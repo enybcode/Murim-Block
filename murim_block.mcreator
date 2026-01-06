@@ -65,7 +65,8 @@
       "metadata": {
         "type": "number",
         "files": []
-      }
+      },
+      "path": "~/Qi effect and other Qi"
     },
     {
       "name": "PillsPlayerFinishesUsingItem",
@@ -130,6 +131,10 @@
       },
       {
         "name": "Effect",
+        "children": []
+      },
+      {
+        "name": "Qi effect and other Qi",
         "children": []
       }
     ]
