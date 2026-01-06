@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " a ",
+    "aba",
+    " a "
+  ],
+  "key": {
+    "a": "minecraft:wheat",
+    "b": "minecraft:wheat_seeds"
+  },
+  "result": {
+    "id": "murim_block:pills",
+    "count": 1
+  }
+}
