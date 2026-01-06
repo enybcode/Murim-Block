@@ -55,6 +55,17 @@
         ]
       },
       "path": "~/Crafts"
+    },
+    {
+      "name": "Qi",
+      "type": "gamerule",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "qi",
+      "metadata": {
+        "type": "number",
+        "files": []
+      }
     }
   ],
   "variable_elements": [],
@@ -68,16 +79,19 @@
   "language_map": {
     "en_us": {
       "item.murim_block.pills": "Pills",
-      "item.murim_block.murim_sword": "Murim Sword"
+      "item.murim_block.murim_sword": "Murim Sword",
+      "gamerule.qi": "qi",
+      "gamerule.qi.description": "La puissance intérieur du joueur"
     }
   },
   "metadata": {
     "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModGameRules.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/resources/pack.mcmeta"
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
+      "src/main/resources/META-INF/neoforge.mods.toml"
     ]
   },
   "foldersRoot": {
