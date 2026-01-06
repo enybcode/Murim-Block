@@ -1,0 +1,99 @@
+{
+  "mod_elements": [
+    {
+      "name": "Pills",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "pills",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/items/pills.json",
+          "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
+          "src/main/resources/assets/murim_block/models/item/pills.json"
+        ]
+      },
+      "path": "~/Tools"
+    },
+    {
+      "name": "MurimSword",
+      "type": "tool",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "murim_sword",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/items/murim_sword.json",
+          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java",
+          "src/main/resources/assets/murim_block/models/item/murim_sword.json"
+        ]
+      },
+      "path": "~/Tools"
+    },
+    {
+      "name": "MurimSwordCraft",
+      "type": "recipe",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "murim_sword_craft",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/recipe/murim_sword_craft.json"
+        ]
+      },
+      "path": "~/Crafts"
+    }
+  ],
+  "variable_elements": [],
+  "sound_elements": [],
+  "tag_elements": {
+    "ITEMS:minecraft:swords": [
+      "~CUSTOM:MurimSword"
+    ]
+  },
+  "tab_element_order": {},
+  "language_map": {
+    "en_us": {
+      "item.murim_block.pills": "Pills",
+      "item.murim_block.murim_sword": "Murim Sword"
+    }
+  },
+  "metadata": {
+    "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
+      "src/main/resources/META-INF/neoforge.mods.toml"
+    ]
+  },
+  "foldersRoot": {
+    "name": "~",
+    "children": [
+      {
+        "name": "Tools",
+        "children": []
+      },
+      {
+        "name": "Crafts",
+        "children": []
+      }
+    ]
+  },
+  "workspaceSettings": {
+    "modid": "murim_block",
+    "modName": "Murim Block",
+    "version": "1.0.0",
+    "author": "MCreator",
+    "websiteURL": "https://mcreator.net",
+    "license": "Not specified",
+    "serverSideOnly": false,
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "mcreatorDependencies": [],
+    "currentGenerator": "neoforge-1.21.8",
+    "modElementsPackage": "net.mcreator.murimblock"
+  },
+  "mcreatorVersion": 202500345720
+}

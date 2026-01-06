@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " aa",
+    " ba",
+    "c  "
+  ],
+  "key": {
+    "a": "minecraft:iron_ingot",
+    "b": "minecraft:redstone",
+    "c": "minecraft:stick"
+  },
+  "result": {
+    "id": "murim_block:murim_sword",
+    "count": 1
+  }
+}
