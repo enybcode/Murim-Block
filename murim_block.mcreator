@@ -66,6 +66,25 @@
         "type": "number",
         "files": []
       }
+    },
+    {
+      "name": "PillsPlayerFinishesUsingItem",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "pills_player_finishes_using_item",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/PillsPlayerFinishesUsingItemProcedure.java"
+        ]
+      },
+      "path": "~/Effect"
     }
   ],
   "variable_elements": [],
@@ -103,6 +122,10 @@
       },
       {
         "name": "Crafts",
+        "children": []
+      },
+      {
+        "name": "Effect",
         "children": []
       }
     ]
