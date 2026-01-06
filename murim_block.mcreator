@@ -8,8 +8,8 @@
       "registry_name": "pills",
       "metadata": {
         "files": [
-          "src/main/resources/assets/murim_block/items/pills.json",
           "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
+          "src/main/resources/assets/murim_block/items/pills.json",
           "src/main/resources/assets/murim_block/models/item/pills.json"
         ]
       },
@@ -78,6 +78,10 @@
           {
             "name": "entity",
             "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
           }
         ],
         "files": [
