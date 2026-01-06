@@ -3,7 +3,7 @@
   "_type": "item",
   "definition": {
     "renderType": 0,
-    "texture": "pilluleherbe",
+    "texture": "pills",
     "customModelName": "Normal",
     "guiTexture": "",
     "customProperties": {},
