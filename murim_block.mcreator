@@ -146,6 +146,19 @@
         ]
       },
       "path": "~/Effect"
+    },
+    {
+      "name": "OpenEyes",
+      "type": "achievement",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_eyes",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/advancement/open_eyes.json"
+        ]
+      },
+      "path": "~/Success"
     }
   ],
   "variable_elements": [],
@@ -162,7 +175,9 @@
       "item.murim_block.murim_sword": "Murim Sword",
       "gamerule.qi": "qi",
       "gamerule.qi.description": "La puissance intérieur du joueur",
-      "item.murim_block.shield_demonic": "Shield Demonic"
+      "item.murim_block.shield_demonic": "Shield Demonic",
+      "advancements.open_eyes.descr": "you entered the murim",
+      "advancements.open_eyes.title": "Open Eyes"
     }
   },
   "metadata": {
@@ -192,6 +207,10 @@
       },
       {
         "name": "Effect",
+        "children": []
+      },
+      {
+        "name": "Success",
         "children": []
       }
     ]

@@ -1,0 +1,27 @@
+{
+  "_fv": 79,
+  "_type": "achievement",
+  "definition": {
+    "achievementName": "Open Eyes",
+    "achievementDescription": "you entered the murim",
+    "achievementIcon": {
+      "value": "Items.ENDER_EYE"
+    },
+    "background": "Default",
+    "disableDisplay": false,
+    "showPopup": true,
+    "announceToChat": false,
+    "hideIfNotCompleted": true,
+    "rewardLoot": [],
+    "rewardRecipes": [
+      "ShieldDemonicCraft",
+      "MurimSwordCraft"
+    ],
+    "rewardXP": 10,
+    "achievementType": "task",
+    "parent": {
+      "value": "adventure/adventuring_time"
+    },
+    "triggerxml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"advancement_trigger\" deletable=\"false\" x=\"40\" y=\"80\"><next><block type=\"item_consumed\"><value name=\"item\"><block type=\"mcitem_all\"><field name=\"value\">CUSTOM:Pills</field></block></value></block></next></block></xml>"
+  }
+}
