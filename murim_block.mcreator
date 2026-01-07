@@ -143,14 +143,18 @@
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModGameRules.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/pack.mcmeta",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
     "name": "~",
     "children": [
+      {
+        "name": "Qi effect and other Qi",
+        "children": []
+      },
       {
         "name": "Tools",
         "children": []
@@ -161,10 +165,6 @@
       },
       {
         "name": "Effect",
-        "children": []
-      },
-      {
-        "name": "Qi effect and other Qi",
         "children": []
       }
     ]
