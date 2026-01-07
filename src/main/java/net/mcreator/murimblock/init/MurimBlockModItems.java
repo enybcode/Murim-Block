@@ -8,6 +8,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 
 import net.minecraft.world.item.Item;
 
+import net.mcreator.murimblock.item.ShieldDemonicItem;
 import net.mcreator.murimblock.item.PillsItem;
 import net.mcreator.murimblock.item.MurimSwordItem;
 import net.mcreator.murimblock.MurimBlockMod;
@@ -18,9 +19,11 @@ public class MurimBlockModItems {
 	public static final DeferredRegister.Items REGISTRY = DeferredRegister.createItems(MurimBlockMod.MODID);
 	public static final DeferredItem<Item> PILLS;
 	public static final DeferredItem<Item> MURIM_SWORD;
+	public static final DeferredItem<Item> SHIELD_DEMONIC;
 	static {
 		PILLS = register("pills", PillsItem::new);
 		MURIM_SWORD = register("murim_sword", MurimSwordItem::new);
+		SHIELD_DEMONIC = register("shield_demonic", ShieldDemonicItem::new);
 	}
 
 	// Start of user code block custom items

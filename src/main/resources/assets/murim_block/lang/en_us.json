@@ -2,5 +2,6 @@
   "item.murim_block.pills": "Pills",
   "item.murim_block.murim_sword": "Murim Sword",
   "gamerule.qi": "qi",
-  "gamerule.qi.description": "La puissance intérieur du joueur"
+  "gamerule.qi.description": "La puissance intérieur du joueur",
+  "item.murim_block.shield_demonic": "Shield Demonic"
 }

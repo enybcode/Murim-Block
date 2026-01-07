@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "murim_block:item/shield_demonic"
+    },
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "murim_block:item/shield_demonic_blocking"
+    },
+    "property": "minecraft:using_item"
+  }
+}
