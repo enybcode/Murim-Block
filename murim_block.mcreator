@@ -23,9 +23,9 @@
       "registry_name": "murim_sword",
       "metadata": {
         "files": [
-          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java",
           "src/main/resources/assets/murim_block/models/item/murim_sword.json",
-          "src/main/resources/assets/murim_block/items/murim_sword.json"
+          "src/main/resources/assets/murim_block/items/murim_sword.json",
+          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java"
         ]
       },
       "path": "~/Tools"
@@ -113,12 +113,39 @@
       "metadata": {
         "files": [
           "src/main/resources/assets/murim_block/models/item/shield_demonic_blocking.json",
-          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
           "src/main/resources/assets/murim_block/items/shield_demonic.json",
+          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
           "src/main/resources/assets/murim_block/models/item/shield_demonic.json"
         ]
       },
       "path": "~/Tools"
+    },
+    {
+      "name": "KillAddQi",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "kill_add_qi",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "sourceentity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/KillAddQiProcedure.java"
+        ]
+      },
+      "path": "~/Effect"
     }
   ],
   "variable_elements": [],
@@ -143,9 +170,9 @@
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModGameRules.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/pack.mcmeta",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
