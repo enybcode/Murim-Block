@@ -40,7 +40,7 @@ public class KillAddQiProcedure {
 				if (world instanceof ServerLevel _serverLevel)
 					_serverLevel.getGameRules().getRule(MurimBlockModGameRules.QI).set((world instanceof ServerLevel _serverLevelGR3 ? _serverLevelGR3.getGameRules().getInt(MurimBlockModGameRules.QI) : 0) + 5, world.getServer());
 				if (world instanceof ServerLevel _level)
-					_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 0.2);
+					_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 10);
 			}
 		}
 	}
