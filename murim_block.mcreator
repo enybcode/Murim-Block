@@ -90,6 +90,35 @@
         ]
       },
       "path": "~/Effect"
+    },
+    {
+      "name": "ShieldDemonicCraft",
+      "type": "recipe",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "shield_demonic_craft",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/recipe/shield_demonic_craft.json"
+        ]
+      },
+      "path": "~/Crafts"
+    },
+    {
+      "name": "ShieldDemonic",
+      "type": "tool",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "shield_demonic",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/models/item/shield_demonic_blocking.json",
+          "src/main/resources/assets/murim_block/items/shield_demonic.json",
+          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
+          "src/main/resources/assets/murim_block/models/item/shield_demonic.json"
+        ]
+      },
+      "path": "~/Tools"
     }
   ],
   "variable_elements": [],
@@ -105,17 +134,18 @@
       "item.murim_block.pills": "Pills",
       "item.murim_block.murim_sword": "Murim Sword",
       "gamerule.qi": "qi",
-      "gamerule.qi.description": "La puissance intérieur du joueur"
+      "gamerule.qi.description": "La puissance intérieur du joueur",
+      "item.murim_block.shield_demonic": "Shield Demonic"
     }
   },
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModGameRules.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/pack.mcmeta",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
