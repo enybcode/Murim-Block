@@ -4,11 +4,12 @@
   "pattern": [
     " a ",
     "aba",
-    " a "
+    " c "
   ],
   "key": {
     "a": "minecraft:wheat",
-    "b": "minecraft:wheat_seeds"
+    "b": "minecraft:wheat_seeds",
+    "c": "minecraft:paper"
   },
   "result": {
     "id": "murim_block:pills",
