@@ -13,31 +13,31 @@
     "recipeShapeless": false,
     "recipeSlots": [
       {
-        "value": "Blocks.COAL_BLOCK"
+        "value": "Blocks.OBSIDIAN"
       },
       {
-        "value": "Items.REDSTONE"
+        "value": "Items.ENDER_EYE"
       },
       {
-        "value": "Blocks.COAL_BLOCK"
+        "value": "Blocks.OBSIDIAN"
       },
       {
-        "value": "Items.REDSTONE"
+        "value": "Blocks.REDSTONE_BLOCK"
       },
       {
-        "value": "Blocks.COAL_BLOCK"
+        "value": "Blocks.NETHERITE_BLOCK"
       },
       {
-        "value": "Items.REDSTONE"
+        "value": "Blocks.REDSTONE_BLOCK"
       },
       {
-        "value": "Blocks.COAL_BLOCK"
+        "value": "Blocks.OBSIDIAN"
       },
       {
-        "value": "Items.REDSTONE"
+        "value": "Blocks.REDSTONE_BLOCK"
       },
       {
-        "value": "Blocks.COAL_BLOCK"
+        "value": "Blocks.OBSIDIAN"
       }
     ],
     "recipeReturnStack": {

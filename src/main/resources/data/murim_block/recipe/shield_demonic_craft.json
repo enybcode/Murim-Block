@@ -3,12 +3,14 @@
   "category": "misc",
   "pattern": [
     "aba",
-    "bab",
-    "aba"
+    "cdc",
+    "aca"
   ],
   "key": {
-    "a": "minecraft:coal_block",
-    "b": "minecraft:redstone"
+    "a": "minecraft:obsidian",
+    "b": "minecraft:ender_eye",
+    "c": "minecraft:redstone_block",
+    "d": "minecraft:netherite_block"
   },
   "result": {
     "id": "murim_block:shield_demonic",

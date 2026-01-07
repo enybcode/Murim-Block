@@ -123,7 +123,7 @@
     {
       "name": "KillAddQi",
       "type": "procedure",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "kill_add_qi",
       "metadata": {
@@ -185,9 +185,9 @@
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModGameRules.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
+      "src/main/resources/pack.mcmeta",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/resources/pack.mcmeta"
+      "src/main/resources/META-INF/neoforge.mods.toml"
     ]
   },
   "foldersRoot": {

@@ -1,6 +1,20 @@
 package net.mcreator.murimblock.procedures;
 
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.bus.api.Event;
+
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.particles.ParticleTypes;
+
+import net.mcreator.murimblock.init.MurimBlockModGameRules;
+
+import javax.annotation.Nullable;
 
 @EventBusSubscriber
 public class KillAddQiProcedure {
@@ -21,6 +35,8 @@ public class KillAddQiProcedure {
 		if (sourceentity instanceof Player == (entity instanceof Mob _mobEnt1 && _mobEnt1.isAggressive())) {
 			if (world instanceof ServerLevel _serverLevel)
 				_serverLevel.getGameRules().getRule(MurimBlockModGameRules.QI).set((world instanceof ServerLevel _serverLevelGR2 ? _serverLevelGR2.getGameRules().getInt(MurimBlockModGameRules.QI) : 0) + 5, world.getServer());
+			if (world instanceof ServerLevel _level)
+				_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 0.2);
 		}
 	}
 }
