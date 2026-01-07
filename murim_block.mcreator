@@ -119,6 +119,33 @@
         ]
       },
       "path": "~/Tools"
+    },
+    {
+      "name": "KillAddQi",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "kill_add_qi",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "sourceentity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/KillAddQiProcedure.java"
+        ]
+      },
+      "path": "~/Effect"
     }
   ],
   "variable_elements": [],
