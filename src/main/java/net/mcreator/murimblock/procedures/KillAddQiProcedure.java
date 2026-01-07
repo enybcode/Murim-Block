@@ -9,7 +9,9 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.particles.ParticleTypes;
 
 import net.mcreator.murimblock.init.MurimBlockModGameRules;
@@ -32,11 +34,14 @@ public class KillAddQiProcedure {
 	private static void execute(@Nullable Event event, LevelAccessor world, Entity entity, Entity sourceentity) {
 		if (entity == null || sourceentity == null)
 			return;
-		if (sourceentity instanceof Player == (entity instanceof Mob _mobEnt1 && _mobEnt1.isAggressive())) {
-			if (world instanceof ServerLevel _serverLevel)
-				_serverLevel.getGameRules().getRule(MurimBlockModGameRules.QI).set((world instanceof ServerLevel _serverLevelGR2 ? _serverLevelGR2.getGameRules().getInt(MurimBlockModGameRules.QI) : 0) + 5, world.getServer());
-			if (world instanceof ServerLevel _level)
-				_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 0.2);
+		if (sourceentity instanceof ServerPlayer _plr0 && _plr0.level() instanceof ServerLevel _serverLevel0
+				&& _plr0.getAdvancements().getOrStartProgress(_serverLevel0.getServer().getAdvancements().get(ResourceLocation.parse("murim_block:open_eyes"))).isDone()) {
+			if (sourceentity instanceof Player == (entity instanceof Mob _mobEnt2 && _mobEnt2.isAggressive())) {
+				if (world instanceof ServerLevel _serverLevel)
+					_serverLevel.getGameRules().getRule(MurimBlockModGameRules.QI).set((world instanceof ServerLevel _serverLevelGR3 ? _serverLevelGR3.getGameRules().getInt(MurimBlockModGameRules.QI) : 0) + 5, world.getServer());
+				if (world instanceof ServerLevel _level)
+					_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 0.2);
+			}
 		}
 	}
 }
