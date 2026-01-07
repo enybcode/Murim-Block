@@ -1,19 +1,6 @@
 package net.mcreator.murimblock.procedures;
 
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.bus.api.Event;
-
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.server.level.ServerLevel;
-
-import net.mcreator.murimblock.init.MurimBlockModGameRules;
-
-import javax.annotation.Nullable;
 
 @EventBusSubscriber
 public class KillAddQiProcedure {
