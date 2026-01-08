@@ -25,7 +25,7 @@ public class PillsItem extends Item {
 	@Override
 	public ItemStack finishUsingItem(ItemStack itemstack, Level world, LivingEntity entity) {
 		ItemStack retval = super.finishUsingItem(itemstack, world, entity);
-		PillsPlayerFinishesUsingItemProcedure.execute(world, entity);
+		PillsPlayerFinishesUsingItemProcedure.execute(entity);
 		return retval;
 	}
 }

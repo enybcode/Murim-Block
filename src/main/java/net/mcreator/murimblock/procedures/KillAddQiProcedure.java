@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.particles.ParticleTypes;
 
-import net.mcreator.murimblock.init.MurimBlockModGameRules;
+import net.mcreator.murimblock.network.MurimBlockModVariables;
 
 import javax.annotation.Nullable;
 
@@ -37,9 +37,11 @@ public class KillAddQiProcedure {
 		if (sourceentity instanceof ServerPlayer _plr0 && _plr0.level() instanceof ServerLevel _serverLevel0
 				&& _plr0.getAdvancements().getOrStartProgress(_serverLevel0.getServer().getAdvancements().get(ResourceLocation.parse("murim_block:open_eyes"))).isDone()) {
 			if (sourceentity instanceof Player == (entity instanceof Mob _mobEnt2 && _mobEnt2.isAggressive())) {
-				if (world instanceof ServerLevel _serverLevel)
-					_serverLevel.getGameRules().getRule(MurimBlockModGameRules.DELETED_MOD_ELEMENT).set((world instanceof ServerLevel _serverLevelGR3 ? _serverLevelGR3.getGameRules().getInt(MurimBlockModGameRules.DELETED_MOD_ELEMENT) : 0) + 5,
-							world.getServer());
+				{
+					MurimBlockModVariables.PlayerVariables _vars = sourceentity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
+					_vars.Qi = sourceentity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi + 5;
+					_vars.markSyncDirty();
+				}
 				if (world instanceof ServerLevel _level)
 					_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 10);
 			}
