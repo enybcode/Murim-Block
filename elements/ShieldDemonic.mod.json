@@ -3,12 +3,12 @@
   "_type": "tool",
   "definition": {
     "toolType": "Shield",
-    "renderType": 2,
-    "blockingRenderType": 2,
+    "renderType": 1,
+    "blockingRenderType": 1,
     "texture": "shielddemonictexture",
     "customModelName": "demonic_shield:default",
     "blockingModelName": "demonic_shield:default",
-    "guiTexture": "demonic_shield_15",
+    "guiTexture": "",
     "name": "Shield Demonic",
     "specialInformation": {
       "fixedValue": []

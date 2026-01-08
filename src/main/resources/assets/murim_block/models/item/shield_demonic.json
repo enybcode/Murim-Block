@@ -1,10 +1,7 @@
 {
-  "forge_marker": 1,
-  "parent": "neoforge:item/default",
-  "loader": "neoforge:obj",
-  "model": "murim_block:models/item/demonic_shield.obj",
+  "parent": "murim_block:custom/demonic_shield",
   "textures": {
-    "m_9f164336-4a07-9105-b203-59b40e704407": "murim_block:block/",
+    "14": "murim_block:block/demonic_shield_15",
     "particle": "murim_block:item/shielddemonictexture"
   }
 }
