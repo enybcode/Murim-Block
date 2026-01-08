@@ -164,7 +164,14 @@
       "path": "~/Success/Item Success"
     }
   ],
-  "variable_elements": [],
+  "variable_elements": [
+    {
+      "name": "Qi",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0.0"
+    }
+  ],
   "sound_elements": [],
   "tag_elements": {
     "ITEMS:minecraft:swords": [
