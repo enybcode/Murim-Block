@@ -3,7 +3,7 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
@@ -243,7 +243,6 @@
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/resources/pack.mcmeta"
     ]
   },
@@ -264,11 +263,11 @@
         "children": []
       },
       {
-        "name": "Crafts",
+        "name": "Procedure",
         "children": []
       },
       {
-        "name": "Procedure",
+        "name": "Crafts",
         "children": []
       }
     ]

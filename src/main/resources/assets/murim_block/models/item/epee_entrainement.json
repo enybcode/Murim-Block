@@ -1,6 +1,7 @@
 {
-  "parent": "item/handheld",
+  "parent": "murim_block:custom/wooden_sword_debutant",
   "textures": {
-    "layer0": "murim_block:item/epee_dentrainement"
+    "0": "murim_block:block/",
+    "particle": "murim_block:item/epee_dentrainement"
   }
 }
