@@ -37,9 +37,11 @@ public class AuraMeditationProcedure {
 			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 40, 2, false, false));
 			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+				_entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 1, false, false));
+			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 10, false, false));
-			if (entity instanceof ServerPlayer _plr2 && _plr2.level() instanceof ServerLevel _serverLevel2
-					&& _plr2.getAdvancements().getOrStartProgress(_serverLevel2.getServer().getAdvancements().get(ResourceLocation.parse("murim_block:open_eyes"))).isDone()) {
+			if (entity instanceof ServerPlayer _plr3 && _plr3.level() instanceof ServerLevel _serverLevel3
+					&& _plr3.getAdvancements().getOrStartProgress(_serverLevel3.getServer().getAdvancements().get(ResourceLocation.parse("murim_block:open_eyes"))).isDone()) {
 				if (world instanceof ServerLevel _level)
 					_level.sendParticles(ParticleTypes.SOUL, x, y, z, 10, 0.5, 1.8, 0.4, 0.05);
 				if (world instanceof ServerLevel _level)

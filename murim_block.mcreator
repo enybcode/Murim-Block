@@ -296,6 +296,12 @@
       "type": "logic",
       "scope": "player_persistent",
       "value": "false"
+    },
+    {
+      "name": "QiMax",
+      "type": "number",
+      "scope": "map",
+      "value": "0"
     }
   ],
   "sound_elements": [],
