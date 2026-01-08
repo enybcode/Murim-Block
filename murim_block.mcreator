@@ -123,7 +123,7 @@
     {
       "name": "KillAddQi",
       "type": "procedure",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "kill_add_qi",
       "metadata": {
@@ -159,6 +159,21 @@
         ]
       },
       "path": "~/Success"
+    },
+    {
+      "name": "OpenEye",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_eye",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/models/item/open_eye.json",
+          "src/main/java/net/mcreator/murimblock/item/OpenEyeItem.java",
+          "src/main/resources/assets/murim_block/items/open_eye.json"
+        ]
+      },
+      "path": "~/Item Success"
     }
   ],
   "variable_elements": [],
@@ -177,17 +192,18 @@
       "gamerule.qi.description": "La puissance intérieur du joueur",
       "item.murim_block.shield_demonic": "Shield Demonic",
       "advancements.open_eyes.descr": "you entered the murim",
-      "advancements.open_eyes.title": "Open Eyes"
+      "advancements.open_eyes.title": "Open Eyes",
+      "item.murim_block.open_eye": "Open Eye"
     }
   },
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModGameRules.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/pack.mcmeta",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
@@ -211,6 +227,10 @@
       },
       {
         "name": "Success",
+        "children": []
+      },
+      {
+        "name": "Item Success",
         "children": []
       }
     ]

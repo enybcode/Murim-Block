@@ -5,7 +5,7 @@
     "achievementName": "Open Eyes",
     "achievementDescription": "you entered the murim",
     "achievementIcon": {
-      "value": "Items.ENDER_EYE"
+      "value": "CUSTOM:OpenEye"
     },
     "background": "Default",
     "disableDisplay": false,
