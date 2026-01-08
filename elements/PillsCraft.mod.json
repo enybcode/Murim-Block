@@ -13,13 +13,7 @@
     "recipeShapeless": false,
     "recipeSlots": [
       {
-        "value": ""
-      },
-      {
-        "value": "Items.WHEAT"
-      },
-      {
-        "value": ""
+        "value": "Items.WHEAT_SEEDS"
       },
       {
         "value": "Items.WHEAT"
@@ -31,13 +25,19 @@
         "value": "Items.WHEAT"
       },
       {
-        "value": ""
+        "value": "Items.CAKE"
+      },
+      {
+        "value": "Items.WHEAT"
+      },
+      {
+        "value": "Items.WHEAT_SEEDS"
       },
       {
         "value": "Items.PAPER"
       },
       {
-        "value": ""
+        "value": "Items.WHEAT_SEEDS"
       }
     ],
     "recipeReturnStack": {
