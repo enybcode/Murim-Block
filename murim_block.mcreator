@@ -184,7 +184,8 @@
         "files": [
           "src/main/java/net/mcreator/murimblock/command/CheckqiCommand.java"
         ]
-      }
+      },
+      "path": "~/command"
     },
     {
       "name": "CheckQiCommand",
@@ -243,6 +244,33 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "AuraActivation",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "aura_activation",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/AuraActivationMessage.java"
+        ]
+      },
+      "path": "~/key bind"
+    },
+    {
+      "name": "AuraActive_M",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "aura_active_m",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/AuraActive_MProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
@@ -257,6 +285,12 @@
       "type": "number",
       "scope": "player_persistent",
       "value": "0"
+    },
+    {
+      "name": "AuraActive",
+      "type": "logic",
+      "scope": "player_persistent",
+      "value": "false"
     }
   ],
   "sound_elements": [],
@@ -275,11 +309,13 @@
       "advancements.open_eyes.descr": "you entered the murim",
       "advancements.open_eyes.title": "Open Eyes",
       "item.murim_block.open_eye": "Open Eye",
-      "item.murim_block.epee_entrainement": "Epee Entrainement"
+      "item.murim_block.epee_entrainement": "Epee Entrainement",
+      "key.murim_block.aura_activation": "Aura Activation"
     }
   },
   "metadata": {
     "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/pack.mcmeta",
@@ -310,6 +346,14 @@
       },
       {
         "name": "Crafts",
+        "children": []
+      },
+      {
+        "name": "command",
+        "children": []
+      },
+      {
+        "name": "key bind",
         "children": []
       }
     ]

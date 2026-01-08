@@ -5,5 +5,6 @@
   "advancements.open_eyes.descr": "you entered the murim",
   "advancements.open_eyes.title": "Open Eyes",
   "item.murim_block.open_eye": "Open Eye",
-  "item.murim_block.epee_entrainement": "Epee Entrainement"
+  "item.murim_block.epee_entrainement": "Epee Entrainement",
+  "key.murim_block.aura_activation": "Aura Activation"
 }

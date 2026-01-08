@@ -71,6 +71,7 @@ public class MurimBlockModVariables {
 		PlayerVariables clone = new PlayerVariables();
 		clone.Qi = original.Qi;
 		clone.QiTimer = original.QiTimer;
+		clone.AuraActive = original.AuraActive;
 		if (!event.isWasDeath()) {
 		}
 		event.getEntity().setData(PLAYER_VARIABLES, clone);
@@ -80,17 +81,20 @@ public class MurimBlockModVariables {
 		boolean _syncDirty = false;
 		public double Qi = 0;
 		public double QiTimer = 0;
+		public boolean AuraActive = false;
 
 		@Override
 		public void serialize(ValueOutput output) {
 			output.putDouble("Qi", Qi);
 			output.putDouble("QiTimer", QiTimer);
+			output.putBoolean("AuraActive", AuraActive);
 		}
 
 		@Override
 		public void deserialize(ValueInput input) {
 			Qi = input.getDoubleOr("Qi", 0);
 			QiTimer = input.getDoubleOr("QiTimer", 0);
+			AuraActive = input.getBooleanOr("AuraActive", false);
 		}
 
 		public void markSyncDirty() {
