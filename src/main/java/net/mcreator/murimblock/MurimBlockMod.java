@@ -20,7 +20,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.FriendlyByteBuf;
 
-import net.mcreator.murimblock.network.MurimBlockModVariables;
 import net.mcreator.murimblock.init.MurimBlockModTabs;
 import net.mcreator.murimblock.init.MurimBlockModItems;
 
@@ -49,7 +48,6 @@ public class MurimBlockMod {
 		modEventBus.addListener(this::registerNetworking);
 		MurimBlockModItems.REGISTRY.register(modEventBus);
 		MurimBlockModTabs.REGISTRY.register(modEventBus);
-		MurimBlockModVariables.ATTACHMENT_TYPES.register(modEventBus);
 		// Start of user code block mod init
 		// End of user code block mod init
 	}
