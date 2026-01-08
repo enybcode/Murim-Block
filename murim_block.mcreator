@@ -302,6 +302,12 @@
       "type": "number",
       "scope": "player_persistent",
       "value": "0"
+    },
+    {
+      "name": "QIaffichage",
+      "type": "string",
+      "scope": "map",
+      "value": "\"\""
     }
   ],
   "sound_elements": [],
@@ -365,6 +371,10 @@
       },
       {
         "name": "key bind",
+        "children": []
+      },
+      {
+        "name": "Overlay",
         "children": []
       }
     ]
