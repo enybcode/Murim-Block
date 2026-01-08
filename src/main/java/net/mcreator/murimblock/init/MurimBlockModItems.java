@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 
 import net.mcreator.murimblock.item.ShieldDemonicItem;
 import net.mcreator.murimblock.item.PillsItem;
+import net.mcreator.murimblock.item.OpenEyeItem;
 import net.mcreator.murimblock.item.MurimSwordItem;
 import net.mcreator.murimblock.MurimBlockMod;
 
@@ -20,10 +21,12 @@ public class MurimBlockModItems {
 	public static final DeferredItem<Item> PILLS;
 	public static final DeferredItem<Item> MURIM_SWORD;
 	public static final DeferredItem<Item> SHIELD_DEMONIC;
+	public static final DeferredItem<Item> OPEN_EYE;
 	static {
 		PILLS = register("pills", PillsItem::new);
 		MURIM_SWORD = register("murim_sword", MurimSwordItem::new);
 		SHIELD_DEMONIC = register("shield_demonic", ShieldDemonicItem::new);
+		OPEN_EYE = register("open_eye", OpenEyeItem::new);
 	}
 
 	// Start of user code block custom items

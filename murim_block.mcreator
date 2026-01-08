@@ -57,18 +57,6 @@
       "path": "~/Crafts"
     },
     {
-      "name": "Qi",
-      "type": "gamerule",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "qi",
-      "metadata": {
-        "type": "number",
-        "files": []
-      },
-      "path": "~/Qi effect and other Qi"
-    },
-    {
       "name": "PillsPlayerFinishesUsingItem",
       "type": "procedure",
       "compiles": true,
@@ -105,9 +93,25 @@
       "path": "~/Crafts"
     },
     {
+      "name": "ShieldDemonic",
+      "type": "tool",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "shield_demonic",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/models/item/shield_demonic_blocking.json",
+          "src/main/resources/assets/murim_block/items/shield_demonic.json",
+          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
+          "src/main/resources/assets/murim_block/models/item/shield_demonic.json"
+        ]
+      },
+      "path": "~/Tools"
+    },
+    {
       "name": "KillAddQi",
       "type": "procedure",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "kill_add_qi",
       "metadata": {
@@ -145,20 +149,19 @@
       "path": "~/Success"
     },
     {
-      "name": "ShieldDemonic",
-      "type": "tool",
+      "name": "OpenEye",
+      "type": "item",
       "compiles": true,
       "locked_code": false,
-      "registry_name": "shield_demonic",
+      "registry_name": "open_eye",
       "metadata": {
         "files": [
-          "src/main/resources/assets/murim_block/models/item/shield_demonic_blocking.json",
-          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
-          "src/main/resources/assets/murim_block/items/shield_demonic.json",
-          "src/main/resources/assets/murim_block/models/item/shield_demonic.json"
+          "src/main/resources/assets/murim_block/models/item/open_eye.json",
+          "src/main/java/net/mcreator/murimblock/item/OpenEyeItem.java",
+          "src/main/resources/assets/murim_block/items/open_eye.json"
         ]
       },
-      "path": "~/Tools"
+      "path": "~/Success/Item Success"
     }
   ],
   "variable_elements": [],
@@ -173,20 +176,18 @@
     "en_us": {
       "item.murim_block.pills": "Pills",
       "item.murim_block.murim_sword": "Murim Sword",
-      "gamerule.qi": "qi",
-      "gamerule.qi.description": "La puissance intérieur du joueur",
+      "item.murim_block.shield_demonic": "Shield Demonic",
       "advancements.open_eyes.descr": "you entered the murim",
-      "advancements.open_eyes.title": "Open Eyes",
-      "item.murim_block.shield_demonic": "Shield Demonic"
+      "advancements.open_eyes.title": "Open Eyes"
     }
   },
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModGameRules.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/pack.mcmeta",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/resources/META-INF/neoforge.mods.toml"
     ]
   },
@@ -194,8 +195,13 @@
     "name": "~",
     "children": [
       {
-        "name": "Qi effect and other Qi",
-        "children": []
+        "name": "Success",
+        "children": [
+          {
+            "name": "Item Success",
+            "children": []
+          }
+        ]
       },
       {
         "name": "Tools",
@@ -207,10 +213,6 @@
       },
       {
         "name": "Effect",
-        "children": []
-      },
-      {
-        "name": "Success",
         "children": []
       }
     ]

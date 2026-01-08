@@ -38,7 +38,8 @@ public class KillAddQiProcedure {
 				&& _plr0.getAdvancements().getOrStartProgress(_serverLevel0.getServer().getAdvancements().get(ResourceLocation.parse("murim_block:open_eyes"))).isDone()) {
 			if (sourceentity instanceof Player == (entity instanceof Mob _mobEnt2 && _mobEnt2.isAggressive())) {
 				if (world instanceof ServerLevel _serverLevel)
-					_serverLevel.getGameRules().getRule(MurimBlockModGameRules.QI).set((world instanceof ServerLevel _serverLevelGR3 ? _serverLevelGR3.getGameRules().getInt(MurimBlockModGameRules.QI) : 0) + 5, world.getServer());
+					_serverLevel.getGameRules().getRule(MurimBlockModGameRules.DELETED_MOD_ELEMENT).set((world instanceof ServerLevel _serverLevelGR3 ? _serverLevelGR3.getGameRules().getInt(MurimBlockModGameRules.DELETED_MOD_ELEMENT) : 0) + 5,
+							world.getServer());
 				if (world instanceof ServerLevel _level)
 					_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 10);
 			}

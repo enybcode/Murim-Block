@@ -16,6 +16,7 @@ public class PillsPlayerFinishesUsingItemProcedure {
 		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 			_entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 1, true, false));
 		if (world instanceof ServerLevel _serverLevel)
-			_serverLevel.getGameRules().getRule(MurimBlockModGameRules.QI).set((world instanceof ServerLevel _serverLevelGR1 ? _serverLevelGR1.getGameRules().getInt(MurimBlockModGameRules.QI) : 0) + 10, world.getServer());
+			_serverLevel.getGameRules().getRule(MurimBlockModGameRules.DELETED_MOD_ELEMENT).set((world instanceof ServerLevel _serverLevelGR1 ? _serverLevelGR1.getGameRules().getInt(MurimBlockModGameRules.DELETED_MOD_ELEMENT) : 0) + 10,
+					world.getServer());
 	}
 }
