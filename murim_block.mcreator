@@ -59,7 +59,7 @@
     {
       "name": "PillsPlayerFinishesUsingItem",
       "type": "procedure",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "pills_player_finishes_using_item",
       "metadata": {
@@ -107,7 +107,7 @@
     {
       "name": "KillAddQi",
       "type": "procedure",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "kill_add_qi",
       "metadata": {
