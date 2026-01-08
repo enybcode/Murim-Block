@@ -168,7 +168,6 @@
       "metadata": {
         "files": [
           "src/main/resources/assets/murim_block/items/epee_entrainement.json",
-          "src/main/resources/assets/murim_block/models/item/epee_entrainement_gui.json",
           "src/main/resources/assets/murim_block/models/item/epee_entrainement.json",
           "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java"
         ]

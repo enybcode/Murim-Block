@@ -1,23 +1,6 @@
 {
   "model": {
-    "type": "minecraft:select",
-    "property": "minecraft:display_context",
-    "cases": [
-      {
-        "when": [
-          "gui",
-          "fixed",
-          "ground"
-        ],
-        "model": {
-          "type": "minecraft:model",
-          "model": "murim_block:item/epee_entrainement_gui"
-        }
-      }
-    ],
-    "fallback": {
-      "type": "minecraft:model",
-      "model": "murim_block:item/epee_entrainement"
-    }
+    "type": "minecraft:model",
+    "model": "murim_block:item/epee_entrainement"
   }
 }
