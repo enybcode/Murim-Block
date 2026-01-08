@@ -3,7 +3,7 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
@@ -148,7 +148,7 @@
     {
       "name": "OpenEye",
       "type": "item",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "open_eye",
       "metadata": {
@@ -182,9 +182,9 @@
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/pack.mcmeta",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
