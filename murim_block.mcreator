@@ -265,7 +265,12 @@
       "locked_code": false,
       "registry_name": "aura_active_m",
       "metadata": {
-        "dependencies": [],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
         "files": [
           "src/main/java/net/mcreator/murimblock/procedures/AuraActive_MProcedure.java"
         ]
