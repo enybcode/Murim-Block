@@ -173,7 +173,7 @@
           "src/main/resources/assets/murim_block/items/open_eye.json"
         ]
       },
-      "path": "~/Item Success"
+      "path": "~/Success/Item Success"
     }
   ],
   "variable_elements": [],
@@ -227,11 +227,12 @@
       },
       {
         "name": "Success",
-        "children": []
-      },
-      {
-        "name": "Item Success",
-        "children": []
+        "children": [
+          {
+            "name": "Item Success",
+            "children": []
+          }
+        ]
       }
     ]
   },
