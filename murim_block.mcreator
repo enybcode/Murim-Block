@@ -160,6 +160,18 @@
       "path": "~/Success/Item Success"
     },
     {
+      "name": "Checkqi",
+      "type": "command",
+      "compiles": false,
+      "locked_code": false,
+      "registry_name": "checkqi",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/command/CheckqiCommand.java"
+        ]
+      }
+    },
+    {
       "name": "EpeeEntrainement",
       "type": "tool",
       "compiles": true,
@@ -173,18 +185,6 @@
         ]
       },
       "path": "~/Tools"
-    },
-    {
-      "name": "Checkqi",
-      "type": "command",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "checkqi",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/command/CheckqiCommand.java"
-        ]
-      }
     }
   ],
   "variable_elements": [
@@ -220,6 +220,7 @@
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/resources/pack.mcmeta"
     ]
   },
