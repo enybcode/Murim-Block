@@ -17,7 +17,7 @@ public class CheckQiCommandProcedure {
 			return;
 		if (entity instanceof Player _player && !_player.level().isClientSide())
 			_player.displayClientMessage(
-					Component.literal(("The Qi of" + (commandParameterEntity(arguments, "target")).getDisplayName().getString() + "is" + (commandParameterEntity(arguments, "target")).getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi)), false);
+					Component.literal(("The Qi of " + (commandParameterEntity(arguments, "target")).getDisplayName().getString() + " is " + (commandParameterEntity(arguments, "target")).getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi)), false);
 	}
 
 	private static Entity commandParameterEntity(CommandContext<CommandSourceStack> arguments, String parameter) {

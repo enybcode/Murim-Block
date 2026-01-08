@@ -9,8 +9,8 @@
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
-          "src/main/resources/assets/murim_block/models/item/pills.json",
-          "src/main/resources/assets/murim_block/items/pills.json"
+          "src/main/resources/assets/murim_block/items/pills.json",
+          "src/main/resources/assets/murim_block/models/item/pills.json"
         ]
       },
       "path": "~/Tools"
@@ -240,10 +240,11 @@
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/resources/pack.mcmeta"
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java"
     ]
   },
   "foldersRoot": {

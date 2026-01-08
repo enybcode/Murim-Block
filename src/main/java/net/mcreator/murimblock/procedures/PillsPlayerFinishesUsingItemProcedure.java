@@ -10,6 +10,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 
+import net.mcreator.murimblock.network.MurimBlockModVariables;
+
 import javax.annotation.Nullable;
 
 @EventBusSubscriber
@@ -30,5 +32,10 @@ public class PillsPlayerFinishesUsingItemProcedure {
 			return;
 		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 			_entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 1, true, false));
+		{
+			MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
+			_vars.Qi = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi + 10;
+			_vars.markSyncDirty();
+		}
 	}
 }
