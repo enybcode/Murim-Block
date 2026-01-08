@@ -3,14 +3,14 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
-          "src/main/resources/assets/murim_block/items/pills.json",
-          "src/main/resources/assets/murim_block/models/item/pills.json"
+          "src/main/resources/assets/murim_block/models/item/pills.json",
+          "src/main/resources/assets/murim_block/items/pills.json"
         ]
       },
       "path": "~/Tools"
@@ -173,6 +173,18 @@
         ]
       },
       "path": "~/Tools"
+    },
+    {
+      "name": "Checkqi",
+      "type": "command",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "checkqi",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/command/CheckqiCommand.java"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -208,7 +220,6 @@
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/resources/pack.mcmeta"
     ]
   },

@@ -1,6 +1,7 @@
 {
-  "parent": "item/handheld",
+  "parent": "murim_block:custom/demonic_shield",
   "textures": {
-    "layer0": "murim_block:item/shielddemonictexture"
+    "14": "murim_block:block/demonic_shield_15",
+    "particle": "murim_block:item/shielddemonictexture"
   }
 }

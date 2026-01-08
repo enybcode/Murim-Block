@@ -1,0 +1,10 @@
+{
+  "mappings": {
+    "default": {
+      "name": "default",
+      "map": {
+        "14": "demonic_shield_15"
+      }
+    }
+  }
+}

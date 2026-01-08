@@ -1,46 +1,7 @@
 {
-  "parent": "item/handheld",
+  "parent": "murim_block:custom/demonic_shield",
   "textures": {
-    "layer0": "murim_block:item/shielddemonictexture"
-  },
-  "display": {
-    "thirdperson_righthand": {
-      "rotation": [
-        45,
-        -35,
-        0
-      ]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [
-        45,
-        -35,
-        0
-      ]
-    },
-    "firstperson_righthand": {
-      "rotation": [
-        0,
-        0,
-        5
-      ],
-      "translation": [
-        -5,
-        2,
-        -1
-      ]
-    },
-    "firstperson_lefthand": {
-      "rotation": [
-        0,
-        0,
-        5
-      ],
-      "translation": [
-        -5,
-        2,
-        -1
-      ]
-    }
+    "14": "murim_block:block/demonic_shield_15",
+    "particle": "murim_block:item/shielddemonictexture"
   }
 }
