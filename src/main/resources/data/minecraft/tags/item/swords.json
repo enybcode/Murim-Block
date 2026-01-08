@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "murim_block:epee_entrainement",
     "murim_block:murim_sword"
   ]
 }

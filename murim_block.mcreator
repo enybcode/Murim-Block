@@ -3,7 +3,7 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
@@ -158,6 +158,21 @@
         ]
       },
       "path": "~/Success/Item Success"
+    },
+    {
+      "name": "EpeeEntrainement",
+      "type": "tool",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "epee_entrainement",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/items/epee_entrainement.json",
+          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java",
+          "src/main/resources/assets/murim_block/models/item/epee_entrainement.json"
+        ]
+      },
+      "path": "~/Tools"
     }
   ],
   "variable_elements": [
@@ -171,6 +186,7 @@
   "sound_elements": [],
   "tag_elements": {
     "ITEMS:minecraft:swords": [
+      "~CUSTOM:EpeeEntrainement",
       "~CUSTOM:MurimSword"
     ]
   },
@@ -182,7 +198,8 @@
       "item.murim_block.shield_demonic": "Shield Demonic",
       "advancements.open_eyes.descr": "you entered the murim",
       "advancements.open_eyes.title": "Open Eyes",
-      "item.murim_block.open_eye": "Open Eye"
+      "item.murim_block.open_eye": "Open Eye",
+      "item.murim_block.epee_entrainement": "Epee Entrainement"
     }
   },
   "metadata": {
@@ -191,6 +208,7 @@
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/resources/pack.mcmeta"
     ]
   },

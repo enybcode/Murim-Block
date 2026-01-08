@@ -25,6 +25,7 @@ public class MurimBlockModTabs {
 		} else if (tabData.getTabKey() == CreativeModeTabs.COMBAT) {
 			tabData.accept(MurimBlockModItems.MURIM_SWORD.get());
 			tabData.accept(MurimBlockModItems.SHIELD_DEMONIC.get());
+			tabData.accept(MurimBlockModItems.EPEE_ENTRAINEMENT.get());
 		}
 	}
 }

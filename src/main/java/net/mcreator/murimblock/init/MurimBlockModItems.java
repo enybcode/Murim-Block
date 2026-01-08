@@ -12,6 +12,7 @@ import net.mcreator.murimblock.item.ShieldDemonicItem;
 import net.mcreator.murimblock.item.PillsItem;
 import net.mcreator.murimblock.item.OpenEyeItem;
 import net.mcreator.murimblock.item.MurimSwordItem;
+import net.mcreator.murimblock.item.EpeeEntrainementItem;
 import net.mcreator.murimblock.MurimBlockMod;
 
 import java.util.function.Function;
@@ -22,11 +23,13 @@ public class MurimBlockModItems {
 	public static final DeferredItem<Item> MURIM_SWORD;
 	public static final DeferredItem<Item> SHIELD_DEMONIC;
 	public static final DeferredItem<Item> OPEN_EYE;
+	public static final DeferredItem<Item> EPEE_ENTRAINEMENT;
 	static {
 		PILLS = register("pills", PillsItem::new);
 		MURIM_SWORD = register("murim_sword", MurimSwordItem::new);
 		SHIELD_DEMONIC = register("shield_demonic", ShieldDemonicItem::new);
 		OPEN_EYE = register("open_eye", OpenEyeItem::new);
+		EPEE_ENTRAINEMENT = register("epee_entrainement", EpeeEntrainementItem::new);
 	}
 
 	// Start of user code block custom items
