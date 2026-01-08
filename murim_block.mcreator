@@ -3,7 +3,7 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
