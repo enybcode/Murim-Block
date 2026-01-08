@@ -3,14 +3,14 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
-          "src/main/resources/assets/murim_block/models/item/pills.json",
-          "src/main/resources/assets/murim_block/items/pills.json"
+          "src/main/resources/assets/murim_block/items/pills.json",
+          "src/main/resources/assets/murim_block/models/item/pills.json"
         ]
       },
       "path": "~/Tools"
@@ -167,9 +167,9 @@
       "registry_name": "epee_entrainement",
       "metadata": {
         "files": [
+          "src/main/resources/assets/murim_block/models/item/epee_entrainement.json",
           "src/main/resources/assets/murim_block/items/epee_entrainement.json",
-          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java",
-          "src/main/resources/assets/murim_block/models/item/epee_entrainement.json"
+          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java"
         ]
       },
       "path": "~/Tools"
@@ -217,10 +217,11 @@
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/resources/pack.mcmeta"
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java"
     ]
   },
   "foldersRoot": {
