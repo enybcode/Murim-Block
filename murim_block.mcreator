@@ -306,7 +306,7 @@
     {
       "name": "QIaffichage",
       "type": "string",
-      "scope": "map",
+      "scope": "player_persistent",
       "value": "\"\""
     }
   ],

@@ -70,7 +70,10 @@ public class AuraMeditationProcedure {
 				}
 			}
 		}
-		MurimBlockModVariables.MapVariables.get(world).QIaffichage = "Qi" + entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi + "/" + entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax;
-		MurimBlockModVariables.MapVariables.get(world).markSyncDirty();
+		{
+			MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
+			_vars.QIaffichage = "Qi" + entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi + "/" + entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax;
+			_vars.markSyncDirty();
+		}
 	}
 }
