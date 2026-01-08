@@ -77,7 +77,7 @@ public class MurimBlockModVariables {
 
 	public static class PlayerVariables implements ValueIOSerializable {
 		boolean _syncDirty = false;
-		public double Qi = 0.0;
+		public double Qi = 0;
 
 		@Override
 		public void serialize(ValueOutput output) {
