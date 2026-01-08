@@ -4,6 +4,9 @@
   "definition": {
     "triggerKey": "M",
     "keyBindingName": "Aura Activation",
-    "keyBindingCategoryKey": "misc"
+    "keyBindingCategoryKey": "misc",
+    "onKeyPressed": {
+      "name": "AuraActive_M"
+    }
   }
 }
