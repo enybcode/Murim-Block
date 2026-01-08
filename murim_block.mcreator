@@ -73,7 +73,7 @@
           "src/main/java/net/mcreator/murimblock/procedures/PillsPlayerFinishesUsingItemProcedure.java"
         ]
       },
-      "path": "~/Effect"
+      "path": "~/Procedure"
     },
     {
       "name": "ShieldDemonicCraft",
@@ -129,7 +129,7 @@
           "src/main/java/net/mcreator/murimblock/procedures/KillAddQiProcedure.java"
         ]
       },
-      "path": "~/Effect"
+      "path": "~/Procedure"
     },
     {
       "name": "OpenEyes",
@@ -185,6 +185,29 @@
           "src/main/java/net/mcreator/murimblock/command/CheckqiCommand.java"
         ]
       }
+    },
+    {
+      "name": "CheckQiCommand",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "check_qi_command",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "arguments",
+            "type": "cmdcontext"
+          },
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/CheckQiCommandProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
@@ -245,7 +268,7 @@
         "children": []
       },
       {
-        "name": "Effect",
+        "name": "Procedure",
         "children": []
       }
     ]
