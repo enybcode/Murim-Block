@@ -208,11 +208,110 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "AuraActivation",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "aura_activation",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/AuraActivationMessage.java"
+        ]
+      },
+      "path": "~/key bind"
+    },
+    {
+      "name": "QiBar",
+      "type": "overlay",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "qi_bar",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/client/screens/QiBarOverlay.java"
+        ]
+      },
+      "path": "~/Overlay"
+    },
+    {
+      "name": "AuraMeditation",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "aura_meditation",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/AuraMeditationProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
+    },
+    {
+      "name": "AuraActive_M",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "aura_active_m",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/AuraActive_MProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
     {
       "name": "Qi",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0"
+    },
+    {
+      "name": "AuraActive",
+      "type": "logic",
+      "scope": "player_persistent",
+      "value": "false"
+    },
+    {
+      "name": "QiMax",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0"
+    },
+    {
+      "name": "QIaffichage",
+      "type": "string",
+      "scope": "player_persistent",
+      "value": "\"\""
+    },
+    {
+      "name": "QiTimer",
       "type": "number",
       "scope": "player_persistent",
       "value": "0"
@@ -234,17 +333,18 @@
       "advancements.open_eyes.descr": "you entered the murim",
       "advancements.open_eyes.title": "Open Eyes",
       "item.murim_block.open_eye": "Open Eye",
-      "item.murim_block.epee_entrainement": "Epee Entrainement"
+      "item.murim_block.epee_entrainement": "Epee Entrainement",
+      "key.murim_block.aura_activation": "Aura Activation",
+      "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]"
     }
   },
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/pack.mcmeta",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
@@ -260,6 +360,10 @@
         ]
       },
       {
+        "name": "command",
+        "children": []
+      },
+      {
         "name": "Tools",
         "children": []
       },
@@ -269,6 +373,14 @@
       },
       {
         "name": "Crafts",
+        "children": []
+      },
+      {
+        "name": "key bind",
+        "children": []
+      },
+      {
+        "name": "Overlay",
         "children": []
       }
     ]

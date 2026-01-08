@@ -2,14 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    " a ",
     "aba",
-    " c "
+    "bcb",
+    "ada"
   ],
   "key": {
-    "a": "minecraft:wheat",
-    "b": "minecraft:wheat_seeds",
-    "c": "minecraft:paper"
+    "a": "minecraft:wheat_seeds",
+    "b": "minecraft:wheat",
+    "c": "minecraft:cake",
+    "d": "minecraft:paper"
   },
   "result": {
     "id": "murim_block:pills",

@@ -2,9 +2,9 @@
   "_fv": 79,
   "_type": "item",
   "definition": {
-    "renderType": 0,
+    "renderType": 1,
     "texture": "pills",
-    "customModelName": "Normal",
+    "customModelName": "pills:default",
     "guiTexture": "",
     "customProperties": {},
     "states": [],

@@ -1,0 +1,12 @@
+{
+  "_fv": 79,
+  "_type": "keybind",
+  "definition": {
+    "triggerKey": "M",
+    "keyBindingName": "Aura Activation",
+    "keyBindingCategoryKey": "misc",
+    "onKeyPressed": {
+      "name": "AuraActive_M"
+    }
+  }
+}
