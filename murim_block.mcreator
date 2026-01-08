@@ -9,8 +9,8 @@
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
-          "src/main/resources/assets/murim_block/models/item/pills.json",
-          "src/main/resources/assets/murim_block/items/pills.json"
+          "src/main/resources/assets/murim_block/items/pills.json",
+          "src/main/resources/assets/murim_block/models/item/pills.json"
         ]
       },
       "path": "~/Tools"
@@ -300,7 +300,7 @@
     {
       "name": "QiMax",
       "type": "number",
-      "scope": "map",
+      "scope": "player_persistent",
       "value": "0"
     }
   ],
