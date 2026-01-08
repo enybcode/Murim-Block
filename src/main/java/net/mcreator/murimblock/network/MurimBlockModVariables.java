@@ -70,6 +70,7 @@ public class MurimBlockModVariables {
 		PlayerVariables original = event.getOriginal().getData(PLAYER_VARIABLES);
 		PlayerVariables clone = new PlayerVariables();
 		clone.Qi = original.Qi;
+		clone.QiTimer = original.QiTimer;
 		if (!event.isWasDeath()) {
 		}
 		event.getEntity().setData(PLAYER_VARIABLES, clone);
@@ -78,15 +79,18 @@ public class MurimBlockModVariables {
 	public static class PlayerVariables implements ValueIOSerializable {
 		boolean _syncDirty = false;
 		public double Qi = 0;
+		public double QiTimer = 0;
 
 		@Override
 		public void serialize(ValueOutput output) {
 			output.putDouble("Qi", Qi);
+			output.putDouble("QiTimer", QiTimer);
 		}
 
 		@Override
 		public void deserialize(ValueInput input) {
 			Qi = input.getDoubleOr("Qi", 0);
+			QiTimer = input.getDoubleOr("QiTimer", 0);
 		}
 
 		public void markSyncDirty() {
