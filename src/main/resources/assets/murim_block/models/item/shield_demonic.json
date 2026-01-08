@@ -1,6 +1,10 @@
 {
-  "parent": "item/handheld",
+  "forge_marker": 1,
+  "parent": "neoforge:item/default",
+  "loader": "neoforge:obj",
+  "model": "murim_block:models/item/demonic_shield.obj",
   "textures": {
-    "layer0": "murim_block:item/shielddemonictexture"
+    "m_9f164336-4a07-9105-b203-59b40e704407": "murim_block:block/",
+    "particle": "murim_block:item/shielddemonictexture"
   }
 }

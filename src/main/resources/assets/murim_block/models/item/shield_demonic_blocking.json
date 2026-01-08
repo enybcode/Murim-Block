@@ -1,46 +1,10 @@
 {
-  "parent": "item/handheld",
+  "forge_marker": 1,
+  "parent": "neoforge:item/default",
+  "loader": "neoforge:obj",
+  "model": "murim_block:models/item/demonic_shield.obj",
   "textures": {
-    "layer0": "murim_block:item/shielddemonictexture"
-  },
-  "display": {
-    "thirdperson_righthand": {
-      "rotation": [
-        45,
-        -35,
-        0
-      ]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [
-        45,
-        -35,
-        0
-      ]
-    },
-    "firstperson_righthand": {
-      "rotation": [
-        0,
-        0,
-        5
-      ],
-      "translation": [
-        -5,
-        2,
-        -1
-      ]
-    },
-    "firstperson_lefthand": {
-      "rotation": [
-        0,
-        0,
-        5
-      ],
-      "translation": [
-        -5,
-        2,
-        -1
-      ]
-    }
+    "m_9f164336-4a07-9105-b203-59b40e704407": "murim_block:block/",
+    "particle": "murim_block:item/shielddemonictexture"
   }
 }
