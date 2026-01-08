@@ -3,10 +3,10 @@
   "_type": "tool",
   "definition": {
     "toolType": "Sword",
-    "renderType": 1,
+    "renderType": 0,
     "blockingRenderType": 0,
     "texture": "epee_dentrainement",
-    "customModelName": "wooden_sword_debutant:default",
+    "customModelName": "Normal",
     "blockingModelName": "Normal blocking",
     "guiTexture": "texture",
     "name": "Epee Entrainement",
