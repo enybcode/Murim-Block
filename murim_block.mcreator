@@ -3,7 +3,7 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
@@ -162,7 +162,7 @@
     {
       "name": "Checkqi",
       "type": "command",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "checkqi",
       "metadata": {
