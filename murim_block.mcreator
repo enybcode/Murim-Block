@@ -276,6 +276,19 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "QiBar",
+      "type": "overlay",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "qi_bar",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/client/screens/QiBarOverlay.java"
+        ]
+      },
+      "path": "~/Overlay"
     }
   ],
   "variable_elements": [
@@ -327,7 +340,8 @@
       "advancements.open_eyes.title": "Open Eyes",
       "item.murim_block.open_eye": "Open Eye",
       "item.murim_block.epee_entrainement": "Epee Entrainement",
-      "key.murim_block.aura_activation": "Aura Activation"
+      "key.murim_block.aura_activation": "Aura Activation",
+      "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]"
     }
   },
   "metadata": {
