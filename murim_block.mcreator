@@ -24,8 +24,8 @@
       "metadata": {
         "files": [
           "src/main/resources/assets/murim_block/models/item/murim_sword.json",
-          "src/main/resources/assets/murim_block/items/murim_sword.json",
-          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java"
+          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java",
+          "src/main/resources/assets/murim_block/items/murim_sword.json"
         ]
       },
       "path": "~/Tools"
@@ -152,9 +152,9 @@
       "registry_name": "open_eye",
       "metadata": {
         "files": [
-          "src/main/resources/assets/murim_block/models/item/open_eye.json",
+          "src/main/resources/assets/murim_block/items/open_eye.json",
           "src/main/java/net/mcreator/murimblock/item/OpenEyeItem.java",
-          "src/main/resources/assets/murim_block/items/open_eye.json"
+          "src/main/resources/assets/murim_block/models/item/open_eye.json"
         ]
       },
       "path": "~/Success/Item Success"
@@ -174,7 +174,8 @@
       "item.murim_block.murim_sword": "Murim Sword",
       "item.murim_block.shield_demonic": "Shield Demonic",
       "advancements.open_eyes.descr": "you entered the murim",
-      "advancements.open_eyes.title": "Open Eyes"
+      "advancements.open_eyes.title": "Open Eyes",
+      "item.murim_block.open_eye": "Open Eye"
     }
   },
   "metadata": {
