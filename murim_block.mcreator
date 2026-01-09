@@ -309,6 +309,26 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "QiBarappair",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "qi_barappair",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "return_type": "logic",
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/QiBarappairProcedure.java"
+        ]
+      },
+      "path": "~/Overlay"
     }
   ],
   "variable_elements": [
@@ -338,6 +358,18 @@
     },
     {
       "name": "QiTimer",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0"
+    },
+    {
+      "name": "QiTimerMax",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0"
+    },
+    {
+      "name": "PassiveQiRegen",
       "type": "number",
       "scope": "player_persistent",
       "value": "0"

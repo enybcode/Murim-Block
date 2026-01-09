@@ -74,6 +74,8 @@ public class MurimBlockModVariables {
 		clone.QiMax = original.QiMax;
 		clone.QIaffichage = original.QIaffichage;
 		clone.QiTimer = original.QiTimer;
+		clone.QiTimerMax = original.QiTimerMax;
+		clone.PassiveQiRegen = original.PassiveQiRegen;
 		if (!event.isWasDeath()) {
 		}
 		event.getEntity().setData(PLAYER_VARIABLES, clone);
@@ -86,6 +88,8 @@ public class MurimBlockModVariables {
 		public double QiMax = 20.0;
 		public String QIaffichage = "\"\"";
 		public double QiTimer = 0;
+		public double QiTimerMax = 0;
+		public double PassiveQiRegen = 0;
 
 		@Override
 		public void serialize(ValueOutput output) {
@@ -94,6 +98,8 @@ public class MurimBlockModVariables {
 			output.putDouble("QiMax", QiMax);
 			output.putString("QIaffichage", QIaffichage);
 			output.putDouble("QiTimer", QiTimer);
+			output.putDouble("QiTimerMax", QiTimerMax);
+			output.putDouble("PassiveQiRegen", PassiveQiRegen);
 		}
 
 		@Override
@@ -103,6 +109,8 @@ public class MurimBlockModVariables {
 			QiMax = input.getDoubleOr("QiMax", 0);
 			QIaffichage = input.getStringOr("QIaffichage", "");
 			QiTimer = input.getDoubleOr("QiTimer", 0);
+			QiTimerMax = input.getDoubleOr("QiTimerMax", 0);
+			PassiveQiRegen = input.getDoubleOr("PassiveQiRegen", 0);
 		}
 
 		public void markSyncDirty() {
