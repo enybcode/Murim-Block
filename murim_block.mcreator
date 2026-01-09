@@ -314,7 +314,7 @@
       "name": "QiMax",
       "type": "number",
       "scope": "player_persistent",
-      "value": "0"
+      "value": "20.0"
     },
     {
       "name": "QIaffichage",
