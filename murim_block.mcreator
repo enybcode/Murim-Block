@@ -9,8 +9,8 @@
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
-          "src/main/resources/assets/murim_block/models/item/pills.json",
-          "src/main/resources/assets/murim_block/items/pills.json"
+          "src/main/resources/assets/murim_block/items/pills.json",
+          "src/main/resources/assets/murim_block/models/item/pills.json"
         ]
       },
       "path": "~/Tools"
@@ -23,8 +23,8 @@
       "registry_name": "murim_sword",
       "metadata": {
         "files": [
-          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java",
           "src/main/resources/assets/murim_block/models/item/murim_sword.json",
+          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java",
           "src/main/resources/assets/murim_block/items/murim_sword.json"
         ]
       },
@@ -97,8 +97,8 @@
       "metadata": {
         "files": [
           "src/main/resources/assets/murim_block/models/item/shield_demonic_blocking.json",
-          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
           "src/main/resources/assets/murim_block/items/shield_demonic.json",
+          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
           "src/main/resources/assets/murim_block/models/item/shield_demonic.json"
         ]
       },
@@ -152,9 +152,9 @@
       "registry_name": "open_eye",
       "metadata": {
         "files": [
-          "src/main/resources/assets/murim_block/models/item/open_eye.json",
+          "src/main/resources/assets/murim_block/items/open_eye.json",
           "src/main/java/net/mcreator/murimblock/item/OpenEyeItem.java",
-          "src/main/resources/assets/murim_block/items/open_eye.json"
+          "src/main/resources/assets/murim_block/models/item/open_eye.json"
         ]
       },
       "path": "~/Success/Item Success"
@@ -167,9 +167,9 @@
       "registry_name": "epee_entrainement",
       "metadata": {
         "files": [
+          "src/main/resources/assets/murim_block/models/item/epee_entrainement.json",
           "src/main/resources/assets/murim_block/items/epee_entrainement.json",
-          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java",
-          "src/main/resources/assets/murim_block/models/item/epee_entrainement.json"
+          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java"
         ]
       },
       "path": "~/Tools"
@@ -278,9 +278,34 @@
       "locked_code": false,
       "registry_name": "aura_active_m",
       "metadata": {
-        "dependencies": [],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
         "files": [
           "src/main/java/net/mcreator/murimblock/procedures/AuraActive_MProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
+    },
+    {
+      "name": "QiBarProcedure",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "qi_bar_procedure",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "return_type": "string",
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/QiBarProcedureProcedure.java"
         ]
       },
       "path": "~/Procedure"
@@ -341,11 +366,13 @@
   },
   "metadata": {
     "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/resources/pack.mcmeta"
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java"
     ]
   },
   "foldersRoot": {

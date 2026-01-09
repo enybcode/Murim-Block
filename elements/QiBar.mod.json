@@ -7,17 +7,18 @@
       {
         "type": "label",
         "data": {
-          "name": "label_globalqiaffichage",
+          "name": "label_proc_qi_bar_procedure",
           "text": {
-            "fixedValue": "[[global:QiAffichage]]"
+            "fixedValue": "",
+            "name": "QiBarProcedure"
           },
           "color": {
-            "value": -1,
+            "value": -16776961,
             "falpha": 0.0
           },
           "anchorPoint": "BOTTOM_LEFT",
           "x": 1,
-          "y": 229,
+          "y": 228,
           "locked": false
         }
       }
