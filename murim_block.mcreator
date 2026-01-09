@@ -316,7 +316,7 @@
       "name": "Qi",
       "type": "number",
       "scope": "player_persistent",
-      "value": "0"
+      "value": "1.0"
     },
     {
       "name": "AuraActive",

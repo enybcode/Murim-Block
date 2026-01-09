@@ -81,7 +81,7 @@ public class MurimBlockModVariables {
 
 	public static class PlayerVariables implements ValueIOSerializable {
 		boolean _syncDirty = false;
-		public double Qi = 0;
+		public double Qi = 1.0;
 		public boolean AuraActive = false;
 		public double QiMax = 20.0;
 		public String QIaffichage = "\"\"";
