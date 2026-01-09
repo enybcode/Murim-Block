@@ -184,7 +184,8 @@
         "files": [
           "src/main/java/net/mcreator/murimblock/command/CheckqiCommand.java"
         ]
-      }
+      },
+      "path": "~/command"
     },
     {
       "name": "CheckQiCommand",

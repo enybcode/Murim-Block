@@ -70,10 +70,10 @@ public class MurimBlockModVariables {
 		PlayerVariables original = event.getOriginal().getData(PLAYER_VARIABLES);
 		PlayerVariables clone = new PlayerVariables();
 		clone.Qi = original.Qi;
-		clone.QiTimer = original.QiTimer;
 		clone.AuraActive = original.AuraActive;
 		clone.QiMax = original.QiMax;
 		clone.QIaffichage = original.QIaffichage;
+		clone.QiTimer = original.QiTimer;
 		if (!event.isWasDeath()) {
 		}
 		event.getEntity().setData(PLAYER_VARIABLES, clone);
@@ -82,27 +82,27 @@ public class MurimBlockModVariables {
 	public static class PlayerVariables implements ValueIOSerializable {
 		boolean _syncDirty = false;
 		public double Qi = 0;
-		public double QiTimer = 0;
 		public boolean AuraActive = false;
 		public double QiMax = 20.0;
 		public String QIaffichage = "\"\"";
+		public double QiTimer = 0;
 
 		@Override
 		public void serialize(ValueOutput output) {
 			output.putDouble("Qi", Qi);
-			output.putDouble("QiTimer", QiTimer);
 			output.putBoolean("AuraActive", AuraActive);
 			output.putDouble("QiMax", QiMax);
 			output.putString("QIaffichage", QIaffichage);
+			output.putDouble("QiTimer", QiTimer);
 		}
 
 		@Override
 		public void deserialize(ValueInput input) {
 			Qi = input.getDoubleOr("Qi", 0);
-			QiTimer = input.getDoubleOr("QiTimer", 0);
 			AuraActive = input.getBooleanOr("AuraActive", false);
 			QiMax = input.getDoubleOr("QiMax", 0);
 			QIaffichage = input.getStringOr("QIaffichage", "");
+			QiTimer = input.getDoubleOr("QiTimer", 0);
 		}
 
 		public void markSyncDirty() {
