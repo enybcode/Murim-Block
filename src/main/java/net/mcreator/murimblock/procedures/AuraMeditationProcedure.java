@@ -55,8 +55,7 @@ public class AuraMeditationProcedure {
 			if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiTimer >= 200) {
 				{
 					MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
-					_vars.Qi = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi + 1;
-					_vars.Qi = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi * 5;
+					_vars.Qi = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi * 1.5;
 					_vars.QiMax = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax * 1.03;
 					_vars.QiTimer = 0;
 					_vars.markSyncDirty();

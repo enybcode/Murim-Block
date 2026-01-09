@@ -8,6 +8,6 @@ public class QiBarProcedureProcedure {
 	public static String execute(Entity entity) {
 		if (entity == null)
 			return "";
-		return "Qi:" + entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi + "/" + entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax;
+		return "Qi:" + Math.round(entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi) + "/" + Math.round(entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax);
 	}
 }
