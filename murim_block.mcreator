@@ -348,7 +348,7 @@
       "name": "QiMax",
       "type": "number",
       "scope": "player_persistent",
-      "value": "20.0"
+      "value": "1.0"
     },
     {
       "name": "QIaffichage",
@@ -400,11 +400,11 @@
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/pack.mcmeta",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
-      "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java"
+      "src/main/resources/META-INF/neoforge.mods.toml"
     ]
   },
   "foldersRoot": {

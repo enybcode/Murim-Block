@@ -34,7 +34,7 @@ public class PillsPlayerFinishesUsingItemProcedure {
 			_entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 1, true, false));
 		{
 			MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
-			_vars.QiMax = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax + 10;
+			_vars.QiMax = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax + 5;
 			_vars.markSyncDirty();
 		}
 	}

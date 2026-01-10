@@ -85,7 +85,7 @@ public class MurimBlockModVariables {
 		boolean _syncDirty = false;
 		public double Qi = 1.0;
 		public boolean AuraActive = false;
-		public double QiMax = 20.0;
+		public double QiMax = 1.0;
 		public String QIaffichage = "\"\"";
 		public double QiTimer = 0;
 		public double QiTimerMax = 0;
