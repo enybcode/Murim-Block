@@ -380,6 +380,38 @@
         ]
       },
       "path": "~/key bind"
+    },
+    {
+      "name": "Addqi",
+      "type": "command",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "addqi",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/command/AddqiCommand.java"
+        ]
+      },
+      "path": "~/command"
+    },
+    {
+      "name": "AddqiProcedure",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "addqi_procedure",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "arguments",
+            "type": "cmdcontext"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/AddqiProcedureProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
