@@ -412,6 +412,26 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "GetQiMaxCap",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "get_qi_max_cap",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "return_type": "number",
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/GetQiMaxCapProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
