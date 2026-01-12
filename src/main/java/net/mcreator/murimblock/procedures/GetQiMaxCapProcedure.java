@@ -38,12 +38,6 @@ public class GetQiMaxCapProcedure {
 				_vars.QiMaxCap = 400;
 				_vars.markSyncDirty();
 			}
-		} else {
-			{
-				MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
-				_vars.QiMaxCap = 400;
-				_vars.markSyncDirty();
-			}
 		}
 		return entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMaxCap;
 	}

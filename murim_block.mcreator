@@ -432,6 +432,25 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "ClampQiAndMax",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "clamp_qi_and_max",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/ClampQiAndMaxProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
