@@ -94,7 +94,7 @@ public class MurimBlockModVariables {
 		public double QiTimer = 0;
 		public double QiTimerMax = 0;
 		public double PassiveQiRegen = 0;
-		public double CultivationStage = 0.0;
+		public double CultivationStage = 1.0;
 		public boolean MurimUIOpen = false;
 		public double MurimUIMode = 0;
 		public double QiMaxCap = 0;

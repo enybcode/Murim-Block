@@ -500,7 +500,7 @@
       "name": "CultivationStage",
       "type": "number",
       "scope": "player_persistent",
-      "value": "0.0"
+      "value": "1.0"
     },
     {
       "name": "MurimUIOpen",
