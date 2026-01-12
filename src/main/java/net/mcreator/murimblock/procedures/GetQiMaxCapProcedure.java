@@ -11,25 +11,25 @@ public class GetQiMaxCapProcedure {
 		if (1 == entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).CultivationStage) {
 			{
 				MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
-				_vars.QiMaxCap = 50;
+				_vars.QiMaxCap = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMaxCap + 50;
 				_vars.markSyncDirty();
 			}
 		} else if (2 == entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).CultivationStage) {
 			{
 				MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
-				_vars.QiMaxCap = 100;
+				_vars.QiMaxCap = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMaxCap + 50;
 				_vars.markSyncDirty();
 			}
 		} else if (3 == entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).CultivationStage) {
 			{
 				MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
-				_vars.QiMaxCap = 200;
+				_vars.QiMaxCap = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMaxCap + 100;
 				_vars.markSyncDirty();
 			}
 		} else if (4 == entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).CultivationStage) {
 			{
 				MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
-				_vars.QiMaxCap = 400;
+				_vars.QiMaxCap = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMaxCap + 400;
 				_vars.markSyncDirty();
 			}
 		}
