@@ -34,7 +34,7 @@ public class FirstBreakthroughTickProcedure {
 		if (entity == null)
 			return;
 		if (entity instanceof Player) {
-			if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).CultivationStage == 1) {
+			if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).CultivationStage == 2) {
 				if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax >= 100) {
 					if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).Qi >= 100) {
 						if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).AuraActive == true) {
@@ -43,7 +43,7 @@ public class FirstBreakthroughTickProcedure {
 								_vars.BT1_MeditTicks = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).BT1_MeditTicks + 1;
 								_vars.markSyncDirty();
 							}
-							if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).BT1_MeditTicks >= 2400) {
+							if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).BT1_MeditTicks >= 100) {
 								{
 									MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
 									_vars.CultivationStage = 2;
@@ -66,9 +66,9 @@ public class FirstBreakthroughTickProcedure {
 								}
 								for (int index0 = 0; index0 < 10; index0++) {
 									if (world instanceof ServerLevel _level)
-										_level.sendParticles(ParticleTypes.SOUL, (entity.getX()), (entity.getY()), (entity.getZ()), 60, 0, 2, 0, 0.25);
+										_level.sendParticles(ParticleTypes.SOUL, (entity.getX()), (entity.getY() + Math.random()), (entity.getZ()), 60, 0, 2, 0, 0.25);
 									if (world instanceof ServerLevel _level)
-										_level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, (entity.getX()), (entity.getY()), (entity.getZ()), 60, 0, 2, 0, 0.25);
+										_level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, (entity.getX()), (entity.getY() + Math.random()), (entity.getZ()), 60, 0, 2, 0, 0.25);
 								}
 							}
 						} else {
