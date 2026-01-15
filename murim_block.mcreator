@@ -607,7 +607,7 @@
     {
       "name": "AuraFX_Interval",
       "type": "number",
-      "scope": "map",
+      "scope": "player_persistent",
       "value": "2.0"
     }
   ],
