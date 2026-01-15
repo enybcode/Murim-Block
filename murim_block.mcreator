@@ -451,6 +451,42 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "FirstBreakthrough",
+      "type": "achievement",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "first_breakthrough",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/advancement/first_breakthrough.json"
+        ]
+      },
+      "path": "~/Success"
+    },
+    {
+      "name": "FirstBreakthroughTick",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "first_breakthrough_tick",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/FirstBreakthroughTickProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
@@ -519,6 +555,60 @@
       "type": "number",
       "scope": "player_persistent",
       "value": "0"
+    },
+    {
+      "name": "BT1_MeditTicks",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0"
+    },
+    {
+      "name": "AuraFX_Active",
+      "type": "logic",
+      "scope": "player_persistent",
+      "value": "false"
+    },
+    {
+      "name": "AuraFX_Style",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "1.0"
+    },
+    {
+      "name": "AuraFX_TicksLeft",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0"
+    },
+    {
+      "name": "AuraFX_Radius",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "0.9"
+    },
+    {
+      "name": "AuraFX_Height",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "10.0"
+    },
+    {
+      "name": "AuraFX_Density",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "16.0"
+    },
+    {
+      "name": "AuraFX_Rings",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "10.0"
+    },
+    {
+      "name": "AuraFX_Interval",
+      "type": "number",
+      "scope": "map",
+      "value": "2.0"
     }
   ],
   "sound_elements": [],
@@ -540,7 +630,9 @@
       "item.murim_block.epee_entrainement": "Epee Entrainement",
       "key.murim_block.aura_activation": "Aura Activation",
       "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
-      "key.murim_block.overlay_murim": "Overlay Murim"
+      "key.murim_block.overlay_murim": "Overlay Murim",
+      "advancements.first_breakthrough.title": "First Breakthrough",
+      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
     }
   },
   "metadata": {
