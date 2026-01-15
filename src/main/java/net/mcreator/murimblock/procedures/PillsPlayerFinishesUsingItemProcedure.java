@@ -35,6 +35,7 @@ public class PillsPlayerFinishesUsingItemProcedure {
 		{
 			MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
 			_vars.QiMax = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax + 5;
+			_vars.CultivationStage = 2;
 			_vars.markSyncDirty();
 		}
 	}
