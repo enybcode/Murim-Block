@@ -487,6 +487,21 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "Meditation",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "meditation",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/item/MeditationItem.java",
+          "src/main/resources/assets/murim_block/models/item/meditation.json",
+          "src/main/resources/assets/murim_block/items/meditation.json"
+        ]
+      },
+      "path": "~/Success/Item Success"
     }
   ],
   "variable_elements": [
@@ -632,18 +647,19 @@
       "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
       "key.murim_block.overlay_murim": "Overlay Murim",
       "advancements.first_breakthrough.title": "First Breakthrough",
-      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
+      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
+      "item.murim_block.meditation": "Meditation"
     }
   },
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/pack.mcmeta",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {

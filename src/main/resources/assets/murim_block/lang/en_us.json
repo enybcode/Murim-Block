@@ -10,5 +10,6 @@
   "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
   "key.murim_block.overlay_murim": "Overlay Murim",
   "advancements.first_breakthrough.title": "First Breakthrough",
-  "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
+  "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
+  "item.murim_block.meditation": "Meditation"
 }

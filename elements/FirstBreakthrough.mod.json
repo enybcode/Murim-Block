@@ -5,7 +5,7 @@
     "achievementName": "First Breakthrough",
     "achievementDescription": "Your beginning in the world of martial arts",
     "achievementIcon": {
-      "value": "Blocks.BARRIER"
+      "value": "CUSTOM:Meditation"
     },
     "background": "Default",
     "disableDisplay": false,

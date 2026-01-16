@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "id": "minecraft:barrier"
+      "id": "murim_block:meditation"
     },
     "title": {
       "translate": "advancements.first_breakthrough.title"
