@@ -16,29 +16,27 @@ import net.mcreator.murimblock.world.inventory.MenuMenu;
 import io.netty.buffer.Unpooled;
 
 public class OpenHubGuiProcedure {
-	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
+	public static void execute(LevelAccessor world, Entity entity) {
 		if (entity == null)
 			return;
-		if (world.isClientSide()) {
-			if (entity instanceof ServerPlayer _ent) {
-				BlockPos _bpos = BlockPos.containing(x, y, z);
-				_ent.openMenu(new MenuProvider() {
-					@Override
-					public Component getDisplayName() {
-						return Component.literal("Menu");
-					}
+		if (entity instanceof ServerPlayer _ent) {
+			BlockPos _bpos = BlockPos.containing(entity.getX(), entity.getY(), entity.getZ());
+			_ent.openMenu(new MenuProvider() {
+				@Override
+				public Component getDisplayName() {
+					return Component.literal("Menu");
+				}
 
-					@Override
-					public boolean shouldTriggerClientSideContainerClosingOnOpen() {
-						return false;
-					}
+				@Override
+				public boolean shouldTriggerClientSideContainerClosingOnOpen() {
+					return false;
+				}
 
-					@Override
-					public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-						return new MenuMenu(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(_bpos));
-					}
-				}, _bpos);
-			}
+				@Override
+				public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+					return new MenuMenu(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(_bpos));
+				}
+			}, _bpos);
 		}
 	}
 }

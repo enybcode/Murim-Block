@@ -51,7 +51,7 @@ public record OpenMurimHubMessage(int eventType, int pressedms) implements Custo
 			return;
 		if (type == 0) {
 
-			OpenHubGuiProcedure.execute(world, x, y, z, entity);
+			OpenHubGuiProcedure.execute(world, entity);
 		}
 	}
 

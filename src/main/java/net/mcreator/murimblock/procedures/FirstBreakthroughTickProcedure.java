@@ -43,7 +43,7 @@ public class FirstBreakthroughTickProcedure {
 								_vars.BT1_MeditTicks = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).BT1_MeditTicks + 1;
 								_vars.markSyncDirty();
 							}
-							if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).BT1_MeditTicks >= 100) {
+							if (entity.getData(MurimBlockModVariables.PLAYER_VARIABLES).BT1_MeditTicks >= 2400) {
 								{
 									MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
 									_vars.CultivationStage = 3;
