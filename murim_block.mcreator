@@ -451,6 +451,21 @@
         ]
       },
       "path": "~/Procedure"
+    },
+    {
+      "name": "Muriumhousechill",
+      "type": "structure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "muriumhousechill",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/worldgen/structure_set/muriumhousechill.json",
+          "src/main/resources/data/murim_block/worldgen/structure/muriumhousechill.json",
+          "src/main/resources/data/murim_block/worldgen/template_pool/muriumhousechill.json"
+        ]
+      },
+      "path": "~/Structures"
     }
   ],
   "variable_elements": [
@@ -598,6 +613,10 @@
             "children": []
           }
         ]
+      },
+      {
+        "name": "Structures",
+        "children": []
       }
     ]
   },
