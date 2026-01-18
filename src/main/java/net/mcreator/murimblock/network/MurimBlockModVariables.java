@@ -77,18 +77,8 @@ public class MurimBlockModVariables {
 		clone.QiTimerMax = original.QiTimerMax;
 		clone.PassiveQiRegen = original.PassiveQiRegen;
 		clone.CultivationStage = original.CultivationStage;
-		clone.MurimUIOpen = original.MurimUIOpen;
-		clone.MurimUIMode = original.MurimUIMode;
 		clone.QiMaxCap = original.QiMaxCap;
 		clone.BT1_MeditTicks = original.BT1_MeditTicks;
-		clone.AuraFX_Active = original.AuraFX_Active;
-		clone.AuraFX_Style = original.AuraFX_Style;
-		clone.AuraFX_TicksLeft = original.AuraFX_TicksLeft;
-		clone.AuraFX_Radius = original.AuraFX_Radius;
-		clone.AuraFX_Height = original.AuraFX_Height;
-		clone.AuraFX_Density = original.AuraFX_Density;
-		clone.AuraFX_Rings = original.AuraFX_Rings;
-		clone.AuraFX_Interval = original.AuraFX_Interval;
 		if (!event.isWasDeath()) {
 		}
 		event.getEntity().setData(PLAYER_VARIABLES, clone);
@@ -104,18 +94,8 @@ public class MurimBlockModVariables {
 		public double QiTimerMax = 0;
 		public double PassiveQiRegen = 0;
 		public double CultivationStage = 1.0;
-		public boolean MurimUIOpen = false;
-		public double MurimUIMode = 0;
 		public double QiMaxCap = 0;
 		public double BT1_MeditTicks = 0;
-		public boolean AuraFX_Active = false;
-		public double AuraFX_Style = 1.0;
-		public double AuraFX_TicksLeft = 0;
-		public double AuraFX_Radius = 0.9;
-		public double AuraFX_Height = 10.0;
-		public double AuraFX_Density = 16.0;
-		public double AuraFX_Rings = 10.0;
-		public double AuraFX_Interval = 2.0;
 
 		@Override
 		public void serialize(ValueOutput output) {
@@ -127,18 +107,8 @@ public class MurimBlockModVariables {
 			output.putDouble("QiTimerMax", QiTimerMax);
 			output.putDouble("PassiveQiRegen", PassiveQiRegen);
 			output.putDouble("CultivationStage", CultivationStage);
-			output.putBoolean("MurimUIOpen", MurimUIOpen);
-			output.putDouble("MurimUIMode", MurimUIMode);
 			output.putDouble("QiMaxCap", QiMaxCap);
 			output.putDouble("BT1_MeditTicks", BT1_MeditTicks);
-			output.putBoolean("AuraFX_Active", AuraFX_Active);
-			output.putDouble("AuraFX_Style", AuraFX_Style);
-			output.putDouble("AuraFX_TicksLeft", AuraFX_TicksLeft);
-			output.putDouble("AuraFX_Radius", AuraFX_Radius);
-			output.putDouble("AuraFX_Height", AuraFX_Height);
-			output.putDouble("AuraFX_Density", AuraFX_Density);
-			output.putDouble("AuraFX_Rings", AuraFX_Rings);
-			output.putDouble("AuraFX_Interval", AuraFX_Interval);
 		}
 
 		@Override
@@ -151,18 +121,8 @@ public class MurimBlockModVariables {
 			QiTimerMax = input.getDoubleOr("QiTimerMax", 0);
 			PassiveQiRegen = input.getDoubleOr("PassiveQiRegen", 0);
 			CultivationStage = input.getDoubleOr("CultivationStage", 0);
-			MurimUIOpen = input.getBooleanOr("MurimUIOpen", false);
-			MurimUIMode = input.getDoubleOr("MurimUIMode", 0);
 			QiMaxCap = input.getDoubleOr("QiMaxCap", 0);
 			BT1_MeditTicks = input.getDoubleOr("BT1_MeditTicks", 0);
-			AuraFX_Active = input.getBooleanOr("AuraFX_Active", false);
-			AuraFX_Style = input.getDoubleOr("AuraFX_Style", 0);
-			AuraFX_TicksLeft = input.getDoubleOr("AuraFX_TicksLeft", 0);
-			AuraFX_Radius = input.getDoubleOr("AuraFX_Radius", 0);
-			AuraFX_Height = input.getDoubleOr("AuraFX_Height", 0);
-			AuraFX_Density = input.getDoubleOr("AuraFX_Density", 0);
-			AuraFX_Rings = input.getDoubleOr("AuraFX_Rings", 0);
-			AuraFX_Interval = input.getDoubleOr("AuraFX_Interval", 0);
 		}
 
 		public void markSyncDirty() {

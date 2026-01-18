@@ -14,23 +14,23 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
-import net.mcreator.murimblock.procedures.OverlayMurimOnKeyPressedProcedure;
+import net.mcreator.murimblock.procedures.OpenHubGuiProcedure;
 import net.mcreator.murimblock.MurimBlockMod;
 
 @EventBusSubscriber
-public record OverlayMurimMessage(int eventType, int pressedms) implements CustomPacketPayload {
-	public static final Type<OverlayMurimMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MurimBlockMod.MODID, "key_overlay_murim"));
-	public static final StreamCodec<RegistryFriendlyByteBuf, OverlayMurimMessage> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buffer, OverlayMurimMessage message) -> {
+public record OpenMurimHubMessage(int eventType, int pressedms) implements CustomPacketPayload {
+	public static final Type<OpenMurimHubMessage> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MurimBlockMod.MODID, "key_open_murim_hub"));
+	public static final StreamCodec<RegistryFriendlyByteBuf, OpenMurimHubMessage> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buffer, OpenMurimHubMessage message) -> {
 		buffer.writeInt(message.eventType);
 		buffer.writeInt(message.pressedms);
-	}, (RegistryFriendlyByteBuf buffer) -> new OverlayMurimMessage(buffer.readInt(), buffer.readInt()));
+	}, (RegistryFriendlyByteBuf buffer) -> new OpenMurimHubMessage(buffer.readInt(), buffer.readInt()));
 
 	@Override
-	public Type<OverlayMurimMessage> type() {
+	public Type<OpenMurimHubMessage> type() {
 		return TYPE;
 	}
 
-	public static void handleData(final OverlayMurimMessage message, final IPayloadContext context) {
+	public static void handleData(final OpenMurimHubMessage message, final IPayloadContext context) {
 		if (context.flow() == PacketFlow.SERVERBOUND) {
 			context.enqueueWork(() -> {
 				pressAction(context.player(), message.eventType, message.pressedms);
@@ -51,12 +51,12 @@ public record OverlayMurimMessage(int eventType, int pressedms) implements Custo
 			return;
 		if (type == 0) {
 
-			OverlayMurimOnKeyPressedProcedure.execute(entity);
+			OpenHubGuiProcedure.execute(world, x, y, z, entity);
 		}
 	}
 
 	@SubscribeEvent
 	public static void registerMessage(FMLCommonSetupEvent event) {
-		MurimBlockMod.addNetworkMessage(OverlayMurimMessage.TYPE, OverlayMurimMessage.STREAM_CODEC, OverlayMurimMessage::handleData);
+		MurimBlockMod.addNetworkMessage(OpenMurimHubMessage.TYPE, OpenMurimHubMessage.STREAM_CODEC, OpenMurimHubMessage::handleData);
 	}
 }

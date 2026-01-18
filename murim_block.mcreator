@@ -350,38 +350,6 @@
       "path": "~/Procedure"
     },
     {
-      "name": "OverlayMurim",
-      "type": "keybind",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "overlay_murim",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/network/OverlayMurimMessage.java"
-        ]
-      },
-      "path": "~/key bind"
-    },
-    {
-      "name": "OverlayMurimOnKeyPressed",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "overlay_murim_on_key_pressed",
-      "metadata": {
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ],
-        "files": [
-          "src/main/java/net/mcreator/murimblock/procedures/OverlayMurimOnKeyPressedProcedure.java"
-        ]
-      },
-      "path": "~/key bind"
-    },
-    {
       "name": "Addqi",
       "type": "command",
       "compiles": true,
@@ -502,6 +470,68 @@
         ]
       },
       "path": "~/Success/Item Success"
+    },
+    {
+      "name": "Menu",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "menu",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/client/gui/MenuScreen.java",
+          "src/main/java/net/mcreator/murimblock/world/inventory/MenuMenu.java"
+        ]
+      },
+      "path": "~/GUI"
+    },
+    {
+      "name": "OpenMurimHub",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_murim_hub",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/OpenMurimHubMessage.java"
+        ]
+      },
+      "path": "~/GUI/Procedure"
+    },
+    {
+      "name": "OpenHubGui",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_hub_gui",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/OpenHubGuiProcedure.java"
+        ]
+      },
+      "path": "~/GUI/Procedure"
     }
   ],
   "variable_elements": [
@@ -554,18 +584,6 @@
       "value": "1.0"
     },
     {
-      "name": "MurimUIOpen",
-      "type": "logic",
-      "scope": "player_persistent",
-      "value": "false"
-    },
-    {
-      "name": "MurimUIMode",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "0"
-    },
-    {
       "name": "QiMaxCap",
       "type": "number",
       "scope": "player_persistent",
@@ -576,54 +594,6 @@
       "type": "number",
       "scope": "player_persistent",
       "value": "0"
-    },
-    {
-      "name": "AuraFX_Active",
-      "type": "logic",
-      "scope": "player_persistent",
-      "value": "false"
-    },
-    {
-      "name": "AuraFX_Style",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "1.0"
-    },
-    {
-      "name": "AuraFX_TicksLeft",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "0"
-    },
-    {
-      "name": "AuraFX_Radius",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "0.9"
-    },
-    {
-      "name": "AuraFX_Height",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "10.0"
-    },
-    {
-      "name": "AuraFX_Density",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "16.0"
-    },
-    {
-      "name": "AuraFX_Rings",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "10.0"
-    },
-    {
-      "name": "AuraFX_Interval",
-      "type": "number",
-      "scope": "player_persistent",
-      "value": "2.0"
     }
   ],
   "sound_elements": [],
@@ -645,21 +615,24 @@
       "item.murim_block.epee_entrainement": "Epee Entrainement",
       "key.murim_block.aura_activation": "Aura Activation",
       "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
-      "key.murim_block.overlay_murim": "Overlay Murim",
       "advancements.first_breakthrough.title": "First Breakthrough",
       "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
-      "item.murim_block.meditation": "Meditation"
+      "item.murim_block.meditation": "Meditation",
+      "key.murim_block.open_murim_hub": "Open Murim Hub"
     }
   },
   "metadata": {
     "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
+      "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
-      "src/main/resources/pack.mcmeta"
+      "src/main/resources/pack.mcmeta",
+      "src/main/resources/META-INF/neoforge.mods.toml"
     ]
   },
   "foldersRoot": {

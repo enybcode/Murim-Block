@@ -3,10 +3,10 @@
   "_type": "keybind",
   "definition": {
     "triggerKey": "K",
-    "keyBindingName": "Overlay Murim",
+    "keyBindingName": "Open Murim Hub",
     "keyBindingCategoryKey": "misc",
     "onKeyPressed": {
-      "name": "OverlayMurimOnKeyPressed"
+      "name": "OpenHubGui"
     }
   }
 }
