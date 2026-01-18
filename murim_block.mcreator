@@ -350,38 +350,6 @@
       "path": "~/Procedure"
     },
     {
-      "name": "OverlayMurim",
-      "type": "keybind",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "overlay_murim",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/network/OverlayMurimMessage.java"
-        ]
-      },
-      "path": "~/key bind"
-    },
-    {
-      "name": "OverlayMurimOnKeyPressed",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "overlay_murim_on_key_pressed",
-      "metadata": {
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ],
-        "files": [
-          "src/main/java/net/mcreator/murimblock/procedures/OverlayMurimOnKeyPressedProcedure.java"
-        ]
-      },
-      "path": "~/key bind"
-    },
-    {
       "name": "Addqi",
       "type": "command",
       "compiles": true,
@@ -466,6 +434,107 @@
         ]
       },
       "path": "~/Structures"
+    },
+    {
+      "name": "Meditation",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "meditation",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/models/item/meditation.json",
+          "src/main/resources/assets/murim_block/items/meditation.json",
+          "src/main/java/net/mcreator/murimblock/item/MeditationItem.java"
+        ]
+      },
+      "path": "~/Success/Item Success"
+    },
+    {
+      "name": "OpenMurimHub",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_murim_hub",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/OpenMurimHubMessage.java"
+        ]
+      },
+      "path": "~/GUI/Procedure"
+    },
+    {
+      "name": "FirstBreakthroughTick",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "first_breakthrough_tick",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/FirstBreakthroughTickProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
+    },
+    {
+      "name": "OpenHubGui",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_hub_gui",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/OpenHubGuiProcedure.java"
+        ]
+      },
+      "path": "~/GUI/Procedure"
+    },
+    {
+      "name": "Menu",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "menu",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/world/inventory/MenuMenu.java",
+          "src/main/java/net/mcreator/murimblock/client/gui/MenuScreen.java"
+        ]
+      },
+      "path": "~/GUI"
+    },
+    {
+      "name": "FirstBreakthrough",
+      "type": "achievement",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "first_breakthrough",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/advancement/first_breakthrough.json"
+        ]
+      },
+      "path": "~/Success"
     }
   ],
   "variable_elements": [
@@ -518,19 +587,13 @@
       "value": "1.0"
     },
     {
-      "name": "MurimUIOpen",
-      "type": "logic",
-      "scope": "player_persistent",
-      "value": "false"
-    },
-    {
-      "name": "MurimUIMode",
+      "name": "QiMaxCap",
       "type": "number",
       "scope": "player_persistent",
       "value": "0"
     },
     {
-      "name": "QiMaxCap",
+      "name": "BT1_MeditTicks",
       "type": "number",
       "scope": "player_persistent",
       "value": "0"
@@ -554,8 +617,7 @@
       "item.murim_block.open_eye": "Open Eye",
       "item.murim_block.epee_entrainement": "Epee Entrainement",
       "key.murim_block.aura_activation": "Aura Activation",
-      "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
-      "key.murim_block.overlay_murim": "Overlay Murim"
+      "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]"
     }
   },
   "metadata": {
@@ -598,11 +660,11 @@
         "children": []
       },
       {
-        "name": "key bind",
+        "name": "Structures",
         "children": []
       },
       {
-        "name": "Overlay",
+        "name": "key bind",
         "children": []
       },
       {
@@ -615,7 +677,7 @@
         ]
       },
       {
-        "name": "Structures",
+        "name": "Overlay",
         "children": []
       }
     ]

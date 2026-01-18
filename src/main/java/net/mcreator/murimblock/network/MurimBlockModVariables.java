@@ -77,9 +77,8 @@ public class MurimBlockModVariables {
 		clone.QiTimerMax = original.QiTimerMax;
 		clone.PassiveQiRegen = original.PassiveQiRegen;
 		clone.CultivationStage = original.CultivationStage;
-		clone.MurimUIOpen = original.MurimUIOpen;
-		clone.MurimUIMode = original.MurimUIMode;
 		clone.QiMaxCap = original.QiMaxCap;
+		clone.BT1_MeditTicks = original.BT1_MeditTicks;
 		if (!event.isWasDeath()) {
 		}
 		event.getEntity().setData(PLAYER_VARIABLES, clone);
@@ -95,9 +94,8 @@ public class MurimBlockModVariables {
 		public double QiTimerMax = 0;
 		public double PassiveQiRegen = 0;
 		public double CultivationStage = 1.0;
-		public boolean MurimUIOpen = false;
-		public double MurimUIMode = 0;
 		public double QiMaxCap = 0;
+		public double BT1_MeditTicks = 0;
 
 		@Override
 		public void serialize(ValueOutput output) {
@@ -109,9 +107,8 @@ public class MurimBlockModVariables {
 			output.putDouble("QiTimerMax", QiTimerMax);
 			output.putDouble("PassiveQiRegen", PassiveQiRegen);
 			output.putDouble("CultivationStage", CultivationStage);
-			output.putBoolean("MurimUIOpen", MurimUIOpen);
-			output.putDouble("MurimUIMode", MurimUIMode);
 			output.putDouble("QiMaxCap", QiMaxCap);
+			output.putDouble("BT1_MeditTicks", BT1_MeditTicks);
 		}
 
 		@Override
@@ -124,9 +121,8 @@ public class MurimBlockModVariables {
 			QiTimerMax = input.getDoubleOr("QiTimerMax", 0);
 			PassiveQiRegen = input.getDoubleOr("PassiveQiRegen", 0);
 			CultivationStage = input.getDoubleOr("CultivationStage", 0);
-			MurimUIOpen = input.getBooleanOr("MurimUIOpen", false);
-			MurimUIMode = input.getDoubleOr("MurimUIMode", 0);
 			QiMaxCap = input.getDoubleOr("QiMaxCap", 0);
+			BT1_MeditTicks = input.getDoubleOr("BT1_MeditTicks", 0);
 		}
 
 		public void markSyncDirty() {

@@ -15,7 +15,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 
-import net.mcreator.murimblock.network.OverlayMurimMessage;
+import net.mcreator.murimblock.network.OpenMurimHubMessage;
 import net.mcreator.murimblock.network.AuraActivationMessage;
 
 @EventBusSubscriber(Dist.CLIENT)
@@ -33,15 +33,15 @@ public class MurimBlockModKeyMappings {
 			isDownOld = isDown;
 		}
 	};
-	public static final KeyMapping OVERLAY_MURIM = new KeyMapping("key.murim_block.overlay_murim", GLFW.GLFW_KEY_K, "key.categories.misc") {
+	public static final KeyMapping OPEN_MURIM_HUB = new KeyMapping("key.murim_block.open_murim_hub", GLFW.GLFW_KEY_K, "key.categories.misc") {
 		private boolean isDownOld = false;
 
 		@Override
 		public void setDown(boolean isDown) {
 			super.setDown(isDown);
 			if (isDownOld != isDown && isDown) {
-				ClientPacketDistributor.sendToServer(new OverlayMurimMessage(0, 0));
-				OverlayMurimMessage.pressAction(Minecraft.getInstance().player, 0, 0);
+				ClientPacketDistributor.sendToServer(new OpenMurimHubMessage(0, 0));
+				OpenMurimHubMessage.pressAction(Minecraft.getInstance().player, 0, 0);
 			}
 			isDownOld = isDown;
 		}
@@ -50,7 +50,7 @@ public class MurimBlockModKeyMappings {
 	@SubscribeEvent
 	public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
 		event.register(AURA_ACTIVATION);
-		event.register(OVERLAY_MURIM);
+		event.register(OPEN_MURIM_HUB);
 	}
 
 	@EventBusSubscriber(Dist.CLIENT)
@@ -59,7 +59,7 @@ public class MurimBlockModKeyMappings {
 		public static void onClientTick(ClientTickEvent.Post event) {
 			if (Minecraft.getInstance().screen == null) {
 				AURA_ACTIVATION.consumeClick();
-				OVERLAY_MURIM.consumeClick();
+				OPEN_MURIM_HUB.consumeClick();
 			}
 		}
 	}
