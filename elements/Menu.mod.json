@@ -3,8 +3,8 @@
   "_type": "gui",
   "definition": {
     "type": 0,
-    "width": 176,
-    "height": 166,
+    "width": 167,
+    "height": 122,
     "inventoryOffsetX": 0,
     "inventoryOffsetY": 0,
     "renderBgLayer": true,
@@ -34,6 +34,17 @@
           },
           "x": 243,
           "y": 62,
+          "locked": false
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_dantian",
+          "image": "dantian.png",
+          "hoveredImage": "",
+          "x": 73,
+          "y": 49,
           "locked": false
         }
       }

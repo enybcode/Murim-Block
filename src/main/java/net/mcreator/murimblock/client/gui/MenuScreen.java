@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.GuiGraphics;
 
 import net.mcreator.murimblock.world.inventory.MenuMenu;
@@ -18,6 +20,7 @@ public class MenuScreen extends AbstractContainerScreen<MenuMenu> implements Mur
 	private final int x, y, z;
 	private final Player entity;
 	private boolean menuStateUpdateActive = false;
+	private ImageButton imagebutton_dantian;
 
 	public MenuScreen(MenuMenu container, Inventory inventory, Component text) {
 		super(container, inventory, text);
@@ -26,8 +29,8 @@ public class MenuScreen extends AbstractContainerScreen<MenuMenu> implements Mur
 		this.y = container.y;
 		this.z = container.z;
 		this.entity = container.entity;
-		this.imageWidth = 176;
-		this.imageHeight = 166;
+		this.imageWidth = 167;
+		this.imageHeight = 122;
 	}
 
 	@Override
@@ -47,7 +50,7 @@ public class MenuScreen extends AbstractContainerScreen<MenuMenu> implements Mur
 	@Override
 	protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/gui.png"), this.leftPos + -38, this.topPos + -9, 0, 0, 270, 179, 270, 179);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/gui.png"), this.leftPos + -42, this.topPos + -31, 0, 0, 270, 179, 270, 179);
 	}
 
 	@Override
@@ -61,11 +64,20 @@ public class MenuScreen extends AbstractContainerScreen<MenuMenu> implements Mur
 
 	@Override
 	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-		guiGraphics.drawString(this.font, QiBarProcedureProcedure.execute(entity), 117, 25, -12829636, false);
+		guiGraphics.drawString(this.font, QiBarProcedureProcedure.execute(entity), 113, 3, -12829636, false);
 	}
 
 	@Override
 	public void init() {
 		super.init();
+		imagebutton_dantian = new ImageButton(this.leftPos + -57, this.topPos + -10, 258, 99, new WidgetSprites(ResourceLocation.parse("murim_block:textures/screens/dantian.png"), ResourceLocation.parse("murim_block:textures/screens/dantian.png")),
+				e -> {
+				}) {
+			@Override
+			public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, sprites.get(isActive(), isHoveredOrFocused()), getX(), getY(), 0, 0, width, height, width, height);
+			}
+		};
+		this.addRenderableWidget(imagebutton_dantian);
 	}
 }
