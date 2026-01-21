@@ -466,7 +466,7 @@
     {
       "name": "FirstBreakthroughTick",
       "type": "procedure",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "first_breakthrough_tick",
       "metadata": {
@@ -622,6 +622,9 @@
   },
   "metadata": {
     "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
+      "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",

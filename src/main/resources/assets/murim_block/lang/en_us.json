@@ -7,9 +7,5 @@
   "item.murim_block.open_eye": "Open Eye",
   "item.murim_block.epee_entrainement": "Epee Entrainement",
   "key.murim_block.aura_activation": "Aura Activation",
-  "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
-  "advancements.first_breakthrough.title": "First Breakthrough",
-  "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
-  "item.murim_block.meditation": "Meditation",
-  "key.murim_block.open_murim_hub": "Open Murim Hub"
+  "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]"
 }
