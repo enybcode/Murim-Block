@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "murim_block:muriumhousechill",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 20,
+    "separation": 4,
+    "salt": 432765336
+  }
+}

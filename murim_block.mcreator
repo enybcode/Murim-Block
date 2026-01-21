@@ -421,17 +421,47 @@
       "path": "~/Procedure"
     },
     {
-      "name": "FirstBreakthrough",
-      "type": "achievement",
+      "name": "Muriumhousechill",
+      "type": "structure",
       "compiles": true,
       "locked_code": false,
-      "registry_name": "first_breakthrough",
+      "registry_name": "muriumhousechill",
       "metadata": {
         "files": [
-          "src/main/resources/data/murim_block/advancement/first_breakthrough.json"
+          "src/main/resources/data/murim_block/worldgen/structure_set/muriumhousechill.json",
+          "src/main/resources/data/murim_block/worldgen/structure/muriumhousechill.json",
+          "src/main/resources/data/murim_block/worldgen/template_pool/muriumhousechill.json"
         ]
       },
-      "path": "~/Success"
+      "path": "~/Structures"
+    },
+    {
+      "name": "Meditation",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "meditation",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/models/item/meditation.json",
+          "src/main/resources/assets/murim_block/items/meditation.json",
+          "src/main/java/net/mcreator/murimblock/item/MeditationItem.java"
+        ]
+      },
+      "path": "~/Success/Item Success"
+    },
+    {
+      "name": "OpenMurimHub",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_murim_hub",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/OpenMurimHubMessage.java"
+        ]
+      },
+      "path": "~/GUI/Procedure"
     },
     {
       "name": "FirstBreakthroughTick",
@@ -457,48 +487,6 @@
       "path": "~/Procedure"
     },
     {
-      "name": "Meditation",
-      "type": "item",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "meditation",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/item/MeditationItem.java",
-          "src/main/resources/assets/murim_block/models/item/meditation.json",
-          "src/main/resources/assets/murim_block/items/meditation.json"
-        ]
-      },
-      "path": "~/Success/Item Success"
-    },
-    {
-      "name": "Menu",
-      "type": "gui",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "menu",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/client/gui/MenuScreen.java",
-          "src/main/java/net/mcreator/murimblock/world/inventory/MenuMenu.java"
-        ]
-      },
-      "path": "~/GUI"
-    },
-    {
-      "name": "OpenMurimHub",
-      "type": "keybind",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "open_murim_hub",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/network/OpenMurimHubMessage.java"
-        ]
-      },
-      "path": "~/GUI/Procedure"
-    },
-    {
       "name": "OpenHubGui",
       "type": "procedure",
       "compiles": true,
@@ -520,6 +508,33 @@
         ]
       },
       "path": "~/GUI/Procedure"
+    },
+    {
+      "name": "Menu",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "menu",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/world/inventory/MenuMenu.java",
+          "src/main/java/net/mcreator/murimblock/client/gui/MenuScreen.java"
+        ]
+      },
+      "path": "~/GUI"
+    },
+    {
+      "name": "FirstBreakthrough",
+      "type": "achievement",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "first_breakthrough",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/advancement/first_breakthrough.json"
+        ]
+      },
+      "path": "~/Success"
     }
   ],
   "variable_elements": [
@@ -602,18 +617,11 @@
       "item.murim_block.open_eye": "Open Eye",
       "item.murim_block.epee_entrainement": "Epee Entrainement",
       "key.murim_block.aura_activation": "Aura Activation",
-      "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
-      "advancements.first_breakthrough.title": "First Breakthrough",
-      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
-      "item.murim_block.meditation": "Meditation",
-      "key.murim_block.open_murim_hub": "Open Murim Hub"
+      "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]"
     }
   },
   "metadata": {
     "files": [
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
-      "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
@@ -652,11 +660,11 @@
         "children": []
       },
       {
-        "name": "key bind",
+        "name": "Structures",
         "children": []
       },
       {
-        "name": "Overlay",
+        "name": "key bind",
         "children": []
       },
       {
@@ -667,6 +675,10 @@
             "children": []
           }
         ]
+      },
+      {
+        "name": "Overlay",
+        "children": []
       }
     ]
   },
