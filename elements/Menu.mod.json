@@ -15,8 +15,8 @@
         "data": {
           "image": "gui.png",
           "use1Xscale": false,
-          "x": 88,
-          "y": 28,
+          "x": 78,
+          "y": 26,
           "locked": false
         }
       },
@@ -32,8 +32,8 @@
             "value": -12829636,
             "falpha": 0.0
           },
-          "x": 243,
-          "y": 62,
+          "x": 231,
+          "y": 53,
           "locked": false
         }
       },
@@ -43,8 +43,19 @@
           "name": "imagebutton_dantian",
           "image": "dantian.png",
           "hoveredImage": "",
-          "x": 73,
-          "y": 49,
+          "x": 105,
+          "y": 53,
+          "locked": false
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_technique",
+          "image": "technique.png",
+          "hoveredImage": "",
+          "x": 105,
+          "y": 89,
           "locked": false
         }
       }
@@ -54,7 +65,7 @@
       "sy": 18,
       "ox": 11,
       "oy": 15,
-      "snapOnGrid": false
+      "snapOnGrid": true
     }
   }
 }
