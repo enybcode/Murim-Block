@@ -65,7 +65,7 @@ public class MenuScreen extends AbstractContainerScreen<MenuMenu> implements Mur
 
 	@Override
 	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-		guiGraphics.drawString(this.font, QiBarProcedureProcedure.execute(entity), 101, -6, -12829636, false);
+		guiGraphics.drawString(this.font, QiBarProcedureProcedure.execute(entity), 101, 3, -12829636, false);
 	}
 
 	@Override

@@ -535,6 +535,34 @@
         ]
       },
       "path": "~/Success"
+    },
+    {
+      "name": "Datian",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "datian",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/DatianProcedure.java"
+        ]
+      },
+      "path": "~/GUI/Procedure"
+    },
+    {
+      "name": "Technique",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "technique",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/TechniqueProcedure.java"
+        ]
+      },
+      "path": "~/GUI/Procedure"
     }
   ],
   "variable_elements": [
