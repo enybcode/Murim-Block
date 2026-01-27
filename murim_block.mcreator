@@ -485,6 +485,84 @@
         ]
       },
       "path": "~/Success"
+    },
+    {
+      "name": "DatiahGui",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "datiah_gui",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/world/inventory/DatiahGuiMenu.java",
+          "src/main/java/net/mcreator/murimblock/client/gui/DatiahGuiScreen.java"
+        ]
+      },
+      "path": "~/Gui"
+    },
+    {
+      "name": "Tenchniquegui",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "tenchniquegui",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/client/gui/TenchniqueguiScreen.java",
+          "src/main/java/net/mcreator/murimblock/world/inventory/TenchniqueguiMenu.java"
+        ]
+      },
+      "path": "~/Gui"
+    },
+    {
+      "name": "Opendatian",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "opendatian",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/OpendatianMessage.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "Guidatianopen",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "guidatianopen",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/GuidatianopenProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "OpenGuiskill",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_guiskill",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/OpenGuiskillProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
     }
   ],
   "variable_elements": [
@@ -570,11 +648,18 @@
       "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
       "item.murim_block.meditation": "Meditation",
       "advancements.first_breakthrough.title": "First Breakthrough",
-      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
+      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
+      "gui.murim_block.datiah_gui.label_datian": "Datian",
+      "gui.murim_block.tenchniquegui.label_datian": "Datian",
+      "gui.murim_block.tenchniquegui.label_tecnique_idk": "Tecnique idk",
+      "key.murim_block.opendatian": "Opendatian"
     }
   },
   "metadata": {
     "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
+      "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
@@ -623,6 +708,15 @@
       {
         "name": "Overlay",
         "children": []
+      },
+      {
+        "name": "Gui",
+        "children": [
+          {
+            "name": "Procedure",
+            "children": []
+          }
+        ]
       }
     ]
   },

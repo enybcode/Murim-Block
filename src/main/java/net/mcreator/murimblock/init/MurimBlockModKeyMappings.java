@@ -15,6 +15,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 
+import net.mcreator.murimblock.network.OpendatianMessage;
 import net.mcreator.murimblock.network.AuraActivationMessage;
 
 @EventBusSubscriber(Dist.CLIENT)
@@ -32,10 +33,24 @@ public class MurimBlockModKeyMappings {
 			isDownOld = isDown;
 		}
 	};
+	public static final KeyMapping OPENDATIAN = new KeyMapping("key.murim_block.opendatian", GLFW.GLFW_KEY_K, "key.categories.misc") {
+		private boolean isDownOld = false;
+
+		@Override
+		public void setDown(boolean isDown) {
+			super.setDown(isDown);
+			if (isDownOld != isDown && isDown) {
+				ClientPacketDistributor.sendToServer(new OpendatianMessage(0, 0));
+				OpendatianMessage.pressAction(Minecraft.getInstance().player, 0, 0);
+			}
+			isDownOld = isDown;
+		}
+	};
 
 	@SubscribeEvent
 	public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
 		event.register(AURA_ACTIVATION);
+		event.register(OPENDATIAN);
 	}
 
 	@EventBusSubscriber(Dist.CLIENT)
@@ -44,6 +59,7 @@ public class MurimBlockModKeyMappings {
 		public static void onClientTick(ClientTickEvent.Post event) {
 			if (Minecraft.getInstance().screen == null) {
 				AURA_ACTIVATION.consumeClick();
+				OPENDATIAN.consumeClick();
 			}
 		}
 	}

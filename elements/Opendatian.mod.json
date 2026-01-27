@@ -1,0 +1,12 @@
+{
+  "_fv": 79,
+  "_type": "keybind",
+  "definition": {
+    "triggerKey": "K",
+    "keyBindingName": "Opendatian",
+    "keyBindingCategoryKey": "misc",
+    "onKeyPressed": {
+      "name": "Guidatianopen"
+    }
+  }
+}

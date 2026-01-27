@@ -10,5 +10,9 @@
   "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
   "item.murim_block.meditation": "Meditation",
   "advancements.first_breakthrough.title": "First Breakthrough",
-  "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
+  "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
+  "gui.murim_block.datiah_gui.label_datian": "Datian",
+  "gui.murim_block.tenchniquegui.label_datian": "Datian",
+  "gui.murim_block.tenchniquegui.label_tecnique_idk": "Tecnique idk",
+  "key.murim_block.opendatian": "Opendatian"
 }
