@@ -22,7 +22,6 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import net.mcreator.murimblock.network.MurimBlockModVariables;
 import net.mcreator.murimblock.init.MurimBlockModTabs;
-import net.mcreator.murimblock.init.MurimBlockModMenus;
 import net.mcreator.murimblock.init.MurimBlockModItems;
 
 import javax.annotation.Nullable;
@@ -51,7 +50,6 @@ public class MurimBlockMod {
 		MurimBlockModItems.REGISTRY.register(modEventBus);
 		MurimBlockModTabs.REGISTRY.register(modEventBus);
 		MurimBlockModVariables.ATTACHMENT_TYPES.register(modEventBus);
-		MurimBlockModMenus.REGISTRY.register(modEventBus);
 		// Start of user code block mod init
 		// End of user code block mod init
 	}

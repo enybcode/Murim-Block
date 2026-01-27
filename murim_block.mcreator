@@ -3,7 +3,7 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
@@ -18,7 +18,7 @@
     {
       "name": "MurimSword",
       "type": "tool",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "murim_sword",
       "metadata": {
@@ -91,7 +91,7 @@
     {
       "name": "ShieldDemonic",
       "type": "tool",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "shield_demonic",
       "metadata": {
@@ -162,14 +162,14 @@
     {
       "name": "EpeeEntrainement",
       "type": "tool",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "epee_entrainement",
       "metadata": {
         "files": [
+          "src/main/resources/assets/murim_block/models/item/epee_entrainement.json",
           "src/main/resources/assets/murim_block/items/epee_entrainement.json",
-          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java",
-          "src/main/resources/assets/murim_block/models/item/epee_entrainement.json"
+          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java"
         ]
       },
       "path": "~/Tools"
@@ -428,9 +428,9 @@
       "registry_name": "muriumhousechill",
       "metadata": {
         "files": [
+          "src/main/resources/data/murim_block/worldgen/template_pool/muriumhousechill.json",
           "src/main/resources/data/murim_block/worldgen/structure_set/muriumhousechill.json",
-          "src/main/resources/data/murim_block/worldgen/structure/muriumhousechill.json",
-          "src/main/resources/data/murim_block/worldgen/template_pool/muriumhousechill.json"
+          "src/main/resources/data/murim_block/worldgen/structure/muriumhousechill.json"
         ]
       },
       "path": "~/Structures"
@@ -443,9 +443,9 @@
       "registry_name": "meditation",
       "metadata": {
         "files": [
+          "src/main/java/net/mcreator/murimblock/item/MeditationItem.java",
           "src/main/resources/assets/murim_block/models/item/meditation.json",
-          "src/main/resources/assets/murim_block/items/meditation.json",
-          "src/main/java/net/mcreator/murimblock/item/MeditationItem.java"
+          "src/main/resources/assets/murim_block/items/meditation.json"
         ]
       },
       "path": "~/Success/Item Success"
@@ -474,41 +474,6 @@
       "path": "~/Procedure"
     },
     {
-      "name": "OpenHubGui",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "open_hub_gui",
-      "metadata": {
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ],
-        "files": [
-          "src/main/java/net/mcreator/murimblock/procedures/OpenHubGuiProcedure.java"
-        ]
-      }
-    },
-    {
-      "name": "Menu",
-      "type": "gui",
-      "compiles": false,
-      "locked_code": false,
-      "registry_name": "menu",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/world/inventory/MenuMenu.java",
-          "src/main/java/net/mcreator/murimblock/client/gui/MenuScreen.java"
-        ]
-      }
-    },
-    {
       "name": "FirstBreakthrough",
       "type": "achievement",
       "compiles": true,
@@ -520,32 +485,6 @@
         ]
       },
       "path": "~/Success"
-    },
-    {
-      "name": "Datian",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "datian",
-      "metadata": {
-        "dependencies": [],
-        "files": [
-          "src/main/java/net/mcreator/murimblock/procedures/DatianProcedure.java"
-        ]
-      }
-    },
-    {
-      "name": "Technique",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "technique",
-      "metadata": {
-        "dependencies": [],
-        "files": [
-          "src/main/java/net/mcreator/murimblock/procedures/TechniqueProcedure.java"
-        ]
-      }
     }
   ],
   "variable_elements": [
@@ -636,9 +575,6 @@
   },
   "metadata": {
     "files": [
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
-      "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
