@@ -24,6 +24,7 @@ import net.mcreator.murimblock.network.MurimBlockModVariables;
 import net.mcreator.murimblock.init.MurimBlockModTabs;
 import net.mcreator.murimblock.init.MurimBlockModMenus;
 import net.mcreator.murimblock.init.MurimBlockModItems;
+import net.mcreator.murimblock.init.MurimBlockModEntities;
 
 import javax.annotation.Nullable;
 
@@ -49,6 +50,7 @@ public class MurimBlockMod {
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
 		MurimBlockModItems.REGISTRY.register(modEventBus);
+		MurimBlockModEntities.REGISTRY.register(modEventBus);
 		MurimBlockModTabs.REGISTRY.register(modEventBus);
 		MurimBlockModVariables.ATTACHMENT_TYPES.register(modEventBus);
 		MurimBlockModMenus.REGISTRY.register(modEventBus);

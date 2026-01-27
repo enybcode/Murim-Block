@@ -616,6 +616,23 @@
         ]
       },
       "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "Crab",
+      "type": "livingentity",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "crab",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/items/crab_spawn_egg.json",
+          "src/main/resources/data/murim_block/neoforge/biome_modifier/crab_biome_modifier.json",
+          "src/main/java/net/mcreator/murimblock/client/renderer/CrabRenderer.java",
+          "src/main/java/net/mcreator/murimblock/entity/CrabEntity.java",
+          "src/main/resources/assets/murim_block/models/item/crab_spawn_egg.json"
+        ]
+      },
+      "path": "~/Mob"
     }
   ],
   "variable_elements": [
@@ -707,19 +724,21 @@
       "gui.murim_block.datiah_gui.button_close": "Close",
       "gui.murim_block.tenchniquegui.label_tecnique_idk": "Tecnique idk",
       "gui.murim_block.tenchniquegui.button_close": "Close",
-      "key.murim_block.opendatian": "Opendatian"
+      "key.murim_block.opendatian": "Opendatian",
+      "item.murim_block.crab_spawn_egg": "Crab Spawn Egg",
+      "entity.murim_block.crab": "Crab"
     }
   },
   "metadata": {
     "files": [
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
       "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/resources/pack.mcmeta"
     ]
@@ -754,6 +773,10 @@
       },
       {
         "name": "Structures",
+        "children": []
+      },
+      {
+        "name": "Mob",
         "children": []
       },
       {
