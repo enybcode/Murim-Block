@@ -1,6 +1,7 @@
 package net.mcreator.murimblock.procedures;
 
-import net.neoforged.bus.api.Event;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 
 public class CloseGuiProcedure {
 	public static void execute(Entity entity) {

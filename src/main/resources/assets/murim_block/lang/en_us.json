@@ -11,5 +11,10 @@
   "item.murim_block.meditation": "Meditation",
   "advancements.first_breakthrough.title": "First Breakthrough",
   "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
-  "gui.murim_block.tenchniquegui.label_datian": "Datian"
+  "gui.murim_block.tenchniquegui.label_datian": "Datian",
+  "gui.murim_block.datiah_gui.label_datian": "Datian",
+  "gui.murim_block.datiah_gui.button_close": "Close",
+  "gui.murim_block.tenchniquegui.label_tecnique_idk": "Tecnique idk",
+  "gui.murim_block.tenchniquegui.button_close": "Close",
+  "key.murim_block.opendatian": "Opendatian"
 }
