@@ -9,7 +9,7 @@
   "key.murim_block.aura_activation": "Aura Activation",
   "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
   "item.murim_block.meditation": "Meditation",
-  "key.murim_block.open_murim_hub": "Open Murim Hub",
   "advancements.first_breakthrough.title": "First Breakthrough",
-  "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
+  "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
+  "gui.murim_block.tenchniquegui.label_datian": "Datian"
 }

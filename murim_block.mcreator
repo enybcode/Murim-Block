@@ -451,19 +451,6 @@
       "path": "~/Success/Item Success"
     },
     {
-      "name": "OpenMurimHub",
-      "type": "keybind",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "open_murim_hub",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/network/OpenMurimHubMessage.java"
-        ]
-      },
-      "path": "~/GUI/Procedure"
-    },
-    {
       "name": "FirstBreakthroughTick",
       "type": "procedure",
       "compiles": true,
@@ -487,11 +474,24 @@
       "path": "~/Procedure"
     },
     {
-      "name": "OpenHubGui",
+      "name": "FirstBreakthrough",
+      "type": "achievement",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "first_breakthrough",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/advancement/first_breakthrough.json"
+        ]
+      },
+      "path": "~/Success"
+    },
+    {
+      "name": "OpenGuiskill",
       "type": "procedure",
       "compiles": true,
       "locked_code": false,
-      "registry_name": "open_hub_gui",
+      "registry_name": "open_guiskill",
       "metadata": {
         "dependencies": [
           {
@@ -504,37 +504,118 @@
           }
         ],
         "files": [
-          "src/main/java/net/mcreator/murimblock/procedures/OpenHubGuiProcedure.java"
+          "src/main/java/net/mcreator/murimblock/procedures/OpenGuiskillProcedure.java"
         ]
       },
-      "path": "~/GUI/Procedure"
+      "path": "~/Gui/Procedure"
     },
     {
-      "name": "Menu",
+      "name": "DatiahGui",
       "type": "gui",
       "compiles": true,
       "locked_code": false,
-      "registry_name": "menu",
+      "registry_name": "datiah_gui",
       "metadata": {
         "files": [
-          "src/main/java/net/mcreator/murimblock/client/gui/MenuScreen.java",
-          "src/main/java/net/mcreator/murimblock/world/inventory/MenuMenu.java"
+          "src/main/java/net/mcreator/murimblock/world/inventory/DatiahGuiMenu.java",
+          "src/main/java/net/mcreator/murimblock/network/DatiahGuiButtonMessage.java",
+          "src/main/java/net/mcreator/murimblock/client/gui/DatiahGuiScreen.java"
         ]
       },
-      "path": "~/GUI"
+      "path": "~/Gui"
     },
     {
-      "name": "FirstBreakthrough",
-      "type": "achievement",
+      "name": "Guidatianopen",
+      "type": "procedure",
       "compiles": true,
       "locked_code": false,
-      "registry_name": "first_breakthrough",
+      "registry_name": "guidatianopen",
       "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
         "files": [
-          "src/main/resources/data/murim_block/advancement/first_breakthrough.json"
+          "src/main/java/net/mcreator/murimblock/procedures/GuidatianopenProcedure.java"
         ]
       },
-      "path": "~/Success"
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "Tenchniquegui",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "tenchniquegui",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/TenchniqueguiButtonMessage.java",
+          "src/main/java/net/mcreator/murimblock/world/inventory/TenchniqueguiMenu.java",
+          "src/main/java/net/mcreator/murimblock/client/gui/TenchniqueguiScreen.java"
+        ]
+      },
+      "path": "~/Gui"
+    },
+    {
+      "name": "Opendatian",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "opendatian",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/network/OpendatianMessage.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "OpenGuiDatian",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_gui_datian",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/OpenGuiDatianProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "CloseGui",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "close_gui",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/CloseGuiProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
     }
   ],
   "variable_elements": [
@@ -619,23 +700,23 @@
       "key.murim_block.aura_activation": "Aura Activation",
       "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
       "item.murim_block.meditation": "Meditation",
-      "key.murim_block.open_murim_hub": "Open Murim Hub",
       "advancements.first_breakthrough.title": "First Breakthrough",
-      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
+      "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts",
+      "gui.murim_block.tenchniquegui.label_datian": "Datian"
     }
   },
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
       "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
-      "src/main/resources/pack.mcmeta"
+      "src/main/resources/pack.mcmeta",
+      "src/main/resources/META-INF/neoforge.mods.toml"
     ]
   },
   "foldersRoot": {
@@ -675,7 +756,7 @@
         "children": []
       },
       {
-        "name": "GUI",
+        "name": "Gui",
         "children": [
           {
             "name": "Procedure",

@@ -8,13 +8,15 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.api.distmarker.Dist;
 
-import net.mcreator.murimblock.client.gui.MenuScreen;
+import net.mcreator.murimblock.client.gui.TenchniqueguiScreen;
+import net.mcreator.murimblock.client.gui.DatiahGuiScreen;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class MurimBlockModScreens {
 	@SubscribeEvent
 	public static void clientLoad(RegisterMenuScreensEvent event) {
-		event.register(MurimBlockModMenus.MENU.get(), MenuScreen::new);
+		event.register(MurimBlockModMenus.DATIAH_GUI.get(), DatiahGuiScreen::new);
+		event.register(MurimBlockModMenus.TENCHNIQUEGUI.get(), TenchniqueguiScreen::new);
 	}
 
 	public interface ScreenAccessor {

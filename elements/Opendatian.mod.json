@@ -3,10 +3,10 @@
   "_type": "keybind",
   "definition": {
     "triggerKey": "K",
-    "keyBindingName": "Open Murim Hub",
+    "keyBindingName": "Opendatian",
     "keyBindingCategoryKey": "misc",
     "onKeyPressed": {
-      "name": "OpenHubGui"
+      "name": "Guidatianopen"
     }
   }
 }

@@ -16,7 +16,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.client.Minecraft;
 
-import net.mcreator.murimblock.world.inventory.MenuMenu;
+import net.mcreator.murimblock.world.inventory.TenchniqueguiMenu;
+import net.mcreator.murimblock.world.inventory.DatiahGuiMenu;
 import net.mcreator.murimblock.network.MenuStateUpdateMessage;
 import net.mcreator.murimblock.MurimBlockMod;
 
@@ -24,7 +25,8 @@ import java.util.Map;
 
 public class MurimBlockModMenus {
 	public static final DeferredRegister<MenuType<?>> REGISTRY = DeferredRegister.create(Registries.MENU, MurimBlockMod.MODID);
-	public static final DeferredHolder<MenuType<?>, MenuType<MenuMenu>> MENU = REGISTRY.register("menu", () -> IMenuTypeExtension.create(MenuMenu::new));
+	public static final DeferredHolder<MenuType<?>, MenuType<DatiahGuiMenu>> DATIAH_GUI = REGISTRY.register("datiah_gui", () -> IMenuTypeExtension.create(DatiahGuiMenu::new));
+	public static final DeferredHolder<MenuType<?>, MenuType<TenchniqueguiMenu>> TENCHNIQUEGUI = REGISTRY.register("tenchniquegui", () -> IMenuTypeExtension.create(TenchniqueguiMenu::new));
 
 	public interface MenuAccessor {
 		Map<String, Object> getMenuState();

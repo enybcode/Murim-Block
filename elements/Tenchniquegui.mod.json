@@ -1,0 +1,92 @@
+{
+  "_fv": 79,
+  "_type": "gui",
+  "definition": {
+    "type": 0,
+    "width": 176,
+    "height": 166,
+    "inventoryOffsetX": 0,
+    "inventoryOffsetY": 0,
+    "renderBgLayer": true,
+    "doesPauseGame": false,
+    "components": [
+      {
+        "type": "image",
+        "data": {
+          "image": "gui.png",
+          "use1Xscale": false,
+          "x": 78,
+          "y": 26,
+          "locked": false
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_datian",
+          "image": "datian.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "OpenGuiDatian"
+          },
+          "x": 33,
+          "y": 53,
+          "locked": false
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_skill",
+          "image": "skill.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "OpenGuiskill"
+          },
+          "x": 33,
+          "y": 80,
+          "locked": false
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_tecnique_idk",
+          "text": {
+            "fixedValue": "Tecnique idk"
+          },
+          "color": {
+            "value": -12829636,
+            "falpha": 0.0
+          },
+          "x": 177,
+          "y": 89,
+          "locked": false
+        }
+      },
+      {
+        "type": "button",
+        "data": {
+          "name": "button_close",
+          "text": "Close",
+          "isUndecorated": false,
+          "onClick": {
+            "name": "CloseGui"
+          },
+          "width": 51,
+          "height": 20,
+          "x": 186,
+          "y": 215,
+          "locked": false
+        }
+      }
+    ],
+    "gridSettings": {
+      "sx": 18,
+      "sy": 18,
+      "ox": 11,
+      "oy": 15,
+      "snapOnGrid": true
+    }
+  }
+}
