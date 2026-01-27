@@ -512,7 +512,7 @@
     {
       "name": "DatiahGui",
       "type": "gui",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "datiah_gui",
       "metadata": {
@@ -527,7 +527,7 @@
     {
       "name": "Guidatianopen",
       "type": "procedure",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "guidatianopen",
       "metadata": {
@@ -550,7 +550,7 @@
     {
       "name": "Tenchniquegui",
       "type": "gui",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "tenchniquegui",
       "metadata": {
@@ -565,7 +565,7 @@
     {
       "name": "Opendatian",
       "type": "keybind",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "opendatian",
       "metadata": {
@@ -601,7 +601,7 @@
     {
       "name": "CloseGui",
       "type": "procedure",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "close_gui",
       "metadata": {
@@ -708,15 +708,15 @@
   "metadata": {
     "files": [
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
-      "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
+      "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
       "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
-      "src/main/resources/pack.mcmeta",
-      "src/main/resources/META-INF/neoforge.mods.toml"
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
