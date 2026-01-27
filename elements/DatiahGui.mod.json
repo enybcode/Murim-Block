@@ -76,6 +76,9 @@
           "name": "imagebutton_datian",
           "image": "datian.png",
           "hoveredImage": "",
+          "onClick": {
+            "name": "OpenGuiDatian"
+          },
           "x": 33,
           "y": 53,
           "locked": false
@@ -87,8 +90,27 @@
           "name": "imagebutton_skill",
           "image": "skill.png",
           "hoveredImage": "",
+          "onClick": {
+            "name": "OpenGuiskill"
+          },
           "x": 33,
           "y": 80,
+          "locked": false
+        }
+      },
+      {
+        "type": "button",
+        "data": {
+          "name": "button_close",
+          "text": "Close",
+          "isUndecorated": false,
+          "onClick": {
+            "name": "CloseGui"
+          },
+          "width": 51,
+          "height": 20,
+          "x": 186,
+          "y": 215,
           "locked": false
         }
       }

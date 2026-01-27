@@ -495,7 +495,8 @@
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/world/inventory/DatiahGuiMenu.java",
-          "src/main/java/net/mcreator/murimblock/client/gui/DatiahGuiScreen.java"
+          "src/main/java/net/mcreator/murimblock/client/gui/DatiahGuiScreen.java",
+          "src/main/java/net/mcreator/murimblock/network/DatiahGuiButtonMessage.java"
         ]
       },
       "path": "~/Gui"
@@ -509,7 +510,8 @@
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/client/gui/TenchniqueguiScreen.java",
-          "src/main/java/net/mcreator/murimblock/world/inventory/TenchniqueguiMenu.java"
+          "src/main/java/net/mcreator/murimblock/world/inventory/TenchniqueguiMenu.java",
+          "src/main/java/net/mcreator/murimblock/network/TenchniqueguiButtonMessage.java"
         ]
       },
       "path": "~/Gui"
@@ -557,9 +559,60 @@
       "locked_code": false,
       "registry_name": "open_guiskill",
       "metadata": {
-        "dependencies": [],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
         "files": [
           "src/main/java/net/mcreator/murimblock/procedures/OpenGuiskillProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "OpenGuiDatian",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_gui_datian",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/OpenGuiDatianProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "CloseGui",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "close_gui",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/CloseGuiProcedure.java"
         ]
       },
       "path": "~/Gui/Procedure"
@@ -652,7 +705,9 @@
       "gui.murim_block.datiah_gui.label_datian": "Datian",
       "gui.murim_block.tenchniquegui.label_datian": "Datian",
       "gui.murim_block.tenchniquegui.label_tecnique_idk": "Tecnique idk",
-      "key.murim_block.opendatian": "Opendatian"
+      "key.murim_block.opendatian": "Opendatian",
+      "gui.murim_block.datiah_gui.button_close": "Close",
+      "gui.murim_block.tenchniquegui.button_close": "Close"
     }
   },
   "metadata": {

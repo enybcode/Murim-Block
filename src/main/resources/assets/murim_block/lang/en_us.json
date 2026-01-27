@@ -14,5 +14,7 @@
   "gui.murim_block.datiah_gui.label_datian": "Datian",
   "gui.murim_block.tenchniquegui.label_datian": "Datian",
   "gui.murim_block.tenchniquegui.label_tecnique_idk": "Tecnique idk",
-  "key.murim_block.opendatian": "Opendatian"
+  "key.murim_block.opendatian": "Opendatian",
+  "gui.murim_block.datiah_gui.button_close": "Close",
+  "gui.murim_block.tenchniquegui.button_close": "Close"
 }

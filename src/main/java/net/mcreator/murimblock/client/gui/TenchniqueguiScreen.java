@@ -1,5 +1,7 @@
 package net.mcreator.murimblock.client.gui;
 
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
@@ -9,9 +11,11 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.GuiGraphics;
 
 import net.mcreator.murimblock.world.inventory.TenchniqueguiMenu;
+import net.mcreator.murimblock.network.TenchniqueguiButtonMessage;
 import net.mcreator.murimblock.init.MurimBlockModScreens;
 
 public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMenu> implements MurimBlockModScreens.ScreenAccessor {
@@ -19,6 +23,7 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 	private final int x, y, z;
 	private final Player entity;
 	private boolean menuStateUpdateActive = false;
+	private Button button_close;
 	private ImageButton imagebutton_datian;
 	private ImageButton imagebutton_skill;
 
@@ -70,7 +75,22 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 	@Override
 	public void init() {
 		super.init();
+		button_close = Button.builder(Component.translatable("gui.murim_block.tenchniquegui.button_close"), e -> {
+			int x = TenchniqueguiScreen.this.x;
+			int y = TenchniqueguiScreen.this.y;
+			if (true) {
+				ClientPacketDistributor.sendToServer(new TenchniqueguiButtonMessage(0, x, y, z));
+				TenchniqueguiButtonMessage.handleButtonAction(entity, 0, x, y, z);
+			}
+		}).bounds(this.leftPos + 60, this.topPos + 178, 51, 20).build();
+		this.addRenderableWidget(button_close);
 		imagebutton_datian = new ImageButton(this.leftPos + -93, this.topPos + 16, 60, 15, new WidgetSprites(ResourceLocation.parse("murim_block:textures/screens/datian.png"), ResourceLocation.parse("murim_block:textures/screens/datian.png")), e -> {
+			int x = TenchniqueguiScreen.this.x;
+			int y = TenchniqueguiScreen.this.y;
+			if (true) {
+				ClientPacketDistributor.sendToServer(new TenchniqueguiButtonMessage(1, x, y, z));
+				TenchniqueguiButtonMessage.handleButtonAction(entity, 1, x, y, z);
+			}
 		}) {
 			@Override
 			public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
@@ -79,6 +99,12 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 		};
 		this.addRenderableWidget(imagebutton_datian);
 		imagebutton_skill = new ImageButton(this.leftPos + -93, this.topPos + 43, 60, 15, new WidgetSprites(ResourceLocation.parse("murim_block:textures/screens/skill.png"), ResourceLocation.parse("murim_block:textures/screens/skill.png")), e -> {
+			int x = TenchniqueguiScreen.this.x;
+			int y = TenchniqueguiScreen.this.y;
+			if (true) {
+				ClientPacketDistributor.sendToServer(new TenchniqueguiButtonMessage(2, x, y, z));
+				TenchniqueguiButtonMessage.handleButtonAction(entity, 2, x, y, z);
+			}
 		}) {
 			@Override
 			public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {

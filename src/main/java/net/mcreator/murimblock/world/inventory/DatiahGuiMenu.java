@@ -26,7 +26,7 @@ public class DatiahGuiMenu extends AbstractContainerMenu implements MurimBlockMo
 	public final Map<String, Object> menuState = new HashMap<>() {
 		@Override
 		public Object put(String key, Object value) {
-			if (!this.containsKey(key) && this.size() >= 6)
+			if (!this.containsKey(key) && this.size() >= 7)
 				return null;
 			return super.put(key, value);
 		}
