@@ -16,7 +16,5 @@
   "gui.murim_block.datiah_gui.button_close": "Close",
   "gui.murim_block.tenchniquegui.label_tecnique_idk": "Tecnique idk",
   "gui.murim_block.tenchniquegui.button_close": "Close",
-  "key.murim_block.opendatian": "Opendatian",
-  "item.murim_block.crab_spawn_egg": "Crab Spawn Egg",
-  "entity.murim_block.crab": "Crab"
+  "key.murim_block.opendatian": "Opendatian"
 }
