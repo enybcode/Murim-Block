@@ -49,22 +49,6 @@
         }
       },
       {
-        "type": "label",
-        "data": {
-          "name": "label_tecnique_idk",
-          "text": {
-            "fixedValue": "Tecnique idk"
-          },
-          "color": {
-            "value": -12829636,
-            "falpha": 0.0
-          },
-          "x": 177,
-          "y": 89,
-          "locked": false
-        }
-      },
-      {
         "type": "button",
         "data": {
           "name": "button_close",
@@ -77,6 +61,16 @@
           "height": 20,
           "x": 186,
           "y": 215,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "fondgui-tecnique.png",
+          "use1Xscale": false,
+          "x": 78,
+          "y": 26,
           "locked": false
         }
       }

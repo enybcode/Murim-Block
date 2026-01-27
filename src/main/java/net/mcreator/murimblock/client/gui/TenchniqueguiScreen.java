@@ -56,6 +56,7 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 	protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/gui.png"), this.leftPos + -48, this.topPos + -11, 0, 0, 270, 179, 270, 179);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/fondgui-tecnique.png"), this.leftPos + -48, this.topPos + -11, 0, 0, 270, 179, 270, 179);
 	}
 
 	@Override
@@ -69,7 +70,6 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 
 	@Override
 	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-		guiGraphics.drawString(this.font, Component.translatable("gui.murim_block.tenchniquegui.label_tecnique_idk"), 51, 52, -12829636, false);
 	}
 
 	@Override

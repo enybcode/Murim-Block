@@ -555,9 +555,9 @@
       "registry_name": "tenchniquegui",
       "metadata": {
         "files": [
-          "src/main/java/net/mcreator/murimblock/network/TenchniqueguiButtonMessage.java",
+          "src/main/java/net/mcreator/murimblock/client/gui/TenchniqueguiScreen.java",
           "src/main/java/net/mcreator/murimblock/world/inventory/TenchniqueguiMenu.java",
-          "src/main/java/net/mcreator/murimblock/client/gui/TenchniqueguiScreen.java"
+          "src/main/java/net/mcreator/murimblock/network/TenchniqueguiButtonMessage.java"
         ]
       },
       "path": "~/Gui"
