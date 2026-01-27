@@ -3,7 +3,7 @@
     {
       "name": "Pills",
       "type": "item",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "pills",
       "metadata": {
@@ -18,7 +18,7 @@
     {
       "name": "MurimSword",
       "type": "tool",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "murim_sword",
       "metadata": {
@@ -91,7 +91,7 @@
     {
       "name": "ShieldDemonic",
       "type": "tool",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "shield_demonic",
       "metadata": {
@@ -162,7 +162,7 @@
     {
       "name": "EpeeEntrainement",
       "type": "tool",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "epee_entrainement",
       "metadata": {
@@ -451,19 +451,6 @@
       "path": "~/Success/Item Success"
     },
     {
-      "name": "OpenMurimHub",
-      "type": "keybind",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "open_murim_hub",
-      "metadata": {
-        "files": [
-          "src/main/java/net/mcreator/murimblock/network/OpenMurimHubMessage.java"
-        ]
-      },
-      "path": "~/GUI/Procedure"
-    },
-    {
       "name": "FirstBreakthroughTick",
       "type": "procedure",
       "compiles": true,
@@ -506,13 +493,12 @@
         "files": [
           "src/main/java/net/mcreator/murimblock/procedures/OpenHubGuiProcedure.java"
         ]
-      },
-      "path": "~/GUI/Procedure"
+      }
     },
     {
       "name": "Menu",
       "type": "gui",
-      "compiles": true,
+      "compiles": false,
       "locked_code": false,
       "registry_name": "menu",
       "metadata": {
@@ -520,8 +506,7 @@
           "src/main/java/net/mcreator/murimblock/world/inventory/MenuMenu.java",
           "src/main/java/net/mcreator/murimblock/client/gui/MenuScreen.java"
         ]
-      },
-      "path": "~/GUI"
+      }
     },
     {
       "name": "FirstBreakthrough",
@@ -547,8 +532,7 @@
         "files": [
           "src/main/java/net/mcreator/murimblock/procedures/DatianProcedure.java"
         ]
-      },
-      "path": "~/GUI/Procedure"
+      }
     },
     {
       "name": "Technique",
@@ -561,8 +545,7 @@
         "files": [
           "src/main/java/net/mcreator/murimblock/procedures/TechniqueProcedure.java"
         ]
-      },
-      "path": "~/GUI/Procedure"
+      }
     }
   ],
   "variable_elements": [
@@ -647,7 +630,6 @@
       "key.murim_block.aura_activation": "Aura Activation",
       "gui.murim_block.qi_bar.label_globalqiaffichage": "[[global:QiAffichage]]",
       "item.murim_block.meditation": "Meditation",
-      "key.murim_block.open_murim_hub": "Open Murim Hub",
       "advancements.first_breakthrough.title": "First Breakthrough",
       "advancements.first_breakthrough.descr": "Your beginning in the world of martial arts"
     }
@@ -701,15 +683,6 @@
       {
         "name": "key bind",
         "children": []
-      },
-      {
-        "name": "GUI",
-        "children": [
-          {
-            "name": "Procedure",
-            "children": []
-          }
-        ]
       },
       {
         "name": "Overlay",
