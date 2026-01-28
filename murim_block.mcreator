@@ -518,8 +518,8 @@
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/world/inventory/DatiahGuiMenu.java",
-          "src/main/java/net/mcreator/murimblock/network/DatiahGuiButtonMessage.java",
-          "src/main/java/net/mcreator/murimblock/client/gui/DatiahGuiScreen.java"
+          "src/main/java/net/mcreator/murimblock/client/gui/DatiahGuiScreen.java",
+          "src/main/java/net/mcreator/murimblock/network/DatiahGuiButtonMessage.java"
         ]
       },
       "path": "~/Gui"
