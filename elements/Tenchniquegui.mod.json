@@ -15,8 +15,8 @@
         "data": {
           "image": "gui.png",
           "use1Xscale": false,
-          "x": 78,
-          "y": 26,
+          "x": 77,
+          "y": 25,
           "locked": false
         }
       },
@@ -73,6 +73,126 @@
           "y": 26,
           "locked": false
         }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 101,
+          "y": 64,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 170,
+          "y": 64,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 101,
+          "y": 104,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 170,
+          "y": 104,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 101,
+          "y": 146,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 170,
+          "y": 146,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 229,
+          "y": 64,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 298,
+          "y": 64,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 229,
+          "y": 104,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 298,
+          "y": 104,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 229,
+          "y": 146,
+          "locked": false
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "competence_bloquer.png",
+          "use1Xscale": false,
+          "x": 298,
+          "y": 146,
+          "locked": false
+        }
       }
     ],
     "gridSettings": {
@@ -80,7 +200,7 @@
       "sy": 18,
       "ox": 11,
       "oy": 15,
-      "snapOnGrid": true
+      "snapOnGrid": false
     }
   }
 }

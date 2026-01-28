@@ -55,8 +55,20 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 	@Override
 	protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/gui.png"), this.leftPos + -48, this.topPos + -11, 0, 0, 270, 179, 270, 179);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/gui.png"), this.leftPos + -49, this.topPos + -12, 0, 0, 270, 179, 270, 179);
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/fondgui-tecnique.png"), this.leftPos + -48, this.topPos + -11, 0, 0, 270, 179, 270, 179);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + -25, this.topPos + 27, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 44, this.topPos + 27, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + -25, this.topPos + 67, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 44, this.topPos + 67, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + -25, this.topPos + 109, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 44, this.topPos + 109, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 103, this.topPos + 27, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 172, this.topPos + 27, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 103, this.topPos + 67, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 172, this.topPos + 67, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 103, this.topPos + 109, 0, 0, 28, 28, 28, 28);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 172, this.topPos + 109, 0, 0, 28, 28, 28, 28);
 	}
 
 	@Override

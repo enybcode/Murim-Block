@@ -731,16 +731,19 @@
   },
   "metadata": {
     "files": [
-      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModScreens.java",
       "src/main/java/net/mcreator/murimblock/network/MenuStateUpdateMessage.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModMenus.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModKeyMappings.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModItems.java",
-      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModEntities.java",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModEntityRenderers.java",
       "src/main/java/net/mcreator/murimblock/init/MurimBlockModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/java/net/mcreator/murimblock/MurimBlockMod.java",
       "src/main/java/net/mcreator/murimblock/network/MurimBlockModVariables.java",
-      "src/main/resources/pack.mcmeta"
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/murimblock/init/MurimBlockModModels.java"
     ]
   },
   "foldersRoot": {
