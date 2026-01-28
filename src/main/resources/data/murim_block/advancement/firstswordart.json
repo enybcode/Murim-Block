@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "murim_block:artofsword"
+    },
+    "title": {
+      "translate": "advancements.firstswordart.title"
+    },
+    "description": {
+      "translate": "advancements.firstswordart.descr"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "firstswordart_0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "murim_block:open_eyes"
+}

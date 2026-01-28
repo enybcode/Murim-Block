@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "murim_block:item/icone_tecnique_de_lepee_tome_1"
+  }
+}

@@ -633,6 +633,34 @@
         ]
       },
       "path": "~/Mob"
+    },
+    {
+      "name": "Artofsword",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "artofsword",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/murim_block/models/item/artofsword.json",
+          "src/main/resources/assets/murim_block/items/artofsword.json",
+          "src/main/java/net/mcreator/murimblock/item/ArtofswordItem.java"
+        ]
+      },
+      "path": "~/Success/Item Success"
+    },
+    {
+      "name": "Firstswordart",
+      "type": "achievement",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "firstswordart",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/murim_block/advancement/firstswordart.json"
+        ]
+      },
+      "path": "~/Success"
     }
   ],
   "variable_elements": [
@@ -726,7 +754,10 @@
       "gui.murim_block.tenchniquegui.button_close": "Close",
       "key.murim_block.opendatian": "Opendatian",
       "item.murim_block.crab_spawn_egg": "Crab Spawn Egg",
-      "entity.murim_block.crab": "Crab"
+      "entity.murim_block.crab": "Crab",
+      "item.murim_block.artofsword": "Meditation",
+      "advancements.firstswordart.descr": "The beginner\u0027s sword technique",
+      "advancements.firstswordart.title": "The Art of the Sword – Volume I"
     }
   },
   "metadata": {

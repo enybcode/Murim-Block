@@ -23,6 +23,7 @@ public class MurimBlockModItems {
 	public static final DeferredItem<Item> EPEE_ENTRAINEMENT;
 	public static final DeferredItem<Item> MEDITATION;
 	public static final DeferredItem<Item> CRAB_SPAWN_EGG;
+	public static final DeferredItem<Item> ARTOFSWORD;
 	static {
 		PILLS = register("pills", PillsItem::new);
 		MURIM_SWORD = register("murim_sword", MurimSwordItem::new);
@@ -31,6 +32,7 @@ public class MurimBlockModItems {
 		EPEE_ENTRAINEMENT = register("epee_entrainement", EpeeEntrainementItem::new);
 		MEDITATION = register("meditation", MeditationItem::new);
 		CRAB_SPAWN_EGG = register("crab_spawn_egg", properties -> new SpawnEggItem(MurimBlockModEntities.CRAB.get(), properties));
+		ARTOFSWORD = register("artofsword", ArtofswordItem::new);
 	}
 
 	// Start of user code block custom items
