@@ -99,18 +99,16 @@
         }
       },
       {
-        "type": "button",
+        "type": "imagebutton",
         "data": {
-          "name": "button_close",
-          "text": "Close",
-          "isUndecorated": false,
+          "name": "imagebutton_close",
+          "image": "close.png",
+          "hoveredImage": "",
           "onClick": {
             "name": "CloseGui"
           },
-          "width": 51,
-          "height": 20,
-          "x": 186,
-          "y": 215,
+          "x": 80,
+          "y": 27,
           "locked": false
         }
       }
@@ -120,7 +118,7 @@
       "sy": 18,
       "ox": 11,
       "oy": 15,
-      "snapOnGrid": true
+      "snapOnGrid": false
     }
   }
 }

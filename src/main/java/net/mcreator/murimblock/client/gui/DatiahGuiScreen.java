@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.GuiGraphics;
 
 import net.mcreator.murimblock.world.inventory.DatiahGuiMenu;
@@ -25,9 +24,9 @@ public class DatiahGuiScreen extends AbstractContainerScreen<DatiahGuiMenu> impl
 	private final int x, y, z;
 	private final Player entity;
 	private boolean menuStateUpdateActive = false;
-	private Button button_close;
 	private ImageButton imagebutton_datian;
 	private ImageButton imagebutton_skill;
+	private ImageButton imagebutton_close;
 
 	public DatiahGuiScreen(DatiahGuiMenu container, Inventory inventory, Component text) {
 		super(container, inventory, text);
@@ -79,21 +78,12 @@ public class DatiahGuiScreen extends AbstractContainerScreen<DatiahGuiMenu> impl
 	@Override
 	public void init() {
 		super.init();
-		button_close = Button.builder(Component.translatable("gui.murim_block.datiah_gui.button_close"), e -> {
+		imagebutton_datian = new ImageButton(this.leftPos + -93, this.topPos + 16, 60, 15, new WidgetSprites(ResourceLocation.parse("murim_block:textures/screens/datian.png"), ResourceLocation.parse("murim_block:textures/screens/datian.png")), e -> {
 			int x = DatiahGuiScreen.this.x;
 			int y = DatiahGuiScreen.this.y;
 			if (true) {
 				ClientPacketDistributor.sendToServer(new DatiahGuiButtonMessage(0, x, y, z));
 				DatiahGuiButtonMessage.handleButtonAction(entity, 0, x, y, z);
-			}
-		}).bounds(this.leftPos + 60, this.topPos + 178, 51, 20).build();
-		this.addRenderableWidget(button_close);
-		imagebutton_datian = new ImageButton(this.leftPos + -93, this.topPos + 16, 60, 15, new WidgetSprites(ResourceLocation.parse("murim_block:textures/screens/datian.png"), ResourceLocation.parse("murim_block:textures/screens/datian.png")), e -> {
-			int x = DatiahGuiScreen.this.x;
-			int y = DatiahGuiScreen.this.y;
-			if (true) {
-				ClientPacketDistributor.sendToServer(new DatiahGuiButtonMessage(1, x, y, z));
-				DatiahGuiButtonMessage.handleButtonAction(entity, 1, x, y, z);
 			}
 		}) {
 			@Override
@@ -106,6 +96,20 @@ public class DatiahGuiScreen extends AbstractContainerScreen<DatiahGuiMenu> impl
 			int x = DatiahGuiScreen.this.x;
 			int y = DatiahGuiScreen.this.y;
 			if (true) {
+				ClientPacketDistributor.sendToServer(new DatiahGuiButtonMessage(1, x, y, z));
+				DatiahGuiButtonMessage.handleButtonAction(entity, 1, x, y, z);
+			}
+		}) {
+			@Override
+			public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, sprites.get(isActive(), isHoveredOrFocused()), getX(), getY(), 0, 0, width, height, width, height);
+			}
+		};
+		this.addRenderableWidget(imagebutton_skill);
+		imagebutton_close = new ImageButton(this.leftPos + -46, this.topPos + -10, 10, 10, new WidgetSprites(ResourceLocation.parse("murim_block:textures/screens/close.png"), ResourceLocation.parse("murim_block:textures/screens/close.png")), e -> {
+			int x = DatiahGuiScreen.this.x;
+			int y = DatiahGuiScreen.this.y;
+			if (true) {
 				ClientPacketDistributor.sendToServer(new DatiahGuiButtonMessage(2, x, y, z));
 				DatiahGuiButtonMessage.handleButtonAction(entity, 2, x, y, z);
 			}
@@ -115,6 +119,6 @@ public class DatiahGuiScreen extends AbstractContainerScreen<DatiahGuiMenu> impl
 				guiGraphics.blit(RenderPipelines.GUI_TEXTURED, sprites.get(isActive(), isHoveredOrFocused()), getX(), getY(), 0, 0, width, height, width, height);
 			}
 		};
-		this.addRenderableWidget(imagebutton_skill);
+		this.addRenderableWidget(imagebutton_close);
 	}
 }

@@ -51,15 +51,15 @@ public record TenchniqueguiButtonMessage(int buttonID, int x, int y, int z) impl
 			return;
 		if (buttonID == 0) {
 
-			CloseGuiProcedure.execute(entity);
+			OpenGuiDatianProcedure.execute(world, entity);
 		}
 		if (buttonID == 1) {
 
-			OpenGuiDatianProcedure.execute(world, entity);
-		}
-		if (buttonID == 2) {
-
 			OpenGuiskillProcedure.execute(world, entity);
+		}
+		if (buttonID == 3) {
+
+			CloseGuiProcedure.execute(entity);
 		}
 	}
 

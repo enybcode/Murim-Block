@@ -49,22 +49,6 @@
         }
       },
       {
-        "type": "button",
-        "data": {
-          "name": "button_close",
-          "text": "Close",
-          "isUndecorated": false,
-          "onClick": {
-            "name": "CloseGui"
-          },
-          "width": 51,
-          "height": 20,
-          "x": 186,
-          "y": 215,
-          "locked": false
-        }
-      },
-      {
         "type": "image",
         "data": {
           "image": "fondgui-tecnique.png",
@@ -79,6 +63,9 @@
         "data": {
           "image": "competence_bloquer.png",
           "use1Xscale": false,
+          "displayCondition": {
+            "name": "Displayswordfirstoff"
+          },
           "x": 101,
           "y": 64,
           "locked": false
@@ -191,6 +178,34 @@
           "use1Xscale": false,
           "x": 298,
           "y": 146,
+          "locked": false
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_icone_tecnique_de_lepee_tome_1",
+          "image": "icone_tecnique_de_lepee_tome_1.png",
+          "hoveredImage": "",
+          "displayCondition": {
+            "name": "DisplaySwordFirst"
+          },
+          "x": 101,
+          "y": 64,
+          "locked": false
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_close",
+          "image": "close.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "CloseGui"
+          },
+          "x": 78,
+          "y": 26,
           "locked": false
         }
       }

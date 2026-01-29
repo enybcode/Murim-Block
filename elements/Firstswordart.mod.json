@@ -19,6 +19,6 @@
     "parent": {
       "value": "CUSTOM:OpenEyes"
     },
-    "triggerxml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"advancement_trigger\" deletable=\"false\" x=\"417\" y=\"74\"><next><block type=\"custom_trigger\"></block></next></block></xml>"
+    "triggerxml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"advancement_trigger\" deletable=\"false\" x=\"792\" y=\"90\"><next><block type=\"custom_trigger\"></block></next></block></xml>"
   }
 }
