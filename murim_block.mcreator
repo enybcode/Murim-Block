@@ -661,6 +661,80 @@
         ]
       },
       "path": "~/Success"
+    },
+    {
+      "name": "DisplaySwordFirst",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "display_sword_first",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "return_type": "logic",
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/DisplaySwordFirstProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "Displayswordfirstoff",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "displayswordfirstoff",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "return_type": "logic",
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/DisplayswordfirstoffProcedure.java"
+        ]
+      },
+      "path": "~/Gui/Procedure"
+    },
+    {
+      "name": "TheArtoftheSwordVolumeI",
+      "type": "tool",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "the_artofthe_sword_volume_i",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/murimblock/item/TheArtoftheSwordVolumeIItem.java",
+          "src/main/resources/assets/murim_block/items/the_artofthe_sword_volume_i.json",
+          "src/main/resources/assets/murim_block/models/item/the_artofthe_sword_volume_i.json"
+        ]
+      },
+      "path": "~/Tools"
+    },
+    {
+      "name": "TheArtoftheSwordVolumeIRightclickedOnBlock",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "the_artofthe_sword_volume_i_rightclicked_on_block",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/mcreator/murimblock/procedures/TheArtoftheSwordVolumeIRightclickedOnBlockProcedure.java"
+        ]
+      },
+      "path": "~/Procedure"
     }
   ],
   "variable_elements": [
@@ -730,6 +804,9 @@
     "ITEMS:minecraft:swords": [
       "~CUSTOM:EpeeEntrainement",
       "~CUSTOM:MurimSword"
+    ],
+    "ITEMS:minecraft:pickaxes": [
+      "~CUSTOM:TheArtoftheSwordVolumeI"
     ]
   },
   "tab_element_order": {},
@@ -757,7 +834,8 @@
       "entity.murim_block.crab": "Crab",
       "item.murim_block.artofsword": "Meditation",
       "advancements.firstswordart.descr": "The beginner\u0027s sword technique",
-      "advancements.firstswordart.title": "The Art of the Sword – Volume I"
+      "advancements.firstswordart.title": "The Art of the Sword – Volume I",
+      "item.murim_block.the_artofthe_sword_volume_i": "The Artofthe Sword Volume I"
     }
   },
   "metadata": {

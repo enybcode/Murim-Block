@@ -22,6 +22,7 @@ public class MurimBlockModTabs {
 	public static void buildTabContentsVanilla(BuildCreativeModeTabContentsEvent tabData) {
 		if (tabData.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
 			tabData.accept(MurimBlockModItems.PILLS.get());
+			tabData.accept(MurimBlockModItems.THE_ARTOFTHE_SWORD_VOLUME_I.get());
 		} else if (tabData.getTabKey() == CreativeModeTabs.COMBAT) {
 			tabData.accept(MurimBlockModItems.MURIM_SWORD.get());
 			tabData.accept(MurimBlockModItems.SHIELD_DEMONIC.get());
