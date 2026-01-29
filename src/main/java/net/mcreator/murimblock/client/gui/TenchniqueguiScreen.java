@@ -59,7 +59,7 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/gui.png"), this.leftPos + -49, this.topPos + -12, 0, 0, 270, 179, 270, 179);
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/fondgui-tecnique.png"), this.leftPos + -48, this.topPos + -11, 0, 0, 270, 179, 270, 179);
-		if (DisplayswordfirstoffProcedure.execute(sourceentity)) {
+		if (DisplayswordfirstoffProcedure.execute(entity)) {
 			guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + -25, this.topPos + 27, 0, 0, 28, 28, 28, 28);
 		}
 		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("murim_block:textures/screens/competence_bloquer.png"), this.leftPos + 44, this.topPos + 27, 0, 0, 28, 28, 28, 28);
@@ -126,7 +126,7 @@ public class TenchniqueguiScreen extends AbstractContainerScreen<TenchniqueguiMe
 			public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 				int x = TenchniqueguiScreen.this.x;
 				int y = TenchniqueguiScreen.this.y;
-				if (DisplaySwordFirstProcedure.execute(sourceentity))
+				if (DisplaySwordFirstProcedure.execute(entity))
 					guiGraphics.blit(RenderPipelines.GUI_TEXTURED, sprites.get(isActive(), isHoveredOrFocused()), getX(), getY(), 0, 0, width, height, width, height);
 			}
 		};

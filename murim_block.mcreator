@@ -550,7 +550,7 @@
     {
       "name": "Tenchniquegui",
       "type": "gui",
-      "compiles": false,
+      "compiles": true,
       "locked_code": false,
       "registry_name": "tenchniquegui",
       "metadata": {
@@ -671,7 +671,7 @@
       "metadata": {
         "dependencies": [
           {
-            "name": "sourceentity",
+            "name": "entity",
             "type": "entity"
           }
         ],
@@ -691,7 +691,7 @@
       "metadata": {
         "dependencies": [
           {
-            "name": "sourceentity",
+            "name": "entity",
             "type": "entity"
           }
         ],
