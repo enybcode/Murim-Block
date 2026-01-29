@@ -8,9 +8,9 @@
       "registry_name": "pills",
       "metadata": {
         "files": [
+          "src/main/java/net/mcreator/murimblock/item/PillsItem.java",
           "src/main/resources/assets/murim_block/models/item/pills.json",
-          "src/main/resources/assets/murim_block/items/pills.json",
-          "src/main/java/net/mcreator/murimblock/item/PillsItem.java"
+          "src/main/resources/assets/murim_block/items/pills.json"
         ]
       },
       "path": "~/Tools"
@@ -24,8 +24,8 @@
       "metadata": {
         "files": [
           "src/main/resources/assets/murim_block/items/murim_sword.json",
-          "src/main/resources/assets/murim_block/models/item/murim_sword.json",
-          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java"
+          "src/main/java/net/mcreator/murimblock/item/MurimSwordItem.java",
+          "src/main/resources/assets/murim_block/models/item/murim_sword.json"
         ]
       },
       "path": "~/Tools"
@@ -96,10 +96,10 @@
       "registry_name": "shield_demonic",
       "metadata": {
         "files": [
-          "src/main/resources/assets/murim_block/models/item/shield_demonic.json",
-          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java",
+          "src/main/resources/assets/murim_block/models/item/shield_demonic_blocking.json",
           "src/main/resources/assets/murim_block/items/shield_demonic.json",
-          "src/main/resources/assets/murim_block/models/item/shield_demonic_blocking.json"
+          "src/main/resources/assets/murim_block/models/item/shield_demonic.json",
+          "src/main/java/net/mcreator/murimblock/item/ShieldDemonicItem.java"
         ]
       },
       "path": "~/Tools"
@@ -152,9 +152,9 @@
       "registry_name": "open_eye",
       "metadata": {
         "files": [
-          "src/main/resources/assets/murim_block/models/item/open_eye.json",
           "src/main/resources/assets/murim_block/items/open_eye.json",
-          "src/main/java/net/mcreator/murimblock/item/OpenEyeItem.java"
+          "src/main/java/net/mcreator/murimblock/item/OpenEyeItem.java",
+          "src/main/resources/assets/murim_block/models/item/open_eye.json"
         ]
       },
       "path": "~/Success/Item Success"
@@ -168,8 +168,8 @@
       "metadata": {
         "files": [
           "src/main/resources/assets/murim_block/models/item/epee_entrainement.json",
-          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java",
-          "src/main/resources/assets/murim_block/items/epee_entrainement.json"
+          "src/main/resources/assets/murim_block/items/epee_entrainement.json",
+          "src/main/java/net/mcreator/murimblock/item/EpeeEntrainementItem.java"
         ]
       },
       "path": "~/Tools"
@@ -428,9 +428,9 @@
       "registry_name": "muriumhousechill",
       "metadata": {
         "files": [
-          "src/main/resources/data/murim_block/worldgen/structure/muriumhousechill.json",
           "src/main/resources/data/murim_block/worldgen/template_pool/muriumhousechill.json",
-          "src/main/resources/data/murim_block/worldgen/structure_set/muriumhousechill.json"
+          "src/main/resources/data/murim_block/worldgen/structure_set/muriumhousechill.json",
+          "src/main/resources/data/murim_block/worldgen/structure/muriumhousechill.json"
         ]
       },
       "path": "~/Structures"
@@ -444,8 +444,8 @@
       "metadata": {
         "files": [
           "src/main/java/net/mcreator/murimblock/item/MeditationItem.java",
-          "src/main/resources/assets/murim_block/items/meditation.json",
-          "src/main/resources/assets/murim_block/models/item/meditation.json"
+          "src/main/resources/assets/murim_block/models/item/meditation.json",
+          "src/main/resources/assets/murim_block/items/meditation.json"
         ]
       },
       "path": "~/Success/Item Success"
@@ -625,11 +625,11 @@
       "registry_name": "crab",
       "metadata": {
         "files": [
-          "src/main/resources/assets/murim_block/items/crab_spawn_egg.json",
-          "src/main/resources/data/murim_block/neoforge/biome_modifier/crab_biome_modifier.json",
-          "src/main/java/net/mcreator/murimblock/client/renderer/CrabRenderer.java",
           "src/main/java/net/mcreator/murimblock/entity/CrabEntity.java",
-          "src/main/resources/assets/murim_block/models/item/crab_spawn_egg.json"
+          "src/main/resources/assets/murim_block/models/item/crab_spawn_egg.json",
+          "src/main/resources/assets/murim_block/items/crab_spawn_egg.json",
+          "src/main/java/net/mcreator/murimblock/client/renderer/CrabRenderer.java",
+          "src/main/resources/data/murim_block/neoforge/biome_modifier/crab_biome_modifier.json"
         ]
       },
       "path": "~/Mob"
