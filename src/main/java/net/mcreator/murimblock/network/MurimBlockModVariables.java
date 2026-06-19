@@ -79,6 +79,7 @@ public class MurimBlockModVariables {
 		clone.CultivationStage = original.CultivationStage;
 		clone.QiMaxCap = original.QiMaxCap;
 		clone.BT1_MeditTicks = original.BT1_MeditTicks;
+		clone.Unlocked_FirstSwordArt = original.Unlocked_FirstSwordArt;
 		if (!event.isWasDeath()) {
 		}
 		event.getEntity().setData(PLAYER_VARIABLES, clone);
@@ -96,6 +97,7 @@ public class MurimBlockModVariables {
 		public double CultivationStage = 1.0;
 		public double QiMaxCap = 0;
 		public double BT1_MeditTicks = 0;
+		public boolean Unlocked_FirstSwordArt = false;
 
 		@Override
 		public void serialize(ValueOutput output) {
@@ -109,6 +111,7 @@ public class MurimBlockModVariables {
 			output.putDouble("CultivationStage", CultivationStage);
 			output.putDouble("QiMaxCap", QiMaxCap);
 			output.putDouble("BT1_MeditTicks", BT1_MeditTicks);
+			output.putBoolean("Unlocked_FirstSwordArt", Unlocked_FirstSwordArt);
 		}
 
 		@Override
@@ -123,6 +126,7 @@ public class MurimBlockModVariables {
 			CultivationStage = input.getDoubleOr("CultivationStage", 0);
 			QiMaxCap = input.getDoubleOr("QiMaxCap", 0);
 			BT1_MeditTicks = input.getDoubleOr("BT1_MeditTicks", 0);
+			Unlocked_FirstSwordArt = input.getBooleanOr("Unlocked_FirstSwordArt", false);
 		}
 
 		public void markSyncDirty() {
