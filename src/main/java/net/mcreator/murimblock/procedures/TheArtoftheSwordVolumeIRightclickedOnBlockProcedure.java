@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementHolder;
 
+import net.mcreator.murimblock.network.MurimBlockModVariables;
+
 public class TheArtoftheSwordVolumeIRightclickedOnBlockProcedure {
 	public static void execute(Entity entity) {
 		if (entity == null)
@@ -20,6 +22,11 @@ public class TheArtoftheSwordVolumeIRightclickedOnBlockProcedure {
 						_player.getAdvancements().award(_adv, criteria);
 				}
 			}
+		}
+		{
+			MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
+			_vars.Unlocked_FirstSwordArt = true;
+			_vars.markSyncDirty();
 		}
 	}
 }
