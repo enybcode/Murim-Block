@@ -12,9 +12,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.particles.ParticleTypes;
 
 import net.mcreator.murimblock.network.MurimBlockModVariables;
+import net.mcreator.murimblock.util.MurimVFX;
 
 import javax.annotation.Nullable;
 
@@ -44,13 +44,15 @@ public class KillAddQiProcedure {
 						_vars.markSyncDirty();
 					}
 					if (world instanceof ServerLevel _level)
-						_level.sendParticles(ParticleTypes.LAVA, (sourceentity.getX()), (sourceentity.getY()), (sourceentity.getZ()), 5, 0, 0, 0, 10);
+						MurimVFX.qiAbsorbOnKill(_level, entity, sourceentity, true);
 				} else {
 					{
 						MurimBlockModVariables.PlayerVariables _vars = sourceentity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
 						_vars.QiMax = sourceentity.getData(MurimBlockModVariables.PLAYER_VARIABLES).QiMax + 1;
 						_vars.markSyncDirty();
 					}
+					if (world instanceof ServerLevel _level)
+						MurimVFX.qiAbsorbOnKill(_level, entity, sourceentity, false);
 				}
 			}
 		}

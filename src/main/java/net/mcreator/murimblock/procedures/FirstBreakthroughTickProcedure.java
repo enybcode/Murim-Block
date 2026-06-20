@@ -11,11 +11,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementHolder;
 
 import net.mcreator.murimblock.network.MurimBlockModVariables;
+import net.mcreator.murimblock.util.MurimVFX;
 
 import javax.annotation.Nullable;
 
@@ -64,12 +64,8 @@ public class FirstBreakthroughTickProcedure {
 									_vars.BT1_MeditTicks = 0;
 									_vars.markSyncDirty();
 								}
-								for (int index0 = 0; index0 < 10; index0++) {
-									if (world instanceof ServerLevel _level)
-										_level.sendParticles(ParticleTypes.SOUL, (entity.getX()), (entity.getY() + Math.random()), (entity.getZ()), 60, 0, 2, 0, 0.25);
-									if (world instanceof ServerLevel _level)
-										_level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, (entity.getX()), (entity.getY() + Math.random()), (entity.getZ()), 60, 0, 2, 0, 0.25);
-								}
+								if (world instanceof ServerLevel _level)
+									MurimVFX.breakthroughAscension(_level, entity);
 							}
 						} else {
 							{

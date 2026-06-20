@@ -13,9 +13,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.particles.ParticleTypes;
 
 import net.mcreator.murimblock.network.MurimBlockModVariables;
+import net.mcreator.murimblock.util.MurimVFX;
 
 import javax.annotation.Nullable;
 
@@ -45,9 +45,7 @@ public class AuraMeditationProcedure {
 				if (entity instanceof ServerPlayer _plr4 && _plr4.level() instanceof ServerLevel _serverLevel4
 						&& _plr4.getAdvancements().getOrStartProgress(_serverLevel4.getServer().getAdvancements().get(ResourceLocation.parse("murim_block:open_eyes"))).isDone()) {
 					if (world instanceof ServerLevel _level)
-						_level.sendParticles(ParticleTypes.SOUL, x, y, z, 10, 0.5, 1.8, 0.4, 0.05);
-					if (world instanceof ServerLevel _level)
-						_level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 10, 0.2, 1.8, 0.4, 0.05);
+						MurimVFX.qiAuraTick(_level, entity);
 				}
 				{
 					MurimBlockModVariables.PlayerVariables _vars = entity.getData(MurimBlockModVariables.PLAYER_VARIABLES);
