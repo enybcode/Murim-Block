@@ -207,6 +207,171 @@ def command_blockbench(_: argparse.Namespace) -> int:
     return 0
 
 
+def bbmodel_summary(path: Path) -> dict:
+    data = read_json(path)
+    groups = data.get("groups", [])
+    animations = data.get("animations", [])
+    return {
+        "path": str(path),
+        "name": data.get("name", path.stem),
+        "model_format": data.get("meta", {}).get("model_format", "unknown"),
+        "format_version": data.get("meta", {}).get("format_version", "unknown"),
+        "elements": len(data.get("elements", [])),
+        "groups": [group.get("name", "") for group in groups],
+        "group_count": len(groups),
+        "animations": [animation.get("name", "") for animation in animations],
+        "animation_count": len(animations),
+        "resolution": data.get("resolution", {}),
+    }
+
+
+def command_bbmodel_info(args: argparse.Namespace) -> int:
+    path = Path(args.path).expanduser()
+    if not path.exists():
+        print(f"File not found: {path}", file=sys.stderr)
+        return 2
+    summary = bbmodel_summary(path)
+    print(f"Blockbench model: {summary['name']}")
+    print(f"Path: {summary['path']}")
+    print(f"Format: {summary['model_format']} ({summary['format_version']})")
+    print(f"Elements: {summary['elements']}")
+    print(f"Groups: {summary['group_count']}")
+    for group in summary["groups"]:
+        print(f"  - {group}")
+    print(f"Animations: {summary['animation_count']}")
+    for animation in summary["animations"]:
+        print(f"  - {animation}")
+    return 0
+
+
+def keyframes(*items: tuple[float, list[float]]) -> dict:
+    return {f"{time:.2f}".rstrip("0").rstrip("."): value for time, value in items}
+
+
+def build_raikan_animation_pack(model_path: Path) -> dict:
+    summary = bbmodel_summary(model_path)
+    groups = set(summary["groups"])
+
+    def keep_bones(bones: dict) -> dict:
+        return {name: channels for name, channels in bones.items() if name in groups}
+
+    animations = {
+        "animation.steel_fanged_raikan.idle": {
+            "loop": "loop",
+            "animation_length": 2.0,
+            "bones": keep_bones({
+                "Body": {
+                    "position": keyframes((0, [0, 0, 0]), (1, [0, 0.35, 0]), (2, [0, 0, 0])),
+                    "rotation": keyframes((0, [0, 0, 0]), (1, [1.5, 0, 0]), (2, [0, 0, 0])),
+                },
+                "head": {
+                    "rotation": keyframes((0, [0, -3, 0]), (1, [2, 3, 0]), (2, [0, -3, 0])),
+                },
+                "tail": {
+                    "rotation": keyframes((0, [0, -7, 0]), (1, [0, 7, 0]), (2, [0, -7, 0])),
+                },
+            }),
+        },
+        "animation.steel_fanged_raikan.walk": {
+            "loop": "loop",
+            "animation_length": 1.0,
+            "bones": keep_bones({
+                "Body": {
+                    "position": keyframes((0, [0, 0, 0]), (0.5, [0, 0.25, 0]), (1, [0, 0, 0])),
+                },
+                "head": {
+                    "rotation": keyframes((0, [1, 0, 0]), (0.5, [-2, 0, 0]), (1, [1, 0, 0])),
+                },
+                "tail": {
+                    "rotation": keyframes((0, [0, 10, 0]), (0.5, [0, -10, 0]), (1, [0, 10, 0])),
+                },
+                "leg1": {"rotation": keyframes((0, [18, 0, 0]), (0.5, [-18, 0, 0]), (1, [18, 0, 0]))},
+                "leg2": {"rotation": keyframes((0, [-18, 0, 0]), (0.5, [18, 0, 0]), (1, [-18, 0, 0]))},
+                "leg3": {"rotation": keyframes((0, [-18, 0, 0]), (0.5, [18, 0, 0]), (1, [-18, 0, 0]))},
+                "leg4": {"rotation": keyframes((0, [18, 0, 0]), (0.5, [-18, 0, 0]), (1, [18, 0, 0]))},
+                "Foot": {"rotation": keyframes((0, [-10, 0, 0]), (0.5, [10, 0, 0]), (1, [-10, 0, 0]))},
+                "Foot2": {"rotation": keyframes((0, [10, 0, 0]), (0.5, [-10, 0, 0]), (1, [10, 0, 0]))},
+                "Foot3": {"rotation": keyframes((0, [-10, 0, 0]), (0.5, [10, 0, 0]), (1, [-10, 0, 0]))},
+                "Foot4": {"rotation": keyframes((0, [10, 0, 0]), (0.5, [-10, 0, 0]), (1, [10, 0, 0]))},
+            }),
+        },
+        "animation.steel_fanged_raikan.attack_bite": {
+            "loop": "once",
+            "animation_length": 0.75,
+            "bones": keep_bones({
+                "Body": {
+                    "position": keyframes((0, [0, 0, 0]), (0.18, [0, -0.2, 1.2]), (0.35, [0, 0.1, -1.6]), (0.75, [0, 0, 0])),
+                    "rotation": keyframes((0, [0, 0, 0]), (0.18, [-8, 0, 0]), (0.35, [15, 0, 0]), (0.75, [0, 0, 0])),
+                },
+                "head": {
+                    "rotation": keyframes((0, [0, 0, 0]), (0.18, [-12, 0, 0]), (0.35, [28, 0, 0]), (0.75, [0, 0, 0])),
+                },
+                "tail": {
+                    "rotation": keyframes((0, [0, 0, 0]), (0.18, [0, -18, 0]), (0.35, [0, 22, 0]), (0.75, [0, 0, 0])),
+                },
+            }),
+        },
+        "animation.steel_fanged_raikan.roar": {
+            "loop": "once",
+            "animation_length": 1.4,
+            "bones": keep_bones({
+                "Body": {
+                    "position": keyframes((0, [0, 0, 0]), (0.25, [0, 0.6, 0]), (0.9, [0, 0.6, 0]), (1.4, [0, 0, 0])),
+                    "rotation": keyframes((0, [0, 0, 0]), (0.25, [-10, 0, 0]), (0.9, [-10, 0, 0]), (1.4, [0, 0, 0])),
+                },
+                "head": {
+                    "rotation": keyframes((0, [0, 0, 0]), (0.25, [-25, 0, 0]), (0.9, [-30, 0, 0]), (1.4, [0, 0, 0])),
+                },
+                "tail": {
+                    "rotation": keyframes((0, [0, 0, 0]), (0.25, [0, 25, 0]), (0.6, [0, -25, 0]), (0.9, [0, 25, 0]), (1.4, [0, 0, 0])),
+                },
+            }),
+        },
+        "animation.steel_fanged_raikan.knockdown": {
+            "loop": "hold_on_last_frame",
+            "animation_length": 0.9,
+            "bones": keep_bones({
+                "Body": {
+                    "position": keyframes((0, [0, 0, 0]), (0.35, [0, -4, 0]), (0.9, [0, -5, 0])),
+                    "rotation": keyframes((0, [0, 0, 0]), (0.35, [0, 0, 55]), (0.9, [0, 0, 75])),
+                },
+                "head": {
+                    "rotation": keyframes((0, [0, 0, 0]), (0.35, [0, 0, -20]), (0.9, [0, 0, -25])),
+                },
+                "tail": {
+                    "rotation": keyframes((0, [0, 0, 0]), (0.35, [0, 35, 0]), (0.9, [0, 45, 0])),
+                },
+            }),
+        },
+    }
+
+    return {
+        "format_version": "1.8.0",
+        "animations": animations,
+        "_murim_notes": {
+            "source_model": str(model_path),
+            "generated_for": summary["name"],
+            "workflow": "Import this JSON in Blockbench animation tools, preview/tune keyframes, then export/import through MCreator.",
+        },
+    }
+
+
+def command_gen_raikan_animations(args: argparse.Namespace) -> int:
+    model_path = Path(args.model).expanduser()
+    if not model_path.exists():
+        print(f"File not found: {model_path}", file=sys.stderr)
+        return 2
+    output = ROOT / args.output
+    output.parent.mkdir(parents=True, exist_ok=True)
+    pack = build_raikan_animation_pack(model_path)
+    output.write_text(json.dumps(pack, indent=2), encoding="utf-8")
+    print(f"Wrote {rel(output)}")
+    print("Animations:")
+    for name in pack["animations"]:
+        print(f"  - {name}")
+    return 0
+
+
 def command_report(args: argparse.Namespace) -> int:
     output = ROOT / args.output
     git = git_summary()
@@ -391,6 +556,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("assets", help="List known mod assets").set_defaults(func=command_assets)
     sub.add_parser("blockbench", help="Find Blockbench projects/exports").set_defaults(func=command_blockbench)
+
+    bbinfo = sub.add_parser("bbmodel-info", help="Inspect a Blockbench .bbmodel file")
+    bbinfo.add_argument("path")
+    bbinfo.set_defaults(func=command_bbmodel_info)
+
+    raikan = sub.add_parser("gen-raikan-animations", help="Generate starter animations for the Steel-Fanged Raikan model")
+    raikan.add_argument("--model", default="C:/Users/enzob/Documents/Steel-Fanged Raikans.bbmodel")
+    raikan.add_argument("--output", default="production/blockbench/steel_fanged_raikan.animations.json")
+    raikan.set_defaults(func=command_gen_raikan_animations)
 
     report = sub.add_parser("report", help="Write a markdown project report")
     report.add_argument("--output", default="MURIM_AUTO_REPORT.md")
