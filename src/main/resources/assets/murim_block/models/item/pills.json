@@ -1,7 +1,0 @@
-{
-  "parent": "murim_block:custom/pills",
-  "textures": {
-    "0": "murim_block:block/pills",
-    "particle": "murim_block:item/pills"
-  }
-}
