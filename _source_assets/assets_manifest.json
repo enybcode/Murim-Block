@@ -1,0 +1,802 @@
+{
+  "source": "437245eb-b8e4-4b26-bdf6-6659a4cd7b7d.png",
+  "source_size": {
+    "width": 1536,
+    "height": 1024
+  },
+  "assets": {
+    "gui_blank_main": {
+      "file": "gui_blank_main.png",
+      "source_bbox": {
+        "left": 10,
+        "top": 8,
+        "right": 578,
+        "bottom": 416
+      },
+      "export_size": {
+        "width": 576,
+        "height": 416
+      }
+    },
+    "gui_profile_template": {
+      "file": "gui_profile_template.png",
+      "source_bbox": {
+        "left": 596,
+        "top": 8,
+        "right": 1194,
+        "bottom": 425
+      },
+      "export_size": {
+        "width": 606,
+        "height": 425
+      }
+    },
+    "decor_circle_black": {
+      "file": "decor_circle_black.png",
+      "source_bbox": {
+        "left": 1216,
+        "top": 9,
+        "right": 1367,
+        "bottom": 164
+      },
+      "export_size": {
+        "width": 159,
+        "height": 163
+      }
+    },
+    "decor_circle_white": {
+      "file": "decor_circle_white.png",
+      "source_bbox": {
+        "left": 1383,
+        "top": 9,
+        "right": 1536,
+        "bottom": 164
+      },
+      "export_size": {
+        "width": 161,
+        "height": 163
+      }
+    },
+    "separator_circle": {
+      "file": "separator_circle.png",
+      "source_bbox": {
+        "left": 1224,
+        "top": 173,
+        "right": 1520,
+        "bottom": 214
+      },
+      "export_size": {
+        "width": 301,
+        "height": 46
+      }
+    },
+    "separator_diamond_long": {
+      "file": "separator_diamond_long.png",
+      "source_bbox": {
+        "left": 1236,
+        "top": 218,
+        "right": 1507,
+        "bottom": 252
+      },
+      "export_size": {
+        "width": 278,
+        "height": 38
+      }
+    },
+    "decor_mountains_wide": {
+      "file": "decor_mountains_wide.png",
+      "source_bbox": {
+        "left": 1382,
+        "top": 258,
+        "right": 1521,
+        "bottom": 314
+      },
+      "export_size": {
+        "width": 146,
+        "height": 63
+      }
+    },
+    "decor_bamboo_tall": {
+      "file": "decor_bamboo_tall.png",
+      "source_bbox": {
+        "left": 1211,
+        "top": 263,
+        "right": 1335,
+        "bottom": 396
+      },
+      "export_size": {
+        "width": 129,
+        "height": 141
+      }
+    },
+    "decor_mountain_small": {
+      "file": "decor_mountain_small.png",
+      "source_bbox": {
+        "left": 1343,
+        "top": 296,
+        "right": 1458,
+        "bottom": 368
+      },
+      "export_size": {
+        "width": 123,
+        "height": 80
+      }
+    },
+    "decor_bamboo_branch": {
+      "file": "decor_bamboo_branch.png",
+      "source_bbox": {
+        "left": 1211,
+        "top": 339,
+        "right": 1349,
+        "bottom": 498
+      },
+      "export_size": {
+        "width": 146,
+        "height": 167
+      }
+    },
+    "decor_ink_cloud": {
+      "file": "decor_ink_cloud.png",
+      "source_bbox": {
+        "left": 1389,
+        "top": 345,
+        "right": 1520,
+        "bottom": 394
+      },
+      "export_size": {
+        "width": 139,
+        "height": 57
+      }
+    },
+    "decor_scroll_hanging": {
+      "file": "decor_scroll_hanging.png",
+      "source_bbox": {
+        "left": 1346,
+        "top": 395,
+        "right": 1445,
+        "bottom": 551
+      },
+      "export_size": {
+        "width": 107,
+        "height": 164
+      }
+    },
+    "decor_red_knot": {
+      "file": "decor_red_knot.png",
+      "source_bbox": {
+        "left": 1457,
+        "top": 406,
+        "right": 1508,
+        "bottom": 525
+      },
+      "export_size": {
+        "width": 59,
+        "height": 126
+      }
+    },
+    "decor_bamboo_corner": {
+      "file": "decor_bamboo_corner.png",
+      "source_bbox": {
+        "left": 1229,
+        "top": 438,
+        "right": 1310,
+        "bottom": 555
+      },
+      "export_size": {
+        "width": 89,
+        "height": 125
+      }
+    },
+    "player_pedestal_panel": {
+      "file": "player_pedestal_panel.png",
+      "source_bbox": {
+        "left": 12,
+        "top": 428,
+        "right": 267,
+        "bottom": 787
+      },
+      "export_size": {
+        "width": 263,
+        "height": 367
+      }
+    },
+    "panel_blank_label": {
+      "file": "panel_blank_label.png",
+      "source_bbox": {
+        "left": 283,
+        "top": 451,
+        "right": 531,
+        "bottom": 549
+      },
+      "export_size": {
+        "width": 256,
+        "height": 106
+      }
+    },
+    "tab_profile_active": {
+      "file": "tab_profile_active.png",
+      "source_bbox": {
+        "left": 588,
+        "top": 454,
+        "right": 767,
+        "bottom": 534
+      },
+      "export_size": {
+        "width": 187,
+        "height": 88
+      }
+    },
+    "tab_cultivation": {
+      "file": "tab_cultivation.png",
+      "source_bbox": {
+        "left": 984,
+        "top": 455,
+        "right": 1194,
+        "bottom": 533
+      },
+      "export_size": {
+        "width": 218,
+        "height": 83
+      }
+    },
+    "tab_techniques": {
+      "file": "tab_techniques.png",
+      "source_bbox": {
+        "left": 772,
+        "top": 456,
+        "right": 983,
+        "bottom": 534
+      },
+      "export_size": {
+        "width": 219,
+        "height": 81
+      }
+    },
+    "stat_realm": {
+      "file": "stat_realm.png",
+      "source_bbox": {
+        "left": 283,
+        "top": 548,
+        "right": 530,
+        "bottom": 612
+      },
+      "export_size": {
+        "width": 255,
+        "height": 70
+      }
+    },
+    "tab_profile_disabled": {
+      "file": "tab_profile_disabled.png",
+      "source_bbox": {
+        "left": 588,
+        "top": 551,
+        "right": 765,
+        "bottom": 625
+      },
+      "export_size": {
+        "width": 185,
+        "height": 80
+      }
+    },
+    "tab_techniques_disabled": {
+      "file": "tab_techniques_disabled.png",
+      "source_bbox": {
+        "left": 771,
+        "top": 550,
+        "right": 983,
+        "bottom": 623
+      },
+      "export_size": {
+        "width": 217,
+        "height": 80
+      }
+    },
+    "tab_cultivation_disabled": {
+      "file": "tab_cultivation_disabled.png",
+      "source_bbox": {
+        "left": 984,
+        "top": 550,
+        "right": 1194,
+        "bottom": 623
+      },
+      "export_size": {
+        "width": 218,
+        "height": 81
+      }
+    },
+    "button_close_black": {
+      "file": "button_close_black.png",
+      "source_bbox": {
+        "left": 1269,
+        "top": 568,
+        "right": 1338,
+        "bottom": 638
+      },
+      "export_size": {
+        "width": 77,
+        "height": 74
+      }
+    },
+    "button_close_gray": {
+      "file": "button_close_gray.png",
+      "source_bbox": {
+        "left": 1350,
+        "top": 568,
+        "right": 1418,
+        "bottom": 637
+      },
+      "export_size": {
+        "width": 76,
+        "height": 76
+      }
+    },
+    "button_close_red": {
+      "file": "button_close_red.png",
+      "source_bbox": {
+        "left": 1428,
+        "top": 569,
+        "right": 1497,
+        "bottom": 637
+      },
+      "export_size": {
+        "width": 74,
+        "height": 73
+      }
+    },
+    "stat_qi": {
+      "file": "stat_qi.png",
+      "source_bbox": {
+        "left": 283,
+        "top": 620,
+        "right": 531,
+        "bottom": 704
+      },
+      "export_size": {
+        "width": 252,
+        "height": 92
+      }
+    },
+    "nav_profile_active": {
+      "file": "nav_profile_active.png",
+      "source_bbox": {
+        "left": 587,
+        "top": 638,
+        "right": 673,
+        "bottom": 791
+      },
+      "export_size": {
+        "width": 94,
+        "height": 158
+      }
+    },
+    "nav_techniques": {
+      "file": "nav_techniques.png",
+      "source_bbox": {
+        "left": 674,
+        "top": 639,
+        "right": 756,
+        "bottom": 791
+      },
+      "export_size": {
+        "width": 90,
+        "height": 153
+      }
+    },
+    "nav_cultivation": {
+      "file": "nav_cultivation.png",
+      "source_bbox": {
+        "left": 755,
+        "top": 639,
+        "right": 837,
+        "bottom": 791
+      },
+      "export_size": {
+        "width": 90,
+        "height": 156
+      }
+    },
+    "nav_scroll": {
+      "file": "nav_scroll.png",
+      "source_bbox": {
+        "left": 838,
+        "top": 639,
+        "right": 919,
+        "bottom": 791
+      },
+      "export_size": {
+        "width": 84,
+        "height": 155
+      }
+    },
+    "icon_book_closed": {
+      "file": "icon_book_closed.png",
+      "source_bbox": {
+        "left": 974,
+        "top": 646,
+        "right": 1058,
+        "bottom": 717
+      },
+      "export_size": {
+        "width": 91,
+        "height": 73
+      }
+    },
+    "icon_book_open": {
+      "file": "icon_book_open.png",
+      "source_bbox": {
+        "left": 1049,
+        "top": 646,
+        "right": 1141,
+        "bottom": 718
+      },
+      "export_size": {
+        "width": 100,
+        "height": 75
+      }
+    },
+    "icon_scroll": {
+      "file": "icon_scroll.png",
+      "source_bbox": {
+        "left": 1138,
+        "top": 645,
+        "right": 1208,
+        "bottom": 717
+      },
+      "export_size": {
+        "width": 78,
+        "height": 80
+      }
+    },
+    "diamond_empty": {
+      "file": "diamond_empty.png",
+      "source_bbox": {
+        "left": 1222,
+        "top": 646,
+        "right": 1301,
+        "bottom": 724
+      },
+      "export_size": {
+        "width": 87,
+        "height": 79
+      }
+    },
+    "diamond_rank_8": {
+      "file": "diamond_rank_8.png",
+      "source_bbox": {
+        "left": 1300,
+        "top": 646,
+        "right": 1378,
+        "bottom": 724
+      },
+      "export_size": {
+        "width": 86,
+        "height": 84
+      }
+    },
+    "diamond_locked": {
+      "file": "diamond_locked.png",
+      "source_bbox": {
+        "left": 1376,
+        "top": 646,
+        "right": 1455,
+        "bottom": 724
+      },
+      "export_size": {
+        "width": 87,
+        "height": 81
+      }
+    },
+    "diamond_question": {
+      "file": "diamond_question.png",
+      "source_bbox": {
+        "left": 1449,
+        "top": 646,
+        "right": 1530,
+        "bottom": 724
+      },
+      "export_size": {
+        "width": 82,
+        "height": 79
+      }
+    },
+    "skill_slot_1": {
+      "file": "skill_slot_1.png",
+      "source_bbox": {
+        "left": 973,
+        "top": 731,
+        "right": 1075,
+        "bottom": 835
+      },
+      "export_size": {
+        "width": 110,
+        "height": 107
+      }
+    },
+    "skill_slot_2": {
+      "file": "skill_slot_2.png",
+      "source_bbox": {
+        "left": 1068,
+        "top": 731,
+        "right": 1166,
+        "bottom": 835
+      },
+      "export_size": {
+        "width": 106,
+        "height": 110
+      }
+    },
+    "skill_slot_3": {
+      "file": "skill_slot_3.png",
+      "source_bbox": {
+        "left": 1161,
+        "top": 731,
+        "right": 1261,
+        "bottom": 835
+      },
+      "export_size": {
+        "width": 108,
+        "height": 108
+      }
+    },
+    "skill_slot_4": {
+      "file": "skill_slot_4.png",
+      "source_bbox": {
+        "left": 1251,
+        "top": 731,
+        "right": 1350,
+        "bottom": 835
+      },
+      "export_size": {
+        "width": 107,
+        "height": 112
+      }
+    },
+    "button_back": {
+      "file": "button_back.png",
+      "source_bbox": {
+        "left": 1373,
+        "top": 742,
+        "right": 1460,
+        "bottom": 829
+      },
+      "export_size": {
+        "width": 93,
+        "height": 95
+      }
+    },
+    "button_question": {
+      "file": "button_question.png",
+      "source_bbox": {
+        "left": 1451,
+        "top": 742,
+        "right": 1536,
+        "bottom": 829
+      },
+      "export_size": {
+        "width": 93,
+        "height": 95
+      }
+    },
+    "separator_diamond_short": {
+      "file": "separator_diamond_short.png",
+      "source_bbox": {
+        "left": 294,
+        "top": 716,
+        "right": 530,
+        "bottom": 757
+      },
+      "export_size": {
+        "width": 240,
+        "height": 48
+      }
+    },
+    "separator_diamond_short_alt": {
+      "file": "separator_diamond_short_alt.png",
+      "source_bbox": {
+        "left": 294,
+        "top": 752,
+        "right": 530,
+        "bottom": 790
+      },
+      "export_size": {
+        "width": 243,
+        "height": 46
+      }
+    },
+    "qi_orb_blue": {
+      "file": "qi_orb_blue.png",
+      "source_bbox": {
+        "left": 336,
+        "top": 804,
+        "right": 404,
+        "bottom": 873
+      },
+      "export_size": {
+        "width": 72,
+        "height": 75
+      }
+    },
+    "qi_bar_blue_segmented": {
+      "file": "qi_bar_blue_segmented.png",
+      "source_bbox": {
+        "left": 11,
+        "top": 808,
+        "right": 320,
+        "bottom": 862
+      },
+      "export_size": {
+        "width": 314,
+        "height": 62
+      }
+    },
+    "info_card_large": {
+      "file": "info_card_large.png",
+      "source_bbox": {
+        "left": 427,
+        "top": 820,
+        "right": 724,
+        "bottom": 994
+      },
+      "export_size": {
+        "width": 303,
+        "height": 182
+      }
+    },
+    "info_card_profile": {
+      "file": "info_card_profile.png",
+      "source_bbox": {
+        "left": 738,
+        "top": 844,
+        "right": 973,
+        "bottom": 1019
+      },
+      "export_size": {
+        "width": 243,
+        "height": 183
+      }
+    },
+    "button_light": {
+      "file": "button_light.png",
+      "source_bbox": {
+        "left": 997,
+        "top": 855,
+        "right": 1158,
+        "bottom": 918
+      },
+      "export_size": {
+        "width": 162,
+        "height": 64
+      }
+    },
+    "button_dark": {
+      "file": "button_dark.png",
+      "source_bbox": {
+        "left": 1162,
+        "top": 856,
+        "right": 1325,
+        "bottom": 918
+      },
+      "export_size": {
+        "width": 168,
+        "height": 63
+      }
+    },
+    "diamond_selected_gold": {
+      "file": "diamond_selected_gold.png",
+      "source_bbox": {
+        "left": 1329,
+        "top": 863,
+        "right": 1446,
+        "bottom": 983
+      },
+      "export_size": {
+        "width": 125,
+        "height": 125
+      }
+    },
+    "qi_orb_purple": {
+      "file": "qi_orb_purple.png",
+      "source_bbox": {
+        "left": 336,
+        "top": 871,
+        "right": 404,
+        "bottom": 939
+      },
+      "export_size": {
+        "width": 73,
+        "height": 76
+      }
+    },
+    "diamond_dark": {
+      "file": "diamond_dark.png",
+      "source_bbox": {
+        "left": 1444,
+        "top": 877,
+        "right": 1534,
+        "bottom": 969
+      },
+      "export_size": {
+        "width": 92,
+        "height": 89
+      }
+    },
+    "button_dark_alt_1": {
+      "file": "button_dark_alt_1.png",
+      "source_bbox": {
+        "left": 997,
+        "top": 920,
+        "right": 1158,
+        "bottom": 982
+      },
+      "export_size": {
+        "width": 166,
+        "height": 67
+      }
+    },
+    "button_dark_alt_2": {
+      "file": "button_dark_alt_2.png",
+      "source_bbox": {
+        "left": 1164,
+        "top": 920,
+        "right": 1325,
+        "bottom": 982
+      },
+      "export_size": {
+        "width": 167,
+        "height": 67
+      }
+    },
+    "qi_orb_gold": {
+      "file": "qi_orb_gold.png",
+      "source_bbox": {
+        "left": 336,
+        "top": 936,
+        "right": 405,
+        "bottom": 1007
+      },
+      "export_size": {
+        "width": 74,
+        "height": 79
+      }
+    },
+    "qi_bar_gold_segmented": {
+      "file": "qi_bar_gold_segmented.png",
+      "source_bbox": {
+        "left": 10,
+        "top": 949,
+        "right": 320,
+        "bottom": 1004
+      },
+      "export_size": {
+        "width": 315,
+        "height": 63
+      }
+    },
+    "qi_bar_blue_compact": {
+      "file": "qi_bar_blue_compact.png",
+      "source_bbox": {
+        "left": 10,
+        "top": 858,
+        "right": 322,
+        "bottom": 906
+      },
+      "export_size": {
+        "width": 319,
+        "height": 56
+      }
+    },
+    "qi_bar_purple_compact": {
+      "file": "qi_bar_purple_compact.png",
+      "source_bbox": {
+        "left": 10,
+        "top": 900,
+        "right": 322,
+        "bottom": 954
+      },
+      "export_size": {
+        "width": 316,
+        "height": 62
+      }
+    }
+  }
+}
