@@ -1,0 +1,645 @@
+Tu travailles sur l'identité visuelle des interfaces du projet Minecraft **Murimblock**.
+
+IMPORTANT :
+
+Pour cette tâche, tu ne dois PAS :
+
+* modifier le projet Minecraft ;
+* écrire du code Java ;
+* intégrer les interfaces dans NeoForge ;
+* créer des classes GUI ;
+* modifier les systèmes de Qi ;
+* modifier le gameplay ;
+* toucher aux fichiers du mod ;
+* créer de logique fonctionnelle.
+
+Je veux uniquement que tu me prépares les **GUI graphiques et leurs assets**, prêts à être utilisés plus tard par un développeur.
+
+Le but est d'obtenir un véritable **UI Kit Murimblock propre**, cohérent et exploitable.
+
+---
+
+# Références
+
+Je vais te fournir plusieurs images de référence.
+
+La référence principale est :
+
+`437245eb-b8e4-4b26-bdf6-6659a4cd7b7d.png`
+
+C'est celle dont je préfère actuellement la direction artistique.
+
+Elle contient notamment :
+
+* cadres ;
+* panneaux ;
+* barre de Qi ;
+* livres ;
+* icônes ;
+* slots de techniques ;
+* boutons ;
+* séparateurs ;
+* bambous ;
+* montagnes ;
+* symboles ;
+* décorations Murim.
+
+Je vais également fournir :
+
+* `menu_murimblock_sur_parchemin.png`
+* `menu_rpg_élégant_techniques.png`
+* `a_clean_ui_asset_sheet_on_a_black_transparent_back.png`
+* `a_clean_png_asset_sheet_ui_kit_on_a_transparent.png`
+
+Toutes ces images servent uniquement de **références artistiques**.
+
+Elles ne sont PAS des textures finales.
+
+---
+
+# Problème actuel
+
+Les images de référence ont été générées par IA.
+
+Elles contiennent donc plusieurs petites imperfections :
+
+* traits irréguliers ;
+* éléments légèrement asymétriques ;
+* pixels parasites ;
+* bordures floues ;
+* différences d'épaisseur ;
+* petits halos ;
+* éléments parfois mal centrés ;
+* décorations collées entre elles ;
+* différences de style entre certains boutons.
+
+Je ne veux pas que tu découpes simplement ces images.
+
+Je veux que tu **reconstruises les éléments proprement**.
+
+Les références doivent servir de modèle visuel, pas de matériau final à découper.
+
+---
+
+# Direction artistique
+
+Le style Murimblock doit être :
+
+* très épuré ;
+* élégant ;
+* lisible ;
+* légèrement traditionnel ;
+* inspiré Murim / Wuxia / Xianxia ;
+* compatible visuellement avec Minecraft.
+
+Palette principale :
+
+* noir ;
+* blanc cassé ;
+* gris ;
+* encre ;
+* parchemin très clair.
+
+Couleurs secondaires utilisées avec modération :
+
+* bleu pour le Qi ;
+* violet éventuellement ;
+* or pour une sélection importante.
+
+Je ne veux PAS une interface RPG remplie de couleurs et d'informations.
+
+Le design doit respirer.
+
+Utiliser beaucoup d'espace vide.
+
+---
+
+# Style graphique
+
+Utiliser principalement :
+
+* traits fins ;
+* cadres simples ;
+* petits losanges ;
+* séparateurs élégants ;
+* formes rectangulaires ;
+* décorations discrètes.
+
+Décorations Murim possibles :
+
+* bambou ;
+* montagnes à l'encre ;
+* cercle de pinceau ;
+* parchemin ;
+* livre martial ;
+* lotus ;
+* symbole de cultivation.
+
+Les décorations ne doivent jamais rendre l'interface difficile à lire.
+
+---
+
+# Règle importante de Murimblock
+
+La seule statistique principale visible dans Murimblock est :
+
+**Qi**
+
+Il ne doit pas y avoir :
+
+* Force ;
+* Dextérité ;
+* Intelligence ;
+* Vitalité ;
+* Défense ;
+* points de statistiques.
+
+Le Royaume de cultivation peut également être affiché.
+
+Exemple :
+
+`Qi Refining III`
+
+Mais ce n'est pas une statistique à distribuer.
+
+---
+
+# GUI 1 — Profil du joueur
+
+Créer une maquette complète du GUI principal.
+
+Je veux quelque chose de très épuré.
+
+Structure approximative :
+
+```text
+--------------------------------------------------
+|                    MURIMBLOCK              [X] |
+--------------------------------------------------
+|                                                |
+|                                                |
+|              [ ZONE JOUEUR ]                  |
+|                                                |
+|               Nom du joueur                   |
+|                                                |
+|                  Royaume                       |
+|              Qi Refining III                  |
+|                                                |
+| Qi      [====================------]           |
+|                    725 / 1000                  |
+|                                                |
+--------------------------------------------------
+| Profil | Techniques | Cultivation | Infos      |
+--------------------------------------------------
+```
+
+La zone joueur doit être prévue pour accueillir plus tard le modèle 3D du joueur Minecraft.
+
+Ne dessine donc PAS un personnage définitif dans le fond du GUI.
+
+Créer seulement l'espace prévu pour lui.
+
+---
+
+# GUI 2 — Techniques
+
+C'est le GUI le plus important.
+
+Je veux conserver cette idée générale :
+
+```text
+--------------------------------------------------------------
+|                         TECHNIQUES                     [X] |
+--------------------------------------------------------------
+|                |                          |                |
+| TOMES          | TECHNIQUES               | DÉTAILS        |
+|                |                          |                |
+| > Tome Épée I  |       [ Technique 1 ]    | Slash frontal  |
+|                |                          |                |
+|   Tome Épée II |       [ Technique 2 ]    | Description    |
+|                |                          |                |
+|   ???          |       [ Technique 3 ]    | Coût : 25 Qi   |
+|                |                          |                |
+|   ???          |       [ Technique 4 ]    | CD : 4 sec     |
+|                |                          |                |
+|                |                          | [ ÉQUIPER ]    |
+--------------------------------------------------------------
+```
+
+Je veux :
+
+* une colonne pour les tomes ;
+* une zone centrale pour les techniques ;
+* une zone de détails ;
+* beaucoup d'espace ;
+* peu de texte ;
+* une hiérarchie visuelle très claire.
+
+---
+
+# Tomes
+
+Préparer plusieurs états visuels.
+
+## Tome normal
+
+Livre simple.
+
+## Tome sélectionné
+
+Contour légèrement doré ou accent discret.
+
+## Tome verrouillé
+
+Livre assombri ou cadenas.
+
+## Tome inconnu
+
+Afficher éventuellement :
+
+`???`
+
+ou une icône de point d'interrogation.
+
+---
+
+# Techniques
+
+Préparer des slots pour 4 techniques.
+
+États nécessaires :
+
+* normal ;
+* hover ;
+* sélectionné ;
+* verrouillé ;
+* inconnu.
+
+Les slots doivent être assez simples.
+
+Exemple :
+
+```text
+┌────────────┐
+│            │
+│    ICON    │
+│            │
+└────────────┘
+```
+
+Pas besoin d'intégrer le nom de la technique directement dans la texture.
+
+---
+
+# Panneau de détails
+
+Créer un panneau réutilisable pour afficher :
+
+* nom de la technique ;
+* description ;
+* coût en Qi ;
+* cooldown ;
+* bouton équiper.
+
+Le texte réel sera ajouté plus tard par le code.
+
+Il ne doit donc PAS être intégré dans les PNG finaux.
+
+Tu peux afficher du faux texte uniquement dans les maquettes de présentation.
+
+---
+
+# Barre de Qi
+
+Créer une barre de Qi propre.
+
+Je veux des éléments séparés :
+
+* icône Qi ;
+* contour / fond ;
+* remplissage ;
+* éventuellement décoration autour.
+
+Le remplissage doit être séparé du fond.
+
+Ne pas écrire :
+
+`725 / 1000`
+
+directement dans la texture finale.
+
+---
+
+# Navigation
+
+Préparer les boutons / onglets :
+
+* Profil ;
+* Techniques ;
+* Cultivation ;
+* Infos.
+
+Créer plusieurs états :
+
+* normal ;
+* hover ;
+* actif ;
+* désactivé si nécessaire.
+
+Créer aussi leurs icônes séparément.
+
+---
+
+# Boutons
+
+Créer un style commun pour les boutons.
+
+États :
+
+* normal ;
+* hover ;
+* pressé ;
+* disabled ;
+* selected.
+
+Exemples de boutons nécessaires :
+
+* fermer ;
+* retour ;
+* équiper ;
+* confirmer ;
+* onglet.
+
+---
+
+# Assets individuels
+
+Je veux que chaque élément important existe séparément.
+
+Par exemple :
+
+```text
+gui_profile_background.png
+
+gui_techniques_background.png
+
+panel_base.png
+panel_details.png
+
+button_normal.png
+button_hover.png
+button_selected.png
+button_disabled.png
+
+close_normal.png
+close_hover.png
+
+tab_normal.png
+tab_active.png
+tab_hover.png
+
+qi_icon.png
+qi_bar_background.png
+qi_bar_fill.png
+
+technique_slot.png
+technique_slot_hover.png
+technique_slot_selected.png
+technique_slot_locked.png
+
+tome_slot.png
+tome_slot_selected.png
+tome_slot_locked.png
+
+icon_book.png
+icon_book_open.png
+icon_scroll.png
+icon_lock.png
+icon_unknown.png
+
+decor_bamboo.png
+decor_mountains.png
+decor_brush_circle.png
+decor_separator.png
+decor_diamond.png
+```
+
+Tu peux améliorer cette liste si nécessaire.
+
+---
+
+# Ne pas mettre de texte dans les textures
+
+Très important.
+
+Les textures finales ne doivent normalement PAS contenir :
+
+* MURIMBLOCK ;
+* Profil ;
+* Techniques ;
+* Cultivation ;
+* nom du joueur ;
+* royaume ;
+* quantité de Qi ;
+* nom des techniques ;
+* coût ;
+* cooldown ;
+* description.
+
+Tous ces textes seront rendus dynamiquement plus tard.
+
+Les maquettes de présentation peuvent contenir du texte pour montrer le rendu.
+
+Mais les assets individuels doivent être propres et sans texte quand cela est possible.
+
+---
+
+# Qualité des PNG
+
+Chaque asset doit :
+
+* avoir un fond transparent réel ;
+* avoir des bords propres ;
+* ne pas avoir de halo blanc ;
+* ne pas avoir de pixels parasites ;
+* être correctement centré ;
+* être symétrique lorsque nécessaire ;
+* utiliser la même épaisseur de ligne que les autres éléments.
+
+Inspecte le résultat après export.
+
+---
+
+# SVG privilégié
+
+Pour tous les éléments géométriques simples, privilégier une reconstruction en SVG ou vectorielle.
+
+Par exemple :
+
+* rectangles ;
+* cadres ;
+* losanges ;
+* boutons ;
+* séparateurs ;
+* contours ;
+* slots ;
+* panneaux.
+
+Cela permettra d'obtenir un résultat beaucoup plus propre que si tu génères les éléments avec une IA d'image.
+
+Ensuite exporter les versions PNG.
+
+---
+
+# Décorations
+
+Pour les décorations plus organiques :
+
+* bambou ;
+* montagnes ;
+* cercle d'encre ;
+* nuage ;
+* parchemin ;
+* livre ;
+
+tu peux les redessiner ou les reconstruire à partir des références.
+
+Je veux une cohérence de style entre toutes les décorations.
+
+---
+
+# Résolution
+
+Le GUI final sera probablement utilisé dans Minecraft sur une base proche de :
+
+**270 × 179**
+
+Cependant, pour le travail graphique, tu peux travailler dans une résolution supérieure afin d'obtenir des assets propres.
+
+Par exemple :
+
+* x2 ;
+* x4.
+
+Puis fournir également les versions redimensionnées si nécessaire.
+
+Ne détériore pas la lisibilité lors du downscale.
+
+---
+
+# Organisation finale
+
+Créer un dossier propre :
+
+```text
+Murimblock_GUI_Kit/
+```
+
+Avec :
+
+```text
+Murimblock_GUI_Kit/
+│
+├── Mockups/
+│   ├── Profile_GUI.png
+│   └── Techniques_GUI.png
+│
+├── Panels/
+│
+├── Buttons/
+│
+├── Tabs/
+│
+├── Qi/
+│
+├── Techniques/
+│
+├── Tomes/
+│
+├── Icons/
+│
+├── Decorations/
+│
+├── SVG/
+│
+└── README.md
+```
+
+---
+
+# Mockups obligatoires
+
+Je veux au minimum deux images finales complètes :
+
+## 1. Profile_GUI.png
+
+Afficher l'apparence finale du GUI principal.
+
+## 2. Techniques_GUI.png
+
+Afficher l'apparence finale du GUI Techniques.
+
+Ces deux images servent de référence visuelle pour le futur développement.
+
+---
+
+# README
+
+Créer un petit README expliquant :
+
+* les différents dossiers ;
+* les dimensions ;
+* quels assets vont ensemble ;
+* les états des boutons ;
+* les états des slots ;
+* quelles textures sont prévues pour être superposées.
+
+---
+
+# Ce que tu ne dois PAS faire
+
+Encore une fois :
+
+NE PAS :
+
+* coder le GUI dans Minecraft ;
+* écrire du Java ;
+* modifier NeoForge ;
+* intégrer les assets ;
+* créer de logique de gameplay ;
+* créer les systèmes de techniques ;
+* toucher au système de Qi ;
+* modifier le projet Murimblock.
+
+Cette tâche est uniquement une tâche de :
+
+**UI / UX / création d'assets graphiques.**
+
+---
+
+# Résultat attendu
+
+À la fin, je veux recevoir :
+
+1. le mockup du GUI Profil ;
+2. le mockup du GUI Techniques ;
+3. tous les panneaux séparés ;
+4. tous les boutons séparés ;
+5. tous les onglets séparés ;
+6. tous les slots séparés ;
+7. les états hover / selected / locked nécessaires ;
+8. les icônes séparées ;
+9. la barre de Qi séparée en plusieurs éléments ;
+10. les décorations séparées ;
+11. les fichiers SVG sources quand c'est pertinent ;
+12. les PNG transparents propres ;
+13. un README ;
+14. aucun code Minecraft.
+
+La référence principale reste l'image fournie.
+
+Je veux conserver son identité visuelle, mais reconstruite avec une finition beaucoup plus propre, régulière et professionnelle.
+
+Ne cherche pas à réinventer complètement le design.
+
+**Nettoie, harmonise et professionnalise cette direction artistique.**
