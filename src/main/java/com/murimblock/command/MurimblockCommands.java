@@ -23,6 +23,7 @@ public final class MurimblockCommands {
     }
 
     public static void onRegisterCommands(RegisterCommandsEvent event) {
+        CultivationCommands.onRegisterCommands(event);
         registerQiMax(event.getDispatcher());
         registerQi(event.getDispatcher());
     }
