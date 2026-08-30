@@ -18,14 +18,14 @@ class QiChargeFovHandlerTest {
     }
 
     @Test
-    void fovSettlesAtNinetyFivePercent() {
-        assertEquals(0.95F, QiChargeFovHandler.fovFactor(1.0F), EPSILON);
+    void fovSettlesAtOneHundredFourPercent() {
+        assertEquals(1.04F, QiChargeFovHandler.fovFactor(1.0F), EPSILON);
     }
 
     @Test
     void fovUsesSmoothEasingDuringTransition() {
-        assertEquals(0.9921875F, QiChargeFovHandler.fovFactor(0.25F), EPSILON);
-        assertEquals(0.9578125F, QiChargeFovHandler.fovFactor(0.75F), EPSILON);
+        assertEquals(1.00625F, QiChargeFovHandler.fovFactor(0.25F), EPSILON);
+        assertEquals(1.03375F, QiChargeFovHandler.fovFactor(0.75F), EPSILON);
     }
 
     @Test

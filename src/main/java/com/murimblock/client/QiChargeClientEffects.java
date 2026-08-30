@@ -1,6 +1,7 @@
 package com.murimblock.client;
 
 import com.murimblock.Murimblock;
+import com.murimblock.qi.QiService;
 import com.murimblock.qi.charge.QiChargeVisuals;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -39,12 +40,17 @@ public final class QiChargeClientEffects {
         }
 
         spawnForegroundParticle(minecraft, level);
-        resetForegroundCooldown();
+        resetForegroundCooldown(QiService.getQiMax(minecraft.player));
     }
 
     static int nextForegroundCooldown(RandomSource random) {
-        return QiChargeVisuals.QI_CHARGE_FOREGROUND_INTERVAL_MIN_TICKS
-                + random.nextInt(QiChargeVisuals.QI_CHARGE_FOREGROUND_INTERVAL_RANGE_TICKS);
+        return nextForegroundCooldown(random, com.murimblock.qi.QiConstants.INITIAL_QI_MAX);
+    }
+
+    static int nextForegroundCooldown(RandomSource random, double qiMax) {
+        int min = QiChargeVisuals.computeForegroundCooldownMin(qiMax);
+        int maxInclusive = QiChargeVisuals.computeForegroundCooldownMaxInclusive(qiMax);
+        return min + random.nextInt(maxInclusive - min + 1);
     }
 
     private static void spawnForegroundParticle(Minecraft minecraft, ClientLevel level) {
@@ -75,6 +81,10 @@ public final class QiChargeClientEffects {
 
     private static void resetForegroundCooldown() {
         foregroundCooldown = nextForegroundCooldown(RANDOM);
+    }
+
+    private static void resetForegroundCooldown(double qiMax) {
+        foregroundCooldown = nextForegroundCooldown(RANDOM, qiMax);
     }
 
     private static double randomSigned(double range) {

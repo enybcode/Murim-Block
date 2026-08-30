@@ -12,11 +12,22 @@ class QiChargeClientEffectsTest {
         RandomSource random = RandomSource.create(123L);
 
         for (int i = 0; i < 100; i++) {
-            int cooldown = QiChargeClientEffects.nextForegroundCooldown(random);
+            int cooldown = QiChargeClientEffects.nextForegroundCooldown(random, 100.0);
 
-            assertTrue(cooldown >= QiChargeVisuals.QI_CHARGE_FOREGROUND_INTERVAL_MIN_TICKS);
-            assertTrue(cooldown < QiChargeVisuals.QI_CHARGE_FOREGROUND_INTERVAL_MIN_TICKS
-                    + QiChargeVisuals.QI_CHARGE_FOREGROUND_INTERVAL_RANGE_TICKS);
+            assertTrue(cooldown >= 16);
+            assertTrue(cooldown <= 22);
+        }
+    }
+
+    @Test
+    void foregroundCooldownGetsShorterAtHighQiMax() {
+        RandomSource random = RandomSource.create(456L);
+
+        for (int i = 0; i < 100; i++) {
+            int cooldown = QiChargeClientEffects.nextForegroundCooldown(random, 10_000.0);
+
+            assertTrue(cooldown >= 7);
+            assertTrue(cooldown <= 12);
         }
     }
 }
