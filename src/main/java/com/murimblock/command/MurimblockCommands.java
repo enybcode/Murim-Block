@@ -5,9 +5,8 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.murimblock.qi.QiConstants;
+import com.murimblock.qi.QiFormat;
 import com.murimblock.qi.QiService;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.function.BiFunction;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -77,7 +76,7 @@ public final class MurimblockCommands {
     }
 
     private static int check(CommandContext<CommandSourceStack> context, ServerPlayer target, boolean namedTarget) {
-        String value = format(QiService.getQiMax(target));
+        String value = QiFormat.format(QiService.getQiMax(target));
         Component message = namedTarget
                 ? Component.literal("Qi Max de " + target.getGameProfile().getName() + " : " + value)
                 : Component.literal("Qi Max : " + value);
@@ -106,7 +105,7 @@ public final class MurimblockCommands {
         QiService.refillQi(target);
         context.getSource().sendSuccess(
                 () -> Component.literal("Qi de " + target.getGameProfile().getName() + " rempli à "
-                        + format(QiService.getQi(target)) + " / " + format(QiService.getQiMax(target))),
+                        + QiFormat.format(QiService.getQi(target)) + " / " + QiFormat.format(QiService.getQiMax(target))),
                 true
         );
         return 1;
@@ -115,15 +114,8 @@ public final class MurimblockCommands {
     private static void sendQiMaxChanged(CommandSourceStack source, ServerPlayer target) {
         source.sendSuccess(
                 () -> Component.literal("Qi Max de " + target.getGameProfile().getName() + " : "
-                        + format(QiService.getQiMax(target)) + " (Qi : " + format(QiService.getQi(target)) + ")"),
+                        + QiFormat.format(QiService.getQiMax(target)) + " (Qi : " + QiFormat.format(QiService.getQi(target)) + ")"),
                 true
         );
-    }
-
-    private static String format(double value) {
-        return BigDecimal.valueOf(value)
-                .setScale(3, RoundingMode.HALF_UP)
-                .stripTrailingZeros()
-                .toPlainString();
     }
 }
