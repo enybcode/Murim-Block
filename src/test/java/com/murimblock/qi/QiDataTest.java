@@ -45,6 +45,57 @@ class QiDataTest {
     }
 
     @Test
+    void activeChargeRegenerationIsFivePercentPerMinute() {
+        QiData data = new QiData(100.0, 1_000.0)
+                .regenerateForTicks(QiConstants.TICKS_PER_MINUTE, QiConstants.ACTIVE_CHARGE_REGENERATION_RATE_PER_MINUTE);
+
+        assertEquals(150.0, data.qi(), EPSILON);
+    }
+
+    @Test
+    void activeChargeDoesNotStackWithPassiveRegeneration() {
+        QiData data = new QiData(0.0, 1_000.0)
+                .regenerateForTicks(QiConstants.TICKS_PER_MINUTE, QiConstants.ACTIVE_CHARGE_REGENERATION_RATE_PER_MINUTE);
+
+        assertEquals(50.0, data.qi(), EPSILON);
+    }
+
+    @Test
+    void activeChargeRegenerationPreservesFractions() {
+        QiData data = new QiData(0.0, 50.0)
+                .regenerateForTicks(QiConstants.TICKS_PER_MINUTE, QiConstants.ACTIVE_CHARGE_REGENERATION_RATE_PER_MINUTE);
+
+        assertEquals(2.5, data.qi(), EPSILON);
+    }
+
+    @Test
+    void activeChargeRegenerationClampsAtMaximum() {
+        QiData data = new QiData(99.0, 100.0)
+                .regenerateForTicks(QiConstants.TICKS_PER_MINUTE, QiConstants.ACTIVE_CHARGE_REGENERATION_RATE_PER_MINUTE);
+
+        assertEquals(100.0, data.qi(), EPSILON);
+    }
+
+    @Test
+    void fullQiDoesNotRegenerate() {
+        QiData data = new QiData(100.0, 100.0)
+                .regenerateForTicks(QiConstants.TICKS_PER_MINUTE, QiConstants.ACTIVE_CHARGE_REGENERATION_RATE_PER_MINUTE);
+
+        assertEquals(new QiData(100.0, 100.0), data);
+    }
+
+    @Test
+    void regenerationRateCanReturnFromActiveToPassive() {
+        QiData active = new QiData(0.0, 1_000.0)
+                .regenerateForTicks(QiConstants.TICKS_PER_MINUTE, QiConstants.ACTIVE_CHARGE_REGENERATION_RATE_PER_MINUTE);
+        QiData passive = new QiData(0.0, 1_000.0)
+                .regenerateForTicks(QiConstants.TICKS_PER_MINUTE, QiConstants.PASSIVE_REGENERATION_RATE_PER_MINUTE);
+
+        assertEquals(50.0, active.qi(), EPSILON);
+        assertEquals(10.0, passive.qi(), EPSILON);
+    }
+
+    @Test
     void fractionalRegenerationIsPreserved() {
         QiData data = new QiData(0.0, 50.0)
                 .regenerateForTicks(QiConstants.TICKS_PER_MINUTE);

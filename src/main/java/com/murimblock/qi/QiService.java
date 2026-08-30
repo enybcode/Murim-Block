@@ -52,7 +52,11 @@ public final class QiService {
     }
 
     static boolean regenerate(ServerPlayer player, long elapsedTicks) {
-        return update(player, data -> data.regenerateForTicks(elapsedTicks));
+        return regenerate(player, elapsedTicks, QiConstants.PASSIVE_REGENERATION_RATE_PER_MINUTE);
+    }
+
+    static boolean regenerate(ServerPlayer player, long elapsedTicks, double ratePerMinute) {
+        return update(player, data -> data.regenerateForTicks(elapsedTicks, ratePerMinute));
     }
 
     private static boolean update(ServerPlayer player, UnaryOperator<QiData> operation) {

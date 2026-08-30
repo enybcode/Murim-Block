@@ -64,15 +64,22 @@ public record QiData(double qi, double qiMax) {
     }
 
     public QiData regenerateForTicks(long elapsedTicks) {
+        return regenerateForTicks(elapsedTicks, QiConstants.PASSIVE_REGENERATION_RATE_PER_MINUTE);
+    }
+
+    public QiData regenerateForTicks(long elapsedTicks, double ratePerMinute) {
         if (elapsedTicks < 0) {
             throw new IllegalArgumentException("elapsedTicks must not be negative");
+        }
+        if (!Double.isFinite(ratePerMinute) || ratePerMinute < 0.0) {
+            throw new IllegalArgumentException("ratePerMinute must be a non-negative finite number");
         }
         if (elapsedTicks == 0 || qi >= qiMax) {
             return this;
         }
 
         double minutes = (double) elapsedTicks / QiConstants.TICKS_PER_MINUTE;
-        double regenerated = qiMax * QiConstants.REGENERATION_PER_MINUTE * minutes;
+        double regenerated = qiMax * ratePerMinute * minutes;
         return addQi(regenerated);
     }
 
