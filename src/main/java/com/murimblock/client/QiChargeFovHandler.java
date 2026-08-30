@@ -1,6 +1,7 @@
 package com.murimblock.client;
 
 import com.murimblock.Murimblock;
+import com.murimblock.qi.charge.QiChargeVisuals;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -9,8 +10,6 @@ import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
 
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class QiChargeFovHandler {
-    private static final float MIN_FOV_FACTOR = 0.85F;
-    private static final float TRANSITION_STEP = 1.0F / 10.0F;
     private static float transition;
 
     private QiChargeFovHandler() {
@@ -18,7 +17,11 @@ public final class QiChargeFovHandler {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
-        transition = nextTransition(transition, QiChargeClientHandler.isVisualCharging(), TRANSITION_STEP);
+        transition = nextTransition(
+                transition,
+                QiChargeClientHandler.isVisualCharging(),
+                QiChargeVisuals.QI_CHARGE_FOV_TRANSITION_STEP
+        );
     }
 
     @SubscribeEvent
@@ -37,7 +40,8 @@ public final class QiChargeFovHandler {
     }
 
     static float fovFactor(float transition) {
-        return 1.0F - ((1.0F - MIN_FOV_FACTOR) * clamp01(transition));
+        float eased = smoothstep(clamp01(transition));
+        return 1.0F - ((1.0F - QiChargeVisuals.QI_CHARGE_FOV_MULTIPLIER) * eased);
     }
 
     static void resetForTests() {
@@ -46,5 +50,9 @@ public final class QiChargeFovHandler {
 
     private static float clamp01(float value) {
         return Math.max(0.0F, Math.min(1.0F, value));
+    }
+
+    private static float smoothstep(float value) {
+        return value * value * (3.0F - 2.0F * value);
     }
 }

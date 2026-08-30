@@ -11,6 +11,9 @@ public final class QiChargeEvents {
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             QiChargeService.keepValid(player);
+            if (QiChargeService.isCharging(player) && QiChargeParticleEffects.shouldSpawnWorldParticles(player.tickCount)) {
+                QiChargeParticleEffects.spawnWorldParticles(player);
+            }
         }
     }
 
