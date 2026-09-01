@@ -20,6 +20,14 @@ public final class QiAttachments {
                     .build()
     );
 
+    static final Supplier<AttachmentType<QiBossProgress>> PLAYER_QI_BOSS_PROGRESS = ATTACHMENT_TYPES.register(
+            "player_qi_boss_progress",
+            () -> AttachmentType.builder(QiBossProgress::initial)
+                    .serialize(QiBossProgress.CODEC)
+                    .copyOnDeath()
+                    .build()
+    );
+
     private QiAttachments() {
     }
 

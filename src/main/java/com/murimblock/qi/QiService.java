@@ -1,6 +1,7 @@
 package com.murimblock.qi;
 
 import java.util.function.UnaryOperator;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -49,6 +50,25 @@ public final class QiService {
 
     public static boolean refillQi(ServerPlayer player) {
         return update(player, QiData::refill);
+    }
+
+    public static QiBossProgress getBossProgress(Player player) {
+        return player.getData(QiAttachments.PLAYER_QI_BOSS_PROGRESS);
+    }
+
+    public static boolean markBossDefeated(ServerPlayer player, ResourceLocation bossId) {
+        QiBossProgress current = getBossProgress(player);
+        QiBossProgress updated = current.markDefeated(bossId);
+        if (current.equals(updated)) {
+            return false;
+        }
+
+        player.setData(QiAttachments.PLAYER_QI_BOSS_PROGRESS, updated);
+        return true;
+    }
+
+    public static void resetBossProgress(ServerPlayer player) {
+        player.setData(QiAttachments.PLAYER_QI_BOSS_PROGRESS, QiBossProgress.initial());
     }
 
     static boolean regenerate(ServerPlayer player, long elapsedTicks) {

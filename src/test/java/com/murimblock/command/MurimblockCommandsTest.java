@@ -26,7 +26,7 @@ class MurimblockCommandsTest {
 
         MurimblockCommands.registerDevelopmentCommands(dispatcher);
 
-        assertVisibleChildren("qi", dispatcher, Set.of("check", "set", "add", "remove", "refill"));
+        assertVisibleChildren("qi", dispatcher, Set.of("check", "set", "add", "remove", "refill", "reward"));
     }
 
     private static void assertVisibleChildren(

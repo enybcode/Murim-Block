@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.murimblock.qi.QiConstants;
 import com.murimblock.qi.QiFormat;
+import com.murimblock.qi.QiRewardManager;
 import com.murimblock.qi.QiService;
 import java.util.function.BiFunction;
 import net.minecraft.commands.CommandSourceStack;
@@ -13,6 +14,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 public final class MurimblockCommands {
@@ -56,7 +58,13 @@ public final class MurimblockCommands {
                 .then(Commands.literal("refill")
                         .executes(context -> refill(context, context.getSource().getPlayerOrException(), false))
                         .then(Commands.argument("player", EntityArgument.player())
-                                .executes(context -> refill(context, EntityArgument.getPlayer(context, "player"), true)))));
+                                .executes(context -> refill(context, EntityArgument.getPlayer(context, "player"), true))))
+                .then(Commands.literal("reward")
+                        .then(Commands.literal("check")
+                                .executes(context -> checkReward(context, context.getSource().getPlayerOrException())))
+                        .then(Commands.literal("reset")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(context -> resetRewardData(context, context.getSource().getPlayerOrException())))));
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> valueCommand(
@@ -154,6 +162,18 @@ public final class MurimblockCommands {
     private static int refill(CommandContext<CommandSourceStack> context, ServerPlayer target, boolean namedTarget) {
         QiService.refillQi(target);
         sendQiState(context.getSource(), target, namedTarget);
+        return 1;
+    }
+
+    private static int checkReward(CommandContext<CommandSourceStack> context, ServerPlayer player) {
+        Component message = Component.literal(QiRewardManager.describeAntiFarm(player, EntityType.ZOMBIE));
+        context.getSource().sendSuccess(() -> message, false);
+        return 1;
+    }
+
+    private static int resetRewardData(CommandContext<CommandSourceStack> context, ServerPlayer player) {
+        QiRewardManager.resetDevelopmentData(player);
+        context.getSource().sendSuccess(() -> Component.literal("Donnees de recompense Qi reinitialisees."), true);
         return 1;
     }
 
