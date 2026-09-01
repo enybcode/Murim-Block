@@ -16,15 +16,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 public final class MurimblockCommands {
-    private static final int ADMIN_PERMISSION_LEVEL = 2;
-
     private MurimblockCommands() {
     }
 
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CultivationCommands.onRegisterCommands(event);
-        registerQiMax(event.getDispatcher());
-        registerQi(event.getDispatcher());
+        registerDevelopmentCommands(event.getDispatcher());
+    }
+
+    static void registerDevelopmentCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
+        registerQiMax(dispatcher);
+        registerQi(dispatcher);
     }
 
     private static void registerQiMax(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -37,19 +39,24 @@ public final class MurimblockCommands {
                 .then(valueCommand("add", QiService::addQiMax))
                 .then(valueCommand("remove", QiService::removeQiMax))
                 .then(Commands.literal("reset")
-                        .requires(source -> source.hasPermission(ADMIN_PERMISSION_LEVEL))
-                        .executes(context -> reset(context, context.getSource().getPlayerOrException()))
+                        .executes(context -> reset(context, context.getSource().getPlayerOrException(), false))
                         .then(Commands.argument("player", EntityArgument.player())
-                                .executes(context -> reset(context, EntityArgument.getPlayer(context, "player"))))));
+                                .executes(context -> reset(context, EntityArgument.getPlayer(context, "player"), true)))));
     }
 
     private static void registerQi(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("qi")
-                .then(Commands.literal("refill")
-                        .requires(source -> source.hasPermission(ADMIN_PERMISSION_LEVEL))
-                        .executes(context -> refill(context, context.getSource().getPlayerOrException()))
+                .then(Commands.literal("check")
+                        .executes(context -> checkQi(context, context.getSource().getPlayerOrException(), false))
                         .then(Commands.argument("player", EntityArgument.player())
-                                .executes(context -> refill(context, EntityArgument.getPlayer(context, "player"))))));
+                                .executes(context -> checkQi(context, EntityArgument.getPlayer(context, "player"), true))))
+                .then(qiValueCommand("set", QiService::setQi))
+                .then(qiValueCommand("add", QiService::addQi))
+                .then(qiValueCommand("remove", QiService::removeQi))
+                .then(Commands.literal("refill")
+                        .executes(context -> refill(context, context.getSource().getPlayerOrException(), false))
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(context -> refill(context, EntityArgument.getPlayer(context, "player"), true)))));
     }
 
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> valueCommand(
@@ -57,13 +64,13 @@ public final class MurimblockCommands {
             BiFunction<ServerPlayer, Double, Boolean> operation
     ) {
         return Commands.literal(name)
-                .requires(source -> source.hasPermission(ADMIN_PERMISSION_LEVEL))
                 .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
                         .executes(context -> applyValue(
                                 context,
                                 context.getSource().getPlayerOrException(),
                                 DoubleArgumentType.getDouble(context, "value"),
-                                operation
+                                operation,
+                                false
                         )))
                 .then(Commands.argument("player", EntityArgument.player())
                         .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
@@ -71,7 +78,32 @@ public final class MurimblockCommands {
                                         context,
                                         EntityArgument.getPlayer(context, "player"),
                                         DoubleArgumentType.getDouble(context, "value"),
-                                        operation
+                                        operation,
+                                        true
+                                ))));
+    }
+
+    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> qiValueCommand(
+            String name,
+            BiFunction<ServerPlayer, Double, Boolean> operation
+    ) {
+        return Commands.literal(name)
+                .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
+                        .executes(context -> applyQiValue(
+                                context,
+                                context.getSource().getPlayerOrException(),
+                                DoubleArgumentType.getDouble(context, "value"),
+                                operation,
+                                false
+                        )))
+                .then(Commands.argument("player", EntityArgument.player())
+                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
+                                .executes(context -> applyQiValue(
+                                        context,
+                                        EntityArgument.getPlayer(context, "player"),
+                                        DoubleArgumentType.getDouble(context, "value"),
+                                        operation,
+                                        true
                                 ))));
     }
 
@@ -88,33 +120,59 @@ public final class MurimblockCommands {
             CommandContext<CommandSourceStack> context,
             ServerPlayer target,
             double value,
-            BiFunction<ServerPlayer, Double, Boolean> operation
+            BiFunction<ServerPlayer, Double, Boolean> operation,
+            boolean namedTarget
     ) {
         operation.apply(target, value);
-        sendQiMaxChanged(context.getSource(), target);
+        sendQiMaxChanged(context.getSource(), target, namedTarget);
         return 1;
     }
 
-    private static int reset(CommandContext<CommandSourceStack> context, ServerPlayer target) {
+    private static int reset(CommandContext<CommandSourceStack> context, ServerPlayer target, boolean namedTarget) {
         QiService.setQiMax(target, QiConstants.INITIAL_QI_MAX);
-        sendQiMaxChanged(context.getSource(), target);
+        sendQiMaxChanged(context.getSource(), target, namedTarget);
         return 1;
     }
 
-    private static int refill(CommandContext<CommandSourceStack> context, ServerPlayer target) {
+    private static int checkQi(CommandContext<CommandSourceStack> context, ServerPlayer target, boolean namedTarget) {
+        sendQiState(context.getSource(), target, namedTarget);
+        return 1;
+    }
+
+    private static int applyQiValue(
+            CommandContext<CommandSourceStack> context,
+            ServerPlayer target,
+            double value,
+            BiFunction<ServerPlayer, Double, Boolean> operation,
+            boolean namedTarget
+    ) {
+        operation.apply(target, value);
+        sendQiState(context.getSource(), target, namedTarget);
+        return 1;
+    }
+
+    private static int refill(CommandContext<CommandSourceStack> context, ServerPlayer target, boolean namedTarget) {
         QiService.refillQi(target);
-        context.getSource().sendSuccess(
-                () -> Component.literal("Qi de " + target.getGameProfile().getName() + " rempli à "
-                        + QiFormat.format(QiService.getQi(target)) + " / " + QiFormat.format(QiService.getQiMax(target))),
-                true
-        );
+        sendQiState(context.getSource(), target, namedTarget);
         return 1;
     }
 
-    private static void sendQiMaxChanged(CommandSourceStack source, ServerPlayer target) {
+    private static void sendQiMaxChanged(CommandSourceStack source, ServerPlayer target, boolean namedTarget) {
+        String value = QiFormat.format(QiService.getQiMax(target));
+        Component message = namedTarget
+                ? Component.literal("Qi Max de " + target.getGameProfile().getName() + " = " + value
+                        + " (Qi : " + QiFormat.format(QiService.getQi(target)) + ")")
+                : Component.literal("Qi Max = " + value);
+        source.sendSuccess(() -> message, true);
+    }
+
+    private static void sendQiState(CommandSourceStack source, ServerPlayer target, boolean namedTarget) {
+        String value = QiFormat.format(QiService.getQi(target)) + " / " + QiFormat.format(QiService.getQiMax(target));
+        Component message = namedTarget
+                ? Component.literal("Qi de " + target.getGameProfile().getName() + " : " + value)
+                : Component.literal("Qi : " + value);
         source.sendSuccess(
-                () -> Component.literal("Qi Max de " + target.getGameProfile().getName() + " : "
-                        + QiFormat.format(QiService.getQiMax(target)) + " (Qi : " + QiFormat.format(QiService.getQi(target)) + ")"),
+                () -> message,
                 true
         );
     }
