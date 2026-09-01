@@ -24,12 +24,12 @@ public final class QiChargeVisuals {
     };
     private static final int[] QI_MAX_WORLD_PARTICLE_COUNTS = {
             2,
-            2,
             3,
             4,
-            5,
-            6,
-            8
+            8,
+            12,
+            16,
+            20
     };
 
     public static final Vector3f QI_PARTICLE_COLOR = new Vector3f(0.15F, 0.55F, 1.0F);
@@ -41,12 +41,23 @@ public final class QiChargeVisuals {
 
     public static final int QI_CHARGE_WORLD_INTERVAL_TICKS = 5;
     public static final int MIN_QI_CHARGE_WORLD_PARTICLES = 2;
-    public static final int MAX_QI_CHARGE_WORLD_PARTICLES = 8;
+    public static final int MAX_QI_CHARGE_WORLD_PARTICLES = 24;
     public static final double QI_CHARGE_WORLD_RADIUS = 0.7;
     public static final double QI_CHARGE_WORLD_EXTRA_HEIGHT = 0.25;
     public static final double QI_CHARGE_WORLD_UPWARD_SPEED_MIN = 0.025;
     public static final double QI_CHARGE_WORLD_UPWARD_SPEED_RANGE = 0.025;
     public static final double QI_CHARGE_WORLD_HORIZONTAL_DRIFT = 0.012;
+    public static final double QI_CHARGE_AURA_START_QI_MAX = 1_000.0;
+    public static final int MAX_QI_CHARGE_NORMAL_PARTICLES = 5;
+    public static final double QI_CHARGE_AURA_RADIUS_INNER = 0.3;
+    public static final double QI_CHARGE_AURA_RADIUS_OUTER = 0.9;
+    public static final double QI_CHARGE_AURA_HEAD_EXTRA_HEIGHT_MIN = 0.3;
+    public static final double QI_CHARGE_AURA_HEAD_EXTRA_HEIGHT_RANGE = 0.4;
+    public static final double QI_CHARGE_AURA_UPWARD_SPEED_MIN = 0.04;
+    public static final double QI_CHARGE_AURA_UPWARD_SPEED_RANGE = 0.06;
+    public static final double QI_CHARGE_AURA_INWARD_SPEED_MIN = 0.004;
+    public static final double QI_CHARGE_AURA_INWARD_SPEED_RANGE = 0.01;
+    public static final double QI_CHARGE_AURA_TANGENTIAL_SPEED = 0.008;
 
     public static final int QI_CHARGE_FOREGROUND_INTERVAL_MIN_TICKS = 8;
     public static final int QI_CHARGE_FOREGROUND_INTERVAL_RANGE_TICKS = 8;
@@ -89,6 +100,25 @@ public final class QiChargeVisuals {
         return 1.0;
     }
 
+    public static double computeAuraIntensityFromQiMax(double qiMax) {
+        if (!Double.isFinite(qiMax) || qiMax < 900.0) {
+            return 0.0;
+        }
+        if (qiMax >= 10_000.0) {
+            return 1.0;
+        }
+        if (qiMax <= QI_CHARGE_AURA_START_QI_MAX) {
+            return lerp(0.0, 0.18, (qiMax - 900.0) / 100.0);
+        }
+        if (qiMax <= 2_500.0) {
+            return lerp(0.18, 0.55, (qiMax - 1_000.0) / 1_500.0);
+        }
+        if (qiMax <= 5_000.0) {
+            return lerp(0.55, 0.82, (qiMax - 2_500.0) / 2_500.0);
+        }
+        return lerp(0.82, 1.0, (qiMax - 5_000.0) / 5_000.0);
+    }
+
     public static int computeBaseWorldParticleCount(double qiMax) {
         if (!Double.isFinite(qiMax) || qiMax <= QI_MAX_INTENSITY_THRESHOLDS[0]) {
             return MIN_QI_CHARGE_WORLD_PARTICLES;
@@ -115,6 +145,27 @@ public final class QiChargeVisuals {
         return MAX_QI_CHARGE_WORLD_PARTICLES;
     }
 
+    public static int computeNormalParticleCount(double qiMax) {
+        int total = computeBaseWorldParticleCount(qiMax);
+        int normalLimit = computeAuraIntensityFromQiMax(qiMax) > 0.0 ? MAX_QI_CHARGE_NORMAL_PARTICLES : total;
+        return Math.min(total, normalLimit);
+    }
+
+    public static int computeAuraParticleCount(double qiMax) {
+        if (computeAuraIntensityFromQiMax(qiMax) <= 0.0) {
+            return 0;
+        }
+        return Math.max(0, computeBaseWorldParticleCount(qiMax) - computeNormalParticleCount(qiMax));
+    }
+
+    public static int computeWorldIntervalTicks(double qiMax) {
+        return (int) Math.round(lerp(
+                QI_CHARGE_WORLD_INTERVAL_TICKS,
+                3.0,
+                computeAuraIntensityFromQiMax(qiMax)
+        ));
+    }
+
     public static int computeForegroundCooldownMin(double qiMax) {
         double intensity = computeIntensityFromQiMax(qiMax);
         return (int) Math.round(lerp(16.0, 7.0, intensity));
@@ -122,7 +173,7 @@ public final class QiChargeVisuals {
 
     public static int computeForegroundCooldownMaxInclusive(double qiMax) {
         double intensity = computeIntensityFromQiMax(qiMax);
-        return (int) Math.round(lerp(22.0, 12.0, intensity));
+        return (int) Math.round(lerp(22.0, 11.0, intensity));
     }
 
     public static int clampParticleCount(int count) {

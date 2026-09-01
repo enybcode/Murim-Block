@@ -1,5 +1,6 @@
 package com.murimblock.qi.charge;
 
+import com.murimblock.qi.QiService;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -11,7 +12,8 @@ public final class QiChargeEvents {
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             QiChargeService.keepValid(player);
-            if (QiChargeService.isCharging(player) && QiChargeParticleEffects.shouldSpawnWorldParticles(player.tickCount)) {
+            if (QiChargeService.isCharging(player)
+                    && QiChargeParticleEffects.shouldSpawnWorldParticles(player.tickCount, QiService.getQiMax(player))) {
                 QiChargeParticleEffects.spawnWorldParticles(player);
             }
         }

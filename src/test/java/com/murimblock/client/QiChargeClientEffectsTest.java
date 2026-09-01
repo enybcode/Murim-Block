@@ -27,7 +27,7 @@ class QiChargeClientEffectsTest {
             int cooldown = QiChargeClientEffects.nextForegroundCooldown(random, 10_000.0);
 
             assertTrue(cooldown >= 7);
-            assertTrue(cooldown <= 12);
+            assertTrue(cooldown <= 11);
         }
     }
 }
