@@ -2,7 +2,13 @@ package com.murimblock.client.hud;
 
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CombatQiHudTest {
     @Test
@@ -36,8 +42,13 @@ class CombatQiHudTest {
 
     @Test
     void filledWidthUsesVanillaExperienceWidth() {
+        assertEquals(0, CombatQiHud.computeFilledWidth(0.0, 100.0));
+        assertEquals(45, CombatQiHud.computeFilledWidth(25.0, 100.0));
         assertEquals(91, CombatQiHud.computeFilledWidth(50.0, 100.0));
-        assertEquals(182, CombatQiHud.computeFilledWidth(100.0, 100.0));
+        assertEquals(183, CombatQiHud.computeFilledWidth(100.0, 100.0));
+        assertEquals(183, CombatQiHud.computeFilledWidth(150.0, 100.0));
+        assertEquals(0, CombatQiHud.computeFilledWidth(-25.0, 100.0));
+        assertEquals(0, CombatQiHud.computeFilledWidth(50.0, 0.0));
     }
 
     @Test
@@ -49,5 +60,17 @@ class CombatQiHudTest {
     void textUsesQiFormatting() {
         assertEquals("Qi 52.5 / 100", CombatQiHud.buildText(52.5, 100.0));
         assertEquals("Qi 100 / 100", CombatQiHud.buildText(100.0, 100.0));
+    }
+
+    @Test
+    void qiProgressSpriteKeepsVanillaExperienceDimensions() throws IOException {
+        try (InputStream inputStream = CombatQiHudTest.class.getClassLoader()
+                .getResourceAsStream("assets/murimblock/textures/gui/sprites/hud/qi_bar_progress.png")) {
+            assertNotNull(inputStream);
+            BufferedImage sprite = ImageIO.read(inputStream);
+            assertNotNull(sprite);
+            assertEquals(CombatQiHud.BAR_WIDTH, sprite.getWidth());
+            assertEquals(CombatQiHud.BAR_HEIGHT, sprite.getHeight());
+        }
     }
 }
