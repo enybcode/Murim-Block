@@ -1,6 +1,8 @@
 package com.murimblock;
 
 import com.murimblock.command.MurimblockCommands;
+import com.murimblock.combat.CombatAttachments;
+import com.murimblock.combat.CombatEvents;
 import com.murimblock.cultivation.CultivationAttachments;
 import com.murimblock.cultivation.CultivationEvents;
 import com.murimblock.network.MurimblockNetworking;
@@ -19,10 +21,14 @@ public final class Murimblock {
     public static final String MOD_ID = "murimblock";
 
     public Murimblock(IEventBus modEventBus) {
+        CombatAttachments.register(modEventBus);
         CultivationAttachments.register(modEventBus);
         QiAttachments.register(modEventBus);
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
 
+        NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerClone);
         NeoForge.EVENT_BUS.addListener(CultivationEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerTick);

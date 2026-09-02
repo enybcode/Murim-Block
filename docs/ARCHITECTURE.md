@@ -10,6 +10,8 @@ Murimblock is a Minecraft 1.21.1 NeoForge mod built around server-authoritative 
 - `api`: public Java API for addons.
 - `api.qi`: supported Qi addon contract.
 - `api.cultivation`: supported Cultivation addon contract.
+- `api.combat`: supported Combat addon contract and combat mode change event.
+- `combat`: temporary combat mode implementation, attachment and server service.
 - `qi`: Qi implementation, player data, reward calculation, attachments, server events.
 - `qi.charge`: Qi charging gameplay state and charge VFX tuning helpers.
 - `cultivation`: Cultivation implementation, progression table, attachments and commands.
@@ -29,6 +31,7 @@ Gameplay authority lives on the logical server:
 
 - Qi mutation uses `ServerPlayer`.
 - Qi charging state is validated server-side by `QiChargeService`.
+- Combat mode is toggled and validated server-side by `CombatService`.
 - Mob kill Qi rewards are calculated and applied server-side by `QiRewardManager`.
 - Attachments are registered through NeoForge and stored per player.
 
@@ -39,6 +42,7 @@ Client-only classes remain in `com.murimblock.client`:
 - `QiChargeFovHandler`: charge FOV transition.
 - `QiDebugOverlay`: temporary Qi HUD.
 - `MurimblockKeyMappings`: key registration.
+- `CombatModeClientHandler`: combat toggle key input.
 
 Server code must not import `Minecraft`, `ClientLevel`, `GuiGraphics`, `Camera`, or `KeyMapping`.
 
@@ -75,6 +79,38 @@ Qi charging is split into clear concerns:
 
 The client sends intent only. The server decides whether charging is valid.
 
+## Combat
+
+Combat mode currently represents only one temporary state: normal or combat.
+
+Main classes:
+
+- `CombatData`: immutable temporary combat state.
+- `CombatAttachments`: internal unsaved NeoForge attachment registration.
+- `CombatService`: server-authoritative reads, set and toggle operations.
+- `CombatEvents`: login, logout and clone reset behavior.
+- `CombatCommands`: `/combat check`, `/combat on`, `/combat off`, `/combat toggle`.
+- `CombatModeTogglePayload`: client to server toggle request with no client-chosen state.
+- `CombatModeClientHandler`: sends toggle requests when the configurable key is pressed.
+
+Flow:
+
+```text
+client key press
+network toggle payload
+server CombatService
+CombatData attachment sync
+MurimblockApi.combat()
+```
+
+No HUD, technique bar, damage system, combo system or hotbar replacement exists yet.
+
+Addon entry point:
+
+```java
+boolean inCombat = MurimblockApi.combat().isInCombatMode(player);
+```
+
 ## Cultivation
 
 Main classes:
@@ -99,9 +135,11 @@ boolean ready = MurimblockApi.cultivation().canAttemptBreakthrough(player);
 Current packets:
 
 - Client to server: `QiChargeStatePayload`, sent when the local charge key state changes.
+- Client to server: `CombatModeTogglePayload`, sent once per consumed combat key press.
 - Server to client: Qi attachment sync for the owning player through `QiAttachments`.
+- Server to client: Combat attachment sync for the owning player through `CombatAttachments`.
 
-Addons should not use Murimblock internal packet classes to read or mutate Qi. They should use `com.murimblock.api`.
+Addons should not use Murimblock internal packet classes to read or mutate Qi or combat mode. They should use `com.murimblock.api`.
 
 ## Data And Configuration Direction
 

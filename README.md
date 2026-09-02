@@ -27,6 +27,7 @@ Technical foundation for the Murimblock Minecraft mod.
 - Temporary Qi debug HUD.
 - Cultivation realms, stages and breakthrough checks.
 - Server-side Qi rewards for mob kills with anti-farm and boss first victories.
+- Server-authoritative Combat Mode foundation with configurable keybind and addon API.
 
 ## Developer documentation
 

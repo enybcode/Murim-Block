@@ -1,8 +1,10 @@
 package com.murimblock.api;
 
+import com.murimblock.api.combat.CombatApi;
 import com.murimblock.api.cultivation.CultivationApi;
 import com.murimblock.api.cultivation.CultivationSnapshot;
 import com.murimblock.api.qi.QiApi;
+import com.murimblock.combat.CombatService;
 import com.murimblock.cultivation.CultivationData;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.qi.QiService;
@@ -20,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 public final class MurimblockApi {
     private static final QiApi QI = new DefaultQiApi();
     private static final CultivationApi CULTIVATION = new DefaultCultivationApi();
+    private static final CombatApi COMBAT = new DefaultCombatApi();
 
     private MurimblockApi() {
     }
@@ -36,6 +39,13 @@ public final class MurimblockApi {
      */
     public static CultivationApi cultivation() {
         return CULTIVATION;
+    }
+
+    /**
+     * Returns the public Combat API for reading and changing the temporary combat mode.
+     */
+    public static CombatApi combat() {
+        return COMBAT;
     }
 
     private static final class DefaultQiApi implements QiApi {
@@ -116,6 +126,23 @@ public final class MurimblockApi {
                     data.stage().displayName(),
                     data.displayName()
             );
+        }
+    }
+
+    private static final class DefaultCombatApi implements CombatApi {
+        @Override
+        public boolean isInCombatMode(Player player) {
+            return CombatService.isInCombatMode(player);
+        }
+
+        @Override
+        public boolean setCombatMode(ServerPlayer player, boolean enabled) {
+            return CombatService.setCombatMode(player, enabled);
+        }
+
+        @Override
+        public boolean toggleCombatMode(ServerPlayer player) {
+            return CombatService.toggleCombatMode(player);
         }
     }
 }

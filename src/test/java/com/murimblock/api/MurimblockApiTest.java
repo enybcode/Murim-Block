@@ -1,6 +1,7 @@
 package com.murimblock.api;
 
 import com.murimblock.api.cultivation.CultivationApi;
+import com.murimblock.api.combat.CombatApi;
 import com.murimblock.api.qi.QiApi;
 import org.junit.jupiter.api.Test;
 
@@ -12,10 +13,13 @@ class MurimblockApiTest {
     void publicApiExposesStableSingletonFacades() {
         QiApi qi = MurimblockApi.qi();
         CultivationApi cultivation = MurimblockApi.cultivation();
+        CombatApi combat = MurimblockApi.combat();
 
         assertNotNull(qi);
         assertNotNull(cultivation);
+        assertNotNull(combat);
         assertSame(qi, MurimblockApi.qi());
         assertSame(cultivation, MurimblockApi.cultivation());
+        assertSame(combat, MurimblockApi.combat());
     }
 }

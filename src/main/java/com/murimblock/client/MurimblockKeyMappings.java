@@ -17,6 +17,12 @@ public final class MurimblockKeyMappings {
             InputConstants.KEY_R,
             CATEGORY
     );
+    public static final KeyMapping COMBAT_MODE = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".combat_mode",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_V,
+            CATEGORY
+    );
 
     private MurimblockKeyMappings() {
     }
@@ -24,5 +30,6 @@ public final class MurimblockKeyMappings {
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(CHARGE_QI);
+        event.register(COMBAT_MODE);
     }
 }

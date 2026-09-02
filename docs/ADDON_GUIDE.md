@@ -25,6 +25,7 @@ Use:
 com.murimblock.api
 com.murimblock.api.qi
 com.murimblock.api.cultivation
+com.murimblock.api.combat
 ```
 
 Avoid:
@@ -65,6 +66,20 @@ CultivationSnapshot cultivation = MurimblockApi.cultivation().getCultivation(pla
 
 if ("qi_guiding".equals(cultivation.realmId())) {
     // Addon-specific behavior.
+}
+```
+
+## Reading Combat Mode
+
+```java
+boolean inCombat = MurimblockApi.combat().isInCombatMode(player);
+```
+
+To change combat mode, run on the logical server:
+
+```java
+if (player instanceof ServerPlayer serverPlayer) {
+    MurimblockApi.combat().toggleCombatMode(serverPlayer);
 }
 ```
 

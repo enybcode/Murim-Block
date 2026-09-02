@@ -15,6 +15,7 @@ Use:
 ```java
 MurimblockApi.qi()
 MurimblockApi.cultivation()
+MurimblockApi.combat()
 ```
 
 Avoid depending on:
@@ -43,6 +44,21 @@ MurimblockApi.qi().refillQi(serverPlayer);
 
 Qi is clamped by the current Qi Max rules. Addons should not bypass this behavior by touching attachments directly.
 
+## Combat API
+
+```java
+boolean inCombat = MurimblockApi.combat().isInCombatMode(player);
+```
+
+Server-authoritative mutations require `ServerPlayer`:
+
+```java
+MurimblockApi.combat().setCombatMode(serverPlayer, true);
+MurimblockApi.combat().toggleCombatMode(serverPlayer);
+```
+
+Combat mode is temporary. It is reset after death and logout, and it is not persisted to disk.
+
 ## Cultivation API
 
 ```java
@@ -68,13 +84,20 @@ boolean advanced = MurimblockApi.cultivation().advanceAfterSuccessfulBreakthroug
 
 ## Public Events
 
-No custom Murimblock API events are currently exposed.
+Murimblock currently exposes one custom API event:
+
+```java
+CombatModeChangedEvent
+```
+
+It fires only when combat mode actually changes.
 
 Current extension guidance:
 
 - use NeoForge events in your addon for your own mechanics;
 - use `MurimblockApi.qi()` to read or mutate Qi;
 - use `MurimblockApi.cultivation()` to read cultivation state;
+- use `MurimblockApi.combat()` to read or toggle combat mode;
 - avoid tick-based polling unless your mechanic truly needs it.
 
 Potential future events:

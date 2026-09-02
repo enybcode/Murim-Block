@@ -1,4 +1,7 @@
 {
   "key.categories.murimblock": "Murimblock",
-  "key.murimblock.charge_qi": "Charge Qi"
+  "key.murimblock.charge_qi": "Charge Qi",
+  "key.murimblock.combat_mode": "Combat Mode",
+  "message.murimblock.combat_mode.on": "Combat Mode: ON",
+  "message.murimblock.combat_mode.off": "Combat Mode: OFF"
 }

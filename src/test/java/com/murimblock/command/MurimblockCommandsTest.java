@@ -29,6 +29,15 @@ class MurimblockCommandsTest {
         assertVisibleChildren("qi", dispatcher, Set.of("check", "set", "add", "remove", "refill", "reward"));
     }
 
+    @Test
+    void combatDevelopmentCommandsAreVisibleWithoutPermissions() {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+
+        CombatCommands.register(dispatcher);
+
+        assertVisibleChildren("combat", dispatcher, Set.of("check", "on", "off", "toggle"));
+    }
+
     private static void assertVisibleChildren(
             String commandName,
             CommandDispatcher<CommandSourceStack> dispatcher,
