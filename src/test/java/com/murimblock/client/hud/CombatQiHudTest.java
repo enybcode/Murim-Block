@@ -36,6 +36,13 @@ class CombatQiHudTest {
     }
 
     @Test
+    void ratioIsZeroForNonFiniteValues() {
+        assertEquals(0.0, CombatQiHud.computeQiRatio(Double.NaN, 100.0), 1.0e-9);
+        assertEquals(0.0, CombatQiHud.computeQiRatio(Double.POSITIVE_INFINITY, 100.0), 1.0e-9);
+        assertEquals(0.0, CombatQiHud.computeQiRatio(50.0, Double.POSITIVE_INFINITY), 1.0e-9);
+    }
+
+    @Test
     void ratioClampsNegativeQiToZero() {
         assertEquals(0.0, CombatQiHud.computeQiRatio(-25.0, 100.0), 1.0e-9);
     }
@@ -52,14 +59,11 @@ class CombatQiHudTest {
     }
 
     @Test
-    void qiBarColorComesFromQiParticleIdentity() {
-        assertEquals(0xFF268CFF, CombatQiHud.QI_COLOR);
-    }
-
-    @Test
-    void textUsesQiFormatting() {
-        assertEquals("Qi 52.5 / 100", CombatQiHud.buildText(52.5, 100.0));
-        assertEquals("Qi 100 / 100", CombatQiHud.buildText(100.0, 100.0));
+    void filledWidthNeverLeavesVanillaBounds() {
+        assertEquals(183, CombatQiHud.computeFilledWidth(999999.0, 100.0));
+        assertEquals(0, CombatQiHud.computeFilledWidth(-999999.0, 100.0));
+        assertEquals(0, CombatQiHud.computeFilledWidth(Double.NaN, 100.0));
+        assertEquals(0, CombatQiHud.computeFilledWidth(50.0, Double.NaN));
     }
 
     @Test

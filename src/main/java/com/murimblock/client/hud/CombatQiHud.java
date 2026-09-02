@@ -3,11 +3,8 @@ package com.murimblock.client.hud;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.murimblock.Murimblock;
 import com.murimblock.api.MurimblockApi;
-import com.murimblock.qi.QiFormat;
 import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeVisuals;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
@@ -22,9 +19,7 @@ public final class CombatQiHud {
     static final int BAR_WIDTH = 182;
     static final int BAR_HEIGHT = 5;
     static final int BAR_Y_OFFSET = 29;
-    static final int TEXT_Y_OFFSET = 12;
     static final int VANILLA_PROGRESS_SCALE = 183;
-    static final int QI_COLOR = colorFromQiParticle();
     private static final ResourceLocation EXPERIENCE_BAR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace(
             "hud/experience_bar_background"
     );
@@ -32,7 +27,6 @@ public final class CombatQiHud {
             Murimblock.MOD_ID,
             "hud/qi_bar_progress"
     );
-    private static final int TEXT_COLOR = QI_COLOR;
 
     private CombatQiHud() {
     }
@@ -65,10 +59,6 @@ public final class CombatQiHud {
         return (int) (computeQiRatio(qi, qiMax) * VANILLA_PROGRESS_SCALE);
     }
 
-    static String buildText(double qi, double qiMax) {
-        return "Qi " + QiFormat.format(qi) + " / " + QiFormat.format(qiMax);
-    }
-
     private static boolean shouldReplaceExperienceHud() {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
@@ -86,10 +76,6 @@ public final class CombatQiHud {
             return;
         }
 
-        if (player.getXpNeededForNextLevel() <= 0) {
-            return;
-        }
-
         double qi = QiService.getQi(player);
         double qiMax = QiService.getQiMax(player);
         int x = guiGraphics.guiWidth() / 2 - 91;
@@ -102,18 +88,5 @@ public final class CombatQiHud {
             guiGraphics.blitSprite(QI_BAR_PROGRESS_SPRITE, BAR_WIDTH, BAR_HEIGHT, 0, 0, x, y, filledWidth, BAR_HEIGHT);
         }
         RenderSystem.disableBlend();
-
-        Font font = minecraft.font;
-        String text = buildText(qi, qiMax);
-        int textX = (guiGraphics.guiWidth() - font.width(text)) / 2;
-        int textY = y - TEXT_Y_OFFSET;
-        guiGraphics.drawString(font, text, textX, textY, TEXT_COLOR, true);
-    }
-
-    private static int colorFromQiParticle() {
-        int red = Math.round(QiChargeVisuals.QI_PARTICLE_COLOR.x * 255.0F);
-        int green = Math.round(QiChargeVisuals.QI_PARTICLE_COLOR.y * 255.0F);
-        int blue = Math.round(QiChargeVisuals.QI_PARTICLE_COLOR.z * 255.0F);
-        return 0xFF000000 | red << 16 | green << 8 | blue;
     }
 }

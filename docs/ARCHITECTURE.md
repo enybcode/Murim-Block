@@ -40,10 +40,9 @@ Client-only classes remain in `com.murimblock.client`:
 - `QiChargeClientHandler`: key input and client movement input lock preview.
 - `QiChargeClientEffects`: first-person foreground particles.
 - `QiChargeFovHandler`: charge FOV transition.
-- `QiDebugOverlay`: temporary Qi HUD.
 - `MurimblockKeyMappings`: key registration.
 - `CombatModeClientHandler`: combat toggle key input.
-- `client.hud.CombatQiHud`: redraws the vanilla experience bar background with a blue Qi progress sprite while Combat Mode is active.
+- `client.hud.CombatQiHud`: redraws the vanilla experience bar background with a blue Qi progress sprite while Combat Mode is active, without numeric Qi text.
 
 Server code must not import `Minecraft`, `ClientLevel`, `GuiGraphics`, `Camera`, or `KeyMapping`.
 
@@ -111,7 +110,8 @@ Combat Mode currently activates one HUD replacement:
 - vanilla `experience_bar` and `experience_level` layers are cancelled while combat mode is active;
 - `CombatQiHud` redraws the vanilla experience bar background at the vanilla coordinates;
 - the progress sprite keeps the vanilla experience bar dimensions and shape, but is recolored blue and filled from `Qi / Qi Max`;
-- player XP values are not modified, and the vanilla XP level is only hidden visually.
+- no numeric Qi value is rendered in the HUD;
+- player XP values are not modified, and the vanilla XP level is only hidden visually while combat mode is active.
 
 Addon entry point:
 
