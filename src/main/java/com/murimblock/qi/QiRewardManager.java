@@ -19,6 +19,12 @@ import net.minecraft.world.entity.monster.MagmaCube;
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.item.Items;
 
+/**
+ * Internal server-side manager for mob kill Qi rewards.
+ *
+ * <p>This class is intentionally not part of the supported addon API yet. Future reward overrides
+ * should move toward NeoForge data maps or another datapack-friendly data source.</p>
+ */
 public final class QiRewardManager {
     private static final QiKillTracker KILL_TRACKER = new QiKillTracker();
     private static final boolean DEBUG_REWARD_MESSAGES = false;

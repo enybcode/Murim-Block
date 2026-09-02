@@ -5,6 +5,11 @@ import java.util.Optional;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
+/**
+ * Internal Cultivation implementation service used by Murimblock systems.
+ *
+ * <p>Addons should prefer {@code com.murimblock.api.MurimblockApi#cultivation()}.</p>
+ */
 public final class CultivationService {
     private CultivationService() {
     }

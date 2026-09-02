@@ -6,7 +6,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * Public API for reading Qi and for performing server-authoritative mutations.
+ * Internal Qi implementation service used by Murimblock systems.
+ *
+ * <p>Addons should prefer {@code com.murimblock.api.MurimblockApi#qi()} so they do not depend on
+ * attachments or other implementation details.</p>
  */
 public final class QiService {
     private QiService() {

@@ -13,8 +13,26 @@ Technical foundation for the Murimblock Minecraft mod.
 
 ```powershell
 .\gradlew.bat runClient
+.\gradlew.bat runServer
+.\gradlew.bat test
 .\gradlew.bat build
 ```
 
-No Murimblock gameplay systems are implemented at this stage.
+## Current systems
+
+- Qi and Qi Max player data.
+- Passive and active Qi regeneration.
+- Configurable keybind for charging Qi.
+- Qi charging movement lock, FOV and particle effects.
+- Temporary Qi debug HUD.
+- Cultivation realms, stages and breakthrough checks.
+- Server-side Qi rewards for mob kills with anti-farm and boss first victories.
+
+## Developer documentation
+
+- `docs/ARCHITECTURE.md`: project architecture and package responsibilities.
+- `docs/ADDON_API.md`: public Java API currently available to addons.
+- `docs/ADDON_GUIDE.md`: how addon developers should depend on Murimblock.
+- `docs/DATA_DRIVEN.md`: planned direction for datapacks, data maps and config.
+- `docs/QI_REWARDS.md`: current mob Qi reward balance table.
 
