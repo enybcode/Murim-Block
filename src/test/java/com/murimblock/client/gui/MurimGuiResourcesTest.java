@@ -40,6 +40,19 @@ class MurimGuiResourcesTest {
     }
 
     @Test
+    void integratedPagesHaveEnglishLabelsForAllNewFieldsAndProgressStates() throws IOException {
+        JsonObject language = json("lang/en_us.json");
+        for (String key : List.of("qi_reserve", "techniques.title", "techniques.library", "techniques.details",
+                "techniques.nothing_selected", "cultivation.current", "cultivation.stage", "cultivation.next_stage",
+                "cultivation.no_requirement", "cultivation.breakthrough", "cultivation.state.ready",
+                "cultivation.state.not_ready", "cultivation.state.complete", "infos.controls", "infos.charge_qi",
+                "infos.combat_mode", "infos.player_status", "infos.qi_max")) {
+            assertTrue(language.has("gui.murimblock." + key), key);
+            assertTrue(!language.get("gui.murimblock." + key).getAsString().isBlank(), key);
+        }
+    }
+
+    @Test
     void bitmapFontDefinitionUsesTheMinecraftCodecAndKeepsUnicodeFallback() throws IOException {
         JsonObject definition = json("font/manuscript.json");
         JsonObject bitmap = definition.getAsJsonArray("providers").get(1).getAsJsonObject();

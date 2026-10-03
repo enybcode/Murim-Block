@@ -31,6 +31,17 @@ class MurimProfileScreenTest {
     }
 
     @Test
+    void cultivationMeterUsesItsOwnWidthWithoutExceedingTheFrame() {
+        assertEquals(0, MurimProfileScreen.computeFilledWidth(0, 100, 82));
+        assertEquals(41, MurimProfileScreen.computeFilledWidth(50, 100, 82));
+        assertEquals(82, MurimProfileScreen.computeFilledWidth(200, 100, 82));
+        assertEquals(1, MurimProfileScreen.computeFilledWidth(1, 100, 82));
+        assertEquals(0, MurimProfileScreen.computeFilledWidth(50, 100, 0));
+        assertEquals(0, MurimProfileScreen.computeFilledWidth(50, 100, -1));
+        assertEquals(0, MurimProfileScreen.computeFilledWidth(Double.NaN, 100, 82));
+    }
+
+    @Test
     void allPagesArePackagedAtTheMinecraftMinimumGuiSize() throws IOException {
         for (String page : new String[]{"profile", "techniques", "cultivation", "infos"}) {
             BufferedImage image = texture("murim_" + page + "_v4");

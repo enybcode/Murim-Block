@@ -1,9 +1,9 @@
-# Proposition Des Onglets
+# Onglets Integres
 
-Cette demo presente les onglets en anglais avec la nouvelle police pixel.
-La police et les textes anglais sont integres dans le mod ; les dispositions
-des pages restent une proposition visuelle. Ouvrir `tab-layout-demo.html`
-depuis ce depot. Les interactions de gameplay sont inchangees.
+Les quatre dispositions sont integrees dans `MurimProfileScreen`, en anglais
+avec la nouvelle police pixel. Ouvrir `tab-layout-demo.html` depuis ce depot
+pour consulter leur apercu avec des valeurs illustratives. Les interactions
+de gameplay sont inchangees.
 
 ## Ce Qui Est Conserve
 
@@ -24,28 +24,36 @@ depuis ce depot. Les interactions de gameplay sont inchangees.
 Les valeurs et la silhouette de la demo sont illustratives. La police utilise
 les memes glyphes et avances que `murimblock:manuscript` dans le mod. Elle
 conserve de vraies minuscules, des pixels nets et un fallback Minecraft pour
-les noms de joueurs non ASCII. Les nouvelles dispositions doivent encore
-etre verifiees dans le moteur Minecraft avant integration complete.
+les noms de joueurs non ASCII. Le GUI Minecraft utilise les vraies donnees
+synchronisees du joueur et les touches configurees, pas les exemples de la demo.
 
-## Corrections A Integrer Apres Validation
+## Corrections Integrees
 
-1. Conditionner le rendu du joueur a `page == Page.PROFILE`.
-2. Donner a chaque page sa propre disposition, au lieu d'afficher les memes
+1. Le rendu du joueur est conditionne a `page.showsPlayer()`, vrai uniquement
+   pour `Page.PROFILE`.
+2. Chaque page a sa propre disposition, au lieu d'afficher les memes
    blocs de profil sur toutes les pages.
-3. Recomposer les boutons avec les sprites existants : icone de 11 pixels de
-   haut a y=175, texte a y=190. Garder au moins 4 pixels entre les deux.
-4. Definir des rectangles de texte avec des marges de 6 a 8 pixels. Exclure
-   explicitement les icones, bordures et illustrations de ces rectangles.
-5. Utiliser `font.split` pour les valeurs longues et une infobulle pour ce qui
-   ne tient toujours pas. Ne pas reduire globalement la taille de la police.
-6. Lire les valeurs synchronisees depuis `MurimblockApi` et les touches depuis
-   les `KeyMapping`. Ne pas ajouter de boutons de technique ou de percee qui
-   n'ont pas d'action disponible dans le projet.
-7. Tester les quatre onglets, noms longs, royaumes longs, textes anglais,
-   changements de taille GUI, fermeture et commandes existantes en jeu.
+3. Les boutons sont recomposes avec les sprites existants : icone de 11 pixels
+   de haut a y=175, texte a y=190, avec au moins 4 pixels entre les deux.
+4. `MurimProfileLayout` definit les rectangles de texte. Les tests excluent
+   explicitement les icones et illustrations de ces rectangles.
+5. `font.split` gere les lignes longues ; une ellipse et une infobulle montrent
+   ce qui ne tient toujours pas. Chaque champ est limite par un scissor.
+6. Les valeurs viennent de `MurimblockApi` et les touches des `KeyMapping`.
+   Aucun bouton de technique ou de percee sans action disponible n'est ajoute.
 
-La validation de cette demo n'est pas une validation du mod en jeu. La branche
-`main` reste inchangee jusqu'a une validation explicite de la version integree.
+## Verification Et Validation
+
+- Build local reussi et 107 tests sans echec : ressources, police, geometrie,
+  espaces reserves et remplissage des deux barres de Qi notamment.
+- Client lance depuis IntelliJ ; ouverture avec K et navigation souris dans
+  les quatre pages observes en jeu. Le personnage reste sur Profile uniquement.
+- Info affiche bien la touche de recharge configuree C, au lieu du R de la demo.
+- Le controle du PC a ete interrompu par l'utilisateur avant les essais manuels
+  de fermeture, clavier, redimensionnement et changements de valeurs via commandes.
+  Ces essais ne sont pas declares verifies.
+- Enzo a explicitement valide la version integree le 2026-10-03 et demande
+  sa publication GitHub. La promotion de `test` vers `main` suit les controles CI.
 
 ## Verification De La Demo
 
