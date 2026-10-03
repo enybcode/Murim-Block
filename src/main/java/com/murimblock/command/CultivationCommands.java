@@ -104,24 +104,24 @@ public final class CultivationCommands {
         double qiMax = QiService.getQiMax(target);
         boolean canAttempt = CultivationProgression.canAttemptBreakthrough(current, qiMax);
 
-        context.getSource().sendSuccess(() -> Component.literal("Cultivation : " + current.displayName()), false);
-        context.getSource().sendSuccess(() -> Component.literal("Qi Max : " + format(qiMax)), false);
+        context.getSource().sendSuccess(() -> Component.literal("Cultivation: " + current.displayName()), false);
+        context.getSource().sendSuccess(() -> Component.literal("Qi Max: " + format(qiMax)), false);
         context.getSource().sendSuccess(
-                () -> Component.literal("Prochain stade : " + next.map(CultivationData::displayName).orElse("Aucun")),
+                () -> Component.literal("Next stage: " + next.map(CultivationData::displayName).orElse("None")),
                 false
         );
         context.getSource().sendSuccess(
-                () -> Component.literal("Qi Max requis : " + required.map(CultivationCommands::format).orElse("Aucun")),
+                () -> Component.literal("Required Qi Max: " + required.map(CultivationCommands::format).orElse("None")),
                 false
         );
         context.getSource().sendSuccess(
-                () -> Component.literal("Breakthrough : " + (canAttempt ? "disponible" : "indisponible")),
+                () -> Component.literal("Breakthrough: " + (canAttempt ? "available" : "unavailable")),
                 false
         );
         context.getSource().sendSuccess(
-                () -> Component.literal("Type : " + CultivationProgression.getBreakthroughType(current)
+                () -> Component.literal("Type: " + CultivationProgression.getBreakthroughType(current)
                         .map(CultivationCommands::format)
-                        .orElse("Aucun")),
+                        .orElse("None")),
                 false
         );
         return 1;
@@ -135,7 +135,7 @@ public final class CultivationCommands {
     ) {
         CultivationService.setCultivation(target, realm, stage);
         context.getSource().sendSuccess(
-                () -> Component.literal("Cultivation definie : " + new CultivationData(realm, stage).displayName()),
+                () -> Component.literal("Cultivation set: " + new CultivationData(realm, stage).displayName()),
                 true
         );
         return 1;
@@ -145,16 +145,16 @@ public final class CultivationCommands {
         CultivationData current = CultivationService.getCultivation(target);
         Optional<CultivationData> next = CultivationProgression.getNext(current);
         if (next.isEmpty()) {
-            context.getSource().sendFailure(Component.literal("Breakthrough impossible. Dernier stade atteint."));
+            context.getSource().sendFailure(Component.literal("Cannot break through. Final stage reached."));
             return 0;
         }
 
         Optional<Double> required = CultivationProgression.getRequiredQiMaxForNext(current);
         double qiMax = QiService.getQiMax(target);
         if (!force && !CultivationProgression.canAttemptBreakthrough(current, qiMax)) {
-            context.getSource().sendFailure(Component.literal("Breakthrough impossible. Qi Max insuffisant."));
-            context.getSource().sendFailure(Component.literal("Qi Max : " + format(qiMax)
-                    + " / Requis : " + required.map(CultivationCommands::format).orElse("Aucun")));
+            context.getSource().sendFailure(Component.literal("Cannot break through. Not enough Qi Max."));
+            context.getSource().sendFailure(Component.literal("Qi Max: " + format(qiMax)
+                    + " / Required: " + required.map(CultivationCommands::format).orElse("None")));
             return 0;
         }
 
@@ -162,7 +162,7 @@ public final class CultivationCommands {
                 ? CultivationService.forceAdvance(target)
                 : CultivationService.advanceAfterSuccessfulBreakthrough(target);
         if (!advanced) {
-            context.getSource().sendFailure(Component.literal("Breakthrough impossible."));
+            context.getSource().sendFailure(Component.literal("Cannot break through."));
             return 0;
         }
 
@@ -176,7 +176,7 @@ public final class CultivationCommands {
     private static int reset(CommandContext<CommandSourceStack> context, ServerPlayer target) {
         CultivationService.resetCultivation(target);
         context.getSource().sendSuccess(
-                () -> Component.literal("Cultivation reinitialisee : " + CultivationData.initial().displayName()),
+                () -> Component.literal("Cultivation reset: " + CultivationData.initial().displayName()),
                 true
         );
         return 1;

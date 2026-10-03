@@ -1,7 +1,9 @@
 # Proposition Des Onglets
 
-Cette demo est une proposition visuelle. Elle ne modifie ni le rendu Minecraft
-ni les interactions du mod. Ouvrir `tab-layout-demo.html` depuis ce depot.
+Cette demo presente les onglets en anglais avec la nouvelle police pixel.
+La police et les textes anglais sont integres dans le mod ; les dispositions
+des pages restent une proposition visuelle. Ouvrir `tab-layout-demo.html`
+depuis ce depot. Les interactions de gameplay sont inchangees.
 
 ## Ce Qui Est Conserve
 
@@ -19,9 +21,11 @@ ni les interactions du mod. Ouvrir `tab-layout-demo.html` depuis ce depot.
 | Cultivation | Etat actuel, prochain stade, Qi Max requis et conditions de percee | Non |
 | Infos | Touches configurees et etat utile du joueur | Non |
 
-Les valeurs et la silhouette de la demo sont illustratives. La police bitmap
-de la demo est indicative : les largeurs devront etre reverifiees avec la
-vraie police Minecraft et les traductions au moment de l'integration.
+Les valeurs et la silhouette de la demo sont illustratives. La police utilise
+les memes glyphes et avances que `murimblock:manuscript` dans le mod. Elle
+conserve de vraies minuscules, des pixels nets et un fallback Minecraft pour
+les noms de joueurs non ASCII. Les nouvelles dispositions doivent encore
+etre verifiees dans le moteur Minecraft avant integration complete.
 
 ## Corrections A Integrer Apres Validation
 
@@ -37,7 +41,7 @@ vraie police Minecraft et les traductions au moment de l'integration.
 6. Lire les valeurs synchronisees depuis `MurimblockApi` et les touches depuis
    les `KeyMapping`. Ne pas ajouter de boutons de technique ou de percee qui
    n'ont pas d'action disponible dans le projet.
-7. Tester les quatre onglets, noms longs, royaumes longs, francais et anglais,
+7. Tester les quatre onglets, noms longs, royaumes longs, textes anglais,
    changements de taille GUI, fermeture et commandes existantes en jeu.
 
 La validation de cette demo n'est pas une validation du mod en jeu. La branche
@@ -50,3 +54,16 @@ Avec Node.js, Playwright et Chrome disponibles, executer
 les quatre pages, les limites des textes, la navigation souris et clavier,
 l'absence d'erreurs navigateur et le viewport mobile. Il produit les captures
 dans `build/gui-demo` puis ferme le navigateur et son serveur temporaire.
+
+Pour regenerer la police, installer `pngjs` dans l'environnement Node puis
+executer `node docs/gui/generate-manuscript-font.cjs`. La source editable est
+`manuscript-glyphs.json` ; le PNG Minecraft et `manuscript-font.js` sont generes.
+
+## Langue Du Mod
+
+`en_us.json` est la source de tous les libelles traduisibles. Le mod utilise
+le fallback anglais de Minecraft meme si une autre langue est selectionnee.
+Les messages de commande et statuts de cultivation sont egalement anglais.
+Le client de developpement utilise deja `lang:en_us` dans `run/options.txt`.
+Les champs historiques `frenchName` de l'API sont conserves pour compatibilite
+mais ne sont pas utilises pour afficher les interfaces du jeu.

@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
@@ -24,6 +25,8 @@ public final class MurimProfileScreen extends Screen {
     private static final int MUTED_INK = 0xFF62533F;
     private static final int GOLD = 0xFFE4C263;
     private static final ResourceLocation QI_FILL = texture("murim_qi_fill_v4");
+    private static final Style GUI_TEXT_STYLE = Style.EMPTY.withFont(
+            ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "manuscript"));
 
     private enum Page {
         PROFILE("profile", 5, 74),
@@ -183,22 +186,29 @@ public final class MurimProfileScreen extends Screen {
     }
 
     private void centered(GuiGraphics graphics, Component text, int centerX, int y, int color, int maxWidth, int mouseX, int mouseY) {
-        String fitted = fit(text.getString(), maxWidth);
+        Component fitted = fit(text.getString(), maxWidth);
         fitted(graphics, text, centerX - font.width(fitted) / 2, y, maxWidth, color, mouseX, mouseY);
     }
 
     private void fitted(GuiGraphics graphics, Component text, int x, int y, int maxWidth, int color, int mouseX, int mouseY) {
         String value = text.getString();
+        Component styled = Component.literal(value).withStyle(GUI_TEXT_STYLE);
         graphics.drawString(font, fit(value, maxWidth), left + x, top + y, color, false);
-        if (font.width(value) > maxWidth && mouseX >= left + x && mouseX < left + x + maxWidth
+        if (font.width(styled) > maxWidth && mouseX >= left + x && mouseX < left + x + maxWidth
                 && mouseY >= top + y && mouseY < top + y + font.lineHeight) {
-            hoveredText = text;
+            hoveredText = styled;
         }
     }
 
-    private String fit(String value, int maxWidth) {
-        return font.width(value) <= maxWidth ? value
-                : font.plainSubstrByWidth(value, Math.max(0, maxWidth - font.width("..."))) + "...";
+    private Component fit(String value, int maxWidth) {
+        Component styled = Component.literal(value).withStyle(GUI_TEXT_STYLE);
+        if (font.width(styled) <= maxWidth) {
+            return styled;
+        }
+        int ellipsisWidth = font.width(Component.literal("...").withStyle(GUI_TEXT_STYLE));
+        String shortened = font.getSplitter().plainHeadByWidth(value,
+                Math.max(0, maxWidth - ellipsisWidth), GUI_TEXT_STYLE);
+        return Component.literal(shortened + "...").withStyle(GUI_TEXT_STYLE);
     }
 
     private static final class ArtButton extends Button {

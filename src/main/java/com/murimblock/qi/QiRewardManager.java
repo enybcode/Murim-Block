@@ -143,8 +143,8 @@ public final class QiRewardManager {
         int count = KILL_TRACKER.recentKillCount(player.getUUID(), entityTypeId, gameTime);
         int nextCount = count + 1;
         double nextMultiplier = Math.clamp(KILL_TRACKER.repeatMultiplier(nextCount), 0.5, 1.0);
-        return "Kills recents " + entityTypeId + " : " + count
-                + " | prochaine recompense anti-farm : " + Math.round(nextMultiplier * 100.0) + " %";
+        return "Recent kills for " + entityTypeId + ": " + count
+                + " | Next anti-farm reward: " + Math.round(nextMultiplier * 100.0) + "%";
     }
 
     public static void resetDevelopmentData(ServerPlayer player) {

@@ -119,8 +119,8 @@ public final class MurimblockCommands {
     private static int check(CommandContext<CommandSourceStack> context, ServerPlayer target, boolean namedTarget) {
         String value = QiFormat.format(QiService.getQiMax(target));
         Component message = namedTarget
-                ? Component.literal("Qi Max de " + target.getGameProfile().getName() + " : " + value)
-                : Component.literal("Qi Max : " + value);
+                ? Component.literal("Qi Max for " + target.getGameProfile().getName() + ": " + value)
+                : Component.literal("Qi Max: " + value);
         context.getSource().sendSuccess(() -> message, false);
         return 1;
     }
@@ -174,15 +174,15 @@ public final class MurimblockCommands {
 
     private static int resetRewardData(CommandContext<CommandSourceStack> context, ServerPlayer player) {
         QiRewardManager.resetDevelopmentData(player);
-        context.getSource().sendSuccess(() -> Component.literal("Donnees de recompense Qi reinitialisees."), true);
+        context.getSource().sendSuccess(() -> Component.literal("Qi reward data reset."), true);
         return 1;
     }
 
     private static void sendQiMaxChanged(CommandSourceStack source, ServerPlayer target, boolean namedTarget) {
         String value = QiFormat.format(QiService.getQiMax(target));
         Component message = namedTarget
-                ? Component.literal("Qi Max de " + target.getGameProfile().getName() + " = " + value
-                        + " (Qi : " + QiFormat.format(QiService.getQi(target)) + ")")
+                ? Component.literal("Qi Max for " + target.getGameProfile().getName() + " = " + value
+                        + " (Qi: " + QiFormat.format(QiService.getQi(target)) + ")")
                 : Component.literal("Qi Max = " + value);
         source.sendSuccess(() -> message, true);
     }
@@ -190,8 +190,8 @@ public final class MurimblockCommands {
     private static void sendQiState(CommandSourceStack source, ServerPlayer target, boolean namedTarget) {
         String value = QiFormat.format(QiService.getQi(target)) + " / " + QiFormat.format(QiService.getQiMax(target));
         Component message = namedTarget
-                ? Component.literal("Qi de " + target.getGameProfile().getName() + " : " + value)
-                : Component.literal("Qi : " + value);
+                ? Component.literal("Qi for " + target.getGameProfile().getName() + ": " + value)
+                : Component.literal("Qi: " + value);
         source.sendSuccess(
                 () -> message,
                 true

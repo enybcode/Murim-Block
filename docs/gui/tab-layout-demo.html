@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Murimblock - Demo des onglets</title>
+  <title>Murimblock - Tab Layout Preview</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: #202322; color: #f4f5f2; font: 15px/1.5 system-ui, sans-serif; }
@@ -35,25 +35,26 @@
     <header>
       <div>
         <h1>Murimblock</h1>
-        <p>Proposition des quatre onglets. Aucun changement dans le mod.</p>
+        <p>English UI and new pixel font. Four-tab layout proposal.</p>
       </div>
-      <button id="reset" type="button">Vue des 4 onglets</button>
+      <button id="reset" type="button">Show all four tabs</button>
     </header>
-    <section class="gallery" aria-label="Demo des quatre onglets">
-      <figure><figcaption>Profil</figcaption><canvas width="320" height="214" data-page="0" role="img" aria-label="Profil : apercu joueur uniquement ici"></canvas></figure>
-      <figure><figcaption>Techniques</figcaption><canvas width="320" height="214" data-page="1" role="img" aria-label="Techniques : repertoire et details, sans personnage"></canvas></figure>
-      <figure><figcaption>Cultivation</figcaption><canvas width="320" height="214" data-page="2" role="img" aria-label="Cultivation : progression et conditions, sans personnage"></canvas></figure>
-      <figure><figcaption>Infos</figcaption><canvas width="320" height="214" data-page="3" role="img" aria-label="Infos : commandes et etat du joueur, sans personnage"></canvas></figure>
+    <section class="gallery" aria-label="Four-tab preview">
+      <figure><figcaption>Profile</figcaption><canvas width="320" height="214" data-page="0" role="img" aria-label="Profile: player preview only here"></canvas></figure>
+      <figure><figcaption>Techniques</figcaption><canvas width="320" height="214" data-page="1" role="img" aria-label="Techniques: library and details, no player model"></canvas></figure>
+      <figure><figcaption>Cultivation</figcaption><canvas width="320" height="214" data-page="2" role="img" aria-label="Cultivation: progression and requirements, no player model"></canvas></figure>
+      <figure><figcaption>Info</figcaption><canvas width="320" height="214" data-page="3" role="img" aria-label="Info: controls and player status, no player model"></canvas></figure>
     </section>
-    <p class="note">Valeurs d'exemple et silhouette illustrative. Le vrai modele Minecraft reste reserve au Profil. Les autres onglets n'en affichent aucun.</p>
+    <p class="note">Example values and illustrative player silhouette. The new font is packaged in the mod; the page layouts shown here remain a proposal.</p>
     <p id="error" role="alert" hidden></p>
   </main>
+  <script src="manuscript-font.js"></script>
   <script>
     'use strict';
 
     const ROOT = '../../src/main/resources/assets/murimblock/textures/gui/';
     const PAGES = ['profile', 'techniques', 'cultivation', 'infos'];
-    const LABELS = ['Profil', 'Techniques', 'Cultivation', 'Infos'];
+    const LABELS = ['Profile', 'Techniques', 'Cultivation', 'Info'];
     const TABS = [{ x: 5, width: 74 }, { x: 81, width: 76 }, { x: 160, width: 75 }, { x: 240, width: 74 }];
     const ICONS = [
       { x: 12, y: 176, width: 18, height: 23 },
@@ -65,59 +66,15 @@
     const MUTED = '#62533f';
     const GOLD = '#e4c263';
 
-    // A compact bitmap font makes every preview pixel crisp without browser font smoothing.
-    const GLYPHS = {
-      A: ['01110','10001','10001','11111','10001','10001','10001'],
-      B: ['11110','10001','10001','11110','10001','10001','11110'],
-      C: ['01111','10000','10000','10000','10000','10000','01111'],
-      D: ['11110','10001','10001','10001','10001','10001','11110'],
-      E: ['11111','10000','10000','11110','10000','10000','11111'],
-      F: ['11111','10000','10000','11110','10000','10000','10000'],
-      G: ['01111','10000','10000','10111','10001','10001','01111'],
-      H: ['10001','10001','10001','11111','10001','10001','10001'],
-      I: ['111','010','010','010','010','010','111'],
-      J: ['00111','00010','00010','00010','00010','10010','01100'],
-      K: ['10001','10010','10100','11000','10100','10010','10001'],
-      L: ['10000','10000','10000','10000','10000','10000','11111'],
-      M: ['10001','11011','10101','10101','10001','10001','10001'],
-      N: ['10001','11001','10101','10011','10001','10001','10001'],
-      O: ['01110','10001','10001','10001','10001','10001','01110'],
-      P: ['11110','10001','10001','11110','10000','10000','10000'],
-      Q: ['01110','10001','10001','10001','10101','10010','01101'],
-      R: ['11110','10001','10001','11110','10100','10010','10001'],
-      S: ['01111','10000','10000','01110','00001','00001','11110'],
-      T: ['11111','00100','00100','00100','00100','00100','00100'],
-      U: ['10001','10001','10001','10001','10001','10001','01110'],
-      V: ['10001','10001','10001','10001','10001','01010','00100'],
-      W: ['10001','10001','10001','10101','10101','10101','01010'],
-      X: ['10001','10001','01010','00100','01010','10001','10001'],
-      Y: ['10001','10001','01010','00100','00100','00100','00100'],
-      Z: ['11111','00001','00010','00100','01000','10000','11111'],
-      '0': ['01110','10001','10011','10101','11001','10001','01110'],
-      '1': ['010','110','010','010','010','010','111'],
-      '2': ['01110','10001','00001','00010','00100','01000','11111'],
-      '3': ['11110','00001','00001','01110','00001','00001','11110'],
-      '4': ['00010','00110','01010','10010','11111','00010','00010'],
-      '5': ['11111','10000','10000','11110','00001','00001','11110'],
-      '6': ['01110','10000','10000','11110','10001','10001','01110'],
-      '7': ['11111','00001','00010','00100','01000','01000','01000'],
-      '8': ['01110','10001','10001','01110','10001','10001','01110'],
-      '9': ['01110','10001','10001','01111','00001','00001','01110'],
-      ':': ['0','1','0','0','1','0','0'],
-      '.': ['0','0','0','0','0','0','1'],
-      '/': ['00001','00001','00010','00100','01000','10000','10000'],
-      '-': ['000','000','000','111','000','000','000'],
-      '?': ['01110','10001','00001','00010','00100','00000','00100']
-    };
-
-    const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    const GLYPHS = globalThis.murimManuscriptGlyphs;
+    const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const advance = character => character === ' ' ? 4 : (GLYPHS[character] || GLYPHS['?'])[0].length + 1;
-    const textWidth = value => Math.max(0, [...normalize(value)].reduce((sum, character) => sum + advance(character), 0) - 1);
+    const textWidth = value => [...normalize(value)].reduce((sum, character) => sum + advance(character), 0);
     const textBounds = [];
 
     function text(ctx, value, x, y, color = INK, maxWidth = 300) {
-      if (textWidth(value) > maxWidth) throw new Error(`Texte trop large : ${value} (${textWidth(value)} > ${maxWidth})`);
-      textBounds.push({ value, x, y, width: textWidth(value), height: 7 });
+      if (textWidth(value) > maxWidth) throw new Error(`Text too wide: ${value} (${textWidth(value)} > ${maxWidth})`);
+      textBounds.push({ value, x, y, width: textWidth(value), height: 8 });
       ctx.fillStyle = color;
       for (const character of normalize(value)) {
         if (character !== ' ') {
@@ -206,67 +163,67 @@
       avatar(ctx);
       ctx.drawImage(image, 169, 32, 9, 6, 139, 32, 123, 26);
       text(ctx, 'Dev', 140, 34, INK, 120);
-      text(ctx, 'Perception du Qi', 140, 46, INK, 120);
-      text(ctx, 'Stade', 165, 84, INK, 49);
-      text(ctx, 'Debut', 165, 98, INK, 49);
+      text(ctx, 'Qi Sensing', 140, 46, INK, 120);
+      text(ctx, 'Stage', 165, 84, INK, 49);
+      text(ctx, 'Early', 165, 98, INK, 49);
       centered(ctx, 'Qi', 269, 84, INK, 70);
       ctx.drawImage(fill, 0, 0, 50, 5, 239, 97, 50, 5);
       centered(ctx, '102.74 / 120', 269, 105, INK, 72);
-      text(ctx, 'Combat : inactif', 139, 125, INK, 132);
-      text(ctx, 'Humain eveille', 139, 141, MUTED, 132);
+      text(ctx, 'Combat: inactive', 139, 125, INK, 132);
+      text(ctx, 'Awakened Human', 139, 141, MUTED, 132);
     }
 
     function techniques(ctx, image) {
       paper(ctx, image, 9, 28, 302, 26);
-      text(ctx, 'Bibliotheque de techniques', 17, 37, INK, 286);
+      text(ctx, 'Technique Library', 17, 37, INK, 286);
       paper(ctx, image, 9, 59, 112, 103);
-      text(ctx, 'Repertoire', 17, 68, INK, 96);
+      text(ctx, 'Library', 17, 68, INK, 96);
       divider(ctx, 17, 81, 96);
-      text(ctx, 'Aucune', 17, 94, MUTED, 96);
-      text(ctx, 'technique', 17, 105, MUTED, 96);
+      text(ctx, 'No techniques', 17, 94, MUTED, 96);
+      text(ctx, 'available', 17, 105, MUTED, 96);
       paper(ctx, image, 126, 59, 185, 103);
       text(ctx, 'Details', 134, 68, INK, 169);
       divider(ctx, 134, 81, 169);
       icon(ctx, image, 1, 218, 91, 22);
-      centered(ctx, 'Aucune selection', 218, 129, MUTED, 169);
+      centered(ctx, 'Nothing selected', 218, 129, MUTED, 169);
     }
 
     function cultivation(ctx, image, fill) {
       paper(ctx, image, 9, 28, 179, 134);
-      text(ctx, 'Royaume actuel', 17, 37, MUTED, 163);
-      text(ctx, 'Perception du Qi', 17, 50, INK, 163);
-      text(ctx, 'Stade : debut', 17, 63, INK, 163);
+      text(ctx, 'Current Realm', 17, 37, MUTED, 163);
+      text(ctx, 'Qi Sensing', 17, 50, INK, 163);
+      text(ctx, 'Stage: Early', 17, 63, INK, 163);
       divider(ctx, 17, 79, 163);
-      text(ctx, 'Prochain stade', 17, 88, MUTED, 163);
-      text(ctx, 'Perception du Qi', 17, 101, INK, 163);
-      text(ctx, 'Milieu', 17, 114, INK, 163);
-      text(ctx, 'Qi Max requis : 240', 17, 143, INK, 163);
+      text(ctx, 'Next Stage', 17, 88, MUTED, 163);
+      text(ctx, 'Qi Sensing', 17, 101, INK, 163);
+      text(ctx, 'Middle', 17, 114, INK, 163);
+      text(ctx, 'Required Qi Max: 240', 17, 143, INK, 163);
       paper(ctx, image, 194, 28, 117, 65);
-      centered(ctx, 'Reserve de Qi', 252, 38, INK, 101);
+      centered(ctx, 'Qi Reserve', 252, 38, INK, 101);
       qi(ctx, image, fill, 205, 53, 94);
       centered(ctx, '102.74 / 120', 252, 73, INK, 101);
       paper(ctx, image, 194, 98, 117, 64);
-      centered(ctx, 'Percee', 252, 108, INK, 101);
-      centered(ctx, 'Qi Max', 252, 128, MUTED, 101);
-      centered(ctx, 'insuffisant', 252, 140, MUTED, 101);
+      centered(ctx, 'Breakthrough', 252, 108, INK, 101);
+      centered(ctx, 'More Qi Max', 252, 128, MUTED, 101);
+      centered(ctx, 'needed', 252, 140, MUTED, 101);
     }
 
     function infos(ctx, image) {
       paper(ctx, image, 9, 28, 176, 134);
-      text(ctx, 'Commandes', 17, 37, INK, 160);
+      text(ctx, 'Controls', 17, 37, INK, 160);
       divider(ctx, 17, 51, 160);
-      for (const [label, key, y] of [['Profil', 'K', 69], ['Charger le Qi', 'R', 96], ['Mode combat', 'V', 123]]) {
+      for (const [label, key, y] of [['Profile', 'K', 69], ['Charge Qi', 'R', 96], ['Combat Mode', 'V', 123]]) {
         text(ctx, label, 17, y, INK, 126);
         paper(ctx, image, 150, y - 5, 25, 18);
         centered(ctx, key, 162, y, INK, 17);
       }
       paper(ctx, image, 191, 28, 120, 134);
-      text(ctx, 'Etat du joueur', 199, 37, INK, 104);
+      text(ctx, 'Player Status', 199, 37, INK, 104);
       divider(ctx, 199, 51, 104);
-      text(ctx, 'Humain eveille', 199, 69, MUTED, 104);
-      text(ctx, 'Combat :', 199, 95, INK, 104);
-      text(ctx, 'inactif', 199, 107, MUTED, 104);
-      text(ctx, 'Qi Max : 120', 199, 135, INK, 104);
+      text(ctx, 'Awakened Human', 199, 69, MUTED, 104);
+      text(ctx, 'Combat:', 199, 95, INK, 104);
+      text(ctx, 'inactive', 199, 107, MUTED, 104);
+      text(ctx, 'Qi Max: 120', 199, 135, INK, 104);
     }
 
     async function load(name) {
@@ -283,7 +240,7 @@
         function render(canvas, page) {
           canvas.dataset.page = String(page);
           canvas.closest('figure').querySelector('figcaption').textContent = LABELS[page];
-          canvas.setAttribute('aria-label', LABELS[page] + (page === 0 ? ' : joueur uniquement ici' : ' : sans personnage'));
+          canvas.setAttribute('aria-label', LABELS[page] + (page === 0 ? ': player preview only here' : ': no player model'));
           canvas.parentElement.querySelectorAll('.tab-hit').forEach((button, index) => {
             button.setAttribute('aria-pressed', String(index === page));
           });
@@ -324,7 +281,7 @@
       }).catch(error => {
         const message = document.getElementById('error');
         message.hidden = false;
-        message.textContent = 'La demo ne peut pas etre affichee : ' + error.message;
+        message.textContent = 'The preview could not load: ' + error.message;
         window.demo = { ready: false, error: error.message };
       });
   </script>

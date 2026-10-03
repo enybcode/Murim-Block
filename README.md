@@ -28,6 +28,13 @@ Technical foundation for the Murimblock Minecraft mod.
 - Cultivation realms, stages and breakthrough checks.
 - Server-side Qi rewards for mob kills with anti-farm and boss first victories.
 - Server-authoritative Combat Mode foundation with configurable keybind and addon API.
+- English in-game text and a dedicated bitmap font for the Murim profile GUI.
+
+## GUI Preview
+
+`docs/gui/tab-layout-demo.html` previews the four proposed tab layouts in English.
+It shares the new manuscript font with the mod. The layouts themselves are still
+awaiting validation; the preview uses example values and an illustrative player.
 
 ## Developer documentation
 
