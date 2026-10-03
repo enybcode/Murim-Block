@@ -1,0 +1,20 @@
+{
+  "providers": [
+    { "type": "space", "advances": { " ": 4 } },
+    {
+      "type": "bitmap",
+      "file": "murimblock:font/manuscript.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\u0000!\"#$%&'()*+,-./",
+        "0123456789:;<=>?",
+        "@ABCDEFGHIJKLMNO",
+        "PQRSTUVWXYZ[\\]^_",
+        "`abcdefghijklmno",
+        "pqrstuvwxyz{|}~\u0000"
+      ]
+    },
+    { "type": "reference", "id": "minecraft:default" }
+  ]
+}

@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Murimblock - Tab Layout Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #202322; color: #f4f5f2; font: 15px/1.5 system-ui, sans-serif; }
+    main { max-width: 1344px; padding: 20px; margin: auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+    h1 { font-size: 22px; margin: 0; }
+    header p { margin: 2px 0 0; color: #bfc8c2; }
+    button { background: #373d39; color: inherit; border: 1px solid #6e7e74; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    button:focus-visible { outline: 2px solid #ebcc70; outline-offset: 3px; }
+    .gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; }
+    figure { margin: 0; min-width: 0; }
+    figcaption { margin-bottom: 5px; font-size: 16px; }
+    .preview { position: relative; }
+    canvas { display: block; width: 100%; aspect-ratio: 320 / 214; image-rendering: pixelated; }
+    .tab-hit { position: absolute; top: 79.9065%; height: 14.486%; padding: 0; border: 0; border-radius: 0; background: transparent; }
+    .tab-hit:focus-visible { outline: 2px solid #fff8bd; outline-offset: -4px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .note { color: #bfc8c2; margin: 16px 0 0; }
+    #error { color: #ffb7b7; }
+    @media (max-width: 720px) {
+      main { padding: 12px; }
+      header { align-items: start; flex-wrap: wrap; }
+      .gallery { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Murimblock</h1>
+        <p>English UI and manuscript pixel font. Integrated four-tab layout preview.</p>
+      </div>
+      <button id="reset" type="button">Show all four tabs</button>
+    </header>
+    <section class="gallery" aria-label="Four-tab preview">
+      <figure><figcaption>Profile</figcaption><canvas width="320" height="214" data-page="0" role="img" aria-label="Profile: player preview only here"></canvas></figure>
+      <figure><figcaption>Techniques</figcaption><canvas width="320" height="214" data-page="1" role="img" aria-label="Techniques: library and details, no player model"></canvas></figure>
+      <figure><figcaption>Cultivation</figcaption><canvas width="320" height="214" data-page="2" role="img" aria-label="Cultivation: progression and requirements, no player model"></canvas></figure>
+      <figure><figcaption>Info</figcaption><canvas width="320" height="214" data-page="3" role="img" aria-label="Info: controls and player status, no player model"></canvas></figure>
+    </section>
+    <p class="note">Example values and illustrative player silhouette. The Minecraft GUI uses live player data and configured keybindings.</p>
+    <p id="error" role="alert" hidden></p>
+  </main>
+  <script src="manuscript-font.js"></script>
+  <script>
+    'use strict';
+
+    const ROOT = '../../src/main/resources/assets/murimblock/textures/gui/';
+    const PAGES = ['profile', 'techniques', 'cultivation', 'infos'];
+    const LABELS = ['Profile', 'Techniques', 'Cultivation', 'Info'];
+    const TABS = [{ x: 5, width: 74 }, { x: 81, width: 76 }, { x: 160, width: 75 }, { x: 240, width: 74 }];
+    const ICONS = [
+      { x: 12, y: 176, width: 18, height: 23 },
+      { x: 90, y: 177, width: 17, height: 21 },
+      { x: 169, y: 177, width: 19, height: 20 },
+      { x: 249, y: 176, width: 13, height: 23 }
+    ];
+    const INK = '#2a1f12';
+    const MUTED = '#62533f';
+    const GOLD = '#e4c263';
+
+    const GLYPHS = globalThis.murimManuscriptGlyphs;
+    const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const advance = character => character === ' ' ? 4 : (GLYPHS[character] || GLYPHS['?'])[0].length + 1;
+    const textWidth = value => [...normalize(value)].reduce((sum, character) => sum + advance(character), 0);
+    const textBounds = [];
+
+    function text(ctx, value, x, y, color = INK, maxWidth = 300) {
+      if (textWidth(value) > maxWidth) throw new Error(`Text too wide: ${value} (${textWidth(value)} > ${maxWidth})`);
+      textBounds.push({ value, x, y, width: textWidth(value), height: 8 });
+      ctx.fillStyle = color;
+      for (const character of normalize(value)) {
+        if (character !== ' ') {
+          const rows = GLYPHS[character] || GLYPHS['?'];
+          rows.forEach((row, dy) => [...row].forEach((pixel, dx) => {
+            if (pixel === '1') ctx.fillRect(x + dx, y + dy, 1, 1);
+          }));
+        }
+        x += advance(character);
+      }
+    }
+
+    function centered(ctx, value, cx, y, color = INK, maxWidth = 300) {
+      text(ctx, value, Math.round(cx - textWidth(value) / 2), y, color, maxWidth);
+    }
+
+    function divider(ctx, x, y, width) {
+      ctx.fillStyle = '#9e895d';
+      ctx.fillRect(x, y, width, 1);
+      ctx.fillRect(Math.round(x + width / 2), y - 1, 3, 3);
+    }
+
+    function nineSlice(ctx, image, source, target, border = 4) {
+      const sx = [source.x, source.x + border, source.x + source.width - border];
+      const sy = [source.y, source.y + border, source.y + source.height - border];
+      const sw = [border, source.width - border * 2, border];
+      const sh = [border, source.height - border * 2, border];
+      const dx = [target.x, target.x + border, target.x + target.width - border];
+      const dy = [target.y, target.y + border, target.y + target.height - border];
+      const dw = [border, target.width - border * 2, border];
+      const dh = [border, target.height - border * 2, border];
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          if (row === 1 && col === 1) continue;
+          ctx.drawImage(image, sx[col], sy[row], sw[col], sh[row], dx[col], dy[row], dw[col], dh[row]);
+        }
+      }
+    }
+
+    function paper(ctx, image, x, y, width, height) {
+      ctx.drawImage(image, 169, 32, 9, 6, x, y, width, height);
+      nineSlice(ctx, image, { x: 131, y: 28, width: 176, height: 48 }, { x, y, width, height });
+    }
+
+    function icon(ctx, image, index, cx, y, height) {
+      const source = ICONS[index];
+      const width = Math.round(source.width * height / source.height);
+      ctx.drawImage(image, source.x, source.y, source.width, source.height, Math.round(cx - width / 2), y, width, height);
+    }
+
+    function tabs(ctx, images, page) {
+      TABS.forEach((tab, index) => {
+        const active = page === index;
+        const image = images[page];
+        ctx.fillStyle = active ? '#e8c879' : '#ecdfc4';
+        ctx.fillRect(tab.x, 171, tab.width, 31);
+        nineSlice(ctx, image, { x: tab.x, y: 171, width: tab.width, height: 31 },
+          { x: tab.x, y: 171, width: tab.width, height: 31 });
+        icon(ctx, images[0], index, tab.x + tab.width / 2, 175, 11);
+        centered(ctx, LABELS[index], tab.x + tab.width / 2, 190, INK, tab.width - 8);
+      });
+    }
+
+    function avatar(ctx) {
+      const blocks = [
+        [56, 57, 27, 25, '#695478'], [59, 64, 21, 18, '#ba8d60'],
+        [56, 56, 27, 8, '#766184'], [56, 61, 7, 16, '#766184'],
+        [64, 71, 3, 3, '#33292b'], [75, 71, 3, 3, '#33292b'],
+        [61, 81, 18, 8, '#28262a'], [52, 88, 36, 30, '#8ebdb7'],
+        [40, 88, 11, 36, '#7eaaa5'], [89, 88, 11, 36, '#9cc9be'],
+        [40, 123, 11, 9, '#ba8d60'], [89, 123, 11, 9, '#ba8d60'],
+        [52, 118, 36, 5, '#5d463c'], [52, 123, 16, 26, '#483748'],
+        [72, 123, 16, 26, '#483748'], [52, 149, 16, 6, '#25272a'],
+        [72, 149, 16, 6, '#25272a'], [60, 118, 5, 5, '#d3ae4b']
+      ];
+      for (const [x, y, w, h, color] of blocks) { ctx.fillStyle = color; ctx.fillRect(x, y, w, h); }
+    }
+
+    function qi(ctx, image, fill, x, y, width) {
+      nineSlice(ctx, image, { x: 233, y: 95, width: 74, height: 10 }, { x, y, width, height: 10 }, 3);
+      const filled = Math.round((width - 12) * 102.74 / 120);
+      ctx.drawImage(fill, 0, 0, 59, 5, x + 6, y + 2, filled, 5);
+    }
+
+    function profile(ctx, image, fill) {
+      avatar(ctx);
+      ctx.drawImage(image, 169, 32, 9, 6, 139, 32, 123, 26);
+      text(ctx, 'Dev', 140, 34, INK, 120);
+      text(ctx, 'Qi Sensing', 140, 46, INK, 120);
+      text(ctx, 'Stage', 165, 84, INK, 49);
+      text(ctx, 'Early', 165, 98, INK, 49);
+      centered(ctx, 'Qi', 269, 84, INK, 70);
+      ctx.drawImage(fill, 0, 0, 50, 5, 239, 97, 50, 5);
+      centered(ctx, '102.74 / 120', 269, 105, INK, 72);
+      text(ctx, 'Combat: inactive', 139, 125, INK, 132);
+      text(ctx, 'Awakened Human', 139, 141, MUTED, 132);
+    }
+
+    function techniques(ctx, image) {
+      paper(ctx, image, 9, 28, 302, 26);
+      text(ctx, 'Technique Library', 17, 37, INK, 286);
+      paper(ctx, image, 9, 59, 112, 103);
+      text(ctx, 'Library', 17, 68, INK, 96);
+      divider(ctx, 17, 81, 96);
+      text(ctx, 'No techniques', 17, 94, MUTED, 96);
+      text(ctx, 'available', 17, 105, MUTED, 96);
+      paper(ctx, image, 126, 59, 185, 103);
+      text(ctx, 'Details', 134, 68, INK, 169);
+      divider(ctx, 134, 81, 169);
+      icon(ctx, image, 1, 218, 91, 22);
+      centered(ctx, 'Nothing selected', 218, 129, MUTED, 169);
+    }
+
+    function cultivation(ctx, image, fill) {
+      paper(ctx, image, 9, 28, 179, 134);
+      text(ctx, 'Current Realm', 17, 37, MUTED, 163);
+      text(ctx, 'Qi Sensing', 17, 50, INK, 163);
+      text(ctx, 'Stage: Early', 17, 63, INK, 163);
+      divider(ctx, 17, 79, 163);
+      text(ctx, 'Next Stage', 17, 88, MUTED, 163);
+      text(ctx, 'Qi Sensing', 17, 101, INK, 163);
+      text(ctx, 'Middle', 17, 114, INK, 163);
+      text(ctx, 'Required Qi Max: 240', 17, 143, INK, 163);
+      paper(ctx, image, 194, 28, 117, 65);
+      centered(ctx, 'Qi Reserve', 252, 38, INK, 101);
+      qi(ctx, image, fill, 205, 53, 94);
+      centered(ctx, '102.74 / 120', 252, 73, INK, 101);
+      paper(ctx, image, 194, 98, 117, 64);
+      centered(ctx, 'Breakthrough', 252, 108, INK, 101);
+      centered(ctx, 'More Qi Max', 252, 128, MUTED, 101);
+      centered(ctx, 'needed', 252, 140, MUTED, 101);
+    }
+
+    function infos(ctx, image) {
+      paper(ctx, image, 9, 28, 176, 134);
+      text(ctx, 'Controls', 17, 37, INK, 160);
+      divider(ctx, 17, 51, 160);
+      for (const [label, key, y] of [['Profile', 'K', 69], ['Charge Qi', 'R', 96], ['Combat Mode', 'V', 123]]) {
+        text(ctx, label, 17, y, INK, 126);
+        paper(ctx, image, 150, y - 5, 25, 18);
+        centered(ctx, key, 162, y, INK, 17);
+      }
+      paper(ctx, image, 191, 28, 120, 134);
+      text(ctx, 'Player Status', 199, 37, INK, 104);
+      divider(ctx, 199, 51, 104);
+      text(ctx, 'Awakened Human', 199, 69, MUTED, 104);
+      text(ctx, 'Combat:', 199, 95, INK, 104);
+      text(ctx, 'inactive', 199, 107, MUTED, 104);
+      text(ctx, 'Qi Max: 120', 199, 135, INK, 104);
+    }
+
+    async function load(name) {
+      const image = new Image();
+      image.src = ROOT + name + '.png';
+      await image.decode();
+      return image;
+    }
+
+    Promise.all([...PAGES.map(page => load('murim_' + page + '_v4')), load('murim_qi_fill_v4')])
+      .then(images => {
+        const canvases = [...document.querySelectorAll('canvas')];
+        const renderers = [profile, techniques, cultivation, infos];
+        function render(canvas, page) {
+          canvas.dataset.page = String(page);
+          canvas.closest('figure').querySelector('figcaption').textContent = LABELS[page];
+          canvas.setAttribute('aria-label', LABELS[page] + (page === 0 ? ': player preview only here' : ': no player model'));
+          canvas.parentElement.querySelectorAll('.tab-hit').forEach((button, index) => {
+            button.setAttribute('aria-pressed', String(index === page));
+          });
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+          ctx.clearRect(0, 0, 320, 214);
+          ctx.drawImage(images[page], 0, 0);
+          if (page !== 0) {
+            ctx.drawImage(images[0], 169, 32, 9, 6, 8, 27, 304, 137);
+          }
+          centered(ctx, 'MURIMBLOCK', 160, 9, GOLD, 76);
+          renderers[page](ctx, images[page], images[4]);
+          tabs(ctx, images, page);
+        }
+        function reset() {
+          textBounds.length = 0;
+          canvases.forEach((canvas, page) => render(canvas, page));
+        }
+        for (const canvas of canvases) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'preview';
+          canvas.replaceWith(wrapper);
+          wrapper.append(canvas);
+          TABS.forEach((tab, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'tab-hit';
+            button.style.left = (tab.x / 320 * 100) + '%';
+            button.style.width = (tab.width / 320 * 100) + '%';
+            button.innerHTML = '<span class="sr-only">' + LABELS[index] + '</span>';
+            button.addEventListener('click', () => render(canvas, index));
+            wrapper.append(button);
+          });
+        }
+        document.getElementById('reset').addEventListener('click', reset);
+        reset();
+        window.demo = { ready: true, textBounds, render, reset, pages: PAGES };
+      }).catch(error => {
+        const message = document.getElementById('error');
+        message.hidden = false;
+        message.textContent = 'The preview could not load: ' + error.message;
+        window.demo = { ready: false, error: error.message };
+      });
+  </script>
+</body>
+</html>

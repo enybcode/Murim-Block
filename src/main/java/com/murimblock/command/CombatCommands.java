@@ -42,7 +42,7 @@ public final class CombatCommands {
     }
 
     private static void sendState(CommandContext<CommandSourceStack> context, ServerPlayer player) {
-        Component message = Component.literal("Combat Mode : " + (CombatService.isInCombatMode(player) ? "ON" : "OFF"));
+        Component message = Component.literal("Combat Mode: " + (CombatService.isInCombatMode(player) ? "ON" : "OFF"));
         context.getSource().sendSuccess(() -> message, false);
     }
 }

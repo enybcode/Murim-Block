@@ -4,15 +4,15 @@ import java.util.Locale;
 import java.util.Optional;
 
 public enum CultivationRealm {
-    QI_SENSING("qi_sensing", "Qi Sensing", "Perception du Qi", "Humain eveille"),
-    QI_GUIDING("qi_guiding", "Qi Guiding", "Guidage du Qi", "Apprenti martial"),
-    QI_CONDENSATION("qi_condensation", "Qi Condensation", "Condensation du Qi", "Disciple confirme"),
-    QI_LIQUIDATION("qi_liquidation", "Qi Liquidation", "Liquefaction du Qi", "Expert martial"),
-    QI_CRYSTALLIZATION("qi_crystallization", "Qi Crystallization", "Cristallisation du Qi", "Maitre martial"),
-    FOUNDATION_ESTABLISHMENT("foundation_establishment", "Foundation Establishment", "Etablissement des Fondations", "Grand maitre"),
-    CORE_FORMATION("core_formation", "Core Formation", "Formation du Noyau", "Maitre legendaire"),
-    NASCENT_SOUL("nascent_soul", "Nascent Soul", "Ame Naissante", "Transcendant"),
-    VOID_ENLIGHTENMENT("void_enlightenment", "Void Enlightenment", "Eveil du Vide", "Etre hors du monde");
+    QI_SENSING("qi_sensing", "Qi Sensing", "Perception du Qi", "Awakened Human"),
+    QI_GUIDING("qi_guiding", "Qi Guiding", "Guidage du Qi", "Martial Apprentice"),
+    QI_CONDENSATION("qi_condensation", "Qi Condensation", "Condensation du Qi", "Established Disciple"),
+    QI_LIQUIDATION("qi_liquidation", "Qi Liquidation", "Liquefaction du Qi", "Martial Expert"),
+    QI_CRYSTALLIZATION("qi_crystallization", "Qi Crystallization", "Cristallisation du Qi", "Martial Master"),
+    FOUNDATION_ESTABLISHMENT("foundation_establishment", "Foundation Establishment", "Etablissement des Fondations", "Grandmaster"),
+    CORE_FORMATION("core_formation", "Core Formation", "Formation du Noyau", "Legendary Master"),
+    NASCENT_SOUL("nascent_soul", "Nascent Soul", "Ame Naissante", "Transcendent"),
+    VOID_ENLIGHTENMENT("void_enlightenment", "Void Enlightenment", "Eveil du Vide", "Beyond the Mortal World");
 
     private final String serializedName;
     private final String displayName;
