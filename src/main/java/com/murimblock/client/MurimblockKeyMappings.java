@@ -23,6 +23,12 @@ public final class MurimblockKeyMappings {
             InputConstants.KEY_V,
             CATEGORY
     );
+    public static final KeyMapping OPEN_PROFILE = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".open_profile",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_K,
+            CATEGORY
+    );
 
     private MurimblockKeyMappings() {
     }
@@ -31,5 +37,6 @@ public final class MurimblockKeyMappings {
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(CHARGE_QI);
         event.register(COMBAT_MODE);
+        event.register(OPEN_PROFILE);
     }
 }

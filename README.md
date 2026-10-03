@@ -36,4 +36,5 @@ Technical foundation for the Murimblock Minecraft mod.
 - `docs/ADDON_GUIDE.md`: how addon developers should depend on Murimblock.
 - `docs/DATA_DRIVEN.md`: planned direction for datapacks, data maps and config.
 - `docs/QI_REWARDS.md`: current mob Qi reward balance table.
+- `docs/GIT_WORKFLOW.md`: publication on `test` and user-approved promotion to `main`.
 
