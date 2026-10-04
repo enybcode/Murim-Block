@@ -28,6 +28,8 @@ Package: `com.murimblock.combat.attack`.
 | `BladeTrajectory` | Immutable, ordered baked endpoint keyframes and blade radius. |
 | `AttackDefinition` | Namespaced action/animation identities with a timeline and trajectory. |
 | `BladeGeometry` | Instantaneous blade capsule contact using Minecraft's existing JOML dependency. |
+| `BladeCollider` | World-space blade snapshot with one common sample time and an inactive/attacking/guarding role. |
+| `BladeContactDetector` | Classifies actual touching blade volumes as an attack clash or guard block. |
 | `AttackContactResolver` | Deterministic ordering and single consumption of already validated contacts. |
 
 No new runtime dependency is installed. Segment distance uses
@@ -80,8 +82,9 @@ equal-time priority or change contact identity.
 
 1. Resolve contacts chronologically, regardless of input list order.
 2. At exactly equal times, obstruction takes precedence over blade clash,
-   which takes precedence over body hit.
-3. The first accepted impact consumes the strike. A clash consumes both strikes.
+   then guard block, then body hit.
+3. The first accepted impact consumes the strike. A clash consumes both strikes;
+   a guard block consumes only the incoming strike, not the defender's stance.
 4. A late clash cannot undo a body hit or stop an opponent's still-valid strike.
 5. Consuming two clashing strikes gives neither victim immunity to a third attacker.
 6. Retain consumed/cancelled IDs across runtime updates, then retire them when
@@ -91,6 +94,43 @@ Canonical identities break otherwise indistinguishable same-time ties, including
 three blades meeting. This is deterministic, not a multi-body physics simulation.
 The first slice has one impact per strike, not area damage or multi-target cuts.
 An explicit policy and tests are required before adding those features.
+
+### Blade Position And Offensive Defense
+
+The collision volume is a thin oriented capsule between hilt and tip, not the
+player's body box or a large axis-aligned weapon rectangle. A snapshot contains
+the world pose, radius, owner, server sample time and current role. The attack
+factory samples its authored trajectory at `sampledAt - startedAt`, applies
+world origin/yaw and derives the attacking role from the active contact phase.
+
+| Touching blade roles | Candidate outcome | Strike consumption |
+| --- | --- | --- |
+| Attacking / attacking | `BladeClash` | Both strikes; no held guard input required. |
+| Attacking / guarding | `GuardBlock` | Incoming strike only. |
+| Attacking / inactive | None | No automatic protection from holding a sword. |
+| Guarding / guarding | None | No offensive impact. |
+| Separated volumes, any roles | None | Simultaneous input is insufficient. |
+
+Preparation, recovery and finished attacks are inactive for this first slice.
+A held defensive pose is guarding only after server authorization; guard raise,
+release, interruption and break must produce the appropriate inactive snapshots
+when defense is unavailable. Two snapshots from different server times are
+rejected rather than used to create a phantom collision. Self contacts are ignored.
+
+The detector supplies a candidate event and the world-space midpoint of the
+blade contact. Canonical actor ordering keeps this effect point stable when
+the caller reverses actor order. The contact enters the shared chronological
+resolver before a later body hit, so an accepted interception consumes the
+prevented strike rather than applying damage and restoring health afterwards.
+
+This does not locate a weapon by reading a client-rendered item transform.
+The animation authoring/export adapter must provide matching attack/guard blade
+poses from shared data. Attack snapshots already sample that data contract;
+guard snapshots accept a world pose supplied by that future adapter. No current
+skin animation or live entity damage handler is connected to these snapshots.
+Server eligibility, dimension/team rules, equipped weapon, directional guard,
+pressure/Qi cost and interruption still have to be validated before accepting
+a guard candidate. An unaffordable guard must not silently cancel a strike.
 
 ### Deliberate Limits
 
@@ -102,7 +142,7 @@ a blade that passed through something between two samples.
 
 The resolver accepts fixtures as well as real contacts: supplying a `BodyHit`
 does not establish that a target was actually reached. No damage is applied
-and no guard, parry, recoil or AI decision is performed by these classes.
+and no defense cost, parry timing, recoil animation or AI decision is performed by these classes.
 The runtime must account for death/interruption caused by earlier outcomes
 before applying later contacts; the returned list does not establish continued
 actor eligibility after world state changes.
@@ -169,6 +209,29 @@ Publication and GitHub CI results for this correction are tracked on
 The timeline, trajectory, pose and definition contracts were also reviewed;
 no additional defect was established there. Live damage, resource playback,
 multiplayer, swept contact and performance remain future integration checks.
+
+### Blade-State Contact Delivery
+
+- [x] Derive active blade snapshots from attack age and authored world-space motion.
+- [x] Generate attack/attack clashes and attack/guard blocks from actual capsule contact.
+- [x] Prevent inactive blades and non-contact simultaneous inputs from granting defense.
+- [x] Preserve a held guard while consuming each intercepted incoming strike only once.
+- [x] Pass the expanded local tests and build: 196 tests, including 67 core tests.
+- [x] Verify the isolated snapshot independently of the local prototype.
+- [ ] Observe the weapon volume against the animated skin and actual damage in Minecraft.
+
+The added tests cover the moving pose/world yaw, phase boundaries, state/owner
+validation, common sample time, all role combinations, candidate consumption,
+late guard/body ordering, wall precedence, effects at blade contact and large
+overlapping weapon bounds whose actual blade capsules do not touch. These are
+core composition tests, not a claim that guard is already hooked into the game.
+
+Blade-state verification: `gradlew.bat cleanTest test build` passed all 196
+local tests. An independent committed-baseline export plus only this delivery's
+seven files passed `gradlew.bat test build` with 174 tests. Both have zero
+failures/errors/skips, including 67 core tests and 23 added tests in this lot.
+The seven snapshot copies were SHA-256 checked before its build. Publication
+and CI status continue to be tracked on PR #2; `main` is not merged automatically.
 
 ## Next Steps
 

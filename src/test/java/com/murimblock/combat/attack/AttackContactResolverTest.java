@@ -57,6 +57,42 @@ class AttackContactResolverTest {
         assertEquals(new BodyHit(0.0, A, MOB), new BodyHit(-0.0, A, MOB));
         assertEquals(new BladeClash(0.0, A, B), new BladeClash(-0.0, A, B));
         assertEquals(new Obstruction(0.0, A, BlockPos.ZERO), new Obstruction(-0.0, A, BlockPos.ZERO));
+        assertEquals(new GuardBlock(0.0, A, MOB), new GuardBlock(-0.0, A, MOB));
+    }
+
+    @Test
+    void guardConsumesOnlyTheIncomingStrikeAndWinsAnEqualTimeBodyHit() {
+        var block = new GuardBlock(100, A, MOB);
+        var result = resolve(List.of(new BodyHit(100, A, MOB), block, block), Set.of());
+        assertEquals(List.of(block), result.accepted());
+        assertEquals(Set.of(A), result.consumed());
+        assertTrue(resolve(List.of(block), result.consumed()).accepted().isEmpty());
+    }
+
+    @Test
+    void bodyBeforeGuardIsNotUndoneAndAThirdAttackStillHitsTheDefender() {
+        var hit = new BodyHit(100, A, MOB);
+        assertEquals(List.of(hit), resolve(List.of(new GuardBlock(100.1, A, MOB), hit), Set.of()).accepted());
+        var block = new GuardBlock(100, A, MOB);
+        var thirdHit = new BodyHit(100.1, C, MOB);
+        assertEquals(List.of(block, thirdHit), resolve(List.of(thirdHit, block), Set.of()).accepted());
+    }
+
+    @Test
+    void exactTimeWallAndClashTakePriorityOverGuard() {
+        var block = new GuardBlock(100, A, THIRD);
+        var wall = new Obstruction(100, A, BlockPos.ZERO);
+        assertEquals(List.of(wall), resolve(List.of(block, wall), Set.of()).accepted());
+        var clash = new BladeClash(100, A, B);
+        assertEquals(List.of(clash), resolve(List.of(block, clash), Set.of()).accepted());
+    }
+
+    @Test
+    void equalTimeGuardsAreDeterministicRegardlessOfCandidateOrder() {
+        var first = new GuardBlock(100, A, MOB);
+        var second = new GuardBlock(100, A, THIRD);
+        assertEquals(List.of(first), resolve(List.of(first, second), Set.of()).accepted());
+        assertEquals(List.of(first), resolve(List.of(second, first), Set.of()).accepted());
     }
 
     @Test
@@ -135,10 +171,12 @@ class AttackContactResolverTest {
         assertThrows(IllegalArgumentException.class, () -> new AttackId(PLAYER, -1));
         assertThrows(NullPointerException.class, () -> new AttackId(null, 1));
         assertThrows(IllegalArgumentException.class, () -> new BodyHit(100, A, PLAYER));
+        assertThrows(IllegalArgumentException.class, () -> new GuardBlock(100, A, PLAYER));
         assertThrows(IllegalArgumentException.class, () -> new BladeClash(100, A, new AttackId(PLAYER, 2)));
         for (double invalid : new double[]{-1, Double.NaN, Double.POSITIVE_INFINITY}) {
             assertThrows(IllegalArgumentException.class, () -> new BodyHit(invalid, A, MOB));
             assertThrows(IllegalArgumentException.class, () -> new BladeClash(invalid, A, B));
+            assertThrows(IllegalArgumentException.class, () -> new GuardBlock(invalid, A, MOB));
             assertThrows(IllegalArgumentException.class, () -> new Obstruction(invalid, A, BlockPos.ZERO));
         }
     }

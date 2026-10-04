@@ -24,7 +24,7 @@ public final class AttackContactResolver {
         }
     }
 
-    public sealed interface Contact permits BodyHit, BladeClash, Obstruction {
+    public sealed interface Contact permits BodyHit, BladeClash, GuardBlock, Obstruction {
         double time();
         AttackId attack();
     }
@@ -49,6 +49,15 @@ public final class AttackContactResolver {
                 attack = other;
                 other = swap;
             }
+        }
+    }
+
+    public record GuardBlock(double time, AttackId attack, UUID defender) implements Contact {
+        public GuardBlock {
+            time = normalizeTime(time);
+            Objects.requireNonNull(attack);
+            Objects.requireNonNull(defender);
+            if (attack.attacker.equals(defender)) throw new IllegalArgumentException("An actor cannot block its own strike");
         }
     }
 
@@ -95,12 +104,13 @@ public final class AttackContactResolver {
         return new Resolution(accepted, consumed);
     }
 
-    // Exact-time ties prefer an obstruction, then a clash, then a body hit.
+    // Exact-time ties prefer an obstruction, then a clash, then a guard block, then a body hit.
     private static int priority(Contact contact) {
         return switch (contact) {
             case Obstruction ignored -> 0;
             case BladeClash ignored -> 1;
-            case BodyHit ignored -> 2;
+            case GuardBlock ignored -> 2;
+            case BodyHit ignored -> 3;
         };
     }
 
@@ -108,6 +118,7 @@ public final class AttackContactResolver {
         return switch (first) {
             case Obstruction obstruction -> BLOCK_ORDER.compare(obstruction.block, ((Obstruction) second).block);
             case BladeClash clash -> clash.other.compareTo(((BladeClash) second).other);
+            case GuardBlock block -> block.defender.compareTo(((GuardBlock) second).defender);
             case BodyHit hit -> hit.target.compareTo(((BodyHit) second).target);
         };
     }
