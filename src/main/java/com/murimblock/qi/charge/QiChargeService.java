@@ -2,6 +2,7 @@ package com.murimblock.qi.charge;
 
 import com.murimblock.Murimblock;
 import com.murimblock.combat.MeleeCombatService;
+import com.murimblock.combat.preview.CombatPreviewService;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +49,8 @@ public final class QiChargeService {
         if (!canCharge(player)) {
             return stopCharging(player);
         }
+
+        CombatPreviewService.cancel(player);
 
         QiChargeState current = STATES.computeIfAbsent(player.getUUID(), ignored -> new QiChargeState());
         if (current.isCharging()) {

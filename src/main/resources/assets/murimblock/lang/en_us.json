@@ -52,5 +52,8 @@
   "gui.murimblock.infos.combat_mode": "Combat Mode",
   "gui.murimblock.infos.player_status": "Player Status",
   "gui.murimblock.infos.qi_max": "Qi Max: %s",
-  "message.murimblock.guard.broken": "Guard broken"
+  "message.murimblock.guard.broken": "Guard broken",
+  "message.murimblock.preview.started": "Sword animation preview started. No damage is applied.",
+  "message.murimblock.preview.stopped": "Sword animation preview stopped.",
+  "message.murimblock.preview.unavailable": "Hold a sword with an empty offhand and finish other actions before previewing."
 }

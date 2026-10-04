@@ -8,6 +8,11 @@ Technical foundation for the Murimblock Minecraft mod.
 - NeoForge 21.1.248
 - Java 21
 - Gradle Wrapper 9.2.1
+- Player Animation Library 1.1.6+mc.1.21.1 (required on client and server)
+
+Gradle supplies PAL automatically to the IntelliJ development runs. A standalone
+installation also needs the matching NeoForge PAL jar in `mods`; Murimblock does
+not bundle it or depend on Epic Fight.
 
 ## Common tasks
 
@@ -34,6 +39,8 @@ Technical foundation for the Murimblock Minecraft mod.
 - Sword-only directional guard in Combat Mode, with Qi cost and guard break.
 - Weapon-category and martial-art profiles; only the basic sword profile is enabled.
 - Shared blade-trajectory/contact core, not yet connected to live attacks or animation.
+- Server-synchronized original sword animation preview: `/combat preview` (operator),
+  with no damage, new Qi cost or replacement of vanilla attacks.
 
 ## GUI Preview
 
@@ -52,5 +59,7 @@ configured keybindings. The integrated appearance was approved by Enzo on
 - `docs/QI_REWARDS.md`: current mob Qi reward balance table.
 - `docs/SWORD_COMBAT.md`: live sword guard controls, profiles, restrictions and validation.
 - `docs/COMBAT_REWORK.md`: delivered contact core and the staged combat replacement plan.
+- `docs/COMBAT_REWORK_PLAN.md`: source-based audit, licensing and implementation milestones.
+- `docs/COMBAT_PREVIEW.md`: animation preview setup, contracts and outstanding in-game checks.
 - `docs/GIT_WORKFLOW.md`: publication on `test` and user-approved promotion to `main`.
 

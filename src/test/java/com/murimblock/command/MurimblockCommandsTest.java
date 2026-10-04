@@ -5,10 +5,16 @@ import com.mojang.brigadier.tree.CommandNode;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class MurimblockCommandsTest {
     @Test
@@ -38,6 +44,18 @@ class MurimblockCommandsTest {
         assertVisibleChildren("combat", dispatcher, Set.of("check", "on", "off", "toggle"));
     }
 
+    @Test
+    void animationPreviewRequiresOperatorPermissionButLegacyCommandsDoNot() {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        CombatCommands.register(dispatcher);
+        var preview = dispatcher.getRoot().getChild("combat").getChild("preview");
+        assertNotNull(preview);
+        assertFalse(preview.canUse(source(0)));
+        assertFalse(preview.canUse(source(1)));
+        assertTrue(preview.canUse(source(2)));
+        assertNotNull(preview.getChild("stop"));
+    }
+
     private static void assertVisibleChildren(
             String commandName,
             CommandDispatcher<CommandSourceStack> dispatcher,
@@ -47,8 +65,13 @@ class MurimblockCommandsTest {
 
         assertNotNull(command);
         assertEquals(expected, command.getChildren().stream()
-                .filter(child -> child.canUse(null))
+                .filter(child -> child.canUse(source(0)))
                 .map(CommandNode::getName)
                 .collect(Collectors.toSet()));
+    }
+
+    private static CommandSourceStack source(int permission) {
+        return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, null, permission,
+                "test", Component.literal("test"), null, null);
     }
 }

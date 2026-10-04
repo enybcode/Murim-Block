@@ -33,6 +33,10 @@ import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import com.murimblock.qi.QiService;
 import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.combat.preview.CombatPreviewService;
+import com.murimblock.combat.preview.PreviewDefinition;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 /** Dev-only server tests. These classes are not included in the distributable mod jar. */
 @GameTestHolder("murimblock")
@@ -277,6 +281,168 @@ public final class SwordGuardGameTests {
             helper.assertTrue(QiService.getQi(player) == 100, "Invalid weapon binding spent Qi");
             helper.succeed();
         } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard", timeoutTicks = 60)
+    public static void previewFinishesWithoutChangingHealthQiOrMovement(GameTestHelper helper) {
+        var player = player(helper);
+        // Unlike a zombie, this stationary melee target cannot lose health to daylight.
+        var target = helper.spawn(EntityType.HUSK, new BlockPos(2, 1, 3));
+        target.setNoAi(true);
+        target.setNoGravity(true);
+        float health = player.getHealth();
+        float targetHealth = target.getHealth();
+        double speed = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        helper.assertTrue(CombatPreviewService.start(player), "Preview did not start with a sword");
+        helper.assertFalse(CombatPreviewService.start(player), "Preview restarted while already playing");
+        helper.runAfterDelay(PreviewDefinition.DURATION_TICKS + 1, () -> {
+            try {
+                helper.assertFalse(CombatPreviewService.getData(player).playing(), "Preview did not expire");
+                helper.assertTrue(player.getHealth() == health, "Preview changed player health");
+                helper.assertTrue(target.getHealth() == targetHealth, "Preview changed target health");
+                helper.assertTrue(QiService.getQi(player) == 100, "Preview changed Qi");
+                helper.assertTrue(player.getMainHandItem().getDamageValue() == 0, "Preview damaged the weapon");
+                helper.assertTrue(player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) == speed,
+                        "Preview changed movement");
+                helper.succeed();
+            } finally { cleanup(player); }
+        });
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard")
+    public static void previewDoesNotBlockOrDuplicateLegacyAttack(GameTestHelper helper) {
+        var player = player(helper);
+        var hits = new java.util.concurrent.atomic.AtomicInteger();
+        Zombie target = attacker(helper, true);
+        java.util.function.Consumer<net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent> counter =
+                event -> { if (event.getEntity() == target) hits.incrementAndGet(); };
+        NeoForge.EVENT_BUS.addListener(counter);
+        try {
+            helper.assertTrue(CombatPreviewService.start(player), "Preview did not start");
+            float before = target.getHealth();
+            player.attack(target);
+            helper.assertFalse(CombatPreviewService.getData(player).playing(), "Attack left preview playing");
+            helper.assertTrue(target.getHealth() < before && hits.get() == 1, "Vanilla sword attack was lost or duplicated");
+            helper.assertTrue(MeleeCombatService.getData(player).action() == MeleeData.Action.SWING, "Legacy swing was lost");
+            helper.succeed();
+        } finally {
+            NeoForge.EVENT_BUS.unregister(counter);
+            cleanup(player);
+        }
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard")
+    public static void previewRefusesOtherWeaponsOffhandAndBusyActions(GameTestHelper helper) {
+        var player = player(helper);
+        try {
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE));
+            helper.assertFalse(CombatPreviewService.start(player), "Axe used sword preview");
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
+            player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.SHIELD));
+            helper.assertFalse(CombatPreviewService.start(player), "Offhand item allowed preview");
+            player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            QiChargeService.startCharging(player);
+            helper.assertFalse(CombatPreviewService.start(player), "Preview interrupted charging");
+            helper.assertTrue(QiChargeService.isCharging(player), "Refused preview changed charging");
+            QiChargeService.stopCharging(player);
+            MeleeCombatService.requestGuard(player, true);
+            helper.assertFalse(CombatPreviewService.start(player), "Preview interrupted guard");
+            helper.assertTrue(MeleeCombatService.getData(player).isGuarding(), "Refused preview changed guard");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard")
+    public static void guardAndChargeInterruptPreviewButKeepTheirBehavior(GameTestHelper helper) {
+        var player = player(helper);
+        try {
+            helper.assertTrue(CombatPreviewService.start(player), "Preview did not start");
+            MeleeCombatService.requestGuard(player, true);
+            helper.assertFalse(CombatPreviewService.getData(player).playing(), "Guard left preview playing");
+            helper.assertTrue(MeleeCombatService.getData(player).isGuarding(), "Preview blocked guard");
+            MeleeCombatService.requestGuard(player, false);
+            helper.assertTrue(CombatPreviewService.start(player), "Preview did not restart after guard release");
+            helper.assertTrue(QiChargeService.startCharging(player), "Preview blocked Qi charging");
+            helper.assertFalse(CombatPreviewService.getData(player).playing(), "Charging left preview playing");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard")
+    public static void slotSwapAndItemUseStopPreviewWithoutLockingPlayer(GameTestHelper helper) {
+        var player = player(helper);
+        try {
+            helper.assertTrue(CombatPreviewService.start(player), "Preview did not start");
+            player.getInventory().setItem(1, new ItemStack(Items.IRON_SWORD));
+            player.getInventory().selected = 1;
+            CombatPreviewService.tick(player);
+            helper.assertFalse(CombatPreviewService.getData(player).playing(), "Same-sword slot swap reused preview");
+            helper.assertFalse(MeleeCombatService.isBusy(player), "Preview locked legacy combat");
+            helper.assertTrue(CombatPreviewService.start(player), "Preview did not start again");
+            player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.APPLE));
+            player.startUsingItem(InteractionHand.OFF_HAND);
+            helper.assertFalse(CombatPreviewService.getData(player).playing(), "Item use did not cancel preview");
+            helper.assertTrue(player.isUsingItem(), "Preview canceled item use");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard", timeoutTicks = 60)
+    public static void lateTrackerKeepsAgeInsteadOfRestartingPreview(GameTestHelper helper) {
+        var player = player(helper);
+        helper.assertTrue(CombatPreviewService.start(player), "Preview did not start");
+        long started = CombatPreviewService.getData(player).startedAt();
+        helper.runAfterDelay(9, () -> {
+            ServerPlayer observer = null;
+            try {
+                observer = player(helper);
+                NeoForge.EVENT_BUS.post(new PlayerEvent.StartTracking(observer, player));
+                var state = CombatPreviewService.getData(player);
+                helper.assertTrue(state.playing() && state.startedAt() == started && state.sampledAge() >= 9,
+                        "Late tracker snapshot restarted or lost preview time");
+                helper.succeed();
+            } finally {
+                if (observer != null) cleanup(observer);
+                cleanup(player);
+            }
+        });
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard")
+    public static void lifecycleEventsCancelPreviewAndDoNotPersistIt(GameTestHelper helper) {
+        var player = player(helper);
+        try {
+            helper.assertTrue(CombatPreviewService.start(player), "Preview did not start");
+            CompoundTag saved = new CompoundTag();
+            player.saveWithoutId(saved);
+            helper.assertFalse(saved.toString().contains("combat_preview"), "Preview leaked into saved data");
+            NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerChangedDimensionEvent(player, net.minecraft.world.level.Level.OVERWORLD,
+                    net.minecraft.world.level.Level.NETHER));
+            helper.assertFalse(CombatPreviewService.getData(player).playing(), "Dimension transition kept preview");
+            helper.assertTrue(CombatPreviewService.start(player), "Preview did not restart");
+            player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+            helper.assertFalse(CombatPreviewService.getData(player).playing(), "Death kept preview");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "guard_arena", batch = "sword_guard")
+    public static void previewIsClearedOnCloneAndLogout(GameTestHelper helper) {
+        var original = player(helper);
+        var clone = player(helper);
+        try {
+            helper.assertTrue(CombatPreviewService.start(original) && CombatPreviewService.start(clone), "Preview did not start");
+            NeoForge.EVENT_BUS.post(new PlayerEvent.Clone(clone, original, true));
+            helper.assertFalse(CombatPreviewService.getData(original).playing(), "Original player kept preview after clone");
+            helper.assertFalse(CombatPreviewService.getData(clone).playing(), "New player inherited preview on respawn");
+            helper.assertTrue(CombatPreviewService.start(clone), "New player could not preview after respawn");
+            NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerLoggedOutEvent(clone));
+            helper.assertFalse(CombatPreviewService.getData(clone).playing(), "Logout kept preview");
+            helper.succeed();
+        } finally {
+            cleanup(original);
+            cleanup(clone);
+        }
     }
 
     private static ServerPlayer player(GameTestHelper helper) {

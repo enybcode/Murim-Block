@@ -1,6 +1,7 @@
 package com.murimblock.combat;
 
 import com.murimblock.Murimblock;
+import com.murimblock.combat.preview.CombatPreviewService;
 import com.murimblock.qi.QiService;
 import com.murimblock.qi.charge.QiChargeService;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ public final class MeleeCombatService {
             clear(player);
             return;
         }
+        CombatPreviewService.cancel(player);
         long tick = player.server.getTickCount();
         GuardRequest request = GUARD_REQUESTS.get(player.getUUID());
         if (request != null && !request.matches(player.getInventory().selected, player.getMainHandItem())) {

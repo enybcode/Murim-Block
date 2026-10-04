@@ -1,0 +1,20 @@
+Murimblock combat animation preview dependency inventory
+
+Player Animation Library 1.1.6+mc.1.21.1 (MIT)
+Copyright (c) 2025 ZigyTheBird.
+Inherited source notices include Copyright (c) 2022 KosmX and
+Copyright (c) 2024 GeckoLib under MIT.
+https://github.com/PlayerAnimationLibrary/PlayerAnimationLibrary
+
+PAL embeds MochaFloats 4.1.0 (MIT; Unnamed Team) and Javassist 3.30.2-GA
+(upstream MPL/LGPL/Apache alternative licensing terms).
+https://github.com/PlayerAnimationLibrary/mochafloats/blob/main/license.txt
+https://github.com/jboss-javassist/javassist/blob/rel_3_30_2_ga/License.html
+
+PAL must be installed separately on both sides. This Murimblock jar does not
+bundle, shade or copy these libraries. Keep the upstream license files and
+notices with their artifacts; this inventory does not replace those licenses.
+
+The Murimblock sword_preview animation is an original clip authored for this
+project. No Epic Fight code, animations, rigs, meshes or shaders are included.
+See docs/COMBAT_PREVIEW.md and docs/COMBAT_REWORK_PLAN.md in the source repository.

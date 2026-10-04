@@ -91,10 +91,53 @@ neoForge {
     }
 }
 
+repositories {
+    maven {
+        name = 'PlayerAnimationLibrary'
+        url = 'https://repo.redlance.org/public'
+        content {
+            includeGroup('com.zigythebird.playeranim')
+        }
+    }
+    mavenCentral()
+}
+
+configurations {
+    palDistribution {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+}
+
+def palCoordinates = 'com.zigythebird.playeranim:PlayerAnimationLibNeo:1.1.6+mc.1.21.1'
+
 dependencies {
+    // The published NeoForge jar includes its core and nested Molang/Javassist runtime.
+    implementation(palCoordinates) { transitive = false }
+    palDistribution(palCoordinates) { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Use PAL's exact nested binaries for compilation and headless sampling tests.
+// The separately published Molang artifact with the same version has different bytes.
+def palRuntimeDirectory = layout.buildDirectory.dir('pal-embedded-runtime')
+def extractPalRuntime = tasks.register('extractPalRuntime', Copy) {
+    from(zipTree(configurations.palDistribution.singleFile)) {
+        include 'META-INF/jars/mochafloats-4.1.0.jar', 'META-INF/jars/javassist-3.30.2-GA.jar'
+        eachFile { details -> details.path = details.name }
+        includeEmptyDirs = false
+    }
+    into(palRuntimeDirectory)
+}
+def palEmbeddedRuntime = files(
+        palRuntimeDirectory.map { it.file('mochafloats-4.1.0.jar') },
+        palRuntimeDirectory.map { it.file('javassist-3.30.2-GA.jar') }
+).builtBy(extractPalRuntime)
+dependencies {
+    compileOnly palEmbeddedRuntime
+    testImplementation palEmbeddedRuntime
 }
 
 def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
