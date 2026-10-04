@@ -98,7 +98,7 @@ and no guard, parry, recoil or AI decision is performed by these classes.
 - [x] Add focused unit tests and a pure-core composition test.
 - [x] Run the expanded test suite and build after this change.
 - [x] Verify an exported clean Git snapshot, independently of the unfinished local prototype.
-- [ ] Publish the completed lot on `test` and open a review toward `main`.
+- [x] Publish the completed lot on `test` and open a review toward `main`.
 - [ ] Validate animation, gameplay and multiplayer in Minecraft after their adapters exist.
 
 Tests cover half-open phases, skipped intervals, invalid data, immutable inputs,
@@ -185,3 +185,7 @@ Commit only this completed lot on `test`; preserve unfinished prototype edits,
 the user's Qi effects edit and local reference folders. Push and open/update
 a pull request toward `main`. Automated success does not authorize merging:
 `main` changes only after explicit user validation.
+
+Step 1 is published on `test` in
+[pull request #2](https://github.com/enybcode/Murim-Block/pull/2).
+The PR remains unmerged; follow its checks for GitHub CI status.
