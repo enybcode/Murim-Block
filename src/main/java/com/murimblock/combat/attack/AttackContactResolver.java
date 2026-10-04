@@ -31,7 +31,7 @@ public final class AttackContactResolver {
 
     public record BodyHit(double time, AttackId attack, UUID target) implements Contact {
         public BodyHit {
-            requireTime(time);
+            time = normalizeTime(time);
             Objects.requireNonNull(attack);
             Objects.requireNonNull(target);
             if (attack.attacker.equals(target)) throw new IllegalArgumentException("An attack cannot hit its owner");
@@ -40,7 +40,7 @@ public final class AttackContactResolver {
 
     public record BladeClash(double time, AttackId attack, AttackId other) implements Contact {
         public BladeClash {
-            requireTime(time);
+            time = normalizeTime(time);
             Objects.requireNonNull(attack);
             Objects.requireNonNull(other);
             if (attack.attacker.equals(other.attacker)) throw new IllegalArgumentException("An actor cannot clash with itself");
@@ -54,7 +54,7 @@ public final class AttackContactResolver {
 
     public record Obstruction(double time, AttackId attack, BlockPos block) implements Contact {
         public Obstruction {
-            requireTime(time);
+            time = normalizeTime(time);
             Objects.requireNonNull(attack);
             block = Objects.requireNonNull(block).immutable();
         }
@@ -112,7 +112,8 @@ public final class AttackContactResolver {
         };
     }
 
-    private static void requireTime(double time) {
+    private static double normalizeTime(double time) {
         if (!Double.isFinite(time) || time < 0) throw new IllegalArgumentException("Contact time must be finite and nonnegative");
+        return time == 0 ? 0.0 : time;
     }
 }

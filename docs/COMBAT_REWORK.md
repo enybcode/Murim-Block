@@ -34,10 +34,15 @@ No new runtime dependency is installed. Segment distance uses
 [JOML Intersectiond](https://joml-ci.github.io/JOML/apidocs/org/joml/Intersectiond.html),
 rather than a second geometry implementation.
 
-The closest points are used to compute squared separation explicitly: bundled
+The closest points are used to compute separation explicitly: bundled
 JOML 1.10.5 returns a dot product instead of squared separation when both
 segments degenerate into points. Regression tests cover this at the origin
 and near the Minecraft world border.
+
+Geometry calculations are rebased to a blade's hilt and nonzero segment lengths
+are normalized above the bundled solver's fixed degeneracy threshold. Four
+endpoint-to-segment projections also guard against a missed near-parallel tip
+contact. Returned points and distances remain in world-space blocks.
 
 ### Timing And Authoring Contract
 
@@ -65,6 +70,14 @@ they must not be sorted using unrelated per-actor animation ages. The future
 runtime owns eligibility, reach, walls, contact generation and authoritative
 validation. A client cannot submit an arbitrary accepted body hit or clash.
 
+Collect all actors' candidates for a common server update interval before
+resolving that batch. Calling the resolver separately for each actor can consume
+a later body hit before an earlier blade contact is even supplied; sorting
+within each call cannot repair that ordering. Do not replay older contact times
+from a later interval or treat client arrival order as contact chronology.
+Signed zero contact times are normalized to positive zero so they cannot bypass
+equal-time priority or change contact identity.
+
 1. Resolve contacts chronologically, regardless of input list order.
 2. At exactly equal times, obstruction takes precedence over blade clash,
    which takes precedence over body hit.
@@ -90,6 +103,9 @@ a blade that passed through something between two samples.
 The resolver accepts fixtures as well as real contacts: supplying a `BodyHit`
 does not establish that a target was actually reached. No damage is applied
 and no guard, parry, recoil or AI decision is performed by these classes.
+The runtime must account for death/interruption caused by earlier outcomes
+before applying later contacts; the returned list does not establish continued
+actor eligibility after world state changes.
 
 ## Verification Log
 
@@ -111,15 +127,48 @@ active blades clash, separated simultaneous blades do not, and inactive phases
 produce no candidate. Its body contacts are fixtures. It is not a GameTest,
 network test or proof of visually correct in-game weapon contact.
 
-Local IntelliJ verification: `gradlew.bat cleanTest test build` succeeded with
+Initial Step 1 IntelliJ verification: `gradlew.bat cleanTest test build` succeeded with
 165 tests, zero failures/errors/skips, including 36 new core tests. This local
 count also includes tests from the unfinished prototype.
 
-Isolated verification: export the committed baseline and copy only this lot's
+Initial Step 1 isolated verification: export the committed baseline and copy only this lot's
 source/tests into it, then run `gradlew.bat test build`. All 143 tests passed
 with zero failures/errors/skips. All 11 new source/test files were SHA-256
 checked against the IntelliJ checkout. The two compile warnings concern an
 existing deprecated NeoForge event-bus annotation, not this change.
+
+### Follow-Up Code Review
+
+The original 36 tests missed three numerical defects in the isolated core:
+
+- Signed zero timestamps could sort a body hit before an equal-time clash/wall.
+  Normalize every contact timestamp; keep zero-time equality consistent too.
+- A near-parallel grazing capsule contact could disappear when endpoints or
+  actor order changed. Also consider valid endpoint-to-segment closest points.
+- The bundled solver could approximate a short nonzero segment as its hilt,
+  missing tip/interior contacts. Rebase and scale the computation before solving.
+
+Four regression tests were run against the old implementation and failed before
+the fixes. Additional tests cover short interior crossings, tiny gaps and 1,000
+deterministic contact/miss configurations with scaled blades, yaw, world-border
+offsets and all endpoint/actor permutations. These tests do not establish exact
+arithmetic for arbitrary magnitudes or continuous swept contact.
+
+- [x] Reproduce the defects before changing production code.
+- [x] Correct the two affected production classes.
+- [x] Pass the expanded full local suite and isolated snapshot build.
+
+Review verification: `gradlew.bat cleanTest test build` passed all 173 local
+tests. A separate tracked baseline export plus only the five reviewed files
+passed `gradlew.bat test build` with 151 tests. Both had zero failures/errors/
+skips and include 44 core tests, eight more than the initial delivery. Snapshot
+copies of the five reviewed files were SHA-256 checked before the isolated build.
+Publication and GitHub CI results for this correction are tracked on
+[PR #2](https://github.com/enybcode/Murim-Block/pull/2).
+
+The timeline, trajectory, pose and definition contracts were also reviewed;
+no additional defect was established there. Live damage, resource playback,
+multiplayer, swept contact and performance remain future integration checks.
 
 ## Next Steps
 

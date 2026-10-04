@@ -45,6 +45,21 @@ class AttackContactResolverTest {
     }
 
     @Test
+    void signedZeroTimesCannotBypassWallAndClashPriority() {
+        var clash = new BladeClash(0.0, A, B);
+        assertEquals(List.of(clash), resolve(List.of(new BodyHit(-0.0, A, MOB), clash), Set.of()).accepted());
+        var wall = new Obstruction(0.0, A, BlockPos.ZERO);
+        assertEquals(List.of(wall), resolve(List.of(new BladeClash(-0.0, A, B), wall), Set.of()).accepted());
+    }
+
+    @Test
+    void signedZeroContactsHaveTheSameIdentity() {
+        assertEquals(new BodyHit(0.0, A, MOB), new BodyHit(-0.0, A, MOB));
+        assertEquals(new BladeClash(0.0, A, B), new BladeClash(-0.0, A, B));
+        assertEquals(new Obstruction(0.0, A, BlockPos.ZERO), new Obstruction(-0.0, A, BlockPos.ZERO));
+    }
+
+    @Test
     void wallWinsExactTimeTieAndDoesNotStopTheOtherActorsAttack() {
         var wall = new Obstruction(100.5, A, new BlockPos(1, 2, 3));
         var counter = new BodyHit(100.5, B, PLAYER);
