@@ -18,6 +18,11 @@ public final class CombatAttachments {
                     .build()
     );
 
+    static final Supplier<AttachmentType<MeleeData>> PLAYER_MELEE = ATTACHMENT_TYPES.register(
+            "player_melee",
+            () -> AttachmentType.builder(MeleeData::initial).sync(MeleeData.STREAM_CODEC).build()
+    );
+
     private CombatAttachments() {
     }
 

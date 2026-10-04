@@ -51,5 +51,6 @@
   "gui.murimblock.infos.charge_qi": "Charge Qi",
   "gui.murimblock.infos.combat_mode": "Combat Mode",
   "gui.murimblock.infos.player_status": "Player Status",
-  "gui.murimblock.infos.qi_max": "Qi Max: %s"
+  "gui.murimblock.infos.qi_max": "Qi Max: %s",
+  "message.murimblock.guard.broken": "Guard broken"
 }

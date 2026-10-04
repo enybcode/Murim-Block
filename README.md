@@ -16,6 +16,7 @@ Technical foundation for the Murimblock Minecraft mod.
 .\gradlew.bat runServer
 .\gradlew.bat test
 .\gradlew.bat build
+.\gradlew.bat -PcombatGameTests runGameTestServer
 ```
 
 ## Current systems
@@ -30,6 +31,9 @@ Technical foundation for the Murimblock Minecraft mod.
 - Server-authoritative Combat Mode foundation with configurable keybind and addon API.
 - English in-game text and a dedicated bitmap font for the Murim profile GUI.
 - Four distinct GUI pages with the 3D player shown only on Profile.
+- Sword-only directional guard in Combat Mode, with Qi cost and guard break.
+- Weapon-category and martial-art profiles; only the basic sword profile is enabled.
+- Shared blade-trajectory/contact core, not yet connected to live attacks or animation.
 
 ## GUI Preview
 
@@ -46,5 +50,7 @@ configured keybindings. The integrated appearance was approved by Enzo on
 - `docs/ADDON_GUIDE.md`: how addon developers should depend on Murimblock.
 - `docs/DATA_DRIVEN.md`: planned direction for datapacks, data maps and config.
 - `docs/QI_REWARDS.md`: current mob Qi reward balance table.
+- `docs/SWORD_COMBAT.md`: live sword guard controls, profiles, restrictions and validation.
+- `docs/COMBAT_REWORK.md`: delivered contact core and the staged combat replacement plan.
 - `docs/GIT_WORKFLOW.md`: publication on `test` and user-approved promotion to `main`.
 

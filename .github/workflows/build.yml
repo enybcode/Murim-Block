@@ -24,3 +24,6 @@ jobs:
 
       - name: Build
         run: ./gradlew build
+
+      - name: Sword guard server tests
+        run: ./gradlew -PcombatGameTests runGameTestServer

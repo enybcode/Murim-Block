@@ -1,6 +1,7 @@
 package com.murimblock.client;
 
 import com.murimblock.Murimblock;
+import com.murimblock.combat.MeleeCombatService;
 import com.murimblock.network.QiChargeStatePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
@@ -27,6 +28,7 @@ public final class QiChargeClientHandler {
         boolean shouldCharge = player != null
                 && player.isAlive()
                 && !player.isSpectator()
+                && !MeleeCombatService.isBusy(player)
                 && minecraft.screen == null
                 && MurimblockKeyMappings.CHARGE_QI.isDown();
 

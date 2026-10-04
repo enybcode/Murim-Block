@@ -11,7 +11,8 @@ Murimblock is a Minecraft 1.21.1 NeoForge mod built around server-authoritative 
 - `api.qi`: supported Qi addon contract.
 - `api.cultivation`: supported Cultivation addon contract.
 - `api.combat`: supported Combat addon contract and combat mode change event.
-- `combat`: temporary combat mode implementation, attachment and server service.
+- `combat`: combat mode, weapon/art profiles, temporary sword guard state and server services.
+- `combat.attack`: shared trajectory and contact core; not connected to live attacks yet.
 - `qi`: Qi implementation, player data, reward calculation, attachments, server events.
 - `qi.charge`: Qi charging gameplay state and charge VFX tuning helpers.
 - `cultivation`: Cultivation implementation, progression table, attachments and commands.
@@ -32,6 +33,7 @@ Gameplay authority lives on the logical server:
 - Qi mutation uses `ServerPlayer`.
 - Qi charging state is validated server-side by `QiChargeService`.
 - Combat mode is toggled and validated server-side by `CombatService`.
+- Sword guard eligibility, Qi costs, damage interception and guard break are validated by `MeleeCombatService`.
 - Mob kill Qi rewards are calculated and applied server-side by `QiRewardManager`.
 - Attachments are registered through NeoForge and stored per player.
 
@@ -42,6 +44,7 @@ Client-only classes remain in `com.murimblock.client`:
 - `QiChargeFovHandler`: charge FOV transition.
 - `MurimblockKeyMappings`: key registration.
 - `CombatModeClientHandler`: combat toggle key input.
+- `SwordCombatClientHandler`: guard intent, vanilla arm poses and hand recoil.
 - `client.hud.CombatQiHud`: redraws the vanilla experience bar background with a blue Qi progress sprite while Combat Mode is active, without numeric Qi text.
 
 Server code must not import `Minecraft`, `ClientLevel`, `GuiGraphics`, `Camera`, or `KeyMapping`.
@@ -81,7 +84,9 @@ The client sends intent only. The server decides whether charging is valid.
 
 ## Combat
 
-Combat mode currently represents only one temporary state: normal or combat.
+Combat Mode is the temporary normal/combat toggle. A separate unsaved melee
+attachment represents guard, attack recovery, impact and guard-break actions.
+The clash enum ID remains reserved but this live slice generates no clashes.
 
 Main classes:
 
@@ -92,6 +97,10 @@ Main classes:
 - `CombatCommands`: `/combat check`, `/combat on`, `/combat off`, `/combat toggle`.
 - `CombatModeTogglePayload`: client to server toggle request with no client-chosen state.
 - `CombatModeClientHandler`: sends toggle requests when the configurable key is pressed.
+- `WeaponCategory`: classifies weapons without modifying unsupported families.
+- `CombatProfile` / `CombatProfiles`: rules identified by weapon category and martial-art ID.
+- `MeleeCombatService`: sword guard input leases and server-authoritative damage interception.
+- `GuardRequest`: held-input timeout and copied slot/weapon binding.
 
 Flow:
 
@@ -103,7 +112,18 @@ CombatData attachment sync
 MurimblockApi.combat()
 ```
 
-No technique bar, damage system, combo system or hotbar replacement exists yet.
+Only `basic_sword` is enabled. A frontal sword guard cancels direct melee damage
+at a Qi cost. An attack suspends guard during a short recovery but its hit stays
+vanilla, without deferral or a second damage owner. Axes, ranged weapons, unarmed
+combat and other categories have no installed custom behavior. There is no
+learned-art selection or save-data change yet. A future art resolver will select
+compatible profiles and authored attacks rather than modify every sword globally.
+The old mutual-target clash shortcut is no longer registered or used. The shared
+blade-contact core remains separate until animation and swept collision are ready.
+All eligibility and damage decisions stay on the server; the client sends only
+guard intent. The existing Combat addon API is unchanged.
+See `docs/SWORD_COMBAT.md` for controls, restrictions and the validation plan.
+No technique bar, combo system or hotbar replacement exists yet.
 
 Combat Mode currently activates one HUD replacement:
 
@@ -144,8 +164,19 @@ Current packets:
 
 - Client to server: `QiChargeStatePayload`, sent when the local charge key state changes.
 - Client to server: `CombatModeTogglePayload`, sent once per consumed combat key press.
+- Client to server: `GuardStatePayload`, sent on guard input changes with a held-input refresh.
 - Server to client: Qi attachment sync for the owning player through `QiAttachments`.
 - Server to client: Combat attachment sync for the owning player through `CombatAttachments`.
+- Server to client: temporary melee action sync to the owner and tracking players.
+
+Guard input refreshes every ten client ticks while held and expires after thirty
+server ticks without a refresh. Release removes protection immediately; equipment,
+dimension and player lifecycle checks prevent stale guard ownership. Network
+version 2 includes the guard channel and requires matching client/server builds.
+
+Dev-only server tests live in `src/gameTest`, are enabled with
+`-PcombatGameTests`, and are not packaged in the mod jar. The GameTest server uses
+`build/game-test-run`, not the user's development world.
 
 Addons should not use Murimblock internal packet classes to read or mutate Qi or combat mode. They should use `com.murimblock.api`.
 

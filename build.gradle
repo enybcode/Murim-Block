@@ -21,8 +21,20 @@ sourceSets.main.resources {
     exclude('**/*.bbmodel', 'src/generated/**/.cache')
 }
 
+sourceSets {
+    gameTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations.gameTestImplementation.extendsFrom configurations.implementation
+configurations.gameTestRuntimeOnly.extendsFrom configurations.runtimeOnly
+def combatGameTestsEnabled = providers.gradleProperty('combatGameTests').isPresent()
+
 neoForge {
     version = project.neo_version
+    addModdingDependenciesTo(sourceSets.gameTest)
 
     parchment {
         minecraftVersion = project.parchment_minecraft_version
@@ -39,6 +51,14 @@ neoForge {
             server()
             programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.gameTest
+            gameDirectory = project.file('build/game-test-run')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            disableIdeRun()
         }
 
         data {
@@ -59,6 +79,9 @@ neoForge {
     mods {
         "${mod_id}" {
             sourceSet(sourceSets.main)
+            if (combatGameTestsEnabled) {
+                sourceSet(sourceSets.gameTest)
+            }
         }
     }
 
@@ -102,6 +125,14 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
+}
+
+tasks.named('runGameTestServer').configure {
+    doFirst {
+        if (!combatGameTestsEnabled) {
+            throw new GradleException('Use -PcombatGameTests to load the sword guard server tests.')
+        }
+    }
 }
 
 tasks.named('wrapper', Wrapper).configure {

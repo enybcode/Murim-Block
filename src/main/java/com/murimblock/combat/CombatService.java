@@ -39,6 +39,9 @@ public final class CombatService {
         }
 
         player.setData(CombatAttachments.PLAYER_COMBAT, updated);
+        if (!enabled) {
+            MeleeCombatService.clear(player);
+        }
         NeoForge.EVENT_BUS.post(new CombatModeChangedEvent(player, enabled));
         sendActionBar(player, enabled);
         return true;

@@ -5,10 +5,12 @@ This document distinguishes implemented code from planned gameplay and visual ch
 
 ## Current Delivery
 
-Step 1 adds an isolated, shared attack/contact core. It is not connected to
-Minecraft input, damage, AI, rendering or networking yet. It changes no controls,
-HUD, skins, save data or live combat. An earlier local sword-combat prototype
-remains separate and is not part of this delivery.
+Step 1 adds an isolated, shared attack/contact core. It is not connected to live
+attacks, animation or AI yet. A later, separate live sword-guard slice now connects
+held input, temporary synchronized poses, Qi cost and frontal melee interception.
+See `SWORD_COMBAT.md` for its controls and deliberately temporary rules. Only the
+basic sword profile is enabled; other weapon families remain unchanged. No learned
+martial-art selection, new HUD or save-data change is included.
 
 The intended result is an original Murim/Wuxia combat system with animated
 cubic player models, readable attack preparation, directional guard, timed
@@ -235,12 +237,18 @@ and CI status continue to be tracked on PR #2; `main` is not merged automaticall
 
 ## Next Steps
 
+The live guard is an interim frontal-cone defense, not animated blade contact.
+It does not activate the isolated core or reinstate the old mutual-target clash.
+Weapon category and martial-art ID identify distinct combat profiles; the future
+animation/action selection must use those same identities. Only `basic_sword`
+exists at runtime today. See the guard delivery's separate verification log.
+
 | Step | Implementation | Acceptance gate | Status |
 | --- | --- | --- | --- |
 | 1. Shared core | Timeline, baked blade motion and contact resolution. | Unit tests, build and clean snapshot. | Passed; no live gameplay integration yet. |
 | 2. Player animation slice | Pin compatible Player Animation Library; author original stance, cut, guard and clash recoil; connect full player rig. | Actual F5/first-person/observer playback, matching debug blade, no duplicate rendering. | Not started. |
 | 3. Armed zombie slice | Server actions, swept blade/body/block contacts, controlled damage bridge and zombie AI/model adapter. | Player/zombie and player/player exchanges, one damage owner, visible preparation and recoil. | Not started. |
-| 4. Defense/network | Directional block, timed parry, guard break, action synchronization and interruption. | Server/client agreement, lifecycle and latency checks. | Not started. |
+| 4. Defense/network | Directional block, timed parry, guard break, action synchronization and interruption. | Server/client agreement, lifecycle and latency checks. | Interim sword guard delivered; animated contact, parry and latency validation pending. |
 | 5. Mob families | Armed, unarmed, ranged and special-attack adapters with an entity audit. | Each entity's behavior, model, equipment, drops and exclusions checked. | Not started. |
 | 6. Cleanup/release | Remove superseded paths and finish regression/performance checks. | Existing worlds, dedicated server, multiplayer and user approval. | Not started. |
 
@@ -255,6 +263,11 @@ There must be one owner per managed attack. When the new slice is connected,
 replace the local prototype's fixed-delay/mutual-target `SwordExchange` route;
 do not run it alongside the trajectory resolver. Suppress the corresponding
 vanilla attack/swing execution for managed actions only.
+
+The live guard delivery already removes that prototype route from runtime:
+it performs no delayed sword damage and no proximity/mutual-target auto-clash.
+Sword hits remain vanilla for this interim guard slice. Replacing them with
+trajectory hits must also retire this slice's temporary attack-recovery rule.
 
 For the first mob, preserve navigation and target selection but replace its
 melee execution/cooldown with server-requested actions. Prevent an independent
