@@ -59,6 +59,10 @@ MurimblockApi.combat().toggleCombatMode(serverPlayer);
 
 Combat mode is temporary. It is reset after death and logout, and it is not persisted to disk.
 
+This API currently controls only Murimblock's HUD/GUI mode flag. It does not
+alter attacks or represent Epic Fight's battle mode. An Epic Fight bridge is
+not implemented yet.
+
 ## Cultivation API
 
 ```java

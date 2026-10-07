@@ -71,6 +71,9 @@ if ("qi_guiding".equals(cultivation.realmId())) {
 
 ## Reading Combat Mode
 
+This is Murimblock's retained HUD/GUI flag, not Epic Fight's battle mode. It does
+not enable or disable attacks. See `EPIC_FIGHT.md` before adding combat hooks.
+
 ```java
 boolean inCombat = MurimblockApi.combat().isInCombatMode(player);
 ```

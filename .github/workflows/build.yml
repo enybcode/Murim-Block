@@ -25,9 +25,9 @@ jobs:
       - name: Build
         run: ./gradlew build
 
-      - name: Sword guard and animation preview server tests
+      - name: Foundation server tests
         shell: bash
         run: |
           set -o pipefail
-          ./gradlew -PcombatGameTests runGameTestServer 2>&1 | tee gametest-output.log
+          ./gradlew -PgameTests runGameTestServer 2>&1 | tee gametest-output.log
           grep -Eq 'All [1-9][0-9]* required tests passed' gametest-output.log

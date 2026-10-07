@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class MurimblockCommandsTest {
     @Test
@@ -45,15 +43,11 @@ class MurimblockCommandsTest {
     }
 
     @Test
-    void animationPreviewRequiresOperatorPermissionButLegacyCommandsDoNot() {
+    void combatCommandTreeContainsOnlyTheRetainedModeControls() {
         CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
         CombatCommands.register(dispatcher);
-        var preview = dispatcher.getRoot().getChild("combat").getChild("preview");
-        assertNotNull(preview);
-        assertFalse(preview.canUse(source(0)));
-        assertFalse(preview.canUse(source(1)));
-        assertTrue(preview.canUse(source(2)));
-        assertNotNull(preview.getChild("stop"));
+        assertEquals(Set.of("check", "on", "off", "toggle"), dispatcher.getRoot()
+                .getChild("combat").getChildren().stream().map(CommandNode::getName).collect(Collectors.toSet()));
     }
 
     private static void assertVisibleChildren(

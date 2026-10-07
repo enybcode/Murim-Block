@@ -1,7 +1,6 @@
 package com.murimblock.combat;
 
 import com.murimblock.Murimblock;
-import com.murimblock.combat.preview.PreviewState;
 import java.util.function.Supplier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -17,16 +16,6 @@ public final class CombatAttachments {
             () -> AttachmentType.builder(CombatData::initial)
                     .sync((holder, recipient) -> holder == recipient, CombatData.STREAM_CODEC)
                     .build()
-    );
-
-    static final Supplier<AttachmentType<MeleeData>> PLAYER_MELEE = ATTACHMENT_TYPES.register(
-            "player_melee",
-            () -> AttachmentType.builder(MeleeData::initial).sync(MeleeData.STREAM_CODEC).build()
-    );
-
-    public static final Supplier<AttachmentType<PreviewState>> PLAYER_PREVIEW = ATTACHMENT_TYPES.register(
-            "combat_preview",
-            () -> AttachmentType.builder(PreviewState::initial).sync(PreviewState.STREAM_CODEC).build()
     );
 
     private CombatAttachments() {
