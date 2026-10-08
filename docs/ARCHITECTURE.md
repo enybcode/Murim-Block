@@ -63,6 +63,16 @@ Main classes:
 - `QiBossProgress`: persistent first boss victory state.
 - `QiFormat`: shared numeric formatting utility.
 
+Reward windows use the server overworld's game clock in every dimension. Only
+the affected kill history is pruned on a kill; a server maintenance hook clears
+expired idle entries every 200 ticks. Server start/stop clears transient history,
+not saved Qi, cultivation or first boss victories. Logging out alone does not
+reset anti-farm protection. Qi mutation commands require operator level 2.
+
+Movement lock modifiers are updated only if missing or changed, avoiding an
+attribute dirty mark every charge tick. Client charge input uses the same Epic
+Fight busy check and clears transient input/FOV state on logout or player replacement.
+
 Addon entry point:
 
 ```java

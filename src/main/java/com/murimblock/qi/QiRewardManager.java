@@ -42,7 +42,7 @@ public final class QiRewardManager {
         // TODO: Decider plus tard si le Qi excedentaire doit alimenter une progression de cultivation ou de breakthrough.
         QiService.addQi(player, reward.finalReward());
         rememberFirstVictory(player, reward);
-        rememberFullBossReward(player, reward, player.serverLevel().getGameTime());
+        rememberFullBossReward(player, reward, rewardTime(player));
         sendDebugMessage(player, killedEntity, reward);
         return Optional.of(reward);
     }
@@ -52,7 +52,7 @@ public final class QiRewardManager {
                 player.getUUID(),
                 QiService.getBossProgress(player),
                 resolveRewardTarget(killedEntity),
-                player.serverLevel().getGameTime()
+                rewardTime(player)
         );
     }
 
@@ -144,7 +144,7 @@ public final class QiRewardManager {
     }
 
     public static String describeAntiFarm(ServerPlayer player, EntityType<?> entityType) {
-        long gameTime = player.serverLevel().getGameTime();
+        long gameTime = rewardTime(player);
         ResourceLocation entityTypeId = entityTypeId(entityType);
         int count = KILL_TRACKER.recentKillCount(player.getUUID(), entityTypeId, gameTime);
         int nextCount = count + 1;
@@ -160,6 +160,19 @@ public final class QiRewardManager {
 
     static void resetTrackerForTests() {
         KILL_TRACKER.clear();
+    }
+
+    static void clearTransientHistory() {
+        KILL_TRACKER.clear();
+    }
+
+    static void cleanupTransientHistory(long gameTime) {
+        KILL_TRACKER.cleanup(gameTime);
+    }
+
+    private static long rewardTime(ServerPlayer player) {
+        // All dimensions share the same anti-farm clock, including custom dimensions with different times.
+        return player.getServer().overworld().getGameTime();
     }
 
     static void recordFullBossRewardForTests(UUID playerId, ResourceLocation bossId, long gameTime) {

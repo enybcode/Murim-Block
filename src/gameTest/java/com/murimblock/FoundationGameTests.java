@@ -1,6 +1,5 @@
 package com.murimblock;
 
-import com.mojang.authlib.GameProfile;
 import com.murimblock.combat.CombatService;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationRealm;
@@ -10,8 +9,6 @@ import com.murimblock.qi.charge.QiChargeService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
 import com.murimblock.integration.epicfight.EpicFightContentPolicy;
-import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -22,13 +19,9 @@ import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -44,14 +37,15 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import net.neoforged.neoforge.network.connection.ConnectionType;
-import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import yesman.epicfight.registry.entries.EpicFightItems;
 import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
+
+import static com.murimblock.testing.GameTestPlayers.player;
+import static com.murimblock.testing.GameTestPlayers.cleanup;
 
 /** Runs against a disposable server world and is excluded from the shipped mod. */
 @GameTestHolder(Murimblock.MOD_ID)
@@ -617,34 +611,4 @@ public final class FoundationGameTests {
         });
     }
 
-    private static ServerPlayer player(GameTestHelper helper) {
-        var cookie = new CommonListenerCookie(new GameProfile(UUID.randomUUID(), "foundation-test"), 0,
-                ClientInformation.createDefault(), false, ConnectionType.NEOFORGE);
-        ServerPlayer player = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(),
-                cookie.gameProfile(), cookie.clientInformation());
-        Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
-        NetworkRegistry.configureMockConnection(connection);
-        player.server.getPlayerList().placeNewPlayer(connection, player, cookie);
-        player.setGameMode(GameType.SURVIVAL);
-        player.getAbilities().invulnerable = false;
-        player.setNoGravity(true);
-        player.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
-        // Damage must run after Minecraft's login protection has elapsed.
-        for (int i = 0; i <= 60; i++) player.tick();
-        BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
-        player.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0, 0);
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
-        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
-        player.tick();
-        CombatService.setCombatMode(player, true);
-        QiService.setQiMax(player, 100);
-        QiService.setQi(player, 100);
-        return player;
-    }
-
-    private static void cleanup(ServerPlayer player) {
-        QiChargeService.stopCharging(player);
-        player.server.getPlayerList().remove(player);
-    }
 }

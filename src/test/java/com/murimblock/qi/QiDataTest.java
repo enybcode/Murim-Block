@@ -163,4 +163,17 @@ class QiDataTest {
         assertThrows(IllegalArgumentException.class, () -> data.addQi(-1.0));
         assertThrows(IllegalArgumentException.class, () -> data.removeQiMax(-1.0));
     }
+
+    @Test
+    void overflowingRegenerationSaturatesInsteadOfThrowing() {
+        QiData data = new QiData(0, Double.MAX_VALUE);
+        assertEquals(data.refill(), data.regenerateForTicks(Long.MAX_VALUE, Double.MAX_VALUE));
+        assertEquals(data.refill(), data.regenerateForTicks(Long.MAX_VALUE));
+    }
+
+    @Test
+    void extremeCapacityWithZeroRateDoesNotRegenerate() {
+        QiData data = new QiData(0, Double.MAX_VALUE);
+        assertEquals(data, data.regenerateForTicks(Long.MAX_VALUE, 0));
+    }
 }

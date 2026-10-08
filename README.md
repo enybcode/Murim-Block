@@ -152,6 +152,8 @@ Voir le guide pour les chemins exacts, les limites et le controle des exports.
 - `src/test`: unit and resource checks.
 - `src/gameTest`: development-only foundation server tests.
 - `docs`: maintained technical documentation and GUI demo.
+- `docs/gui/legacy-v4`: archived V4 reference images, not shipped in the mod.
+- `scripts/cloud`: dependency setup, managed Java proxy and headless verification.
 - `.local/gui`: local GUI references and previous asset kits, excluded from Git.
 - `build`, `.gradle`, `run`: generated output, caches and local development worlds.
 
@@ -180,6 +182,15 @@ dependency, custom character model or NPC guard is claimed. See the
 [delivery report](docs/DELIVERY_CLEAR_MANUSCRIPT_MOBS.md) for actual checks and limits.
 
 ## Developer documentation
+
+Start with the [documentation index](docs/README.md). For the existing Codex
+environment, follow [Cloud import](docs/CLOUD_IMPORT.md): select `test`, preserve
+the managed proxy and verify actual NeoForge dependency access. Source is imported
+through GitHub; local worlds, IDE settings and caches must stay local.
+
+Qi/Qi Max mutation commands now require operator permission level 2, including
+self-targeted commands. Read-only checks and normal combat mode controls remain
+available to players. This fixes unrestricted debug commands in multiplayer.
 
 - `docs/ARCHITECTURE.md`: project architecture and package responsibilities.
 - `docs/ADDON_API.md`: public Java API currently available to addons.
