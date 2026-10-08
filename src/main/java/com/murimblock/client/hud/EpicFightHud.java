@@ -44,9 +44,6 @@ public final class EpicFightHud {
         int center = graphics.guiWidth() / 2;
         int x = Math.max(5, center - 158);
         int y = graphics.guiHeight() - 15;
-        if (patch.getStamina() < patch.getMaxStamina()) {
-            meter(graphics, x, y, 60, patch.getStamina(), patch.getMaxStamina(), 0xFFE4C263);
-        }
         if (patch.isHoldingAny() && patch.getHoldingSkill() instanceof ChargeableSkill charge) {
             meter(graphics, x, y - 8, 54, patch.getSkillChargingTicks(), charge.getMaxChargingTicks(), 0xFFF3EEE0);
         }

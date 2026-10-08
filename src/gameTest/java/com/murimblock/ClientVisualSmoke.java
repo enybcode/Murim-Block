@@ -115,7 +115,13 @@ public final class ClientVisualSmoke {
                         EpicFightBridge.patch(player).setStamina(5);
                     });
                 }
-                case 265 -> capture("07-hud.png");
+                case 265 -> {
+                    var patch = EpicFightBridge.patch(mc.player);
+                    patch.setStamina(0);
+                    require(patch.getStamina() == patch.getMaxStamina(), "Client still reads depleted stamina");
+                    require(patch.hasStamina(patch.getMaxStamina() + 100), "Client still limits actions by stamina");
+                    capture("07-hud.png");
+                }
                 case 280 -> {
                     mc.getWindow().setWindowed(960, 720);
                     mc.options.guiScale().set(3);
@@ -125,7 +131,7 @@ public final class ClientVisualSmoke {
                 case 295 -> capture("08-small-scale.png");
                 case 320 -> {
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
-                            "Native skill/book screens replaced; one Murim key category; hidden rows absent; gameplay mappings retained.\n");
+                            "Native skill/book screens replaced; one Murim key category; hidden rows absent; gameplay mappings retained; client stamina disabled.\n");
                     LOGGER.info("Murim client visual smoke checks passed");
                     mc.stop();
                 }

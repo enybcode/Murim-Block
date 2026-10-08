@@ -30,7 +30,8 @@ See `docs/EPIC_FIGHT.md` for the integration boundary and validation checklist.
 - Passive and active Qi regeneration.
 - Configurable keybind for charging Qi.
 - Qi charging movement lock, FOV and particle effects.
-- Compact blue Qi HUD in Epic Fight combat mode and minimal stamina/skill indicators.
+- Compact blue Qi HUD in Epic Fight combat mode and minimal skill indicators.
+- Stamina disabled for player combat: no yellow endurance bar or stamina exhaustion.
 - Cultivation realms, stages and breakthrough checks.
 - Server-side Qi rewards for mob kills with anti-farm and boss first victories.
 - Actual Epic Fight mode bridge; the engine owns combat, animation, collision and guard.

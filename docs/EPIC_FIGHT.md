@@ -13,7 +13,8 @@
 ## Responsibilities
 
 Epic Fight owns animation, player rendering, attack timing/colliders, damage, guard,
-native stamina, default weapon combos, patched entities and network synchronization.
+default weapon combos, patched entities and network synchronization. Murimblock
+disables player stamina as a combat resource.
 Its default entity patches also affect supported mobs and bosses. This is not a
 sword-only replacement. Outside combat mode, the engine permits vanilla-mode combat.
 
@@ -21,8 +22,7 @@ Murimblock retains Qi, cultivation, rewards, manuscript screens and stable addon
 `EpicFightBridge` delegates to the actual `PlayerPatch`. The unsaved `CombatData`
 attachment is a HUD/event mirror, not a second combat authority. Epic Fight owns
 actual mode/skill persistence; logout clears only the mirror. Switches respect the
-engine gamerule/events. No new Qi costs were introduced; native stamina remains
-independent of Qi.
+engine gamerule/events. No new Qi costs were introduced.
 
 Qi charging cannot start during an action or held skill. The server `CAST_SKILL`
 hook rejects casts during Qi charging. Existing movement locks, regeneration and
@@ -47,12 +47,35 @@ charge effects remain. Test damage/stun interruption behavior in actual play.
   settings are not all recreated in this slice.
 - Only four native engine HUD layers are cancelled: stamina, skills, innate and
   charging. Native target indicator and mob health bars are suppressed. Murim draws
-  compact indicators outside the hotbar's health/armor/food columns and keeps the
-  blue Qi replacement of XP in combat mode. XP data is unchanged.
+  compact skill/charge indicators outside the hotbar's health/armor/food columns
+  and keeps the blue Qi replacement of XP in combat mode. The yellow stamina meter
+  is removed entirely. XP data is unchanged.
 - Three access-transformed fields allow presentation regrouping and row filtering.
   A client-only mixin suppresses the temporary engine version banner; credits/version
   remain in the mod list and documentation. No engine fork or global font override.
 - The manuscript font is scoped to Murim screens; labels remain in `lang/en_us.json`.
+
+## Stamina Disabled
+
+`EpicFightStaminaMixin` applies to `PlayerPatch` on **both client and server**.
+Stamina reads report the existing finite maximum, finite nonnegative stamina costs
+are affordable even when larger than that maximum, and stamina writes cannot
+deplete it. This is a compatibility shim, not a larger pool or faster regeneration.
+It also neutralizes legacy depleted values and direct writes outside skill casts.
+Upstream attributes, data IDs and serialization remain registered and unchanged;
+no engine fork or save migration is necessary.
+
+Guard and dodge still require the appropriate equipped skills, weapon, action
+state and positioning. Front-facing and unblockable-damage rules remain native;
+stamina exhaustion can no longer cause guard break. The Qi-charge cast exclusion,
+skill cooldowns, weapon charge and explicit health costs remain unchanged. No
+stamina cost is transferred to Qi, hunger or health, including Forbidden Strength's
+insufficient-stamina fallback. Protocol **6** requires matching client/server builds
+so an older client cannot retain its own stamina prediction.
+
+Upstream stamina-only upgrades lose their resource-management purpose. Their saved
+IDs are retained; balancing those native skills and their descriptions is later
+work. Do not claim every native passive or addon interaction has been rebalanced.
 
 ## Technique Learning And Equipping
 
@@ -115,12 +138,17 @@ not success. Neither the capture harness nor GameTests enter published mod jars.
 ### Recorded Checks (2026-10-08)
 
 - 114 unit tests: zero failures or errors.
-- 11 required server GameTests passed, including one damage application from an
+- 14 required server GameTests passed, including one damage application from an
   actual animated sword contact, book consumption and all six sword capabilities.
+  Added repeated guard/dodge resource checks above the old maximum, Forbidden
+  Strength without health fallback, retained health/charge/cooldown requirements,
+  a grounded dodge cast and front-only guard with no stamina or Qi consumption.
 - Real Minecraft client smoke run passed: four tabs, native screen redirection,
   combat settings, one controls category with twelve useful bindings and hidden
   redundant rows. Eight fresh captures were reviewed at 427x240 and 320x240 GUI
-  sizes; the native version banner is absent and HUD indicators avoid the hotbar.
+  sizes; the native version banner and yellow stamina bar are absent and remaining
+  HUD indicators avoid the hotbar. The client reads full stamina and accepts costs
+  above the old maximum, confirming the common-side shim is active locally too.
 - Native book-screen routing was exercised, but this does not replace manual
   right-click checks with real books in both hands or two-client network tests.
 
@@ -143,7 +171,8 @@ Keep main unchanged until explicit user approval.
 - Native client-to-server packets still exist. The validated Murim technique path
   is not an anti-cheat audit or hardening of every upstream packet.
 - Upgrade checks must cover skill/container APIs, screen namespaces, layer names,
-  key categories, gamerules and the three access-transformed fields.
+  key categories, gamerules, the three access-transformed fields and the pinned
+  `PlayerPatch.getStamina`, `hasStamina` and `setStamina` mixin targets.
 - Upstream diagnostics can mention `epicfight:air_slash`, missing subtitles and
   optional WaveyCapes integration. Do not claim every native skill was tested or
   patch the whole engine to suppress unrelated logs.

@@ -50,6 +50,8 @@ import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.world.item.SkillBookItem;
 import yesman.epicfight.gameasset.Animations;
+import yesman.epicfight.skill.Skill;
+import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 
 /** Runs against a disposable server world and is excluded from the shipped mod. */
 @GameTestHolder(Murimblock.MOD_ID)
@@ -304,6 +306,84 @@ public final class FoundationGameTests {
                     "Invalid sword capability: " + item);
         }
         helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void staminaCostsCannotExhaustGuardOrDodgeAndKeepOtherResources(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        try {
+            var patch = (ServerPlayerPatch) EpicFightBridge.patch(player);
+            var guard = EpicFightSkills.GUARD.get();
+            var roll = EpicFightSkills.ROLL.get();
+            patch.getSkill(SkillSlots.GUARD).setSkill(guard);
+            patch.getSkill(SkillSlots.DODGE).setSkill(roll);
+            patch.getSkill(SkillSlots.PASSIVE1).setSkill(EpicFightSkills.FORBIDDEN_STRENGTH.get());
+            patch.setStamina(0);
+            float health = player.getHealth();
+            for (int i = 0; i < 40; i++) {
+                float cost = patch.getMaxStamina() + 100;
+                helper.assertTrue(patch.consumeForSkill(guard, Skill.Resource.STAMINA, cost), "Guard still limited by stamina");
+                helper.assertTrue(patch.consumeForSkill(roll, Skill.Resource.STAMINA, cost), "Dodge still limited by stamina");
+            }
+            helper.assertTrue(patch.getStamina() == patch.getMaxStamina(), "Stamina was depleted");
+            helper.assertTrue(player.getHealth() == health, "Stamina costs fell back to health");
+            helper.assertTrue(QiService.getQi(player) == 100, "Removing stamina spent Qi");
+            helper.assertFalse(patch.consumeForSkill(guard, Skill.Resource.WEAPON_CHARGE, 1000), "Weapon charge requirement removed");
+            helper.assertFalse(patch.consumeForSkill(guard, Skill.Resource.COOLDOWN, 1000), "Cooldown requirement removed");
+            helper.assertTrue(patch.consumeForSkill(guard, Skill.Resource.HEALTH, 1), "Unrelated health resource changed");
+            helper.assertTrue(player.getHealth() == health - 1, "Unrelated health cost was removed");
+            helper.assertFalse(patch.hasStamina(Float.NaN) || patch.hasStamina(Float.POSITIVE_INFINITY), "Invalid cost accepted");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void dodgeCastsWithoutStaminaButStillRequiresGround(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        try {
+            var patch = (ServerPlayerPatch) EpicFightBridge.patch(player);
+            var dodge = patch.getSkill(SkillSlots.DODGE);
+            dodge.setSkill(EpicFightSkills.ROLL.get());
+            patch.setStamina(0);
+            CompoundTag args = new CompoundTag();
+            args.putInt("direction", 0);
+            args.putFloat("yRot", 0);
+            player.setOnGround(false);
+            helper.assertFalse(dodge.requestCasting(patch, args), "Stamina removal permitted an airborne dodge");
+            player.setOnGround(true);
+            helper.assertTrue(dodge.requestCasting(patch, args), "Grounded dodge was rejected");
+            helper.assertTrue(patch.getStamina() == patch.getMaxStamina() && QiService.getQi(player) == 100,
+                    "Dodge consumed stamina or Qi");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void freeGuardStillBlocksOnlyFromTheFront(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        try {
+            var patch = (ServerPlayerPatch) EpicFightBridge.patch(player);
+            var guard = patch.getSkill(SkillSlots.GUARD);
+            guard.setSkill(EpicFightSkills.GUARD.get());
+            player.connection.tick();
+            patch.setStamina(0);
+            player.setYRot(0);
+            helper.assertTrue(guard.requestHold(patch, new CompoundTag()), "Guard could not start");
+            var attacker = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 3));
+            attacker.setNoAi(true);
+            attacker.setNoGravity(true);
+            attacker.moveTo(player.getX(), player.getY(), player.getZ() + 1);
+            float health = player.getHealth();
+            player.hurt(player.damageSources().mobAttack(attacker), 6);
+            helper.assertTrue(player.getHealth() == health, "Frontal guard failed");
+            player.invulnerableTime = 0;
+            attacker.moveTo(player.getX(), player.getY(), player.getZ() - 1);
+            player.hurt(player.damageSources().mobAttack(attacker), 6);
+            helper.assertTrue(player.getHealth() < health, "Guard incorrectly blocked a rear hit");
+            helper.assertTrue(patch.getStamina() == patch.getMaxStamina() && QiService.getQi(player) == 100,
+                    "Guard consumed stamina or Qi");
+            helper.succeed();
+        } finally { cleanup(player); }
     }
 
     private static ServerPlayer player(GameTestHelper helper) {

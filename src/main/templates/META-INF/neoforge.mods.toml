@@ -5,6 +5,9 @@ license="${mod_license}"
 [[mixins]]
 config="murimblock.client.mixins.json"
 
+[[mixins]]
+config="murimblock.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"

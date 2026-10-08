@@ -93,6 +93,8 @@ Main classes:
 - `CombatService`: server-authoritative reads, set and toggle operations.
 - `CombatEvents`: clears stale mirrors without overwriting Epic Fight's saved mode.
 - `EpicFightBridge`: engine mode, activity checks and Qi-charge cast exclusion.
+- `EpicFightStaminaMixin`: common-side stamina compatibility shim; no stamina
+  depletion or limits, without changing Qi, skill cooldowns or saved engine IDs.
 - `EpicFightSkillService`: ownership, book consumption, compatible slots,
   cooldowns and owner/tracking-player synchronization.
 - `CombatCommands`: `/combat check`, `/combat on`, `/combat off`, `/combat toggle`.
@@ -162,7 +164,7 @@ Current packets:
 - Server to client: Qi attachment sync for the owning player through `QiAttachments`.
 - Server to client: Combat attachment sync for the owning player through `CombatAttachments`.
 
-Network version 5 requires matching client/server builds. The Murimblock mirror
+Network version 6 requires matching client/server builds. The Murimblock mirror
 is not persisted; Epic Fight saves its own mode. Qi/cultivation IDs are unchanged.
 Epic Fight carries its own attack/animation/skill synchronization packets.
 
