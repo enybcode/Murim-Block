@@ -16,21 +16,23 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class MurimblockCommandsTest {
     @Test
-    void qiMaxDevelopmentCommandsAreVisibleWithoutPermissions() {
+    void qiMaxChangesRequireOperatorPermission() {
         CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
 
         MurimblockCommands.registerDevelopmentCommands(dispatcher);
 
-        assertVisibleChildren("qimax", dispatcher, Set.of("check", "set", "add", "remove", "reset"));
+        assertVisibleChildren("qimax", dispatcher, Set.of("check"));
+        assertVisibleChildren("qimax", dispatcher, Set.of("check", "set", "add", "remove", "reset"), 2);
     }
 
     @Test
-    void qiDevelopmentCommandsAreVisibleWithoutPermissions() {
+    void qiChangesRequireOperatorPermission() {
         CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
 
         MurimblockCommands.registerDevelopmentCommands(dispatcher);
 
-        assertVisibleChildren("qi", dispatcher, Set.of("check", "set", "add", "remove", "refill", "reward"));
+        assertVisibleChildren("qi", dispatcher, Set.of("check", "reward"));
+        assertVisibleChildren("qi", dispatcher, Set.of("check", "set", "add", "remove", "refill", "reward"), 2);
     }
 
     @Test
@@ -55,11 +57,16 @@ class MurimblockCommandsTest {
             CommandDispatcher<CommandSourceStack> dispatcher,
             Set<String> expected
     ) {
+        assertVisibleChildren(commandName, dispatcher, expected, 0);
+    }
+
+    private static void assertVisibleChildren(String commandName, CommandDispatcher<CommandSourceStack> dispatcher,
+                                             Set<String> expected, int permission) {
         CommandNode<CommandSourceStack> command = dispatcher.getRoot().getChild(commandName);
 
         assertNotNull(command);
         assertEquals(expected, command.getChildren().stream()
-                .filter(child -> child.canUse(source(0)))
+                .filter(child -> child.canUse(source(permission)))
                 .map(CommandNode::getName)
                 .collect(Collectors.toSet()));
     }

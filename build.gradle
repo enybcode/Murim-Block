@@ -145,6 +145,9 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
+    dependsOn tasks.named('jar')
+    inputs.file(tasks.named('jar', Jar).flatMap { it.archiveFile }).withPropertyName('distributionJar')
+    systemProperty 'murimblock.test.distribution', tasks.named('jar', Jar).flatMap { it.archiveFile }.get().asFile.absolutePath
 }
 
 tasks.named('runGameTestServer').configure {

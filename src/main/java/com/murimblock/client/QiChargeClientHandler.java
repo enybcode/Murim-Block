@@ -1,6 +1,7 @@
 package com.murimblock.client;
 
 import com.murimblock.Murimblock;
+import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.network.QiChargeStatePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
@@ -9,6 +10,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -16,6 +18,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class QiChargeClientHandler {
     private static boolean lastSentCharging;
     private static boolean visualCharging;
+    private static LocalPlayer lastPlayer;
 
     private QiChargeClientHandler() {
     }
@@ -24,9 +27,14 @@ public final class QiChargeClientHandler {
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
+        if (player != lastPlayer) {
+            resetState();
+            lastPlayer = player;
+        }
         boolean shouldCharge = player != null
                 && player.isAlive()
                 && !player.isSpectator()
+                && !EpicFightBridge.isBusy(player)
                 && minecraft.screen == null
                 && MurimblockKeyMappings.CHARGE_QI.isDown();
 
@@ -58,8 +66,19 @@ public final class QiChargeClientHandler {
     }
 
     static void resetForTests() {
+        resetState();
+    }
+
+    @SubscribeEvent
+    public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        resetState();
+        QiChargeFovHandler.resetTransition();
+    }
+
+    private static void resetState() {
         lastSentCharging = false;
         visualCharging = false;
+        lastPlayer = null;
     }
 
     private static void setVisualCharging(boolean charging) {

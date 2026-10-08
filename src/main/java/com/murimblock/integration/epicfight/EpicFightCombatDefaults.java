@@ -22,17 +22,17 @@ public final class EpicFightCombatDefaults {
     public static void enforce(ServerPlayer player) {
         var patch = EpicFightBridge.patch(player);
         if (patch == null) return;
-        for (var container : patch.getPlayerSkills().listSkillContainers().toList()) {
+        patch.getPlayerSkills().listSkillContainers().forEach(container -> {
             Skill current = container.getSkill();
             Skill desired = current;
             boolean nativeOrEmpty = current == null || EpicFightContentPolicy.isNative(current.getRegistryName());
             if (nativeOrEmpty && container.getSlot() == SkillSlots.GUARD) desired = EpicFightSkills.GUARD.get();
             else if (nativeOrEmpty && container.getSlot() == SkillSlots.DODGE) desired = EpicFightSkills.ROLL.get();
             else if (!allowed(current)) desired = null;
-            if (desired == current || !container.setSkill(desired)) continue;
+            if (desired == current || !container.setSkill(desired)) return;
             EpicFightNetworkManager.sendToPlayer(container.createSyncPacketToLocalPlayer(), player);
             EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(
                     new SPSetRemotePlayerSkill(container.getSlot(), player.getId(), Skill.holderOrNull(desired)), player);
-        }
+        });
     }
 }

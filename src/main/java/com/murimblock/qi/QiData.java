@@ -80,6 +80,9 @@ public record QiData(double qi, double qiMax) {
 
         double minutes = (double) elapsedTicks / QiConstants.TICKS_PER_MINUTE;
         double regenerated = qiMax * ratePerMinute * minutes;
+        if (regenerated >= qiMax - qi) {
+            return refill();
+        }
         return addQi(regenerated);
     }
 

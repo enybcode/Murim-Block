@@ -56,7 +56,7 @@ public final class CombatQiHud {
     }
 
     static int computeFilledWidth(double qi, double qiMax) {
-        return (int) (computeQiRatio(qi, qiMax) * VANILLA_PROGRESS_SCALE);
+        return Math.min(BAR_WIDTH, (int) (computeQiRatio(qi, qiMax) * VANILLA_PROGRESS_SCALE));
     }
 
     private static boolean shouldReplaceExperienceHud() {

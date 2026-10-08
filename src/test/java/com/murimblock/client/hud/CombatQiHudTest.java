@@ -52,15 +52,15 @@ class CombatQiHudTest {
         assertEquals(0, CombatQiHud.computeFilledWidth(0.0, 100.0));
         assertEquals(45, CombatQiHud.computeFilledWidth(25.0, 100.0));
         assertEquals(91, CombatQiHud.computeFilledWidth(50.0, 100.0));
-        assertEquals(183, CombatQiHud.computeFilledWidth(100.0, 100.0));
-        assertEquals(183, CombatQiHud.computeFilledWidth(150.0, 100.0));
+        assertEquals(182, CombatQiHud.computeFilledWidth(100.0, 100.0));
+        assertEquals(182, CombatQiHud.computeFilledWidth(150.0, 100.0));
         assertEquals(0, CombatQiHud.computeFilledWidth(-25.0, 100.0));
         assertEquals(0, CombatQiHud.computeFilledWidth(50.0, 0.0));
     }
 
     @Test
     void filledWidthNeverLeavesVanillaBounds() {
-        assertEquals(183, CombatQiHud.computeFilledWidth(999999.0, 100.0));
+        assertEquals(182, CombatQiHud.computeFilledWidth(999999.0, 100.0));
         assertEquals(0, CombatQiHud.computeFilledWidth(-999999.0, 100.0));
         assertEquals(0, CombatQiHud.computeFilledWidth(Double.NaN, 100.0));
         assertEquals(0, CombatQiHud.computeFilledWidth(50.0, Double.NaN));

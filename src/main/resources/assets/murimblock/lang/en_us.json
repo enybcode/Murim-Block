@@ -1,5 +1,6 @@
 {
   "key.categories.murimblock": "Murimblock",
+  "entity.murimblock.training_opponent": "Training Opponent",
   "key.murimblock.charge_qi": "Charge Qi",
   "key.murimblock.combat_mode": "Combat Mode",
   "message.murimblock.combat_mode.on": "Combat Mode: ON",
@@ -12,6 +13,10 @@
   "gui.murimblock.tab.cultivation": "Cultivation",
   "gui.murimblock.tab.infos": "Info",
   "gui.murimblock.stage": "Stage",
+  "gui.murimblock.realm_label": "Realm",
+  "gui.murimblock.qi": "Qi",
+  "gui.murimblock.stage_unknown": "???",
+  "gui.murimblock.status_placeholder": "Stage: ???",
   "gui.murimblock.stage.early": "Early",
   "gui.murimblock.stage.middle": "Middle",
   "gui.murimblock.stage.late": "Late",

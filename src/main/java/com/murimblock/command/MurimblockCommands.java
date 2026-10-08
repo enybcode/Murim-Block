@@ -42,6 +42,7 @@ public final class MurimblockCommands {
                 .then(valueCommand("add", QiService::addQiMax))
                 .then(valueCommand("remove", QiService::removeQiMax))
                 .then(Commands.literal("reset")
+                        .requires(source -> source.hasPermission(2))
                         .executes(context -> reset(context, context.getSource().getPlayerOrException(), false))
                         .then(Commands.argument("player", EntityArgument.player())
                                 .executes(context -> reset(context, EntityArgument.getPlayer(context, "player"), true)))));
@@ -57,6 +58,7 @@ public final class MurimblockCommands {
                 .then(qiValueCommand("add", QiService::addQi))
                 .then(qiValueCommand("remove", QiService::removeQi))
                 .then(Commands.literal("refill")
+                        .requires(source -> source.hasPermission(2))
                         .executes(context -> refill(context, context.getSource().getPlayerOrException(), false))
                         .then(Commands.argument("player", EntityArgument.player())
                                 .executes(context -> refill(context, EntityArgument.getPlayer(context, "player"), true))))
@@ -73,6 +75,7 @@ public final class MurimblockCommands {
             BiFunction<ServerPlayer, Double, Boolean> operation
     ) {
         return Commands.literal(name)
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
                         .executes(context -> applyValue(
                                 context,
@@ -97,6 +100,7 @@ public final class MurimblockCommands {
             BiFunction<ServerPlayer, Double, Boolean> operation
     ) {
         return Commands.literal(name)
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0))
                         .executes(context -> applyQiValue(
                                 context,

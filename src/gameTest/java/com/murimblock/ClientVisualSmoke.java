@@ -29,6 +29,7 @@ import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.registry.entries.EpicFightSkills;
+import yesman.epicfight.config.ClientConfig;
 
 /** Opt-in real-client rendering checks. Never loads into a published jar or the normal IntelliJ run. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -39,6 +40,7 @@ public final class ClientVisualSmoke {
     private static boolean initialized;
     private static boolean failed;
     private static final AtomicBoolean ready = new AtomicBoolean();
+    private static volatile java.util.UUID opponentId;
 
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
@@ -100,12 +102,30 @@ public final class ClientVisualSmoke {
                 case 115 -> capture("02-techniques.png");
                 case 125 -> mc.setScreen(new SkillBookScreen(mc.player, EpicFightSkills.GUARD.get(), null, null));
                 case 127 -> require(mc.screen instanceof MurimProfileScreen, "Native skill book GUI remained open");
-                case 140 -> { mc.setScreen(new MurimProfileScreen()); click(201, 194); }
+                case 140 -> { mc.setScreen(new MurimProfileScreen()); clickButton("Cultivation"); }
                 case 155 -> capture("03-cultivation.png");
-                case 165 -> { mc.setScreen(new MurimProfileScreen()); click(278, 194); }
+                case 165 -> { mc.setScreen(new MurimProfileScreen()); clickButton("Info"); }
                 case 180 -> capture("04-info.png");
-                case 190 -> mc.setScreen(MurimProfileScreen.combatSettings());
+                case 190 -> clickButton("Combat Settings");
+                case 192 -> {
+                    checkToggle("Blood effects:", () -> ClientConfig.bloodEffects);
+                    checkToggle("Camera motion:", () -> ClientConfig.enableFirstPersonCameraMove);
+                    checkToggle("Auto perspective:", () -> ClientConfig.autoPerspectiveSwithing);
+                    checkToggle("First-person body:", () -> ClientConfig.enableAnimatedFirstPersonModel);
+                    checkToggle("Lock-on snapping:", () -> ClientConfig.lockOnSnapping);
+                    var before = ClientConfig.tpsType;
+                    clickButton("Camera:");
+                    require(ClientConfig.tpsType != before, "Camera mode did not change");
+                    for (int count = 0; ClientConfig.tpsType != before && count < 10; count++) clickButton("Camera:");
+                    require(ClientConfig.tpsType == before, "Camera mode did not restore");
+                    mc.screen.setFocused(null);
+                }
                 case 205 -> capture("05-settings.png");
+                case 210 -> {
+                    clickButton("Keybinds");
+                    require(mc.screen instanceof net.minecraft.client.gui.screens.options.controls.ControlsScreen,
+                            "The GUI Keybinds action did not open controls");
+                }
                 case 215 -> mc.setScreen(new KeyBindsScreen(mc.screen, mc.options));
                 case 220 -> checkControls();
                 case 235 -> capture("06-keybinds.png");
@@ -151,8 +171,70 @@ public final class ClientVisualSmoke {
                     capture("09-creative.png");
                 }
                 case 320 -> {
+                    mc.setScreen(new MurimProfileScreen());
+                    clickButton("Close");
+                    require(mc.screen == null, "Close button did not close the GUI");
+                    mc.setScreen(new MurimProfileScreen());
+                    mc.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_K, 0, 0);
+                    require(mc.screen == null, "Profile key did not close the GUI");
+                    mc.setScreen(new MurimProfileScreen());
+                    mc.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_E, 0, 0);
+                    require(mc.screen == null, "Inventory key did not close the GUI");
+                    mc.setScreen(new MurimProfileScreen());
+                    mc.screen.keyPressed(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE, 0, 0);
+                    require(mc.screen == null, "Escape did not close the GUI");
+                    mc.options.guiScale().set(2);
+                    mc.getWindow().setWindowed(1280, 720);
+                    mc.resizeDisplay();
+                    mc.setScreen(new MurimProfileScreen());
+                }
+                case 335 -> capture("10-profile-large.png");
+                case 340 -> clickButton("Cultivation");
+                case 355 -> capture("11-cultivation-large.png");
+                case 360 -> clickButton("Info");
+                case 365 -> clickButton("Combat Settings");
+                case 380 -> capture("12-settings-large.png");
+                case 390 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var mob = com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get().create(level);
+                    mob.setNoGravity(true);
+                    mob.moveTo(1.5, 80, 0.5, 0, 0);
+                    require(level.addFreshEntity(mob), "Custom mob spawn failed");
+                    mob.setNoAi(true);
+                    opponentId = mob.getUUID();
+                });
+                case 410 -> {
+                    var mob = mc.level.entitiesForRendering().iterator();
+                    net.minecraft.world.entity.LivingEntity opponent = null;
+                    while (mob.hasNext()) {
+                        var candidate = mob.next();
+                        if (candidate.getUUID().equals(opponentId)) opponent = (net.minecraft.world.entity.LivingEntity) candidate;
+                    }
+                    require(opponent != null, "Custom mob was not tracked on the real client");
+                    var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(opponent,
+                            yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+                    require(patch != null, "Custom client mob patch missing");
+                    require(yesman.epicfight.client.events.engine.RenderEngine.getInstance().hasRendererFor(opponent),
+                            "Custom mob animated renderer missing");
+                    mc.setScreen(new MobPreviewScreen(opponent));
+                }
+                case 415 -> capture("13-mob-idle.png");
+                case 420 -> mc.getSingleplayerServer().execute(() -> {
+                    var mob = mc.getSingleplayerServer().overworld().getEntity(opponentId);
+                    var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mob,
+                            yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+                    patch.playAnimationSynchronized(yesman.epicfight.gameasset.Animations.BIPED_MOB_ONEHAND1, 0);
+                });
+                case 430 -> capture("14-mob-windup.png");
+                case 433 -> capture("15-mob-contact.png");
+                case 455 -> {
+                    ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
-                            "Techniques empty; native screens replaced; guard/roll synchronized without books; one Murim key category; creative/search engine items absent; client stamina disabled.\n");
+                            "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
+                    mc.getSingleplayerServer().execute(() -> {
+                        var mob = mc.getSingleplayerServer().overworld().getEntity(opponentId);
+                        if (mob != null) mob.discard();
+                    });
                     LOGGER.info("Murim client visual smoke checks passed");
                     mc.stop();
                 }
@@ -164,9 +246,36 @@ public final class ClientVisualSmoke {
         }
     }
 
-    private static void click(int x, int y) {
+    private static void clickButton(String message) {
         Screen screen = Minecraft.getInstance().screen;
-        screen.mouseClicked((screen.width - 320) / 2.0 + x, (screen.height - 214) / 2.0 + y, 0);
+        for (var child : screen.children()) {
+            if (child instanceof Button button && button.getMessage().getString().startsWith(message)) {
+                require(screen.mouseClicked(button.getX() + button.getWidth() / 2.0,
+                        button.getY() + button.getHeight() / 2.0, 0), "Button did not handle click: " + message);
+                return;
+            }
+        }
+        throw new IllegalStateException("Missing button: " + message);
+    }
+
+    private static void checkToggle(String label, java.util.function.BooleanSupplier value) {
+        boolean before = value.getAsBoolean();
+        clickButton(label);
+        require(value.getAsBoolean() != before, "Setting did not toggle: " + label);
+        clickButton(label);
+        require(value.getAsBoolean() == before, "Setting did not restore: " + label);
+    }
+
+    private static final class MobPreviewScreen extends Screen {
+        private final net.minecraft.world.entity.LivingEntity mob;
+        MobPreviewScreen(net.minecraft.world.entity.LivingEntity mob) { super(mob.getName()); this.mob = mob; }
+        @Override public boolean isPauseScreen() { return false; }
+        @Override public void renderBackground(net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float tick) {
+            g.fill(0, 0, width, height, 0xFFF0E7CE);
+            g.drawCenteredString(font, title, width / 2, 16, 0xFF202522);
+            net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g,
+                    width / 2 - 90, 40, width / 2 + 90, height - 20, 80, 0.0625F, width / 2.0F, height / 2.0F, mob);
+        }
     }
 
     private static void checkControls() {

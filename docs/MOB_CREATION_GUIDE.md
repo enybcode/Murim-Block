@@ -8,10 +8,14 @@ Tu peux aussi creer les modeles/animations toi-meme ou les commander a un artist
 Ce guide concerne Minecraft **1.21.1**, NeoForge **21.1.248**, Java **21** et
 Epic Fight **21.17.3.1**. Une autre version demande une nouvelle verification.
 
-La preparation actuelle fournit `com.murimblock.mob.MurimEntities`, deja raccorde
-au bus du mod, sans aucune entite enregistree. Les exemples ci-dessous restent
-dans `docs`, hors du jar. Aucun bandit, nouveau spawn ou pack d'animations Murim
-n'est encore implemente. Les patches vanilla deja fournis par Epic Fight restent
+Le registre `com.murimblock.mob.MurimEntities` contient maintenant
+`murimblock:training_opponent`, un prototype Zombie a l'epee avec patch Epic Fight,
+attributs explicites et rendu anime. Invocation :
+`/summon murimblock:training_opponent ~ ~ ~3` en monde de test, difficulte Normal.
+Il peut tuer le joueur en survie ; pas de spawn naturel, loot, XP ou recompense Qi.
+Sa silhouette/sons restent vanilla et ses attaques utilisent le preset upstream.
+Les exemples ci-dessous restent dans `docs`, hors du jar. Aucun bandit final ou
+pack d'animations Murim original n'est encore implemente. Les patches vanilla restent
 actifs. On ne modifie pas les boss ou tous les zombies pour preparer un seul mob.
 
 Le contenu Epic Fight est retire, mais son moteur/API restent disponibles. La
@@ -30,7 +34,10 @@ la cultivation, les recompenses et l'API publique Murim restent separes du moteu
 
 Pour commencer, je recommande **un humanoide melee invoque a la commande**, avec
 une arme vanilla et un seul coup. Ni generation naturelle ni comportement de
-boss avant validation du rendu et des degats. Ce n'est pas un nouveau mob deja livre.
+boss avant validation du rendu et des degats. Le prototype technique ci-dessus
+est livre ; le personnage artistique reste a choisir. Voir le
+[pipeline Epic Fight / GeckoLib](ANIMATION_PIPELINE.md) pour ses limites et le
+[compte rendu](DELIVERY_CLEAR_MANUSCRIPT_MOBS.md) pour les essais effectues.
 
 ## Ce Que Tu Dois Me Fournir
 
@@ -62,7 +69,8 @@ de faire produire toute la serie d'animations.
 - Persistance, nommage, despawn, interactions joueur, sons souhaites.
 
 Un mob inconnu tombe actuellement sur le calcul de recompense Qi existant, dont
-le fallback de base est 1. Cela ne constitue pas un equilibrage volontaire du mob.
+le fallback de base est 1, sauf le prototype d'entrainement explicitement a zero.
+Cela ne constitue pas un equilibrage volontaire des futurs mobs.
 Je raccorderai chaque mob a `QiRewardManager`, sans contourner l'anti-farm ni
 attribuer automatiquement un bonus de boss.
 

@@ -13,7 +13,7 @@ Murimblock is a Minecraft 1.21.1 NeoForge mod built around server-authoritative 
 - `api.combat`: supported Combat addon contract and combat mode change event.
 - `combat`: actual Epic Fight mode bridge, unsaved HUD mirror and addon events.
 - `integration.epicfight`: pinned engine boundary, basic actions and native content policy.
-- `mob`: registered empty entity-type registry, reserved for future Murim mobs.
+- `mob`: entity registry and summon-only TrainingOpponent prototype; no natural spawns.
 - `qi`: Qi implementation, player data, reward calculation, attachments, server events.
 - `qi.charge`: Qi charging gameplay state and charge VFX tuning helpers.
 - `cultivation`: Cultivation implementation, progression table, attachments and commands.
@@ -44,6 +44,8 @@ Client-only classes remain in `com.murimblock.client`:
 - `QiChargeFovHandler`: charge FOV transition.
 - `MurimblockKeyMappings`: key registration.
 - `CombatModeClientHandler`: combat toggle key input.
+- `client.gui.MurimProfileScreen` / `MurimProfileLayout`: adaptive Clear Manuscript pages, native pixel geometry and scoped bitmap font.
+- `TrainingOpponentRenderer`: client registration for the provisional Zombie appearance; Epic Fight preset owns animated rendering.
 - `client.hud.CombatQiHud`: redraws the vanilla experience bar background with a blue Qi progress sprite while Combat Mode is active, without numeric Qi text.
 
 Server code must not import `Minecraft`, `ClientLevel`, `GuiGraphics`, `Camera`, or `KeyMapping`.
@@ -60,6 +62,16 @@ Main classes:
 - `QiKillTracker`: temporary anti-farm kill history.
 - `QiBossProgress`: persistent first boss victory state.
 - `QiFormat`: shared numeric formatting utility.
+
+Reward windows use the server overworld's game clock in every dimension. Only
+the affected kill history is pruned on a kill; a server maintenance hook clears
+expired idle entries every 200 ticks. Server start/stop clears transient history,
+not saved Qi, cultivation or first boss victories. Logging out alone does not
+reset anti-farm protection. Qi mutation commands require operator level 2.
+
+Movement lock modifiers are updated only if missing or changed, avoiding an
+attribute dirty mark every charge tick. Client charge input uses the same Epic
+Fight busy check and clears transient input/FOV state on logout or player replacement.
 
 Addon entry point:
 

@@ -19,8 +19,6 @@ public final class QiKillTracker {
     private final Map<UUID, Map<ResourceLocation, Long>> fullBossRewardTicks = new HashMap<>();
 
     public int recordKill(UUID playerId, ResourceLocation entityTypeId, long gameTime) {
-        cleanup(gameTime);
-
         KillHistory history = killHistories
                 .computeIfAbsent(playerId, ignored -> new HashMap<>())
                 .computeIfAbsent(entityTypeId, ignored -> new KillHistory());
@@ -43,7 +41,7 @@ public final class QiKillTracker {
         Long rewardTick = fullBossRewardTicks
                 .getOrDefault(playerId, Map.of())
                 .get(bossId);
-        return rewardTick != null && gameTime - rewardTick < BOSS_REPEAT_WINDOW_TICKS;
+        return rewardTick != null && gameTime >= rewardTick && gameTime - rewardTick < BOSS_REPEAT_WINDOW_TICKS;
     }
 
     public void recordFullBossReward(UUID playerId, ResourceLocation bossId, long gameTime) {

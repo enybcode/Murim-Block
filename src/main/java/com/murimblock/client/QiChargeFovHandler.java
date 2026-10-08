@@ -45,6 +45,10 @@ public final class QiChargeFovHandler {
     }
 
     static void resetForTests() {
+        resetTransition();
+    }
+
+    static void resetTransition() {
         transition = 0.0F;
     }
 

@@ -109,7 +109,7 @@ public final class QiChargeService {
     }
 
     private static void addOrUpdateModifier(AttributeInstance instance, AttributeModifier modifier) {
-        if (instance != null) {
+        if (instance != null && !modifier.equals(instance.getModifier(modifier.id()))) {
             instance.addOrUpdateTransientModifier(modifier);
         }
     }

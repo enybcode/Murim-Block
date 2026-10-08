@@ -6,9 +6,25 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
 public final class QiEvents {
     private QiEvents() {
+    }
+
+    public static void onServerStarted(ServerStartedEvent event) {
+        QiRewardManager.clearTransientHistory();
+    }
+
+    public static void onServerStopped(ServerStoppedEvent event) {
+        QiRewardManager.clearTransientHistory();
+    }
+
+    public static void onServerTick(ServerTickEvent.Post event) {
+        long gameTime = event.getServer().overworld().getGameTime();
+        if (gameTime % 200 == 0) QiRewardManager.cleanupTransientHistory(gameTime);
     }
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {

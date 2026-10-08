@@ -57,18 +57,21 @@ server must use the same Murimblock build (network protocol **7**).
 - One Murimblock keybind category with ten useful bindings instead of four blocks;
   native menu, special-attack and mover shortcuts are disabled and hidden.
 - English in-game text and a dedicated bitmap font for the Murim profile GUI.
-- Four distinct GUI pages with the 3D player shown only on Profile.
+- Adaptive Clear Manuscript GUI: flat parchment, simple gold edges, text-only tabs;
+  four distinct pages with the 3D player shown only on Profile.
+- Profile/Info status placeholder `Stage: ???`; no Awakened Human or combat On/Off status.
 - Nine cultivation realms and four stages, with server-side breakthrough checks.
 - Admin/debug commands for Qi, Qi Max, cultivation, rewards and combat mode.
 - Saved Qi/cultivation/boss progress, with public Qi/cultivation/combat addon APIs.
 - Development-only unit, real server combat and real client rendering checks.
-- Registered empty entity registry for future Murim mobs; no placeholder entity
-  or new natural spawn is added by this preparation.
+- Summon-only `murimblock:training_opponent`: temporary vanilla zombie appearance,
+  iron sword, Epic Fight animated attacks, no natural spawn or progression rewards.
 
 ### What Is Not Implemented
 
-Martial styles, four configurable M1 moves, custom Murim mobs, their animation
-packs and physical blade clashes are future work. The empty Techniques tab is
+Martial styles, four configurable M1 moves, finished Murim characters, original
+animation packs and physical blade clashes are future work. The training opponent
+is a technical prototype, not the final bandit. The empty Techniques tab is
 not a finished style system. Epic Fight's supported vanilla mob/boss patches
 remain active; outside combat mode its vanilla-mode attacks still exist.
 
@@ -89,6 +92,8 @@ See the integration document before upgrading Epic Fight or adding combat addons
 ## Ajouter Un Mob Et Ses Animations
 
 Le guide complet est [MOB_CREATION_GUIDE.md](docs/MOB_CREATION_GUIDE.md).
+Le [pipeline technique Epic Fight / GeckoLib](docs/ANIMATION_PIPELINE.md) explique
+les rigs, les phases de degats, la synchronisation et les conflits de rendu.
 La [fiche a remplir](docs/examples/mobs/MOB_REQUEST_TEMPLATE.md) ne demande pas de
 Java : tu fournis le design et les ressources disponibles, je realise le code,
 les fichiers techniques, l'integration Epic Fight et les tests.
@@ -147,21 +152,45 @@ Voir le guide pour les chemins exacts, les limites et le controle des exports.
 - `src/test`: unit and resource checks.
 - `src/gameTest`: development-only foundation server tests.
 - `docs`: maintained technical documentation and GUI demo.
+- `docs/gui/legacy-v4`: archived V4 reference images, not shipped in the mod.
+- `scripts/cloud`: dependency setup, managed Java proxy and headless verification.
 - `.local/gui`: local GUI references and previous asset kits, excluded from Git.
 - `build`, `.gradle`, `run`: generated output, caches and local development worlds.
 
 Keep local references out of `src` and commits. Never delete development worlds
 as part of source cleanup.
 
-## GUI Preview
+## Clear Manuscript GUI And Training Prototype
 
-`docs/gui/tab-layout-demo.html` previews the four integrated tab layouts in English.
-It shares the manuscript font with the mod and uses example values and an
-illustrative player. The Minecraft GUI reads synchronized player data and actual
-configured keybindings. The integrated appearance was approved by Enzo on
-2026-10-03.
+Open the new GUI with **K** (or the rebound Profile key). Profile, Techniques,
+Cultivation, Info and Combat Settings now use native integer-coordinate pixel
+geometry, not the old textured V4 backgrounds. The current layout is documented
+in [TAB_LAYOUT.md](docs/gui/TAB_LAYOUT.md). `docs/gui/tab-layout-demo.html` is the
+**historical V4 demo**, not a preview of the new GUI. The current appearance is
+awaiting in-game approval on `test`, not declared approved on `main`.
+
+In a disposable Normal-difficulty world with commands enabled:
+
+```mcfunction
+/summon murimblock:training_opponent ~ ~ ~3
+/kill @e[type=murimblock:training_opponent]
+```
+
+The prototype is hostile in Survival and can kill the player. It deliberately
+awards no Qi, loot or XP. Its look/sounds are still vanilla Zombie; no GeckoLib
+dependency, custom character model or NPC guard is claimed. See the
+[delivery report](docs/DELIVERY_CLEAR_MANUSCRIPT_MOBS.md) for actual checks and limits.
 
 ## Developer documentation
+
+Start with the [documentation index](docs/README.md). For the existing Codex
+environment, follow [Cloud import](docs/CLOUD_IMPORT.md): select `test`, preserve
+the managed proxy and verify actual NeoForge dependency access. Source is imported
+through GitHub; local worlds, IDE settings and caches must stay local.
+
+Qi/Qi Max mutation commands now require operator permission level 2, including
+self-targeted commands. Read-only checks and normal combat mode controls remain
+available to players. This fixes unrestricted debug commands in multiplayer.
 
 - `docs/ARCHITECTURE.md`: project architecture and package responsibilities.
 - `docs/ADDON_API.md`: public Java API currently available to addons.
@@ -170,6 +199,8 @@ configured keybindings. The integrated appearance was approved by Enzo on
 - `docs/QI_REWARDS.md`: current mob Qi reward balance table.
 - `docs/EPIC_FIGHT.md`: selected combat engine, current boundary and integration checks.
 - `docs/MOB_CREATION_GUIDE.md`: detailed French mob/animation handoff and implementation guide.
+- `docs/ANIMATION_PIPELINE.md`: pinned engine animation/collision pipeline and GeckoLib compatibility boundaries.
+- `docs/DELIVERY_CLEAR_MANUSCRIPT_MOBS.md`: current GUI/prototype verification and outstanding in-game checks.
 - `docs/examples/mobs`: inactive examples and a non-code mob request form.
 - `docs/GIT_WORKFLOW.md`: publication on `test` and user-approved promotion to `main`.
 

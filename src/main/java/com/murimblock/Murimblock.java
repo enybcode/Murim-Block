@@ -40,6 +40,9 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(QiEvents::onLivingDeath);
+        NeoForge.EVENT_BUS.addListener(QiEvents::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(QiEvents::onServerStopped);
+        NeoForge.EVENT_BUS.addListener(QiEvents::onServerTick);
         NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerChangedDimension);

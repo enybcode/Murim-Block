@@ -1,6 +1,5 @@
 package com.murimblock;
 
-import com.mojang.authlib.GameProfile;
 import com.murimblock.combat.CombatService;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationRealm;
@@ -10,8 +9,6 @@ import com.murimblock.qi.charge.QiChargeService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
 import com.murimblock.integration.epicfight.EpicFightContentPolicy;
-import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -22,13 +19,9 @@ import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -44,14 +37,15 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import net.neoforged.neoforge.network.connection.ConnectionType;
-import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import yesman.epicfight.registry.entries.EpicFightItems;
 import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
+
+import static com.murimblock.testing.GameTestPlayers.player;
+import static com.murimblock.testing.GameTestPlayers.cleanup;
 
 /** Runs against a disposable server world and is excluded from the shipped mod. */
 @GameTestHolder(Murimblock.MOD_ID)
@@ -464,34 +458,157 @@ public final class FoundationGameTests {
         } finally { cleanup(player); }
     }
 
-    private static ServerPlayer player(GameTestHelper helper) {
-        var cookie = new CommonListenerCookie(new GameProfile(UUID.randomUUID(), "foundation-test"), 0,
-                ClientInformation.createDefault(), false, ConnectionType.NEOFORGE);
-        ServerPlayer player = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(),
-                cookie.gameProfile(), cookie.clientInformation());
-        Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
-        NetworkRegistry.configureMockConnection(connection);
-        player.server.getPlayerList().placeNewPlayer(connection, player, cookie);
-        player.setGameMode(GameType.SURVIVAL);
-        player.getAbilities().invulnerable = false;
-        player.setNoGravity(true);
-        player.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
-        // Damage must run after Minecraft's login protection has elapsed.
-        for (int i = 0; i <= 60; i++) player.tick();
-        BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
-        player.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0, 0);
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
-        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
-        player.tick();
-        CombatService.setCombatMode(player, true);
-        QiService.setQiMax(player, 100);
-        QiService.setQi(player, 100);
-        return player;
+    @GameTest(template = "foundation_arena", batch = "mob_integration")
+    public static void trainingOpponentReceivesEngineAttributesAndOnlyAnimatedMeleeGoals(GameTestHelper helper) {
+        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        try {
+            var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mob,
+                    yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+            helper.assertTrue(patch != null && patch.getArmature() != null, "Custom mob patch or armature missing");
+            for (var attribute : java.util.List.of(yesman.epicfight.registry.entries.EpicFightAttributes.WEIGHT,
+                    yesman.epicfight.registry.entries.EpicFightAttributes.IMPACT,
+                    yesman.epicfight.registry.entries.EpicFightAttributes.MAX_STRIKES,
+                    yesman.epicfight.registry.entries.EpicFightAttributes.OFFHAND_IMPACT)) {
+                helper.assertTrue(mob.getAttribute(attribute) != null, "Custom mob engine attribute missing: " + attribute);
+            }
+            long animated = mob.goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal()
+                    instanceof yesman.epicfight.world.entity.ai.goal.AnimatedAttackGoal).count();
+            helper.assertTrue(animated == 1, "Expected exactly one animated melee goal, got " + animated);
+            // Epic Fight's TargetChasingGoal extends MeleeAttackGoal but overrides its damage callback with a no-op.
+            helper.assertFalse(mob.goalSelector.getAvailableGoals().stream().anyMatch(goal -> goal.getGoal()
+                    instanceof net.minecraft.world.entity.ai.goal.MeleeAttackGoal
+                    && !(goal.getGoal() instanceof yesman.epicfight.world.entity.ai.goal.TargetChasingGoal)),
+                    "Vanilla melee goal would double attacks");
+            helper.assertTrue(mob.getMainHandItem().is(Items.IRON_SWORD), "Fixture sword missing");
+            mob.setBaby(true);
+            helper.assertFalse(mob.isBaby(), "Fixture became a baby with an incompatible rig");
+            CompoundTag saved = new CompoundTag();
+            mob.saveWithoutId(saved);
+            saved.remove("UUID");
+            var restored = com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get().create(helper.getLevel());
+            restored.load(saved);
+            helper.assertTrue(restored.getMainHandItem().is(Items.IRON_SWORD) && !restored.isBaby(), "Mob save/load changed equipment or rig");
+            helper.succeed();
+        } finally { mob.discard(); }
     }
 
-    private static void cleanup(ServerPlayer player) {
-        QiChargeService.stopCharging(player);
-        player.server.getPlayerList().remove(player);
+    @GameTest(template = "foundation_arena", batch = "mob_integration")
+    public static void trainingOpponentCannotAwardQiLootOrExperience(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(1, 1, 1));
+        mob.setNoAi(true);
+        mob.setNoGravity(true);
+        try {
+            helper.assertTrue(com.murimblock.qi.QiRewardManager.rewardTarget(mob.getType()).baseReward() == 0,
+                    "Prototype type received the fallback Qi reward");
+            QiService.setQi(player, 50);
+            helper.assertTrue(com.murimblock.qi.QiRewardManager.awardKillReward(player, mob).isEmpty()
+                    && QiService.getQi(player) == 50, "Fixture awarded progression Qi");
+            helper.assertTrue(mob.getExperienceReward(helper.getLevel(), player) == 0, "Fixture awarded XP");
+            // Observe the actual death pipeline, including equipment (not just the empty JSON loot table).
+            AtomicInteger deathEvents = new AtomicInteger();
+            Consumer<net.neoforged.neoforge.event.entity.living.LivingDropsEvent> observer = event -> {
+                if (event.getEntity() != mob) return;
+                helper.assertTrue(event.getDrops().isEmpty(), "Fixture death generated equipment or loot");
+                deathEvents.incrementAndGet();
+            };
+            NeoForge.EVENT_BUS.addListener(observer);
+            try {
+                mob.hurt(player.damageSources().playerAttack(player), 1000);
+                helper.assertTrue(!mob.isAlive() && deathEvents.get() == 1, "Fixture death pipeline did not run");
+            } finally { NeoForge.EVENT_BUS.unregister(observer); }
+            helper.succeed();
+        } finally { mob.discard(); cleanup(player); }
     }
+
+    @GameTest(template = "foundation_arena", batch = "mob_integration", timeoutTicks = 60)
+    public static void customMobAnimatedSwordDealsOneContactWithoutSpendingPlayerQi(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        mob.setNoAi(true);
+        mob.setNoGravity(true);
+        helper.getLevel().getChunk(0, 0);
+        helper.getLevel().setChunkForced(0, 0, true);
+        mob.moveTo(0.5, 70, 0.5, 0, 0);
+        player.moveTo(0.5, 70, 1.7, 180, 0);
+        mob.setTarget(player);
+        player.connection.tick();
+        var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mob,
+                yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+        mob.yBodyRot = 0;
+        mob.yHeadRot = 0;
+        AtomicInteger contacts = new AtomicInteger();
+        Consumer<LivingDamageEvent.Post> observer = event -> {
+            if (event.getEntity() == player && event.getSource().getEntity() == mob) contacts.incrementAndGet();
+        };
+        NeoForge.EVENT_BUS.addListener(observer);
+        float health = player.getHealth();
+        try {
+            patch.playAnimationSynchronized(Animations.BIPED_MOB_ONEHAND1, 0);
+            helper.runAfterDelay(8, () -> helper.assertTrue(contacts.get() == 0 && player.getHealth() == health,
+                    "Animated mob dealt damage during windup, before the contact window"));
+            for (int tick = 1; tick <= 35; tick++) helper.runAfterDelay(tick, player.connection::tick);
+            helper.runAfterDelay(35, () -> {
+                try {
+                    helper.assertTrue(player.getHealth() < health && contacts.get() == 1,
+                            "Custom animated mob contacts=" + contacts.get() + ", health=" + player.getHealth());
+                    helper.assertTrue(QiService.getQi(player) == 100, "Mob attack changed player Qi");
+                    helper.succeed();
+                } finally { NeoForge.EVENT_BUS.unregister(observer); mob.discard(); cleanup(player); }
+            });
+        } catch (RuntimeException exception) {
+            NeoForge.EVENT_BUS.unregister(observer);
+            mob.discard();
+            cleanup(player);
+            throw exception;
+        }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "mob_interrupt", timeoutTicks = 60)
+    public static void removingTrainingOpponentDuringWindupCannotLeaveADelayedHit(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        helper.getLevel().getChunk(0, 0);
+        helper.getLevel().setChunkForced(0, 0, true);
+        mob.setNoAi(true);
+        mob.setNoGravity(true);
+        mob.moveTo(0.5, 70, 0.5, 0, 0);
+        mob.yBodyRot = 0;
+        player.moveTo(0.5, 70, 1.7, 180, 0);
+        player.connection.tick();
+        var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mob,
+                yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+        float health = player.getHealth();
+        patch.playAnimationSynchronized(Animations.BIPED_MOB_ONEHAND1, 0);
+        helper.runAfterDelay(4, mob::discard);
+        for (int tick = 1; tick <= 35; tick++) helper.runAfterDelay(tick, player.connection::tick);
+        helper.runAfterDelay(35, () -> {
+            try {
+                helper.assertTrue(player.getHealth() == health, "Removed attacker left a delayed animated hit");
+                helper.succeed();
+            } finally { mob.discard(); cleanup(player); }
+        });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "mob_ai", timeoutTicks = 100)
+    public static void trainingOpponentAiSelectsAnAnimatedAttack(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        helper.getLevel().getChunk(0, 0);
+        helper.getLevel().setChunkForced(0, 0, true);
+        mob.setNoGravity(true);
+        mob.moveTo(0.5, 70, 0.5, 0, 0);
+        player.moveTo(0.5, 70, 1.7, 180, 0);
+        mob.setTarget(player);
+        float health = player.getHealth();
+        for (int tick = 1; tick <= 80; tick++) helper.runAfterDelay(tick, player.connection::tick);
+        helper.runAfterDelay(80, () -> {
+            try {
+                helper.assertTrue(player.getHealth() < health, "Autonomous combat AI never landed an attack");
+                helper.assertTrue(QiService.getQi(player) == 100, "Autonomous attacks spent player Qi");
+                helper.succeed();
+            } finally { mob.discard(); cleanup(player); }
+        });
+    }
+
 }

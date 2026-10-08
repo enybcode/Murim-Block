@@ -81,6 +81,12 @@ For each player and entity type, Murimblock tracks kills over an approximate 15 
 
 The final multiplier is clamped between 50% and 100%. Rewards use ceiling rounding, so `15 * 0.5` becomes `8`.
 
+Kill windows and boss cooldowns use the overworld game clock for the whole server.
+Affected histories are pruned on access; idle histories are cleaned every 200
+server ticks. Transient history is cleared at server start/stop, not at logout,
+so reconnecting cannot bypass anti-farm within the same session. First boss
+victories remain saved separately. `murimblock:training_opponent` grants no Qi.
+
 ## Planned Data Format
 
 Future versions should move this table to NeoForge Data Maps or another datapack-friendly system. A future file may look like:

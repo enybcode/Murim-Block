@@ -42,7 +42,7 @@ public final class QiRewardManager {
         // TODO: Decider plus tard si le Qi excedentaire doit alimenter une progression de cultivation ou de breakthrough.
         QiService.addQi(player, reward.finalReward());
         rememberFirstVictory(player, reward);
-        rememberFullBossReward(player, reward, player.serverLevel().getGameTime());
+        rememberFullBossReward(player, reward, rewardTime(player));
         sendDebugMessage(player, killedEntity, reward);
         return Optional.of(reward);
     }
@@ -52,7 +52,7 @@ public final class QiRewardManager {
                 player.getUUID(),
                 QiService.getBossProgress(player),
                 resolveRewardTarget(killedEntity),
-                player.serverLevel().getGameTime()
+                rewardTime(player)
         );
     }
 
@@ -109,7 +109,7 @@ public final class QiRewardManager {
             return new RewardTarget(entityTypeId, 500, 2_000, entityTypeId, entityTypeId, originMultiplier);
         }
 
-        int baseReward = FIXED_REWARDS.getOrDefault(entity.getType(), 1);
+        int baseReward = baseReward(entity.getType(), entityTypeId);
         if (entity.getType() == EntityType.ELDER_GUARDIAN) {
             return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null, originMultiplier);
         }
@@ -121,7 +121,7 @@ public final class QiRewardManager {
 
     public static RewardTarget rewardTarget(EntityType<?> entityType) {
         ResourceLocation entityTypeId = entityTypeId(entityType);
-        int baseReward = FIXED_REWARDS.getOrDefault(entityType, 1);
+        int baseReward = baseReward(entityType, entityTypeId);
         if (entityType == EntityType.ELDER_GUARDIAN) {
             return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null);
         }
@@ -137,8 +137,14 @@ public final class QiRewardManager {
         return new RewardTarget(entityTypeId, baseReward, 0, null, null);
     }
 
+    private static int baseReward(EntityType<?> type, ResourceLocation id) {
+        // Summoned integration fixtures must not become a source of progression rewards.
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "training_opponent"))) return 0;
+        return FIXED_REWARDS.getOrDefault(type, 1);
+    }
+
     public static String describeAntiFarm(ServerPlayer player, EntityType<?> entityType) {
-        long gameTime = player.serverLevel().getGameTime();
+        long gameTime = rewardTime(player);
         ResourceLocation entityTypeId = entityTypeId(entityType);
         int count = KILL_TRACKER.recentKillCount(player.getUUID(), entityTypeId, gameTime);
         int nextCount = count + 1;
@@ -154,6 +160,19 @@ public final class QiRewardManager {
 
     static void resetTrackerForTests() {
         KILL_TRACKER.clear();
+    }
+
+    static void clearTransientHistory() {
+        KILL_TRACKER.clear();
+    }
+
+    static void cleanupTransientHistory(long gameTime) {
+        KILL_TRACKER.cleanup(gameTime);
+    }
+
+    private static long rewardTime(ServerPlayer player) {
+        // All dimensions share the same anti-farm clock, including custom dimensions with different times.
+        return player.getServer().overworld().getGameTime();
     }
 
     static void recordFullBossRewardForTests(UUID playerId, ResourceLocation bossId, long gameTime) {
