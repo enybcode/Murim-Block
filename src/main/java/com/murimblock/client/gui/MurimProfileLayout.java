@@ -99,7 +99,7 @@ final class MurimProfileLayout {
                     entry(Field.LIBRARY_LABEL, new Box(17, 68, 96, 10)),
                     entry(Field.EMPTY_LIBRARY, new Box(17, 94, 96, 36)),
                     entry(Field.DETAILS_LABEL, new Box(134, 68, 169, 10)),
-                    entry(Field.EMPTY_DETAILS, new Box(134, 129, 169, 18))),
+                    entry(Field.EMPTY_DETAILS, new Box(134, 119, 169, 9))),
             Page.CULTIVATION, Map.ofEntries(
                     entry(Field.REALM_LABEL, new Box(17, 37, 163, 9)),
                     entry(Field.REALM, new Box(17, 50, 163, 10)),

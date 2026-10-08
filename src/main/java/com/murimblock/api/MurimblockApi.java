@@ -42,7 +42,7 @@ public final class MurimblockApi {
     }
 
     /**
-     * Returns the public Combat API for reading and changing the temporary combat mode.
+     * Returns the public Combat API for reading and changing Epic Fight's actual combat mode.
      */
     public static CombatApi combat() {
         return COMBAT;

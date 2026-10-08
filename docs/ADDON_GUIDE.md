@@ -71,6 +71,10 @@ if ("qi_guiding".equals(cultivation.realmId())) {
 
 ## Reading Combat Mode
 
+This delegates to Epic Fight's actual battle mode, not a second Murimblock flag.
+Epic Fight owns persistence and combat. See `EPIC_FIGHT.md` before adding combat
+hooks and install the pinned dependency in your development run.
+
 ```java
 boolean inCombat = MurimblockApi.combat().isInCombatMode(player);
 ```

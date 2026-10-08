@@ -1,6 +1,7 @@
 package com.murimblock.combat;
 
 import com.murimblock.api.combat.CombatModeChangedEvent;
+import com.murimblock.integration.epicfight.EpicFightBridge;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +21,7 @@ public final class CombatService {
     }
 
     public static boolean isInCombatMode(Player player) {
-        return getData(player).combatMode();
+        return EpicFightBridge.isCombatMode(player);
     }
 
     public static boolean toggleCombatMode(ServerPlayer player) {
@@ -32,16 +33,21 @@ public final class CombatService {
             enabled = false;
         }
 
+        boolean changed = EpicFightBridge.setMode(player, enabled);
+        refreshMode(player);
+        if (changed) sendActionBar(player, isInCombatMode(player));
+        return changed;
+    }
+
+    public static void refreshMode(ServerPlayer player) {
         CombatData current = getData(player);
-        CombatData updated = current.withCombatMode(enabled);
+        CombatData updated = current.withCombatMode(isInCombatMode(player));
         if (current.equals(updated)) {
-            return false;
+            return;
         }
 
         player.setData(CombatAttachments.PLAYER_COMBAT, updated);
-        NeoForge.EVENT_BUS.post(new CombatModeChangedEvent(player, enabled));
-        sendActionBar(player, enabled);
-        return true;
+        NeoForge.EVENT_BUS.post(new CombatModeChangedEvent(player, updated.combatMode()));
     }
 
     public static boolean resetCombatMode(ServerPlayer player) {

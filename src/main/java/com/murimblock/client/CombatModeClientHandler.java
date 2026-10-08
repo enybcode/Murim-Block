@@ -7,6 +7,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraft.client.Minecraft;
+import yesman.epicfight.client.input.EpicFightKeyMappings;
 
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CombatModeClientHandler {
@@ -16,7 +18,11 @@ public final class CombatModeClientHandler {
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         while (MurimblockKeyMappings.COMBAT_MODE.consumeClick()) {
-            PacketDistributor.sendToServer(CombatModeTogglePayload.INSTANCE);
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.player != null && minecraft.screen == null
+                    && !MurimblockKeyMappings.COMBAT_MODE.getKey().equals(EpicFightKeyMappings.SWITCH_MODE.getKey())) {
+                PacketDistributor.sendToServer(CombatModeTogglePayload.INSTANCE);
+            }
         }
     }
 }

@@ -1,0 +1,11 @@
+{
+  "type": "epicfight:sword",
+  "attributes": {
+    "common": {
+      "impact": 0.5,
+      "max_strikes": 1
+    }
+  },
+  "hit_particle": "epicfight:hit_blunt",
+  "hit_sound": "epicfight:entity.hit.blunt"
+}

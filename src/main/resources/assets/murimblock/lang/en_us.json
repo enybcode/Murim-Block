@@ -51,5 +51,19 @@
   "gui.murimblock.infos.charge_qi": "Charge Qi",
   "gui.murimblock.infos.combat_mode": "Combat Mode",
   "gui.murimblock.infos.player_status": "Player Status",
-  "gui.murimblock.infos.qi_max": "Qi Max: %s"
+  "gui.murimblock.infos.qi_max": "Qi Max: %s",
+  "gui.murimblock.settings.title": "Combat Settings",
+  "gui.murimblock.settings.option": "%s: %s",
+  "gui.murimblock.settings.on": "On",
+  "gui.murimblock.settings.off": "Off",
+  "gui.murimblock.settings.camera": "Camera",
+  "gui.murimblock.settings.camera.disabled": "Classic",
+  "gui.murimblock.settings.camera.on_aiming": "On aiming",
+  "gui.murimblock.settings.camera.always": "Shoulder",
+  "gui.murimblock.settings.auto_perspective": "Auto perspective",
+  "gui.murimblock.settings.first_person_motion": "Camera motion",
+  "gui.murimblock.settings.first_person_model": "First-person body",
+  "gui.murimblock.settings.lock_on": "Lock-on snapping",
+  "gui.murimblock.settings.blood": "Blood effects",
+  "gui.murimblock.settings.keybinds": "Keybinds"
 }

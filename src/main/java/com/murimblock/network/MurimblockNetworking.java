@@ -4,7 +4,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
-    private static final String NETWORK_VERSION = "1";
+    private static final String NETWORK_VERSION = "7";
 
     private MurimblockNetworking() {
     }

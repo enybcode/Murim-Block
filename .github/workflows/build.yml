@@ -24,3 +24,10 @@ jobs:
 
       - name: Build
         run: ./gradlew build
+
+      - name: Foundation server tests
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew -PgameTests runGameTestServer 2>&1 | tee gametest-output.log
+          grep -Eq 'All [1-9][0-9]* required tests passed' gametest-output.log

@@ -1,0 +1,24 @@
+{
+  "combat_behavior": [
+    {
+      "weapon_categories": ["sword"],
+      "style": "one_hand",
+      "behavior_series": [
+        {
+          "weight": 1.0,
+          "cooldown": 20,
+          "canBeInterrupted": true,
+          "looping": false,
+          "behaviors": [
+            {
+              "animation": "epicfight:biped/combat/mob_onehand1",
+              "conditions": [
+                {"predicate": "epicfight:within_distance", "min": 0.0, "max": 2.5}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

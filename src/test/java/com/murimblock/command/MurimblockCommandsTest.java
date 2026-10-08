@@ -5,6 +5,10 @@ import com.mojang.brigadier.tree.CommandNode;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +42,14 @@ class MurimblockCommandsTest {
         assertVisibleChildren("combat", dispatcher, Set.of("check", "on", "off", "toggle"));
     }
 
+    @Test
+    void combatCommandTreeContainsOnlyTheRetainedModeControls() {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        CombatCommands.register(dispatcher);
+        assertEquals(Set.of("check", "on", "off", "toggle"), dispatcher.getRoot()
+                .getChild("combat").getChildren().stream().map(CommandNode::getName).collect(Collectors.toSet()));
+    }
+
     private static void assertVisibleChildren(
             String commandName,
             CommandDispatcher<CommandSourceStack> dispatcher,
@@ -47,8 +59,13 @@ class MurimblockCommandsTest {
 
         assertNotNull(command);
         assertEquals(expected, command.getChildren().stream()
-                .filter(child -> child.canUse(null))
+                .filter(child -> child.canUse(source(0)))
                 .map(CommandNode::getName)
                 .collect(Collectors.toSet()));
+    }
+
+    private static CommandSourceStack source(int permission) {
+        return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, null, permission,
+                "test", Component.literal("test"), null, null);
     }
 }

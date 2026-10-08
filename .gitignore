@@ -25,6 +25,7 @@ crash-reports/
 src/generated/resources/.cache/
 
 ### Local and temporary files ###
+.local/
 *.log
 *.tmp
 hs_err_pid*.log

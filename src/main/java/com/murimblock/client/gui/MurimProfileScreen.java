@@ -7,18 +7,22 @@ import com.murimblock.api.cultivation.CultivationSnapshot;
 import com.murimblock.client.MurimblockKeyMappings;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.qi.QiFormat;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
+import yesman.epicfight.config.ClientConfig;
 
 import static com.murimblock.client.gui.MurimProfileLayout.*;
 import static com.murimblock.client.gui.MurimProfileLayout.Field.*;
@@ -41,9 +45,23 @@ public final class MurimProfileScreen extends Screen {
     private int pointerX;
     private int pointerY;
     private Component hoveredText;
+    private boolean settingsMode;
 
     public MurimProfileScreen() {
         super(label("title"));
+    }
+
+    public static MurimProfileScreen techniques() {
+        MurimProfileScreen screen = new MurimProfileScreen();
+        screen.page = Page.TECHNIQUES;
+        return screen;
+    }
+
+    public static MurimProfileScreen combatSettings() {
+        MurimProfileScreen screen = new MurimProfileScreen();
+        screen.page = Page.INFOS;
+        screen.settingsMode = true;
+        return screen;
     }
 
     private static ResourceLocation texture(String name) {
@@ -61,11 +79,16 @@ public final class MurimProfileScreen extends Screen {
         for (Page target : Page.values()) {
             Box tab = target.tab;
             addRenderableWidget(new ArtButton(left + tab.x(), top + tab.y(), tab.width(), tab.height(),
-                    label("tab." + target.id), button -> page = target));
+                    label("tab." + target.id), button -> {
+                        page = target;
+                        settingsMode = false;
+                        rebuildWidgets();
+                    }));
         }
         ArtButton close = new ArtButton(left + 302, top + 8, 14, 14, label("close"), button -> onClose());
         close.setTooltip(Tooltip.create(close.getMessage()));
         addRenderableWidget(close);
+        if (page == Page.INFOS) initInfoButtons();
     }
 
     @Override
@@ -94,7 +117,7 @@ public final class MurimProfileScreen extends Screen {
         hoveredText = null;
         super.render(graphics, mouseX, mouseY, partialTick);
         if (hoveredText != null) {
-            graphics.renderTooltip(font, hoveredText, mouseX, mouseY);
+            graphics.renderTooltip(font, font.split(hoveredText, Math.min(220, width - 20)), mouseX, mouseY);
         }
     }
 
@@ -169,6 +192,40 @@ public final class MurimProfileScreen extends Screen {
         centered(graphics, EMPTY_DETAILS, label("techniques.nothing_selected"), MUTED_INK);
     }
 
+    private void initInfoButtons() {
+        if (!settingsMode) {
+            inkButton(new Box(17, 146, 160, 12), () -> label("settings.title"), () -> {
+                settingsMode = true;
+                rebuildWidgets();
+            });
+            return;
+        }
+        setting(62, "camera", () -> label("settings.camera." + ClientConfig.tpsType.name().toLowerCase(java.util.Locale.ROOT)), () -> ClientConfig.tpsType = ClientConfig.tpsType.nextEnum());
+        setting(78, "auto_perspective", () -> state(ClientConfig.autoPerspectiveSwithing), () -> ClientConfig.autoPerspectiveSwithing = !ClientConfig.autoPerspectiveSwithing);
+        setting(94, "first_person_motion", () -> state(ClientConfig.enableFirstPersonCameraMove), () -> ClientConfig.enableFirstPersonCameraMove = !ClientConfig.enableFirstPersonCameraMove);
+        setting(110, "first_person_model", () -> state(ClientConfig.enableAnimatedFirstPersonModel), () -> ClientConfig.enableAnimatedFirstPersonModel = !ClientConfig.enableAnimatedFirstPersonModel);
+        setting(126, "lock_on", () -> state(ClientConfig.lockOnSnapping), () -> ClientConfig.lockOnSnapping = !ClientConfig.lockOnSnapping);
+        setting(142, "blood", () -> state(ClientConfig.bloodEffects), () -> ClientConfig.bloodEffects = !ClientConfig.bloodEffects);
+        inkButton(new Box(199, 145, 104, 12), () -> label("settings.keybinds"), () -> minecraft.setScreen(new ControlsScreen(this, minecraft.options)));
+    }
+
+    private static Component state(boolean enabled) {
+        return label(enabled ? "settings.on" : "settings.off");
+    }
+
+    private void setting(int y, String name, Supplier<Component> value, Runnable action) {
+        inkButton(new Box(17, y, 160, 12), () -> label("settings.option", label("settings." + name), value.get()), () -> {
+            action.run();
+            List<Runnable> save = new ArrayList<>();
+            ClientConfig.checkUnsaved(save, new ArrayList<>());
+            save.forEach(Runnable::run);
+        });
+    }
+
+    private Button inkButton(Box box, Supplier<Component> title, Runnable action) {
+        return addRenderableWidget(new InkButton(box, title, action));
+    }
+
     private void renderCultivation(GuiGraphics graphics, Player player, CultivationSnapshot cultivation, double qi, double qiMax) {
         text(graphics, REALM_LABEL, label("cultivation.current"), MUTED_INK);
         text(graphics, REALM, realm(cultivation), INK);
@@ -203,19 +260,21 @@ public final class MurimProfileScreen extends Screen {
     }
 
     private void renderInfos(GuiGraphics graphics, Player player, CultivationSnapshot cultivation, double qiMax) {
-        text(graphics, CONTROLS_LABEL, label("infos.controls"), INK);
+        text(graphics, CONTROLS_LABEL, label(settingsMode ? "settings.title" : "infos.controls"), INK);
         divider(graphics, 17, 51, 160);
-        text(graphics, CONTROL_PROFILE, label("tab.profile"), INK);
-        text(graphics, CONTROL_QI, label("infos.charge_qi"), INK);
-        text(graphics, CONTROL_COMBAT, label("infos.combat_mode"), INK);
-        key(graphics, KEY_PROFILE, MurimblockKeyMappings.OPEN_PROFILE);
-        key(graphics, KEY_QI, MurimblockKeyMappings.CHARGE_QI);
-        key(graphics, KEY_COMBAT, MurimblockKeyMappings.COMBAT_MODE);
+        if (!settingsMode) {
+            text(graphics, CONTROL_PROFILE, label("tab.profile"), INK);
+            text(graphics, CONTROL_QI, label("infos.charge_qi"), INK);
+            text(graphics, CONTROL_COMBAT, label("infos.combat_mode"), INK);
+            key(graphics, KEY_PROFILE, MurimblockKeyMappings.OPEN_PROFILE);
+            key(graphics, KEY_QI, MurimblockKeyMappings.CHARGE_QI);
+            key(graphics, KEY_COMBAT, MurimblockKeyMappings.COMBAT_MODE);
+        }
         text(graphics, INFO_LABEL, label("infos.player_status"), INK);
         divider(graphics, 199, 51, 104);
         text(graphics, STATUS, Component.literal(cultivation.realmStatus()), MUTED_INK);
         text(graphics, COMBAT, combat(player), INK);
-        text(graphics, QI_VALUE, label("infos.qi_max", QiFormat.format(qiMax)), INK);
+        if (!settingsMode) text(graphics, QI_VALUE, label("infos.qi_max", QiFormat.format(qiMax)), INK);
     }
 
     private static Component realm(CultivationSnapshot cultivation) {
@@ -350,7 +409,7 @@ public final class MurimProfileScreen extends Screen {
         return Component.literal(shortened + "...").withStyle(GUI_TEXT_STYLE);
     }
 
-    private static final class ArtButton extends Button {
+    private static class ArtButton extends Button {
         private ArtButton(int x, int y, int width, int height, Component title, OnPress action) {
             super(x, y, width, height, title, action, DEFAULT_NARRATION);
         }
@@ -360,6 +419,31 @@ public final class MurimProfileScreen extends Screen {
             if (isHoveredOrFocused()) {
                 graphics.fill(getX() + 2, getY() + getHeight() - 2, getX() + getWidth() - 2, getY() + getHeight() - 1, GOLD);
             }
+        }
+    }
+
+    private final class InkButton extends ArtButton {
+        private final Box box;
+        private final Supplier<Component> title;
+
+        private InkButton(Box box, Supplier<Component> title, Runnable action) {
+            super(left + box.x(), top + box.y(), box.width(), box.height(), title.get(), button -> action.run());
+            this.box = box;
+            this.title = title;
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            setMessage(title.get());
+            RenderSystem.enableBlend();
+            quietPaper(graphics, box);
+            RenderSystem.disableBlend();
+            int edge = isHoveredOrFocused() ? 0xFFB69342 : 0xFF9E895D;
+            graphics.fill(getX(), getY(), getX() + getWidth(), getY() + 1, edge);
+            graphics.fill(getX(), getY() + getHeight() - 1, getX() + getWidth(), getY() + getHeight(), edge);
+            graphics.fill(getX(), getY(), getX() + 1, getY() + getHeight(), edge);
+            graphics.fill(getX() + getWidth() - 1, getY(), getX() + getWidth(), getY() + getHeight(), edge);
+            text(graphics, getMessage(), new Box(box.x() + 4, box.y() + 1, box.width() - 8, 9), active ? INK : MUTED_INK, false);
         }
     }
 }
