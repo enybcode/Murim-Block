@@ -5,14 +5,11 @@ import com.murimblock.integration.epicfight.EpicFightBridge;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import yesman.epicfight.skill.SkillContainer;
-import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
@@ -46,22 +43,6 @@ public final class EpicFightHud {
         int y = graphics.guiHeight() - 15;
         if (patch.isHoldingAny() && patch.getHoldingSkill() instanceof ChargeableSkill charge) {
             meter(graphics, x, y - 8, 54, patch.getSkillChargingTicks(), charge.getMaxChargingTicks(), 0xFFF3EEE0);
-        }
-        int index = 0;
-        for (SkillContainer container : patch.getPlayerSkills().listSkillContainers().toList()) {
-            if (container.isEmpty() || !container.getSkill().shouldDraw(container)) continue;
-            boolean innate = container.getSlot() == SkillSlots.WEAPON_INNATE;
-            boolean active = container.isActivated() || container.getMaxResource() > 0
-                    && container.getResource() < container.getMaxResource();
-            if (!innate && !active || index >= 3) continue;
-            int sx = center + 99 + index++ * 19;
-            graphics.fill(sx, y - 12, sx + 17, y + 4, 0xDD161B19);
-            graphics.fill(sx, y - 12, sx + 17, y - 11, 0xFFD5B75F);
-            String name = Component.translatable(container.getSkill().getTranslationKey()).getString();
-            String initials = name.length() > 2 ? name.substring(0, 2) : name;
-            graphics.drawString(minecraft.font, initials, sx + 2, y - 9, 0xFFF2E9D0, false);
-            meter(graphics, sx + 2, y + 1, 13, container.getResource(), container.getMaxResource(),
-                    container.isDisabled() ? 0xFF827B6D : 0xFFE4C263);
         }
     }
 

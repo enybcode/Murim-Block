@@ -6,6 +6,8 @@ import com.murimblock.combat.CombatEvents;
 import com.murimblock.cultivation.CultivationAttachments;
 import com.murimblock.cultivation.CultivationEvents;
 import com.murimblock.integration.epicfight.EpicFightBridge;
+import com.murimblock.integration.epicfight.EpicFightContentRegistries;
+import com.murimblock.mob.MurimEntities;
 import com.murimblock.network.MurimblockNetworking;
 import com.murimblock.qi.QiAttachments;
 import com.murimblock.qi.QiEvents;
@@ -22,6 +24,8 @@ public final class Murimblock {
     public static final String MOD_ID = "murimblock";
 
     public Murimblock(IEventBus modEventBus) {
+        MurimEntities.register(modEventBus);
+        EpicFightContentRegistries.register(modEventBus);
         CombatAttachments.register(modEventBus);
         CultivationAttachments.register(modEventBus);
         QiAttachments.register(modEventBus);

@@ -8,7 +8,8 @@ import com.murimblock.cultivation.CultivationStage;
 import com.murimblock.qi.QiService;
 import com.murimblock.qi.charge.QiChargeService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
-import com.murimblock.integration.epicfight.EpicFightSkillService;
+import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
+import com.murimblock.integration.epicfight.EpicFightContentPolicy;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,7 +49,6 @@ import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import yesman.epicfight.registry.entries.EpicFightItems;
 import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.skill.SkillSlots;
-import yesman.epicfight.world.item.SkillBookItem;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
@@ -224,37 +224,115 @@ public final class FoundationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
-    public static void techniqueChangesRejectUnknownSlotsAndUnlearnedSkills(GameTestHelper helper) {
+    public static void basicsNeedNoBooksAndNativeProgressionCannotCast(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         try {
-            int guard = SkillSlots.GUARD.universalOrdinal();
-            helper.assertFalse(EpicFightSkillService.change(player, -1, "epicfight:guard", -1), "Negative slot accepted");
-            helper.assertFalse(EpicFightSkillService.change(player, Integer.MAX_VALUE, "epicfight:guard", -1), "Out of range slot accepted");
-            helper.assertFalse(EpicFightSkillService.change(player, guard, "missing:skill", -1), "Unknown skill accepted");
-            helper.assertFalse(EpicFightSkillService.change(player, guard, "epicfight:guard", -1), "Unlearned skill accepted");
-            helper.assertFalse(EpicFightSkillService.change(player, guard, "epicfight:guard", 0), "Missing book accepted");
-            helper.assertTrue(EpicFightBridge.patch(player).getSkill(SkillSlots.GUARD).isEmpty(), "Rejected request mutated the slot");
-            helper.assertTrue(QiService.getQi(player) == 100, "Rejected request changed Qi");
+            var patch = (ServerPlayerPatch) EpicFightBridge.patch(player);
+            var passive = patch.getSkill(SkillSlots.PASSIVE1);
+            passive.setSkill(EpicFightSkills.FORBIDDEN_STRENGTH.get());
+            helper.assertFalse(EpicFightCombatDefaults.allowed(passive.getSkill()), "Native passive allowed");
+            var innate = patch.getSkill(SkillSlots.WEAPON_INNATE);
+            innate.setSkill(EpicFightSkills.SWEEPING_EDGE.get());
+            player.setOnGround(true);
+            helper.assertFalse(innate.requestCasting(patch, new CompoundTag()), "Native special attack accepted");
+            EpicFightCombatDefaults.enforce(player);
+            EpicFightCombatDefaults.enforce(player);
+            helper.assertTrue(passive.isEmpty() && innate.isEmpty(), "Native progression was not cleared");
+            helper.assertTrue(patch.getSkill(SkillSlots.GUARD).getSkill() == EpicFightSkills.GUARD.get(), "Default guard missing");
+            helper.assertTrue(patch.getSkill(SkillSlots.DODGE).getSkill() == EpicFightSkills.ROLL.get(), "Default dodge missing");
+            helper.assertTrue(QiService.getQi(player) == 100, "Default actions changed Qi");
             helper.succeed();
         } finally { cleanup(player); }
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
-    public static void guardBookIsConsumedOnceAndEquippedOnTheServer(GameTestHelper helper) {
+    public static void legacyItemsAreRemovedWithoutChangingVanillaInventory(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         try {
-            ItemStack book = new ItemStack(EpicFightItems.SKILLBOOK.get(), 2);
-            SkillBookItem.setContainingSkill(EpicFightSkills.GUARD, book);
-            player.setItemInHand(InteractionHand.OFF_HAND, book);
-            helper.assertTrue(EpicFightSkillService.change(player, SkillSlots.GUARD.universalOrdinal(), "epicfight:guard", 40), "Valid guard book rejected");
-            var patch = EpicFightBridge.patch(player);
-            helper.assertTrue(patch.getSkill(SkillSlots.GUARD).getSkill() == EpicFightSkills.GUARD.get(), "Guard not equipped on server");
-            helper.assertTrue(patch.getPlayerSkills().hasLearned(EpicFightSkills.GUARD.get()), "Guard not learned");
-            helper.assertTrue(book.getCount() == 1, "Learning did not consume exactly one book");
-            helper.assertFalse(EpicFightSkillService.change(player, SkillSlots.GUARD.universalOrdinal(), "epicfight:guard", 40), "Duplicate learning accepted");
-            helper.assertTrue(book.getCount() == 1 && QiService.getQi(player) == 100, "Duplicate request consumed book or Qi");
+            var chest = player.getEnderChestInventory();
+            chest.setItem(0, new ItemStack(EpicFightItems.SKILLBOOK.get(), 2));
+            chest.setItem(1, new ItemStack(Items.DIAMOND, 7));
+            player.getInventory().setItem(5, new ItemStack(EpicFightItems.SKILLBOOK.get(), 3));
+            NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerLoggedInEvent(player));
+            helper.assertTrue(chest.getItem(0).isEmpty() && player.getInventory().getItem(5).isEmpty(), "Legacy books remained");
+            helper.assertTrue(chest.getItem(1).is(Items.DIAMOND) && chest.getItem(1).getCount() == 7, "Vanilla contents changed");
+            helper.assertTrue(player.getMainHandItem().is(Items.IRON_SWORD) && QiService.getQi(player) == 100, "Cleanup changed unrelated state");
             helper.succeed();
         } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void nativeRecipesAreFilteredAndVanillaRecipesRemain(GameTestHelper helper) {
+        var manager = helper.getLevel().getRecipeManager();
+        for (var recipe : manager.getRecipes()) {
+            helper.assertFalse(EpicFightContentPolicy.isNative(recipe.id()), "Native recipe remained: " + recipe.id());
+            helper.assertFalse(EpicFightContentPolicy.blocked(recipe.value().getResultItem(helper.getLevel().registryAccess())), "Native recipe output remained");
+        }
+        helper.assertTrue(manager.byKey(ResourceLocation.parse("minecraft:iron_sword")).isPresent(), "Vanilla sword recipe missing");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void lootModifierRemovesOnlyNativeItems(GameTestHelper helper) {
+        var loot = new it.unimi.dsi.fastutil.objects.ObjectArrayList<ItemStack>();
+        loot.add(new ItemStack(EpicFightItems.SKILLBOOK.get(), 4));
+        loot.add(new ItemStack(Items.DIAMOND, 3));
+        var params = new net.minecraft.world.level.storage.loot.LootParams.Builder(helper.getLevel())
+                .create(net.minecraft.world.level.storage.loot.parameters.LootContextParamSets.EMPTY);
+        var context = new net.minecraft.world.level.storage.loot.LootContext.Builder(params).create(java.util.Optional.empty());
+        loot = net.neoforged.neoforge.common.CommonHooks.modifyLoot(ResourceLocation.parse("murimblock:test_loot"), loot, context);
+        helper.assertTrue(loot.size() == 1 && loot.getFirst().is(Items.DIAMOND) && loot.getFirst().getCount() == 3, "Loot filter changed vanilla drops");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void openedContainersAreCleanedAndBookUseIsRejected(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        try {
+            var chest = new net.minecraft.world.SimpleContainer(27);
+            chest.setItem(0, new ItemStack(EpicFightItems.SKILLBOOK.get()));
+            chest.setItem(1, new ItemStack(Items.GOLD_INGOT, 6));
+            var menu = net.minecraft.world.inventory.ChestMenu.threeRows(0, player.getInventory(), chest);
+            menu.setCarried(new ItemStack(EpicFightItems.SKILLBOOK.get()));
+            NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Open(player, menu));
+            helper.assertTrue(chest.getItem(0).isEmpty() && menu.getCarried().isEmpty(), "Opened legacy contents remained");
+            helper.assertTrue(chest.getItem(1).getCount() == 6 && chest.getItem(1).is(Items.GOLD_INGOT), "Vanilla chest content changed");
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(EpicFightItems.SKILLBOOK.get()));
+            var use = new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem(player, InteractionHand.MAIN_HAND);
+            NeoForge.EVENT_BUS.post(use);
+            helper.assertTrue(use.isCanceled() && use.getCancellationResult() == InteractionResult.FAIL, "Native book use not rejected");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void documentedBehaviorFragmentUsesPinnedEngineSchema(GameTestHelper helper) throws Exception {
+        String json = java.nio.file.Files.readString(java.nio.file.Path.of("../../docs/examples/mobs/humanoid_behavior.fragment.json"));
+        var tag = net.minecraft.nbt.TagParser.parseTag(json);
+        var behaviors = yesman.epicfight.api.data.reloader.MobPatchReloadListener
+                .deserializeHumanoidCombatBehaviors(tag.getList("combat_behavior", 10));
+        helper.assertTrue(!behaviors.isEmpty(), "Example behavior was not deserialized by the real engine");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void nativeDropsAreRejectedAndStrayKeepsVanillaEquipment(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(2, 1, 2));
+        var dropped = new net.minecraft.world.entity.item.ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(),
+                new ItemStack(EpicFightItems.SKILLBOOK.get()));
+        helper.assertFalse(level.addFreshEntity(dropped), "Native item entity was added");
+        var stray = EntityType.STRAY.create(level);
+        stray.moveTo(pos.getX(), pos.getY(), pos.getZ());
+        stray.setNoAi(true);
+        stray.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+        helper.assertTrue(level.addFreshEntity(stray), "Stray spawn failed");
+        helper.assertTrue(stray.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(Items.IRON_HELMET), "Stray combat patch overwrote vanilla helmet");
+        for (var slot : net.minecraft.world.entity.EquipmentSlot.values()) helper.assertFalse(EpicFightContentPolicy.blocked(stray.getItemBySlot(slot)), "Native mob equipment remained");
+        helper.assertTrue(yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(stray,
+                yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch.class) != null, "Stray engine patch missing");
+        stray.discard();
+        helper.succeed();
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation", timeoutTicks = 60)

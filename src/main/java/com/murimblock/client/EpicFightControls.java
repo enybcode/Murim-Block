@@ -20,7 +20,8 @@ public final class EpicFightControls {
     private static Set<KeyMapping> disabled() {
         return Set.of(EpicFightKeyMappings.SWITCH_MODE, EpicFightKeyMappings.SKILL_EDIT,
                 EpicFightKeyMappings.OPEN_CONFIG_SCREEN, EpicFightKeyMappings.OPEN_EMOTE_WHEEL,
-                EpicFightKeyMappings.SWITCH_VANILLA_MODEL_DEBUGGING);
+                EpicFightKeyMappings.SWITCH_VANILLA_MODEL_DEBUGGING, EpicFightKeyMappings.WEAPON_INNATE_SKILL,
+                EpicFightKeyMappings.MOVER_SKILL);
     }
 
     public static boolean hidden(KeyMapping mapping) {

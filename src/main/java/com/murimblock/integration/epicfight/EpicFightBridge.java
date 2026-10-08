@@ -38,6 +38,7 @@ public final class EpicFightBridge {
 
     public static void registerHooks() {
         EpicFightEventHooks.Player.CAST_SKILL.registerEvent(event -> {
+            if (!EpicFightCombatDefaults.allowed(event.getSkillContainer().getSkill())) event.cancel();
             if (event.getPlayerPatch().getOriginal() instanceof ServerPlayer player
                     && QiChargeService.isCharging(player)) {
                 event.cancel();
@@ -46,6 +47,9 @@ public final class EpicFightBridge {
     }
 
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (event.getEntity() instanceof ServerPlayer player) CombatService.refreshMode(player);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            EpicFightCombatDefaults.enforce(player);
+            CombatService.refreshMode(player);
+        }
     }
 }

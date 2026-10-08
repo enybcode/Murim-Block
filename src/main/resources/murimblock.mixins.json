@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "com.murimblock.integration.epicfight.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["EpicFightStaminaMixin"],
+  "mixins": ["EpicFightStaminaMixin", "EpicFightLootMixin", "EpicFightRecipesMixin", "EpicFightStrayEquipmentMixin"],
   "injectors": {"defaultRequire": 1}
 }

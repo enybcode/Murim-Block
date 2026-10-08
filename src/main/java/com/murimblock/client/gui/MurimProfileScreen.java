@@ -6,11 +6,8 @@ import com.murimblock.api.MurimblockApi;
 import com.murimblock.api.cultivation.CultivationSnapshot;
 import com.murimblock.client.MurimblockKeyMappings;
 import com.murimblock.cultivation.CultivationService;
-import com.murimblock.integration.epicfight.EpicFightBridge;
-import com.murimblock.network.TechniqueChangePayload;
 import com.murimblock.qi.QiFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.KeyMapping;
@@ -25,16 +22,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.InteractionHand;
-import net.neoforged.neoforge.network.PacketDistributor;
 import yesman.epicfight.config.ClientConfig;
-import yesman.epicfight.registry.EpicFightRegistries;
-import yesman.epicfight.skill.Skill;
-import yesman.epicfight.skill.SkillCategories;
-import yesman.epicfight.skill.SkillSlot;
-import yesman.epicfight.skill.SkillSlots;
-import yesman.epicfight.world.gamerule.EpicFightGameRules;
-import yesman.epicfight.world.item.SkillBookItem;
 
 import static com.murimblock.client.gui.MurimProfileLayout.*;
 import static com.murimblock.client.gui.MurimProfileLayout.Field.*;
@@ -57,28 +45,15 @@ public final class MurimProfileScreen extends Screen {
     private int pointerX;
     private int pointerY;
     private Component hoveredText;
-    private ResourceLocation selectedSkill;
-    private InteractionHand bookHand;
     private boolean settingsMode;
-    private int libraryOffset;
-    private int descriptionOffset;
-    private int slotChoice;
-    private int requestCooldown;
-    private List<Skill> library = List.of();
-    private final List<Button> libraryButtons = new ArrayList<>();
-    private Button slotButton;
-    private Button equipButton;
-    private Button unequipButton;
 
     public MurimProfileScreen() {
         super(label("title"));
     }
 
-    public static MurimProfileScreen techniques(ResourceLocation skill, InteractionHand hand) {
+    public static MurimProfileScreen techniques() {
         MurimProfileScreen screen = new MurimProfileScreen();
         screen.page = Page.TECHNIQUES;
-        screen.selectedSkill = skill;
-        screen.bookHand = hand;
         return screen;
     }
 
@@ -99,10 +74,6 @@ public final class MurimProfileScreen extends Screen {
 
     @Override
     protected void init() {
-        libraryButtons.clear();
-        slotButton = null;
-        equipButton = null;
-        unequipButton = null;
         left = (width - PANEL_WIDTH) / 2;
         top = (height - PANEL_HEIGHT) / 2;
         for (Page target : Page.values()) {
@@ -117,31 +88,7 @@ public final class MurimProfileScreen extends Screen {
         ArtButton close = new ArtButton(left + 302, top + 8, 14, 14, label("close"), button -> onClose());
         close.setTooltip(Tooltip.create(close.getMessage()));
         addRenderableWidget(close);
-        if (page == Page.TECHNIQUES) initTechniques();
         if (page == Page.INFOS) initInfoButtons();
-    }
-
-    @Override
-    public void tick() {
-        if (requestCooldown > 0) requestCooldown--;
-        if (page == Page.TECHNIQUES) updateTechniqueButtons();
-    }
-
-    @Override
-    public boolean mouseScrolled(double x, double y, double horizontal, double vertical) {
-        if (page == Page.TECHNIQUES && vertical != 0) {
-            if (x >= left + 9 && x < left + 121 && y >= top + 83 && y < top + 162) {
-                libraryOffset = Math.clamp(libraryOffset - (int) Math.signum(vertical), 0, Math.max(0, library.size() - 5));
-                updateTechniqueButtons();
-                return true;
-            }
-            if (x >= left + 134 && x < left + 303 && y >= top + 100 && y < top + 129) {
-                int count = font.split(description(), 169).size();
-                descriptionOffset = Math.clamp(descriptionOffset - (int) Math.signum(vertical), 0, Math.max(0, count - 3));
-                return true;
-            }
-        }
-        return super.mouseScrolled(x, y, horizontal, vertical);
     }
 
     @Override
@@ -236,132 +183,13 @@ public final class MurimProfileScreen extends Screen {
         text(graphics, HEADER, label("techniques.title"), INK);
         text(graphics, LIBRARY_LABEL, label("techniques.library"), INK);
         divider(graphics, 17, 81, 96);
-        if (library.isEmpty()) text(graphics, EMPTY_LIBRARY, label("techniques.empty"), MUTED_INK);
+        text(graphics, EMPTY_LIBRARY, label("techniques.empty"), MUTED_INK);
         text(graphics, DETAILS_LABEL, label("techniques.details"), INK);
         divider(graphics, 134, 81, 169);
-        Skill skill = selection();
-        if (skill == null) {
-            RenderSystem.enableBlend();
-            icon(graphics, Page.TECHNIQUES, 218, 91, 22);
-            RenderSystem.disableBlend();
-            centered(graphics, EMPTY_DETAILS, label("techniques.nothing_selected"), MUTED_INK);
-        } else {
-            text(graphics, Component.translatable(skill.getTranslationKey()), new Box(134, 87, 169, 10), INK, false);
-            List<FormattedCharSequence> lines = font.split(description(), 169);
-            int start = Math.min(descriptionOffset, Math.max(0, lines.size() - 3));
-            graphics.enableScissor(left + 134, top + 101, left + 303, top + 128);
-            for (int i = start; i < Math.min(start + 3, lines.size()); i++) {
-                graphics.drawString(font, lines.get(i), left + 134, top + 101 + (i - start) * 9, MUTED_INK, false);
-            }
-            graphics.disableScissor();
-            if (pointerX >= 134 && pointerX < 303 && pointerY >= 101 && pointerY < 128) hoveredText = description();
-        }
-    }
-
-    private void initTechniques() {
-        for (int i = 0; i < 5; i++) {
-            int row = i;
-            libraryButtons.add(inkButton(new Box(17, 85 + i * 12, 96, 11), () -> {
-                int index = libraryOffset + row;
-                return index < library.size() ? Component.translatable(library.get(index).getTranslationKey()) : Component.empty();
-            }, () -> {
-                int index = libraryOffset + row;
-                if (index < library.size()) {
-                    selectedSkill = EpicFightRegistries.SKILL.getKey(library.get(index));
-                    descriptionOffset = 0;
-                    slotChoice = 0;
-                    updateTechniqueButtons();
-                }
-            }));
-        }
-        inkButton(new Box(17, 148, 20, 11), () -> Component.literal("<"), () -> {
-            libraryOffset = Math.max(0, libraryOffset - 5);
-            updateTechniqueButtons();
-        }).setTooltip(Tooltip.create(label("techniques.previous")));
-        inkButton(new Box(93, 148, 20, 11), () -> Component.literal(">"), () -> {
-            libraryOffset = Math.min(Math.max(0, library.size() - 5), libraryOffset + 5);
-            updateTechniqueButtons();
-        }).setTooltip(Tooltip.create(label("techniques.next")));
-        slotButton = inkButton(new Box(134, 132, 169, 12), () -> {
-            List<SkillSlot> slots = slots();
-            return slots.isEmpty() ? label("techniques.no_slot") : label("techniques.slot", slots.get(slotChoice).toString().replace('_', ' '));
-        }, () -> {
-            if (!slots().isEmpty()) slotChoice = (slotChoice + 1) % slots().size();
-            updateTechniqueButtons();
-        });
-        unequipButton = inkButton(new Box(134, 147, 67, 12), () -> label("techniques.unequip"), () -> requestChange(true));
-        equipButton = inkButton(new Box(205, 147, 98, 12), () -> label(isBookSelection() ? "techniques.learn" : "techniques.equip"), () -> requestChange(false));
-        updateTechniqueButtons();
-    }
-
-    private Skill selection() {
-        return selectedSkill == null ? null : EpicFightRegistries.SKILL.get(selectedSkill);
-    }
-
-    private Component description() {
-        Skill skill = selection();
-        if (skill == null) return Component.empty();
-        return Component.translatable(skill.getTranslationKey() + ".tooltip",
-                skill.getTooltipArgsOfScreen(new ArrayList<>()).toArray()).withStyle(GUI_TEXT_STYLE);
-    }
-
-    private List<SkillSlot> slots() {
-        if (minecraft.player == null) return List.of();
-        Skill skill = selection();
-        int limit = EpicFightGameRules.MAX_PASSIVE_SKILLS.getRuleValue(minecraft.player.level());
-        return SkillSlot.ENUM_MANAGER.universalValues().stream()
-                .filter(slot -> slot.category().learnable() && (skill == null || slot.category() == skill.getCategory()))
-                .filter(slot -> !(slot instanceof SkillSlots) || slot.category() != SkillCategories.PASSIVE
-                        || slot.universalOrdinal() - SkillSlots.PASSIVE1.universalOrdinal() < limit)
-                .sorted(Comparator.comparingInt(SkillSlot::universalOrdinal)).toList();
-    }
-
-    private boolean isBookSelection() {
-        return minecraft.player != null && bookHand != null && SkillBookItem.getContainSkill(minecraft.player.getItemInHand(bookHand))
-                .map(holder -> holder.getKey().location().equals(selectedSkill)).orElse(false);
-    }
-
-    private void updateTechniqueButtons() {
-        if (minecraft.player == null || slotButton == null) return;
-        var patch = EpicFightBridge.patch(minecraft.player);
-        if (patch == null) {
-            slotButton.active = false;
-            equipButton.active = false;
-            unequipButton.active = false;
-            return;
-        }
-        var choices = new ArrayList<Skill>(minecraft.player.isCreative()
-                ? EpicFightRegistries.SKILL.stream().filter(skill -> skill.getCategory().learnable()).toList()
-                : patch.getPlayerSkills().listAcquiredSkills().toList());
-        if (isBookSelection() && selection() != null && !choices.contains(selection())) choices.add(selection());
-        library = choices.stream().distinct().sorted(Comparator.comparing(Skill::toString)).toList();
-        libraryOffset = Math.clamp(libraryOffset, 0, Math.max(0, library.size() - 5));
-        for (int i = 0; i < libraryButtons.size(); i++) {
-            int index = libraryOffset + i;
-            InkButton button = (InkButton) libraryButtons.get(i);
-            button.visible = index < library.size();
-            button.selected = () -> index < library.size() && library.get(index) == selection();
-        }
-        List<SkillSlot> slots = slots();
-        slotChoice = slots.isEmpty() ? 0 : Math.clamp(slotChoice, 0, slots.size() - 1);
-        slotButton.active = !slots.isEmpty();
-        var container = slots.isEmpty() ? null : patch.getSkill(slots.get(slotChoice));
-        boolean editable = container != null && !container.onReplaceCooldown() && !EpicFightBridge.isBusy(minecraft.player)
-                && requestCooldown == 0;
-        unequipButton.active = editable && !container.isEmpty();
-        Skill skill = selection();
-        equipButton.active = editable && skill != null && !patch.getPlayerSkills().isEquipping(skill)
-                && (minecraft.player.isCreative() || patch.getPlayerSkills().hasLearned(skill) || isBookSelection());
-    }
-
-    private void requestChange(boolean remove) {
-        List<SkillSlot> slots = slots();
-        if (slots.isEmpty() || minecraft.player == null) return;
-        int bookSlot = !remove && isBookSelection() ? bookHand == InteractionHand.MAIN_HAND ? minecraft.player.getInventory().selected : 40 : -1;
-        PacketDistributor.sendToServer(new TechniqueChangePayload(slots.get(slotChoice).universalOrdinal(),
-                remove ? "" : selectedSkill.toString(), bookSlot));
-        requestCooldown = 10;
-        updateTechniqueButtons();
+        RenderSystem.enableBlend();
+        icon(graphics, Page.TECHNIQUES, 218, 91, 22);
+        RenderSystem.disableBlend();
+        centered(graphics, EMPTY_DETAILS, label("techniques.nothing_selected"), MUTED_INK);
     }
 
     private void initInfoButtons() {
@@ -597,7 +425,6 @@ public final class MurimProfileScreen extends Screen {
     private final class InkButton extends ArtButton {
         private final Box box;
         private final Supplier<Component> title;
-        private Supplier<Boolean> selected = () -> false;
 
         private InkButton(Box box, Supplier<Component> title, Runnable action) {
             super(left + box.x(), top + box.y(), box.width(), box.height(), title.get(), button -> action.run());
@@ -611,12 +438,11 @@ public final class MurimProfileScreen extends Screen {
             RenderSystem.enableBlend();
             quietPaper(graphics, box);
             RenderSystem.disableBlend();
-            int edge = selected.get() || isHoveredOrFocused() ? 0xFFB69342 : 0xFF9E895D;
+            int edge = isHoveredOrFocused() ? 0xFFB69342 : 0xFF9E895D;
             graphics.fill(getX(), getY(), getX() + getWidth(), getY() + 1, edge);
             graphics.fill(getX(), getY() + getHeight() - 1, getX() + getWidth(), getY() + getHeight(), edge);
             graphics.fill(getX(), getY(), getX() + 1, getY() + getHeight(), edge);
             graphics.fill(getX() + getWidth() - 1, getY(), getX() + getWidth(), getY() + getHeight(), edge);
-            if (selected.get()) graphics.fill(getX() + 1, getY() + 1, getX() + 3, getY() + getHeight() - 1, GOLD);
             text(graphics, getMessage(), new Box(box.x() + 4, box.y() + 1, box.width() - 8, 9), active ? INK : MUTED_INK, false);
         }
     }

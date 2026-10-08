@@ -5,7 +5,8 @@ import com.murimblock.client.MurimblockKeyMappings;
 import com.murimblock.client.gui.MurimProfileScreen;
 import com.murimblock.combat.CombatService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
-import com.murimblock.integration.epicfight.EpicFightSkillService;
+import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
+import com.murimblock.integration.epicfight.EpicFightContentPolicy;
 import com.murimblock.qi.QiService;
 import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +29,6 @@ import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.registry.entries.EpicFightSkills;
-import yesman.epicfight.skill.SkillSlots;
 
 /** Opt-in real-client rendering checks. Never loads into a published jar or the normal IntelliJ run. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -78,7 +78,7 @@ public final class ClientVisualSmoke {
                     CombatService.setCombatMode(player, true);
                     QiService.setQiMax(player, 120);
                     QiService.setQi(player, 87);
-                    EpicFightSkillService.change(player, SkillSlots.GUARD.universalOrdinal(), "epicfight:guard", -1);
+                    EpicFightCombatDefaults.enforce(player);
                     EpicFightBridge.patch(player).setStamina(5);
                     ready.set(true);
                 });
@@ -92,8 +92,10 @@ public final class ClientVisualSmoke {
                 case 80 -> mc.setScreen(new SkillEditScreen(mc.player, EpicFightBridge.patch(mc.player).getPlayerSkills()));
                 case 82 -> require(mc.screen instanceof MurimProfileScreen, "Native skills GUI remained open");
                 case 100 -> {
-                    // Exercise the real library row button, not a separate mock layout.
-                    click(65, 90);
+                    require(mc.screen.children().size() == 5, "Native technique library widgets remained");
+                    var patch = EpicFightBridge.patch(mc.player);
+                    require(patch.getSkill(yesman.epicfight.skill.SkillSlots.GUARD).getSkill() == EpicFightSkills.GUARD.get(), "Default guard not synchronized");
+                    require(patch.getSkill(yesman.epicfight.skill.SkillSlots.DODGE).getSkill() == EpicFightSkills.ROLL.get(), "Default dodge not synchronized");
                 }
                 case 115 -> capture("02-techniques.png");
                 case 125 -> mc.setScreen(new SkillBookScreen(mc.player, EpicFightSkills.GUARD.get(), null, null));
@@ -126,12 +128,31 @@ public final class ClientVisualSmoke {
                     mc.getWindow().setWindowed(960, 720);
                     mc.options.guiScale().set(3);
                     mc.resizeDisplay();
-                    mc.setScreen(MurimProfileScreen.techniques(null, null));
+                    mc.setScreen(MurimProfileScreen.techniques());
                 }
                 case 295 -> capture("08-small-scale.png");
+                case 300 -> {
+                    mc.getSingleplayerServer().execute(() -> mc.getSingleplayerServer().getPlayerList()
+                            .getPlayer(mc.player.getUUID()).setGameMode(GameType.CREATIVE));
+                }
+                case 305 -> {
+                    require(mc.gameMode.hasInfiniteItems(), "Creative mode switch was not synchronized");
+                    net.minecraft.world.item.CreativeModeTabs.tryRebuildTabContents(mc.level.enabledFeatures(), true, mc.level.registryAccess());
+                    for (var tab : net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB) {
+                        require(tab.getDisplayItems().stream().noneMatch(EpicFightContentPolicy::blocked), "Native creative item remained");
+                        require(tab.getSearchTabDisplayItems().stream().noneMatch(EpicFightContentPolicy::blocked), "Native creative search item remained");
+                    }
+                    mc.setScreen(new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(mc.player,
+                            mc.level.enabledFeatures(), true));
+                }
+                case 315 -> {
+                    require(mc.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen,
+                            "Creative inventory was replaced by survival inventory");
+                    capture("09-creative.png");
+                }
                 case 320 -> {
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
-                            "Native skill/book screens replaced; one Murim key category; hidden rows absent; gameplay mappings retained; client stamina disabled.\n");
+                            "Techniques empty; native screens replaced; guard/roll synchronized without books; one Murim key category; creative/search engine items absent; client stamina disabled.\n");
                     LOGGER.info("Murim client visual smoke checks passed");
                     mc.stop();
                 }
@@ -162,7 +183,7 @@ public final class ClientVisualSmoke {
             headers = list.children().stream().filter(entry -> entry instanceof KeyBindsList.CategoryEntry).count();
             list.setScrollAmount(Math.max(0, list.getMaxScroll() - 80));
         }
-        require(visible == 12, "Expected 12 useful mappings in a single Murim category, got " + visible);
+        require(visible == 10, "Expected 10 useful mappings in a single Murim category, got " + visible);
         long categories = java.util.Arrays.stream(mc.options.keyMappings).filter(mapping -> !EpicFightControls.hidden(mapping))
                 .map(net.minecraft.client.KeyMapping::getCategory).distinct().count();
         require(headers == categories, "Unexpected empty or duplicated keybind sections: " + headers);

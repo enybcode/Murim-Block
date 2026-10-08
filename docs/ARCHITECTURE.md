@@ -12,7 +12,8 @@ Murimblock is a Minecraft 1.21.1 NeoForge mod built around server-authoritative 
 - `api.cultivation`: supported Cultivation addon contract.
 - `api.combat`: supported Combat addon contract and combat mode change event.
 - `combat`: actual Epic Fight mode bridge, unsaved HUD mirror and addon events.
-- `integration.epicfight`: pinned engine boundary and validated technique changes.
+- `integration.epicfight`: pinned engine boundary, basic actions and native content policy.
+- `mob`: registered empty entity-type registry, reserved for future Murim mobs.
 - `qi`: Qi implementation, player data, reward calculation, attachments, server events.
 - `qi.charge`: Qi charging gameplay state and charge VFX tuning helpers.
 - `cultivation`: Cultivation implementation, progression table, attachments and commands.
@@ -95,8 +96,15 @@ Main classes:
 - `EpicFightBridge`: engine mode, activity checks and Qi-charge cast exclusion.
 - `EpicFightStaminaMixin`: common-side stamina compatibility shim; no stamina
   depletion or limits, without changing Qi, skill cooldowns or saved engine IDs.
-- `EpicFightSkillService`: ownership, book consumption, compatible slots,
-  cooldowns and owner/tracking-player synchronization.
+- `EpicFightCombatDefaults`: basic guard/roll without books; remove equipped native
+  progression and special skills, preserving other namespaces and engine attack/wakeup.
+- `EpicFightContentPolicy`: creative/recipe/loot/legacy-item retirement scoped to
+  `epicfight`, without unregistering IDs or changing vanilla item content.
+- `RemoveEpicFightLoot`, `EpicFightContentRegistries`: additive NeoForge global loot filter.
+- `EpicFightLootMixin`: suppress native bonus book loot construction/injection.
+- `EpicFightRecipesMixin`: recipe reload filter for native recipes/explicit native outputs.
+- `EpicFightStrayEquipmentMixin`: keep skeleton combat initialization but skip the
+  native robe assignment that would overwrite a Stray's vanilla equipment.
 - `CombatCommands`: `/combat check`, `/combat on`, `/combat off`, `/combat toggle`.
 - `CombatModeTogglePayload`: client to server toggle request with no client-chosen state.
 - `CombatModeClientHandler`: sends toggle requests when the configurable key is pressed.
@@ -112,8 +120,9 @@ MurimblockApi.combat() reads actual PlayerPatch mode
 ```
 
 Epic Fight 21.17.3.1 is installed as a required dependency. See `docs/EPIC_FIGHT.md`.
-Techniques equip native learnable skills. Martial styles and four configurable
-M1 moves are not implemented by this integration and need a later design.
+Techniques is empty and reserved for Murim progression. No native book-learning
+payload or skill service remains. Martial styles and four configurable M1 moves
+are not implemented by this integration and need a later design.
 
 Combat Mode activates these HUD replacements:
 
@@ -122,11 +131,12 @@ Combat Mode activates these HUD replacements:
 - the progress sprite keeps the vanilla experience bar dimensions and shape, but is recolored blue and filled from `Qi / Qi Max`;
 - no numeric Qi value is rendered in the HUD;
 - player XP values are not modified, and the vanilla XP level is only hidden visually while combat mode is active.
-- `EpicFightHud` cancels only the four native Epic Fight HUD layers and draws
-  compact indicators outside the health/armor/food columns.
+- `EpicFightHud` cancels only the four native Epic Fight HUD layers, without
+  native skill tiles or stamina. A compact charge indicator remains an extension
+  point for a future permitted chargeable action; normal basic actions do not use it.
 - `EpicFightGuiAdapter` routes native screens into Murimblock; outside a world
   it opens vanilla Options instead of a player-dependent profile.
-- `EpicFightControls` regroups native input objects and filters six redundant
+- `EpicFightControls` regroups native input objects and filters eight redundant
   presentation rows. Three access-transformed fields affect presentation only.
 
 Addon entry point:
@@ -160,11 +170,10 @@ Current packets:
 
 - Client to server: `QiChargeStatePayload`, sent when the local charge key state changes.
 - Client to server: `CombatModeTogglePayload`, sent once per consumed combat key press.
-- Client to server: `TechniqueChangePayload`, validated skill/slot/book intent.
 - Server to client: Qi attachment sync for the owning player through `QiAttachments`.
 - Server to client: Combat attachment sync for the owning player through `CombatAttachments`.
 
-Network version 6 requires matching client/server builds. The Murimblock mirror
+Network version 7 requires matching client/server builds. The Murimblock mirror
 is not persisted; Epic Fight saves its own mode. Qi/cultivation IDs are unchanged.
 Epic Fight carries its own attack/animation/skill synchronization packets.
 
@@ -175,6 +184,14 @@ Dev-only server tests live in `src/gameTest`, are enabled with
 Addons should not use Murimblock internal packet classes to read or mutate Qi or combat mode. They should use `com.murimblock.api`.
 
 ## Data And Configuration Direction
+
+`MurimEntities.TYPES` is connected to the mod bus but has no entries. Preparation
+does not add a fake NPC, renderer, spawn rule or world migration. Future mob entity
+code/attributes/AI belongs under `mob`; rendering stays client-only. Epic Fight
+mob patches and animation registration must use the pinned API, not a second
+damage loop. Inactive examples and the designer handoff are documented in
+`MOB_CREATION_GUIDE.md`. Unknown entity rewards currently fall back to the existing
+Qi reward rules; each new mob must be deliberately balanced there.
 
 Current gameplay values are still Java constants or Java tables. This is acceptable for the current young codebase, but the intended direction is:
 
