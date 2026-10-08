@@ -7,6 +7,8 @@ import com.murimblock.cultivation.CultivationRealm;
 import com.murimblock.cultivation.CultivationStage;
 import com.murimblock.qi.QiService;
 import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.integration.epicfight.EpicFightBridge;
+import com.murimblock.integration.epicfight.EpicFightSkillService;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,13 +38,18 @@ import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
+import yesman.epicfight.registry.entries.EpicFightItems;
+import yesman.epicfight.registry.entries.EpicFightSkills;
+import yesman.epicfight.skill.SkillSlots;
+import yesman.epicfight.world.item.SkillBookItem;
+import yesman.epicfight.gameasset.Animations;
 
 /** Runs against a disposable server world and is excluded from the shipped mod. */
 @GameTestHolder(Murimblock.MOD_ID)
@@ -74,8 +81,9 @@ public final class FoundationGameTests {
         var target = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 3));
         target.setNoAi(true);
         target.setNoGravity(true);
+        target.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
         AtomicInteger contacts = new AtomicInteger();
-        Consumer<LivingIncomingDamageEvent> observer = event -> {
+        Consumer<LivingDamageEvent.Post> observer = event -> {
             if (event.getEntity() == target && event.getSource().getEntity() == player) contacts.incrementAndGet();
         };
         NeoForge.EVENT_BUS.addListener(observer);
@@ -88,7 +96,7 @@ public final class FoundationGameTests {
             helper.runAfterDelay(5, () -> {
                 try {
                     helper.assertTrue(target.getHealth() == after && contacts.get() == 1,
-                            "A second delayed hit followed the default attack");
+                            "Delayed damage: health=" + target.getHealth() + ", expected=" + after + ", contacts=" + contacts.get());
                     helper.assertTrue(QiService.getQi(player) == 100, "Sword attacks spent Qi");
                     helper.succeed();
                 } finally {
@@ -164,17 +172,19 @@ public final class FoundationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
-    public static void modeAndChargeResetOnLogoutAndClone(GameTestHelper helper) {
+    public static void chargeAndHudMirrorResetWithoutOverwritingEpicFightMode(GameTestHelper helper) {
         ServerPlayer original = player(helper);
         ServerPlayer clone = player(helper);
         try {
             QiChargeService.startCharging(clone);
             NeoForge.EVENT_BUS.post(new PlayerEvent.Clone(clone, original, true));
-            helper.assertFalse(CombatService.isInCombatMode(clone), "Respawn inherited the temporary mode");
+            helper.assertFalse(CombatService.getData(clone).combatMode(), "Respawn inherited a stale HUD mirror");
+            CombatService.refreshMode(clone);
+            helper.assertTrue(CombatService.getData(clone).combatMode() == EpicFightBridge.isCombatMode(clone), "HUD mirror disagreed with Epic Fight");
             helper.assertFalse(QiChargeService.isCharging(clone), "Respawn inherited charging");
             QiChargeService.startCharging(original);
             NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerLoggedOutEvent(original));
-            helper.assertFalse(CombatService.isInCombatMode(original), "Logout kept the temporary mode");
+            helper.assertFalse(CombatService.getData(original).combatMode(), "Logout kept the HUD mirror");
             helper.assertFalse(QiChargeService.isCharging(original), "Logout kept charging");
             helper.succeed();
         } finally {
@@ -184,7 +194,7 @@ public final class FoundationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
-    public static void playerDataRoundTripsQiAndCultivationWithoutTemporaryMode(GameTestHelper helper) {
+    public static void playerDataRoundTripsQiCultivationAndEpicFightMode(GameTestHelper helper) {
         ServerPlayer original = player(helper);
         ServerPlayer restored = player(helper);
         try {
@@ -202,12 +212,98 @@ public final class FoundationGameTests {
             helper.assertTrue(QiService.getQi(restored) == 73 && QiService.getQiMax(restored) == 150,
                     "Qi values did not survive save/load");
             helper.assertTrue(CultivationService.getCultivation(restored).equals(cultivation), "Cultivation did not survive save/load");
-            helper.assertFalse(CombatService.isInCombatMode(restored), "Saved data enabled the temporary mode");
+            helper.assertTrue(CombatService.isInCombatMode(restored) == CombatService.isInCombatMode(original),
+                    "Epic Fight mode did not survive its own save/load");
             helper.succeed();
         } finally {
             cleanup(original);
             cleanup(restored);
         }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void techniqueChangesRejectUnknownSlotsAndUnlearnedSkills(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        try {
+            int guard = SkillSlots.GUARD.universalOrdinal();
+            helper.assertFalse(EpicFightSkillService.change(player, -1, "epicfight:guard", -1), "Negative slot accepted");
+            helper.assertFalse(EpicFightSkillService.change(player, Integer.MAX_VALUE, "epicfight:guard", -1), "Out of range slot accepted");
+            helper.assertFalse(EpicFightSkillService.change(player, guard, "missing:skill", -1), "Unknown skill accepted");
+            helper.assertFalse(EpicFightSkillService.change(player, guard, "epicfight:guard", -1), "Unlearned skill accepted");
+            helper.assertFalse(EpicFightSkillService.change(player, guard, "epicfight:guard", 0), "Missing book accepted");
+            helper.assertTrue(EpicFightBridge.patch(player).getSkill(SkillSlots.GUARD).isEmpty(), "Rejected request mutated the slot");
+            helper.assertTrue(QiService.getQi(player) == 100, "Rejected request changed Qi");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void guardBookIsConsumedOnceAndEquippedOnTheServer(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        try {
+            ItemStack book = new ItemStack(EpicFightItems.SKILLBOOK.get(), 2);
+            SkillBookItem.setContainingSkill(EpicFightSkills.GUARD, book);
+            player.setItemInHand(InteractionHand.OFF_HAND, book);
+            helper.assertTrue(EpicFightSkillService.change(player, SkillSlots.GUARD.universalOrdinal(), "epicfight:guard", 40), "Valid guard book rejected");
+            var patch = EpicFightBridge.patch(player);
+            helper.assertTrue(patch.getSkill(SkillSlots.GUARD).getSkill() == EpicFightSkills.GUARD.get(), "Guard not equipped on server");
+            helper.assertTrue(patch.getPlayerSkills().hasLearned(EpicFightSkills.GUARD.get()), "Guard not learned");
+            helper.assertTrue(book.getCount() == 1, "Learning did not consume exactly one book");
+            helper.assertFalse(EpicFightSkillService.change(player, SkillSlots.GUARD.universalOrdinal(), "epicfight:guard", 40), "Duplicate learning accepted");
+            helper.assertTrue(book.getCount() == 1 && QiService.getQi(player) == 100, "Duplicate request consumed book or Qi");
+            helper.succeed();
+        } finally { cleanup(player); }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation", timeoutTicks = 60)
+    public static void epicFightSwordAnimationDealsOneHitWithoutSpendingQi(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        var target = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 3));
+        target.setNoAi(true);
+        target.setNoGravity(true);
+        target.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+        // Vanilla GameTest scatters arenas millions of blocks away; float-based engine colliders need a local fixture.
+        helper.getLevel().getChunk(0, 0);
+        helper.getLevel().setChunkForced(0, 0, true);
+        player.moveTo(0.5, 70, 0.5, 0, 0);
+        target.moveTo(0.5, 70, 1.7, 180, 0);
+        EpicFightBridge.patch(player).setModelYRot(0, false);
+        player.connection.tick();
+        AtomicInteger contacts = new AtomicInteger();
+        Consumer<LivingDamageEvent.Post> observer = event -> {
+            if (event.getEntity() == target && event.getSource().getEntity() == player) contacts.incrementAndGet();
+        };
+        NeoForge.EVENT_BUS.addListener(observer);
+        float before = target.getHealth();
+        try {
+            EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SWORD_AUTO1, 0);
+            // The embedded connection is not polled by the network acceptor; the world drives Epic Fight's clock.
+            for (int tick = 1; tick <= 35; tick++) helper.runAfterDelay(tick, player.connection::tick);
+            helper.runAfterDelay(35, () -> {
+                try {
+                    helper.assertTrue(target.getHealth() < before, "Animated blade did not hit the target");
+                    helper.assertTrue(contacts.get() == 1, "Animated attack damage contacts=" + contacts.get() + ", health=" + target.getHealth());
+                    helper.assertTrue(QiService.getQi(player) == 100, "Animated attack spent Qi");
+                    helper.succeed();
+                } finally { NeoForge.EVENT_BUS.unregister(observer); target.discard(); cleanup(player); }
+            });
+        } catch (RuntimeException exception) {
+            NeoForge.EVENT_BUS.unregister(observer);
+            cleanup(player);
+            throw exception;
+        }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void everyVanillaSwordResolvesToAnEpicFightSword(GameTestHelper helper) {
+        for (var item : java.util.List.of(Items.WOODEN_SWORD, Items.STONE_SWORD, Items.IRON_SWORD,
+                Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD)) {
+            var capability = yesman.epicfight.world.capabilities.EpicFightCapabilities.getItemStackCapability(new ItemStack(item));
+            helper.assertTrue(capability.getWeaponCategory()
+                    == yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories.SWORD,
+                    "Invalid sword capability: " + item);
+        }
+        helper.succeed();
     }
 
     private static ServerPlayer player(GameTestHelper helper) {

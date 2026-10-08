@@ -15,7 +15,7 @@ public final class CombatEvents {
 
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            CombatService.resetCombatMode(player);
+            player.setData(CombatAttachments.PLAYER_COMBAT, CombatData.initial());
         }
     }
 

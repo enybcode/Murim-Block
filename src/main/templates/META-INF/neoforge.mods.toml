@@ -2,6 +2,9 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
+[[mixins]]
+config="murimblock.client.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
@@ -16,6 +19,13 @@ modId="neoforge"
 type="required"
 versionRange="[${neo_version},)"
 ordering="NONE"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="epicfight"
+type="required"
+versionRange="[${epic_fight_version}]"
+ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]

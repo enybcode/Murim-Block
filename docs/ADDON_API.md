@@ -57,11 +57,11 @@ MurimblockApi.combat().setCombatMode(serverPlayer, true);
 MurimblockApi.combat().toggleCombatMode(serverPlayer);
 ```
 
-Combat mode is temporary. It is reset after death and logout, and it is not persisted to disk.
-
-This API currently controls only Murimblock's HUD/GUI mode flag. It does not
-alter attacks or represent Epic Fight's battle mode. An Epic Fight bridge is
-not implemented yet.
+Reads and mutations delegate to Epic Fight's actual player mode. The engine owns
+its persistence and respawn behavior; only Murimblock's internal HUD/event mirror
+is unsaved and cleared during login, cloning and logout. Mutations respect the
+engine's mode-switch gamerule and events. False means no actual state change.
+Do not treat the mirror as gameplay authority or register a second damage engine.
 
 ## Cultivation API
 

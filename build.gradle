@@ -61,6 +61,14 @@ neoForge {
             disableIdeRun()
         }
 
+        visualSmoke {
+            client()
+            gameDirectory = project.file('build/client-smoke-run')
+            programArguments.addAll('--quickPlaySingleplayer', 'murim-smoke', '--width', '1280', '--height', '720')
+            systemProperty 'murimblock.visualSmoke', 'true'
+            disableIdeRun()
+        }
+
         data {
             data()
             programArguments.addAll(
@@ -92,10 +100,17 @@ neoForge {
 }
 
 repositories {
+    exclusiveContent {
+        forRepository {
+            maven { url = 'https://api.modrinth.com/maven' }
+        }
+        filter { includeGroup('maven.modrinth') }
+    }
     mavenCentral()
 }
 
 dependencies {
+    implementation("maven.modrinth:epic-fight:${epic_fight_artifact}") { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -107,6 +122,7 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             minecraft_version_range: minecraft_version_range,
             neo_version            : neo_version,
             loader_version_range   : loader_version_range,
+            epic_fight_version     : epic_fight_version,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
@@ -136,6 +152,21 @@ tasks.named('runGameTestServer').configure {
         if (!gameTestsEnabled) {
             throw new GradleException('Use -PgameTests to load the foundation server tests.')
         }
+    }
+}
+
+def visualSmokeWorld = layout.buildDirectory.file('client-smoke-run/saves/murim-smoke/level.dat')
+def visualSmokeReport = layout.buildDirectory.file('client-smoke-run/visual-smoke-passed.txt')
+tasks.named('runVisualSmoke').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only visual smoke test.')
+        if (!visualSmokeWorld.get().asFile.isFile()) {
+            throw new GradleException('Copy the disposable GameTest world to build/client-smoke-run/saves/murim-smoke first.')
+        }
+        visualSmokeReport.get().asFile.delete()
+    }
+    doLast {
+        if (!visualSmokeReport.get().asFile.isFile()) throw new GradleException('Client visual checks did not complete; inspect the smoke log.')
     }
 }
 

@@ -9,9 +9,10 @@ Technical foundation for the Murimblock Minecraft mod.
 - Java 21
 - Gradle Wrapper 9.2.1
 
-Epic Fight is the selected combat engine. Its dependency and integration are not
-installed in this cleanup build; attacks currently remain Minecraft's default.
-See `docs/EPIC_FIGHT.md` for the integration boundary.
+Epic Fight 21.17.3.1 is required on the client and server, pinned to Modrinth artifact
+`8HHhJt6i`. Gradle installs it for IntelliJ runs. Players must install that same
+NeoForge / Minecraft 1.21.1 release alongside Murimblock.
+See `docs/EPIC_FIGHT.md` for the integration boundary and validation checklist.
 
 ## Common tasks
 
@@ -29,11 +30,13 @@ See `docs/EPIC_FIGHT.md` for the integration boundary.
 - Passive and active Qi regeneration.
 - Configurable keybind for charging Qi.
 - Qi charging movement lock, FOV and particle effects.
-- Compact blue Qi HUD, displayed through the retained mode toggle.
+- Compact blue Qi HUD in Epic Fight combat mode and minimal stamina/skill indicators.
 - Cultivation realms, stages and breakthrough checks.
 - Server-side Qi rewards for mob kills with anti-farm and boss first victories.
-- Temporary server-authoritative mode toggle for the HUD, GUI and addon API;
-  this flag does not change attacks, damage, guard or animation.
+- Actual Epic Fight mode bridge; the engine owns combat, animation, collision and guard.
+- Native skill/book/configuration screens replaced by the Murimblock interface.
+- Learned technique selection and skill-book learning with server validation.
+- One Murimblock keybind category instead of four native Epic Fight blocks.
 - English in-game text and a dedicated bitmap font for the Murim profile GUI.
 - Four distinct GUI pages with the 3D player shown only on Profile.
 
