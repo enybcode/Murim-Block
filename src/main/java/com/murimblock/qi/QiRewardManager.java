@@ -109,7 +109,7 @@ public final class QiRewardManager {
             return new RewardTarget(entityTypeId, 500, 2_000, entityTypeId, entityTypeId, originMultiplier);
         }
 
-        int baseReward = FIXED_REWARDS.getOrDefault(entity.getType(), 1);
+        int baseReward = baseReward(entity.getType(), entityTypeId);
         if (entity.getType() == EntityType.ELDER_GUARDIAN) {
             return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null, originMultiplier);
         }
@@ -121,7 +121,7 @@ public final class QiRewardManager {
 
     public static RewardTarget rewardTarget(EntityType<?> entityType) {
         ResourceLocation entityTypeId = entityTypeId(entityType);
-        int baseReward = FIXED_REWARDS.getOrDefault(entityType, 1);
+        int baseReward = baseReward(entityType, entityTypeId);
         if (entityType == EntityType.ELDER_GUARDIAN) {
             return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null);
         }
@@ -135,6 +135,12 @@ public final class QiRewardManager {
             return new RewardTarget(entityTypeId, 500, 2_000, entityTypeId, entityTypeId);
         }
         return new RewardTarget(entityTypeId, baseReward, 0, null, null);
+    }
+
+    private static int baseReward(EntityType<?> type, ResourceLocation id) {
+        // Summoned integration fixtures must not become a source of progression rewards.
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "training_opponent"))) return 0;
+        return FIXED_REWARDS.getOrDefault(type, 1);
     }
 
     public static String describeAntiFarm(ServerPlayer player, EntityType<?> entityType) {

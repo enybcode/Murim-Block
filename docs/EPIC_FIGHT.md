@@ -119,13 +119,17 @@ as Murim techniques. The policy is version-pinned, not an upstream API guarantee
 
 ## Mob Preparation
 
-`MurimEntities` is a registered **empty** DeferredRegister. No fake mob, natural
-spawn or placeholder asset is introduced. See the French
+`MurimEntities` now registers the summon-only `training_opponent` Zombie-derived
+fixture, with explicit engine attributes, an iron sword and the zombie preset.
+No natural spawn, original asset pack, loot, XP or Qi reward is introduced. See the French
 [mob/animation guide](MOB_CREATION_GUIDE.md) and
-[request template](examples/mobs/MOB_REQUEST_TEMPLATE.md).
+[request template](examples/mobs/MOB_REQUEST_TEMPLATE.md) and the
+[Epic Fight / GeckoLib animation pipeline](ANIMATION_PIPELINE.md).
 
 The inactive behavior fragment is deserialized by the actual pinned engine in a
-server GameTest. This verifies its schema/animation IDs, not a rendered new mob.
+server GameTest. This verifies its schema/animation IDs. The separate live preset
+is tested for patch/attributes/AI, one animated damage contact, save data, rewards
+and real client rendering; see [current delivery](DELIVERY_CLEAR_MANUSCRIPT_MOBS.md).
 The zombie preset only suits a compatible Zombie-derived entity. Mob creation
 still needs a chosen design, legal resources, rig, attributes/AI/renderer, combat
 integration and validation before enabling natural spawns.
@@ -145,7 +149,10 @@ disposable copied world at `build/client-smoke-run/saves/murim-smoke`; never ove
 an active world or use a user save for cleanup tests. Reports/screenshots are local
 build output, not release assets. The published jar excludes both harnesses.
 
-### Checks Recorded On 2026-10-08
+### Previous Engine-Policy Checks Recorded On 2026-10-08
+
+These counts describe the earlier engine-policy delivery. The GUI/prototype
+delivery adds tests and has its own current report linked above.
 
 - 114 unit checks, zero failures/errors.
 - 19 required real server GameTests: one animated sword damage contact, six vanilla

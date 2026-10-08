@@ -26,6 +26,8 @@ class MurimGuiResourcesTest {
         JsonObject language = json("lang/en_us.json");
         assertEquals("Profile", language.get("gui.murimblock.tab.profile").getAsString());
         assertEquals("Info", language.get("gui.murimblock.tab.infos").getAsString());
+        assertEquals("Stage: ???", language.get("gui.murimblock.status_placeholder").getAsString());
+        assertEquals("???", language.get("gui.murimblock.stage_unknown").getAsString());
         for (CultivationRealm realm : CultivationRealm.values()) {
             assertEquals(realm.displayName(), language.get("gui.murimblock.realm." + realm.serializedName()).getAsString());
         }

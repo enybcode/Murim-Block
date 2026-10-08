@@ -13,7 +13,7 @@ Murimblock is a Minecraft 1.21.1 NeoForge mod built around server-authoritative 
 - `api.combat`: supported Combat addon contract and combat mode change event.
 - `combat`: actual Epic Fight mode bridge, unsaved HUD mirror and addon events.
 - `integration.epicfight`: pinned engine boundary, basic actions and native content policy.
-- `mob`: registered empty entity-type registry, reserved for future Murim mobs.
+- `mob`: entity registry and summon-only TrainingOpponent prototype; no natural spawns.
 - `qi`: Qi implementation, player data, reward calculation, attachments, server events.
 - `qi.charge`: Qi charging gameplay state and charge VFX tuning helpers.
 - `cultivation`: Cultivation implementation, progression table, attachments and commands.
@@ -44,6 +44,8 @@ Client-only classes remain in `com.murimblock.client`:
 - `QiChargeFovHandler`: charge FOV transition.
 - `MurimblockKeyMappings`: key registration.
 - `CombatModeClientHandler`: combat toggle key input.
+- `client.gui.MurimProfileScreen` / `MurimProfileLayout`: adaptive Clear Manuscript pages, native pixel geometry and scoped bitmap font.
+- `TrainingOpponentRenderer`: client registration for the provisional Zombie appearance; Epic Fight preset owns animated rendering.
 - `client.hud.CombatQiHud`: redraws the vanilla experience bar background with a blue Qi progress sprite while Combat Mode is active, without numeric Qi text.
 
 Server code must not import `Minecraft`, `ClientLevel`, `GuiGraphics`, `Camera`, or `KeyMapping`.
