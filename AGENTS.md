@@ -26,3 +26,12 @@
 - Keep dev-only tests in `src/gameTest`; never enable `-PgameTests` for a normal player client or package the harness in the release jar.
 - Cloud server checks do not replace graphical client checks or two-client multiplayer validation.
 - Never upload local worlds, IDE state, caches, credentials or `.local` reference files as repository source.
+
+# Multiple Coding Agents
+
+- Codex and Claude work against the same repository rules, but do not share chat history automatically.
+- In a shared checkout, allow only one agent to edit, stage, commit or change branches at a time. The other can review in read-only mode.
+- Before editing, inspect the current branch and working tree again; preserve unfinished changes from the user or another agent.
+- For simultaneous implementation, use separate Git worktrees only when requested by the user; never assume uncommitted changes are copied into a worktree.
+- Transfer context with a concise handoff: task, branch, commit, changed files, checks actually run, and remaining limitations. Never transfer credentials or local worlds.
+- Read `docs/AI_COLLABORATION.md` for the Claude setup and initial read-only verification.

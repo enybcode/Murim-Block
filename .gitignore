@@ -30,6 +30,15 @@ src/generated/resources/.cache/
 *.tmp
 hs_err_pid*.log
 
+### Local coding-agent state ###
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/ide/
+.claude/worktrees/
+.claude/sessions/
+.claude/projects/
+.claude/.credentials.json
+
 ### Operating systems ###
 .DS_Store
 Thumbs.db
