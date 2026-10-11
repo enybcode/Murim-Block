@@ -12,6 +12,7 @@
 
 - [Git workflow](GIT_WORKFLOW.md): `test` for pending validation, `main` stable.
 - [Codex and Claude](AI_COLLABORATION.md): shared rules, local setup and safe handoffs.
+- [Claude handoff](CLAUDE_HANDOFF.md): compact project state, decisions and next validation steps.
 - [Cloud import](CLOUD_IMPORT.md): setup, networking, headless verification and handoff.
 - [Audit report](CODE_AUDIT_2026_10_08.md): fixes, checks and remaining limitations.
 - [GUI/mob delivery](DELIVERY_CLEAR_MANUSCRIPT_MOBS.md): earlier implementation report.

@@ -197,9 +197,11 @@ Addons should not use Murimblock internal packet classes to read or mutate Qi or
 
 ## Data And Configuration Direction
 
-`MurimEntities.TYPES` is connected to the mod bus but has no entries. Preparation
-does not add a fake NPC, renderer, spawn rule or world migration. Future mob entity
-code/attributes/AI belongs under `mob`; rendering stays client-only. Epic Fight
+`MurimEntities.TYPES` registers the summon-only `TRAINING_OPPONENT`, a
+Zombie-derived training fixture with an iron sword, explicit engine attributes
+and an Epic Fight preset/renderer. It has no natural spawning, loot, XP or Qi
+reward. This is a technical prototype, not a final Murim character or crab.
+Future mob entity code/attributes/AI belongs under `mob`; rendering stays client-only. Epic Fight
 mob patches and animation registration must use the pinned API, not a second
 damage loop. Inactive examples and the designer handoff are documented in
 `MOB_CREATION_GUIDE.md`. Unknown entity rewards currently fall back to the existing
