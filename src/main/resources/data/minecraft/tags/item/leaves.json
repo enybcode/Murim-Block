@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "murimblock:osmanthus_leaves",
+    "murimblock:banyan_leaves",
+    "murimblock:huangshan_pine_leaves",
+    "murimblock:jujube_leaves",
+    "murimblock:dove_tree_leaves",
+    "murimblock:willow_leaves",
+    "murimblock:peach_leaves",
+    "murimblock:desert_poplar_leaves",
+    "murimblock:moso_bamboo_leaves"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "type": "murimblock:rock_pillar",
+  "config": {
+    "style": "pillar",
+    "rock": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "murimblock:pillar_sandstone"
+      }
+    },
+    "accent": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:smooth_sandstone"
+      }
+    },
+    "top": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:grass_block",
+        "Properties": {
+          "snowy": "false"
+        }
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 2,
+      "max_inclusive": 4
+    },
+    "height": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 26,
+      "max_inclusive": 58
+    }
+  }
+}

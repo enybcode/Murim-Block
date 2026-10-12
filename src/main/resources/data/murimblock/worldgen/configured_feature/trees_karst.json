@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": {
+      "feature": "murimblock:osmanthus",
+      "placement": []
+    },
+    "features": [
+      {
+        "chance": 0.25,
+        "feature": {
+          "feature": "murimblock:banyan",
+          "placement": []
+        }
+      }
+    ]
+  }
+}

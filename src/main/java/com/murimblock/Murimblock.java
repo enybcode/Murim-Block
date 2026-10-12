@@ -5,13 +5,17 @@ import com.murimblock.combat.CombatAttachments;
 import com.murimblock.combat.CombatEvents;
 import com.murimblock.cultivation.CultivationAttachments;
 import com.murimblock.cultivation.CultivationEvents;
+import com.murimblock.integration.epicfight.ArmoredCrabEpicFight;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightContentRegistries;
+import com.murimblock.item.MurimItems;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.network.MurimblockNetworking;
 import com.murimblock.qi.QiAttachments;
 import com.murimblock.qi.QiEvents;
 import com.murimblock.qi.charge.QiChargeEvents;
+import com.murimblock.world.MurimWorldgen;
+import com.murimblock.world.block.MurimBlocks;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -25,6 +29,11 @@ public final class Murimblock {
 
     public Murimblock(IEventBus modEventBus) {
         MurimEntities.register(modEventBus);
+        // Blocks first: they add their block items to MurimItems before its registry is attached.
+        MurimBlocks.register(modEventBus);
+        MurimItems.register(modEventBus);
+        MurimWorldgen.register(modEventBus);
+        ArmoredCrabEpicFight.register(modEventBus);
         EpicFightContentRegistries.register(modEventBus);
         CombatAttachments.register(modEventBus);
         CultivationAttachments.register(modEventBus);
@@ -48,5 +57,8 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerChangedDimension);
         NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerClone);
         NeoForge.EVENT_BUS.addListener(MurimblockCommands::onRegisterCommands);
+        // The Cloud Cliff Sanctuary: built once near the spawn; every player gets the sect token that finds it.
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.SanctuaryPlacement::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.item.SectTokenItem::onPlayerLoggedIn);
     }
 }

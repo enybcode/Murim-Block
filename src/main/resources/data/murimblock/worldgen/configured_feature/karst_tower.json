@@ -1,0 +1,59 @@
+{
+  "type": "murimblock:rock_pillar",
+  "config": {
+    "style": "tower",
+    "rock": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "murimblock:karst_limestone"
+          },
+          "weight": 6
+        },
+        {
+          "data": {
+            "Name": "minecraft:andesite"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "accent": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "murimblock:mossy_karst_limestone"
+          },
+          "weight": 3
+        },
+        {
+          "data": {
+            "Name": "minecraft:tuff"
+          },
+          "weight": 2
+        }
+      ]
+    },
+    "top": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:grass_block",
+        "Properties": {
+          "snowy": "false"
+        }
+      }
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 4,
+      "max_inclusive": 8
+    },
+    "height": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 24,
+      "max_inclusive": 58
+    }
+  }
+}

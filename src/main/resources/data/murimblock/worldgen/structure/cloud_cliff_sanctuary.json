@@ -1,0 +1,7 @@
+{
+  "type": "murimblock:cloud_cliff_sanctuary",
+  "biomes": "#murimblock:murim_biomes",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "none"
+}

@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "murimblock:osmanthus_log",
+    "murimblock:banyan_log",
+    "murimblock:huangshan_pine_log",
+    "murimblock:jujube_log",
+    "murimblock:dove_tree_log",
+    "murimblock:willow_log",
+    "murimblock:peach_log",
+    "murimblock:desert_poplar_log",
+    "murimblock:osmanthus_planks",
+    "murimblock:banyan_planks",
+    "murimblock:huangshan_pine_planks",
+    "murimblock:jujube_planks",
+    "murimblock:dove_tree_planks",
+    "murimblock:willow_planks",
+    "murimblock:peach_planks",
+    "murimblock:desert_poplar_planks",
+    "murimblock:moso_bamboo"
+  ]
+}

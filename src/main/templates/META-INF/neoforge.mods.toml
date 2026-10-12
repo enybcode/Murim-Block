@@ -8,6 +8,9 @@ config="murimblock.client.mixins.json"
 [[mixins]]
 config="murimblock.mixins.json"
 
+[[mixins]]
+config="murimblock.world.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
@@ -28,6 +31,28 @@ side="BOTH"
 modId="epicfight"
 type="required"
 versionRange="[${epic_fight_version}]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="geckolib"
+type="required"
+versionRange="[${geckolib_version},)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="photon"
+type="required"
+versionRange="[${photon_version},)"
+ordering="AFTER"
+side="BOTH"
+
+# Murim biomes in the overworld.
+[[dependencies.${mod_id}]]
+modId="terrablender"
+type="required"
+versionRange="[${terrablender_version},)"
 ordering="AFTER"
 side="BOTH"
 

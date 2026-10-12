@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "murimblock:block/willow_strands"
+  },
+  "render_type": "minecraft:cutout"
+}

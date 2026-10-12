@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "murimblock:huangshan_pine_log"
+    }
+  ],
+  "result": {
+    "id": "murimblock:huangshan_pine_planks",
+    "count": 4
+  }
+}

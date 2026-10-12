@@ -7,12 +7,17 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
 public final class EpicFightMobSupport {
     private EpicFightMobSupport() { }
 
-    public static AttributeSupplier.Builder humanoidAttributes(AttributeSupplier.Builder builder) {
+    /** Same set the engine gives its non-humanoid vanilla mobs (EpicFightAttributes.common, e.g. spiders). */
+    public static AttributeSupplier.Builder creatureAttributes(AttributeSupplier.Builder builder) {
         return builder.add(EpicFightAttributes.WEIGHT)
                 .add(EpicFightAttributes.ARMOR_NEGATION)
                 .add(EpicFightAttributes.IMPACT, 1.0)
                 .add(EpicFightAttributes.MAX_STRIKES, 1.0)
-                .add(EpicFightAttributes.STUN_ARMOR)
+                .add(EpicFightAttributes.STUN_ARMOR);
+    }
+
+    public static AttributeSupplier.Builder humanoidAttributes(AttributeSupplier.Builder builder) {
+        return creatureAttributes(builder)
                 .add(EpicFightAttributes.OFFHAND_ATTACK_SPEED)
                 .add(EpicFightAttributes.OFFHAND_MAX_STRIKES)
                 .add(EpicFightAttributes.OFFHAND_ARMOR_NEGATION)

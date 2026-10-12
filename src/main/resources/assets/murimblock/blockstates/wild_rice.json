@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "murimblock:block/wild_rice_bottom"
+    },
+    "half=upper": {
+      "model": "murimblock:block/wild_rice_top"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "murimblock:block/rhododendron_top"
+  },
+  "render_type": "minecraft:cutout"
+}

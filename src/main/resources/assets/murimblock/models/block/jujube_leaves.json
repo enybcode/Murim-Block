@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "murimblock:block/jujube_leaves"
+  },
+  "render_type": "minecraft:cutout_mipped"
+}

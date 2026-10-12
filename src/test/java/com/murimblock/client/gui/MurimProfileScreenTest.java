@@ -59,4 +59,11 @@ class MurimProfileScreenTest {
             previous = fill;
         }
     }
+
+    @Test
+    void qiIsShownAsWholePointsWithoutRoundingUpToFull() {
+        assertEquals("87 / 120", MurimProfileScreen.qiValue(87.06, 120).getString());
+        assertEquals("119 / 120", MurimProfileScreen.qiValue(119.9, 120).getString());
+        assertEquals("0 / 0", MurimProfileScreen.qiValue(Double.NaN, -5).getString());
+    }
 }

@@ -54,7 +54,7 @@ de son integration. README, architecture et guide des mobs sont actualises.
 
 Le pont GeckoLib examine peut annuler le rendu Geo au profit d'Epic Fight pour
 une meme entite patchee. Il ne convertit pas automatiquement les animations.
-GeckoLib n'est pas installe ici : la compatibilite d'un couple de versions ou
+(Etat au 08/10 ; GeckoLib 4.9.3 est requis depuis le 12/10/2026.) GeckoLib n'etait pas installe ici : la compatibilite d'un couple de versions ou
 d'une armure concrete n'est donc pas declaree validee en execution.
 
 ## Boucle De Verification Executee

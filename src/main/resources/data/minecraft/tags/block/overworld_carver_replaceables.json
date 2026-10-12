@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "murimblock:loess",
+    "murimblock:red_loess",
+    "murimblock:karst_limestone",
+    "murimblock:pale_granite",
+    "murimblock:pillar_sandstone",
+    "murimblock:gobi_gravel"
+  ]
+}

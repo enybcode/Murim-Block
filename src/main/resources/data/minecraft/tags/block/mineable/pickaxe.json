@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "murimblock:karst_limestone",
+    "murimblock:mossy_karst_limestone",
+    "murimblock:pale_granite",
+    "murimblock:pillar_sandstone"
+  ]
+}

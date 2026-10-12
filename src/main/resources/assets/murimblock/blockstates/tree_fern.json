@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "murimblock:block/tree_fern_bottom"
+    },
+    "half=upper": {
+      "model": "murimblock:block/tree_fern_top"
+    }
+  }
+}

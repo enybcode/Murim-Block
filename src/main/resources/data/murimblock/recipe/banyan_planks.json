@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "murimblock:banyan_log"
+    }
+  ],
+  "result": {
+    "id": "murimblock:banyan_planks",
+    "count": 4
+  }
+}

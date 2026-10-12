@@ -14,7 +14,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
-public final class QiChargeClientEffects {
+public final class  QiChargeClientEffects {
     private static final RandomSource RANDOM = RandomSource.create();
     private static int foregroundCooldown;
 

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "murimblock:desert_poplar_log"
+    }
+  ],
+  "result": {
+    "id": "murimblock:desert_poplar_planks",
+    "count": 4
+  }
+}

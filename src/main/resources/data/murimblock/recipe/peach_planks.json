@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "murimblock:peach_log"
+    }
+  ],
+  "result": {
+    "id": "murimblock:peach_planks",
+    "count": 4
+  }
+}

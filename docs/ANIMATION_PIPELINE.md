@@ -9,7 +9,9 @@ Etude et socle controles le 2026-10-08. Lire aussi le
 Epic Fight reste le moteur des humanoides combattants : poses, phases, collisions,
 IA de melee animee et synchronisation. Murimblock definit ses entites, leurs regles,
 leurs ressources originales et les raccordements. Ne pas faire jouer les attaques
-du meme corps par deux moteurs independants. GeckoLib n'est pas ajoute a ce stade.
+du meme corps par deux moteurs independants. GeckoLib 4.9.3 est une dependance
+requise depuis le 12/10/2026 (avec Photon 2.2.8 pour les effets lumineux), mais
+aucune entite Murimblock ne l'utilise encore.
 
 Un mob d'ambiance non patche par Epic Fight pourra utiliser GeckoLib si son design
 le justifie. Ce choix doit se faire par type d'entite, pas a chaque frame.
@@ -24,7 +26,8 @@ L'existence d'une integration upstream ne garantit pas tous les modeles/addons.
 | Java | 21 |
 | Epic Fight | 21.17.3.1, artifact Modrinth `8HHhJt6i`, client et serveur |
 | Binaire Epic Fight SHA-256 | `8B882554CF10086398340FBDC741819EE72A801A3ADCE516C7F4768326A39526` |
-| GeckoLib | Non declare / non installe dans ce projet. Documentation GeckoLib 4 et pont fourni par Epic Fight examines ; aucun couple de binaires GeckoLib valide en jeu ici. |
+| GeckoLib | 4.9.3 NeoForge 1.21.1 (Modrinth `Grwn5rUB`), requis depuis le 12/10/2026. Charge avec Epic Fight en serveur de test et client de smoke ; aucune entite ou armure Geo encore validee en jeu. |
+| Photon | 2.2.8 (Modrinth `T9SRwGMM`, Low-Drag) + LDLib2 2.2.42 + KilaGraph 21.1.0.16, requis depuis le 12/10/2026 pour les effets et lumieres dynamiques. Charge ; aucun effet Murimblock cree. |
 | Blender / exporteur | Documentation officielle consultee, mais pas de nouveau mesh/clip Murim exporte ou teste dans cette livraison. |
 
 Les constats precis ci-dessous viennent du sources jar correspondant a **21.17.3.1**,
