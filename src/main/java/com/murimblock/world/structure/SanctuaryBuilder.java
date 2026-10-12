@@ -33,7 +33,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class SanctuaryBuilder {
     public static final int HEIGHT = 70;
     /** Distance from the spire axis at which the ground is measured to choose the road side. */
-    public static final int FOOT_RADIUS = 19;
+    public static final int FOOT_RADIUS = 22;
     /** Plank road: blocks of climb per block walked, and where it starts (angle in radians, 0 = east). */
     static final double ROAD_PITCH = 0.3;
 
@@ -96,10 +96,10 @@ public final class SanctuaryBuilder {
         return block.defaultBlockState().setValue(SlabBlock.TYPE, type);
     }
 
-    /** Spire radius at a height: a little wider towards the summit, so the top holds the whole court. */
+    /** Spire radius at a height: a little wider towards the summit, so the top holds the whole court and its buildings. */
     double radiusAt(int y) {
         double t = Math.max(0, Math.min(1, (double) (y - ground) / HEIGHT));
-        return 12.5 + 4.5 * t;
+        return 14 + 6 * t;
     }
 
     // ---------------------------------------------------------------- the spire
@@ -107,7 +107,7 @@ public final class SanctuaryBuilder {
     private void spire() {
         // From below the lowest ground of the footprint, so it never floats on a slope.
         int bottom = ground;
-        for (int dx = -18; dx <= 18; dx += 3) for (int dz = -18; dz <= 18; dz += 3)
+        for (int dx = -21; dx <= 21; dx += 3) for (int dz = -21; dz <= 21; dz += 3)
             bottom = Math.min(bottom, level.getHeight(Heightmap.Types.OCEAN_FLOOR, cx + dx, cz + dz) - 1);
         int[] jointX = new int[HEIGHT + 64], jointZ = new int[HEIGHT + 64];
         for (int s = 0; s < jointX.length; s += 7) {
@@ -144,35 +144,69 @@ public final class SanctuaryBuilder {
 
     // ---------------------------------------------------------------- the plank road
 
+    /**
+     * Total angle the road turns through: about the natural spiral at {@link #ROAD_PITCH}, adjusted so that it always
+     * arrives at the south (pi/2), in line with the paifang gate.
+     */
+    private double roadTurn() {
+        double a = 0, y = ground + 1;
+        while (y < top) { a += 1.0 / (radiusAt((int) y) + 1.2); y += ROAD_PITCH; }
+        double miss = Math.IEEEremainder(Math.PI / 2 - (roadStart + a), Math.PI * 2);
+        return a + miss;
+    }
+
+    /** Length of the gangway between the rim of the court and the end of the road. */
+    static final int GANGWAY = 4;
+
+    /** How far out from the rock the road runs: against it, then swinging out over the last quarter turn. */
+    private static double roadOffset(double frac, double turn) {
+        double left = (1 - frac) * turn; // radians still to go
+        double t = Math.max(0, Math.min(1, 1 - left / (Math.PI / 2)));
+        return 1.2 + GANGWAY * t * t * (3 - 2 * t);
+    }
+
     private void road() {
         BlockState fence = Blocks.SPRUCE_FENCE.defaultBlockState();
+        BlockState strut = Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState();
+        double turn = roadTurn();
         double a = roadStart;
-        double y = ground + 1;
-        int lastY = (int) y;
-        boolean pavilionDone = false;
-        while (y < top) {
-            double r = radiusAt((int) y) + 1.2;
+        int lastY = ground + 1;
+        double pavilionA = 0, pavilionR = 0;
+        int pavilionY = Integer.MIN_VALUE;
+        int step = 0;
+        while (true) {
+            double frac = Math.min(1, (a - roadStart) / turn);
+            double y = ground + 1 + frac * (HEIGHT - 1);
             int iy = (int) Math.floor(y);
+            double rock = radiusAt(iy);
+            double off = roadOffset(frac, turn);
+            double r = rock + off;
+            Direction travel = Direction.fromYRot(Math.toDegrees(a) + 180); // tangent, roughly
             for (double w = 0; w <= 1.6; w += 0.4) { // two blocks wide
                 int x = (int) Math.floor(cx + Math.cos(a) * (r + w)), z = (int) Math.floor(cz + Math.sin(a) * (r + w));
-                Direction travel = Direction.fromYRot(Math.toDegrees(a) + 180); // tangent, roughly
-                BlockState step = iy > lastY ? stair(Blocks.SPRUCE_STAIRS, travel, Half.BOTTOM) : PLANK;
-                set(x, iy, z, step);
+                BlockState tread = iy > lastY ? stair(Blocks.SPRUCE_STAIRS, travel, Half.BOTTOM) : PLANK;
+                set(x, iy, z, tread);
                 for (int h = 1; h <= 3; h++) set(x, iy + h, z, Blocks.AIR.defaultBlockState());
                 // Beam struck into the rock under every few planks.
                 if (Math.floorMod(x + z, 4) == 0) set(x, iy - 1, z, fence);
             }
+            // Away from the rock, the road rests on log struts struck into it, with a rail on the inner side too.
+            if (off > 1.7) {
+                if (step % 3 == 0) for (double d = rock - 1; d <= r + 1.6; d += 0.5)
+                    set((int) Math.floor(cx + Math.cos(a) * d), iy - 1, (int) Math.floor(cz + Math.sin(a) * d), strut);
+                set((int) Math.floor(cx + Math.cos(a) * (r - 0.6)), iy + 1, (int) Math.floor(cz + Math.sin(a) * (r - 0.6)), fence);
+            }
             // Rail on the outer edge.
             int ox = (int) Math.floor(cx + Math.cos(a) * (r + 2.4)), oz = (int) Math.floor(cz + Math.sin(a) * (r + 2.4));
             set(ox, iy + 1, oz, fence);
-            if (!pavilionDone && y > ground + HEIGHT * 0.5) {
-                restPavilion(a, r, iy);
-                pavilionDone = true;
-            }
+            if (pavilionY == Integer.MIN_VALUE && y > ground + HEIGHT * 0.5) { pavilionA = a; pavilionR = r; pavilionY = iy; }
             lastY = iy;
+            if (frac >= 1) break;
             a += 1.0 / r;          // one block of arc
-            y += ROAD_PITCH;
+            step++;
         }
+        // After the whole road, so its later turns never cut through the pavilion roof.
+        restPavilion(pavilionA, pavilionR, pavilionY);
         // Foot landing, last so nothing of the road (rail, steps) stands on it: a stone apron, a stele, lanterns.
         BlockPos foot = foot();
         // Open sky over the landing (it may stand against a slope), then no tree or plant around it.
@@ -197,9 +231,24 @@ public final class SanctuaryBuilder {
         set(foot.getX() - 2, ground + 2, foot.getZ() + 2, Blocks.LANTERN.defaultBlockState());
     }
 
-    /** Mid-way rest pavilion hanging out from the road: four red posts, a small pyramid roof, benches. */
+    /**
+     * Mid-way rest pavilion standing out from the road on beams, reached by a short bridge: four red posts, a small
+     * pyramid roof clear of the road, benches.
+     */
     private void restPavilion(double a, double r, int y) {
-        int px = (int) Math.floor(cx + Math.cos(a) * (r + 4)), pz = (int) Math.floor(cz + Math.sin(a) * (r + 4));
+        double ux = Math.cos(a), uz = Math.sin(a), tx = -uz, tz = ux; // outwards, along the road
+        double centre = r + 6.5;
+        // Bridge from the road's outer edge to the pavilion floor, rails on both sides.
+        for (double d = r + 1.6; d <= centre - 2; d += 0.4) for (int w = -2; w <= 2; w++) {
+            int x = (int) Math.floor(cx + ux * d + tx * w), z = (int) Math.floor(cz + uz * d + tz * w);
+            boolean rail = Math.abs(w) == 2;
+            if (!rail) {
+                set(x, y, z, PLANK);
+                set(x, y - 1, z, Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState());
+                for (int h = 1; h <= 3; h++) set(x, y + h, z, Blocks.AIR.defaultBlockState());
+            } else if (d > r + 2.8) set(x, y + 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
+        }
+        int px = (int) Math.floor(cx + ux * centre), pz = (int) Math.floor(cz + uz * centre);
         for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
             set(px + dx, y, pz + dz, PLANK);
             set(px + dx, y - 1, pz + dz, Blocks.SPRUCE_FENCE.defaultBlockState());
@@ -219,7 +268,8 @@ public final class SanctuaryBuilder {
     private void summit() {
         int t = top;
         // Clear and pave the court; a stone brick border and a low balustrade at the rim.
-        for (int dx = -16; dx <= 16; dx++) for (int dz = -16; dz <= 16; dz++) {
+        int reach = (int) Math.ceil(radiusAt(t)) + 1;
+        for (int dx = -reach; dx <= reach; dx++) for (int dz = -reach; dz <= reach; dz++) {
             if (Math.hypot(dx, dz) > radiusAt(t) + 0.5) continue;
             for (int h = 1; h <= 30; h++) setRel(dx, t + h, dz, Blocks.AIR.defaultBlockState());
             boolean rim = Math.hypot(dx, dz) > radiusAt(t) - 1.2;
@@ -229,28 +279,40 @@ public final class SanctuaryBuilder {
         mainHall(t);
         sideHall(-15, -9, -3, 5, t, false); // dormitory (west)
         sideHall(9, 15, -3, 5, t, true);    // library (east)
-        tower(-13, 10, t, true);            // bell tower (south-west)
-        tower(13, 10, t, false);            // drum tower (south-east)
+        tower(-12, 10, t, true);            // bell tower (south-west)
+        tower(12, 10, t, false);            // drum tower (south-east)
         paifang(t);
         incense(t);
         // Two pines in the court corners.
         var pine = level.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getOptional(MurimTrees.feature("huangshan_pine"));
         pine.ifPresent(feature -> {
-            feature.place(level, level.getChunkSource().getGenerator(), random, new BlockPos(cx - 11, t + 1, cz + 3));
-            feature.place(level, level.getChunkSource().getGenerator(), random, new BlockPos(cx + 11, t + 1, cz + 4));
+            feature.place(level, level.getChunkSource().getGenerator(), random, new BlockPos(cx - 6, t + 1, cz + 10));
+            feature.place(level, level.getChunkSource().getGenerator(), random, new BlockPos(cx + 6, t + 1, cz + 9));
         });
-        // Opening in the rim where the plank road arrives.
-        double a = roadEndAngle();
-        for (int w = -1; w <= 1; w++) {
-            int x = (int) Math.floor(Math.cos(a) * (radiusAt(t) - 0.5) - Math.sin(a) * w), z = (int) Math.floor(Math.sin(a) * (radiusAt(t) - 0.5) + Math.cos(a) * w);
-            setRel(x, t + 1, z, Blocks.AIR.defaultBlockState());
-        }
+        gangway(t);
     }
 
-    private double roadEndAngle() {
-        double a = roadStart, y = ground + 1;
-        while (y < top) { a += 1.0 / (radiusAt((int) y) + 1.2); y += ROAD_PITCH; }
-        return a;
+    /**
+     * The entrance: the plank road ends at the south, a few blocks out from the rock, and a gangway (3 wide, rails on
+     * both sides, beams under it) crosses to a gap in the balustrade between two lantern posts, in line with the
+     * paifang's central passage.
+     */
+    private void gangway(int t) {
+        int rim = (int) Math.floor(radiusAt(t) + 0.5);          // last paved row of the court
+        int far = (int) Math.floor(radiusAt(t) + 1.2 + GANGWAY); // where the road runs
+        for (int x = -1; x <= 1; x++) for (int z = rim - 1; z <= far; z++) {
+            setRel(x, t, z, z <= rim - 1 ? PAVING : PLANK);
+            if (z > rim && x != 0) setRel(x, t - 1, z, Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z));
+            for (int h = 1; h <= 3; h++) setRel(x, t + h, z, Blocks.AIR.defaultBlockState());
+        }
+        for (int x : new int[]{-2, 2}) {
+            for (int z = rim + 1; z < far; z++) setRel(x, t + 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
+            // Lantern posts at the gap in the balustrade.
+            setRel(x, t + 1, rim, Blocks.CHISELED_STONE_BRICKS.defaultBlockState());
+            setRel(x, t + 2, rim, Blocks.LANTERN.defaultBlockState());
+        }
+        // The road ends here: close its far end over the void.
+        for (int z = far; z <= far + 2; z++) setRel(-2, t + 1, z, Blocks.SPRUCE_FENCE.defaultBlockState());
     }
 
     /** Main hall, 5 bays (21 x 9), facing the court on the south: platform, vermilion columns, lattice front, green roof. */
@@ -385,9 +447,9 @@ public final class SanctuaryBuilder {
      */
     private void roof(int x0, int z0, int x1, int z1, int y, Block stairs, Block slabs, Block ridge, boolean pyramid) {
         x0 -= 2; z0 -= 2; x1 += 2; z1 += 2;
-        // Eave course: bottom slabs (the flat lower curve of the roof).
+        // Eave course: bottom slabs (the flat lower curve of the roof) round a solid ceiling, so no gap shows under it.
         for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++)
-            if (x == x0 || x == x1 || z == z0 || z == z1) set(x, y, z, slab(slabs, SlabType.BOTTOM));
+            set(x, y, z, x == x0 || x == x1 || z == z0 || z == z1 ? slab(slabs, SlabType.BOTTOM) : ridge.defaultBlockState());
         // Flying eaves at the four corners.
         set(x0, y + 1, z0, stair(stairs, Direction.SOUTH, Half.BOTTOM).setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT));
         set(x1, y + 1, z0, stair(stairs, Direction.SOUTH, Half.BOTTOM).setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT));

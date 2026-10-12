@@ -20,14 +20,15 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 /**
  * The Cloud Cliff Sanctuary is unique: built once per world, in the cloud-sea peaks biome nearest to the world spawn
- * (within 4000 blocks; otherwise in the nearest Murim biome, since it brings its own spire), and the world spawn moves
- * to the foot of its plank road, so every adventure starts there. Its position is kept in the overworld saved data
- * (the sect token points to it). Only in worlds with a normal multi-noise overworld (not flat or test worlds).
+ * (within 4000 blocks; otherwise in the nearest Murim biome, since it brings its own spire), never on the spawn itself:
+ * players start in the wild and find it with the sect token. Its position is kept in the overworld saved data. Only in worlds with a normal multi-noise overworld (not flat or test worlds).
  */
 public final class SanctuaryPlacement extends SavedData {
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private static final String NAME = Murimblock.MOD_ID + "_sanctuary";
     public static final int SEARCH_RADIUS = 4000;
+    /** Closest the spire may stand to the world spawn, so nobody spawns on or inside it. */
+    public static final int MIN_SPAWN_DISTANCE = 64;
     /** The registered structure /locate knows the sanctuary by. */
     public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.structure.Structure> STRUCTURE =
             net.minecraft.resources.ResourceKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "cloud_cliff_sanctuary"));
@@ -45,7 +46,7 @@ public final class SanctuaryPlacement extends SavedData {
 
     /** Centre of the spire at its base, or null if the sanctuary is not built in this world. */
     @Nullable public BlockPos centre() { return centre; }
-    /** Where players arrive: the foot of the plank road. */
+    /** The foot of the plank road. */
     @Nullable public BlockPos foot() { return foot; }
     public int top() { return top; }
 
@@ -75,7 +76,7 @@ public final class SanctuaryPlacement extends SavedData {
         build(overworld, site, data);
     }
 
-    /** Builds the sanctuary on the site's ground, records it and moves the world spawn to its foot. */
+    /** Builds the sanctuary on the site's ground and records it. The world spawn stays where it is. */
     public static void build(ServerLevel level, BlockPos site, SanctuaryPlacement data) {
         // Generate the whole footprint (and a margin, so neighbouring decoration is done before we build).
         int cx = site.getX() >> 4, cz = site.getZ() >> 4;
@@ -94,15 +95,27 @@ public final class SanctuaryPlacement extends SavedData {
         builder.build();
         BlockPos foot = builder.foot();
         data.record(new BlockPos(site.getX(), ground, site.getZ()), foot, builder.top());
-        level.setDefaultSpawnPos(foot, 180);
-        LOGGER.info("Cloud Cliff Sanctuary built at {} (top y {}); world spawn moved to its foot {}", data.centre, builder.top(), foot);
+        LOGGER.info("Cloud Cliff Sanctuary built at {} (top y {}), road foot {}", data.centre, builder.top(), foot);
     }
 
     /**
      * The point most inside the cloud-sea peaks nearest to the spawn: biome samples every 32 blocks out to 4000; the
-     * nearest sample whose 7x7 neighbourhood is mostly peaks. Falls back to the nearest Murim biome, then the spawn.
+     * nearest sample whose 7x7 neighbourhood is mostly peaks. Falls back to the nearest Murim biome, then next to the
+     * spawn. Always at least {@link #MIN_SPAWN_DISTANCE} blocks from the spawn.
      */
     static BlockPos findSite(ServerLevel level, BlockPos spawn) {
+        return awayFromSpawn(nearestSite(level, spawn), spawn);
+    }
+
+    /** Pushes a site straight away from the spawn until it is far enough (east if it is right on it). */
+    static BlockPos awayFromSpawn(BlockPos site, BlockPos spawn) {
+        double dx = site.getX() - spawn.getX(), dz = site.getZ() - spawn.getZ(), d = Math.hypot(dx, dz);
+        if (d >= MIN_SPAWN_DISTANCE) return site;
+        if (d < 1) { dx = 1; dz = 0; d = 1; }
+        return new BlockPos((int) Math.round(spawn.getX() + dx / d * MIN_SPAWN_DISTANCE), site.getY(), (int) Math.round(spawn.getZ() + dz / d * MIN_SPAWN_DISTANCE));
+    }
+
+    private static BlockPos nearestSite(ServerLevel level, BlockPos spawn) {
         var source = level.getChunkSource().getGenerator().getBiomeSource();
         var sampler = level.getChunkSource().randomState().sampler();
         int step = 32, n = SEARCH_RADIUS / step;

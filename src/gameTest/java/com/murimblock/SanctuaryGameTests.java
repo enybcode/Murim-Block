@@ -67,6 +67,23 @@ public final class SanctuaryGameTests {
                 if (s.is(Blocks.CAMPFIRE) && s.getValue(CampfireBlock.SIGNAL_FIRE) && level.getBlockState(new BlockPos(X + dx, top + 1, Z + dz)).is(Blocks.HAY_BLOCK)) signal = true;
             }
             bell = count(level, s -> s.is(Blocks.BELL)) > 0;
+            // The entrance: the road ends at the south and a gangway crosses into the court, nothing in the way.
+            boolean gateOpen = true;
+            for (int x = -1; x <= 1; x++) for (int dz = 19; dz <= 25; dz++) {
+                BlockPos floor = new BlockPos(X + x, top, Z + dz);
+                if (!level.getBlockState(floor).isSolid() || !level.getBlockState(floor.above()).isAir() || !level.getBlockState(floor.above(2)).isAir()) gateOpen = false;
+            }
+            // No gap under the roofs: the layer under the stair courses is closed (main hall, a side hall, a tower).
+            boolean roofsClosed = level.getBlockState(new BlockPos(X, top + 10, Z - 10)).isSolid()
+                    && level.getBlockState(new BlockPos(X - 12, top + 6, Z + 1)).isSolid()
+                    && level.getBlockState(new BlockPos(X - 12, top + 8, Z + 10)).isSolid();
+            // Every red column and tower stands on the court, none over the void.
+            boolean grounded = true;
+            for (int x = -R; x <= R; x++) for (int z = -R; z <= R; z++) {
+                BlockPos at = new BlockPos(X + x, top + 1, Z + z);
+                var s = level.getBlockState(at);
+                if ((s.is(Blocks.STRIPPED_MANGROVE_LOG) || s.is(Blocks.RED_TERRACOTTA) || s.is(Blocks.POLISHED_ANDESITE)) && level.getBlockState(at.below()).isAir()) grounded = false;
+            }
             BlockPos foot = builder.foot();
             boolean footSafe = level.getBlockState(foot.below()).isSolid() && level.getBlockState(foot).isAir() && level.getBlockState(foot.above()).isAir();
             helper.assertTrue(top == GROUND + SanctuaryBuilder.HEIGHT, "Summit at " + top);
@@ -76,6 +93,9 @@ public final class SanctuaryGameTests {
             helper.assertTrue(road > 300 && roadReachesTop, "Plank road too short or not reaching the summit (" + road + ")");
             helper.assertTrue(signal, "No signal fire (campfire on hay) in the court");
             helper.assertTrue(bell, "No bell in the bell tower");
+            helper.assertTrue(gateOpen, "No open gangway from the road into the court at the south gate");
+            helper.assertTrue(roofsClosed, "Gap left under a roof");
+            helper.assertTrue(grounded, "A column or tower stands over the void at the summit");
             helper.assertTrue(footSafe, "Players would not arrive safely at the foot " + foot);
             helper.succeed();
         } finally {

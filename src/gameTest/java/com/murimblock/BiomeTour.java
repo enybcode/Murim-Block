@@ -50,6 +50,7 @@ public final class BiomeTour {
     /** First the Cloud Cliff Sanctuary (built near the spawn of the fresh world), then the biomes. */
     private static int sanctuaryStep = 0;
     private static volatile com.murimblock.world.structure.SanctuaryPlacement sanctuaryData;
+    private static volatile BlockPos pavilion;
     /** Set by the server thread when the biome search (or the block scan) is done. */
     private static volatile boolean searchDone, scanDone;
     private static int surfaceY;
@@ -181,14 +182,33 @@ public final class BiomeTour {
                         + ", foot " + sanctuaryData.foot() + ", world spawn " + level.getSharedSpawnPos() + ", biome " + level.getBiome(c).unwrapKey().map(k -> k.location().toString()).orElse("?");
                 report.add(line);
                 LOGGER.info("Biome tour: {}", line);
-                if (c == null || !level.getSharedSpawnPos().equals(sanctuaryData.foot())) failed = true;
+                // Near the spawn, but the spawn stays in the wild: never on the sanctuary.
+                if (c == null || Math.hypot(c.getX() - level.getSharedSpawnPos().getX(), c.getZ() - level.getSharedSpawnPos().getZ()) < 48) failed = true;
             });
             case 20 -> { if (sanctuaryData == null || sanctuaryData.centre() == null) { sanctuaryStep = -1; return; } look(mc, 62, 18, 62, 0, -12, 0); }
             case 120 -> capture(mc, "sanctuary-aerial.png");
-            case 121 -> look(mc, 0, 7, 13, 0, 5, -12);
+            case 121 -> { look(mc, 0, 7, 13, 0, 5, -12); server.execute(() -> {
+                // Lighting must be consistent all round the spire: nothing see-through (air, stairs, slabs...) left dark next to air lit by the sky.
+                ServerLevel level = server.overworld();
+                BlockPos c = sanctuaryData.centre();
+                int dark = 0;
+                BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+                for (int x = -30; x <= 30; x++) for (int z = -30; z <= 30; z++) for (int y = c.getY() - 10; y <= sanctuaryData.top() + 20; y++) {
+                    p.set(c.getX() + x, y, c.getZ() + z);
+                    var here = level.getBlockState(p);
+                    if (here.getLightBlock(level, p) >= 15 || level.getBrightness(net.minecraft.world.level.LightLayer.SKY, p) > 0) continue;
+                    for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
+                        BlockPos n = p.relative(d);
+                        if (level.getBlockState(n).isAir() && level.getBrightness(net.minecraft.world.level.LightLayer.SKY, n) >= 3) { dark++; break; }
+                    }
+                }
+                report.add("sanctuary lighting: " + dark + " see-through blocks left dark next to sky-lit air");
+                LOGGER.info("Biome tour: sanctuary lighting {} dark", dark);
+                if (dark > 0) failed = true;
+            }); }
             case 160 -> capture(mc, "sanctuary-court.png");
             case 161 -> { BlockPos f = sanctuaryData.foot(); var c = sanctuaryData.centre();
-                // Exactly what a new player sees on arrival: from the spawn, at eye height, looking up at the spire.
+                // What a player sees arriving at the foot of the road, at eye height, looking up at the spire.
                 lookAbs(mc, f.getX() + 0.5, f.getY() + 0.1, f.getZ() + 0.5, c.getX() + 0.5, sanctuaryData.top() - 20, c.getZ() + 0.5);
                 server.execute(() -> {
                     int clutter = 0;
@@ -215,7 +235,33 @@ public final class BiomeTour {
             });
             case 262 -> mc.options.hideGui = false;
             case 320 -> capture(mc, "sanctuary-token.png");
-            case 321 -> { mc.options.hideGui = true; sanctuaryStep = -1; }
+            // The entrance as a player walks it: from the end of the plank road, then from above.
+            case 321 -> { mc.options.hideGui = true; look(mc, 0, 1.6, 26, 0, 2, 0); }
+            case 380 -> capture(mc, "sanctuary-gate.png");
+            case 381 -> look(mc, 6, 14, 33, 0, 0, 21);
+            case 440 -> capture(mc, "sanctuary-gate-above.png");
+            case 441 -> look(mc, 0, 4, 12, -12, 7, 1);
+            case 500 -> capture(mc, "sanctuary-roofs.png");
+            // Under the gangway, where it leaves the rock.
+            case 501 -> look(mc, 3, -3, 25, 0, -5, 18);
+            case 560 -> capture(mc, "sanctuary-under-gangway.png");
+            // The rest pavilion half-way up, seen from out in the air (found by its hanging lantern's chain).
+            case 561 -> server.execute(() -> {
+                ServerLevel level = server.overworld();
+                BlockPos c = sanctuaryData.centre();
+                BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+                for (int x = -32; x <= 32 && pavilion == null; x++) for (int z = -32; z <= 32 && pavilion == null; z++)
+                    for (int y = c.getY(); y < sanctuaryData.top() - 10; y++)
+                        if (level.getBlockState(p.set(c.getX() + x, y, c.getZ() + z)).is(net.minecraft.world.level.block.Blocks.CHAIN)) { pavilion = p.immutable(); break; }
+                report.add("rest pavilion at " + pavilion);
+                if (pavilion == null) failed = true;
+            });
+            case 563 -> { if (pavilion == null) { sanctuaryStep = -1; return; }
+                BlockPos c = sanctuaryData.centre();
+                double ox = pavilion.getX() - c.getX(), oz = pavilion.getZ() - c.getZ(), d = Math.hypot(ox, oz);
+                lookAbs(mc, pavilion.getX() + 0.5 + ox / d * 9 - oz / d * 4, pavilion.getY() + 1, pavilion.getZ() + 0.5 + oz / d * 9 + ox / d * 4,
+                        pavilion.getX() + 0.5, pavilion.getY() - 1, pavilion.getZ() + 0.5); }
+            case 620 -> { capture(mc, "sanctuary-pavilion.png"); sanctuaryStep = -1; }
             default -> { }
         }
     }

@@ -4,7 +4,7 @@ Les quatre propositions du 12/10/2026, avec leur maquette voxel :
 
 | Structure | Biome | État | Maquette |
 |---|---|---|---|
-| Sanctuaire de la Falaise des Nuages | Pics de la mer de nuages | **Construit** (unique, au spawn) | ![](images/sanctuary.jpg) |
+| Sanctuaire de la Falaise des Nuages | Pics de la mer de nuages | **Construit** (unique, près du spawn) | ![](images/sanctuary.jpg) |
 | Village sur pilotis de la rivière de Jade | Forêt des pics de jade | Proposé | ![](images/village.jpg) |
 | Repaire des Bandits du Fleuve Jaune | Plateau de lœss | Proposé | ![](images/lair.jpg) |
 | Forteresse de la Passe de Jade | Désert de la frontière du Hexi | Proposé | ![](images/fortress.jpg) |
@@ -15,21 +15,23 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
 
 ![Vue aérienne en jeu](images/sanctuary-ingame-aerial.jpg)
 ![La cour au sommet](images/sanctuary-ingame-court.jpg)
-![Ce que voit un nouveau joueur en arrivant](images/sanctuary-ingame-foot.jpg)
+![Au pied du chemin de planches](images/sanctuary-ingame-foot.jpg)
+![L'entrée : la passerelle depuis la fin du chemin](images/sanctuary-ingame-gate.jpg)
 
 **Le début de chaque aventure.** Le sanctuaire est le siège de « la » secte du serveur.
 
 - **Il est unique** : un seul par monde. Il est construit au premier démarrage du serveur par `SanctuaryPlacement`, puis mémorisé dans la sauvegarde de la Surface (`murimblock_sanctuary`).
-- **Son emplacement** : le cœur du biome Pics de la mer de nuages le plus proche du spawn, dans un rayon de 4 000 blocs. Le biome est échantillonné tous les 32 blocs, et un point compte comme « cœur » si au moins 30 de ses 49 voisins sont dans les pics. À défaut, le sanctuaire va dans le biome Murim le plus proche, puis au spawn. Il apporte sa propre aiguille, donc il fonctionne partout.
+- **Son emplacement** : le cœur du biome Pics de la mer de nuages le plus proche du spawn, dans un rayon de 4 000 blocs. Le biome est échantillonné tous les 32 blocs, et un point compte comme « cœur » si au moins 30 de ses 49 voisins sont dans les pics. À défaut, le sanctuaire va dans le biome Murim le plus proche, puis à côté du spawn. Il est toujours à au moins 64 blocs du spawn. Il apporte sa propre aiguille, donc il fonctionne partout.
 - **Les mondes concernés** : seulement ceux dont la Surface est un monde normal (multi-noise). Les mondes plats et les mondes de test n'en ont pas.
-- **Le point d'apparition** est déplacé au pied du chemin de planches. Chaque nouveau joueur commence donc là, et y réapparaît s'il meurt sans lit.
-- **Le chemin part du côté le plus bas** autour de l'aiguille : le terrain est mesuré sur 24 directions, à 19 blocs de l'axe. Le palier d'arrivée est posé sur le sol de ce côté, à ciel ouvert, et sans arbre dans un rayon de 5 blocs.
+- **Le point d'apparition n'est pas déplacé** : les joueurs commencent dans la nature et trouvent le sanctuaire avec le Jeton de la Secte ou `/locate`.
+- **Le chemin part du côté le plus bas** autour de l'aiguille : le terrain est mesuré sur 24 directions, à 22 blocs de l'axe. Le palier d'arrivée est posé sur le sol de ce côté, à ciel ouvert, et sans arbre dans un rayon de 5 blocs.
 
 **Ce qui est construit**, dans `SanctuaryBuilder` (en vrais blocs Minecraft) :
 
-- **L'aiguille** : en granite pâle, 70 blocs au-dessus du sol, d'un rayon de 12,5 à 17 blocs. Elle est un peu plus large au sommet, avec des joints de diorite tous les 7 blocs, de la mousse et 6 pins qui sortent des flancs.
-- **Le chemin de planches** : en épicéa, 2 blocs de large, avec des marches, des poutres d'épicéa plantées dans la roche et une rambarde extérieure. Il monte en spirale de 0,3 bloc par bloc parcouru.
-- **Le pavillon de repos** à mi-hauteur : poteaux rouges, toit en tuiles grises, lanterne et bancs.
+- **L'aiguille** : en granite pâle, 70 blocs au-dessus du sol, d'un rayon de 14 à 20 blocs, assez large au sommet pour que toutes les colonnes et les tours reposent sur la cour. Elle est un peu plus large au sommet, avec des joints de diorite tous les 7 blocs, de la mousse et 6 pins qui sortent des flancs.
+- **Le chemin de planches** : en épicéa, 2 blocs de large, avec des marches, des poutres d'épicéa plantées dans la roche et une rambarde extérieure. Il monte en spirale d'environ 0,3 bloc par bloc parcouru et finit toujours au sud. Sur le dernier quart de tour, il s'écarte de la roche sur des poutres, avec une rambarde des deux côtés.
+- **La passerelle d'entrée** : 3 blocs de large, rambardes des deux côtés, poutres dessous. Elle relie la fin du chemin à une ouverture dans la balustrade, entre deux bornes à lanterne, dans l'axe du passage central du portique.
+- **Le pavillon de repos** à mi-hauteur : posé sur des poutres à l'écart du chemin et relié à lui par un petit pont, pour que le chemin qui continue de monter ne traverse jamais son toit. Poteaux rouges, toit en tuiles grises, lanterne et bancs.
 - **La cour au sommet** : pavée d'andésite polie, avec une bordure et une balustrade de pierre.
 - **La salle principale** :
   - 5 travées (21 × 9) sur une plateforme de 2 blocs, avec des marches dans l'axe ;
@@ -61,7 +63,7 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
 ## Vérification
 
 - **GameTests** (`SanctuaryGameTests`) :
-  - le sanctuaire complet se construit : 70 blocs, plus de 25 000 blocs de granite, toits verts, colonnes, chemin jusqu'au sommet, feu de signal sur la paille, cloche, palier sûr ;
+  - le sanctuaire complet se construit : 70 blocs, plus de 25 000 blocs de granite, toits verts, colonnes, chemin jusqu'au sommet, feu de signal sur la paille, cloche, passerelle d'entrée dégagée au sud, aucun vide sous les toits, aucune colonne ni tour au-dessus du vide, palier sûr ;
   - un monde plat n'en reçoit pas ;
   - un seul jeton est donné à la première connexion ;
   - l'aiguille vise le sommet ;
@@ -69,8 +71,9 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
   - `/locate structure murimblock:cloud_cliff_sanctuary` échoue dans un monde sans sanctuaire et le trouve quand il existe.
 - **Visite en vrai client** (`gradlew -PgameTests runBiomeTour`) :
   - le monde est neuf (graine 20261012) ;
-  - on vérifie que le sanctuaire est construit dans le biome de pics, que le spawn est à son pied et que le palier est dégagé ;
-  - on prend des photos aérienne, de la cour, du pied, de nuit et du jeton.
+  - on vérifie que le sanctuaire est construit dans le biome de pics, à au moins 48 blocs du spawn, et que le palier est dégagé ;
+  - on vérifie que la lumière est cohérente autour de l'aiguille : aucun bloc transparent (air, escalier, dalle) resté noir à côté d'un bloc éclairé par le ciel ;
+  - on prend des photos aérienne, de la cour, du pied, de nuit, du jeton, de l'entrée, des toits, du dessous de la passerelle et du pavillon de repos.
 
 ## À faire ensuite
 

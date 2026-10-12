@@ -82,8 +82,9 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   NatureTextures.java) ; verification en vrai client : gradlew -PgameTests runBiomeTour.
 - Sanctuaire de la Falaise des Nuages (12/10/2026, local) : structure unique, construite
   au premier demarrage (SanctuaryPlacement, sauvegarde murimblock_sanctuary) au coeur des
-  Pics de la mer de nuages les plus proches du spawn (4000 blocs), point d'apparition
-  deplace au pied du chemin de planches. Jeton de la Secte (boussole de jade) donne une
+  Pics de la mer de nuages les plus proches du spawn (4000 blocs), a 64 blocs au moins ;
+  le point d'apparition n'est PAS deplace (demande d'Enzo). Le chemin finit au sud par
+  une passerelle dans l'axe du portique ; couche sous les toits fermee. Jeton de la Secte (boussole de jade) donne une
   fois a la premiere connexion. Pas dans les mondes plats/tests. docs/structures.
 - GeckoLib 4.9.3 et Photon 2.2.8 (Low-Drag, effets/lumieres dynamiques) sont
   des dependances requises depuis le 12/10/2026, a la demande d'Enzo, avec
