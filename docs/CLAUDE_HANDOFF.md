@@ -63,7 +63,7 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   contre 20, seul + escorte) ; structures plus tard. 10 XP, 10 Qi, sans butin.
   Attaques jouees a la vitesse animee (`ATTACK_SPEED_FACTOR` 0, crabe inclus).
   Boule d'eau (12/10/2026, demande d'Enzo, sans particules Minecraft) : clip
-  `crab_man/water_ball` (ActionAnimation, 5 a 16 blocs, ligne de vue, recharge
+  `crab_man/water_ball` (ActionAnimation, vers 4 blocs : 3 a 6, ligne de vue, recharge
   140 ticks). Une grosse boule + 4 petites (`WaterBallEntity`, rendu GeckoLib
   du modele Blockbench `crabe/human-crab-animated-v2/water-ball`) se forment
   dans la pince a 0,3 s et partent a 0,82 s, trajectoire de fleche lente
@@ -71,10 +71,26 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   la cible : sol, mur (ou plafond) ou corps (suit la cible). Grosse : 4 degats,
   Lenteur I 3 s, petit recul direct (Epic Fight annule le recul vanilla d'un
   projectile) ; petites : 1 degat, Lenteur I 2 s. Ignore le crab man et ses crabes.
+- Biomes Murim (12/10/2026, local, demande d'Enzo) : 7 biomes de la Chine
+  feodale (karst de Guilin, plateau de loess, desert du Hexi : grands ; Huangshan,
+  mer de bambous de Shu, Jiangnan, vallee des pechers : moyens), sans structures.
+  TerraBlender 4.1.0.8 requis (region murimblock:overworld, poids 7). 57 blocs de
+  flore et de roche (onglet Murimblock: Nature), reliefs en Java (tours karstiques,
+  aiguilles, piliers, yardangs, bambous, pins de falaise, etangs, sous-sol par biome),
+  brume shanshui cote client. Fiches, sources et maquettes des futures structures :
+  docs/biomes. Donnees generees par scripts/worldgen (generate-nature.cjs,
+  NatureTextures.java) ; verification en vrai client : gradlew -PgameTests runBiomeTour.
+- Sanctuaire de la Falaise des Nuages (12/10/2026, local) : structure unique, construite
+  au premier demarrage (SanctuaryPlacement, sauvegarde murimblock_sanctuary) au coeur des
+  Pics de la mer de nuages les plus proches du spawn (4000 blocs), point d'apparition
+  deplace au pied du chemin de planches. Jeton de la Secte (boussole de jade) donne une
+  fois a la premiere connexion. Pas dans les mondes plats/tests. docs/structures.
 - GeckoLib 4.9.3 et Photon 2.2.8 (Low-Drag, effets/lumieres dynamiques) sont
   des dependances requises depuis le 12/10/2026, a la demande d'Enzo, avec
   LDLib2 2.2.42 et KilaGraph 21.1.0.16. GeckoLib rend la boule d'eau du
-  Crab Man ; Photon n'est pas encore utilise. Deux moteurs
+  Crab Man (reflets en glowmask, brillent dans le noir) ; Photon fait le flash de
+  lumiere dynamique a l'eclatement (`WaterBallLights`, PhotonLights.flash, rien
+  si ses lumieres dynamiques sont coupees dans sa config). Deux moteurs
   de rendu/animation sur une meme entite demandent toujours une integration
   concrete ; aucun convertisseur universel.
 - Modele de crabe travaille separement dans le dossier local `crabe`, variante
@@ -84,6 +100,9 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
 
 ## Verifications Et Limites
 
+- 12 octobre (local, test) : 130 tests unitaires, 60 GameTests serveur, smoke
+  client reel (captures GUI, mobs, boule d'eau, nuit Photon) et visite des biomes
+  et du sanctuaire en monde neuf (runBiomeTour), tous passants. Outils : scripts/README.md.
 - Audit du 8 octobre : 126 tests unitaires, 27 GameTests serveur requis,
   smoke graphique reel avec 15 captures, 8 tests Node proxy, selon le rapport
   `CODE_AUDIT_2026_10_08.md`. Ce sont des resultats historiques, pas un rerun
