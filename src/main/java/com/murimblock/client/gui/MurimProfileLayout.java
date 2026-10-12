@@ -4,11 +4,16 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/** Integer coordinates: reflow content instead of shrinking a textured menu. */
+/**
+ * Compact manuscript menu: integer coordinates, reflowed rather than shrunk.
+ * Thin title band, bookmark tabs under it, then a paper page holding two cards per tab.
+ */
 final class MurimProfileLayout {
-    static final int MAX_WIDTH = 480;
-    static final int MAX_HEIGHT = 300;
+    static final int MAX_WIDTH = 320;
+    static final int MAX_HEIGHT = 200;
     static final int MARGIN = 8;
+    /** Top of the paper page; the active bookmark tab joins it. */
+    static final int PAGE_TOP = 40;
 
     enum Page {
         PROFILE("profile"), TECHNIQUES("techniques"), CULTIVATION("cultivation"), INFOS("infos");
@@ -42,10 +47,12 @@ final class MurimProfileLayout {
     final int height;
     final Box title;
     final Box close;
+    final Box page;
     final Box content;
     final Box player;
     final Box profileQiFill;
     final Box cultivationQiFill;
+    final Box stagePips;
     final Box infoSettings;
     final Box settingsHeader;
     final Box settingsStatus;
@@ -60,87 +67,98 @@ final class MurimProfileLayout {
     }
 
     MurimProfileLayout(int width, int height) {
-        if (width < 280 || height < 200) throw new IllegalArgumentException("Viewport is smaller than Minecraft's supported GUI");
+        if (width < 280 || height < 190) throw new IllegalArgumentException("Viewport is smaller than Minecraft's supported GUI");
         this.width = width;
         this.height = height;
-        title = new Box(36, 8, width - 72, 18);
-        close = new Box(width - 27, 8, 18, 18);
-        int tabY = height - 31;
-        content = new Box(12, 39, width - 24, tabY - 45);
-        for (Page page : Page.values()) {
-            int x = 8 + page.ordinal() * (width - 16) / 4;
-            int end = 8 + (page.ordinal() + 1) * (width - 16) / 4;
-            tabs.put(page, new Box(x, tabY, end - x, 23));
-            text.put(page, new EnumMap<>(Field.class));
+        title = new Box(40, 7, width - 80, 10);
+        close = new Box(width - 18, 5, 13, 13);
+        for (Page target : Page.values()) {
+            int x = 8 + target.ordinal() * (width - 16) / 4;
+            int end = 8 + (target.ordinal() + 1) * (width - 16) / 4;
+            tabs.put(target, new Box(x + 1, 26, end - x - 2, 14));
+            text.put(target, new EnumMap<>(Field.class));
         }
-        int profileSplit = content.x() + content.width() * 37 / 100;
-        player = new Box(content.x(), content.y(), profileSplit - content.x() - 8, content.height());
-        Box profile = new Box(profileSplit + 4, content.y(), content.right() - profileSplit - 4, content.height());
+        page = new Box(4, PAGE_TOP, width - 8, height - PAGE_TOP - 4);
+        content = new Box(10, PAGE_TOP + 6, width - 20, height - PAGE_TOP - 14);
+        int cx = content.x(), cy = content.y(), cw = content.width(), ch = content.height();
+
+        // Profile: framed portrait, then name, realm, stage and Qi.
+        player = new Box(cx, cy, cw * 36 / 100, ch);
+        Box profile = new Box(player.right() + 8, cy, content.right() - player.right() - 8, ch);
         panels.put(Page.PROFILE, List.of(player, profile));
-        int row = Math.max(17, content.height() / 7);
-        put(Page.PROFILE, Field.NAME, profile.x(), profile.y() + 5, profile.width(), 18);
-        put(Page.PROFILE, Field.REALM_LABEL, profile.x(), profile.y() + row + 10, 36, 10);
-        put(Page.PROFILE, Field.REALM, profile.x() + 40, profile.y() + row + 10, profile.width() - 40, 20);
-        put(Page.PROFILE, Field.STAGE_LABEL, profile.x(), profile.y() + row * 3, 36, 10);
-        put(Page.PROFILE, Field.STAGE, profile.x() + 40, profile.y() + row * 3, profile.width() - 40, 10);
-        put(Page.PROFILE, Field.QI_LABEL, profile.x(), profile.y() + row * 4 + 5, profile.width(), 10);
-        profileQiFill = new Box(profile.x() + 2, profile.y() + row * 5, profile.width() - 4, 6);
-        put(Page.PROFILE, Field.QI_VALUE, profile.x(), profileQiFill.bottom() + 6, profile.width(), 10);
+        int px = profile.x(), pw = profile.width();
+        put(Page.PROFILE, Field.NAME, px, cy + 2, pw, 18);
+        put(Page.PROFILE, Field.REALM_LABEL, px, cy + 28, pw, 9);
+        put(Page.PROFILE, Field.REALM, px, cy + 40, pw, 18);
+        put(Page.PROFILE, Field.STAGE_LABEL, px, cy + 66, 40, 9);
+        put(Page.PROFILE, Field.STAGE, px + 44, cy + 66, pw - 44, 9);
+        put(Page.PROFILE, Field.QI_LABEL, px, cy + 88, pw, 9);
+        profileQiFill = new Box(px + 1, cy + 102, pw - 2, 6);
+        put(Page.PROFILE, Field.QI_VALUE, px, cy + 113, pw, 9);
 
-        int libraryWidth = content.width() * 35 / 100;
-        Box library = new Box(content.x(), content.y(), libraryWidth - 8, content.height());
-        Box details = new Box(content.x() + libraryWidth + 8, content.y(), content.width() - libraryWidth - 8, content.height());
+        // Techniques: library list and detail card under a header.
+        int libraryWidth = cw * 40 / 100;
+        Box library = new Box(cx, cy + 22, libraryWidth - 4, ch - 22);
+        Box details = new Box(cx + libraryWidth + 4, cy + 22, cw - libraryWidth - 4, ch - 22);
         panels.put(Page.TECHNIQUES, List.of(library, details));
-        put(Page.TECHNIQUES, Field.HEADER, library.x(), content.y(), content.width(), 18);
-        put(Page.TECHNIQUES, Field.LIBRARY_LABEL, library.x(), content.y() + 28, library.width(), 10);
-        put(Page.TECHNIQUES, Field.DETAILS_LABEL, details.x(), content.y() + 28, details.width(), 10);
-        put(Page.TECHNIQUES, Field.EMPTY_LIBRARY, library.x(), content.y() + content.height() / 2, library.width(), 30);
-        put(Page.TECHNIQUES, Field.EMPTY_DETAILS, details.x(), content.y() + content.height() / 2, details.width(), 30);
+        put(Page.TECHNIQUES, Field.HEADER, cx, cy, cw, 18);
+        put(Page.TECHNIQUES, Field.LIBRARY_LABEL, library.x() + 6, library.y() + 6, library.width() - 12, 9);
+        put(Page.TECHNIQUES, Field.DETAILS_LABEL, details.x() + 6, details.y() + 6, details.width() - 12, 9);
+        put(Page.TECHNIQUES, Field.EMPTY_LIBRARY, library.x() + 6, library.y() + library.height() / 2 - 4, library.width() - 12, 20);
+        put(Page.TECHNIQUES, Field.EMPTY_DETAILS, details.x() + 6, details.y() + details.height() / 2 - 4, details.width() - 12, 20);
 
-        Box progress = new Box(content.x(), content.y(), content.width() / 2 - 10, content.height());
-        Box reserve = new Box(content.x() + content.width() / 2 + 10, content.y(), content.width() - content.width() / 2 - 10, content.height());
+        // Cultivation: progression card and Qi reserve / breakthrough card.
+        Box progress = new Box(cx, cy, cw / 2 - 4, ch);
+        Box reserve = new Box(cx + cw / 2 + 4, cy, cw - cw / 2 - 4, ch);
         panels.put(Page.CULTIVATION, List.of(progress, reserve));
-        int step = Math.max(16, (content.height() - 20) / 8);
-        put(Page.CULTIVATION, Field.REALM_LABEL, progress.x(), progress.y(), progress.width(), 10);
-        put(Page.CULTIVATION, Field.REALM, progress.x(), progress.y() + step, progress.width(), 18);
-        put(Page.CULTIVATION, Field.STAGE, progress.x(), progress.y() + step * 2 + 3, progress.width(), 10);
-        put(Page.CULTIVATION, Field.NEXT_LABEL, progress.x(), progress.y() + step * 4, progress.width(), 10);
-        put(Page.CULTIVATION, Field.NEXT_REALM, progress.x(), progress.y() + step * 5, progress.width(), 18);
-        put(Page.CULTIVATION, Field.NEXT_STAGE, progress.x(), progress.y() + step * 6 + 3, progress.width(), 10);
-        put(Page.CULTIVATION, Field.REQUIRED_QI, progress.x(), progress.bottom() - 20, progress.width(), 20);
-        put(Page.CULTIVATION, Field.QI_LABEL, reserve.x(), reserve.y() + 16, reserve.width(), 10);
-        cultivationQiFill = new Box(reserve.x() + 2, reserve.y() + 40, reserve.width() - 4, 6);
-        put(Page.CULTIVATION, Field.QI_VALUE, reserve.x(), reserve.y() + 55, reserve.width(), 10);
-        put(Page.CULTIVATION, Field.BREAKTHROUGH_LABEL, reserve.x(), reserve.y() + content.height() / 2 + 10, reserve.width(), 10);
-        put(Page.CULTIVATION, Field.BREAKTHROUGH, reserve.x(), reserve.y() + content.height() / 2 + 28, reserve.width(), 30);
+        int gx = progress.x() + 6, gw = progress.width() - 12;
+        put(Page.CULTIVATION, Field.REALM_LABEL, gx, cy + 6, gw, 9);
+        put(Page.CULTIVATION, Field.REALM, gx, cy + 18, gw, 18);
+        put(Page.CULTIVATION, Field.STAGE, gx, cy + 38, gw, 9);
+        stagePips = new Box(gx, cy + 50, 4 * 8, 5);
+        put(Page.CULTIVATION, Field.NEXT_LABEL, gx, cy + 66, gw, 9);
+        put(Page.CULTIVATION, Field.NEXT_REALM, gx, cy + 78, gw, 9);
+        put(Page.CULTIVATION, Field.NEXT_STAGE, gx, cy + 89, gw, 9);
+        put(Page.CULTIVATION, Field.REQUIRED_QI, gx, cy + 106, gw, 18);
+        int rx = reserve.x() + 6, rw = reserve.width() - 12;
+        put(Page.CULTIVATION, Field.QI_LABEL, rx, cy + 6, rw, 9);
+        cultivationQiFill = new Box(rx + 1, cy + 22, rw - 2, 6);
+        put(Page.CULTIVATION, Field.QI_VALUE, rx, cy + 33, rw, 9);
+        put(Page.CULTIVATION, Field.BREAKTHROUGH_LABEL, rx, cy + 66, rw, 9);
+        put(Page.CULTIVATION, Field.BREAKTHROUGH, rx, cy + 80, rw, 18);
 
-        int controlsWidth = content.width() * 54 / 100;
-        Box controls = new Box(content.x(), content.y(), controlsWidth - 10, content.height());
-        Box status = new Box(content.x() + controlsWidth + 8, content.y(), content.width() - controlsWidth - 8, content.height());
+        // Info: controls with key caps, player status, Combat Settings button.
+        int controlsWidth = cw * 58 / 100;
+        Box controls = new Box(cx, cy, controlsWidth - 4, ch);
+        Box status = new Box(cx + controlsWidth + 4, cy, cw - controlsWidth - 4, ch);
         panels.put(Page.INFOS, List.of(controls, status));
-        put(Page.INFOS, Field.CONTROLS_LABEL, controls.x(), controls.y(), controls.width(), 18);
-        put(Page.INFOS, Field.INFO_LABEL, status.x(), status.y(), status.width(), 18);
+        put(Page.INFOS, Field.CONTROLS_LABEL, controls.x() + 6, cy + 6, controls.width() - 12, 9);
+        put(Page.INFOS, Field.INFO_LABEL, status.x() + 6, cy + 6, status.width() - 12, 9);
+        Field[] controlLabels = {Field.CONTROL_PROFILE, Field.CONTROL_QI, Field.CONTROL_COMBAT};
+        Field[] keys = {Field.KEY_PROFILE, Field.KEY_QI, Field.KEY_COMBAT};
         for (int i = 0; i < 3; i++) {
-            int y = controls.y() + 38 + i * Math.max(24, (content.height() - 70) / 3);
-            put(Page.INFOS, new Field[]{Field.CONTROL_PROFILE, Field.CONTROL_QI, Field.CONTROL_COMBAT}[i],
-                    controls.x(), y + 3, controls.width() - 40, 18);
-            put(Page.INFOS, new Field[]{Field.KEY_PROFILE, Field.KEY_QI, Field.KEY_COMBAT}[i], controls.right() - 31, y, 29, 22);
+            int y = cy + 24 + i * 22;
+            put(Page.INFOS, controlLabels[i], controls.x() + 6, y + 5, controls.width() - 52, 9);
+            put(Page.INFOS, keys[i], controls.right() - 42, y, 36, 17);
         }
-        infoSettings = new Box(controls.x(), controls.bottom() - 24, controls.width(), 22);
-        put(Page.INFOS, Field.STATUS, status.x(), status.y() + 38, status.width(), 20);
-        put(Page.INFOS, Field.QI_VALUE, status.x(), status.y() + 70, status.width(), 20);
-        int settingWidth = content.width() * 63 / 100;
-        settingsHeader = new Box(content.x(), content.y(), settingWidth - 10, 18);
-        settingsStatus = new Box(content.x() + settingWidth + 8, content.y() + 38, content.width() - settingWidth - 8, 20);
-        keybinds = new Box(settingsStatus.x(), content.bottom() - 24, settingsStatus.width(), 22);
-        int settingStep = (content.height() - 28) / 6;
+        infoSettings = new Box(controls.x() + 6, controls.bottom() - 22, controls.width() - 12, 16);
+        put(Page.INFOS, Field.STATUS, status.x() + 6, cy + 26, status.width() - 12, 9);
+        put(Page.INFOS, Field.QI_VALUE, status.x() + 6, cy + 42, status.width() - 12, 9);
+
+        // Combat Settings (inside Info): six rows and a Keybinds button.
+        int settingWidth = cw * 62 / 100;
+        settingsHeader = new Box(cx, cy, settingWidth - 6, 14);
+        // Status column text and Keybinds sit 6 px inside the card drawn around them.
+        settingsStatus = new Box(cx + settingWidth + 12, cy + 22, cw - settingWidth - 18, 9);
+        keybinds = new Box(settingsStatus.x(), content.bottom() - 22, settingsStatus.width(), 16);
+        int settingStep = (ch - 18) / 6;
         settingRows = java.util.stream.IntStream.range(0, 6).mapToObj(i ->
-                new Box(content.x(), content.y() + 28 + i * settingStep, settingWidth - 10, settingStep - 2)).toList();
+                new Box(cx, cy + 18 + i * settingStep, settingWidth - 6, settingStep - 2)).toList();
     }
     Box tab(Page page) { return tabs.get(page); }
     Box tabLabel(Page page) {
         Box box = tab(page);
-        return new Box(box.x() + 5, box.y() + 7, box.width() - 10, 10);
+        return new Box(box.x() + 2, box.y() + 3, box.width() - 4, 9);
     }
     Box text(Page page, Field field) {
         Box box = text.get(page).get(field);

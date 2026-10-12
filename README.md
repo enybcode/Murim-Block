@@ -66,6 +66,9 @@ server must use the same Murimblock build (network protocol **7**).
 - Development-only unit, real server combat and real client rendering checks.
 - Summon-only `murimblock:training_opponent`: temporary vanilla zombie appearance,
   iron sword, Epic Fight animated attacks, no natural spawn or progression rewards.
+- `murimblock:armored_crab`: custom rig, mesh and six Epic Fight animation clips;
+  two animated claw attacks, shore/river/swamp spawning near water, and a spawn egg
+  in the Murimblock creative tab. See [crab delivery checks](docs/ARMORED_CRAB_DELIVERY.md).
 
 ### What Is Not Implemented
 

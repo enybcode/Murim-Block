@@ -5,9 +5,11 @@ import com.murimblock.api.MurimblockApi;
 import com.murimblock.api.cultivation.CultivationSnapshot;
 import com.murimblock.client.MurimblockKeyMappings;
 import com.murimblock.cultivation.CultivationService;
+import com.murimblock.cultivation.CultivationStage;
 import com.murimblock.qi.QiFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.client.KeyMapping;
@@ -27,12 +29,25 @@ import yesman.epicfight.config.ClientConfig;
 import static com.murimblock.client.gui.MurimProfileLayout.*;
 import static com.murimblock.client.gui.MurimProfileLayout.Field.*;
 
+/**
+ * Compact "clear manuscript" menu: ink title band with a red seal, bookmark tabs, a paper page and
+ * soft cards. Same information and controls as before; everything is drawn with integer fills.
+ */
 public final class MurimProfileScreen extends Screen {
-    private static final int INK = 0xFF202522;
-    private static final int PAPER = 0xFFF0E7CE;
-    private static final int PREVIEW = 0xFFD9D8C8;
-    private static final int GOLD = 0xFFC8A64A;
+    private static final int INK = 0xFF1F2420;
+    private static final int INK_SOFT = 0xFF343B35;
+    private static final int PAPER = 0xFFF3EBD4;
+    private static final int CARD = 0xFFEAE0C4;
+    private static final int PAPER_LINE = 0xFFD2C29C;
+    private static final int MUTED = 0xFF7A6A4C;
+    private static final int TAB_TEXT = 0xFFCFC3A2;
+    private static final int GOLD = 0xFFC9A74B;
+    private static final int GOLD_DARK = 0xFF8E7230;
+    private static final int SEAL = 0xFFA8322D;
     private static final int BLUE = 0xFF238DD4;
+    private static final int BLUE_LIGHT = 0xFF73C2F2;
+    private static final int BLUE_DARK = 0xFF15598A;
+    private static final int TRACK = 0xFFDCD1B4;
     private static final Style GUI_TEXT_STYLE = Style.EMPTY.withFont(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "manuscript"));
     private Page page = Page.PROFILE;
     private MurimProfileLayout layout;
@@ -93,46 +108,83 @@ public final class MurimProfileScreen extends Screen {
         Player player = minecraft.player;
         if (player == null) return;
         g.fill(0, 0, width, height, 0x88000000);
-        fill(g, new Box(0, 0, layout.width, layout.height), INK);
-        outline(g, new Box(3, 3, layout.width - 6, layout.height - 6), GOLD);
-        fill(g, new Box(8, 33, layout.width - 16, layout.height - 70), PAPER);
-        for (int x : new int[]{4, layout.width - 10}) {
-            for (int y : new int[]{4, layout.height - 10}) {
-                fill(g, new Box(x, y, 6, 6), GOLD);
-                fill(g, new Box(x + 2, y + 2, 2, 2), INK);
-            }
-        }
-        text(g, title, layout.title, PAPER, true, 2);
-        if (layout.width >= 400) { cloud(g, 18, 17); cloud(g, layout.width - 64, 17); }
-        fill(g, layout.close, PAPER);
-        text(g, Component.literal("X"), new Box(layout.close.x(), layout.close.y() + 4, layout.close.width(), 10), INK, true, 1);
-        for (Page tab : Page.values()) {
-            Box box = layout.tab(tab);
-            fill(g, box, tab == page ? INK : PAPER);
-            outline(g, box, INK);
-            if (tab == page) fill(g, new Box(box.x() + 2, box.bottom() - 3, box.width() - 4, 2), GOLD);
-            text(g, label("tab." + tab.id), layout.tabLabel(tab), tab == page ? PAPER : INK, true, 1);
-        }
+        renderFrame(g);
+        renderTabs(g);
         if (page.showsPlayer()) {
-            fill(g, layout.player, PREVIEW);
-            outline(g, layout.player, INK);
             Box box = layout.player;
-            int size = Math.min((box.height() - 14) / 2, (box.width() - 12) * 3 / 5);
+            card(g, box);
+            fill(g, new Box(box.x() + 8, box.bottom() - 12, box.width() - 16, 1), PAPER_LINE);
+            fill(g, new Box(box.x() + 14, box.bottom() - 10, box.width() - 28, 1), PAPER_LINE);
+            int size = Math.min((box.height() - 18) / 2, (box.width() - 12) * 3 / 5);
             InventoryScreen.renderEntityInInventoryFollowsMouse(g, left + box.x() + 3, top + box.y() + 3,
-                    left + box.right() - 3, top + box.bottom() - 3, size, 0.0625F, mouseX, mouseY, player);
+                    left + box.right() - 3, top + box.bottom() - 6, size, 0.0625F, mouseX, mouseY, player);
+        } else if (settingsMode) {
+            card(g, new Box(layout.settingsStatus.x() - 6, layout.content.y(), layout.content.right() - layout.settingsStatus.x() + 6, layout.content.height()));
         } else {
-            int split = settingsMode ? layout.settingsStatus.x() - 9 : layout.panels(page).get(1).x() - 9;
-            int offset = page == Page.TECHNIQUES ? 25 : 0;
-            fill(g, new Box(split, layout.content.y() + offset, 1, layout.content.height() - offset), INK);
+            for (Box panel : layout.panels(page)) card(g, panel);
         }
         CultivationSnapshot cultivation = MurimblockApi.cultivation().getCultivation(player);
         double qi = MurimblockApi.qi().getQi(player);
         double qiMax = MurimblockApi.qi().getQiMax(player);
         switch (page) {
-            case PROFILE -> renderProfile(g, player, cultivation, qi, qiMax);
+            case PROFILE -> renderProfile(g, player, qi, qiMax, cultivation);
             case TECHNIQUES -> renderTechniques(g);
             case CULTIVATION -> renderCultivation(g, player, cultivation, qi, qiMax);
             case INFOS -> renderInfos(g, qiMax);
+        }
+    }
+
+    private void renderFrame(GuiGraphics g) {
+        fill(g, new Box(0, 0, layout.width, layout.height), INK);
+        outline(g, new Box(2, 2, layout.width - 4, layout.height - 4), GOLD_DARK);
+        fill(g, layout.page, PAPER);
+        fill(g, new Box(layout.page.x(), layout.page.y(), layout.page.width(), 1), PAPER_LINE);
+        for (int x : new int[]{1, layout.width - 6}) {
+            for (int y : new int[]{1, layout.height - 6}) {
+                fill(g, new Box(x, y, 5, 5), GOLD);
+                fill(g, new Box(x + 2, y + 2, 1, 1), INK);
+            }
+        }
+        // Title flanked by gold rules, a red seal on the left.
+        Component styledTitle = Component.literal(title.getString()).withStyle(GUI_TEXT_STYLE);
+        int titleWidth = Math.min(font.width(styledTitle), layout.title.width());
+        int titleLeft = (layout.width - titleWidth) / 2;
+        text(g, title, layout.title, GOLD, true, 1);
+        int ruleY = layout.title.y() + 4;
+        if (titleLeft - 14 > 30) {
+            fill(g, new Box(24, ruleY, titleLeft - 32, 1), GOLD_DARK);
+            fill(g, new Box(titleLeft - 8, ruleY - 1, 3, 3), GOLD);
+            int rightStart = titleLeft + titleWidth + 8;
+            fill(g, new Box(rightStart, ruleY - 1, 3, 3), GOLD);
+            fill(g, new Box(rightStart + 6, ruleY, layout.close.x() - rightStart - 12, 1), GOLD_DARK);
+        }
+        seal(g, 9, 5);
+        boolean closeHovered = layout.close.contains(pointerX, pointerY);
+        fill(g, layout.close, closeHovered ? SEAL : INK_SOFT);
+        outline(g, layout.close, closeHovered ? GOLD : GOLD_DARK);
+        text(g, Component.literal("x"), new Box(layout.close.x(), layout.close.y() + 2, layout.close.width(), 9), PAPER, true, 1);
+    }
+    /** Small square chop: red block, paper frame and a stylised 王 (three bars and a stem), not a cross. */
+    private void seal(GuiGraphics g, int x, int y) {
+        fill(g, new Box(x, y, 13, 13), SEAL);
+        outline(g, new Box(x + 1, y + 1, 11, 11), PAPER);
+        for (int bar : new int[]{3, 6, 9}) fill(g, new Box(x + 3, y + bar, 7, 1), PAPER);
+        fill(g, new Box(x + 6, y + 3, 1, 7), PAPER);
+    }
+    private void renderTabs(GuiGraphics g) {
+        for (Page tab : Page.values()) {
+            Box box = layout.tab(tab);
+            boolean active = tab == page;
+            boolean hovered = !active && box.contains(pointerX, pointerY);
+            if (active) {
+                // The active bookmark merges into the page below it.
+                fill(g, new Box(box.x(), box.y(), box.width(), box.height() + 1), PAPER);
+                fill(g, new Box(box.x(), box.y(), box.width(), 2), GOLD);
+            } else {
+                fill(g, box, hovered ? 0xFF434B44 : INK_SOFT);
+                fill(g, new Box(box.x(), box.y(), box.width(), 1), hovered ? GOLD : GOLD_DARK);
+            }
+            text(g, label("tab." + tab.id), layout.tabLabel(tab), active ? INK : hovered ? PAPER : TAB_TEXT, true, 1);
         }
     }
 
@@ -140,54 +192,73 @@ public final class MurimProfileScreen extends Screen {
         if (!Double.isFinite(qi) || !Double.isFinite(qiMax) || qiMax <= 0 || pixelWidth <= 0) return 0;
         return (int) Math.round(pixelWidth * Math.clamp(qi / qiMax, 0, 1));
     }
-    private void renderProfile(GuiGraphics g, Player player, CultivationSnapshot cultivation, double qi, double qiMax) {
+    private void renderProfile(GuiGraphics g, Player player, double qi, double qiMax, CultivationSnapshot cultivation) {
         text(g, NAME, player.getName(), 2);
-        text(g, REALM_LABEL, label("realm_label"));
-        text(g, REALM, realm(cultivation));
-        text(g, STAGE_LABEL, label("stage"));
+        section(g, REALM_LABEL, label("realm_label"));
+        text(g, REALM, realm(cultivation), 2);
+        text(g, layout.text(page, STAGE_LABEL), label("stage"), MUTED);
         text(g, STAGE, label("stage_unknown"));
-        text(g, QI_LABEL, label("qi"));
+        section(g, QI_LABEL, label("qi"));
         qiBar(g, layout.profileQiFill, qi, qiMax);
         text(g, QI_VALUE, qiValue(qi, qiMax));
     }
     private void renderTechniques(GuiGraphics g) {
         text(g, HEADER, label("techniques.title"), 2);
-        text(g, LIBRARY_LABEL, label("techniques.library"));
-        text(g, DETAILS_LABEL, label("techniques.details"));
-        rule(g, layout.text(page, LIBRARY_LABEL));
-        rule(g, layout.text(page, DETAILS_LABEL));
-        text(g, label("techniques.empty"), layout.text(page, EMPTY_LIBRARY), INK, true, 1);
-        text(g, label("techniques.nothing_selected"), layout.text(page, EMPTY_DETAILS), INK, true, 1);
+        section(g, LIBRARY_LABEL, label("techniques.library"));
+        section(g, DETAILS_LABEL, label("techniques.details"));
+        text(g, label("techniques.empty"), layout.text(page, EMPTY_LIBRARY), MUTED, true, 1);
+        text(g, label("techniques.nothing_selected"), layout.text(page, EMPTY_DETAILS), MUTED, true, 1);
     }
     private void renderCultivation(GuiGraphics g, Player player, CultivationSnapshot cultivation, double qi, double qiMax) {
-        text(g, REALM_LABEL, label("cultivation.current"));
-        text(g, REALM, realm(cultivation));
+        section(g, REALM_LABEL, label("cultivation.current"));
+        text(g, REALM, realm(cultivation), 2);
         text(g, STAGE, label("cultivation.stage", stage(cultivation)));
-        text(g, NEXT_LABEL, label("cultivation.next_stage"));
+        stagePips(g, cultivation.stageId());
+        section(g, NEXT_LABEL, label("cultivation.next_stage"));
         var next = MurimblockApi.cultivation().getNextCultivation(player);
         text(g, NEXT_REALM, next.map(MurimProfileScreen::realm).orElseGet(() -> label("cultivation.complete")));
-        next.ifPresent(value -> text(g, NEXT_STAGE, stage(value)));
-        text(g, REQUIRED_QI, CultivationService.getRequiredQiMaxForNextStage(player)
-                .<Component>map(value -> label("cultivation.required", QiFormat.format(value))).orElseGet(() -> label("cultivation.no_requirement")));
-        text(g, QI_LABEL, label("qi_reserve"));
+        next.ifPresent(value -> text(g, layout.text(page, NEXT_STAGE), stage(value), MUTED));
+        text(g, layout.text(page, REQUIRED_QI), CultivationService.getRequiredQiMaxForNextStage(player)
+                .<Component>map(value -> label("cultivation.required", QiFormat.format(value))).orElseGet(() -> label("cultivation.no_requirement")), MUTED);
+        section(g, QI_LABEL, label("qi_reserve"));
         qiBar(g, layout.cultivationQiFill, qi, qiMax);
         text(g, QI_VALUE, qiValue(qi, qiMax));
-        text(g, BREAKTHROUGH_LABEL, label("cultivation.breakthrough"));
-        text(g, BREAKTHROUGH, label(next.isEmpty() ? "cultivation.state.complete" : MurimblockApi.cultivation().canAttemptBreakthrough(player)
-                ? "cultivation.state.ready" : "cultivation.state.not_ready"));
+        section(g, BREAKTHROUGH_LABEL, label("cultivation.breakthrough"));
+        boolean complete = next.isEmpty();
+        boolean ready = !complete && MurimblockApi.cultivation().canAttemptBreakthrough(player);
+        Box pill = layout.text(page, BREAKTHROUGH);
+        if (complete) {
+            fill(g, pill, INK);
+        } else if (ready) {
+            fill(g, pill, GOLD);
+            outline(g, pill, GOLD_DARK);
+        } else {
+            outline(g, pill, PAPER_LINE);
+        }
+        text(g, label(complete ? "cultivation.state.complete" : ready ? "cultivation.state.ready" : "cultivation.state.not_ready"),
+                new Box(pill.x() + 2, pill.y() + 5, pill.width() - 4, 9), complete ? PAPER : ready ? INK : MUTED, true, 1);
+    }
+    /** Early, Middle, Late, Peak as four marks; reached stages are gold. */
+    private void stagePips(GuiGraphics g, String stageId) {
+        int reached = CultivationStage.bySerializedName(stageId).map(Enum::ordinal).orElse(-1);
+        for (int i = 0; i < CultivationStage.values().length; i++) {
+            Box pip = new Box(layout.stagePips.x() + i * 8, layout.stagePips.y(), 5, 5);
+            if (i <= reached) {
+                fill(g, pip, GOLD);
+                outline(g, pip, GOLD_DARK);
+            } else outline(g, pip, PAPER_LINE);
+        }
     }
     private void renderInfos(GuiGraphics g, double qiMax) {
         if (settingsMode) {
-            text(g, label("settings.title"), layout.settingsHeader, INK, false, 2);
-            Box header = new Box(layout.settingsStatus.x(), layout.content.y(), layout.settingsStatus.width(), 18);
-            text(g, label("infos.player_status"), header, INK, false, 1);
-            rule(g, header);
+            text(g, label("settings.title"), layout.settingsHeader, INK, false, 1);
+            fill(g, new Box(layout.settingsHeader.x(), layout.settingsHeader.y() + 11, 18, 1), GOLD);
+            Box header = new Box(layout.settingsStatus.x(), layout.content.y() + 6, layout.settingsStatus.width(), 9);
+            section(g, header, label("infos.player_status"));
             text(g, label("status_placeholder"), layout.settingsStatus, INK, false, 1);
         } else {
-            text(g, CONTROLS_LABEL, label("infos.controls"), 2);
-            text(g, INFO_LABEL, label("infos.player_status"));
-            rule(g, layout.text(page, CONTROLS_LABEL));
-            rule(g, layout.text(page, INFO_LABEL));
+            section(g, CONTROLS_LABEL, label("infos.controls"));
+            section(g, INFO_LABEL, label("infos.player_status"));
             text(g, CONTROL_PROFILE, label("tab.profile"));
             text(g, CONTROL_QI, label("infos.charge_qi"));
             text(g, CONTROL_COMBAT, label("infos.combat_mode"));
@@ -203,7 +274,7 @@ public final class MurimProfileScreen extends Screen {
             button(layout.infoSettings, () -> label("settings.title"), () -> { settingsMode = true; rebuildWidgets(); }, true);
             return;
         }
-        setting(0, "camera", () -> label("settings.camera." + ClientConfig.tpsType.name().toLowerCase(java.util.Locale.ROOT)),
+        setting(0, "camera", () -> label("settings.camera." + ClientConfig.tpsType.name().toLowerCase(Locale.ROOT)),
                 () -> ClientConfig.tpsType = ClientConfig.tpsType.nextEnum(), null);
         toggle(1, "auto_perspective", () -> ClientConfig.autoPerspectiveSwithing, () -> ClientConfig.autoPerspectiveSwithing = !ClientConfig.autoPerspectiveSwithing);
         toggle(2, "first_person_motion", () -> ClientConfig.enableFirstPersonCameraMove, () -> ClientConfig.enableFirstPersonCameraMove = !ClientConfig.enableFirstPersonCameraMove);
@@ -225,38 +296,75 @@ public final class MurimProfileScreen extends Screen {
         }, false) {
             @Override protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
                 setMessage(message.get());
+                if (isHoveredOrFocused()) fill(g, box, CARD);
+                fill(g, new Box(box.x(), box.bottom() - 1, box.width(), 1), PAPER_LINE);
                 int valueWidth = Math.min(62, box.width() / 3);
-                Box labelBox = new Box(box.x(), box.y() + (box.height() - 9) / 2, box.width() - valueWidth - 6, 10);
+                Box labelBox = new Box(box.x() + 4, box.y() + (box.height() - 9) / 2, box.width() - valueWidth - 10, 9);
                 text(g, label("settings." + name), labelBox, INK, false, 1);
-                Box valueBox = new Box(box.right() - valueWidth, labelBox.y(), valueWidth, 10);
+                Box valueBox = new Box(box.right() - valueWidth, labelBox.y(), valueWidth - 2, 9);
                 if (enabled != null) {
-                    Box check = new Box(valueBox.x(), box.y() + (box.height() - 11) / 2, 11, 11);
-                    outline(g, check, isHoveredOrFocused() ? GOLD : INK);
-                    if (enabled.getAsBoolean()) text(g, Component.literal("X"), new Box(check.x(), check.y() + 1, check.width(), 10), INK, true, 1);
-                    valueBox = new Box(valueBox.x() + 15, valueBox.y(), valueBox.width() - 15, 10);
+                    boolean on = enabled.getAsBoolean();
+                    Box check = new Box(valueBox.x(), box.y() + (box.height() - 9) / 2, 9, 9);
+                    fill(g, check, on ? GOLD : PAPER);
+                    outline(g, check, isHoveredOrFocused() ? GOLD_DARK : INK);
+                    if (on) fill(g, new Box(check.x() + 3, check.y() + 3, 3, 3), INK);
+                    valueBox = new Box(valueBox.x() + 13, valueBox.y(), valueBox.width() - 13, 9);
+                    text(g, value.get(), valueBox, on ? INK : MUTED, false, 1);
                 } else {
-                    outline(g, new Box(valueBox.x() - 2, valueBox.y() - 3, valueBox.width() + 2, 16), isHoveredOrFocused() ? GOLD : INK);
+                    outline(g, new Box(valueBox.x() - 2, valueBox.y() - 3, valueBox.width() + 4, 15), isHoveredOrFocused() ? GOLD_DARK : PAPER_LINE);
+                    text(g, value.get(), valueBox, INK, true, 1);
                 }
-                text(g, value.get(), valueBox, INK, true, 1);
             }
         });
     }
     private Button button(Box box, Supplier<Component> message, Runnable action, boolean painted) {
         return addRenderableWidget(new ManuscriptButton(box, message, action, painted));
     }
+    /** Keyboard key cap with a one-pixel bottom edge. */
     private void key(GuiGraphics g, Field field, KeyMapping mapping) {
         Box box = layout.text(page, field);
+        fill(g, box, PAPER);
         outline(g, box, INK);
-        text(g, mapping.getTranslatedKeyMessage(), new Box(box.x() + 3, box.y() + 6, box.width() - 6, 10), INK, true, 1);
+        fill(g, new Box(box.x() + 1, box.bottom() - 3, box.width() - 2, 2), PAPER_LINE);
+        text(g, mapping.getTranslatedKeyMessage(), new Box(box.x() + 2, box.y() + 4, box.width() - 4, 9), INK, true, 1);
     }
     private static Component realm(CultivationSnapshot value) { return label("realm." + value.realmId()); }
     private static Component stage(CultivationSnapshot value) { return label("stage." + value.stageId()); }
-    private static Component qiValue(double qi, double max) { return Component.literal(QiFormat.format(qi) + " / " + QiFormat.format(max)); }
+    /** Whole points read better in a menu; the exact value remains available in commands. */
+    static Component qiValue(double qi, double max) {
+        long current = Double.isFinite(qi) ? (long) Math.floor(Math.max(0, qi)) : 0;
+        long capacity = Double.isFinite(max) ? (long) Math.floor(Math.max(0, max)) : 0;
+        return Component.literal(current + " / " + capacity);
+    }
     private void qiBar(GuiGraphics g, Box box, double qi, double max) {
-        outline(g, new Box(box.x() - 2, box.y() - 2, box.width() + 4, box.height() + 4), INK);
-        fill(g, box, PREVIEW);
+        outline(g, new Box(box.x() - 1, box.y() - 1, box.width() + 2, box.height() + 2), INK);
+        fill(g, box, TRACK);
         int filled = computeFilledWidth(qi, max, box.width());
-        if (filled > 0) fill(g, new Box(box.x(), box.y(), filled, box.height()), BLUE);
+        if (filled > 0) {
+            fill(g, new Box(box.x(), box.y(), filled, box.height()), BLUE);
+            fill(g, new Box(box.x(), box.y(), filled, 1), BLUE_LIGHT);
+            fill(g, new Box(box.x(), box.bottom() - 1, filled, 1), BLUE_DARK);
+        }
+        for (int quarter = 1; quarter < 4; quarter++) {
+            int x = box.x() + box.width() * quarter / 4;
+            fill(g, new Box(x, box.y(), 1, box.height()), x < box.x() + filled ? BLUE_DARK : PAPER_LINE);
+        }
+    }
+    /** Rounded-looking card: soft fill, paper-line border, cut corners. */
+    private void card(GuiGraphics g, Box box) {
+        fill(g, new Box(box.x() + 1, box.y(), box.width() - 2, box.height()), CARD);
+        fill(g, new Box(box.x(), box.y() + 1, 1, box.height() - 2), CARD);
+        fill(g, new Box(box.right() - 1, box.y() + 1, 1, box.height() - 2), CARD);
+        fill(g, new Box(box.x() + 1, box.y(), box.width() - 2, 1), PAPER_LINE);
+        fill(g, new Box(box.x() + 1, box.bottom() - 1, box.width() - 2, 1), PAPER_LINE);
+        fill(g, new Box(box.x(), box.y() + 1, 1, box.height() - 2), PAPER_LINE);
+        fill(g, new Box(box.right() - 1, box.y() + 1, 1, box.height() - 2), PAPER_LINE);
+    }
+    /** Small-caps section label in muted ink with a short gold underline. */
+    private void section(GuiGraphics g, Field field, Component value) { section(g, layout.text(page, field), value); }
+    private void section(GuiGraphics g, Box box, Component value) {
+        text(g, Component.literal(value.getString().toUpperCase(Locale.ROOT)), box, MUTED, false, 1);
+        fill(g, new Box(box.x(), box.bottom() + 1, Math.min(18, box.width()), 1), GOLD);
     }
     private void fill(GuiGraphics g, Box box, int color) { g.fill(left + box.x(), top + box.y(), left + box.right(), top + box.bottom(), color); }
     private void outline(GuiGraphics g, Box box, int color) {
@@ -265,17 +373,11 @@ public final class MurimProfileScreen extends Screen {
         fill(g, new Box(box.x(), box.y(), 1, box.height()), color);
         fill(g, new Box(box.right() - 1, box.y(), 1, box.height()), color);
     }
-    private void rule(GuiGraphics g, Box header) { fill(g, new Box(header.x(), header.bottom() + 4, header.width(), 1), GOLD); }
-    private void cloud(GuiGraphics g, int x, int y) {
-        fill(g, new Box(x, y + 4, 28, 3), GOLD);
-        fill(g, new Box(x + 6, y + 1, 16, 3), GOLD);
-        fill(g, new Box(x + 10, y - 2, 8, 3), GOLD);
-        fill(g, new Box(x + 13, y + 1, 3, 3), INK);
-    }
     private void text(GuiGraphics g, Field field, Component value) { text(g, field, value, 1); }
     private void text(GuiGraphics g, Field field, Component value, int preferredScale) {
         text(g, value, layout.text(page, field), INK, false, preferredScale);
     }
+    private void text(GuiGraphics g, Box box, Component value, int color) { text(g, value, box, color, false, 1); }
     private void text(GuiGraphics g, Component value, Box box, int color, boolean centered, int preferredScale) {
         Component styled = Component.literal(value.getString()).withStyle(GUI_TEXT_STYLE);
         int scale = preferredScale == 2 && font.width(styled) * 2 <= box.width() && box.height() >= 18 ? 2 : 1;
@@ -316,10 +418,11 @@ public final class MurimProfileScreen extends Screen {
         @Override protected void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
             setMessage(message.get());
             if (painted) {
-                fill(g, box, INK);
-                outline(g, box, isHoveredOrFocused() ? GOLD : INK);
-                text(g, getMessage(), new Box(box.x() + 5, box.y() + 7, box.width() - 10, 10), PAPER, true, 1);
-            } else if (isHoveredOrFocused()) outline(g, box, GOLD);
+                boolean hot = isHoveredOrFocused();
+                fill(g, box, hot ? INK_SOFT : INK);
+                outline(g, box, hot ? GOLD : GOLD_DARK);
+                text(g, getMessage(), new Box(box.x() + 4, box.y() + (box.height() - 8) / 2, box.width() - 8, 9), hot ? GOLD : PAPER, true, 1);
+            }
         }
     }
 }

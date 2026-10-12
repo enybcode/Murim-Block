@@ -56,11 +56,22 @@ class MurimProfileLayoutTest {
         for (var entry : layout.fields(Page.PROFILE).entrySet()) assertFalse(entry.getValue().intersects(layout.profileQiFill));
         for (var entry : layout.fields(Page.CULTIVATION).entrySet()) assertFalse(entry.getValue().intersects(layout.cultivationQiFill));
     }
-    @Test void compactMenuIsLargerThanThePreviousContentAreaWithoutShrinkingText() {
+    @Test void menuStaysCompactOnLargeScreensWithoutShrinkingText() {
+        MurimProfileLayout large = forViewport(1920, 1080);
+        assertEquals(320, large.width);
+        assertEquals(200, large.height);
+        MurimProfileLayout small = forViewport(320, 240);
+        assertTrue(small.content.height() >= 140, "content " + small.content.height());
+        for (Page page : Page.values()) {
+            assertTrue(small.page.contains(small.content));
+            assertEquals(PAGE_TOP, small.tab(page).bottom(), "bookmark tabs must touch the page");
+        }
+    }
+    @Test void cultivationStagePipsSitBetweenTheStageAndTheNextStageLabel() {
         MurimProfileLayout layout = forViewport(427, 240);
-        assertTrue(layout.width > 320);
-        assertTrue(layout.content.height() > 137);
-        assertEquals(18, layout.title.height());
+        assertTrue(layout.stagePips.y() >= layout.text(Page.CULTIVATION, Field.STAGE).bottom());
+        assertTrue(layout.stagePips.bottom() <= layout.text(Page.CULTIVATION, Field.NEXT_LABEL).y());
+        assertTrue(layout.panels(Page.CULTIVATION).get(0).contains(layout.stagePips));
     }
     @Test void boxesRejectInvalidDimensionsAndUnknownFields() {
         assertThrows(IllegalArgumentException.class, () -> new Box(0, 0, 0, 9));

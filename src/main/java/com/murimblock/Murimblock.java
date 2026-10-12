@@ -5,8 +5,10 @@ import com.murimblock.combat.CombatAttachments;
 import com.murimblock.combat.CombatEvents;
 import com.murimblock.cultivation.CultivationAttachments;
 import com.murimblock.cultivation.CultivationEvents;
+import com.murimblock.integration.epicfight.ArmoredCrabEpicFight;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightContentRegistries;
+import com.murimblock.item.MurimItems;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.network.MurimblockNetworking;
 import com.murimblock.qi.QiAttachments;
@@ -25,6 +27,8 @@ public final class Murimblock {
 
     public Murimblock(IEventBus modEventBus) {
         MurimEntities.register(modEventBus);
+        MurimItems.register(modEventBus);
+        ArmoredCrabEpicFight.register(modEventBus);
         EpicFightContentRegistries.register(modEventBus);
         CombatAttachments.register(modEventBus);
         CultivationAttachments.register(modEventBus);

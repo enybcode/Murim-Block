@@ -1,6 +1,9 @@
 {
   "key.categories.murimblock": "Murimblock",
   "entity.murimblock.training_opponent": "Training Opponent",
+  "entity.murimblock.armored_crab": "Armored Crab",
+  "item.murimblock.armored_crab_spawn_egg": "Armored Crab Spawn Egg",
+  "itemGroup.murimblock": "Murimblock",
   "key.murimblock.charge_qi": "Charge Qi",
   "key.murimblock.combat_mode": "Combat Mode",
   "message.murimblock.combat_mode.on": "Combat Mode: ON",

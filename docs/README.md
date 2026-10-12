@@ -6,6 +6,7 @@
 - [Epic Fight](EPIC_FIGHT.md): pinned dependency and retained/disabled features.
 - [Clear Manuscript](gui/TAB_LAYOUT.md): current GUI, not the V4 reference.
 - [Qi rewards](QI_REWARDS.md): balance and temporary anti-farm history.
+- [Armored crab](ARMORED_CRAB_DELIVERY.md): integrated assets, behavior and local verification.
 - [Addon API](ADDON_API.md) and [addon guide](ADDON_GUIDE.md): supported contracts.
 
 ## Development And Delivery

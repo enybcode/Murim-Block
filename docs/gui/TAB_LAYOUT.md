@@ -8,10 +8,20 @@ pas leurs decoupes, petits motifs ou icones. Les anciennes ressources et la demo
 
 ## Contrat Visuel
 
-- Parchemin ivoire uni `#F0E7CE`, encre `#202522`, or mat `#C8A64A`, Qi `#238DD4`.
+Refonte compacte du 12/10/2026 (Enzo trouvait l'ancien ecran terne et trop grand).
+Memes informations et memes controles ; seul l'habillage et la taille changent.
+
+- Papier `#F3EBD4`, cartes `#EAE0C4` bordees `#D2C29C`, encre `#1F2420`,
+  encre douce `#343B35`, or `#C9A74B` / `#8E7230`, sceau `#A8322D`, Qi `#238DD4`
+  avec reflets `#73C2F2` / `#15598A`, texte secondaire `#7A6A4C`.
 - Geometrie native `GuiGraphics.fill`, coordonnees entieres, bordures de 1 pixel.
-- Quatre angles dores et deux nuages pixel larges uniquement si la place le permet.
-- Titre, fermeture X, onglets texte sans icone, aucun motif sous les informations.
+- Bandeau titre encre : titre or 1x entre deux filets, petit sceau rouge (王 stylise),
+  fermeture `x` carree. Quatre angles dores.
+- Onglets en marque-pages sous le bandeau ; l'onglet actif se fond dans la page.
+- Informations groupees en cartes ; titres de section en petites capitales avec
+  un court trait or. Royaume en 2x, pastilles d'etape (Early/Middle/Late/Peak),
+  barre de Qi a quarts, valeurs de Qi en points entiers (`87 / 120`), percee en
+  pastille (or = prete, contour = pas prete, encre = terminee), touches en capuchons.
 - Police `murimblock:manuscript` reservee a ces ecrans ; pas de police globale changee.
 - Texte 1x, titre/nom 2x seulement si toute la chaine tient, sans scale fractionnaire.
 - Retours a la ligne, scissor, puis ellipse/infobulle pour une valeur trop longue.
@@ -19,11 +29,13 @@ pas leurs decoupes, petits motifs ou icones. Les anciennes ressources et la demo
 ## Taille Et Zones
 
 `MurimProfileLayout.forViewport` utilise les dimensions GUI logiques de Minecraft,
-pas les pixels physiques de la fenetre. Cadre maximum **480 x 300**, reduit a la
-taille disponible avec 8 pixels de marge. Au viewport minimum 320 x 240, le cadre
-fait 304 x 224. Le contenu est redispose au lieu de reduire une grande texture.
+pas les pixels physiques de la fenetre. Cadre maximum **320 x 200** (contre
+480 x 300 auparavant), reduit a la taille disponible avec 8 pixels de marge. Au
+viewport minimum 320 x 240, le cadre fait 304 x 200. Le contenu est redispose au
+lieu de reduire une grande texture.
 
-Le titre occupe la bande haute ; les quatre onglets se partagent la bande basse.
+Le titre occupe la bande haute ; les quatre onglets sont juste en dessous et
+touchent la page (`PAGE_TOP`).
 Le joueur, les textes, barres et boutons ont des rectangles distincts. Les
 controles de reglages ne recouvrent pas le panneau de statut. Les tests couvrent
 320x240, 427x240, 640x360, 854x480 et 1920x1080 en dimensions logiques.
