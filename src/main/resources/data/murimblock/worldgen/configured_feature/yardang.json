@@ -1,0 +1,43 @@
+{
+  "type": "murimblock:yardang",
+  "config": {
+    "body": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:smooth_sandstone"
+      }
+    },
+    "band": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:terracotta"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "murimblock:red_loess"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "length": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 14,
+      "max_inclusive": 38
+    },
+    "height": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 5,
+      "max_inclusive": 13
+    },
+    "width": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 3,
+      "max_inclusive": 6
+    }
+  }
+}

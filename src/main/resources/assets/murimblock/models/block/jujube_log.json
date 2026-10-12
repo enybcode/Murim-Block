@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "murimblock:block/jujube_log",
+    "end": "murimblock:block/jujube_log_top"
+  }
+}

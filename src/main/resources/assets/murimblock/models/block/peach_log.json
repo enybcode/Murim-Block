@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "murimblock:block/peach_log",
+    "end": "murimblock:block/peach_log_top"
+  }
+}

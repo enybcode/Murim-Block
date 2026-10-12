@@ -1,0 +1,14 @@
+{
+  "type": "murimblock:ground_body",
+  "config": {
+    "biome": "murimblock:peach_blossom_valley",
+    "body": {
+      "Name": "murimblock:pillar_sandstone"
+    },
+    "band": {
+      "Name": "minecraft:smooth_sandstone"
+    },
+    "depth": 22,
+    "band_spacing": 6
+  }
+}

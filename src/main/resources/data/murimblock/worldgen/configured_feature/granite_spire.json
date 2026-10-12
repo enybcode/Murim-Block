@@ -1,0 +1,45 @@
+{
+  "type": "murimblock:rock_pillar",
+  "config": {
+    "style": "spire",
+    "rock": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "murimblock:pale_granite"
+      }
+    },
+    "accent": {
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:diorite"
+      }
+    },
+    "top": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:moss_block"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "murimblock:pale_granite"
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "radius": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 3,
+      "max_inclusive": 6
+    },
+    "height": {
+      "type": "minecraft:uniform",
+      "min_inclusive": 28,
+      "max_inclusive": 64
+    }
+  }
+}

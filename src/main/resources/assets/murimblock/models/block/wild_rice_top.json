@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "murimblock:block/wild_rice_top"
+  },
+  "render_type": "minecraft:cutout"
+}

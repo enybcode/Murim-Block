@@ -1,0 +1,31 @@
+{
+  "replace": false,
+  "values": [
+    "murimblock:osmanthus_leaves",
+    "murimblock:banyan_leaves",
+    "murimblock:huangshan_pine_leaves",
+    "murimblock:jujube_leaves",
+    "murimblock:dove_tree_leaves",
+    "murimblock:willow_leaves",
+    "murimblock:peach_leaves",
+    "murimblock:desert_poplar_leaves",
+    "murimblock:moso_bamboo_leaves",
+    "murimblock:karst_fern",
+    "murimblock:rhododendron",
+    "murimblock:sea_buckthorn",
+    "murimblock:feather_grass",
+    "murimblock:bamboo_shoot",
+    "murimblock:arrow_bamboo",
+    "murimblock:tree_fern",
+    "murimblock:lotus_pad",
+    "murimblock:lotus_blossom",
+    "murimblock:wild_rice",
+    "murimblock:chrysanthemum",
+    "murimblock:rapeseed",
+    "murimblock:tamarisk",
+    "murimblock:saxaul",
+    "murimblock:cistanche",
+    "murimblock:banyan_roots",
+    "murimblock:willow_strands"
+  ]
+}

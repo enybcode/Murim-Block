@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "murimblock:block/tree_fern_top"
+  },
+  "render_type": "minecraft:cutout"
+}

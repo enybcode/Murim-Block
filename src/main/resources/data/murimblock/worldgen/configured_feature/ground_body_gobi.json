@@ -1,0 +1,14 @@
+{
+  "type": "murimblock:ground_body",
+  "config": {
+    "biome": "murimblock:hexi_frontier_desert",
+    "body": {
+      "Name": "minecraft:sandstone"
+    },
+    "band": {
+      "Name": "minecraft:terracotta"
+    },
+    "depth": 10,
+    "band_spacing": 5
+  }
+}

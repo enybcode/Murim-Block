@@ -1,0 +1,157 @@
+package com.murimblock;
+
+import com.murimblock.item.MurimItems;
+import com.murimblock.item.SectTokenItem;
+import com.murimblock.world.block.MurimBlocks;
+import com.murimblock.world.structure.SanctuaryBuilder;
+import com.murimblock.world.structure.SanctuaryPlacement;
+import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+
+import static com.murimblock.testing.GameTestPlayers.cleanup;
+import static com.murimblock.testing.GameTestPlayers.player;
+
+/** The Cloud Cliff Sanctuary and its sect token. Absolute coordinates far out at x 3000: one batch per test. */
+@GameTestHolder(Murimblock.MOD_ID)
+@PrefixGameTestTemplate(false)
+public final class SanctuaryGameTests {
+    private static final int X = 3000, Z = 0, GROUND = 70, R = 30;
+
+    private SanctuaryGameTests() { }
+
+    private static void forEach(ServerLevel level, int y0, int y1, java.util.function.Consumer<BlockPos> action) {
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int x = X - R; x <= X + R; x++) for (int z = Z - R; z <= Z + R; z++) for (int y = y0; y <= y1; y++) action.accept(p.set(x, y, z));
+    }
+
+    private static int count(ServerLevel level, Predicate<BlockState> what) {
+        int[] n = {0};
+        forEach(level, GROUND - 2, GROUND + SanctuaryBuilder.HEIGHT + 30, p -> { if (what.test(level.getBlockState(p))) n[0]++; });
+        return n[0];
+    }
+
+    @GameTest(template = "foundation_arena", batch = "sanctuary_build", timeoutTicks = 400)
+    public static void sanctuaryRisesWithItsRoadHallsAndSignalFire(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (int cx = (X - R - 16) >> 4; cx <= (X + R + 16) >> 4; cx++) for (int cz = (Z - R - 16) >> 4; cz <= (Z + R + 16) >> 4; cz++) level.setChunkForced(cx, cz, true);
+        forEach(level, GROUND - 1, GROUND - 1, p -> level.setBlock(p, Blocks.STONE.defaultBlockState(), 2));
+        try {
+            SanctuaryBuilder builder = new SanctuaryBuilder(level, X, GROUND, Z, RandomSource.create(7));
+            builder.build();
+            int top = builder.top();
+            int granite = count(level, s -> s.is(MurimBlocks.PALE_GRANITE.get()));
+            int greenRoof = count(level, s -> s.is(Blocks.PRISMARINE_BRICK_STAIRS) || s.is(Blocks.PRISMARINE_BRICK_SLAB));
+            int columns = count(level, s -> s.is(Blocks.STRIPPED_MANGROVE_LOG));
+            int road = 0;
+            boolean roadReachesTop = false;
+            for (int y = GROUND; y <= top; y++) {
+                int at = y;
+                int here = count2(level, at, s -> s.is(Blocks.SPRUCE_PLANKS) || s.is(Blocks.SPRUCE_STAIRS));
+                road += here;
+                if (y >= top - 2 && here > 0) roadReachesTop = true;
+            }
+            boolean signal = false, bell = false;
+            for (int dx = -2; dx <= 2; dx++) for (int dz = -1; dz <= 5; dz++) {
+                BlockState s = level.getBlockState(new BlockPos(X + dx, top + 2, Z + dz));
+                if (s.is(Blocks.CAMPFIRE) && s.getValue(CampfireBlock.SIGNAL_FIRE) && level.getBlockState(new BlockPos(X + dx, top + 1, Z + dz)).is(Blocks.HAY_BLOCK)) signal = true;
+            }
+            bell = count(level, s -> s.is(Blocks.BELL)) > 0;
+            BlockPos foot = builder.foot();
+            boolean footSafe = level.getBlockState(foot.below()).isSolid() && level.getBlockState(foot).isAir() && level.getBlockState(foot.above()).isAir();
+            helper.assertTrue(top == GROUND + SanctuaryBuilder.HEIGHT, "Summit at " + top);
+            helper.assertTrue(granite > 25000, "Spire too thin: " + granite + " granite");
+            helper.assertTrue(greenRoof > 150, "Green glazed roofs missing: " + greenRoof);
+            helper.assertTrue(columns > 60, "Vermilion columns missing: " + columns);
+            helper.assertTrue(road > 300 && roadReachesTop, "Plank road too short or not reaching the summit (" + road + ")");
+            helper.assertTrue(signal, "No signal fire (campfire on hay) in the court");
+            helper.assertTrue(bell, "No bell in the bell tower");
+            helper.assertTrue(footSafe, "Players would not arrive safely at the foot " + foot);
+            helper.succeed();
+        } finally {
+            forEach(level, GROUND - 6, GROUND + SanctuaryBuilder.HEIGHT + 30, p -> { if (!level.getBlockState(p).isAir()) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16); });
+        }
+    }
+
+    private static int count2(ServerLevel level, int y, Predicate<BlockState> what) {
+        int n = 0;
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int x = X - R; x <= X + R; x++) for (int z = Z - R; z <= Z + R; z++) if (what.test(level.getBlockState(p.set(x, y, z)))) n++;
+        return n;
+    }
+
+    @GameTest(template = "foundation_arena", batch = "sanctuary_locate")
+    public static void vanillaLocateFindsTheSanctuary(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        SanctuaryPlacement data = SanctuaryPlacement.get(server.overworld());
+        var source = server.createCommandSourceStack().withLevel(server.overworld()).withPosition(net.minecraft.world.phys.Vec3.ZERO).withSuppressedOutput();
+        var dispatcher = server.getCommands().getDispatcher();
+        boolean notFoundWithoutSanctuary = false;
+        try {
+            dispatcher.execute("locate structure murimblock:cloud_cliff_sanctuary", source);
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+            notFoundWithoutSanctuary = true; // "Could not find a structure..." in a flat world
+        }
+        data.record(new BlockPos(1200, 90, -800), new BlockPos(1200, 91, -784), 160);
+        try {
+            int found = dispatcher.execute("locate structure murimblock:cloud_cliff_sanctuary", source);
+            var direct = server.overworld().getChunkSource().getGenerator().findNearestMapStructure(server.overworld(),
+                    net.minecraft.core.HolderSet.direct(server.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE)
+                            .getHolderOrThrow(SanctuaryPlacement.STRUCTURE)), BlockPos.ZERO, 100, false);
+            helper.assertTrue(notFoundWithoutSanctuary, "/locate found a sanctuary in a world without one");
+            // /locate returns the distance in blocks.
+            helper.assertTrue(found > 0 && direct != null && direct.getFirst().getX() == 1200 && direct.getFirst().getZ() == -800,
+                    "/locate did not find the sanctuary: " + found + " " + direct);
+            helper.succeed();
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+            helper.fail("/locate structure failed: " + e.getMessage());
+        } finally {
+            data.clear();
+        }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "sanctuary_token")
+    public static void everyPlayerGetsATokenThatPointsToTheSanctuary(GameTestHelper helper) {
+        ServerLevel overworld = helper.getLevel().getServer().overworld();
+        SanctuaryPlacement data = SanctuaryPlacement.get(overworld);
+        // Flat test world: no sanctuary was built on start.
+        helper.assertTrue(data.centre() == null, "A sanctuary was built in a flat world");
+        data.record(new BlockPos(1200, 90, -800), new BlockPos(1200, 91, -784), 160);
+        var player = player(helper);
+        // The test helper puts a sword in the first slot after login: replay the first login on a clean inventory.
+        player.getInventory().clearContent();
+        player.getPersistentData().remove("murimblock_sect_token_received");
+        SectTokenItem.onPlayerLoggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(player));
+        SectTokenItem.onPlayerLoggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(player));
+        int tokens = player.getInventory().countItem(MurimItems.SECT_TOKEN.get());
+        ItemStack token = null;
+        for (ItemStack stack : player.getInventory().items) if (stack.is(MurimItems.SECT_TOKEN.get())) token = stack;
+        ItemStack held = token;
+        // The needle refreshes once a second: tick the token for a little over a second of game time.
+        for (int t = 1; t <= 25; t++) helper.runAfterDelay(t, () -> { if (held != null) held.inventoryTick(overworld, player, 0, true); });
+        helper.runAfterDelay(26, () -> {
+            try {
+                helper.assertTrue(held != null && tokens == 1, "Expected exactly one token on first login, got " + tokens);
+                var tracker = held.get(DataComponents.LODESTONE_TRACKER);
+                helper.assertTrue(tracker != null && tracker.target().isPresent() && tracker.target().get().pos().equals(new BlockPos(1200, 160, -800)),
+                        "Token needle not on the sanctuary: " + tracker);
+                helper.assertTrue(SectTokenItem.compass(0, -100).equals("north") && SectTokenItem.compass(100, 0).equals("east")
+                        && SectTokenItem.compass(70, 70).equals("south_east") && SectTokenItem.compass(-70, -70).equals("north_west"), "Wrong compass winds");
+                helper.succeed();
+            } finally {
+                data.clear();
+                cleanup(player);
+            }
+        });
+    }
+}

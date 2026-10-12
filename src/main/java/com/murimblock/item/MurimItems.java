@@ -26,6 +26,10 @@ public final class MurimItems {
     public static final DeferredItem<DeferredSpawnEggItem> CRAB_MAN_SPAWN_EGG = ITEMS.register("crab_man_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.CRAB_MAN, 0x087C8B, 0xE7D1A1, new Item.Properties()));
 
+    /** Jade medallion of the Cloud Cliff sect: its needle points to the sanctuary. */
+    public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
+            () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MURIMBLOCK_TAB = TABS.register("murimblock",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.murimblock"))
@@ -33,7 +37,18 @@ public final class MurimItems {
                     .displayItems((parameters, output) -> {
                         output.accept(ARMORED_CRAB_SPAWN_EGG.get());
                         output.accept(CRAB_MAN_SPAWN_EGG.get());
+                        output.accept(SECT_TOKEN.get());
                     })
+                    .build());
+
+    /** Rock, trees and plants of the seven Murim biomes (docs/biomes). */
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> NATURE_TAB = TABS.register("murimblock_nature",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.murimblock_nature"))
+                    .icon(() -> new ItemStack(com.murimblock.world.block.MurimBlocks.PEACH.sapling().get()))
+                    .withTabsBefore(MURIMBLOCK_TAB.getKey())
+                    .displayItems((parameters, output) -> com.murimblock.world.block.MurimBlocks.creativeOrder()
+                            .forEach(block -> output.accept(block.get())))
                     .build());
 
     private MurimItems() { }

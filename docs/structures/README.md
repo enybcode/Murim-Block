@@ -1,0 +1,80 @@
+# Structures Murim
+
+Les quatre propositions du 12/10/2026, avec leur maquette voxel :
+
+| Structure | Biome | État | Maquette |
+|---|---|---|---|
+| Sanctuaire de la Falaise des Nuages | Pics de la mer de nuages | **Construit** (unique, au spawn) | ![](images/sanctuary.jpg) |
+| Village sur pilotis de la rivière de Jade | Forêt des pics de jade | Proposé | ![](images/village.jpg) |
+| Repaire des Bandits du Fleuve Jaune | Plateau de lœss | Proposé | ![](images/lair.jpg) |
+| Forteresse de la Passe de Jade | Désert de la frontière du Hexi | Proposé | ![](images/fortress.jpg) |
+
+Les plans et les intentions de jeu de chaque proposition ont été donnés à Enzo le 12/10/2026. Les maquettes se régénèrent avec `node scripts/concepts/render-proposals.cjs`, qui demande un Blockbench isolé lancé sur le port 9232.
+
+## Sanctuaire de la Falaise des Nuages (construit)
+
+![Vue aérienne en jeu](images/sanctuary-ingame-aerial.jpg)
+![La cour au sommet](images/sanctuary-ingame-court.jpg)
+![Ce que voit un nouveau joueur en arrivant](images/sanctuary-ingame-foot.jpg)
+
+**Le début de chaque aventure.** Le sanctuaire est le siège de « la » secte du serveur.
+
+- **Il est unique** : un seul par monde. Il est construit au premier démarrage du serveur par `SanctuaryPlacement`, puis mémorisé dans la sauvegarde de la Surface (`murimblock_sanctuary`).
+- **Son emplacement** : le cœur du biome Pics de la mer de nuages le plus proche du spawn, dans un rayon de 4 000 blocs. Le biome est échantillonné tous les 32 blocs, et un point compte comme « cœur » si au moins 30 de ses 49 voisins sont dans les pics. À défaut, le sanctuaire va dans le biome Murim le plus proche, puis au spawn. Il apporte sa propre aiguille, donc il fonctionne partout.
+- **Les mondes concernés** : seulement ceux dont la Surface est un monde normal (multi-noise). Les mondes plats et les mondes de test n'en ont pas.
+- **Le point d'apparition** est déplacé au pied du chemin de planches. Chaque nouveau joueur commence donc là, et y réapparaît s'il meurt sans lit.
+- **Le chemin part du côté le plus bas** autour de l'aiguille : le terrain est mesuré sur 24 directions, à 19 blocs de l'axe. Le palier d'arrivée est posé sur le sol de ce côté, à ciel ouvert, et sans arbre dans un rayon de 5 blocs.
+
+**Ce qui est construit**, dans `SanctuaryBuilder` (en vrais blocs Minecraft) :
+
+- **L'aiguille** : en granite pâle, 70 blocs au-dessus du sol, d'un rayon de 12,5 à 17 blocs. Elle est un peu plus large au sommet, avec des joints de diorite tous les 7 blocs, de la mousse et 6 pins qui sortent des flancs.
+- **Le chemin de planches** : en épicéa, 2 blocs de large, avec des marches, des poutres d'épicéa plantées dans la roche et une rambarde extérieure. Il monte en spirale de 0,3 bloc par bloc parcouru.
+- **Le pavillon de repos** à mi-hauteur : poteaux rouges, toit en tuiles grises, lanterne et bancs.
+- **La cour au sommet** : pavée d'andésite polie, avec une bordure et une balustrade de pierre.
+- **La salle principale** :
+  - 5 travées (21 × 9) sur une plateforme de 2 blocs, avec des marches dans l'axe ;
+  - colonnes en bois de palétuvier écorcé (rouge), murs en calcite, façade en treillis de chêne noir ;
+  - toit vert vernissé en prismarine, avec des angles relevés ;
+  - à l'intérieur : allée de tapis rouge, autel et statue du fondateur, coussins de méditation, lanternes.
+- **Le dortoir** (à l'ouest) et **la bibliothèque** (à l'est, avec étagères et pupitre) : toits en tuiles grises.
+- **Les tours** : celle de la cloche, avec une vraie cloche, et celle du tambour. Toits pyramidaux verts.
+- **Le portique (paifang)** au sud : trois passages, poteaux rouges, toits verts, lanternes.
+- **Le brûle-parfum** : un feu de camp sur une botte de paille, dont la fumée monte très haut. C'est le repère de jour.
+- **Deux pins du Huangshan** dans la cour.
+
+## Le Jeton de la Secte
+
+![Le jeton en main](images/sanctuary-ingame-token.png)
+
+- **Ce que c'est.** Un médaillon de jade cerclé d'or, dont l'aiguille rouge pointe vers le sommet du sanctuaire partout dans la Surface. C'est une cible de magnétite qui ne demande aucune magnétite.
+- **Ses 32 images** sont dessinées par `scripts/worldgen/TokenTextures.java` et suivent les mêmes paliers que la boussole vanilla.
+- **Le clic droit** affiche la direction et la distance, par exemple « Sanctuaire de la Falaise des Nuages : 1 240 blocs au nord-est ». Le message est en anglais, comme tout le texte du mod (règle du projet). Il y a une seconde de recharge entre deux utilisations.
+- **Le don.** Il est donné une seule fois par joueur, à sa première connexion (drapeau `murimblock_sect_token_received`). Il est aussi dans l'onglet créatif Murimblock.
+- **À décider avec Enzo** : une autre façon d'en obtenir un, par exemple sur un mob.
+
+## Le trouver avec /locate
+
+- `/locate structure murimblock:cloud_cliff_sanctuary` donne sa position avec la réponse habituelle de Minecraft : coordonnées vertes cliquables et distance.
+- Le sanctuaire est déclaré comme structure (`SanctuaryStructure`, `data/murimblock/worldgen/structure/cloud_cliff_sanctuary.json`) mais ne se génère jamais tout seul : c'est `SanctuaryPlacement` qui construit l'unique exemplaire. Un mixin sur la recherche de structures (`SanctuaryLocateMixin`) renvoie la position mémorisée.
+- En jeu, le joueur le retrouve avec le Jeton de la Secte.
+
+## Vérification
+
+- **GameTests** (`SanctuaryGameTests`) :
+  - le sanctuaire complet se construit : 70 blocs, plus de 25 000 blocs de granite, toits verts, colonnes, chemin jusqu'au sommet, feu de signal sur la paille, cloche, palier sûr ;
+  - un monde plat n'en reçoit pas ;
+  - un seul jeton est donné à la première connexion ;
+  - l'aiguille vise le sommet ;
+  - les 8 directions sont justes ;
+  - `/locate structure murimblock:cloud_cliff_sanctuary` échoue dans un monde sans sanctuaire et le trouve quand il existe.
+- **Visite en vrai client** (`gradlew -PgameTests runBiomeTour`) :
+  - le monde est neuf (graine 20261012) ;
+  - on vérifie que le sanctuaire est construit dans le biome de pics, que le spawn est à son pied et que le palier est dégagé ;
+  - on prend des photos aérienne, de la cour, du pied, de nuit et du jeton.
+
+## À faire ensuite
+
+- Le maître de la secte (PNJ), l'éveil du Qi et la première technique.
+- Les lanternes lumineuses avec Photon, pour le repère de nuit.
+- La source du jeton de remplacement.
+- Les autres structures : village, repaire, forteresse.

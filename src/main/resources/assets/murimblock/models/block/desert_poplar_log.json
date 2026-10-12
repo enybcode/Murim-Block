@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "murimblock:block/desert_poplar_log",
+    "end": "murimblock:block/desert_poplar_log_top"
+  }
+}
