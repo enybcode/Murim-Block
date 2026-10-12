@@ -88,6 +88,7 @@ public final class ClientVisualSmoke {
             if (!ready.get()) return;
             mc.getToasts().clear();
             ticks++;
+            nightFrames(mc);
             switch (ticks) {
                 case 50 -> mc.setScreen(new MurimProfileScreen());
                 case 70 -> capture("01-profile.png");
@@ -267,12 +268,42 @@ public final class ClientVisualSmoke {
                 case 562 -> capture("19-water-ball-charge.png");
                 case 569 -> capture("20-water-ball-flight.png");
                 case 580 -> capture("21-water-ball-splash.png");
-                case 595 -> {
+                case 595 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    for (int x = -2; x <= 5; x++) for (int y = 77; y <= 84; y++)
+                        level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x, y, 7), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                });
+                // Water ball at night in a closed stone room, seen from the player's eyes: its reflections glow a
+                // little (GeckoLib glow mask) and its burst flashes light on the room (Photon dynamic light).
+                case 600 -> {
+                    mc.setScreen(null);
+                    mc.options.hideGui = true;
                     mc.getSingleplayerServer().execute(() -> {
                         var level = mc.getSingleplayerServer().overworld();
-                        for (int x = -2; x <= 5; x++) for (int y = 77; y <= 84; y++)
-                            level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x, y, 7), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                        var old = level.getEntity(opponentId);
+                        if (old != null) old.discard();
+                        darkRoom(level, true);
+                        level.setDayTime(18000);
+                        opponentId = spawnPreviewMob(level, com.murimblock.mob.MurimEntities.CRAB_MAN.get());
+                        var player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
+                        // Side-on: the crab man on the right, the ball flying away to the left.
+                        player.connection.teleport(8.0, 80, 3.0, 75, 10);
                     });
+                }
+                case 618 -> capture("22-night-before.png");
+                case 620 -> mc.getSingleplayerServer().execute(() -> yesman.epicfight.world.capabilities.EpicFightCapabilities
+                        .getEntityPatch(mc.getSingleplayerServer().overworld().getEntity(opponentId), com.murimblock.integration.epicfight.CrabManPatch.class)
+                        .playAnimationSynchronized(com.murimblock.integration.epicfight.CrabManEpicFight.WATER_BALL, 0));
+                case 640 -> capture("23-night-charge.png");
+                case 690 -> {
+                    mc.options.hideGui = false;
+                    mc.getSingleplayerServer().execute(() -> {
+                        var level = mc.getSingleplayerServer().overworld();
+                        darkRoom(level, false);
+                        level.setDayTime(6000);
+                    });
+                }
+                case 700 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
                             "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
@@ -288,6 +319,35 @@ public final class ClientVisualSmoke {
         } catch (Exception exception) {
             failed = true;
             LOGGER.error("Murim client visual smoke failed", exception);
+        }
+    }
+
+    private static int flashTick = -1;
+
+    /** Night sequence frames (for a preview GIF) and the first tick a ball bursts (the Photon flash). */
+    private static void nightFrames(Minecraft mc) throws Exception {
+        if (ticks < 618 || ticks > 685) return;
+        capture("night/frame-" + String.format("%03d", ticks - 618) + ".png");
+        if (flashTick < 0 && ticks > 620) {
+            for (var e : mc.level.entitiesForRendering()) {
+                if (e instanceof com.murimblock.mob.WaterBallEntity ball && ball.isBig() && ball.state() >= com.murimblock.mob.WaterBallEntity.SPLASH_GROUND) {
+                    flashTick = ticks;
+                    break;
+                }
+            }
+        }
+        // The screenshot shows the last rendered frame: the flash is on screen from the next ticks.
+        if (flashTick > 0 && ticks == flashTick + 2) capture("24-night-flash.png");
+        if (flashTick > 0 && ticks == flashTick + 25) capture("25-night-after.png");
+    }
+
+    /** Hollow stone box around the crab man's spot: floor y 79, roof y 86, x -5..9, z -4..15. */
+    private static void darkRoom(net.minecraft.server.level.ServerLevel level, boolean build) {
+        var stone = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+        var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        for (int x = -5; x <= 9; x++) for (int y = 79; y <= 86; y++) for (int z = -4; z <= 15; z++) {
+            boolean shell = x == -5 || x == 9 || y == 79 || y == 86 || z == -4 || z == 15;
+            if (shell) level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x, y, z), build ? stone : air);
         }
     }
 
@@ -413,6 +473,7 @@ public final class ClientVisualSmoke {
         Minecraft mc = Minecraft.getInstance();
         var folder = mc.gameDirectory.toPath().resolve("screenshots");
         Files.createDirectories(folder);
+        Files.createDirectories(folder.resolve(name).getParent());
         try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
             image.writeToFile(folder.resolve(name));
         }

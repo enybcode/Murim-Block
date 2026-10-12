@@ -187,14 +187,15 @@ public final class WaterBallGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "water_ball_ai", timeoutTicks = 160)
-    public static void crabManThrowsWaterAtAPlayerOutOfClawReach(GameTestHelper helper) {
+    public static void crabManThrowsWaterAtAPlayerFourBlocksAway(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         var man = helper.spawn(MurimEntities.CRAB_MAN.get(), new BlockPos(2, 1, 2));
         helper.getLevel().getChunk(0, 0);
         helper.getLevel().setChunkForced(0, 0, true);
         man.setNoGravity(true);
         man.moveTo(0.5, 70, 0.5, 0, 0);
-        player.moveTo(0.5, 70, 9.5, 180, 0);
+        // About 4 blocks away: inside the water ball range, out of reach of the claw.
+        player.moveTo(0.5, 70, 4.5, 180, 0);
         man.setTarget(player);
         boolean[] sawBall = {false};
         for (int tick = 1; tick <= 140; tick++) helper.runAfterDelay(tick, () -> {
@@ -203,7 +204,7 @@ public final class WaterBallGameTests {
         });
         helper.runAfterDelay(140, () -> {
             try {
-                helper.assertTrue(sawBall[0], "Crab man never cast its water ball at 9 blocks");
+                helper.assertTrue(sawBall[0], "Crab man never cast its water ball at 4 blocks");
                 helper.succeed();
             } finally {
                 balls(man).forEach(WaterBallEntity::discard);

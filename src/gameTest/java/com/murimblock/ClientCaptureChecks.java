@@ -63,6 +63,36 @@ final class ClientCaptureChecks {
         require(charge[0] > 1000, "Water ball missing from the crab man's claw (" + charge[0] + " water pixels)");
         require(burst[0] > 300 && burst[1] > charge[1] + 50, "Water ball burst missing or not ahead of the claw ("
                 + burst[0] + " pixels, x " + burst[1] + " vs " + charge[1] + ")");
+        // At night in a closed room: the reflections glow (GeckoLib glow mask) and the burst lights the room (Photon).
+        // Checked on the per-tick frames: the client draws fewer frames than ticks, so fixed ticks can miss the flash.
+        java.io.File[] frames = directory.resolve("night").toFile().listFiles((d, n) -> n.startsWith("frame-"));
+        require(frames != null && frames.length > 40, "Night frames missing");
+        java.util.Arrays.sort(frames);
+        double[] dark = luminance(read(frames[0].toPath()));
+        double brightest = 0, glowMax = 0;
+        for (java.io.File frame : frames) {
+            double[] l = luminance(read(frame.toPath()));
+            brightest = Math.max(brightest, l[0]);
+            glowMax = Math.max(glowMax, l[1]);
+        }
+        require(dark[1] < 60 && glowMax > 90, "Water ball reflections do not glow in the dark (max " + dark[1] + " -> " + glowMax + ")");
+        // Frame-to-frame noise in the dark room is about 0.05; how many frames catch the flash depends on the client's frame rate.
+        require(brightest > dark[0] + 0.4, "No Photon flash at the burst (mean " + dark[0] + " -> " + brightest + ")");
+    }
+
+    /** Mean and max luminance (0-255). */
+    private static double[] luminance(BufferedImage image) {
+        double sum = 0;
+        int max = 0;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int c = image.getRGB(x, y);
+                int l = ((c >> 16 & 255) * 3 + (c >> 8 & 255) * 6 + (c & 255)) / 10;
+                sum += l;
+                max = Math.max(max, l);
+            }
+        }
+        return new double[]{sum / (image.getWidth() * image.getHeight()), max};
     }
 
     /** Water-blue pixels (blue well above green and red, unlike the crab man's teal shell): count and mean x. */

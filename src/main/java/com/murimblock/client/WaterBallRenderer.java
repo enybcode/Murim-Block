@@ -15,6 +15,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 /**
  * Draws the water ball with GeckoLib from geo/entity/water_ball.geo.json and animations/entity/water_ball.animation.json
@@ -26,6 +27,8 @@ public final class WaterBallRenderer extends GeoEntityRenderer<WaterBallEntity> 
     public WaterBallRenderer(EntityRendererProvider.Context context) {
         super(context, new DefaultedEntityGeoModel<>(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "water_ball")));
         shadowRadius = 0.0F;
+        // water_ball_glowmask.png: the reflections drawn at full brightness, so they shine a little in the dark.
+        addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
 
     @SubscribeEvent

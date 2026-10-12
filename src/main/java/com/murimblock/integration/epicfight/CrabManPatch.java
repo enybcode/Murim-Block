@@ -16,10 +16,11 @@ import yesman.epicfight.world.entity.ai.goal.TargetChasingGoal;
 
 /**
  * Epic Fight side of the crab man. Same faction as its armored crabs (NEUTRAL), so its claw does not
- * hurt the escort. Up close the overhead claw swing and the lunging jab (knockback); at 5 to 16 blocks the water ball volley.
+ * hurt the escort. Up close the overhead claw swing and the lunging jab (knockback); around 4 blocks (3 to 6) the water ball volley.
  */
 public final class CrabManPatch extends MobPatch<CrabManEntity> {
-    public static final double WATER_BALL_MIN_RANGE = 5.0D, WATER_BALL_MAX_RANGE = 16.0D;
+    /** The volley triggers around 4 blocks (Enzo, 12/10/2026): just beyond the jab, before the target closes in. */
+    public static final double WATER_BALL_MIN_RANGE = 3.0D, WATER_BALL_MAX_RANGE = 6.0D;
     public static final int WATER_BALL_COOLDOWN = 140;
 
     public CrabManPatch(CrabManEntity original) {
@@ -35,7 +36,7 @@ public final class CrabManPatch extends MobPatch<CrabManEntity> {
                 .newBehaviorSeries(BehaviorSeries.<CrabManPatch>builder().weight(50.0F).canBeInterrupted(false).looping(false).cooldown(40)
                         .nextBehavior(Behavior.<CrabManPatch>builder().animationBehavior(CrabManEpicFight.CLAW_SNAP)
                                 .withinEyeHeight().withinDistance(0.8D, 2.2D)))
-                // At range: the water ball volley, every 7 s at most, only with a clear line of sight.
+                // Around 4 blocks: the water ball volley, every 7 s at most, only with a clear line of sight.
                 .newBehaviorSeries(BehaviorSeries.<CrabManPatch>builder().weight(50.0F).canBeInterrupted(false).looping(false).cooldown(WATER_BALL_COOLDOWN)
                         .nextBehavior(Behavior.<CrabManPatch>builder().animationBehavior(CrabManEpicFight.WATER_BALL)
                                 .withinDistance(WATER_BALL_MIN_RANGE, WATER_BALL_MAX_RANGE)

@@ -24,13 +24,13 @@ import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * The crab man's water ball, drawn by GeckoLib from the Blockbench model (crabe/human-crab-animated-v2/water-ball),
- * no Minecraft particles. Life: CHARGING in the claw (follows its owner), FLYING like a slow arrow (vanilla arrow
+ * no Minecraft particles; its reflections glow a little in the dark (GeckoLib glow mask) and its burst flashes
+ * light on its surroundings (Photon dynamic light). Life: CHARGING in the claw (follows its owner), FLYING like a slow arrow (vanilla arrow
  * drag and gravity, launched at 0.8 block/tick), then a burst that depends on what it hit: the floor, a wall or a
  * body (it then follows that body while the water runs down it). Big ball: 4 damage, Slowness I 3 s and a small
  * push; the small followers: 1 damage, Slowness I 2 s, a third of the push.
@@ -101,7 +101,11 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (SCALE.equals(key)) refreshDimensions();
-        if (STATE.equals(key)) stateTicks = 0;
+        if (STATE.equals(key)) {
+            stateTicks = 0;
+            // Flash of light where it bursts (Photon, client only).
+            if (level().isClientSide && state() >= SPLASH_GROUND) com.murimblock.client.WaterBallLights.burst(this);
+        }
     }
 
     @Override public EntityDimensions getDimensions(Pose pose) {
