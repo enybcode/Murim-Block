@@ -22,11 +22,18 @@ public final class MurimItems {
     public static final DeferredItem<DeferredSpawnEggItem> ARMORED_CRAB_SPAWN_EGG = ITEMS.register("armored_crab_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.ARMORED_CRAB, 0x1D5C63, 0xC9B27C, new Item.Properties()));
 
+    /** Shell teal with the sand of its barnacles; spawning it also brings its two crabs. */
+    public static final DeferredItem<DeferredSpawnEggItem> CRAB_MAN_SPAWN_EGG = ITEMS.register("crab_man_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.CRAB_MAN, 0x087C8B, 0xE7D1A1, new Item.Properties()));
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MURIMBLOCK_TAB = TABS.register("murimblock",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.murimblock"))
                     .icon(() -> new ItemStack(ARMORED_CRAB_SPAWN_EGG.get()))
-                    .displayItems((parameters, output) -> output.accept(ARMORED_CRAB_SPAWN_EGG.get()))
+                    .displayItems((parameters, output) -> {
+                        output.accept(ARMORED_CRAB_SPAWN_EGG.get());
+                        output.accept(CRAB_MAN_SPAWN_EGG.get());
+                    })
                     .build());
 
     private MurimItems() { }

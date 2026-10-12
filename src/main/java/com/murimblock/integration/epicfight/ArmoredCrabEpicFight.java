@@ -51,11 +51,16 @@ public final class ArmoredCrabEpicFight {
     private ArmoredCrabEpicFight() { }
 
     public static void register(IEventBus modBus) {
-        modBus.addListener(AnimationRegistryEvent.class, event -> event.newBuilder(Murimblock.MOD_ID, ArmoredCrabEpicFight::buildAnimations));
+        // Epic Fight allows one animation builder per namespace: every Murimblock creature registers here.
+        modBus.addListener(AnimationRegistryEvent.class, event -> event.newBuilder(Murimblock.MOD_ID, builder -> {
+            buildAnimations(builder);
+            CrabManEpicFight.buildAnimations(builder);
+        }));
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
             event.registerEntityPatch(MurimEntities.ARMORED_CRAB.get(), ArmoredCrabPatch::new);
             // Runs once on the main thread during common setup; the mapping is not cleared on reload.
             Armatures.registerEntityTypeArmature(MurimEntities.ARMORED_CRAB.get(), ARMATURE);
+            CrabManEpicFight.registerPatch(event);
         });
     }
 
@@ -63,10 +68,10 @@ public final class ArmoredCrabEpicFight {
         IDLE = builder.nextAccessor("armored_crab/idle", a -> new StaticAnimation(true, a, ARMATURE));
         WALK = builder.nextAccessor("armored_crab/walk", a -> new MovementAnimation(true, a, ARMATURE));
         // start, antic, preDelay, contact, recovery, end: the hit window is preDelay..contact.
-        ATTACK_RIGHT = builder.nextAccessor("armored_crab/attack_right", a -> new AttackAnimation(0.15F, a, ARMATURE,
-                new Phase(0.0F, 0.45F, 0.50F, 0.62F, 0.85F, 1.25F, ARMATURE.get().clawRightPalm, RIGHT_CLAW)));
-        ATTACK_LEFT = builder.nextAccessor("armored_crab/attack_left", a -> new AttackAnimation(0.10F, a, ARMATURE,
-                new Phase(0.0F, 0.30F, 0.34F, 0.44F, 0.60F, 22F / 24F, ARMATURE.get().clawLeftPalm, LEFT_CLAW)));
+        ATTACK_RIGHT = builder.nextAccessor("armored_crab/attack_right", a -> CrabManEpicFight.designedSpeed(new AttackAnimation(0.15F, a, ARMATURE,
+                new Phase(0.0F, 0.45F, 0.50F, 0.62F, 0.85F, 1.25F, ARMATURE.get().clawRightPalm, RIGHT_CLAW))));
+        ATTACK_LEFT = builder.nextAccessor("armored_crab/attack_left", a -> CrabManEpicFight.designedSpeed(new AttackAnimation(0.10F, a, ARMATURE,
+                new Phase(0.0F, 0.30F, 0.34F, 0.44F, 0.60F, 22F / 24F, ARMATURE.get().clawLeftPalm, LEFT_CLAW))));
         HURT = builder.nextAccessor("armored_crab/hurt", a -> new HitAnimation(0.08F, a, ARMATURE));
         DEATH = builder.nextAccessor("armored_crab/death", a -> new LongHitAnimation(0.16F, a, ARMATURE));
     }

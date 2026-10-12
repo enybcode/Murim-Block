@@ -111,6 +111,10 @@ repositories {
 
 dependencies {
     implementation("maven.modrinth:epic-fight:${epic_fight_artifact}") { transitive = false }
+    implementation("maven.modrinth:geckolib:${geckolib_artifact}") { transitive = false }
+    implementation("maven.modrinth:photon-editor:${photon_artifact}") { transitive = false }
+    implementation("maven.modrinth:kilagraph:${kilagraph_artifact}") { transitive = false }
+    implementation("maven.modrinth:ldlib:${ldlib_artifact}") { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -123,6 +127,8 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             neo_version            : neo_version,
             loader_version_range   : loader_version_range,
             epic_fight_version     : epic_fight_version,
+            geckolib_version       : geckolib_version,
+            photon_version         : photon_version,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,

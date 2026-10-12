@@ -227,10 +227,55 @@ public final class ClientVisualSmoke {
                 });
                 case 430 -> capture("14-mob-windup.png");
                 case 433 -> capture("15-mob-contact.png");
-                case 455 -> {
+                // Murimblock creatures with their own Epic Fight armature: crab man (idle, jab) and armored crab.
+                case 440 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var old = level.getEntity(opponentId);
+                    if (old != null) old.discard();
+                    opponentId = spawnPreviewMob(level, com.murimblock.mob.MurimEntities.CRAB_MAN.get());
+                });
+                case 460 -> previewTracked(com.murimblock.integration.epicfight.CrabManPatch.class);
+                case 466 -> capture("16-crab-man-idle.png");
+                case 470 -> mc.getSingleplayerServer().execute(() -> yesman.epicfight.world.capabilities.EpicFightCapabilities
+                        .getEntityPatch(mc.getSingleplayerServer().overworld().getEntity(opponentId), com.murimblock.integration.epicfight.CrabManPatch.class)
+                        .playAnimationSynchronized(com.murimblock.integration.epicfight.CrabManEpicFight.CLAW_SNAP, 0));
+                case 487 -> capture("17-crab-man-jab.png");
+                case 495 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var old = level.getEntity(opponentId);
+                    if (old != null) old.discard();
+                    opponentId = spawnPreviewMob(level, com.murimblock.mob.MurimEntities.ARMORED_CRAB.get());
+                });
+                case 515 -> previewTracked(com.murimblock.integration.epicfight.ArmoredCrabPatch.class);
+                case 521 -> capture("18-armored-crab-idle.png");
+                // Crab man water ball (GeckoLib model): forming in the claw, in flight, burst on a wall 6 blocks ahead.
+                case 525 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var old = level.getEntity(opponentId);
+                    if (old != null) old.discard();
+                    for (int x = -2; x <= 5; x++) for (int y = 77; y <= 84; y++)
+                        level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x, y, 7), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+                    opponentId = spawnPreviewMob(level, com.murimblock.mob.MurimEntities.CRAB_MAN.get());
+                });
+                case 545 -> {
+                    previewTracked(com.murimblock.integration.epicfight.CrabManPatch.class);
+                    mc.setScreen(new WaterBallPreviewScreen(opponentId));
+                }
+                case 548 -> mc.getSingleplayerServer().execute(() -> yesman.epicfight.world.capabilities.EpicFightCapabilities
+                        .getEntityPatch(mc.getSingleplayerServer().overworld().getEntity(opponentId), com.murimblock.integration.epicfight.CrabManPatch.class)
+                        .playAnimationSynchronized(com.murimblock.integration.epicfight.CrabManEpicFight.WATER_BALL, 0));
+                case 562 -> capture("19-water-ball-charge.png");
+                case 569 -> capture("20-water-ball-flight.png");
+                case 580 -> capture("21-water-ball-splash.png");
+                case 595 -> {
+                    mc.getSingleplayerServer().execute(() -> {
+                        var level = mc.getSingleplayerServer().overworld();
+                        for (int x = -2; x <= 5; x++) for (int y = 77; y <= 84; y++)
+                            level.setBlockAndUpdate(new net.minecraft.core.BlockPos(x, y, 7), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                    });
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
-                            "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
+                            "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
                     mc.getSingleplayerServer().execute(() -> {
                         var mob = mc.getSingleplayerServer().overworld().getEntity(opponentId);
                         if (mob != null) mob.discard();
@@ -266,6 +311,28 @@ public final class ClientVisualSmoke {
         require(value.getAsBoolean() == before, "Setting did not restore: " + label);
     }
 
+    /** Frozen preview mob created directly (no finalizeSpawn, so the crab man comes without its escort). */
+    private static java.util.UUID spawnPreviewMob(net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob> type) {
+        var mob = type.create(level);
+        mob.setNoGravity(true);
+        mob.moveTo(1.5, 80, 0.5, 0, 0);
+        require(level.addFreshEntity(mob), "Preview mob spawn failed: " + type);
+        mob.setNoAi(true);
+        return mob.getUUID();
+    }
+
+    private static void previewTracked(Class<? extends yesman.epicfight.world.capabilities.entitypatch.EntityPatch<?>> patchType) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        net.minecraft.world.entity.LivingEntity found = null;
+        for (var candidate : mc.level.entitiesForRendering()) {
+            if (candidate.getUUID().equals(opponentId)) found = (net.minecraft.world.entity.LivingEntity) candidate;
+        }
+        require(found != null, "Preview mob was not tracked on the real client");
+        require(yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(found, patchType) != null, "Client patch missing: " + patchType.getSimpleName());
+        require(yesman.epicfight.client.events.engine.RenderEngine.getInstance().hasRendererFor(found), "Animated renderer missing for " + found.getType());
+        mc.setScreen(new MobPreviewScreen(found));
+    }
+
     private static final class MobPreviewScreen extends Screen {
         private final net.minecraft.world.entity.LivingEntity mob;
         MobPreviewScreen(net.minecraft.world.entity.LivingEntity mob) { super(mob.getName()); this.mob = mob; }
@@ -275,6 +342,48 @@ public final class ClientVisualSmoke {
             g.drawCenteredString(font, title, width / 2, 16, 0xFF202522);
             net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g,
                     width / 2 - 90, 40, width / 2 + 90, height - 20, 80, 0.0625F, width / 2.0F, height / 2.0F, mob);
+        }
+    }
+
+    /**
+     * Side view of the crab man and every water ball near it, drawn by the real entity renderers (Epic Fight for the
+     * crab man, GeckoLib for the balls). Blocks are not drawn: the wall the balls burst on is invisible here.
+     */
+    private static final class WaterBallPreviewScreen extends Screen {
+        private final java.util.UUID manId;
+        WaterBallPreviewScreen(java.util.UUID manId) { super(net.minecraft.network.chat.Component.literal("Crab Man - water ball")); this.manId = manId; }
+        @Override public boolean isPauseScreen() { return false; }
+        @Override public void renderBackground(net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float tick) {
+            g.fill(0, 0, width, height, 0xFFF0E7CE);
+            g.drawCenteredString(font, title, width / 2, 16, 0xFF202522);
+            var mc = Minecraft.getInstance();
+            net.minecraft.world.entity.Entity man = null;
+            java.util.List<net.minecraft.world.entity.Entity> drawn = new java.util.ArrayList<>();
+            for (var e : mc.level.entitiesForRendering()) {
+                if (e.getUUID().equals(manId)) man = e;
+                if (e instanceof com.murimblock.mob.WaterBallEntity) drawn.add(e);
+            }
+            if (man == null) return;
+            drawn.add(0, man);
+            var pose = g.pose();
+            pose.pushPose();
+            float scale = Math.min(width, height) / 7.0F;
+            pose.translate(width * 0.3F, height * 0.82F, 100);
+            pose.scale(scale, scale, -scale);
+            pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(180));
+            pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-12));
+            pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-90));
+            com.mojang.blaze3d.platform.Lighting.setupForEntityInInventory();
+            var dispatcher = mc.getEntityRenderDispatcher();
+            dispatcher.setRenderShadow(false);
+            for (var e : drawn) {
+                var off = e.getPosition(tick).subtract(man.getPosition(tick));
+                dispatcher.render(e, off.x, off.y, off.z, 0, tick, pose, g.bufferSource(), 0xF000F0);
+            }
+            g.flush();
+            dispatcher.setRenderShadow(true);
+            pose.popPose();
+            com.mojang.blaze3d.platform.Lighting.setupFor3DItems();
         }
     }
 

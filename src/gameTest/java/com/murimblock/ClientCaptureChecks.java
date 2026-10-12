@@ -43,6 +43,39 @@ final class ClientCaptureChecks {
             }
         }
         require(model > 5000 && changed > 3000, "Mob preview blank or animated pose did not change");
+        // Murimblock creatures drawn by Epic Fight from their own armature and mesh.
+        BufferedImage manIdle = read(directory.resolve("16-crab-man-idle.png"));
+        BufferedImage manJab = read(directory.resolve("17-crab-man-jab.png"));
+        BufferedImage crab = read(directory.resolve("18-armored-crab-idle.png"));
+        int manPixels = 0, manChanged = 0, crabPixels = 0;
+        for (int y = manIdle.getHeight() / 6; y < manIdle.getHeight() * 5 / 6; y++) {
+            for (int x = manIdle.getWidth() / 4; x < manIdle.getWidth() * 3 / 4; x++) {
+                if ((manIdle.getRGB(x, y) & 0xFFFFFF) != 0xF0E7CE) manPixels++;
+                if (manIdle.getRGB(x, y) != manJab.getRGB(x, y)) manChanged++;
+                if ((crab.getRGB(x, y) & 0xFFFFFF) != 0xF0E7CE) crabPixels++;
+            }
+        }
+        require(manPixels > 5000 && manChanged > 3000, "Crab man preview blank or jab pose did not change (" + manPixels + ", " + manChanged + ")");
+        require(crabPixels > 2000, "Armored crab preview blank (" + crabPixels + ")");
+        // Water ball drawn by GeckoLib: translucent blue in the claw, then its burst further ahead.
+        double[] charge = water(read(directory.resolve("19-water-ball-charge.png")));
+        double[] burst = water(read(directory.resolve("21-water-ball-splash.png")));
+        require(charge[0] > 1000, "Water ball missing from the crab man's claw (" + charge[0] + " water pixels)");
+        require(burst[0] > 300 && burst[1] > charge[1] + 50, "Water ball burst missing or not ahead of the claw ("
+                + burst[0] + " pixels, x " + burst[1] + " vs " + charge[1] + ")");
+    }
+
+    /** Water-blue pixels (blue well above green and red, unlike the crab man's teal shell): count and mean x. */
+    private static double[] water(BufferedImage image) {
+        long count = 0, sumX = 0;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int c = image.getRGB(x, y);
+                int r = c >> 16 & 255, g = c >> 8 & 255, b = c & 255;
+                if (b > g + 25 && b > r + 60) { count++; sumX += x; }
+            }
+        }
+        return new double[]{count, count == 0 ? 0 : (double) sumX / count};
     }
 
     private static BufferedImage read(Path path) throws IOException {
