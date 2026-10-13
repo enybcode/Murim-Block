@@ -3,15 +3,24 @@ package com.murimblock.client.gui;
 import com.murimblock.Murimblock;
 import com.murimblock.api.MurimblockApi;
 import com.murimblock.api.cultivation.CultivationSnapshot;
+import com.murimblock.client.CombatBarClient;
 import com.murimblock.client.MurimblockKeyMappings;
+import com.murimblock.client.TechniqueIcons;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationStage;
+import com.murimblock.martial.MartialArts;
+import com.murimblock.martial.MartialData;
+import com.murimblock.martial.MartialService;
+import com.murimblock.network.TechniquePayloads;
 import com.murimblock.qi.QiFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -24,6 +33,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.network.PacketDistributor;
 import yesman.epicfight.config.ClientConfig;
 
 import static com.murimblock.client.gui.MurimProfileLayout.*;
@@ -206,8 +216,107 @@ public final class MurimProfileScreen extends Screen {
         text(g, HEADER, label("techniques.title"), 2);
         section(g, LIBRARY_LABEL, label("techniques.library"));
         section(g, DETAILS_LABEL, label("techniques.details"));
-        text(g, label("techniques.empty"), layout.text(page, EMPTY_LIBRARY), MUTED, true, 1);
-        text(g, label("techniques.nothing_selected"), layout.text(page, EMPTY_DETAILS), MUTED, true, 1);
+        techniqueRows.clear();
+        barSlots.clear();
+        MartialData data = minecraft == null || minecraft.player == null ? MartialData.EMPTY : MartialService.data(minecraft.player);
+        if (data.arts().isEmpty()) {
+            text(g, label("techniques.empty"), layout.text(page, EMPTY_LIBRARY), MUTED, true, 1);
+            text(g, label("techniques.nothing_selected"), layout.text(page, EMPTY_DETAILS), MUTED, true, 1);
+            return;
+        }
+        // Library: each known art, then its techniques (locked ones greyed); click one to see it.
+        Box library = layout.panels(page).get(0), details = layout.panels(page).get(1);
+        int x = library.x() + 6, w = library.width() - 12, y = library.y() + 20;
+        for (MartialArts.Art art : MartialArts.arts()) {
+            if (!data.knowsArt(art.id())) continue;
+            text(g, new Box(x, y, w, 9), Component.translatable(art.translationKey()), GOLD_DARK);
+            y += 12;
+            for (MartialArts.Technique technique : art.techniques()) {
+                Box row = new Box(x, y, w, 11);
+                boolean unlocked = data.hasTechnique(technique.id());
+                if (technique.id().equals(selectedTechnique)) fill(g, row, TRACK);
+                else if (row.contains(pointerX, pointerY)) fill(g, row, PAPER_LINE);
+                Component name = Component.translatable(technique.translationKey());
+                text(g, new Box(x + 3, y + 1, w - 3, 9), unlocked ? name : label("techniques.locked", name), unlocked ? INK : MUTED);
+                techniqueRows.add(Map.entry(row, technique.id()));
+                y += 12;
+            }
+            y += 4;
+        }
+        // Details: the selected technique, then the combat bar.
+        int dx = details.x() + 6, dw = details.width() - 12, dy = details.y() + 20;
+        MartialArts.Technique selected = selectedTechnique == null ? null : MartialArts.technique(selectedTechnique);
+        if (selected == null) {
+            text(g, label("techniques.select"), new Box(dx, dy, dw, 20), MUTED, false, 1);
+        } else {
+            boolean unlocked = data.hasTechnique(selected.id());
+            // The technique's icon, large, beside its name and figures.
+            Box icon = new Box(dx, dy, 32, 32);
+            outline(g, new Box(icon.x() - 1, icon.y() - 1, 34, 34), GOLD_DARK);
+            TechniqueIcons.draw(g, selected, left + icon.x(), top + icon.y(), 32);
+            dx += 38;
+            dw -= 38;
+            text(g, new Box(dx, dy, dw, 9), Component.translatable(selected.translationKey()), INK);
+            text(g, new Box(dx, dy + 12, dw, 9), label("techniques.cost", QiFormat.format(selected.qiCost()), QiFormat.format(selected.cooldownTicks() / 20.0)), MUTED);
+            text(g, new Box(dx, dy + 24, dw, 9), unlocked ? label("techniques.mastery", data.mastery(selected.id())) : label("techniques.status_locked"), unlocked ? MUTED : SEAL);
+        }
+        int barY = details.bottom() - 34;
+        section(g, new Box(dx, barY - 14, dw, 9), label("techniques.bar"));
+        int slot = Math.min(16, (dw - 9 * 2) / MartialData.BAR_SLOTS);
+        for (int i = 0; i < MartialData.BAR_SLOTS; i++) {
+            Box box = new Box(dx + i * (slot + 2), barY, slot, slot);
+            fill(g, box, box.contains(pointerX, pointerY) ? PAPER_LINE : CARD);
+            outline(g, box, GOLD_DARK);
+            MartialArts.Technique placed = data.slot(i).map(MartialArts::technique).orElse(null);
+            if (placed != null) {
+                TechniqueIcons.draw(g, placed, left + box.x() + 1, top + box.y() + 1, slot - 2);
+                if (box.contains(pointerX, pointerY)) hoveredText = Component.translatable(placed.translationKey());
+            }
+            String key = minecraft == null ? "" : CombatBarClient.slotKey(minecraft, i).getTranslatedKeyMessage().getString();
+            text(g, Component.literal(key.length() > 1 ? key.substring(0, 1) : key), new Box(box.x(), box.bottom() + 1, slot, 9), MUTED, true, 1);
+            barSlots.add(box);
+        }
+        text(g, label("techniques.bar_hint"), new Box(dx, details.bottom() - 10, dw, 9), MUTED, false, 1);
+    }
+
+    /** Selects a technique on the Techniques page, as a click on its row would (tests and tours). */
+    public void selectForTests(ResourceLocation technique) {
+        selectedTechnique = technique;
+    }
+
+    /** Clickable rows and bar slots of the Techniques page, as last drawn. */
+    private final List<Map.Entry<Box, ResourceLocation>> techniqueRows = new ArrayList<>();
+    private final List<Box> barSlots = new ArrayList<>();
+    @Nullable private ResourceLocation selectedTechnique;
+
+    private static String initials(String name) {
+        StringBuilder out = new StringBuilder();
+        for (String word : name.split("[ -]")) if (!word.isEmpty() && out.length() < 2) out.append(Character.toUpperCase(word.charAt(0)));
+        return out.toString();
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (page == Page.TECHNIQUES && minecraft != null && minecraft.player != null) {
+            int mx = (int) mouseX - left, my = (int) mouseY - top;
+            for (Map.Entry<Box, ResourceLocation> row : techniqueRows) {
+                if (row.getKey().contains(mx, my)) {
+                    selectedTechnique = row.getValue();
+                    return true;
+                }
+            }
+            for (int i = 0; i < barSlots.size(); i++) {
+                if (!barSlots.get(i).contains(mx, my)) continue;
+                MartialData data = MartialService.data(minecraft.player);
+                if (button == 1) {
+                    PacketDistributor.sendToServer(new TechniquePayloads.Assign(i, Optional.empty()));
+                } else if (selectedTechnique != null && data.hasTechnique(selectedTechnique)) {
+                    PacketDistributor.sendToServer(new TechniquePayloads.Assign(i, Optional.of(selectedTechnique)));
+                }
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
     private void renderCultivation(GuiGraphics g, Player player, CultivationSnapshot cultivation, double qi, double qiMax) {
         section(g, REALM_LABEL, label("cultivation.current"));

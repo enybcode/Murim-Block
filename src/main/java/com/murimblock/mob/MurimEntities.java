@@ -7,11 +7,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import yesman.epicfight.registry.entries.EpicFightAttributes;
 
 /** Murim entities have stable IDs; the training fixture has no natural spawn, the crabs and the crab man do. */
 public final class MurimEntities {
@@ -41,7 +42,7 @@ public final class MurimEntities {
         event.put(TRAINING_OPPONENT.get(), TrainingOpponentEntity.createTrainingAttributes().build());
         event.put(ARMORED_CRAB.get(), EpicFightMobSupport.creatureAttributes(ArmoredCrabEntity.createCrabAttributes()).build());
         event.put(CRAB_MAN.get(), EpicFightMobSupport.creatureAttributes(CrabManEntity.createCrabManAttributes())
-                .add(yesman.epicfight.registry.entries.EpicFightAttributes.IMPACT, 1.5).build());
+                .add(EpicFightAttributes.IMPACT, 1.5).build());
     }
     private static void spawnPlacements(RegisterSpawnPlacementsEvent event) {
         // Biomes, weight and group size live in data/murimblock/neoforge/biome_modifier/armored_crab_spawns.json.

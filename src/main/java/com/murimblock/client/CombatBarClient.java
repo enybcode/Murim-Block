@@ -1,0 +1,127 @@
+package com.murimblock.client;
+
+import com.murimblock.Murimblock;
+import com.murimblock.api.MurimblockApi;
+import com.murimblock.martial.MartialArts;
+import com.murimblock.martial.MartialData;
+import com.murimblock.martial.MartialService;
+import com.murimblock.network.TechniquePayloads;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+/**
+ * The combat bar on the client (docs/combat/STYLES.md, "La barre de combat"): in combat mode, the keys 1 to 0 (the nine
+ * hotbar keys and Murim's tenth, & é " ' ( - è _ ç à on AZERTY) cast the techniques of the bar instead of changing the
+ * held item; and the bar takes the hotbar's place at the bottom of the screen, with each technique's cooldown. The server decides everything.
+ */
+@EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
+public final class CombatBarClient {
+    private static final ResourceLocation HOTBAR = ResourceLocation.withDefaultNamespace("hud/hotbar");
+    private static final ResourceLocation OFFHAND_LEFT = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left");
+    /** Client game time at which each technique is ready again, and how long its cooldown was (for the fill). */
+    private static final Map<ResourceLocation, long[]> COOLDOWNS = new HashMap<>();
+
+    private CombatBarClient() {
+    }
+
+    static boolean inCombat(LocalPlayer player) {
+        return MurimblockApi.combat().isInCombatMode(player);
+    }
+
+    /** From the server: a technique was used; ready again in that many ticks. */
+    public static void cooldown(ResourceLocation technique, int ticks) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        COOLDOWNS.put(technique, new long[]{mc.level.getGameTime() + ticks, ticks});
+    }
+
+    /** Ticks until a technique is ready again, as this client knows it (0 when ready). */
+    public static int cooldownLeft(ResourceLocation technique) {
+        Minecraft mc = Minecraft.getInstance();
+        long[] cd = COOLDOWNS.get(technique);
+        return cd == null || mc.level == null ? 0 : (int) Math.max(0, cd[0] - mc.level.getGameTime());
+    }
+
+    /** Before Minecraft reads the hotbar keys: in combat mode they cast instead. */
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.screen != null || !inCombat(player)) return;
+        for (int i = 0; i < MartialData.BAR_SLOTS; i++) {
+            KeyMapping key = slotKey(mc, i);
+            while (key.consumeClick()) PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
+        }
+    }
+
+    /** In combat mode the item hotbar gives way to the combat bar, drawn in its place. */
+    @SubscribeEvent
+    public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || player.isSpectator() || !inCombat(player) || !VanillaGuiLayers.HOTBAR.equals(event.getName())) return;
+        event.setCanceled(true);
+        // F1 (hidden interface) hides it, like the hotbar it replaces.
+        if (!mc.options.hideGui) render(event.getGuiGraphics(), mc, player);
+    }
+
+    /**
+     * The combat bar where the hotbar was: Minecraft's hotbar frame widened to ten slots (the first eight slots of its
+     * sprite, then its last two and its edge), each slot showing its technique, its cooldown and its key; the held weapon
+     * in a small slot on the left, like the offhand slot.
+     */
+    static void render(GuiGraphics g, Minecraft mc, LocalPlayer player) {
+        MartialData data = MartialService.data(player);
+        int width = 202, x0 = (g.guiWidth() - width) / 2, y = g.guiHeight() - 22;
+        g.blitSprite(HOTBAR, 182, 22, 0, 0, x0, y, 161, 22);
+        g.blitSprite(HOTBAR, 182, 22, 141, 0, x0 + 161, y, 41, 22);
+        // The weapon in hand.
+        g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);
+        g.renderItem(player.getMainHandItem(), x0 - 26, y + 3);
+        g.renderItemDecorations(mc.font, player.getMainHandItem(), x0 - 26, y + 3);
+        for (int i = 0; i < MartialData.BAR_SLOTS; i++) {
+            int x = x0 + 3 + i * 20;
+            Optional<ResourceLocation> id = data.slot(i);
+            MartialArts.Technique technique = id.map(MartialArts::technique).orElse(null);
+            if (technique != null) {
+                TechniqueIcons.draw(g, technique, x, y + 3, 16);
+                long[] cd = COOLDOWNS.get(technique.id());
+                if (cd != null && mc.level != null) {
+                    long left = cd[0] - mc.level.getGameTime();
+                    if (left > 0) {
+                        int h = (int) Math.ceil(16 * (double) left / Math.max(1, cd[1]));
+                        g.fill(x, y + 19 - h, x + 16, y + 19, 0xB0000000);
+                    }
+                }
+            }
+            // The slot's key, small, in the top left corner.
+            String key = slotKey(mc, i).getTranslatedKeyMessage().getString();
+            String label = key.length() > 1 ? key.substring(0, 1) : key;
+            g.pose().pushPose();
+            g.pose().translate(x - 1, y + 2, 200);
+            g.pose().scale(0.5F, 0.5F, 1);
+            g.drawString(mc.font, label, 0, 0, 0xFFE8DCB8, true);
+            g.pose().popPose();
+        }
+    }
+
+    /** The key of a combat bar slot: the nine hotbar keys, then Murim's tenth. */
+    public static KeyMapping slotKey(Minecraft mc, int slot) {
+        return slot < mc.options.keyHotbarSlots.length ? mc.options.keyHotbarSlots[slot] : MurimblockKeyMappings.COMBAT_SLOT_10;
+    }
+
+}

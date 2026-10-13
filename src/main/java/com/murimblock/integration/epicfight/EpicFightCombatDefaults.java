@@ -8,7 +8,10 @@ import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillSlots;
 
-/** Basic engine actions are available without books; native progression is not Murim's technique system. */
+/**
+ * Basic engine actions are available without books; native progression is not Murim's technique system. The guard
+ * slot always holds {@link MurimGuardSkill}, the dodge slot Epic Fight's roll.
+ */
 public final class EpicFightCombatDefaults {
     private EpicFightCombatDefaults() { }
 
@@ -26,7 +29,8 @@ public final class EpicFightCombatDefaults {
             Skill current = container.getSkill();
             Skill desired = current;
             boolean nativeOrEmpty = current == null || EpicFightContentPolicy.isNative(current.getRegistryName());
-            if (nativeOrEmpty && container.getSlot() == SkillSlots.GUARD) desired = EpicFightSkills.GUARD.get();
+            // Every player guards with Murim's guard (perfect and normal parry, arrows too).
+            if (container.getSlot() == SkillSlots.GUARD && current != MurimSkills.MURIM_GUARD.get()) desired = MurimSkills.MURIM_GUARD.get();
             else if (nativeOrEmpty && container.getSlot() == SkillSlots.DODGE) desired = EpicFightSkills.ROLL.get();
             else if (!allowed(current)) desired = null;
             if (desired == current || !container.setSkill(desired)) return;

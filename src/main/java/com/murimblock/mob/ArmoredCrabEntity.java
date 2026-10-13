@@ -27,7 +27,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
  */
 public final class ArmoredCrabEntity extends Monster {
     /** Horizontal and vertical reach, in blocks, of the "near water" spawn rule. */
-    static final int WATER_SEARCH_RADIUS = 4;
+    public static final int WATER_SEARCH_RADIUS = 4;
 
     public ArmoredCrabEntity(EntityType<? extends ArmoredCrabEntity> type, Level level) {
         super(type, level);

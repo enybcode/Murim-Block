@@ -3,6 +3,7 @@ package com.murimblock;
 import com.murimblock.integration.epicfight.ArmoredCrabArmature;
 import com.murimblock.integration.epicfight.ArmoredCrabEpicFight;
 import com.murimblock.integration.epicfight.ArmoredCrabPatch;
+import com.murimblock.item.MurimItems;
 import com.murimblock.mob.ArmoredCrabEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.qi.QiRewardManager;
@@ -16,6 +17,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -119,12 +122,12 @@ public final class ArmoredCrabGameTests {
 
     @GameTest(template = "foundation_arena", batch = "crab")
     public static void murimblockCreativeTabOffersTheCrabSpawnEgg(GameTestHelper helper) {
-        var egg = com.murimblock.item.MurimItems.ARMORED_CRAB_SPAWN_EGG.get();
-        helper.assertTrue(egg.getType(new net.minecraft.world.item.ItemStack(egg)) == MurimEntities.ARMORED_CRAB.get(),
+        var egg = MurimItems.ARMORED_CRAB_SPAWN_EGG.get();
+        helper.assertTrue(egg.getType(new ItemStack(egg)) == MurimEntities.ARMORED_CRAB.get(),
                 "Spawn egg does not create an armored crab");
-        var tab = com.murimblock.item.MurimItems.MURIMBLOCK_TAB.get();
+        var tab = MurimItems.MURIMBLOCK_TAB.get();
         var level = helper.getLevel();
-        tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(
+        tab.buildContents(new CreativeModeTab.ItemDisplayParameters(
                 level.enabledFeatures(), false, level.registryAccess()));
         helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(egg)), "Murimblock tab lacks the crab egg");
         helper.assertTrue(tab.getIconItem().is(egg), "Murimblock tab icon is not the crab egg");

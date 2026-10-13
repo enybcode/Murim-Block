@@ -3,6 +3,7 @@ package com.murimblock;
 import com.murimblock.integration.epicfight.CrabManArmature;
 import com.murimblock.integration.epicfight.CrabManEpicFight;
 import com.murimblock.integration.epicfight.CrabManPatch;
+import com.murimblock.item.MurimItems;
 import com.murimblock.mob.ArmoredCrabEntity;
 import com.murimblock.mob.CrabManEntity;
 import com.murimblock.mob.MurimEntities;
@@ -12,17 +13,26 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -94,14 +104,19 @@ public final class CrabManGameTests {
         var level = helper.getLevel();
         BlockPos spawn = helper.absolutePos(new BlockPos(2, 1, 2));
         helper.setBlock(new BlockPos(2, 0, 2), Blocks.SAND);
+        // The search reaches past this arena: clear any water another test left within it, so only ours counts.
+        int r = ArmoredCrabEntity.WATER_SEARCH_RADIUS;
+        for (BlockPos p : BlockPos.betweenClosed(spawn.offset(-r, -2, -r), spawn.offset(r, 1, r))) {
+            if (level.getFluidState(p).is(net.minecraft.tags.FluidTags.WATER)) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
+        }
         var type = MurimEntities.CRAB_MAN.get();
         helper.assertFalse(CrabManEntity.checkCrabManSpawnRules(type, level, MobSpawnType.NATURAL, spawn, level.random), "Crab man may spawn away from water");
         helper.setBlock(new BlockPos(4, 1, 2), Blocks.WATER);
         helper.assertTrue(CrabManEntity.checkCrabManSpawnRules(type, level, MobSpawnType.NATURAL, spawn, level.random), "Crab man cannot spawn next to water");
-        var beach = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME)
-                .getHolderOrThrow(net.minecraft.world.level.biome.Biomes.BEACH).value();
+        var beach = level.registryAccess().registryOrThrow(Registries.BIOME)
+                .getHolderOrThrow(Biomes.BEACH).value();
         int crabWeight = 0, manWeight = 0, manMax = 0;
-        for (var data : beach.getMobSettings().getMobs(net.minecraft.world.entity.MobCategory.MONSTER).unwrap()) {
+        for (var data : beach.getMobSettings().getMobs(MobCategory.MONSTER).unwrap()) {
             if (data.type == MurimEntities.ARMORED_CRAB.get()) crabWeight = data.getWeight().asInt();
             if (data.type == type) { manWeight = data.getWeight().asInt(); manMax = data.maxCount; }
         }
@@ -116,12 +131,12 @@ public final class CrabManGameTests {
         for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.GRASS_BLOCK);
         ServerPlayer player = player(helper);
         try {
-            player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);
-            var egg = new net.minecraft.world.item.ItemStack(com.murimblock.item.MurimItems.CRAB_MAN_SPAWN_EGG.get());
-            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, egg);
+            player.setGameMode(GameType.CREATIVE);
+            var egg = new ItemStack(MurimItems.CRAB_MAN_SPAWN_EGG.get());
+            player.setItemInHand(InteractionHand.MAIN_HAND, egg);
             BlockPos floor = helper.absolutePos(new BlockPos(2, 0, 2));
-            var hit = new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(floor).add(0, 0.5, 0), net.minecraft.core.Direction.UP, floor, false);
-            var result = egg.useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND, hit));
+            var hit = new BlockHitResult(Vec3.atCenterOf(floor).add(0, 0.5, 0), Direction.UP, floor, false);
+            var result = egg.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
             AABB area = new AABB(floor).inflate(5);
             var men = helper.getLevel().getEntitiesOfClass(CrabManEntity.class, area);
             var crabs = helper.getLevel().getEntitiesOfClass(ArmoredCrabEntity.class, area);
@@ -158,6 +173,9 @@ public final class CrabManGameTests {
         helper.setBlock(new BlockPos(3, 2, 3), Blocks.WATER);
         var wet = helper.spawn(MurimEntities.CRAB_MAN.get(), new BlockPos(3, 1, 3));
         dry.setNoAi(true);
+        // Held in the water: with its AI it sometimes walked out before the check. The speed comes from aiStep, which
+        // runs without AI too.
+        wet.setNoAi(true);
         helper.runAfterDelay(40, () -> {
             try {
                 helper.assertFalse(dry.isOnFire(), "Crab man burns in daylight");

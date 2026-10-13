@@ -9,10 +9,12 @@ import com.murimblock.world.feature.MosoBambooFeature;
 import com.murimblock.world.feature.RockPillarFeature;
 import com.murimblock.world.feature.ShallowPondFeature;
 import com.murimblock.world.feature.YardangFeature;
+import com.murimblock.world.structure.SanctuaryStructure;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
+import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -35,11 +37,11 @@ public final class MurimWorldgen {
     public static final DeferredHolder<Feature<?>, CliffPineFeature> CLIFF_PINE = FEATURES.register("cliff_pine", CliffPineFeature::new);
     public static final DeferredHolder<Feature<?>, ShallowPondFeature> SHALLOW_POND = FEATURES.register("shallow_pond", ShallowPondFeature::new);
     public static final DeferredHolder<Feature<?>, GroundBodyFeature> GROUND_BODY = FEATURES.register("ground_body", GroundBodyFeature::new);
-    public static final DeferredRegister<net.minecraft.world.level.levelgen.structure.StructureType<?>> STRUCTURE_TYPES =
+    public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES =
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Murimblock.MOD_ID);
     /** The Cloud Cliff Sanctuary (built by SanctuaryPlacement; registered so /locate structure knows it). */
-    public static final DeferredHolder<net.minecraft.world.level.levelgen.structure.StructureType<?>, net.minecraft.world.level.levelgen.structure.StructureType<com.murimblock.world.structure.SanctuaryStructure>> SANCTUARY_STRUCTURE =
-            STRUCTURE_TYPES.register("cloud_cliff_sanctuary", () -> () -> com.murimblock.world.structure.SanctuaryStructure.CODEC);
+    public static final DeferredHolder<StructureType<?>, StructureType<SanctuaryStructure>> SANCTUARY_STRUCTURE =
+            STRUCTURE_TYPES.register("cloud_cliff_sanctuary", () -> () -> SanctuaryStructure.CODEC);
     public static final DeferredHolder<TreeDecoratorType<?>, TreeDecoratorType<HangingStrandDecorator>> HANGING_STRANDS =
             DECORATORS.register("hanging_strands", () -> new TreeDecoratorType<>(HangingStrandDecorator.CODEC));
 

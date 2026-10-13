@@ -1,6 +1,7 @@
 package com.murimblock.qi.charge;
 
 import com.murimblock.Murimblock;
+import com.murimblock.combat.knockdown.KnockdownService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import java.util.Map;
 import java.util.UUID;
@@ -87,7 +88,7 @@ public final class QiChargeService {
     }
 
     public static boolean canCharge(Player player) {
-        return player.isAlive() && !player.isSpectator() && !EpicFightBridge.isBusy(player);
+        return player.isAlive() && !player.isSpectator() && !EpicFightBridge.isBusy(player) && !KnockdownService.isHindered(player);
     }
 
     static int trackedStateCount() {

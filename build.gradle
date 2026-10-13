@@ -78,6 +78,33 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the PvP knock-down, carry and finish (see KnockdownTour).
+        knockdownTour {
+            client()
+            gameDirectory = project.file('build/knockdown-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.knockdownTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of Murim's guard, perfect and normal parry (see ParryTour).
+        parryTour {
+            client()
+            gameDirectory = project.file('build/parry-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.parryTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the Azure Cloud Sword Art (see MartialTour).
+        martialTour {
+            client()
+            gameDirectory = project.file('build/martial-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.martialTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: films the vertical presentation video (see Showcase, scripts/showcase/make-video.cjs).
         showcase {
             client()
@@ -214,6 +241,54 @@ tasks.named('runBiomeTour').configure {
     doLast {
         def report = biomeTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Biome tour failed; see build/biome-tour-run/biome-tour-report.txt')
+    }
+}
+
+def knockdownTourSave = layout.buildDirectory.dir('knockdown-tour-run/saves/murim-knockdown')
+def knockdownTourReport = layout.buildDirectory.file('knockdown-tour-run/knockdown-tour-report.txt')
+def knockdownTourShots = layout.buildDirectory.dir('knockdown-tour-run/screenshots')
+tasks.named('runKnockdownTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only knockdown tour.')
+        knockdownTourSave.get().asFile.deleteDir()
+        knockdownTourShots.get().asFile.deleteDir()
+        knockdownTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = knockdownTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Knockdown tour failed; see build/knockdown-tour-run/knockdown-tour-report.txt')
+    }
+}
+
+def parryTourSave = layout.buildDirectory.dir('parry-tour-run/saves/murim-parry')
+def parryTourReport = layout.buildDirectory.file('parry-tour-run/parry-tour-report.txt')
+def parryTourShots = layout.buildDirectory.dir('parry-tour-run/screenshots')
+tasks.named('runParryTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only parry tour.')
+        parryTourSave.get().asFile.deleteDir()
+        parryTourShots.get().asFile.deleteDir()
+        parryTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = parryTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Parry tour failed; see build/parry-tour-run/parry-tour-report.txt')
+    }
+}
+
+def martialTourSave = layout.buildDirectory.dir('martial-tour-run/saves/murim-martial')
+def martialTourReport = layout.buildDirectory.file('martial-tour-run/martial-tour-report.txt')
+def martialTourShots = layout.buildDirectory.dir('martial-tour-run/screenshots')
+tasks.named('runMartialTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only martial tour.')
+        martialTourSave.get().asFile.deleteDir()
+        martialTourShots.get().asFile.deleteDir()
+        martialTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = martialTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Martial tour failed; see build/martial-tour-run/martial-tour-report.txt')
     }
 }
 

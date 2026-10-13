@@ -1,0 +1,204 @@
+# L'Art de l'Épée du Nuage Azur (青云剑法, *Qīngyún Jiànfǎ*)
+
+> **État : conception proposée par Claude le 12/10/2026, à valider par Enzo.** Rien n'est implémenté. Les règles communes à tous les styles sont dans [../STYLES.md](../STYLES.md).
+>
+> Les noms en jeu sont en anglais (règle du projet). Le nom anglais est donné entre parenthèses.
+
+## Où on en est
+
+**Première tranche implémentée le 12/10/2026, en local :**
+- **Le manuel :** `MartialManualItem`. Le pupitre de la bibliothèque du sanctuaire en donne un exemplaire par joueur (`SectLibrary`).
+- **L'apprentissage :** lire le manuel apprend le style et Cloud Step Slash, qui se place dans le premier emplacement libre de la barre.
+- **Les données du joueur** (`MartialData`, sauvegardées) : styles connus, techniques débloquées, barre de 10 emplacements, maîtrise, manuels reçus.
+- **L'onglet Techniques :**
+  - à gauche, le style et ses techniques, celles qui sont verrouillées en gris ;
+  - à droite, la fiche de la technique choisie (Qi, recharge, maîtrise) et la barre de combat. Un clic sur un emplacement y place la technique, un clic droit le vide.
+- **La barre de combat :**
+  - en mode combat, les touches 1 à 9 de Minecraft et une 10ᵉ touche Murim (0, soit & é " ' ( - è _ ç à en AZERTY) lancent les techniques au lieu de changer d'objet ;
+  - en mode combat, elle remplace la barre d’objets en bas de l’écran (10 emplacements dans le cadre de la barre de Minecraft, élargi), avec la recharge de chaque technique et l’arme tenue dans une petite case à gauche.
+- **Les vérifications du serveur avant le lancement :** mode combat, technique débloquée, joueur libre d'agir, recharge, Qi, épée en main.
+- **Cloud Step Slash (au sol)** est une attaque de ruée Epic Fight avec sa propre animation (`scripts/animation/azure-cloud-animations.cjs`) :
+  - le joueur avance de 5 blocs ;
+  - les zones de touche d'Epic Fight infligent les dégâts : ×1,4 sur l'épée, jusqu'à 4 cibles sur tout le chemin ;
+  - elle coûte 12 Qi et se recharge en 6 s.
+- **Commandes de test** (opérateur ; joueur visé en option à la fin) :
+  - `/martial info` : arts, techniques, maîtrise, recharges et barre ;
+  - `/martial learn azure_cloud_sword` : comme lire le manuel ;
+  - `/martial unlock <technique|all>` et `/martial forget <technique|art|all>` (oublier l'art permet de recevoir à nouveau le manuel) ;
+  - `/martial mastery set|add <technique|all> <valeur>` : de 0 à 100 ;
+  - `/martial bar set <1-10> <technique>` et `/martial bar clear <1-10>` ;
+  - `/martial cooldown reset`.
+- **Vérifications :**
+  - `MartialGameTests` : pupitre, lecture, refus de lancement, une vraie ruée qui blesse un zombie, et toutes les commandes `/martial` ;
+  - en vrai client, `gradlew -PgameTests runMartialTour` : vraie touche 1, ruée de 5,00 blocs, 3 zombies sur 3 touchés, Qi, recharge connue du client.
+
+**Tranches suivantes :**
+- le passif (M1 et parade du style) ;
+- Thousand Drizzle et Heaven-Splitting Crescent ;
+- les variantes en l'air et après une parade parfaite ;
+- les quêtes, la maîtrise, les évolutions et le mouvement secret ;
+- les icônes de Thousand Drizzle et Heaven-Splitting Crescent (Cloud Step Slash a la sienne ; les autres montrent leurs initiales en attendant).
+
+## L'idée
+
+C'est l'art fondateur de la secte de la Falaise des Nuages, celle du sanctuaire au sommet de l'aiguille. On le reconnaît à trois choses :
+
+- **Une épée fluide, rapide et précise**, qui gagne en se plaçant mieux que l'adversaire, pas en frappant plus fort.
+- **Un style de contre** : sa parade parfaite est la plus récompensée, et ses meilleurs combos partent d'elle.
+- **Le jeu aérien.** Il soulève l'adversaire, le poursuit dans les airs et le rabat au sol, comme un nuage qui monte puis retombe en pluie.
+
+C'est le style de départ idéal : il apprend à parer, à enchaîner, et à finir proprement un combo.
+
+## Le livre
+
+- **« Azure Cloud Sword Manual »** (Manuel de l'Épée du Nuage Azur), un livre relié de jade.
+- **Où le trouver :** sur le pupitre de la bibliothèque du Sanctuaire de la Falaise des Nuages. Le Jeton de la Secte mène donc au premier art martial, et le sanctuaire devient vraiment « le début de chaque aventure ». Plus tard, le maître de la secte pourra le remettre en personne.
+- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le livre n'est pas consommé : il peut se prêter à un autre joueur.
+
+## Le passif : « Flowing Cloud Stance » (Posture du Nuage qui s'écoule)
+
+Un seul passif est actif à la fois : celui du style principal.
+
+### Les M1
+
+L'enchaînement est rapide, en 4 coups. Le style autorise 6 coups, et le joueur en place 4 dans ses emplacements M1 :
+
+| Coup | Effet | Remarque |
+|---|---|---|
+| **Drifting Cut** (Coupe flottante) | Taille horizontale rapide | Ouverture |
+| **Returning Cut** (Coupe de retour) | Revers | Enchaînement |
+| **Piercing Mist** (Brume perçante) | Estoc, un peu plus de portée | Utile à mi-distance |
+| **Rising Cloud** (Nuage montant) | Taille montante qui soulève légèrement la cible | Lanceur vers le jeu aérien |
+| **Falling Rain** (Pluie tombante) | Taille plongeante qui met à terre | Finisseur : termine le combo |
+| **Wind Step** (Pas du vent) | Petit pas en avant avec une coupe | Rattrape une cible qui recule |
+
+- **Règle des emplacements :** le 4ᵉ emplacement doit être un lanceur (Rising Cloud) ou un finisseur (Falling Rain). Un enchaînement M1 se termine donc toujours sur l'un ou l'autre.
+- **En l'air**, le 4ᵉ coup devient toujours Falling Rain, qui rabat la cible au sol. Un combo aérien ne peut donc pas durer.
+
+### La parade
+
+| Parade | Effet avec ce passif |
+|---|---|
+| **Parfaite** (dans les 0,5 s avant le coup) | Le coup est annulé. L'attaquant est **déséquilibré** pendant 0,6 seconde : il ne peut ni attaquer ni parer. Pendant 1,5 seconde, la prochaine compétence lancée prend sa **variante de riposte** (voir plus bas) et coûte moitié moins de Qi. Le joueur récupère 6 Qi. |
+| **Normale** (garde tenue) | Les dégâts sont réduits de 50 %, avec un léger recul. Pas de bonus. |
+
+### Le bonus : « Breath of the Blade » (Souffle de la lame)
+
+Chaque M1 qui **touche** un ennemi rend 1 Qi, et une parade parfaite en rend 6. Frapper dans le vide ne rend rien.
+
+C'est ce qui fait tourner l'économie du Qi en combat. Aujourd'hui, le Qi remonte d'environ 1 % par minute, ce qui est bien trop lent pour payer des compétences en plein combat (voir les questions ouvertes).
+
+## Les compétences actives
+
+| Compétence | Débloquée par | Qi | Recharge |
+|---|---|---|---|
+| 1. **Cloud Step Slash** (Taille du Pas de Nuage) | Le livre | 12 | 6 s |
+| 2. **Thousand Drizzle** (Bruine des Mille Gouttes) | Quête 1 | 18 | 9 s |
+| 3. **Heaven-Splitting Crescent** (Croissant qui fend le ciel) | Quête 2 | 25 | 14 s |
+
+Les valeurs sont un premier jet, à régler en jeu.
+
+### 1. Cloud Step Slash
+
+Une ruée de 5 blocs en avant qui tranche tout sur son passage. C'est l'outil pour se replacer : engager, poursuivre ou s'échapper.
+
+- **Au sol :** ruée horizontale. Elle traverse la cible, ce qui vous replace derrière elle.
+- **En l'air :** ruée **plongeante** en diagonale vers le sol. Elle met à terre la cible touchée et termine le combo.
+- **Riposte** (après une parade parfaite) : ruée courte qui frappe deux fois au lieu d'une.
+
+### 2. Thousand Drizzle
+
+Une rafale d'estocs très rapides devant soi (6 touches), puis un dernier estoc qui repousse. Elle tient la cible en place pendant la rafale, ce qui en fait le cœur des combos.
+
+- **Cible proche :** la rafale complète.
+- **Cible à mi-distance** (4 à 7 blocs) : la rafale part en **onde d'épée**, un projectile court qui ne touche qu'une fois, sans repousser. Elle sert à interrompre un adversaire qui charge.
+- **Riposte :** sur une cible déséquilibrée, le dernier estoc **brise la garde**. La cible ne peut plus parer pendant 2 secondes.
+
+### 3. Heaven-Splitting Crescent
+
+Une taille en croissant, de bas en haut, qui **soulève la cible et le joueur** dans les airs. C'est l'ouverture du jeu aérien.
+
+- **Au sol :** le lanceur. La cible et le joueur montent d'environ 4 blocs.
+- **En l'air :** **« Cloud-Splitting Descent »** (Descente qui fend les nuages). Le joueur s'abat au sol et crée une onde de choc en cercle (rayon 3) qui met à terre. C'est le grand finisseur.
+- **Riposte :** le croissant soulève plus haut et laisse plus de temps pour enchaîner en l'air.
+
+## Le finish : « Last Rain Over the Clouds » (Dernière pluie sur les nuages)
+
+C'est l'exécution signature de l'art, jouée avec B sur un joueur K.O. (voir [la mise à terre](../STYLES.md#mise-à-terre-et-finish-pvp)) :
+
+1. Le joueur pointe son épée vers le ciel.
+2. Un nuage de Qi bleu pâle se forme au-dessus de la cible, et une fine pluie lumineuse commence à tomber.
+3. Le joueur saute et retombe en une seule taille verticale, qui fend le nuage en deux.
+4. La pluie s'arrête d'un coup.
+
+Il dure environ 2 secondes, pendant lesquelles un tiers peut l'interrompre en frappant le joueur qui l'exécute.
+
+## Les enchaînements
+
+Ce sont des combos vrais mais bornés. Chacun se termine par une mise à terre, avec un relevé invulnérable. Les dégâts baissent de 8 % par coup dans un même combo, sans descendre sous 40 %. La cible peut s'échapper une fois avec l'évasion.
+
+- **Combo de base (sol → air) :**
+  1. M1 ×3 ;
+  2. **Heaven-Splitting Crescent** (on monte) ;
+  3. M1 ×2 en l'air ;
+  4. **Cloud-Splitting Descent**, qui met à terre.
+- **Combo de contre :**
+  1. parade parfaite ;
+  2. **Thousand Drizzle** en riposte (garde brisée) ;
+  3. M1 ×3 ;
+  4. **Cloud Step Slash**, qui traverse et vous replace derrière ;
+  5. Falling Rain, qui met à terre.
+- **Poursuite :**
+  1. Thousand Drizzle à mi-distance (l'onde arrête une charge) ;
+  2. **Cloud Step Slash** pour rattraper ;
+  3. M1 ×4 qui finit sur Falling Rain.
+
+## Le mouvement secret : « Swallow Returns » (Retour de l'Hirondelle)
+
+Il n'apparaît pas dans l'onglet Techniques tant qu'on ne l'a pas découvert.
+
+- **Comment le déclencher :** lancer Cloud Step Slash **dans les 5 ticks** (un quart de seconde) qui suivent une parade parfaite.
+- **Ce qu'il fait :** au lieu de la ruée, le joueur **réapparaît instantanément dans le dos** de l'attaquant et frappe un coup qui le retourne. Il ouvre n'importe quel combo.
+- **La première fois** qu'on le réussit, un message (« A swallow returns to its nest… ») révèle la technique et l'ajoute à l'onglet.
+
+## Débloquer les compétences
+
+| Étape | Ce qu'il faut faire | Récompense |
+|---|---|---|
+| Livre | Utiliser le manuel | Le style, le passif, Cloud Step Slash |
+| Quête 1 : « The Patient Blade » (La lame patiente) | Réussir **10 parades parfaites** contre des ennemis, puis toucher **5 ennemis** avec Cloud Step Slash | Thousand Drizzle |
+| Quête 2 : « Above the Sea of Clouds » (Au-dessus de la mer de nuages) | Monter au sommet du Sanctuaire et **sonner la cloche** de la tour, puis placer **3 combos complets** finis par une mise à terre | Heaven-Splitting Crescent |
+
+L'onglet Techniques affiche la quête en cours et sa progression, par exemple « Perfect parries 6/10 ».
+
+## Maîtrise et évolutions
+
+- **La maîtrise de chaque technique** monte de 0 à 100. Elle progresse quand la technique touche un ennemi vivant : mob hostile ou joueur. Les animaux et l'air ne comptent pas.
+- **La maîtrise du style** est la moyenne de ses techniques, M1 compris.
+
+Quand le style atteint une maîtrise donnée, chaque technique gagne son évolution, qui remplace la version de base :
+
+| Maîtrise du style | Évolution |
+|---|---|
+| 30 | **Cloud Step Slash → « Thousand-Li Cloud Step »** (Pas de nuage de mille lieues) : on peut relancer une seconde ruée dans la seconde qui suit. |
+| 60 | **Thousand Drizzle → « Storm of Needles »** (Tempête d'aiguilles) : la rafale est plus large, et le dernier estoc lance une aiguille de Qi qui traverse jusqu'à 8 blocs. |
+| 90 | **Heaven-Splitting Crescent → « Azure Heaven Crescent »** (Croissant du Ciel Azur) : le croissant projette une lame d'énergie verticale en plus du lanceur. |
+
+## Contre-jeu face à ce style
+
+- **Ne pas attaquer n'importe quand :** contre l'Épée du Nuage Azur, une attaque prévisible se fait parer parfaitement. Les feintes et les attaques à retardement la battent.
+- **Cloud Step Slash et Thousand Drizzle ont une recharge assez longue.** Une fois qu'ils sont utilisés, on a quelques secondes pour attaquer.
+- **Le jeu aérien commence par Heaven-Splitting Crescent**, qui se voit venir : une roulade ou une parade l'évite.
+- **L'évasion** permet de sortir d'un combo une fois.
+
+## Les animations
+
+- **Au début :** des animations d'épée d'Epic Fight, pour valider le jeu.
+- **Ensuite :** des animations Murim faites dans Blockbench (dans le pipeline existant, `docs/ANIMATION_PIPELINE.md`), avec des effets Photon (traînées de nuage bleu pâle, onde au sol) et des sons.
+
+## Questions ouvertes pour Enzo
+
+1. **L'économie du Qi.** Le Qi remonte aujourd'hui d'environ 1 % par minute, et de 5 % en méditant. Avec des compétences à 12-25 Qi, il faut une source en combat. Je propose « Breath of the Blade » (les coups qui touchent rendent du Qi), plus peut-être une régénération plus rapide hors combat. D'accord ?
+2. **La fenêtre de la parade parfaite.** Elle fait 0,5 s pour tous les styles. Un passif peut-il la modifier ?
+3. ~~Le livre au sanctuaire~~ : **un exemplaire par joueur** (décision d'Enzo, 12/10/2026).
+4. ~~Le mouvement secret~~ : **révélé dans l'onglet une fois découvert** (lecture de la réponse d'Enzo, à confirmer).

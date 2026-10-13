@@ -1,12 +1,16 @@
 package com.murimblock.item;
 
 import com.murimblock.Murimblock;
+import com.murimblock.martial.MartialArts;
+import com.murimblock.martial.MartialManualItem;
 import com.murimblock.mob.MurimEntities;
+import com.murimblock.world.block.MurimBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -28,7 +32,11 @@ public final class MurimItems {
 
     /** Jade medallion of the Cloud Cliff sect: its needle points to the sanctuary. */
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
-            () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+            () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+
+    /** Manual of the Cloud Cliff sect's art: read once, it teaches the Azure Cloud Sword Art. */
+    public static final DeferredItem<MartialManualItem> AZURE_CLOUD_SWORD_MANUAL = ITEMS.register("azure_cloud_sword_manual",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MURIMBLOCK_TAB = TABS.register("murimblock",
             () -> CreativeModeTab.builder()
@@ -38,6 +46,7 @@ public final class MurimItems {
                         output.accept(ARMORED_CRAB_SPAWN_EGG.get());
                         output.accept(CRAB_MAN_SPAWN_EGG.get());
                         output.accept(SECT_TOKEN.get());
+                        output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                     })
                     .build());
 
@@ -45,9 +54,9 @@ public final class MurimItems {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> NATURE_TAB = TABS.register("murimblock_nature",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.murimblock_nature"))
-                    .icon(() -> new ItemStack(com.murimblock.world.block.MurimBlocks.PEACH.sapling().get()))
+                    .icon(() -> new ItemStack(MurimBlocks.PEACH.sapling().get()))
                     .withTabsBefore(MURIMBLOCK_TAB.getKey())
-                    .displayItems((parameters, output) -> com.murimblock.world.block.MurimBlocks.creativeOrder()
+                    .displayItems((parameters, output) -> MurimBlocks.creativeOrder()
                             .forEach(block -> output.accept(block.get())))
                     .build());
 

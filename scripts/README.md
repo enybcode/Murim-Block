@@ -8,6 +8,7 @@ Outils de développement. Aucun n'est livré dans le jar du mod.
 | `worldgen/` | Génère les données des biomes Murim et dessine les textures de la flore et du Jeton de la Secte | voir ci-dessous |
 | `concepts/` | Rendus voxel des structures, dans un Blockbench isolé | voir ci-dessous |
 | `showcase/` | Montage de la vidéo de présentation | voir ci-dessous |
+| `animation/` | Animations de joueur Murim pour Epic Fight (mise à terre, portage, finish) et GIF | voir ci-dessous |
 
 ## worldgen
 
@@ -37,6 +38,22 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
    - une version légère pour Discord ;
    - la musique en WAV.
 
+## animation
+
+- `node scripts/animation/knockdown-animations.cjs [--preview build/anim-preview]` régénère les animations de la mise à terre dans `assets/murimblock/animmodels/animations/biped/murim` :
+  - à terre, ramper ;
+  - porter (debout, en marchant), être porté ;
+  - le finish générique.
+
+  Les poses sont écrites en rotations d'articulations (`biped.cjs` lit le squelette d'Epic Fight dans son jar, depuis le cache Gradle). `--preview` dessine chaque pose en fil de fer, de face et de profil.
+- `node scripts/animation/azure-cloud-animations.cjs [--preview build/anim-preview]` : les animations de l'Art de l'Épée du Nuage Azur (pour l'instant, Cloud Step Slash). `pose.cjs` regroupe l'écriture des poses, commune aux deux scripts.
+- `java scripts/worldgen/ManualTexture.java src/main/resources/assets/murimblock/textures/item` : la texture du Manuel de l'Épée du Nuage Azur.
+- `java scripts/worldgen/TechniqueIcons.java src/main/resources/assets/murimblock/textures/gui/technique` : les icônes 32x32 des techniques (barre de combat, onglet Techniques).
+- `java scripts/animation/FramesToGif.java <dossier> <sortie.gif> [délai ms] [largeur] [x,y,l,h]` assemble des images en GIF ; `--sheet` fait une planche contact.
+
 Les autres vérifications en vrai client sont des tâches Gradle :
 - `gradlew -PgameTests runVisualSmoke`
 - `gradlew -PgameTests runBiomeTour` : les 7 biomes et le sanctuaire dans un monde neuf.
+- `gradlew -PgameTests runKnockdownTour` : la mise à terre, le portage et le finish avec deux joueurs factices.
+- `gradlew -PgameTests runMartialTour` : l'Art de l'Épée du Nuage Azur (manuel, onglet Techniques, Cloud Step Slash au clavier).
+- `gradlew -PgameTests runParryTour` : la garde Murim (parade parfaite et normale, coups et vraies flèches).

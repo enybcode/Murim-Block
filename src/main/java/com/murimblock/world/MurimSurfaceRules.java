@@ -8,6 +8,7 @@ import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.SurfaceRules.ConditionSource;
 import net.minecraft.world.level.levelgen.SurfaceRules.RuleSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
+import net.minecraft.world.level.levelgen.placement.CaveSurface;
 
 /**
  * Surface of the Murim biomes (the top blocks; GroundBodyFeature does the rock underneath). Anything not matched here
@@ -54,7 +55,7 @@ public final class MurimSurfaceRules {
                 SurfaceRules.ifTrue(floor, SurfaceRules.sequence(
                         SurfaceRules.ifTrue(patches, block(Blocks.SAND)),
                         block(MurimBlocks.GOBI_GRAVEL.get()))),
-                SurfaceRules.ifTrue(SurfaceRules.stoneDepthCheck(0, true, 4, net.minecraft.world.level.levelgen.placement.CaveSurface.FLOOR),
+                SurfaceRules.ifTrue(SurfaceRules.stoneDepthCheck(0, true, 4, CaveSurface.FLOOR),
                         block(Blocks.SANDSTONE)),
                 SurfaceRules.ifTrue(underFloor, block(Blocks.SAND))));
 

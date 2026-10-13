@@ -2,8 +2,8 @@ package com.murimblock.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.murimblock.qi.QiConstants;
 import com.murimblock.qi.QiFormat;
 import com.murimblock.qi.QiRewardManager;
@@ -23,6 +23,7 @@ public final class MurimblockCommands {
 
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CombatCommands.register(event.getDispatcher());
+        MartialCommands.register(event.getDispatcher());
         CultivationCommands.onRegisterCommands(event);
         registerDevelopmentCommands(event.getDispatcher());
     }
@@ -70,7 +71,7 @@ public final class MurimblockCommands {
                                 .executes(context -> resetRewardData(context, context.getSource().getPlayerOrException())))));
     }
 
-    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> valueCommand(
+    private static LiteralArgumentBuilder<CommandSourceStack> valueCommand(
             String name,
             BiFunction<ServerPlayer, Double, Boolean> operation
     ) {
@@ -95,7 +96,7 @@ public final class MurimblockCommands {
                                 ))));
     }
 
-    private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> qiValueCommand(
+    private static LiteralArgumentBuilder<CommandSourceStack> qiValueCommand(
             String name,
             BiFunction<ServerPlayer, Double, Boolean> operation
     ) {

@@ -1,5 +1,7 @@
 package com.murimblock.mob;
 
+import com.murimblock.client.WaterBallLights;
+import com.murimblock.integration.epicfight.MurimGuardSkill;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -104,7 +106,7 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
         if (STATE.equals(key)) {
             stateTicks = 0;
             // Flash of light where it bursts (Photon, client only).
-            if (level().isClientSide && state() >= SPLASH_GROUND) com.murimblock.client.WaterBallLights.burst(this);
+            if (level().isClientSide && state() >= SPLASH_GROUND) WaterBallLights.burst(this);
         }
     }
 
@@ -228,12 +230,15 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
         Entity owner = getOwner();
         boolean big = isBig();
         target.hurt(damageSources().mobProjectile(this, owner instanceof LivingEntity living ? living : null), big ? 4.0F : 1.0F);
-        if (target instanceof LivingEntity living) {
-            living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, big ? 60 : 40, 0), owner);
+        // A ball caught on a perfect parry only splashes on the blade; on a normal parry it does not slow and pushes half.
+        boolean parried = target instanceof LivingEntity l && MurimGuardSkill.parriedThisTick(l);
+        boolean guarded = target instanceof LivingEntity l && MurimGuardSkill.guardedThisTick(l);
+        if (target instanceof LivingEntity living && !parried) {
+            if (!guarded) living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, big ? 60 : 40, 0), owner);
             // Small push along the flight. A direct push: Epic Fight replaces the vanilla hurt knockback with its
             // stun system, which gives nothing for a projectile.
             double resist = living.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-            double push = (big ? KNOCKBACK : KNOCKBACK / 3) * Math.max(0, 1 - resist);
+            double push = (big ? KNOCKBACK : KNOCKBACK / 3) * Math.max(0, 1 - resist) * (guarded ? 0.5 : 1);
             if (push > 0) {
                 living.push(dir.x * push, 0.1 * push / KNOCKBACK, dir.z * push);
                 living.hurtMarked = true;

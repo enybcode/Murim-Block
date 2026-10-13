@@ -2,6 +2,7 @@ package com.murimblock.world.feature;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -10,17 +11,18 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
-import net.minecraft.world.level.levelgen.WorldgenRandom;
-import net.minecraft.world.level.levelgen.LegacyRandomSource;
 
 /**
  * Freestanding rock peaks, the signature of three Murim biomes, rising from the ground they stand on:
@@ -44,7 +46,7 @@ public class RockPillarFeature extends Feature<RockPillarFeature.Config> {
         public static final Codec<Style> CODEC = StringRepresentable.fromEnum(Style::values);
 
         @Override public String getSerializedName() {
-            return name().toLowerCase(java.util.Locale.ROOT);
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 
@@ -74,7 +76,7 @@ public class RockPillarFeature extends Feature<RockPillarFeature.Config> {
         // Keep peaks apart: no other rock of this kind within a few blocks of where this one would stand,
         // so they rise as separate towers and never melt into walls.
         BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
-        net.minecraft.world.level.block.Block rockBlock = config.rock().getState(random, origin).getBlock();
+        Block rockBlock = config.rock().getState(random, origin).getBlock();
         for (int k = 0; k < 16; k++) {
             double a = k * Math.PI / 8;
             int reach = radius * 2 + 4;

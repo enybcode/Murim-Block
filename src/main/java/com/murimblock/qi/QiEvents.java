@@ -1,6 +1,7 @@
 package com.murimblock.qi;
 
 import com.murimblock.qi.charge.QiChargeService;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -57,6 +58,21 @@ public final class QiEvents {
         }
 
         QiRewardManager.awardKillReward(killer, event.getEntity());
+    }
+
+    /**
+     * Every real death (a knock-down is not one; a finish is) costs a share of the maximum Qi for good. Registered
+     * last, without canceled events, so a death another rule cancels costs nothing.
+     */
+    public static void onPlayerDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        double before = QiService.getQiMax(player);
+        QiService.applyDeathPenalty(player);
+        double lost = before - QiService.getQiMax(player);
+        if (lost > 0) {
+            player.sendSystemMessage(Component.translatable("qi.murimblock.death_penalty",
+                    QiFormat.format(lost), QiFormat.format(QiService.getQiMax(player))));
+        }
     }
 
     private static ServerPlayer findResponsiblePlayer(LivingDeathEvent event) {

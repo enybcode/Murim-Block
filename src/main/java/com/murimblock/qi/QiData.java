@@ -54,6 +54,15 @@ public record QiData(double qi, double qiMax) {
         return withQiMax(saturatedAdd(qiMax, amount));
     }
 
+    /**
+     * After a death: the maximum Qi shrinks for good by {@link QiConstants#DEATH_QI_MAX_LOSS}, never below the starting
+     * reserve (and never raised by it); the current Qi stays within the new maximum.
+     */
+    public QiData afterDeath() {
+        double floor = Math.min(qiMax, QiConstants.INITIAL_QI_MAX);
+        return withQiMax(Math.max(floor, qiMax * (1.0 - QiConstants.DEATH_QI_MAX_LOSS)));
+    }
+
     public QiData removeQiMax(double amount) {
         requireNonNegativeFinite(amount, "amount");
         return withQiMax(Math.max(0.0, qiMax - amount));

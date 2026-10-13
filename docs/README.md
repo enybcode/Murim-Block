@@ -11,6 +11,7 @@
 
 ## Development And Delivery
 
+- [Local publication, 13 October](DELIVERY_2026_10_13.md): combat/techniques changes, current checks and remaining validation.
 - [Git workflow](GIT_WORKFLOW.md): `test` for pending validation, `main` stable.
 - [Codex and Claude](AI_COLLABORATION.md): shared rules, local setup and safe handoffs.
 - [Claude handoff](CLAUDE_HANDOFF.md): compact project state, decisions and next validation steps.

@@ -21,12 +21,13 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
 **Le début de chaque aventure.** Le sanctuaire est le siège de « la » secte du serveur.
 
 - **Il est unique** : un seul par monde. Il est construit au premier démarrage du serveur par `SanctuaryPlacement`, puis mémorisé dans la sauvegarde de la Surface (`murimblock_sanctuary`).
+- **Sans geler le jeu** : la recherche du site, le chargement des chunks et la pose des blocs sont répartis sur les ticks du serveur (environ 5 ms de recherche, puis 10 ms de construction par tick). Les chunks sont générés en arrière-plan grâce à un ticket de chargement. Sur la graine de test, le tick le plus long est passé de 2,8 s à environ 50 ms, pour une soixantaine de ticks en tout. Pendant ces quelques secondes, le jeton et `/locate` ne trouvent pas encore le sanctuaire. Si le serveur s'arrête avant la fin, la construction reprend à zéro, à l'identique, au démarrage suivant.
 - **Son emplacement** : le cœur du biome Pics de la mer de nuages le plus proche du spawn, dans un rayon de 4 000 blocs. Le biome est échantillonné tous les 32 blocs, et un point compte comme « cœur » si au moins 30 de ses 49 voisins sont dans les pics. À défaut, le sanctuaire va dans le biome Murim le plus proche, puis à côté du spawn. Il est toujours à au moins 64 blocs du spawn. Il apporte sa propre aiguille, donc il fonctionne partout.
 - **Les mondes concernés** : seulement ceux dont la Surface est un monde normal (multi-noise). Les mondes plats et les mondes de test n'en ont pas.
 - **Le point d'apparition n'est pas déplacé** : les joueurs commencent dans la nature et trouvent le sanctuaire avec le Jeton de la Secte ou `/locate`.
 - **Le chemin part du côté le plus bas** autour de l'aiguille : le terrain est mesuré sur 24 directions, à 22 blocs de l'axe. Le palier d'arrivée est posé sur le sol de ce côté, à ciel ouvert, et sans arbre dans un rayon de 5 blocs.
 
-**Ce qui est construit**, dans `SanctuaryBuilder` (en vrais blocs Minecraft) :
+**Ce qui est construit**, dans `SanctuaryBuilder` (en vrais blocs Minecraft, avec le kit commun décrit plus bas) :
 
 - **L'aiguille** : en granite pâle, 70 blocs au-dessus du sol, d'un rayon de 14 à 20 blocs, assez large au sommet pour que toutes les colonnes et les tours reposent sur la cour. Elle est un peu plus large au sommet, avec des joints de diorite tous les 7 blocs, de la mousse et 6 pins qui sortent des flancs.
 - **Le chemin de planches** : en épicéa, 2 blocs de large, avec des marches, des poutres d'épicéa plantées dans la roche et une rambarde extérieure. Il monte en spirale d'environ 0,3 bloc par bloc parcouru et finit toujours au sud. Sur le dernier quart de tour, il s'écarte de la roche sur des poutres, avec une rambarde des deux côtés.
@@ -74,6 +75,17 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
   - on vérifie que le sanctuaire est construit dans le biome de pics, à au moins 48 blocs du spawn, et que le palier est dégagé ;
   - on vérifie que la lumière est cohérente autour de l'aiguille : aucun bloc transparent (air, escalier, dalle) resté noir à côté d'un bloc éclairé par le ciel ;
   - on prend des photos aérienne, de la cour, du pied, de nuit, du jeton, de l'entrée, des toits, du dessous de la passerelle et du pavillon de repos.
+
+## Le kit de construction commun
+
+Les structures construites en code partagent `world/structure/kit` :
+
+- `BuildKit` : pose de blocs en coordonnées du monde ou relatives à l'origine de la structure, états d'escaliers et de dalles, lanterne suspendue, et le toit chinois (en croupe ou en pyramide, avec avant-toits, coins relevés, faîtage et plafond plein) ;
+- `RoofTiles` : les jeux de tuiles, `GREEN_GLAZED` (tuiles vernissées vertes, pour les salles de rang) et `GREY` (tuiles grises, pour les bâtiments ordinaires).
+
+Chaque structure garde son propre plan et sa palette ; le village, le repaire et la forteresse s'appuieront sur ce kit.
+
+Le test de construction du sanctuaire affiche une empreinte de tous ses blocs (`SANCTUARY_FINGERPRINT`). Un refactoring qui ne doit rien changer au sanctuaire doit la laisser identique.
 
 ## À faire ensuite
 

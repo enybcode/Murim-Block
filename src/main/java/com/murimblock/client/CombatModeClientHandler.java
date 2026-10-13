@@ -19,6 +19,8 @@ public final class CombatModeClientHandler {
     public static void onClientTick(ClientTickEvent.Post event) {
         while (MurimblockKeyMappings.COMBAT_MODE.consumeClick()) {
             Minecraft minecraft = Minecraft.getInstance();
+            // Next to a knocked-down player (or while carrying one), V carries or puts down instead.
+            if (minecraft.screen == null && KnockdownClient.handleCarryKey(minecraft)) continue;
             if (minecraft.player != null && minecraft.screen == null
                     && !MurimblockKeyMappings.COMBAT_MODE.getKey().equals(EpicFightKeyMappings.SWITCH_MODE.getKey())) {
                 PacketDistributor.sendToServer(CombatModeTogglePayload.INSTANCE);

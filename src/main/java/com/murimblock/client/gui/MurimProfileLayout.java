@@ -3,6 +3,7 @@ package com.murimblock.client.gui;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 /**
  * Compact manuscript menu: integer coordinates, reflowed rather than shrunk.
@@ -152,7 +153,7 @@ final class MurimProfileLayout {
         settingsStatus = new Box(cx + settingWidth + 12, cy + 22, cw - settingWidth - 18, 9);
         keybinds = new Box(settingsStatus.x(), content.bottom() - 22, settingsStatus.width(), 16);
         int settingStep = (ch - 18) / 6;
-        settingRows = java.util.stream.IntStream.range(0, 6).mapToObj(i ->
+        settingRows = IntStream.range(0, 6).mapToObj(i ->
                 new Box(cx, cy + 18 + i * settingStep, settingWidth - 6, settingStep - 2)).toList();
     }
     Box tab(Page page) { return tabs.get(page); }

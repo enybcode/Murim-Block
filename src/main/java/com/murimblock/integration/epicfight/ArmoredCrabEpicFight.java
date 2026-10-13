@@ -55,6 +55,7 @@ public final class ArmoredCrabEpicFight {
         modBus.addListener(AnimationRegistryEvent.class, event -> event.newBuilder(Murimblock.MOD_ID, builder -> {
             buildAnimations(builder);
             CrabManEpicFight.buildAnimations(builder);
+            MurimAnimations.buildAnimations(builder);
         }));
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
             event.registerEntityPatch(MurimEntities.ARMORED_CRAB.get(), ArmoredCrabPatch::new);

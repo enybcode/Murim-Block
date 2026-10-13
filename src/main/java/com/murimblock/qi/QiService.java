@@ -51,6 +51,11 @@ public final class QiService {
         return update(player, data -> data.removeQiMax(amount));
     }
 
+    /** The permanent loss of a death (see {@link QiData#afterDeath}). */
+    public static boolean applyDeathPenalty(ServerPlayer player) {
+        return update(player, QiData::afterDeath);
+    }
+
     public static boolean refillQi(ServerPlayer player) {
         return update(player, QiData::refill);
     }

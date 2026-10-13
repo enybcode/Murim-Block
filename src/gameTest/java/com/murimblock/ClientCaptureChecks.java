@@ -1,8 +1,10 @@
 package com.murimblock;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 
 /** Pixel checks on real Minecraft captures, never shipped with the mod. */
@@ -65,12 +67,12 @@ final class ClientCaptureChecks {
                 + burst[0] + " pixels, x " + burst[1] + " vs " + charge[1] + ")");
         // At night in a closed room: the reflections glow (GeckoLib glow mask) and the burst lights the room (Photon).
         // Checked on the per-tick frames: the client draws fewer frames than ticks, so fixed ticks can miss the flash.
-        java.io.File[] frames = directory.resolve("night").toFile().listFiles((d, n) -> n.startsWith("frame-"));
+        File[] frames = directory.resolve("night").toFile().listFiles((d, n) -> n.startsWith("frame-"));
         require(frames != null && frames.length > 40, "Night frames missing");
-        java.util.Arrays.sort(frames);
+        Arrays.sort(frames);
         double[] dark = luminance(read(frames[0].toPath()));
         double brightest = 0, glowMax = 0;
-        for (java.io.File frame : frames) {
+        for (File frame : frames) {
             double[] l = luminance(read(frame.toPath()));
             brightest = Math.max(brightest, l[0]);
             glowMax = Math.max(glowMax, l[1]);

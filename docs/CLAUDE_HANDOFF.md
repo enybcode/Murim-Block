@@ -84,8 +84,25 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   au premier demarrage (SanctuaryPlacement, sauvegarde murimblock_sanctuary) au coeur des
   Pics de la mer de nuages les plus proches du spawn (4000 blocs), a 64 blocs au moins ;
   le point d'apparition n'est PAS deplace (demande d'Enzo). Le chemin finit au sud par
-  une passerelle dans l'axe du portique ; couche sous les toits fermee. Jeton de la Secte (boussole de jade) donne une
+  une passerelle dans l'axe du portique ; couche sous les toits fermee. Construction repartie sur
+  les ticks (SanctuaryPlacement.Job, ticket de chargement, ~50 ms max par tick). Kit commun pour
+  les structures : world/structure/kit (BuildKit, RoofTiles). Jeton de la Secte (boussole de jade) donne une
   fois a la premiere connexion. Pas dans les mondes plats/tests. docs/structures.
+- Mise a terre PvP (12/10/2026, local) : un coup mortel d'un joueur met K.O. au lieu de tuer
+  (combat/knockdown : KnockdownService, KnockdownEvents ; client/KnockdownClient). Ramper,
+  V porter/poser, B executer (finish generique, l'art martial aura le sien), releve apres 30 s
+  (personne ne peut relever). Execution = mort normale (inventaire au sol). Toute vraie mort
+  coute 10 % du Qi maximum pour de bon, plancher 100 (QiData.afterDeath, QiEvents.onPlayerDeath).
+  Animations originales Epic Fight generees par scripts/animation (MurimAnimations, mouvements
+  Motions ajoutes via INIT_ANIMATOR et MODIFY_PLAYER_LIVING_MOTION). Protocole reseau 8.
+  Finish vu en cinematique par ses deux joueurs (client/FinishCinematic, FinishCinematicPayload,
+  protocole 9). Tests : KnockdownGameTests, gradlew -PgameTests runKnockdownTour. docs/combat/STYLES.md.
+- Garde Murim (12/10/2026, local) : MurimGuardSkill (herite de ParryingSkill d'Epic Fight) dans l'emplacement de
+  garde ; parade parfaite (10 ticks) sur toute attaque (fleches, boules d'eau, competences), parade normale 50 %.
+- Art de l'Epee du Nuage Azur, 1re tranche (12/10/2026, local) : package martial (MartialArts, MartialData,
+  MartialService, Techniques, SectLibrary, MartialManualItem), barre de combat (CombatBarClient, touches 1-9 + 10e
+  touche Murim), onglet Techniques, Cloud Step Slash (DashAttackAnimation, MurimAnimations). Protocole reseau 10.
+  Tests : MartialGameTests, ParryGameTests, gradlew -PgameTests runMartialTour / runParryTour.
 - GeckoLib 4.9.3 et Photon 2.2.8 (Low-Drag, effets/lumieres dynamiques) sont
   des dependances requises depuis le 12/10/2026, a la demande d'Enzo, avec
   LDLib2 2.2.42 et KilaGraph 21.1.0.16. GeckoLib rend la boule d'eau du
