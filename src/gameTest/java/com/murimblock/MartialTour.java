@@ -224,14 +224,14 @@ public final class MartialTour {
             case 200 -> server.execute(() -> {
                 check(200 - zombies.getFirst().getHealth() > 6, "the flurry strikes again and again (" + (200 - zombies.getFirst().getHealth()) + " damage)");
                 zombies.getFirst().setHealth(200);
-                zombies.getFirst().moveTo(self(server).getX(), self(server).getY(), self(server).getZ() + 5.0, 180, 0);
+                zombies.getFirst().moveTo(self(server).getX(), self(server).getY(), self(server).getZ() + 7.0, 180, 0);
                 MartialService.resetCooldowns(self(server));
             });
             // Key 2 again, the zombie 5 blocks away: the wave.
             case 206 -> KeyMapping.click(mc.options.keyHotbarSlots[1].getKey());
             case 210 -> check(clientPlaying(mc, MurimAnimations.DRIZZLE_WAVE), "at mid-distance, Thousand Drizzle sends its wave");
             case 228 -> server.execute(() -> {
-                check(zombies.getFirst().getHealth() < 200, "the wave reaches the zombie 5 blocks away");
+                check(zombies.getFirst().getHealth() < 200, "the wave reaches the zombie 7 blocks away");
                 zombies.getFirst().setHealth(200);
                 zombies.getFirst().moveTo(self(server).getX(), self(server).getY(), self(server).getZ() + 1.8, 180, 0);
                 QiService.setQi(self(server), 50);

@@ -28,23 +28,24 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.damagesource.StunType;
 
 /**
- * Qi sent off a blade by the Azure Cloud Sword Art, flying straight (no gravity) and drawn only with pale azure specks
- * (no model). Three kinds:
+ * Qi sent off a blade by the Azure Cloud Sword Art, flying straight (no gravity). Three kinds:
  * <ul>
- *   <li>{@link #WAVE}: Thousand Drizzle at mid-distance. Short, low and wide; stops on the first body it meets, without
- *   pushing it, and interrupts what that body was doing (a short stun);</li>
+ *   <li>{@link #WAVE}: Thousand Drizzle with no enemy within its thrusts' reach. A great ghost of the sword, point first
+ *   (drawn by QiBladeRenderer); stops on the first body it meets, without pushing it, and interrupts what that body was
+ *   doing (a short stun);</li>
  *   <li>{@link #NEEDLE}: Storm of Needles' last thrust. Thin, goes through everything up to 8 blocks;</li>
  *   <li>{@link #CRESCENT}: Azure Heaven Crescent. A tall vertical blade going through everything up to 10 blocks.</li>
  * </ul>
+ * The needle and the crescent are drawn with pale azure specks for now (no model).
  * Its damage is a share of its owner's attack (so of the sword in hand), as a projectile: a guard parries it like an arrow.
  * A hit counts for its technique's mastery like the technique's own hits.
  */
 public final class QiBladeEntity extends Projectile {
     public static final byte WAVE = 0, NEEDLE = 1, CRESCENT = 2;
     /** Speed (blocks/tick), range (blocks), share of the owner's attack, by kind. */
-    private static final double[] SPEED = {1.3, 1.6, 1.2}, RANGE = {8, 8, 10}, DAMAGE = {0.8, 0.5, 1.0};
+    private static final double[] SPEED = {1.1, 1.6, 1.2}, RANGE = {8, 8, 10}, DAMAGE = {0.8, 0.5, 1.0};
     /** Half-width and height of what it sweeps, by kind. */
-    private static final double[] HALF_WIDTH = {0.7, 0.25, 0.5}, HEIGHT = {0.9, 0.4, 2.2};
+    private static final double[] HALF_WIDTH = {0.45, 0.25, 0.5}, HEIGHT = {0.9, 0.4, 2.2};
     private static final DustParticleOptions AZURE = new DustParticleOptions(new Vector3f(0.62F, 0.85F, 1.0F), 1.0F);
     private static final DustParticleOptions AZURE_BRIGHT = new DustParticleOptions(new Vector3f(0.85F, 0.95F, 1.0F), 0.7F);
 
@@ -69,10 +70,22 @@ public final class QiBladeEntity extends Projectile {
         blade.damage = (float) (owner.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * DAMAGE[kind]);
         Vec3 dir = Vec3.directionFromRotation(0, owner.getYRot());
         double y = kind == CRESCENT ? owner.getY() : owner.getY() + owner.getBbHeight() * 0.55 - HEIGHT[kind] / 2;
-        blade.moveTo(owner.getX() + dir.x * 0.8, y, owner.getZ() + dir.z * 0.8, owner.getYRot(), 0);
+        // The wave's position is its point, which leaves a little ahead of the blade in hand.
+        double ahead = kind == WAVE ? 1.2 : 0.8;
+        blade.moveTo(owner.getX() + dir.x * ahead, y, owner.getZ() + dir.z * ahead, owner.getYRot(), 0);
         blade.setDeltaMovement(dir.scale(SPEED[kind]));
         owner.level().addFreshEntity(blade);
         return blade;
+    }
+
+    /** How many ticks a blade of this kind flies before it ends (its range at its speed). */
+    public static int lifetime(byte kind) {
+        return (int) Math.ceil(RANGE[kind] / SPEED[kind]);
+    }
+
+    /** The height of what a blade of this kind sweeps, from its position up (blocks). */
+    public static double sweptHeight(byte kind) {
+        return HEIGHT[kind];
     }
 
     public byte kind() {
@@ -87,12 +100,16 @@ public final class QiBladeEntity extends Projectile {
         super.tick();
         byte kind = kind();
         Vec3 from = position(), motion = getDeltaMovement();
-        Vec3 to = from.add(motion);
         if (level().isClientSide) {
+            // Each client flies it itself, smoothly: a straight line at its kind's speed along its heading (the server's
+            // position updates would only make it jerk; the server decides what it hits and when it ends).
+            motion = Vec3.directionFromRotation(0, getYRot()).scale(SPEED[kind]);
+            Vec3 to = from.add(motion);
             specks(kind, to, motion);
             setPos(to);
             return;
         }
+        Vec3 to = from.add(motion);
         // A solid block ends it.
         HitResult wall = level().clip(new ClipContext(from.add(0, HEIGHT[kind] / 2, 0), to.add(0, HEIGHT[kind] / 2, 0),
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
@@ -113,6 +130,11 @@ public final class QiBladeEntity extends Projectile {
         setPos(to);
         travelled += motion.length();
         if (travelled >= RANGE[kind] || tickCount > 40) discard();
+    }
+
+    /** The client flies it on its own (see tick): the server's position updates are not followed. */
+    @Override public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps) {
+        if (position().distanceToSqr(x, y, z) > 9) setPos(x, y, z);
     }
 
     @Override protected boolean canHitEntity(Entity target) {
@@ -136,12 +158,7 @@ public final class QiBladeEntity extends Projectile {
         Vec3 side = new Vec3(-dir.z, 0, dir.x);
         switch (kind) {
             case WAVE -> {
-                // A low arc bowed forward, like the sweep of a blade.
-                for (int i = -4; i <= 4; i++) {
-                    double k = i / 4.0;
-                    Vec3 p = at.add(side.scale(k * HALF_WIDTH[kind])).add(dir.scale(-0.35 * k * k)).add(0, HEIGHT[kind] * 0.5, 0);
-                    level().addParticle(i % 2 == 0 ? AZURE : AZURE_BRIGHT, p.x, p.y, p.z, 0, 0, 0);
-                }
+                // Drawn as a ghost sword (QiBladeRenderer), no specks.
             }
             case NEEDLE -> {
                 for (int i = 0; i < 4; i++) {
