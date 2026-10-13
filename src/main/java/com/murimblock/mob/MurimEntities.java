@@ -2,6 +2,7 @@ package com.murimblock.mob;
 
 import com.murimblock.Murimblock;
 import com.murimblock.integration.epicfight.EpicFightMobSupport;
+import com.murimblock.martial.QiBladeEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -32,6 +33,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<WaterBallEntity>> WATER_BALL =
             TYPES.register("water_ball", () -> EntityType.Builder.<WaterBallEntity>of(WaterBallEntity::new, MobCategory.MISC)
                     .sized(0.6F, 0.6F).clientTrackingRange(8).updateInterval(2).build("murimblock:water_ball"));
+    /** A blade of Qi sent by the Azure Cloud Sword Art (Thousand Drizzle's wave, its needle, the azure crescent). */
+    public static final DeferredHolder<EntityType<?>, EntityType<QiBladeEntity>> QI_BLADE =
+            TYPES.register("qi_blade", () -> EntityType.Builder.<QiBladeEntity>of(QiBladeEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F).clientTrackingRange(6).updateInterval(1).build("murimblock:qi_blade"));
     private MurimEntities() { }
     public static void register(IEventBus bus) {
         TYPES.register(bus);

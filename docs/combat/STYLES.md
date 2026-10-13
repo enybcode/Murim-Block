@@ -1,6 +1,6 @@
 # Styles de combat (conception)
 
-> **État : conception et première tranche locale.** La garde Murim, le K.O./portage/finish générique et Cloud Step Slash sont implémentés ; le reste du système de styles reste à développer. Voir [la publication du 13 octobre](../DELIVERY_2026_10_13.md) pour les contrôles réellement exécutés. Le clash physique entre armes est pour plus tard.
+> **État : conception et premier art complet en local.** La garde Murim, le K.O./portage/finish générique et l'Art de l'Épée du Nuage Azur entier (passif et M1 configurables, riposte, variantes, secret, quêtes, maîtrise, évolutions, finish propre, combos dégressifs) sont implémentés ([la fiche de l'art](styles/azure-cloud-sword.md)). Restent l'évasion, les styles en datapack et le mélange de plusieurs styles. Voir [la publication du 13 octobre](../DELIVERY_2026_10_13.md) pour les contrôles réellement exécutés. Le clash physique entre armes est pour plus tard.
 
 ## L'idée
 

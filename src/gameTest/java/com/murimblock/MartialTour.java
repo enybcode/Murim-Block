@@ -3,6 +3,7 @@ package com.murimblock;
 import com.mojang.logging.LogUtils;
 import com.murimblock.client.gui.MurimProfileScreen;
 import com.murimblock.combat.CombatService;
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.item.MurimItems;
 import com.murimblock.martial.MartialArts;
 import com.murimblock.martial.MartialService;
@@ -43,7 +44,9 @@ import org.slf4j.Logger;
 /**
  * Development-only real-client check of the Azure Cloud Sword Art (gradlew -PgameTests runMartialTour): reading the
  * manual, the Techniques tab, then Cloud Step Slash cast with the real key 1 in combat mode, dashing through three
- * zombies; filmed from the side. Report in martial-tour-report.txt, pictures in build/martial-tour-run/screenshots.
+ * zombies; then a real M1 (the stance's Drifting Cut), Thousand Drizzle close and at mid-distance (key 2), and the
+ * crescent (key 3) taking the player up; filmed from the side; last the passive's and Thousand Drizzle's pages of the
+ * Techniques tab. Report in martial-tour-report.txt, pictures in build/martial-tour-run/screenshots.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MartialTour {
@@ -89,8 +92,8 @@ public final class MartialTour {
 
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
         record(mc, "02-cloud-step-slash", 86, 116, 1);
-        // The side camera holds through the attack (the game puts the view back on the player otherwise).
-        if (camera != null && ticks < 128 && mc.getCameraEntity() != camera) {
+        // The side camera holds through the attacks (the game puts the view back on the player otherwise).
+        if (camera != null && ticks < 278 && !(ticks >= 128 && ticks < 136) && mc.getCameraEntity() != camera) {
             if (ticks > 61) LOGGER.info("Martial tour: camera taken back at tick {}", ticks);
             mc.setCameraEntity(camera);
         }
@@ -179,14 +182,120 @@ public final class MartialTour {
                 });
             }
             case 124 -> capture(mc, "04-cooldown-bar.png");
-            case 130 -> {
+            // The rest of the art: a sturdy zombie in front, the three techniques on keys 1 to 3, half the Qi.
+            case 130 -> server.execute(() -> {
+                ServerPlayer self = self(server);
+                ServerLevel level = server.overworld();
+                zombies.forEach(Zombie::discard);
+                zombies.clear();
+                MartialService.unlock(self, MartialArts.THOUSAND_DRIZZLE);
+                MartialService.unlock(self, MartialArts.HEAVEN_SPLITTING_CRESCENT);
+                MartialService.assign(self, 1, MartialArts.THOUSAND_DRIZZLE.id());
+                MartialService.assign(self, 2, MartialArts.HEAVEN_SPLITTING_CRESCENT.id());
+                MartialService.resetCooldowns(self);
+                QiService.setQi(self, 50);
+                Zombie z = EntityType.ZOMBIE.create(level);
+                z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(200);
+                z.setHealth(200);
+                z.moveTo(self.getX(), self.getY(), self.getZ() + 1.8, 180, 0);
+                z.setNoAi(true);
+                z.setPersistenceRequired();
+                level.addFreshEntity(z);
+                zombies.add(z);
+            });
+            case 136 -> placeSideCamera(mc);
+            // A real M1 (the attack key): Flowing Cloud Stance's first strike, Drifting Cut.
+            case 140 -> KeyMapping.click(mc.options.keyAttack.getKey());
+            case 146 -> check(clientPlaying(mc, MurimAnimations.DRIFTING_CUT), "the attack key plays the stance's first strike, Drifting Cut");
+            case 158 -> server.execute(() -> {
+                check(zombies.getFirst().getHealth() < 200, "Drifting Cut lands");
+                check(QiService.getQi(self(server)) >= 50.9, "a strike that lands gives back Qi (" + QiService.getQi(self(server)) + ")");
+                zombies.getFirst().setHealth(200);
+            });
+            // Key 2: Thousand Drizzle, close: the flurry.
+            case 164 -> KeyMapping.click(mc.options.keyHotbarSlots[1].getKey());
+            case 168 -> check(clientPlaying(mc, MurimAnimations.THOUSAND_DRIZZLE), "key 2 plays Thousand Drizzle's flurry");
+            case 200 -> server.execute(() -> {
+                check(200 - zombies.getFirst().getHealth() > 6, "the flurry strikes again and again (" + (200 - zombies.getFirst().getHealth()) + " damage)");
+                zombies.getFirst().setHealth(200);
+                zombies.getFirst().moveTo(self(server).getX(), self(server).getY(), self(server).getZ() + 5.0, 180, 0);
+                MartialService.resetCooldowns(self(server));
+            });
+            // Key 2 again, the zombie 5 blocks away: the wave.
+            case 206 -> KeyMapping.click(mc.options.keyHotbarSlots[1].getKey());
+            case 210 -> check(clientPlaying(mc, MurimAnimations.DRIZZLE_WAVE), "at mid-distance, Thousand Drizzle sends its wave");
+            case 228 -> server.execute(() -> {
+                check(zombies.getFirst().getHealth() < 200, "the wave reaches the zombie 5 blocks away");
+                zombies.getFirst().setHealth(200);
+                zombies.getFirst().moveTo(self(server).getX(), self(server).getY(), self(server).getZ() + 1.8, 180, 0);
+                QiService.setQi(self(server), 50);
+            });
+            // Key 3: Heaven-Splitting Crescent, both in the air.
+            case 234 -> {
+                startY = mc.player.getY();
+                KeyMapping.click(mc.options.keyHotbarSlots[2].getKey());
+            }
+            case 262 -> {
+                check(peakY - startY > 2.6 && peakY - startY < 3.4, String.format("the crescent takes the player 3 blocks up (%.2f blocks)", peakY - startY));
+                check(zombiePeakY - startY > 2.3, String.format("the crescent carries the zombie up with the player (%.2f blocks)", zombiePeakY - startY));
+                server.execute(() -> check(zombies.getFirst().getHealth() < 200, "the crescent cuts the zombie"));
+            }
+            // The Techniques tab: the passive and its M1 slots, then Thousand Drizzle.
+            case 280 -> {
                 mc.setCameraEntity(mc.player);
                 mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+                mc.setScreen(MurimProfileScreen.techniques());
+            }
+            case 284 -> ((MurimProfileScreen) mc.screen).selectForTests(MartialArts.FLOWING_CLOUD_STANCE.id());
+            case 290 -> capture(mc, "09-passive-tab.png");
+            case 292 -> ((MurimProfileScreen) mc.screen).selectForTests(MartialArts.THOUSAND_DRIZZLE.id());
+            case 298 -> capture(mc, "10-thousand-drizzle-tab.png");
+            case 304 -> {
+                mc.setScreen(null);
                 server.execute(() -> zombies.forEach(Zombie::discard));
                 finish(mc);
             }
             default -> { }
         }
+        record(mc, "05-drifting-cut", 140, 156, 1);
+        record(mc, "06-thousand-drizzle", 164, 196, 1);
+        record(mc, "07-drizzle-wave", 206, 226, 1);
+        record(mc, "08-crescent", 234, 262, 1);
+        if (ticks >= 234 && ticks <= 262) {
+            peakY = Math.max(peakY, mc.player.getY());
+            // The zombie as this client sees it.
+            var seen = zombies.isEmpty() ? null : mc.level.getEntity(zombies.getFirst().getId());
+            if (seen != null) zombiePeakY = Math.max(zombiePeakY, seen.getY());
+        }
+    }
+
+    private static double startY, peakY = Double.NEGATIVE_INFINITY, zombiePeakY = Double.NEGATIVE_INFINITY;
+
+    /** The side camera again, beside where the player stands now. */
+    private static void placeSideCamera(Minecraft mc) {
+        Vec3 at = mc.player.position();
+        Vec3 wanted = at.add(6.5, 1.8, 1.5);
+        Vec3 d = at.add(0, 0.9, 1.5).subtract(wanted);
+        Vec3 eye = wanted.add(d.normalize().scale(4));
+        if (camera == null) camera = new Marker(EntityType.MARKER, mc.level);
+        camera.setPos(eye);
+        camera.xo = camera.xOld = eye.x;
+        camera.yo = camera.yOld = eye.y;
+        camera.zo = camera.zOld = eye.z;
+        camera.setYRot((float) Math.toDegrees(Math.atan2(-d.x, d.z)));
+        camera.setXRot((float) -Math.toDegrees(Math.atan2(d.y, Math.hypot(d.x, d.z))));
+        camera.yRotO = camera.getYRot();
+        camera.xRotO = camera.getXRot();
+        mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+        mc.setCameraEntity(camera);
+    }
+
+    /** Whether this client's own player is playing an animation (Epic Fight's client animator). */
+    private static boolean clientPlaying(Minecraft mc, yesman.epicfight.api.animation.AnimationManager.AnimationAccessor<?> animation) {
+        var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mc.player, yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch.class);
+        if (patch == null) return false;
+        var main = patch.getAnimator().getPlayerFor(null);
+        return main != null && main.getRealAnimation() != null && main.getRealAnimation().get() == animation.get();
     }
 
     /** No first-person hand while the side camera films. */

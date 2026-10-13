@@ -3,6 +3,7 @@ package com.murimblock.combat.knockdown;
 import com.murimblock.Murimblock;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.MurimAnimations;
+import com.murimblock.martial.AzureCloudSword;
 import com.murimblock.network.FinishCinematicPayload;
 import com.murimblock.qi.charge.QiChargeService;
 import java.util.HashMap;
@@ -58,7 +59,12 @@ public final class KnockdownService {
     /** Carried players their carrier is putting down (the one dismount we allow). */
     private static final java.util.Set<UUID> RELEASING = new java.util.HashSet<>();
 
-    private record Execution(UUID victim, int started) { }
+    /** A finish being played: on whom, since when, and whose (its blow lands at its own tick). */
+    private record Execution(UUID victim, int started, boolean azure) {
+        int hitTick() {
+            return azure ? AzureCloudSword.FINISH_HIT_TICK : FINISH_HIT_TICK;
+        }
+    }
 
     private KnockdownService() {
     }
@@ -197,13 +203,17 @@ public final class KnockdownService {
 
     // ---------------------------------------------------------------- finishing
 
-    /** Validates and starts a finish on a knocked-down player within reach. */
+    /**
+     * Validates and starts a finish on a knocked-down player within reach: the finish of the executor's main style
+     * (Last Rain Over the Clouds for the Azure Cloud Sword Art, a sword in hand), or the generic one.
+     */
     public static boolean execute(ServerPlayer executor, ServerPlayer target) {
         if (!canActOn(executor, target) || isCarried(target) || isBeingExecuted(target)) return false;
-        EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount()));
+        boolean azure = AzureCloudSword.finishes(executor);
+        EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount(), azure));
         PlayerPatch<?> patch = EpicFightBridge.patch(executor);
-        if (patch != null) patch.playAnimationSynchronized(MurimAnimations.FINISH_GENERIC, 0.0F);
-        cinematic(true, executor, target);
+        if (patch != null) patch.playAnimationSynchronized(azure ? MurimAnimations.FINISH_AZURE : MurimAnimations.FINISH_GENERIC, 0.0F);
+        cinematic(true, executor, target, azure ? FinishCinematicPayload.AZURE_CLOUD : FinishCinematicPayload.GENERIC);
         return true;
     }
 
@@ -215,7 +225,9 @@ public final class KnockdownService {
             ServerPlayer victim = server.getPlayerList().getPlayer(entry.getValue().victim);
             if (executor == null || victim == null || !executor.isAlive() || !isDowned(victim)
                     || executor.distanceTo(victim) > ACTION_REACH + 1) { EXECUTIONS.remove(entry.getKey()); continue; }
-            if (server.getTickCount() - entry.getValue().started < FINISH_HIT_TICK) continue;
+            int elapsed = server.getTickCount() - entry.getValue().started;
+            if (entry.getValue().azure) AzureCloudSword.finishTick(executor, victim, elapsed);
+            if (elapsed < entry.getValue().hitTick()) continue;
             // The blow lands: the finish is over (the animation plays out on its own).
             EXECUTIONS.remove(entry.getKey());
             finish(executor, victim);
@@ -238,16 +250,20 @@ public final class KnockdownService {
     /** A hit on the executor breaks the finish before the blow lands. */
     public static void interrupt(Player executor) {
         Execution e = EXECUTIONS.get(executor.getUUID());
-        if (e != null && executor instanceof ServerPlayer ex && ex.server.getTickCount() - e.started < FINISH_HIT_TICK) {
+        if (e != null && executor instanceof ServerPlayer ex && ex.server.getTickCount() - e.started < e.hitTick()) {
             EXECUTIONS.remove(executor.getUUID());
             ServerPlayer victim = ex.server.getPlayerList().getPlayer(e.victim);
             if (victim != null) cinematic(false, ex, victim);
         }
     }
 
-    /** Starts or breaks off the cinematic camera of a finish, for its two players only. */
     private static void cinematic(boolean start, ServerPlayer executor, ServerPlayer victim) {
-        FinishCinematicPayload payload = new FinishCinematicPayload(start, executor.getId(), victim.getId());
+        cinematic(start, executor, victim, FinishCinematicPayload.GENERIC);
+    }
+
+    /** Starts or breaks off the cinematic camera of a finish, for its two players only. */
+    private static void cinematic(boolean start, ServerPlayer executor, ServerPlayer victim, int finish) {
+        FinishCinematicPayload payload = new FinishCinematicPayload(start, executor.getId(), victim.getId(), finish);
         for (ServerPlayer p : new ServerPlayer[]{executor, victim}) if (p.connection != null) PacketDistributor.sendToPlayer(p, payload);
     }
 

@@ -77,21 +77,50 @@ public final class MartialService {
         return ready == null ? 0 : (int) Math.max(0, ready - player.level().getGameTime());
     }
 
-    /** Casts the technique in a combat bar slot, after every check. */
+    /**
+     * Casts the technique in a combat bar slot, after every check. Right after a perfect parry with Flowing Cloud
+     * Stance, the technique is a riposte: half its Qi, and it may cut the guard's recoil short. Thousand-Li Cloud Step
+     * (Cloud Step Slash evolved) gives a second dash, free, right after the first.
+     */
     public static CastResult castSlot(ServerPlayer player, int slot) {
         ResourceLocation id = data(player).slot(slot).orElse(null);
         MartialArts.Technique technique = id == null ? null : MartialArts.technique(id);
         if (technique == null || !data(player).hasTechnique(id)) return CastResult.NO_TECHNIQUE;
         if (!CombatService.isInCombatMode(player)) return CastResult.NOT_IN_COMBAT;
-        if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || QiChargeService.isCharging(player)
-                || EpicFightBridge.isBusy(player)) return CastResult.HINDERED;
-        if (cooldownLeft(player, id) > 0) return CastResult.COOLDOWN;
-        if (QiService.getQi(player) < technique.qiCost()) return CastResult.NO_QI;
+        MartialCombat.Riposte riposte = MartialCombat.riposte(player);
+        if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || QiChargeService.isCharging(player)) return CastResult.HINDERED;
+        if (EpicFightBridge.isBusy(player) && !(riposte != null && guardRecoil(player))) return CastResult.HINDERED;
+        boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
+        if (cooldownLeft(player, id) > 0 && !secondStep) return CastResult.COOLDOWN;
+        double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
+        if (QiService.getQi(player) < cost) return CastResult.NO_QI;
         if (!Techniques.canUse(player, technique)) return CastResult.NO_WEAPON;
-        if (!Techniques.perform(player, technique)) return CastResult.FAILED;
-        QiService.removeQi(player, technique.qiCost());
-        READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, player.level().getGameTime() + technique.cooldownTicks());
+        if (!Techniques.perform(player, technique, riposte)) return CastResult.FAILED;
+        if (riposte != null) MartialCombat.consumeRiposte(player);
+        if (cost > 0) QiService.removeQi(player, cost);
+        if (secondStep) {
+            MartialCombat.takeSecondStep(player);
+        } else {
+            READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, player.level().getGameTime() + technique.cooldownTicks());
+            if (technique == MartialArts.CLOUD_STEP_SLASH && data(player).evolved(AzureCloudSword.art(), id)) MartialCombat.openSecondStep(player);
+        }
         return CastResult.CAST;
+    }
+
+    /** The player is busy only with a guard's recoil (holding the guard, or the parry's motion). */
+    private static boolean guardRecoil(ServerPlayer player) {
+        var patch = EpicFightBridge.patch(player);
+        return patch != null && (AzureCloudSword.inGuardMotion(patch) || (patch.isHoldingAny() && !patch.getEntityState().inaction()));
+    }
+
+    /** Places a strike of the main style's passive in one of its four M1 slots (refused if it breaks the chain's rule). */
+    public static void setStrike(ServerPlayer player, int slot, ResourceLocation strike) {
+        set(player, data(player).withStrike(slot, strike));
+    }
+
+    /** Makes a known art the main style: its passive gives the M1 chain and the parry. */
+    public static void setMainArt(ServerPlayer player, ResourceLocation art) {
+        set(player, data(player).withMainArt(art));
     }
 
     // Commands (/martial) and tests.
@@ -122,9 +151,16 @@ public final class MartialService {
 
     public static void forget(ServerPlayer player) {
         READY_AT.remove(player.getUUID());
+        MartialCombat.forget(player);
     }
 
     public static void clearCooldownsForTests(ServerPlayer player) {
         READY_AT.remove(player.getUUID());
+        MartialCombat.forget(player);
+    }
+
+    /** For tests and commands: sets the whole martial data of a player. */
+    public static void setForTests(ServerPlayer player, MartialData data) {
+        set(player, data);
     }
 }

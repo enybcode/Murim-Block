@@ -3,21 +3,28 @@ package com.murimblock.integration.epicfight;
 import com.murimblock.Murimblock;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.AnimationManager.AnimationBuilder;
+import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.LivingMotion;
+import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.property.AnimationProperty.AttackAnimationProperty;
 import yesman.epicfight.api.animation.property.AnimationProperty.AttackPhaseProperty;
 import yesman.epicfight.api.animation.types.ActionAnimation;
+import yesman.epicfight.api.animation.types.AirSlashAnimation;
+import yesman.epicfight.api.animation.types.AttackAnimation;
+import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
+import yesman.epicfight.api.animation.types.ComboAttackAnimation;
 import yesman.epicfight.api.animation.types.DashAttackAnimation;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.registry.entries.EpicFightSounds;
+import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.api.animation.types.MovementAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.gameasset.Armatures;
 
 /**
  * Murim's own player animations for the Epic Fight biped (assets/murimblock/animmodels/animations/biped/murim, written
- * by scripts/animation/knockdown-animations.cjs), and the living motions that select them.
+ * by scripts/animation/knockdown-animations.cjs and azure-cloud-animations.cjs), and the living motions that select them.
  */
 public final class MurimAnimations {
     public static AnimationAccessor<StaticAnimation> DOWNED_IDLE;
@@ -39,6 +46,56 @@ public final class MurimAnimations {
     /** Played by whoever executes a knocked-down player, until each martial art brings its own finish. */
     public static AnimationAccessor<ActionAnimation> FINISH_GENERIC;
 
+    // ---------------------------------------------------------------- Azure Cloud Sword Art (scripts/animation/azure-cloud-animations.cjs)
+    // Every hit below comes from a box on the root joint (Epic Fight's joint space: Y up, -Z forward), not from the blade,
+    // so a strike lands where it is drawn whatever the sword. The server does not move a player during an animation (the
+    // client does), so a box covers the whole way a step or a dash goes.
+
+    /** Flowing Cloud Stance, the art's passive: its six strikes (M1), the air attack and the sprinting attack. */
+    public static AnimationAccessor<ComboAttackAnimation> DRIFTING_CUT, RETURNING_CUT, PIERCING_MIST, RISING_CLOUD, FALLING_RAIN;
+    public static AnimationAccessor<AirSlashAnimation> FALLING_RAIN_AIR;
+    public static AnimationAccessor<DashAttackAnimation> WIND_STEP;
+    /** Cloud Step Slash from the air (plunges, knocks down) and after a perfect parry (short, cuts twice). */
+    public static AnimationAccessor<DashAttackAnimation> CLOUD_STEP_DIVE;
+    public static AnimationAccessor<AttackAnimation> CLOUD_STEP_RIPOSTE;
+    /** The secret: the spinning cut from behind the attacker. */
+    public static AnimationAccessor<AttackAnimation> SWALLOW_RETURNS;
+    /** Thousand Drizzle: six thrusts that hold, a last one that pushes; Storm of Needles, its evolution, is wider. */
+    public static AnimationAccessor<AttackAnimation> THOUSAND_DRIZZLE, THOUSAND_DRIZZLE_STORM;
+    /** Thousand Drizzle at mid-distance: one thrust; the wave of Qi does the hitting (QiBladeEntity). */
+    public static AnimationAccessor<ActionAnimation> DRIZZLE_WAVE;
+    /** Heaven-Splitting Crescent on the ground (lifts) and its air version, Cloud-Splitting Descent (slams, knocks down). */
+    public static AnimationAccessor<AttackAnimation> HEAVEN_SPLITTING_CRESCENT, CLOUD_SPLITTING_DESCENT;
+    /** Last Rain Over the Clouds, the art's finish: the blade to the sky, a leap and one vertical cut (lands at 1.5 s). */
+    public static AnimationAccessor<ActionAnimation> FINISH_AZURE;
+
+    /** A wide horizontal arc in front: 2.6 across, from 0.1 to 2.3 ahead. */
+    private static final OBBCollider ARC = new OBBCollider(1.3D, 0.9D, 1.1D, 0.0D, 1.0D, -1.2D);
+    /** A long narrow thrust, up to 3.6 ahead. */
+    private static final OBBCollider PIERCE = new OBBCollider(0.5D, 0.6D, 1.7D, 0.0D, 1.1D, -1.9D);
+    /** A cut from low to high, tall. */
+    private static final OBBCollider RISE = new OBBCollider(1.0D, 1.2D, 1.0D, 0.0D, 1.1D, -1.2D);
+    /** A cut from high to low. */
+    private static final OBBCollider FALL = new OBBCollider(0.9D, 1.2D, 1.1D, 0.0D, 0.9D, -1.3D);
+    /** Wind Step's slide: two blocks forward, so a box from the player to 3.2 ahead. */
+    private static final OBBCollider WIND_STEP_PATH = new OBBCollider(1.0D, 0.9D, 1.6D, 0.0D, 1.0D, -1.6D);
+    /** The dive: 4 ahead and 2.5 down. */
+    private static final OBBCollider DIVE_PATH = new OBBCollider(0.9D, 1.8D, 2.3D, 0.0D, -0.4D, -2.2D);
+    /** The riposte dash: 2.5 ahead. */
+    private static final OBBCollider RIPOSTE_PATH = new OBBCollider(0.9D, 0.9D, 1.7D, 0.0D, 1.0D, -1.5D);
+    /** The spin of Swallow Returns: all around, mostly in front. */
+    private static final OBBCollider SPIN = new OBBCollider(1.5D, 1.0D, 1.5D, 0.0D, 1.0D, -0.7D);
+    private static final OBBCollider DRIZZLE = new OBBCollider(0.7D, 0.8D, 1.4D, 0.0D, 1.1D, -1.6D);
+    private static final OBBCollider STORM = new OBBCollider(1.4D, 1.0D, 1.7D, 0.0D, 1.1D, -1.8D);
+    private static final OBBCollider CRESCENT = new OBBCollider(1.2D, 1.5D, 1.2D, 0.0D, 1.3D, -1.2D);
+    /** The shock of the descent: three blocks all around. */
+    private static final OBBCollider SHOCKWAVE = new OBBCollider(3.0D, 1.4D, 3.0D, 0.0D, 0.4D, 0.0D);
+
+    /** Thousand Drizzle's six quick thrusts (seconds), as drawn by the animation script. */
+    public static final float[] DRIZZLE_THRUSTS = {0.2F, 0.32F, 0.44F, 0.56F, 0.68F, 0.8F};
+    /** The last, pushing thrust of Thousand Drizzle starts there. */
+    public static final float DRIZZLE_FINAL = 0.98F;
+
     private MurimAnimations() {
     }
 
@@ -58,6 +115,108 @@ public final class MurimAnimations {
                         .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
                         .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.6F)
                         .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
+        buildAzureCloudSword(builder);
+    }
+
+    private static Joint root() {
+        return Armatures.BIPED.get().rootJoint;
+    }
+
+    /**
+     * The Azure Cloud Sword Art. The strikes (M1) follow the weapon's speed like Epic Fight's own (authored for a sword,
+     * 1.6 attacks a second); the techniques play at their own pace whatever the weapon.
+     */
+    private static void buildAzureCloudSword(AnimationBuilder builder) {
+        // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact.
+        DRIFTING_CUT = builder.nextAccessor("biped/murim/drifting_cut", a -> strike(new ComboAttackAnimation(0.08F, 0.06F, 0.12F, 0.26F, 0.42F, ARC, root(), a, Armatures.BIPED), 1.0F));
+        RETURNING_CUT = builder.nextAccessor("biped/murim/returning_cut", a -> strike(new ComboAttackAnimation(0.08F, 0.05F, 0.1F, 0.24F, 0.4F, ARC, root(), a, Armatures.BIPED), 1.0F));
+        PIERCING_MIST = builder.nextAccessor("biped/murim/piercing_mist", a -> strike(new ComboAttackAnimation(0.08F, 0.1F, 0.16F, 0.3F, 0.45F, PIERCE, root(), a, Armatures.BIPED), 1.1F)
+                .addProperty(AttackPhaseProperty.ARMOR_NEGATION_MODIFIER, ValueModifier.adder(20.0F))
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get()));
+        RISING_CLOUD = builder.nextAccessor("biped/murim/rising_cloud", a -> strike(new ComboAttackAnimation(0.08F, 0.1F, 0.16F, 0.28F, 0.45F, RISE, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG));
+        FALLING_RAIN = builder.nextAccessor("biped/murim/falling_rain", a -> strike(new ComboAttackAnimation(0.08F, 0.12F, 0.19F, 0.3F, 0.52F, FALL, root(), a, Armatures.BIPED), 1.25F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN));
+        // Epic Fight's air attack: plays when the player attacks while rising or at the top of a jump.
+        FALLING_RAIN_AIR = builder.nextAccessor("biped/murim/falling_rain_air", a -> new AirSlashAnimation(0.08F, 0.1F, 0.3F, 0.55F, FALL, root(), a, Armatures.BIPED)
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(1.25F))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.6F));
+        WIND_STEP = builder.nextAccessor("biped/murim/wind_step", a -> new DashAttackAnimation(0.08F, 0.08F, 0.12F, 0.36F, 0.5F, WIND_STEP_PATH, root(), a, Armatures.BIPED)
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(1.1F))
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2))
+                .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.6F)
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
+
+        CLOUD_STEP_DIVE = builder.nextAccessor("biped/murim/cloud_step_dive", a -> technique(new DashAttackAnimation(0.06F, 0.12F, 0.16F, 0.46F, 0.66F, DIVE_PATH, root(), a, Armatures.BIPED), 1.4F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(3))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true)
+                .addProperty(ActionAnimationProperty.MOVE_VERTICAL, true));
+        CLOUD_STEP_RIPOSTE = builder.nextAccessor("biped/murim/cloud_step_riposte", a -> technique(new AttackAnimation(0.06F, a, Armatures.BIPED,
+                        new Phase(0.0F, 0.1F, 0.12F, 0.22F, 0.24F, 0.24F, root(), RIPOSTE_PATH),
+                        new Phase(0.24F, 0.27F, 0.28F, 0.38F, 0.5F, Float.MAX_VALUE, root(), RIPOSTE_PATH)), 1.0F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2))
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
+        SWALLOW_RETURNS = builder.nextAccessor("biped/murim/swallow_returns", a -> technique(new AttackAnimation(0.02F, 0.0F, 0.08F, 0.32F, 0.45F, SPIN, root(), a, Armatures.BIPED), 1.3F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get()));
+
+        THOUSAND_DRIZZLE = builder.nextAccessor("biped/murim/thousand_drizzle", a -> drizzle(a, DRIZZLE));
+        THOUSAND_DRIZZLE_STORM = builder.nextAccessor("biped/murim/thousand_drizzle_storm", a -> drizzle(a, STORM));
+        DRIZZLE_WAVE = builder.nextAccessor("biped/murim/drizzle_wave", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+
+        HEAVEN_SPLITTING_CRESCENT = builder.nextAccessor("biped/murim/heaven_splitting_crescent", a -> technique(new AttackAnimation(0.06F, 0.14F, 0.2F, 0.34F, 0.6F, CRESCENT, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        CLOUD_SPLITTING_DESCENT = builder.nextAccessor("biped/murim/cloud_splitting_descent", a -> technique(new AttackAnimation(0.04F, 0.14F, 0.2F, 0.34F, 0.6F, SHOCKWAVE, root(), a, Armatures.BIPED), 1.3F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(5))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+
+        FINISH_AZURE = builder.nextAccessor("biped/murim/finish_azure", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+    }
+
+    /** A strike of the M1 chain: its damage, at the weapon's speed. */
+    private static <A extends AttackAnimation> A strike(A animation, float damage) {
+        animation.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(damage));
+        animation.addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.6F);
+        return animation;
+    }
+
+    /** A technique: its damage, at its own pace whatever the weapon's speed. */
+    private static <A extends AttackAnimation> A technique(A animation, float damage) {
+        animation.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(damage));
+        animation.addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
+        return animation;
+    }
+
+    /**
+     * Thousand Drizzle: one phase per quick thrust (a light hit that holds the target in place), then the last thrust
+     * (heavier, pushes). Each phase strikes anew, so one target takes all seven.
+     */
+    private static AttackAnimation drizzle(AnimationAccessor<? extends AttackAnimation> accessor, OBBCollider box) {
+        Phase[] phases = new Phase[DRIZZLE_THRUSTS.length + 1];
+        float start = 0.0F;
+        for (int i = 0; i < DRIZZLE_THRUSTS.length; i++) {
+            float t = DRIZZLE_THRUSTS[i];
+            phases[i] = new Phase(start, t - 0.05F, t - 0.03F, t + 0.02F, t + 0.04F, t + 0.06F, root(), box)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
+            start = t + 0.06F;
+        }
+        phases[DRIZZLE_THRUSTS.length] = new Phase(start, DRIZZLE_FINAL, DRIZZLE_FINAL + 0.03F, DRIZZLE_FINAL + 0.12F, 1.3F, Float.MAX_VALUE, root(), box)
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.9F))
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH.get());
+        return new AttackAnimation(0.06F, accessor, Armatures.BIPED, phases)
+                .addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
     }
 
     /** Murim's living motions: what a knocked-down, carrying or carried player is doing. */

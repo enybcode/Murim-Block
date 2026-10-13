@@ -1,5 +1,13 @@
 # Là où je me suis arrêté : Murimblock
 
+> **Mise à jour du 13 octobre au soir (nouveau PC, Claude, carte blanche d'Enzo) :** l'Art de l'Épée du Nuage Azur est
+> maintenant **complet en local** : passif Flowing Cloud Stance (M1 configurables, Qi sur les coups, riposte après
+> parade parfaite), variantes des trois techniques, secret Swallow Returns, quêtes, maîtrise, évolutions et finish
+> Last Rain Over the Clouds. Protocole réseau **11**. Détail et contrôles :
+> [docs/combat/styles/azure-cloud-sword.md](../docs/combat/styles/azure-cloud-sword.md). Les passages ci-dessous
+> disant « passif non implémenté » ou « deux techniques seulement définies » décrivent l'état d'avant.
+> À faire par Enzo : essayer en jeu, régler chiffres et animations, deux vrais clients.
+
 Point de reprise préparé le **13 octobre 2026**. Ce dossier rassemble le code
 publié, les décisions du projet et les échanges récents consultés dans Claude.
 Ce n'est ni une copie intégrale des conversations, ni une validation de l'alpha.

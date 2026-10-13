@@ -10,6 +10,7 @@ import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationStage;
 import com.murimblock.martial.MartialArts;
 import com.murimblock.martial.MartialData;
+import com.murimblock.martial.MartialProgress;
 import com.murimblock.martial.MartialService;
 import com.murimblock.network.TechniquePayloads;
 import com.murimblock.qi.QiFormat;
@@ -224,43 +225,69 @@ public final class MurimProfileScreen extends Screen {
             text(g, label("techniques.nothing_selected"), layout.text(page, EMPTY_DETAILS), MUTED, true, 1);
             return;
         }
-        // Library: each known art, then its techniques (locked ones greyed); click one to see it.
+        // Library: each known art, its passive, then its techniques (locked ones greyed, a secret only once found);
+        // click one to see it.
         Box library = layout.panels(page).get(0), details = layout.panels(page).get(1);
         int x = library.x() + 6, w = library.width() - 12, y = library.y() + 20;
         for (MartialArts.Art art : MartialArts.arts()) {
             if (!data.knowsArt(art.id())) continue;
             text(g, new Box(x, y, w, 9), Component.translatable(art.translationKey()), GOLD_DARK);
             y += 12;
+            Box passiveRow = new Box(x, y, w, 11);
+            if (art.passive().id().equals(selectedTechnique)) fill(g, passiveRow, TRACK);
+            else if (passiveRow.contains(pointerX, pointerY)) fill(g, passiveRow, PAPER_LINE);
+            text(g, new Box(x + 3, y + 1, w - 3, 9), label("techniques.passive_row", Component.translatable(art.passive().translationKey())), BLUE_DARK);
+            techniqueRows.add(Map.entry(passiveRow, art.passive().id()));
+            y += 12;
             for (MartialArts.Technique technique : art.techniques()) {
-                Box row = new Box(x, y, w, 11);
                 boolean unlocked = data.hasTechnique(technique.id());
+                if (technique.secret() && !unlocked) continue;
+                Box row = new Box(x, y, w, 11);
                 if (technique.id().equals(selectedTechnique)) fill(g, row, TRACK);
                 else if (row.contains(pointerX, pointerY)) fill(g, row, PAPER_LINE);
-                Component name = Component.translatable(technique.translationKey());
-                text(g, new Box(x + 3, y + 1, w - 3, 9), unlocked ? name : label("techniques.locked", name), unlocked ? INK : MUTED);
+                Component name = techniqueName(data, art, technique);
+                text(g, new Box(x + 3, y + 1, w - 3, 9), unlocked ? name : label("techniques.locked", name), unlocked ? (technique.secret() ? SEAL : INK) : MUTED);
                 techniqueRows.add(Map.entry(row, technique.id()));
                 y += 12;
             }
             y += 4;
         }
-        // Details: the selected technique, then the combat bar.
+        // Details: the selected technique (or passive), then the combat bar.
         int dx = details.x() + 6, dw = details.width() - 12, dy = details.y() + 20;
+        int barY = details.bottom() - 34;
+        strikeSlots.clear();
         MartialArts.Technique selected = selectedTechnique == null ? null : MartialArts.technique(selectedTechnique);
-        if (selected == null) {
+        MartialArts.Art passiveArt = selectedTechnique == null ? null : MartialArts.artOfPassive(selectedTechnique);
+        if (passiveArt != null) {
+            // The passive's page takes the whole panel: its M1 slots instead of the combat bar.
+            if (details.bottom() - 4 - dy > 0) renderPassive(g, data, passiveArt, new Box(dx, dy, dw, details.bottom() - 4 - dy));
+            return;
+        } else if (selected == null) {
             text(g, label("techniques.select"), new Box(dx, dy, dw, 20), MUTED, false, 1);
         } else {
             boolean unlocked = data.hasTechnique(selected.id());
+            MartialArts.Art art = MartialArts.art(selected.art());
             // The technique's icon, large, beside its name and figures.
             Box icon = new Box(dx, dy, 32, 32);
             outline(g, new Box(icon.x() - 1, icon.y() - 1, 34, 34), GOLD_DARK);
             TechniqueIcons.draw(g, selected, left + icon.x(), top + icon.y(), 32);
-            dx += 38;
-            dw -= 38;
-            text(g, new Box(dx, dy, dw, 9), Component.translatable(selected.translationKey()), INK);
-            text(g, new Box(dx, dy + 12, dw, 9), label("techniques.cost", QiFormat.format(selected.qiCost()), QiFormat.format(selected.cooldownTicks() / 20.0)), MUTED);
-            text(g, new Box(dx, dy + 24, dw, 9), unlocked ? label("techniques.mastery", data.mastery(selected.id())) : label("techniques.status_locked"), unlocked ? MUTED : SEAL);
+            int tx = dx + 38, tw = dw - 38;
+            text(g, new Box(tx, dy, tw, 9), art == null ? Component.translatable(selected.translationKey()) : techniqueName(data, art, selected), INK);
+            text(g, new Box(tx, dy + 12, tw, 9), selected.secret() ? label("techniques.secret")
+                    : label("techniques.cost", QiFormat.format(selected.qiCost()), QiFormat.format(selected.cooldownTicks() / 20.0)), MUTED);
+            Component status;
+            int statusColor = MUTED;
+            if (unlocked) {
+                status = selected.secret() ? label("techniques.secret_found") : label("techniques.mastery", data.mastery(selected.id()));
+            } else {
+                status = questStatus(data, art, selected);
+                statusColor = SEAL;
+            }
+            text(g, new Box(tx, dy + 24, tw, 9), status, statusColor);
+            // What it does, as far as the room allows.
+            int aboutHeight = barY - 16 - (dy + 38);
+            if (aboutHeight >= 9) about(g, Component.translatable(selected.translationKey() + ".desc"), new Box(dx, dy + 38, dw, aboutHeight));
         }
-        int barY = details.bottom() - 34;
         section(g, new Box(dx, barY - 14, dw, 9), label("techniques.bar"));
         int slot = Math.min(16, (dw - 9 * 2) / MartialData.BAR_SLOTS);
         for (int i = 0; i < MartialData.BAR_SLOTS; i++) {
@@ -279,14 +306,91 @@ public final class MurimProfileScreen extends Screen {
         text(g, label("techniques.bar_hint"), new Box(dx, details.bottom() - 10, dw, 9), MUTED, false, 1);
     }
 
+    /** A technique's name: its evolution's once the style has reached it. */
+    private static Component techniqueName(MartialData data, MartialArts.Art art, MartialArts.Technique technique) {
+        MartialArts.Evolution evolution = art.evolutionOf(technique.id());
+        if (evolution != null && data.evolved(art, technique.id())) return Component.translatable(evolution.nameKey());
+        return Component.translatable(technique.translationKey());
+    }
+
+    /** Why a technique is locked: its quest and how far the current step is, or the quest still to come. */
+    private static Component questStatus(MartialData data, @Nullable MartialArts.Art art, MartialArts.Technique technique) {
+        MartialArts.Quest quest = art == null ? null : art.questFor(technique.id());
+        if (quest == null) return label("techniques.status_locked");
+        if (MartialProgress.currentQuest(data, art) != quest) return label("techniques.quest_later", Component.translatable(quest.translationKey()));
+        MartialArts.QuestStep step = MartialProgress.currentStep(data, quest);
+        if (step == null) return Component.translatable(quest.translationKey());
+        return label("techniques.quest", Component.translatable(quest.translationKey()),
+                Component.translatable("quest.murimblock.step." + step.key(), data.progress(step.key()), step.goal()));
+    }
+
+    /**
+     * A passive: whether it is the main style's, its mastery and the style's, then its four M1 slots (click: the next
+     * strike that fits, right-click: the previous) and what it does.
+     */
+    private void renderPassive(GuiGraphics g, MartialData data, MartialArts.Art art, Box area) {
+        MartialArts.Passive passive = art.passive();
+        boolean main = data.mainArt().filter(art.id()::equals).isPresent();
+        Box icon = new Box(area.x(), area.y(), 32, 32);
+        outline(g, new Box(icon.x() - 1, icon.y() - 1, 34, 34), GOLD_DARK);
+        TechniqueIcons.draw(g, passive.id(), Component.translatable(passive.translationKey()), left + icon.x(), top + icon.y(), 32, 0xFF2F6E9E);
+        int tx = area.x() + 38, tw = area.width() - 38;
+        text(g, new Box(tx, area.y(), tw, 9), Component.translatable(passive.translationKey()), INK);
+        text(g, new Box(tx, area.y() + 12, tw, 9), label(main ? "techniques.passive_main" : "techniques.passive_inactive"), main ? BLUE_DARK : SEAL);
+        text(g, new Box(tx, area.y() + 24, tw, 9), label("techniques.style_mastery", data.mastery(passive.id()), data.styleMastery(art)), MUTED);
+        int sy = area.y() + 40;
+        section(g, new Box(area.x(), sy, area.width(), 9), label("techniques.strikes"));
+        sy += 13;
+        List<ResourceLocation> strikes = data.strikes(passive);
+        int gap = 3, sw = Math.max(8, (area.width() - gap * (MartialArts.Passive.M1_SLOTS - 1)) / MartialArts.Passive.M1_SLOTS);
+        for (int i = 0; i < MartialArts.Passive.M1_SLOTS; i++) {
+            Box box = new Box(area.x() + i * (sw + gap), sy, sw, 18);
+            MartialArts.Strike strike = passive.strike(strikes.get(i));
+            fill(g, box, main && box.contains(pointerX, pointerY) ? PAPER_LINE : CARD);
+            outline(g, box, GOLD_DARK);
+            if (strike != null) {
+                int kind = switch (strike.kind()) { case LAUNCHER -> BLUE; case FINISHER -> SEAL; default -> GOLD; };
+                fill(g, new Box(box.x() + 1, box.y() + 1, box.width() - 2, 2), kind);
+                text(g, Component.translatable(strike.translationKey()), new Box(box.x() + 2, box.y() + 5, box.width() - 4, 11), INK, true, 1);
+                if (box.contains(pointerX, pointerY)) hoveredText = Component.literal("M" + (i + 1) + ": ").append(Component.translatable(strike.translationKey()))
+                        .append(" - ").append(Component.translatable(strike.translationKey() + ".desc"));
+            }
+            if (main) strikeSlots.add(box);
+        }
+        sy += 21;
+        if (area.bottom() - sy >= 9) text(g, label("techniques.strikes_hint"), new Box(area.x(), sy, area.width(), 9), MUTED, false, 1);
+        int aboutHeight = area.bottom() - (sy + 12);
+        if (aboutHeight >= 9) about(g, Component.translatable(passive.translationKey() + ".desc"), new Box(area.x(), sy + 12, area.width(), aboutHeight));
+    }
+
+    /** What a technique or passive does, as far as the room allows; the whole text on hover. */
+    private void about(GuiGraphics g, Component description, Box box) {
+        text(g, description, box, INK_SOFT, false, 1);
+        if (box.contains(pointerX, pointerY)) hoveredText = description;
+    }
+
+    /** The strike to place in an M1 slot after (or before) the one there: the next of the passive's that keeps the chain valid. */
+    @Nullable static ResourceLocation cycleStrike(MartialData data, MartialArts.Passive passive, int slot, boolean forward) {
+        List<MartialArts.Strike> all = passive.strikes();
+        ResourceLocation current = data.strikes(passive).get(slot);
+        int at = 0;
+        for (int i = 0; i < all.size(); i++) if (all.get(i).id().equals(current)) at = i;
+        for (int k = 1; k < all.size(); k++) {
+            ResourceLocation candidate = all.get(Math.floorMod(at + (forward ? k : -k), all.size())).id();
+            if (data.withStrike(slot, candidate) != data) return candidate;
+        }
+        return null;
+    }
+
     /** Selects a technique on the Techniques page, as a click on its row would (tests and tours). */
     public void selectForTests(ResourceLocation technique) {
         selectedTechnique = technique;
     }
 
-    /** Clickable rows and bar slots of the Techniques page, as last drawn. */
+    /** Clickable rows, bar slots and M1 slots of the Techniques page, as last drawn. */
     private final List<Map.Entry<Box, ResourceLocation>> techniqueRows = new ArrayList<>();
     private final List<Box> barSlots = new ArrayList<>();
+    private final List<Box> strikeSlots = new ArrayList<>();
     @Nullable private ResourceLocation selectedTechnique;
 
     private static String initials(String name) {
@@ -304,6 +408,14 @@ public final class MurimProfileScreen extends Screen {
                     selectedTechnique = row.getValue();
                     return true;
                 }
+            }
+            for (int i = 0; i < strikeSlots.size(); i++) {
+                if (!strikeSlots.get(i).contains(mx, my)) continue;
+                MartialData data = MartialService.data(minecraft.player);
+                MartialArts.Passive passive = data.passive().orElse(null);
+                ResourceLocation next = passive == null ? null : cycleStrike(data, passive, i, button != 1);
+                if (next != null) PacketDistributor.sendToServer(new TechniquePayloads.SetStrike(i, next));
+                return true;
             }
             for (int i = 0; i < barSlots.size(); i++) {
                 if (!barSlots.get(i).contains(mx, my)) continue;

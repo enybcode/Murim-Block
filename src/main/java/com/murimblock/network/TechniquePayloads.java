@@ -39,7 +39,7 @@ public final class TechniquePayloads {
             if (technique == null) return;
             Component name = Component.translatable(technique.translationKey());
             switch (result) {
-                case CAST -> PacketDistributor.sendToPlayer(player, new Cooldown(technique.id(), technique.cooldownTicks()));
+                case CAST -> PacketDistributor.sendToPlayer(player, new Cooldown(technique.id(), MartialService.cooldownLeft(player, technique.id())));
                 case COOLDOWN -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.cooldown", name,
                         (MartialService.cooldownLeft(player, technique.id()) + 19) / 20), true);
                 case NO_QI -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_qi", name, (int) technique.qiCost()), true);
@@ -63,6 +63,29 @@ public final class TechniquePayloads {
         public static void handle(Assign payload, IPayloadContext context) {
             if (context.player() instanceof ServerPlayer player) MartialService.assign(player, payload.slot, payload.technique.orElse(null));
         }
+    }
+
+    /** Client places a strike of its main style's passive in one of the four M1 slots (Techniques tab). */
+    public record SetStrike(int slot, ResourceLocation strike) implements CustomPacketPayload {
+        public static final Type<SetStrike> TYPE = new Type<>(id("strike_set"));
+        public static final StreamCodec<ByteBuf, SetStrike> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, SetStrike::slot,
+                ResourceLocation.STREAM_CODEC, SetStrike::strike,
+                SetStrike::new);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(SetStrike payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player) MartialService.setStrike(player, payload.slot, payload.strike);
+        }
+    }
+
+    /** Server tells the client a perfect parry opened a riposte window of that many ticks (the bar lights up). */
+    public record Riposte(int ticks) implements CustomPacketPayload {
+        public static final Type<Riposte> TYPE = new Type<>(id("technique_riposte"));
+        public static final StreamCodec<ByteBuf, Riposte> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(Riposte::new, Riposte::ticks);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
     /** Server tells the client a technique was used and how long until it is ready (for the bar's cooldown display). */

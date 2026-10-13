@@ -1,6 +1,6 @@
 # L'Art de l'Épée du Nuage Azur (青云剑法, *Qīngyún Jiànfǎ*)
 
-> **État : conception proposée par Claude le 12/10/2026, à valider par Enzo.** Rien n'est implémenté. Les règles communes à tous les styles sont dans [../STYLES.md](../STYLES.md).
+> **État : art complet implémenté le 13/10/2026 par Claude (carte blanche d'Enzo), local, à essayer et régler par Enzo.** Voir « Art complet » ci-dessous ; les chiffres sont un premier jet. Les règles communes à tous les styles sont dans [../STYLES.md](../STYLES.md).
 >
 > Les noms en jeu sont en anglais (règle du projet). Le nom anglais est donné entre parenthèses.
 
@@ -32,12 +32,30 @@
   - `MartialGameTests` : pupitre, lecture, refus de lancement, une vraie ruée qui blesse un zombie, et toutes les commandes `/martial` ;
   - en vrai client, `gradlew -PgameTests runMartialTour` : vraie touche 1, ruée de 5,00 blocs, 3 zombies sur 3 touchés, Qi, recharge connue du client.
 
-**Tranches suivantes :**
-- le passif (M1 et parade du style) ;
-- Thousand Drizzle et Heaven-Splitting Crescent ;
-- les variantes en l'air et après une parade parfaite ;
-- les quêtes, la maîtrise, les évolutions et le mouvement secret ;
-- les icônes de Thousand Drizzle et Heaven-Splitting Crescent (Cloud Step Slash a la sienne ; les autres montrent leurs initiales en attendant).
+**Art complet, 13/10/2026 (local, protocole réseau 11) :**
+
+| Élément | Ce qui est fait | Code |
+|---|---|---|
+| Style principal | Le premier art appris devient le style principal ; son passif donne les M1 et la parade. `/martial main <art>`. | `MartialData.mainArt` |
+| Passif Flowing Cloud Stance : M1 | Une épée (épée, épée longue, uchigatana, tachi) frappe avec les coups du style au lieu de l'enchaînement de l'arme : 4 emplacements choisis parmi 6 coups, le 4ᵉ forcément Rising Cloud (soulève) ou Falling Rain (met à terre). Par défaut : Drifting Cut, Returning Cut, Piercing Mist, Falling Rain. Wind Step est l'attaque en courant, Falling Rain l'attaque en l'air. Réglable dans l'onglet Techniques (clic : coup suivant, clic droit : précédent) ou `/martial strike <1-4> <coup>`. | mixin `EpicFightStanceMixin`, `AzureCloudSword.autoAttackMotions` |
+| Breath of the Blade | Un coup M1 qui touche un ennemi (mob hostile ou joueur) rend 1 Qi (une fois par coup). | `MartialCombat` |
+| Parade du passif | Parade parfaite : +6 Qi, fenêtre de riposte de 1,5 s (barre de combat encadrée d'or, « Riposte ») : la prochaine technique prend sa variante de riposte, coûte moitié moins et peut couper le recul de la garde. Le déséquilibre de 0,6 s existait déjà. | `MartialCombat.onPerfectParry` |
+| Cloud Step Slash | Au sol : la ruée. En l'air : plongée en diagonale (4 avant, 2,5 bas) qui met à terre. Riposte : ruée courte (2,5) qui frappe deux fois. | `AzureCloudSword.perform` |
+| Swallow Returns (secret) | Cloud Step Slash dans les 5 ticks d'une parade parfaite : téléportation dans le dos de l'attaquant (s'il y a la place), tournoiement qui le frappe. Révélé la 1ʳᵉ fois (« A swallow returns to its nest… »), affiché ensuite dans l'onglet, jamais sur la barre. | `AzureCloudSword.swallowReturns` |
+| Thousand Drizzle | Près : 6 estocs (×0,35, tiennent la cible) puis un dernier qui repousse (×0,9, impact ×3). Cible ennemie à 4–7 blocs devant : un seul estoc qui lance une onde de Qi (×0,8 de l'attaque, s'arrête sur le premier corps, l'interrompt). Riposte : le dernier estoc brise la garde 2 s. | `QiBladeEntity` (onde) |
+| Heaven-Splitting Crescent | Au sol : croissant montant ; le joueur monte de 3 blocs et **emporte la cible avec lui**, tenue devant lui à sa hauteur jusqu'au sommet (0,5 s), puis lâchée (riposte : les deux retombent lentement 1,5 s). Pendant une action Epic Fight, le serveur ne reçoit pas la position du client : il recalcule la hauteur du saut avec la physique de Minecraft pour y placer la cible (`MartialCombat.leap`, `carry`). En l'air (≥ 1,2 bloc du sol) : Cloud-Splitting Descent, le joueur est jeté au sol, onde de choc rayon 3 qui met à terre. Pas de dégâts de chute pendant ces sauts. | |
+| Combos bornés | Chaque coup de l'art sur une même cible dans les 1,5 s du précédent perd 8 % de dégâts (plancher 40 %) ; une mise à terre termine le combo. | `MartialCombat.comboFactor` |
+| Quêtes | 1. The Patient Blade : 10 parades parfaites contre des ennemis, puis 5 ennemis touchés par Cloud Step Slash → Thousand Drizzle. 2. Above the Sea of Clouds : sonner la cloche du sanctuaire, puis 3 combos (≥ 3 coups puis une mise à terre) → Heaven-Splitting Crescent. Progression dans l'onglet et à l'écran. `/martial quest <compteur> <n>`. | `MartialProgress` |
+| Maîtrise | +1 par lancer qui touche un ennemi (une fois par lancer) ; passif : +1 tous les 8 coups M1 qui touchent. Style = moyenne passif + 3 techniques. | `MartialProgress` |
+| Évolutions | Style 30 : Thousand-Li Cloud Step (2ᵉ ruée gratuite dans les 1,5 s). Style 60 : Storm of Needles (rafale plus large, aiguille de Qi traversante à 8 blocs). Style 90 : Azure Heaven Crescent (lame de Qi verticale traversante, 10 blocs). Annoncées en jeu, noms changés dans l'onglet. | |
+| Finish | Last Rain Over the Clouds (B sur un K.O., style principal + épée) : épée vers le ciel, nuage de Qi et pluie lumineuse au-dessus de la cible, saut et taille verticale à 1,5 s, la pluie s'arrête net. Film de 2,6 s pour les deux joueurs. Sinon finish générique. | `AzureCloudSword.finishTick`, `KnockdownService.execute` |
+| Icônes | Thousand Drizzle, Heaven-Splitting Crescent, Swallow Returns, le passif. | `scripts/worldgen/TechniqueIcons.java` |
+
+Toutes les touches viennent de boîtes posées sur la racine du squelette (`MurimAnimations`), pas de la lame : un coup touche là où il est dessiné, quelle que soit l'épée. Epic Fight tourne ces boîtes avec la rotation de la racine dans l'animation : le script d'animation garde donc la racine face à l'avant et met la rotation du corps sur le torse (sauf Swallow Returns, qui tournoie exprès). Les boîtes sont vérifiées par `AzureHitboxGameTests` (47 positions : où chaque coup doit toucher et ne pas toucher), joué près de l'origine du monde : à 10 millions de blocs, où le serveur de test place ses arènes, les calculs en `float` d'Epic Fight n'ont plus qu'un bloc de précision. Les animations sont générées par `scripts/animation/azure-cloud-animations.cjs` (Node 20+) ; elles sont un premier jet, à retoucher.
+
+**Vérifications du 13/10 :** `MartialDataTest` (8 tests unitaires : règle des M1, secret, oubli complet, anciennes sauvegardes, quêtes, maîtrise, combos) ; `AzureCloudSwordGameTests` (13 GameTests serveur : chaîne M1, Qi, riposte à moitié prix, Swallow Returns, garde brisée, 7 touches de Thousand Drizzle, onde à 4,4 blocs, croissant qui soulève, variantes en l'air, combo dégressif et quête, quêtes par le jeu, évolution et 2ᵉ ruée, finish) ; en vrai client, `runMartialTour` étendu (vrai clic M1, touches 2 et 3, onde, montée de 4,9 blocs, captures de l'onglet).
+
+**Non fait :** l'évasion (sortir d'un combo une fois, commune à tous les styles), le maître de la secte, la description des styles en datapack, les sons et effets Photon propres, la validation à deux vrais clients. Le K.O. reste réservé au PvP.
 
 ## L'idée
 

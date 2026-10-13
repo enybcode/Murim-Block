@@ -1,6 +1,7 @@
 package com.murimblock.integration.epicfight;
 
 import com.murimblock.combat.knockdown.KnockdownService;
+import com.murimblock.martial.MartialCombat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -80,6 +81,8 @@ public class MurimGuardSkill extends ParryingSkill {
         Entity offender = getOffender(source);
         if (offender == null || !perfectParryable(source)) return;
         ServerPlayer player = playerPatch.getOriginal();
+        // A guard broken by a riposte (Thousand Drizzle) parries nothing for a while.
+        if (MartialCombat.guardBroken(player)) return;
         int raised = container.getDataManager().getDataValue(EpicFightSkillDataKeys.LAST_ACTIVE);
         boolean perfect = player.tickCount - raised <= PERFECT_WINDOW_TICKS;
         // What pierces a guard (some skills, unblockable attacks) only a perfect parry stops.
@@ -100,6 +103,8 @@ public class MurimGuardSkill extends ParryingSkill {
                 if (attackerPatch != null) attackerPatch.applyStun(StunType.NEUTRALIZE, 0.6F);
             }
             this.dealEvent(playerPatch, event, true);
+            // The main style's passive answers the parry (Flowing Cloud Stance: Qi back, a riposte window).
+            MartialCombat.onPerfectParry(player, offender);
         } else {
             AnimationAccessor<? extends StaticAnimation> motion = this.getGuardMotion(container, playerPatch, itemCapability, BlockType.GUARD);
             if (motion != null) playerPatch.playAnimationSynchronized(motion, 0.0F);

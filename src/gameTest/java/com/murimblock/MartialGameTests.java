@@ -128,6 +128,8 @@ public final class MartialGameTests {
         ItemStack manual = new ItemStack(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get());
         manual.use(player.level(), player, InteractionHand.MAIN_HAND);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
+        // A mock player is never told it stands on the ground: without this, the techniques take their air variants.
+        player.setOnGround(true);
         MartialService.clearCooldownsForTests(player);
         return player;
     }

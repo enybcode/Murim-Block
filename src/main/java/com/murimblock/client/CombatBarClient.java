@@ -34,8 +34,22 @@ public final class CombatBarClient {
     private static final ResourceLocation OFFHAND_LEFT = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left");
     /** Client game time at which each technique is ready again, and how long its cooldown was (for the fill). */
     private static final Map<ResourceLocation, long[]> COOLDOWNS = new HashMap<>();
+    /** Client game time until which a riposte is open (after a perfect parry with Flowing Cloud Stance). */
+    private static long riposteUntil;
 
     private CombatBarClient() {
+    }
+
+    /** From the server: a perfect parry opened a riposte window; the bar lights up until it closes. */
+    public static void riposte(int ticks) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) riposteUntil = mc.level.getGameTime() + ticks;
+    }
+
+    /** Whether this client shows a riposte window open. */
+    public static boolean riposteOpen() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level != null && mc.level.getGameTime() < riposteUntil;
     }
 
     static boolean inCombat(LocalPlayer player) {
@@ -89,6 +103,16 @@ public final class CombatBarClient {
         int width = 202, x0 = (g.guiWidth() - width) / 2, y = g.guiHeight() - 22;
         g.blitSprite(HOTBAR, 182, 22, 0, 0, x0, y, 161, 22);
         g.blitSprite(HOTBAR, 182, 22, 141, 0, x0 + 161, y, 41, 22);
+        // A riposte is open: a gold frame pulsing around the bar, and its name above it.
+        if (riposteOpen() && mc.level != null) {
+            int gold = (mc.level.getGameTime() / 3) % 2 == 0 ? 0xFFE8C25A : 0xFFB8902F;
+            g.fill(x0 - 1, y - 1, x0 + width + 1, y, gold);
+            g.fill(x0 - 1, y + 22, x0 + width + 1, y + 23, gold);
+            g.fill(x0 - 1, y, x0, y + 22, gold);
+            g.fill(x0 + width, y, x0 + width + 1, y + 22, gold);
+            // On the right of the bar (above it are the Qi bar and the level).
+            g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), x0 + width + 6, y + 7, 0xFFE8C25A, true);
+        }
         // The weapon in hand.
         g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);
         g.renderItem(player.getMainHandItem(), x0 - 26, y + 3);

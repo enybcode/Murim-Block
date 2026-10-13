@@ -4,6 +4,8 @@
 > Ce fichier conserve l'historique du 12 octobre : les passages « Techniques vide »,
 > « crabe non intégré » et les anciens SHA/protocoles ne décrivent plus l'état courant.
 > La tranche garde/K.O./premier art est publiée dans `84b2cac`, protocole 10, PR #5.
+> 13 octobre au soir : art Azure Cloud Sword complet (passif, variantes, secret, quêtes, maîtrise, évolutions, finish),
+> protocole 11, voir `docs/combat/styles/azure-cloud-sword.md`. Checkout de ce PC : `C:\Users\enzob\Documents\Murimblock`.
 
 Etat prepare le 12 octobre 2026. Synthese des decisions humaines et du depot,
 pas une preuve de nouveaux tests ni une copie exhaustive des conversations.

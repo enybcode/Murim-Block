@@ -13,6 +13,7 @@ import com.murimblock.integration.epicfight.EpicFightContentRegistries;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.integration.epicfight.MurimSkills;
 import com.murimblock.item.MurimItems;
+import com.murimblock.martial.MartialCombat;
 import com.murimblock.martial.MartialService;
 import com.murimblock.martial.SectLibrary;
 import com.murimblock.item.SectTokenItem;
@@ -91,10 +92,18 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onServerTick);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onLoggedOut);
-        // Martial arts: the sect library hands out the manual; cooldowns are forgotten on logout.
+        // Martial arts: the sect library hands out the manual (and its bell starts a quest); the fight of the arts around
+        // Epic Fight's hits; cooldowns and ripostes are forgotten on logout and death.
         NeoForge.EVENT_BUS.addListener(SectLibrary::onRightClickBlock);
+        MartialCombat.registerHooks();
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Post event) -> {
+            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialCombat.onPlayerTick(player);
+        });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialService.forget(player);
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) -> {
+            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialCombat.forget(player);
         });
     }
 }
