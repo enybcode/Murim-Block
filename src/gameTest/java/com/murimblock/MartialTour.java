@@ -219,6 +219,8 @@ public final class MartialTour {
                 z.moveTo(self.getX(), self.getY(), self.getZ() + 1.8, 180, 0);
                 z.setNoAi(true);
                 z.setPersistenceRequired();
+                // A helmet: no burning in the sun (the flames would hide the cuts in the pictures).
+                z.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
                 level.addFreshEntity(z);
                 zombies.add(z);
             });
