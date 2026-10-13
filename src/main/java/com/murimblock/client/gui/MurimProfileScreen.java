@@ -209,6 +209,16 @@ public final class MurimProfileScreen extends Screen {
         text(g, REALM, realm(cultivation), 2);
         text(g, layout.text(page, STAGE_LABEL), label("stage"), MUTED);
         text(g, STAGE, label("stage_unknown"));
+        // The passive in use: only one at a time, the main style's; what it does on hover.
+        section(g, PASSIVE_LABEL, label("passive"));
+        MartialArts.Passive passive = MartialService.data(player).passive().orElse(null);
+        Box passiveBox = layout.text(page, PASSIVE);
+        if (passive == null) {
+            text(g, label("passive_none"), passiveBox, MUTED, false, 1);
+        } else {
+            text(g, Component.translatable(passive.translationKey()), passiveBox, BLUE_DARK, false, 1);
+            if (passiveBox.contains(pointerX, pointerY)) hoveredText = Component.translatable(passive.translationKey() + ".desc");
+        }
         section(g, QI_LABEL, label("qi"));
         qiBar(g, layout.profileQiFill, qi, qiMax);
         text(g, QI_VALUE, qiValue(qi, qiMax));

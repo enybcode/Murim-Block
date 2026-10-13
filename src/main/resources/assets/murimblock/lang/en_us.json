@@ -199,6 +199,8 @@
   "evolution.murimblock.storm_of_needles": "Storm of Needles",
   "evolution.murimblock.azure_heaven_crescent": "Azure Heaven Crescent",
   "evolution.murimblock.reached": "%s evolves: %s",
+  "gui.murimblock.passive": "Passive",
+  "gui.murimblock.passive_none": "None: learn a martial art",
   "gui.murimblock.techniques.passive_row": "%s (passive)",
   "gui.murimblock.techniques.passive_main": "Main style passive",
   "gui.murimblock.techniques.passive_inactive": "Not your main style",

@@ -23,7 +23,7 @@ final class MurimProfileLayout {
         boolean showsPlayer() { return this == PROFILE; }
     }
     enum Field {
-        NAME, REALM_LABEL, REALM, STAGE_LABEL, STAGE, QI_LABEL, QI_VALUE, STATUS,
+        NAME, REALM_LABEL, REALM, STAGE_LABEL, STAGE, PASSIVE_LABEL, PASSIVE, QI_LABEL, QI_VALUE, STATUS,
         HEADER, LIBRARY_LABEL, EMPTY_LIBRARY, DETAILS_LABEL, EMPTY_DETAILS,
         NEXT_LABEL, NEXT_REALM, NEXT_STAGE, REQUIRED_QI, BREAKTHROUGH_LABEL, BREAKTHROUGH,
         CONTROLS_LABEL, CONTROL_PROFILE, CONTROL_QI, CONTROL_COMBAT,
@@ -89,13 +89,16 @@ final class MurimProfileLayout {
         panels.put(Page.PROFILE, List.of(player, profile));
         int px = profile.x(), pw = profile.width();
         put(Page.PROFILE, Field.NAME, px, cy + 2, pw, 18);
-        put(Page.PROFILE, Field.REALM_LABEL, px, cy + 28, pw, 9);
-        put(Page.PROFILE, Field.REALM, px, cy + 40, pw, 18);
-        put(Page.PROFILE, Field.STAGE_LABEL, px, cy + 66, 40, 9);
-        put(Page.PROFILE, Field.STAGE, px + 44, cy + 66, pw - 44, 9);
-        put(Page.PROFILE, Field.QI_LABEL, px, cy + 88, pw, 9);
-        profileQiFill = new Box(px + 1, cy + 102, pw - 2, 6);
-        put(Page.PROFILE, Field.QI_VALUE, px, cy + 113, pw, 9);
+        put(Page.PROFILE, Field.REALM_LABEL, px, cy + 26, pw, 9);
+        put(Page.PROFILE, Field.REALM, px, cy + 37, pw, 18);
+        put(Page.PROFILE, Field.STAGE_LABEL, px, cy + 58, 40, 9);
+        put(Page.PROFILE, Field.STAGE, px + 44, cy + 58, pw - 44, 9);
+        // The one passive in use: the main style's.
+        put(Page.PROFILE, Field.PASSIVE_LABEL, px, cy + 72, pw, 9);
+        put(Page.PROFILE, Field.PASSIVE, px, cy + 84, pw, 9);
+        put(Page.PROFILE, Field.QI_LABEL, px, cy + 98, pw, 9);
+        profileQiFill = new Box(px + 1, cy + 111, pw - 2, 6);
+        put(Page.PROFILE, Field.QI_VALUE, px, cy + 121, pw, 9);
 
         // Techniques: library list and detail card under a header.
         int libraryWidth = cw * 40 / 100;

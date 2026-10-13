@@ -127,15 +127,16 @@ public final class MurimAnimations {
      * 1.6 attacks a second); the techniques play at their own pace whatever the weapon.
      */
     private static void buildAzureCloudSword(AnimationBuilder builder) {
-        // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact.
-        DRIFTING_CUT = builder.nextAccessor("biped/murim/drifting_cut", a -> strike(new ComboAttackAnimation(0.08F, 0.06F, 0.12F, 0.26F, 0.42F, ARC, root(), a, Armatures.BIPED), 1.0F));
-        RETURNING_CUT = builder.nextAccessor("biped/murim/returning_cut", a -> strike(new ComboAttackAnimation(0.08F, 0.05F, 0.1F, 0.24F, 0.4F, ARC, root(), a, Armatures.BIPED), 1.0F));
-        PIERCING_MIST = builder.nextAccessor("biped/murim/piercing_mist", a -> strike(new ComboAttackAnimation(0.08F, 0.1F, 0.16F, 0.3F, 0.45F, PIERCE, root(), a, Armatures.BIPED), 1.1F)
+        // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact. The four default
+        // strikes come from Blockbench (art/blockbench/azure_cloud_m1.bbmodel): each window covers its swing through the front.
+        DRIFTING_CUT = builder.nextAccessor("biped/murim/drifting_cut", a -> strike(new ComboAttackAnimation(0.08F, 0.08F, 0.13F, 0.28F, 0.42F, ARC, root(), a, Armatures.BIPED), 1.0F));
+        RETURNING_CUT = builder.nextAccessor("biped/murim/returning_cut", a -> strike(new ComboAttackAnimation(0.08F, 0.07F, 0.12F, 0.27F, 0.4F, ARC, root(), a, Armatures.BIPED), 1.0F));
+        PIERCING_MIST = builder.nextAccessor("biped/murim/piercing_mist", a -> strike(new ComboAttackAnimation(0.08F, 0.12F, 0.17F, 0.32F, 0.45F, PIERCE, root(), a, Armatures.BIPED), 1.1F)
                 .addProperty(AttackPhaseProperty.ARMOR_NEGATION_MODIFIER, ValueModifier.adder(20.0F))
                 .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get()));
         RISING_CLOUD = builder.nextAccessor("biped/murim/rising_cloud", a -> strike(new ComboAttackAnimation(0.08F, 0.1F, 0.16F, 0.28F, 0.45F, RISE, root(), a, Armatures.BIPED), 1.0F)
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG));
-        FALLING_RAIN = builder.nextAccessor("biped/murim/falling_rain", a -> strike(new ComboAttackAnimation(0.08F, 0.12F, 0.19F, 0.3F, 0.52F, FALL, root(), a, Armatures.BIPED), 1.25F)
+        FALLING_RAIN = builder.nextAccessor("biped/murim/falling_rain", a -> strike(new ComboAttackAnimation(0.08F, 0.15F, 0.2F, 0.31F, 0.52F, FALL, root(), a, Armatures.BIPED), 1.25F)
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN));
         // Epic Fight's air attack: plays when the player attacks while rising or at the top of a jump.
         FALLING_RAIN_AIR = builder.nextAccessor("biped/murim/falling_rain_air", a -> new AirSlashAnimation(0.08F, 0.1F, 0.3F, 0.55F, FALL, root(), a, Armatures.BIPED)

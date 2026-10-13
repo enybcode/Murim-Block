@@ -93,7 +93,7 @@ public final class MartialTour {
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
         record(mc, "02-cloud-step-slash", 86, 116, 1);
         // The side camera holds through the attacks (the game puts the view back on the player otherwise).
-        if (camera != null && ticks < 278 && !(ticks >= 128 && ticks < 136) && mc.getCameraEntity() != camera) {
+        if (camera != null && (ticks < 278 || (ticks >= 316 && ticks < 380)) && !(ticks >= 128 && ticks < 136) && mc.getCameraEntity() != camera) {
             if (ticks > 61) LOGGER.info("Martial tour: camera taken back at tick {}", ticks);
             mc.setCameraEntity(camera);
         }
@@ -250,7 +250,37 @@ public final class MartialTour {
             case 290 -> capture(mc, "09-passive-tab.png");
             case 292 -> ((MurimProfileScreen) mc.screen).selectForTests(MartialArts.THOUSAND_DRIZZLE.id());
             case 298 -> capture(mc, "10-thousand-drizzle-tab.png");
-            case 304 -> {
+            // The Profile page: the passive in use.
+            case 300 -> mc.setScreen(new MurimProfileScreen());
+            case 306 -> capture(mc, "11-profile-passive.png");
+            // The whole M1 chain with four real clicks: the four default strikes in order, each landing.
+            case 310 -> {
+                mc.setScreen(null);
+                server.execute(() -> {
+                    ServerPlayer self = self(server);
+                    Zombie z = zombies.getFirst();
+                    z.moveTo(self.getX(), self.getY(), self.getZ() + 1.8, 180, 0);
+                    z.setHealth(200);
+                    z.setDeltaMovement(Vec3.ZERO);
+                });
+            }
+            case 316 -> placeSideCamera(mc);
+            case 320, 334, 348, 362 -> {
+                server.execute(() -> chainHealth = zombies.getFirst().getHealth());
+                KeyMapping.click(mc.options.keyAttack.getKey());
+            }
+            case 325, 339, 353, 367 -> {
+                int strike = (ticks - 325) / 14;
+                var expected = List.of(MurimAnimations.DRIFTING_CUT, MurimAnimations.RETURNING_CUT, MurimAnimations.PIERCING_MIST, MurimAnimations.FALLING_RAIN).get(strike);
+                check(clientPlaying(mc, expected), "M1 " + (strike + 1) + " plays " + List.of("Drifting Cut", "Returning Cut", "Piercing Mist", "Falling Rain").get(strike));
+            }
+            case 332, 346, 360, 374 -> {
+                int strike = (ticks - 332) / 14 + 1;
+                server.execute(() -> check(zombies.getFirst().getHealth() < chainHealth, "M1 " + strike + " lands on the zombie in front"));
+            }
+            case 380 -> {
+                mc.setCameraEntity(mc.player);
+                mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
                 mc.setScreen(null);
                 server.execute(() -> zombies.forEach(Zombie::discard));
                 finish(mc);
@@ -261,6 +291,7 @@ public final class MartialTour {
         record(mc, "06-thousand-drizzle", 164, 196, 1);
         record(mc, "07-drizzle-wave", 206, 226, 1);
         record(mc, "08-crescent", 234, 262, 1);
+        record(mc, "12-m1-chain", 318, 378, 1);
         if (ticks >= 234 && ticks <= 262) {
             peakY = Math.max(peakY, mc.player.getY());
             // The zombie as this client sees it.
@@ -270,6 +301,7 @@ public final class MartialTour {
     }
 
     private static double startY, peakY = Double.NEGATIVE_INFINITY, zombiePeakY = Double.NEGATIVE_INFINITY;
+    private static volatile float chainHealth;
 
     /** The side camera again, beside where the player stands now. */
     private static void placeSideCamera(Minecraft mc) {

@@ -31,7 +31,33 @@ function locals(pose) {
   return out;
 }
 
+/**
+ * Local matrices of every joint from ready rotations {joint: 3x3 row-major, character axes} and the root's position:
+ * the same rule as locals(), for rotations that do not come from a pose spec (a Blockbench animation).
+ */
+function localsFromRotations(rots, rootPos) {
+  const out = {};
+  const m4 = r => [r[0], r[1], r[2], 0, r[3], r[4], r[5], 0, r[6], r[7], r[8], 0, 0, 0, 0, 1];
+  for (const name of arm.order) {
+    const j = arm.joints[name];
+    const r = rots[name] ? m4(rots[name]) : b.rotation([1, 0, 0], 0);
+    const B = rotOnly(bind[name]);
+    if (name === 'Root') out[name] = b.mul(b.translation(...(rootPos || b.origin(bind.Root))), b.mul(r, rotOnly(j.local)));
+    else out[name] = b.mul(j.local, b.mul(b.invRigid(B), b.mul(r, B)));
+  }
+  return out;
+}
+
 const round = m => m.map(v => Math.abs(v) < 5e-7 ? 0 : Math.round(v * 1e6) / 1e6);
+
+/** Writes an Epic Fight animation from frames already computed: times (seconds) and local matrices per frame. */
+function writeFrames(dir, name, times, frames) {
+  const json = {
+    animation: arm.order.map(joint => ({ name: joint, time: times, transform: frames.map(f => round(f[joint])) })),
+  };
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, name + '.json'), JSON.stringify(json));
+}
 
 /** Writes an Epic Fight animation from keyframes [{t, pose}] (seconds) into a directory; returns the frames. */
 function write(dir, name, keys) {
@@ -51,4 +77,4 @@ function write(dir, name, keys) {
 /** Where Murim's player animations live. */
 const MURIM_BIPED = path.join(__dirname, '..', '..', 'src', 'main', 'resources', 'assets', 'murimblock', 'animmodels', 'animations', 'biped', 'murim');
 
-module.exports = { arm, bind, locals, write, MURIM_BIPED };
+module.exports = { arm, bind, locals, localsFromRotations, write, writeFrames, MURIM_BIPED };

@@ -4,8 +4,9 @@
 //   swallow_returns: the secret, a spinning cut from behind the attacker.
 //   thousand_drizzle (+ _storm): six quick thrusts and a last pushing one; drizzle_wave: one thrust sending a wave.
 //   heaven_splitting_crescent: a rising crescent that leaves the ground; cloud_splitting_descent: the slam from the air.
-//   Flowing Cloud Stance's strikes (M1): drifting_cut, returning_cut, piercing_mist, rising_cloud, falling_rain
-//   (+ falling_rain_air, the air attack) and wind_step (the sprinting attack).
+//   Flowing Cloud Stance's other strikes: rising_cloud, falling_rain_air (the air attack) and wind_step (the sprinting attack).
+//   The four default strikes (drifting_cut, returning_cut, piercing_mist, falling_rain) are made in Blockbench:
+//   art/blockbench/azure_cloud_m1.bbmodel (azure-m1.cjs), turned into game files by blockbench-to-epicfight.cjs.
 //   finish_azure: Last Rain Over the Clouds, the art's finish.
 // The hits come from boxes on the root joint (MurimAnimations), not from the blade: these poses only have to read well.
 // Usage: node scripts/animation/azure-cloud-animations.cjs [--preview <dir>] [--blade]
@@ -386,7 +387,8 @@ const anims = {
   cloud_step_dive, cloud_step_riposte, swallow_returns,
   thousand_drizzle, thousand_drizzle_storm: thousand_drizzle, drizzle_wave,
   heaven_splitting_crescent, cloud_splitting_descent,
-  drifting_cut, returning_cut, piercing_mist, rising_cloud, falling_rain, falling_rain_air, wind_step,
+  // drifting_cut, returning_cut, piercing_mist and falling_rain come from Blockbench (azure-m1.cjs, blockbench-to-epicfight.cjs).
+  rising_cloud, falling_rain_air, wind_step,
   finish_azure,
 };
 
