@@ -91,6 +91,12 @@ public final class MartialTour {
     }
 
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
+        // Minecraft only sends the player's position to the server while the player is the camera: with the filming
+        // camera, the tour sends it itself, or the server would keep the player where the filming began.
+        if (camera != null && mc.getCameraEntity() == camera && mc.getConnection() != null) {
+            mc.getConnection().send(new net.minecraft.network.protocol.game.ServerboundMovePlayerPacket.PosRot(
+                    mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYRot(), mc.player.getXRot(), mc.player.onGround()));
+        }
         record(mc, "02-cloud-step-slash", 86, 116, 1);
         // The side camera holds through the attacks (the game puts the view back on the player otherwise).
         if (camera != null && (ticks < 278 || (ticks >= 316 && ticks < 380)) && !(ticks >= 128 && ticks < 136) && mc.getCameraEntity() != camera) {
@@ -272,7 +278,8 @@ public final class MartialTour {
             case 325, 339, 353, 367 -> {
                 int strike = (ticks - 325) / 14;
                 var expected = List.of(MurimAnimations.DRIFTING_CUT, MurimAnimations.RETURNING_CUT, MurimAnimations.PIERCING_MIST, MurimAnimations.FALLING_RAIN).get(strike);
-                check(clientPlaying(mc, expected), "M1 " + (strike + 1) + " plays " + List.of("Drifting Cut", "Returning Cut", "Piercing Mist", "Falling Rain").get(strike));
+                check(clientPlaying(mc, expected), "M1 " + (strike + 1) + " plays " + List.of("Drifting Cut", "Returning Cut", "Piercing Mist", "Falling Rain").get(strike)
+                        + " (playing: " + clientAnimation(mc) + ")");
             }
             case 332, 346, 360, 374 -> {
                 int strike = (ticks - 332) / 14 + 1;
@@ -292,6 +299,13 @@ public final class MartialTour {
         record(mc, "07-drizzle-wave", 206, 226, 1);
         record(mc, "08-crescent", 234, 262, 1);
         record(mc, "12-m1-chain", 318, 378, 1);
+        if (ticks == 86 || ticks == 100 || ticks == 118 || ticks == 128 || ticks == 140 || ticks == 170 || ticks == 230) {
+            Vec3 client = mc.player.position();
+            int at = ticks;
+            server.execute(() -> LOGGER.info("Martial tour: POS tick {} client {} server {} yaw c {} s {}", at,
+                    String.format("%.2f,%.2f", client.x, client.z), String.format("%.2f,%.2f", self(server).getX(), self(server).getZ()),
+                    String.format("%.0f", mc.player.getYRot()), String.format("%.0f", self(server).getYRot())));
+        }
         if (ticks >= 234 && ticks <= 262) {
             peakY = Math.max(peakY, mc.player.getY());
             // The zombie as this client sees it.
@@ -320,6 +334,13 @@ public final class MartialTour {
         camera.xRotO = camera.getXRot();
         mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
         mc.setCameraEntity(camera);
+    }
+
+    /** What this client's own player is playing, by its registry name (for a report). */
+    private static String clientAnimation(Minecraft mc) {
+        var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mc.player, yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch.class);
+        var main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
+        return main == null || main.getRealAnimation() == null ? "nothing" : String.valueOf(main.getRealAnimation().get());
     }
 
     /** Whether this client's own player is playing an animation (Epic Fight's client animator). */
