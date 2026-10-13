@@ -2,6 +2,7 @@ package com.murimblock.martial;
 
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.MurimAnimations;
+import com.murimblock.integration.epicfight.MurimGuardSkill;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -266,8 +267,13 @@ public final class AzureCloudSword {
 
     /** What one of the art's hits does besides its damage. */
     static void onHit(ServerPlayer player, LivingEntity target, AnimationAccessor<? extends StaticAnimation> animation, boolean riposte) {
+        // A hit taken on a guard (perfect or normal parry) does only its damage: no lift, no carry, no broken guard.
+        if (MurimGuardSkill.parriedThisTick(target) || MurimGuardSkill.guardedThisTick(target)) return;
         if (animation == MurimAnimations.RISING_CLOUD) {
-            MartialCombat.lift(target, RISING_CLOUD_LIFT);
+            // On the next tick: the hit's own stun, which follows this hook, stops the body (lifted now, it would stay put).
+            MartialCombat.later(player, 1, () -> {
+                if (target.isAlive()) MartialCombat.lift(target, RISING_CLOUD_LIFT);
+            });
         } else if (animation == MurimAnimations.HEAVEN_SPLITTING_CRESCENT) {
             // Taken up with the player, held in front of them until the top of the leap.
             MartialCombat.carry(player, target, CARRY_TICKS, riposte);

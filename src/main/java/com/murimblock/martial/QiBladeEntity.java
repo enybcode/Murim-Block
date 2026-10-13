@@ -1,5 +1,6 @@
 package com.murimblock.martial;
 
+import com.murimblock.integration.epicfight.MurimGuardSkill;
 import com.murimblock.mob.MurimEntities;
 import java.util.HashSet;
 import java.util.Set;
@@ -146,9 +147,10 @@ public final class QiBladeEntity extends Projectile {
         Entity owner = getOwner();
         boolean hurt = target.hurt(damageSources().mobProjectile(this, owner instanceof LivingEntity living ? living : null), damage);
         if (!hurt) return;
-        // The wave interrupts: what the target was doing stops. The crescent staggers.
+        // The wave interrupts: what the target was doing stops. The crescent staggers. Not a guard that took it.
+        boolean guarded = MurimGuardSkill.parriedThisTick(target) || MurimGuardSkill.guardedThisTick(target);
         LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(target, LivingEntityPatch.class);
-        if (patch != null && kind() != NEEDLE) patch.applyStun(kind() == WAVE ? StunType.SHORT : StunType.LONG, kind() == WAVE ? 0.4F : 0.6F);
+        if (patch != null && kind() != NEEDLE && !guarded) patch.applyStun(kind() == WAVE ? StunType.SHORT : StunType.LONG, kind() == WAVE ? 0.4F : 0.6F);
         if (owner instanceof ServerPlayer player && technique != null) MartialCombat.qiBladeHit(player, target, technique);
     }
 
