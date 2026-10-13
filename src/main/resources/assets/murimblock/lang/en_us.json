@@ -171,7 +171,7 @@
   "technique.murimblock.swallow_returns.discovered": "A swallow returns to its nest... You discovered the secret technique Swallow Returns",
   "technique.murimblock.riposte": "Riposte",
   "technique.murimblock.cloud_step_slash.desc": "Dash 5 blocks through everything on the way. In the air: dive and knock down. As a riposte: a short dash that cuts twice.",
-  "technique.murimblock.thousand_drizzle.desc": "Six quick thrusts that hold the target, then one that pushes. At 4 to 7 blocks: a wave of Qi that interrupts. As a riposte: the last thrust breaks the guard.",
+  "technique.murimblock.thousand_drizzle.desc": "Six quick thrusts that hold the target, then one that pushes. With no enemy within 3 blocks: a wave of Qi sent straight ahead, that interrupts. As a riposte: the last thrust breaks the guard.",
   "technique.murimblock.heaven_splitting_crescent.desc": "A rising crescent: you leap 3 blocks up, carrying the target with you. In the air: Cloud-Splitting Descent, a slam that knocks down all around.",
   "technique.murimblock.swallow_returns.desc": "Cloud Step Slash within a quarter second of a perfect parry: you appear behind the attacker and spin into a cut.",
   "passive.murimblock.flowing_cloud_stance": "Flowing Cloud Stance",

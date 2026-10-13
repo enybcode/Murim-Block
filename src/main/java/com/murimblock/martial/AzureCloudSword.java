@@ -40,7 +40,7 @@ import yesman.epicfight.world.capabilities.item.WeaponCategory;
  *   twice; within a quarter second of a perfect parry it is <b>Swallow Returns</b>, the secret (behind the attacker).
  *   Evolved (Thousand-Li Cloud Step), a second dash within 1.5 s is free;</li>
  *   <li><b>Thousand Drizzle</b>: close, six thrusts that hold the target then one that pushes (as a riposte, that last
- *   one breaks the guard); at mid-distance (4 to 7 blocks), one thrust sending a wave that interrupts. Evolved (Storm
+ *   one breaks the guard); with no enemy within 3 blocks in front, one thrust sending a wave straight ahead that interrupts. Evolved (Storm
  *   of Needles), wider, and the last thrust sends a needle of Qi;</li>
  *   <li><b>Heaven-Splitting Crescent</b>: on the ground, a rising crescent that lifts the target and the player (higher
  *   as a riposte); in the air, Cloud-Splitting Descent, a slam that knocks down all around. Evolved (Azure Heaven
@@ -53,8 +53,11 @@ public final class AzureCloudSword {
     /** The sword arts need a blade of the sword family in the main hand. */
     public static final Set<WeaponCategory> SWORDS = Set.of(WeaponCategories.SWORD, WeaponCategories.LONGSWORD,
             WeaponCategories.UCHIGATANA, WeaponCategories.TACHI);
-    /** Thousand Drizzle sends its wave at a target this far or farther (blocks); up to {@link #DRIZZLE_REACH}. */
-    public static final double WAVE_DISTANCE = 4.0, DRIZZLE_REACH = 7.0;
+    /**
+     * Thousand Drizzle's flurry when an enemy stands this close in front (blocks, as far as the thrusts reach); otherwise
+     * (farther, or nobody) the wave, sent straight ahead.
+     */
+    public static final double FLURRY_REACH = 3.0;
     /** How high above the ground a player must be for the air variants (blocks). */
     public static final double AIR_HEIGHT = 1.2;
     /** Upward speed given by Rising Cloud, blocks per tick. */
@@ -175,8 +178,8 @@ public final class AzureCloudSword {
         }
         if (technique == MartialArts.THOUSAND_DRIZZLE) {
             boolean storm = data.evolved(art(), technique.id());
-            LivingEntity target = targetAhead(player, DRIZZLE_REACH);
-            if (target != null && player.distanceTo(target) >= WAVE_DISTANCE) {
+            // An enemy within the thrusts' reach in front: the flurry. Otherwise, the wave straight ahead.
+            if (targetAhead(player, FLURRY_REACH) == null) {
                 play(player, patch, MurimAnimations.DRIZZLE_WAVE, technique, riposte);
                 // The wave leaves at the thrust (0.24 s).
                 MartialCombat.later(player, 5, () -> QiBladeEntity.send(player, QiBladeEntity.WAVE, technique.id()));

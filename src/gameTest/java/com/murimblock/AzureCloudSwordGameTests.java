@@ -259,6 +259,28 @@ public final class AzureCloudSwordGameTests {
         });
     }
 
+    @GameTest(template = "foundation_arena", batch = "azure_drizzle_edges", timeoutTicks = 20)
+    public static void thousandDrizzleThrustsWithinThreeBlocksAndSendsItsWaveOtherwise(GameTestHelper helper) {
+        ServerPlayer player = adept(helper, 0.5);
+        unlock(player, MartialArts.THOUSAND_DRIZZLE, 1);
+        // Nobody in front: the wave, straight ahead.
+        helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Thousand Drizzle was refused");
+        helper.assertTrue(playing(player, MurimAnimations.DRIZZLE_WAVE), "With nobody in front, not the wave");
+        // An enemy 2.9 blocks ahead, within the thrusts' reach: the flurry.
+        stopAnimation(player);
+        MartialService.clearCooldownsForTests(player);
+        Zombie zombie = dummy(helper, player, 2.9);
+        helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Thousand Drizzle was refused");
+        helper.assertTrue(playing(player, MurimAnimations.THOUSAND_DRIZZLE), "An enemy 2.9 blocks ahead did not get the flurry");
+        // 3.4 blocks ahead, out of reach: the wave.
+        stopAnimation(player);
+        MartialService.clearCooldownsForTests(player);
+        zombie.moveTo(player.getX(), player.getY(), player.getZ() + 3.4, 180, 0);
+        helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Thousand Drizzle was refused");
+        helper.assertTrue(playing(player, MurimAnimations.DRIZZLE_WAVE), "An enemy 3.4 blocks ahead did not get the wave");
+        end(helper, player, zombie);
+    }
+
     @GameTest(template = "foundation_arena", batch = "azure_drizzle_wave", timeoutTicks = 60)
     public static void atMidDistanceThousandDrizzleSendsAWave(GameTestHelper helper) {
         ServerPlayer player = adept(helper, 0.2);
