@@ -228,7 +228,7 @@ public final class AzureCloudSword {
             // An enemy within the thrusts' reach in front: the flurry. Otherwise, the wave straight ahead.
             if (targetAhead(player, FLURRY_REACH) == null) {
                 play(player, patch, MurimAnimations.DRIZZLE_WAVE, technique, riposte);
-                // The wave leaves at the thrust (0.24 s).
+                // The ghost sword leaves as the thrust reaches its full length (0.25 s, the arm straight out).
                 MartialCombat.later(player, 5, () -> QiBladeEntity.send(player, QiBladeEntity.WAVE, technique.id()));
             } else {
                 play(player, patch, storm ? MurimAnimations.THOUSAND_DRIZZLE_STORM : MurimAnimations.THOUSAND_DRIZZLE, technique, riposte);

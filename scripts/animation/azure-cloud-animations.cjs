@@ -2,7 +2,7 @@
 //   cloud_step_slash and its aim are made in Blockbench: art/blockbench/azure_cloud_step.bbmodel (azure-cloud-step.cjs).
 //   cloud_step_dive / cloud_step_riposte: the dash plunging from the air, and the short double cut after a parry.
 //   swallow_returns: the secret, a spinning cut from behind the attacker.
-//   thousand_drizzle (+ _storm): six quick thrusts and a last pushing one; drizzle_wave: one thrust sending a wave.
+//   thousand_drizzle (+ _storm): six quick thrusts and a last pushing one; drizzle_wave (one thrust sending the wave) is made in Blockbench: azure-drizzle-wave.cjs.
 //   heaven_splitting_crescent: a rising crescent that leaves the ground; cloud_splitting_descent: the slam from the air.
 //   Flowing Cloud Stance's other strikes: rising_cloud, falling_rain_air (the air attack) and wind_step (the sprinting attack).
 //   The four default strikes (drifting_cut, returning_cut, piercing_mist, falling_rain) are made in Blockbench:
@@ -283,15 +283,6 @@ const thousand_drizzle = (() => {
   return keys;
 })();
 
-/** At mid-distance: one thrust that sends the wave of Qi down the line of the blade. */
-const drizzle_wave = [
-  { t: 0, pose: GUARD() },
-  { t: 0.12, pose: DRAWN(-0.05) },
-  { t: 0.24, pose: THRUST(0.35) },
-  { t: 0.42, pose: THRUST(0.4) },
-  { t: 0.62, pose: GUARD(0.4) },
-];
-
 // ---------------------------------------------------------------- Heaven-Splitting Crescent
 
 /** Crouched deep, blade low behind the right leg: the crescent starts from the ground. */
@@ -378,7 +369,8 @@ const finish_azure = [
 const anims = {
   // cloud_step_slash and cloud_step_aim come from Blockbench (azure-cloud-step.cjs, blockbench-to-epicfight.cjs).
   cloud_step_dive, cloud_step_riposte, swallow_returns,
-  thousand_drizzle, thousand_drizzle_storm: thousand_drizzle, drizzle_wave,
+  thousand_drizzle, thousand_drizzle_storm: thousand_drizzle,
+  // drizzle_wave comes from Blockbench (azure-drizzle-wave.cjs).
   heaven_splitting_crescent, cloud_splitting_descent,
   // drifting_cut, returning_cut, piercing_mist and falling_rain come from Blockbench (azure-m1.cjs, blockbench-to-epicfight.cjs).
   rising_cloud, falling_rain_air, wind_step,

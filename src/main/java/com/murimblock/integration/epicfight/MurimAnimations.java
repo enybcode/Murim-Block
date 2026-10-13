@@ -69,7 +69,7 @@ public final class MurimAnimations {
     public static AnimationAccessor<AttackAnimation> SWALLOW_RETURNS;
     /** Thousand Drizzle: six thrusts that hold, a last one that pushes; Storm of Needles, its evolution, is wider. */
     public static AnimationAccessor<AttackAnimation> THOUSAND_DRIZZLE, THOUSAND_DRIZZLE_STORM;
-    /** Thousand Drizzle at mid-distance: one thrust; the wave of Qi does the hitting (QiBladeEntity). */
+    /** Thousand Drizzle at range: one long thrust, arm straight out (Blockbench); the ghost sword does the hitting (QiBladeEntity). */
     public static AnimationAccessor<ActionAnimation> DRIZZLE_WAVE;
     /** Heaven-Splitting Crescent on the ground (lifts) and its air version, Cloud-Splitting Descent (slams, knocks down). */
     public static AnimationAccessor<AttackAnimation> HEAVEN_SPLITTING_CRESCENT, CLOUD_SPLITTING_DESCENT;
