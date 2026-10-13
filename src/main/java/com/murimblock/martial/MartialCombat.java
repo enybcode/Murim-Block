@@ -268,8 +268,8 @@ public final class MartialCombat {
     private static final Map<UUID, Leap> LEAPS = new HashMap<>();
 
     /**
-     * Sends a player up (the crescent's leap). Their client moves them; while an Epic Fight action plays, the server
-     * hears nothing of it, so it keeps the leap to know where they are (see {@link #heightAt}).
+     * Sends a player up (the crescent's leap). Their client moves them and reports where they are, a ping later; the
+     * server keeps the leap to place a carried body where the player is now, not where they were (see {@link #heightAt}).
      */
     static void leap(ServerPlayer player, double speed) {
         Vec3 m = player.getDeltaMovement();
@@ -291,7 +291,7 @@ public final class MartialCombat {
         return rise;
     }
 
-    /** Where a player stands for the server: their known position, or higher during a leap the server cannot see. */
+    /** Where a player stands for the server: their reported position, or ahead of it during a leap (the report lags a ping). */
     private static double heightAt(ServerPlayer player, long now) {
         Leap l = LEAPS.get(player.getUUID());
         if (l == null) return player.getY();

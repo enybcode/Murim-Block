@@ -299,13 +299,6 @@ public final class MartialTour {
         record(mc, "07-drizzle-wave", 206, 226, 1);
         record(mc, "08-crescent", 234, 262, 1);
         record(mc, "12-m1-chain", 318, 378, 1);
-        if (ticks == 86 || ticks == 100 || ticks == 118 || ticks == 128 || ticks == 140 || ticks == 170 || ticks == 230) {
-            Vec3 client = mc.player.position();
-            int at = ticks;
-            server.execute(() -> LOGGER.info("Martial tour: POS tick {} client {} server {} yaw c {} s {}", at,
-                    String.format("%.2f,%.2f", client.x, client.z), String.format("%.2f,%.2f", self(server).getX(), self(server).getZ()),
-                    String.format("%.0f", mc.player.getYRot()), String.format("%.0f", self(server).getYRot())));
-        }
         if (ticks >= 234 && ticks <= 262) {
             peakY = Math.max(peakY, mc.player.getY());
             // The zombie as this client sees it.
