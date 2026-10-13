@@ -270,7 +270,7 @@ public final class MartialTour {
                     z.setDeltaMovement(Vec3.ZERO);
                 });
             }
-            case 316 -> placeSideCamera(mc);
+            case 316 -> placeTopCamera(mc);
             case 320, 334, 348, 362 -> {
                 server.execute(() -> chainHealth = zombies.getFirst().getHealth());
                 KeyMapping.click(mc.options.keyAttack.getKey());
@@ -309,6 +309,25 @@ public final class MartialTour {
 
     private static double startY, peakY = Double.NEGATIVE_INFINITY, zombiePeakY = Double.NEGATIVE_INFINITY;
     private static volatile float chainHealth;
+
+    /** A camera right above the player, looking down at the ground in front of them: a blade lying level shows wide. */
+    private static void placeTopCamera(Minecraft mc) {
+        Vec3 at = mc.player.position();
+        Vec3 wanted = at.add(0.01, 4.2, 0.9);
+        Vec3 d = at.add(0, 1.0, 1.0).subtract(wanted);
+        Vec3 eye = wanted.add(d.normalize().scale(4));
+        if (camera == null) camera = new Marker(EntityType.MARKER, mc.level);
+        camera.setPos(eye);
+        camera.xo = camera.xOld = eye.x;
+        camera.yo = camera.yOld = eye.y;
+        camera.zo = camera.zOld = eye.z;
+        camera.setYRot((float) Math.toDegrees(Math.atan2(-d.x, d.z)));
+        camera.setXRot((float) -Math.toDegrees(Math.atan2(d.y, Math.hypot(d.x, d.z))));
+        camera.yRotO = camera.getYRot();
+        camera.xRotO = camera.getXRot();
+        mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+        mc.setCameraEntity(camera);
+    }
 
     /** The side camera again, beside where the player stands now. */
     private static void placeSideCamera(Minecraft mc) {

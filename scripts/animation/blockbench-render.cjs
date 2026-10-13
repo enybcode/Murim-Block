@@ -30,6 +30,8 @@ async function connect(port) {
 const VIEWS = {
   side: { position: [70, 22, -6], target: [0, 16, -6] },
   front: { position: [-42, 30, -58], target: [0, 15, -4] },
+  // From above (the blade's flat shows wide when it lies level).
+  top: { position: [0.5, 95, -12], target: [0, 15, -10] },
 };
 
 (async () => {
@@ -47,7 +49,7 @@ const VIEWS = {
     for (const name of names.filter(n => only.includes(n))) {
       const length = await c.evaluate(`(() => { const a = Animation.all.find(a => a.name === ${JSON.stringify(name)}); a.select(); return a.length; })()`);
       const frames = Math.round(length * FPS) + 1;
-      for (const [view, spec] of Object.entries(VIEWS)) {
+      for (const [view, spec] of Object.entries(VIEWS).filter(([v]) => (arg('views') || 'side,front').split(',').includes(v))) {
         const dir = path.join(out, name, view);
         fs.mkdirSync(dir, { recursive: true });
         for (let f = 0; f < frames; f++) {

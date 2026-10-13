@@ -30,11 +30,15 @@ const GUARD = (y = 0) => ({
   Thigh_L: [['x', -14], ['y', 4]], Leg_L: [['x', -16]],
 });
 
-/** A horizontal sweep: the straight arm and its blade turned `yaw` (+ left), the trunk turned `trunk` with it. */
-const SWEEP = (yaw, trunk, { y = 0, z = HIP - 0.08, pitch = 86, lead = 'R' } = {}) => ({
+/**
+ * A horizontal sweep: the straight arm and its blade turned `yaw` (+ left), the trunk turned `trunk` with it. The wrist
+ * turns the blade flat (`edge` degrees about its own length, the side of the turn picking the edge that leads), so the
+ * edge cuts the way the arm sweeps, not the flat.
+ */
+const SWEEP = (yaw, trunk, { y = 0, z = HIP - 0.08, pitch = 86, lead = 'R', edge = 90 } = {}) => ({
   Root: { pos: [0, y, z] },
   Torso: [['z', trunk * 0.6]], Chest: [['x', -10], ['z', trunk * 0.4]], ...look(trunk),
-  Arm_R: [['x', pitch], ['z', yaw - trunk]], Hand_R: [['x', 10]], Tool_R: [['x', -92]],
+  Arm_R: [['x', pitch], ['z', yaw - trunk]], Hand_R: [['x', 10]], Tool_R: [['y', edge], ['x', -92]],
   Arm_L: [['x', 20 - trunk * 0.3], ['y', 34]], Hand_L: [['x', 30]],
   ...(lead === 'R'
     ? { Thigh_R: [['x', 46], ['y', -6]], Leg_R: [['x', -42]], Thigh_L: [['x', -26], ['y', 6]], Leg_L: [['x', -10]] }
@@ -57,12 +61,12 @@ const drifting_cut = [
 const returning_cut = [
   { t: 0, pose: GUARD() },
   // The blade gathered high on the left, across the chest.
-  { t: 0.09, pose: { ...SWEEP(100, 40, { pitch: 104 }), Hand_R: [['x', 34]], Arm_L: [['x', 40], ['y', 24]], Hand_L: [['x', 50]] } },
+  { t: 0.09, pose: { ...SWEEP(100, 40, { pitch: 104, edge: -90 }), Hand_R: [['x', 34]], Arm_L: [['x', 40], ['y', 24]], Hand_L: [['x', 50]] } },
   // Back across the front, a little downward.
-  { t: 0.18, pose: SWEEP(0, 0, { y: 0.18, pitch: 90, lead: 'L' }) },
+  { t: 0.18, pose: SWEEP(0, 0, { y: 0.18, pitch: 90, lead: 'L', edge: -90 }) },
   // Out to the right.
-  { t: 0.26, pose: SWEEP(-100, -44, { y: 0.24, z: HIP - 0.1, pitch: 76, lead: 'L' }) },
-  { t: 0.38, pose: SWEEP(-108, -48, { y: 0.24, z: HIP - 0.1, pitch: 72, lead: 'L' }) },
+  { t: 0.26, pose: SWEEP(-100, -44, { y: 0.24, z: HIP - 0.1, pitch: 76, lead: 'L', edge: -90 }) },
+  { t: 0.38, pose: SWEEP(-108, -48, { y: 0.24, z: HIP - 0.1, pitch: 72, lead: 'L', edge: -90 }) },
   { t: 0.52, pose: GUARD(0.24) },
 ];
 
