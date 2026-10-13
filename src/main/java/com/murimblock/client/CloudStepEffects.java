@@ -41,16 +41,37 @@ import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 /**
- * What Cloud Step Slash's dash looks like besides its animation (docs/combat/styles/azure-cloud-sword.md): pale azure
- * afterimages of the player left along the way, fading; thin speed lines trailing behind; a puff of dust where it leaves;
- * and, for the one who dashes, a short push of the field of view (and in first person, speed lines on the screen). Each client draws it for every player it sees dash
- * (it reads their Epic Fight animation): nothing goes through the network.
+ * What the art's fast moves look like besides their animation (docs/combat/styles/azure-cloud-sword.md): Cloud Step
+ * Slash's dash and Heaven-Splitting Crescent's rise. Pale azure afterimages of the player left along the way, fading;
+ * thin speed lines trailing behind (below, going up); a puff of dust where it leaves; and, for the one who moves, a
+ * short push of the field of view (in first person, speed lines on the screen). Each client draws it for every player
+ * it sees move (it reads their Epic Fight animation): nothing goes through the network.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CloudStepEffects {
     private static final ResourceLocation WHITE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/afterimage.png");
-    /** The dash itself, in the animation (seconds): from the launch to the stop past the target. */
-    private static final float DASH_FROM = 0.02F, DASH_TO = 0.22F;
+    /**
+     * A fast move of the art: its animation, the stretch of it where the body flies (seconds), and whether it goes up
+     * (else forward). Cloud Step Slash's dash, from the launch to the stop; Heaven-Splitting Crescent's rise, from the
+     * leap (AzureCloudSword: 4 ticks in) to near the top.
+     */
+    private record Fast(java.util.function.Supplier<yesman.epicfight.api.animation.AnimationManager.AnimationAccessor<?>> animation,
+                        float from, float to, boolean up) {
+        float length() {
+            return to - from;
+        }
+    }
+
+    private static final List<Fast> FAST = List.of(
+            new Fast(() -> MurimAnimations.CLOUD_STEP_SLASH, 0.02F, 0.22F, false),
+            new Fast(() -> MurimAnimations.HEAVEN_SPLITTING_CRESCENT, 0.2F, 0.62F, true));
+
+    /** A player in a fast move, `t` seconds into its flying stretch (negative before it). */
+    private record InMove(Fast move, float t) {
+        boolean flying() {
+            return t >= 0 && t <= move.length();
+        }
+    }
     /** How long an afterimage takes to fade (ticks), and how bright it starts. */
     private static final float FADE_TICKS = 7.0F, BRIGHT = 0.55F;
     private static final DustParticleOptions AZURE = new DustParticleOptions(new Vector3f(0.62F, 0.85F, 1.0F), 0.9F);
@@ -67,12 +88,14 @@ public final class CloudStepEffects {
     private CloudStepEffects() {
     }
 
-    /** How far into Cloud Step Slash this player is (seconds), or -1 if they are not in it. */
-    static float dashTime(Player player) {
+    /** The fast move this player is in, if any. */
+    @javax.annotation.Nullable
+    static InMove inMove(Player player) {
         PlayerPatch<?> patch = EpicFightBridge.patch(player);
         AnimationPlayer main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
-        if (main == null || main.isEmpty() || MurimAnimations.CLOUD_STEP_SLASH == null || main.getRealAnimation() != MurimAnimations.CLOUD_STEP_SLASH) return -1;
-        return main.getElapsedTime();
+        if (main == null || main.isEmpty() || main.getRealAnimation() == null) return null;
+        for (Fast f : FAST) if (f.animation.get() != null && main.getRealAnimation() == f.animation.get()) return new InMove(f, main.getElapsedTime() - f.from);
+        return null;
     }
 
     @SubscribeEvent
@@ -82,12 +105,12 @@ public final class CloudStepEffects {
         if (level == null || mc.isPaused()) return;
         long now = level.getGameTime();
         for (AbstractClientPlayer player : level.players()) {
-            float t = dashTime(player);
-            boolean dashing = t >= DASH_FROM && t <= DASH_TO;
+            InMove move = inMove(player);
+            boolean dashing = move != null && move.flying();
             boolean was = DASHING.getOrDefault(player.getUUID(), false);
             if (dashing) {
                 GHOSTS.computeIfAbsent(player.getUUID(), k -> new ArrayDeque<>()).addLast(new Ghost(player.position(), now));
-                wind(level, player, !was);
+                wind(level, player, !was, move.move.up);
             }
             DASHING.put(player.getUUID(), dashing);
         }
@@ -100,9 +123,9 @@ public final class CloudStepEffects {
         STREAKS.removeIf(s -> now - s.tick > STREAK_TICKS);
     }
 
-    /** Wind pulled behind the body, and at the start a puff of dust at the feet. */
-    private static void wind(ClientLevel level, Player player, boolean leaving) {
-        Vec3 forward = Vec3.directionFromRotation(0, player.getYRot());
+    /** Wind pulled behind the body (below it, going up), and at the start a puff of dust at the feet. */
+    private static void wind(ClientLevel level, Player player, boolean leaving, boolean up) {
+        Vec3 forward = up ? Vec3.ZERO : Vec3.directionFromRotation(0, player.getYRot());
         Vec3 at = player.position();
         var random = level.getRandom();
         if (leaving) {
@@ -116,8 +139,15 @@ public final class CloudStepEffects {
         // would cross the camera; the screen has its own, onRenderGui).
         boolean ownEyes = player == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson();
         for (int i = 0; i < (ownEyes ? 0 : 5); i++) {
-            double side = (random.nextDouble() - 0.5) * 1.6, up = 0.15 + random.nextDouble() * 1.7;
-            Vec3 from = at.add(-forward.z * side, up, forward.x * side).add(forward.scale(random.nextDouble() * 0.8));
+            if (up) {
+                // All around the body, trailing down.
+                double a = random.nextDouble() * Math.PI * 2, r = 0.45 + random.nextDouble() * 0.5;
+                Vec3 from = at.add(Math.cos(a) * r, random.nextDouble() * 2.0, Math.sin(a) * r);
+                STREAKS.add(new Streak(from, from.subtract(0, 1.2 + random.nextDouble() * 1.4, 0), level.getGameTime()));
+                continue;
+            }
+            double side = (random.nextDouble() - 0.5) * 1.6, height = 0.15 + random.nextDouble() * 1.7;
+            Vec3 from = at.add(-forward.z * side, height, forward.x * side).add(forward.scale(random.nextDouble() * 0.8));
             STREAKS.add(new Streak(from, from.subtract(forward.scale(1.4 + random.nextDouble() * 1.6)), level.getGameTime()));
         }
         for (int i = 0; i < (ownEyes ? 0 : 2); i++) {
@@ -218,10 +248,12 @@ public final class CloudStepEffects {
     public static void onRenderGui(RenderGuiEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || !mc.options.getCameraType().isFirstPerson() || mc.options.hideGui) return;
-        float t = dashTime(mc.player);
-        if (t < 0 || t > 0.34F) return;
-        // Up in a few hundredths of a second, down over the rest of the dash and the stop.
-        float strength = t < 0.06F ? t / 0.06F : Mth.clamp(1 - (t - 0.06F) / 0.28F, 0, 1);
+        InMove move = inMove(mc.player);
+        if (move == null) return;
+        float t = move.t, length = move.move.length();
+        if (t < 0 || t > length + 0.12F) return;
+        // Up in a few hundredths of a second, down over the rest of the flight and the stop.
+        float strength = t < 0.04F ? t / 0.04F : Mth.clamp(1 - (t - 0.04F) / (length + 0.08F), 0, 1);
         if (strength <= 0) return;
         GuiGraphics g = event.getGuiGraphics();
         float cx = g.guiWidth() / 2.0F, cy = g.guiHeight() / 2.0F, reach = (float) Math.hypot(cx, cy);
@@ -245,7 +277,7 @@ public final class CloudStepEffects {
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
     public static void onRenderLiving(net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || event.getEntity() == mc.player || !mc.options.getCameraType().isFirstPerson() || dashTime(mc.player) < 0) return;
+        if (mc.player == null || event.getEntity() == mc.player || !mc.options.getCameraType().isFirstPerson() || inMove(mc.player) == null) return;
         Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
         if (event.getEntity().getBoundingBox().inflate(0.3).contains(eye)) event.setCanceled(true);
     }
@@ -254,9 +286,11 @@ public final class CloudStepEffects {
     @SubscribeEvent
     public static void onFov(ComputeFovModifierEvent event) {
         if (event.getPlayer() != Minecraft.getInstance().player) return;
-        float t = dashTime(event.getPlayer());
-        if (t < 0 || t > 0.4F) return;
-        float push = Mth.sin(Mth.PI * Mth.clamp(t / 0.4F, 0, 1));
+        InMove move = inMove(event.getPlayer());
+        if (move == null) return;
+        float span = move.move.length() + 0.18F;
+        if (move.t < 0 || move.t > span) return;
+        float push = Mth.sin(Mth.PI * Mth.clamp(move.t / span, 0, 1));
         event.setNewFovModifier(event.getNewFovModifier() * (1 + 0.12F * push));
     }
 

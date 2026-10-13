@@ -3,7 +3,7 @@
 //   cloud_step_dive / cloud_step_riposte: the dash plunging from the air, and the short double cut after a parry.
 //   swallow_returns: the secret, a spinning cut from behind the attacker.
 //   thousand_drizzle (+ _storm): six quick thrusts and a last pushing one; drizzle_wave (one thrust sending the wave) is made in Blockbench: azure-drizzle-wave.cjs.
-//   heaven_splitting_crescent: a rising crescent that leaves the ground; cloud_splitting_descent: the slam from the air.
+//   heaven_splitting_crescent (made in Blockbench: azure-crescent.cjs); cloud_splitting_descent: the slam from the air.
 //   Flowing Cloud Stance's other strikes: rising_cloud, falling_rain_air (the air attack) and wind_step (the sprinting attack).
 //   The four default strikes (drifting_cut, returning_cut, piercing_mist, falling_rain) are made in Blockbench:
 //   art/blockbench/azure_cloud_m1.bbmodel (azure-m1.cjs), turned into game files by blockbench-to-epicfight.cjs.
@@ -285,25 +285,7 @@ const thousand_drizzle = (() => {
 
 // ---------------------------------------------------------------- Heaven-Splitting Crescent
 
-/** Crouched deep, blade low behind the right leg: the crescent starts from the ground. */
-const COIL = {
-  Root: { pos: [0, 0, HIP - 0.22], rot: [['z', -20]] },
-  Chest: [['x', -30], ['z', -20]], Head: [['x', 20], ['z', 15]],
-  Arm_R: [['x', -25], ['z', -30]], Hand_R: [['x', -15]],
-  Arm_L: [['x', 35], ['y', 25]], Hand_L: [['x', 30]],
-  Thigh_R: [['x', 75]], Leg_R: [['x', -95]],
-  Thigh_L: [['x', 10]], Leg_L: [['x', -60]],
-};
-/** Airborne after the crescent: blade high, knees drawn up. */
-const RISEN = { ...HIGH(0.3, HIP + 0.08), ...AIR_LEGS };
-const heaven_splitting_crescent = [
-  { t: 0, pose: GUARD() },
-  { t: 0.14, pose: COIL },
-  { t: 0.24, pose: { ...CUT(0, 0.2, HIP - 0.02, 0), ...blade(85, 0, 0), Chest: [['x', 5]] } },
-  { t: 0.34, pose: RISEN },
-  { t: 0.6, pose: RISEN },
-  { t: 0.9, pose: { ...HIGH(0.3), ...AIR_LEGS, ...blade(120, 0, 20) } },
-];
+// heaven_splitting_crescent comes from Blockbench (azure-crescent.cjs).
 
 /** Cloud-Splitting Descent: in the air, blade raised in both hands, then driven down as the body slams the ground. */
 const PLANT = {
@@ -371,7 +353,7 @@ const anims = {
   cloud_step_dive, cloud_step_riposte, swallow_returns,
   thousand_drizzle, thousand_drizzle_storm: thousand_drizzle,
   // drizzle_wave comes from Blockbench (azure-drizzle-wave.cjs).
-  heaven_splitting_crescent, cloud_splitting_descent,
+  cloud_splitting_descent,
   // drifting_cut, returning_cut, piercing_mist and falling_rain come from Blockbench (azure-m1.cjs, blockbench-to-epicfight.cjs).
   rising_cloud, falling_rain_air, wind_step,
   finish_azure,
