@@ -376,6 +376,7 @@ public final class MartialCombat {
             else player.resetFallDistance();
         }
         tickCarried(player, now);
+        AzureCloudSword.tickAim(player, now);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
         if (list == null) return;
         List<Runnable> due = new ArrayList<>();
@@ -412,6 +413,7 @@ public final class MartialCombat {
         GUARD_BROKEN.remove(id);
         CARRIED.remove(id);
         LEAPS.remove(id);
+        AzureCloudSword.forgetAim(id);
     }
 
     public static void clearForTests() {
@@ -425,5 +427,6 @@ public final class MartialCombat {
         NO_FALL.clear();
         CARRIED.clear();
         LEAPS.clear();
+        AzureCloudSword.forgetAim(null);
     }
 }

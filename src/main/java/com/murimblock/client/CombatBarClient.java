@@ -70,16 +70,62 @@ public final class CombatBarClient {
         return cd == null || mc.level == null ? 0 : (int) Math.max(0, cd[0] - mc.level.getGameTime());
     }
 
-    /** Before Minecraft reads the hotbar keys: in combat mode they cast instead. */
+    /** For each slot whose key is held to aim: for how many ticks (-1: not held), and whether it already went off. */
+    private static final int[] HELD = new int[MartialData.BAR_SLOTS];
+    private static final boolean[] FIRED = new boolean[MartialData.BAR_SLOTS];
+
+    static {
+        java.util.Arrays.fill(HELD, -1);
+    }
+
+    /** Whether a technique is held to aim before it goes (Cloud Step Slash: its draw stance). */
+    static boolean heldToAim(Optional<ResourceLocation> technique) {
+        return technique.filter(MartialArts.CLOUD_STEP_SLASH.id()::equals).isPresent();
+    }
+
+    /**
+     * Before Minecraft reads the hotbar keys: in combat mode they cast instead, as the key goes down; a technique held to
+     * aim takes its stance as the key goes down and goes as it is let go (or by itself after
+     * {@link MartialArts#CLOUD_STEP_AIM_MAX_TICKS}).
+     */
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.screen != null || !inCombat(player)) return;
+        boolean active = player != null && mc.screen == null && inCombat(player);
+        MartialData data = player == null ? null : MartialService.data(player);
         for (int i = 0; i < MartialData.BAR_SLOTS; i++) {
             KeyMapping key = slotKey(mc, i);
-            while (key.consumeClick()) PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
+            if (!active || !heldToAim(data.slot(i))) {
+                // A stance left held (a screen opened, combat mode left, the technique moved): it goes now.
+                if (HELD[i] >= 0) release(i);
+                if (!active) continue;
+                while (key.consumeClick()) PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
+                continue;
+            }
+            boolean clicked = false;
+            while (key.consumeClick()) clicked = true;
+            if (key.isDown() || (clicked && HELD[i] < 0)) {
+                if (HELD[i] < 0) {
+                    HELD[i] = 0;
+                    FIRED[i] = false;
+                    PacketDistributor.sendToServer(new TechniquePayloads.Aim(i));
+                } else if (++HELD[i] >= MartialArts.CLOUD_STEP_AIM_MAX_TICKS && !FIRED[i]) {
+                    FIRED[i] = true;
+                    PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
+                }
+                // A tap shorter than a tick: the stance, then at once the dash.
+                if (!key.isDown()) release(i);
+            } else if (HELD[i] >= 0) {
+                release(i);
+            }
         }
+    }
+
+    private static void release(int slot) {
+        if (!FIRED[slot]) PacketDistributor.sendToServer(new TechniquePayloads.Cast(slot));
+        HELD[slot] = -1;
+        FIRED[slot] = false;
     }
 
     /** In combat mode the item hotbar gives way to the combat bar, drawn in its place. */

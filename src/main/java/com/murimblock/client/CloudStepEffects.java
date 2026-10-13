@@ -1,0 +1,247 @@
+package com.murimblock.client;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.murimblock.Murimblock;
+import com.murimblock.integration.epicfight.EpicFightBridge;
+import com.murimblock.integration.epicfight.MurimAnimations;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.neoforged.neoforge.common.util.TriState;
+import org.joml.Vector3f;
+import yesman.epicfight.api.animation.AnimationPlayer;
+import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+
+/**
+ * What Cloud Step Slash's dash looks like besides its animation (docs/combat/styles/azure-cloud-sword.md): pale azure
+ * afterimages of the player left along the way, fading; thin speed lines trailing behind; a puff of dust where it leaves;
+ * and, for the one who dashes, a short push of the field of view. Each client draws it for every player it sees dash
+ * (it reads their Epic Fight animation): nothing goes through the network.
+ */
+@EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
+public final class CloudStepEffects {
+    private static final ResourceLocation WHITE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/afterimage.png");
+    /** The dash itself, in the animation (seconds): from the launch to the stop past the target. */
+    private static final float DASH_FROM = 0.02F, DASH_TO = 0.22F;
+    /** How long an afterimage takes to fade (ticks), and how bright it starts. */
+    private static final float FADE_TICKS = 7.0F, BRIGHT = 0.55F;
+    private static final DustParticleOptions AZURE = new DustParticleOptions(new Vector3f(0.62F, 0.85F, 1.0F), 0.9F);
+
+    /** An afterimage: where the player was, and when (client game time). */
+    private record Ghost(Vec3 at, long tick) { }
+
+    private static final Map<UUID, Deque<Ghost>> GHOSTS = new HashMap<>();
+    /** The players seen dashing last tick (to puff the dust once, as they leave). */
+    private static final Map<UUID, Boolean> DASHING = new HashMap<>();
+    /** True while afterimages are drawn: their name tags are not. */
+    private static boolean drawingGhosts;
+
+    private CloudStepEffects() {
+    }
+
+    /** How far into Cloud Step Slash this player is (seconds), or -1 if they are not in it. */
+    static float dashTime(Player player) {
+        PlayerPatch<?> patch = EpicFightBridge.patch(player);
+        AnimationPlayer main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
+        if (main == null || main.isEmpty() || MurimAnimations.CLOUD_STEP_SLASH == null || main.getRealAnimation() != MurimAnimations.CLOUD_STEP_SLASH) return -1;
+        return main.getElapsedTime();
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null || mc.isPaused()) return;
+        long now = level.getGameTime();
+        for (AbstractClientPlayer player : level.players()) {
+            float t = dashTime(player);
+            boolean dashing = t >= DASH_FROM && t <= DASH_TO;
+            boolean was = DASHING.getOrDefault(player.getUUID(), false);
+            if (dashing) {
+                GHOSTS.computeIfAbsent(player.getUUID(), k -> new ArrayDeque<>()).addLast(new Ghost(player.position(), now));
+                wind(level, player, !was);
+            }
+            DASHING.put(player.getUUID(), dashing);
+        }
+        for (Iterator<Map.Entry<UUID, Deque<Ghost>>> it = GHOSTS.entrySet().iterator(); it.hasNext(); ) {
+            Deque<Ghost> ghosts = it.next().getValue();
+            while (!ghosts.isEmpty() && now - ghosts.peekFirst().tick > FADE_TICKS) ghosts.removeFirst();
+            if (ghosts.isEmpty()) it.remove();
+        }
+        DASHING.keySet().removeIf(id -> level.getPlayerByUUID(id) == null);
+        STREAKS.removeIf(s -> now - s.tick > STREAK_TICKS);
+    }
+
+    /** Wind pulled behind the body, and at the start a puff of dust at the feet. */
+    private static void wind(ClientLevel level, Player player, boolean leaving) {
+        Vec3 forward = Vec3.directionFromRotation(0, player.getYRot());
+        Vec3 at = player.position();
+        var random = level.getRandom();
+        if (leaving) {
+            for (int i = 0; i < 8; i++) {
+                double a = Math.PI * 2 * i / 8;
+                level.addParticle(ParticleTypes.POOF, at.x + Math.cos(a) * 0.4, at.y + 0.1, at.z + Math.sin(a) * 0.4,
+                        Math.cos(a) * 0.08 - forward.x * 0.1, 0.02, Math.sin(a) * 0.08 - forward.z * 0.1);
+            }
+        }
+        // Speed lines: thin streaks of light around the body, trailing back along the way.
+        for (int i = 0; i < 5; i++) {
+            double side = (random.nextDouble() - 0.5) * 1.6, up = 0.15 + random.nextDouble() * 1.7;
+            Vec3 from = at.add(-forward.z * side, up, forward.x * side).add(forward.scale(random.nextDouble() * 0.8));
+            STREAKS.add(new Streak(from, from.subtract(forward.scale(1.4 + random.nextDouble() * 1.6)), level.getGameTime()));
+        }
+        for (int i = 0; i < 2; i++) {
+            Vec3 p = at.add((random.nextDouble() - 0.5) * 0.8, 0.4 + random.nextDouble() * 1.2, (random.nextDouble() - 0.5) * 0.8);
+            level.addParticle(AZURE, p.x, p.y, p.z, 0, 0, 0);
+        }
+    }
+
+    /** A speed line, from its front end to its tail, and when it was drawn (client game time). */
+    private record Streak(Vec3 from, Vec3 to, long tick) { }
+
+    private static final List<Streak> STREAKS = new ArrayList<>();
+    /** How long a speed line lasts (ticks), and its width (blocks). */
+    private static final float STREAK_TICKS = 4.0F, STREAK_WIDTH = 0.035F;
+
+    /** The speed lines, each a thin strip turned to the camera, fading. */
+    private static void drawStreaks(PoseStack pose, VertexConsumer out, Vec3 camera, float now) {
+        PoseStack.Pose p = pose.last();
+        for (Streak s : STREAKS) {
+            float fade = 1 - (now - s.tick) / STREAK_TICKS;
+            if (fade <= 0) continue;
+            Vec3 a = s.from.subtract(camera), b = s.to.subtract(camera);
+            Vec3 side = b.subtract(a).cross(a.add(b).scale(0.5)).normalize().scale(STREAK_WIDTH);
+            int c = (int) (255 * 0.8F * fade), cb = (int) (255 * fade);
+            // Bright at the front, nothing at the tail.
+            streakVertex(p, out, a.add(side), c, c, cb);
+            streakVertex(p, out, a.subtract(side), c, c, cb);
+            streakVertex(p, out, b.subtract(side), 0, 0, 0);
+            streakVertex(p, out, b.add(side), 0, 0, 0);
+            // And its back (seen from either side).
+            streakVertex(p, out, b.add(side), 0, 0, 0);
+            streakVertex(p, out, b.subtract(side), 0, 0, 0);
+            streakVertex(p, out, a.subtract(side), c, c, cb);
+            streakVertex(p, out, a.add(side), c, c, cb);
+        }
+    }
+
+    private static void streakVertex(PoseStack.Pose p, VertexConsumer out, Vec3 v, int r, int g, int b) {
+        out.addVertex(p, (float) v.x, (float) v.y, (float) v.z).setColor(r, g, b, 255).setUv(0.5F, 0.5F)
+                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(p, 0, 1, 0);
+    }
+
+    /** The afterimages: the player's own model, as it is now, at each place it passed, in fading azure light. */
+    @SubscribeEvent
+    public static void onRenderLevel(RenderLevelStageEvent event) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES || (GHOSTS.isEmpty() && STREAKS.isEmpty())) return;
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null) return;
+        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float now = level.getGameTime() + partial;
+        Vec3 camera = event.getCamera().getPosition();
+        PoseStack pose = event.getPoseStack();
+        MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        RenderType glow = RenderType.eyes(WHITE);
+        drawingGhosts = true;
+        try {
+            for (Map.Entry<UUID, Deque<Ghost>> e : GHOSTS.entrySet()) {
+                Player player = level.getPlayerByUUID(e.getKey());
+                if (player == null || (player == mc.player && mc.options.getCameraType().isFirstPerson())) continue;
+                @SuppressWarnings("unchecked")
+                EntityRenderer<Player> renderer = (EntityRenderer<Player>) mc.getEntityRenderDispatcher().getRenderer(player);
+                List<Ghost> ghosts = new ArrayList<>(e.getValue());
+                Vec3 here = player.getPosition(partial);
+                for (Ghost g : ghosts) {
+                    float fade = 1 - (now - g.tick) / FADE_TICKS;
+                    // Not where the player stands now (it would only brighten them).
+                    if (fade <= 0 || g.at.distanceToSqr(here) < 0.36) continue;
+                    float b = BRIGHT * fade;
+                    MultiBufferSource tinted = type -> new Tinted(buffers.getBuffer(glow), (int) (90 * b), (int) (170 * b), (int) (255 * b));
+                    pose.pushPose();
+                    pose.translate(g.at.x - camera.x, g.at.y - camera.y, g.at.z - camera.z);
+                    renderer.render(player, Mth.lerp(partial, player.yRotO, player.getYRot()), partial, pose, tinted, LightTexture.FULL_BRIGHT);
+                    pose.popPose();
+                }
+            }
+        } finally {
+            drawingGhosts = false;
+        }
+        drawStreaks(pose, buffers.getBuffer(glow), camera, now);
+        buffers.endBatch(glow);
+    }
+
+    @SubscribeEvent
+    public static void onNameTag(RenderNameTagEvent event) {
+        if (drawingGhosts) event.setCanRender(TriState.FALSE);
+    }
+
+    /** For the one who dashes: the view pushed out a little as they leave, back as they stop. */
+    @SubscribeEvent
+    public static void onFov(ComputeFovModifierEvent event) {
+        if (event.getPlayer() != Minecraft.getInstance().player) return;
+        float t = dashTime(event.getPlayer());
+        if (t < 0 || t > 0.4F) return;
+        float push = Mth.sin(Mth.PI * Mth.clamp(t / 0.4F, 0, 1));
+        event.setNewFovModifier(event.getNewFovModifier() * (1 + 0.12F * push));
+    }
+
+    /** Everything drawn in one flat colour (the white texture's middle), lit full. */
+    private record Tinted(VertexConsumer out, int r, int g, int b) implements VertexConsumer {
+        @Override public VertexConsumer addVertex(float x, float y, float z) {
+            out.addVertex(x, y, z);
+            return this;
+        }
+
+        @Override public VertexConsumer setColor(int red, int green, int blue, int alpha) {
+            out.setColor(r, g, b, 255);
+            return this;
+        }
+
+        @Override public VertexConsumer setUv(float u, float v) {
+            out.setUv(0.5F, 0.5F);
+            return this;
+        }
+
+        @Override public VertexConsumer setUv1(int u, int v) {
+            out.setUv1(u, v);
+            return this;
+        }
+
+        @Override public VertexConsumer setUv2(int u, int v) {
+            out.setUv2(240, 240);
+            return this;
+        }
+
+        @Override public VertexConsumer setNormal(float x, float y, float z) {
+            out.setNormal(x, y, z);
+            return this;
+        }
+    }
+}

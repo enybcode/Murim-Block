@@ -50,6 +50,21 @@ public final class TechniquePayloads {
         }
     }
 
+    /**
+     * Client: the key of a slot went down (its release sends {@link Cast}). For a technique held to aim (Cloud Step
+     * Slash), the server puts the player in its draw stance; for the others, nothing.
+     */
+    public record Aim(int slot) implements CustomPacketPayload {
+        public static final Type<Aim> TYPE = new Type<>(id("technique_aim"));
+        public static final StreamCodec<ByteBuf, Aim> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(Aim::new, Aim::slot);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(Aim payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player) MartialService.aim(player, payload.slot);
+        }
+    }
+
     /** Client places an unlocked technique in a slot of its bar (or clears it). */
     public record Assign(int slot, Optional<ResourceLocation> technique) implements CustomPacketPayload {
         public static final Type<Assign> TYPE = new Type<>(id("technique_assign"));

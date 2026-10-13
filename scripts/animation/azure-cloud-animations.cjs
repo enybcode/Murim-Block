@@ -1,5 +1,5 @@
 // Generates the Azure Cloud Sword Art's animations for the Epic Fight biped (docs/combat/styles/azure-cloud-sword.md).
-//   cloud_step_slash: a 5-block dash, low and fast, the blade swept from left to right across the path.
+//   cloud_step_slash and its aim are made in Blockbench: art/blockbench/azure_cloud_step.bbmodel (azure-cloud-step.cjs).
 //   cloud_step_dive / cloud_step_riposte: the dash plunging from the air, and the short double cut after a parry.
 //   swallow_returns: the secret, a spinning cut from behind the attacker.
 //   thousand_drizzle (+ _storm): six quick thrusts and a last pushing one; drizzle_wave: one thrust sending a wave.
@@ -376,14 +376,7 @@ const finish_azure = [
 // ---------------------------------------------------------------- writing
 
 const anims = {
-  cloud_step_slash: [
-    { t: 0, pose: STANCE(0) },
-    { t: 0.14, pose: WIND_UP },
-    { t: 0.26, pose: DASH_MID() },
-    { t: 0.42, pose: SWEPT(DASH * 0.96) },
-    { t: 0.62, pose: SWEPT(DASH) },
-    { t: 1.0, pose: STANCE(DASH) },
-  ],
+  // cloud_step_slash and cloud_step_aim come from Blockbench (azure-cloud-step.cjs, blockbench-to-epicfight.cjs).
   cloud_step_dive, cloud_step_riposte, swallow_returns,
   thousand_drizzle, thousand_drizzle_storm: thousand_drizzle, drizzle_wave,
   heaven_splitting_crescent, cloud_splitting_descent,

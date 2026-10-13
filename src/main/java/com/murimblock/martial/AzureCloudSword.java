@@ -4,6 +4,9 @@ import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.integration.epicfight.MurimGuardSkill;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -28,6 +31,7 @@ import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.GuardAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
@@ -152,6 +156,48 @@ public final class AzureCloudSword {
         if (player.onGround() || player.isInWater() || player.onClimbable()) return false;
         AABB below = player.getBoundingBox().move(0, -AIR_HEIGHT, 0);
         return player.level().noCollision(player, below);
+    }
+
+    /** Since when each player holds Cloud Step Slash's draw stance (game time). */
+    private static final Map<UUID, Long> AIMS = new HashMap<>();
+
+    /**
+     * Takes Cloud Step Slash's draw stance (the key held): crouched, the blade sheathed at the hip, turning with the camera
+     * to aim. Not in the air nor with a riposte to answer (those variants go at once, on the release). False if not taken.
+     */
+    static boolean aim(ServerPlayer player) {
+        PlayerPatch<?> patch = EpicFightBridge.patch(player);
+        if (patch == null || MurimAnimations.CLOUD_STEP_AIM == null || airborne(player) || MartialCombat.riposte(player) != null) return false;
+        patch.playAnimationSynchronized(MurimAnimations.CLOUD_STEP_AIM, 0.0F);
+        AIMS.put(player.getUUID(), player.level().getGameTime());
+        return true;
+    }
+
+    /** Whether this player is in Cloud Step Slash's draw stance (their key held). */
+    public static boolean aiming(Player player) {
+        PlayerPatch<?> patch = EpicFightBridge.patch(player);
+        AnimationPlayer main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
+        return main != null && !main.isEmpty() && main.getRealAnimation() == MurimAnimations.CLOUD_STEP_AIM;
+    }
+
+    /** A stance held past this (the release lost) is dropped. The client lets go by itself at AIM_MAX_TICKS. */
+    static final int AIM_DROP_TICKS = MartialArts.CLOUD_STEP_AIM_MAX_TICKS + 40;
+
+    static void tickAim(ServerPlayer player, long now) {
+        Long since = AIMS.get(player.getUUID());
+        if (since == null) return;
+        if (!aiming(player)) {
+            AIMS.remove(player.getUUID());
+        } else if (now - since > AIM_DROP_TICKS) {
+            AIMS.remove(player.getUUID());
+            PlayerPatch<?> patch = EpicFightBridge.patch(player);
+            if (patch != null) patch.playAnimationSynchronized(Animations.BIPED_IDLE, 0.0F);
+        }
+    }
+
+    static void forgetAim(UUID player) {
+        if (player == null) AIMS.clear();
+        else AIMS.remove(player);
     }
 
     /** Whether the player is in a guard's recoil (after a parry): a riposte may cut it short. */

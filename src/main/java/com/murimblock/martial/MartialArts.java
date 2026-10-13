@@ -109,6 +109,8 @@ public final class MartialArts {
 
     public static final ResourceLocation AZURE_CLOUD_SWORD = id("azure_cloud_sword");
     public static final Technique CLOUD_STEP_SLASH = new Technique(id("cloud_step_slash"), AZURE_CLOUD_SWORD, 12, 120);
+    /** Cloud Step Slash is held to aim (its draw stance) and goes when let go, or by itself after this long (3 s). */
+    public static final int CLOUD_STEP_AIM_MAX_TICKS = 60;
     public static final Technique THOUSAND_DRIZZLE = new Technique(id("thousand_drizzle"), AZURE_CLOUD_SWORD, 18, 180);
     public static final Technique HEAVEN_SPLITTING_CRESCENT = new Technique(id("heaven_splitting_crescent"), AZURE_CLOUD_SWORD, 25, 280);
     /** The secret: Cloud Step Slash cast right after a perfect parry (costs what that Cloud Step Slash costs). */

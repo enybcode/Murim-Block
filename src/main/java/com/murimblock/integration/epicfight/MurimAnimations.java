@@ -14,6 +14,7 @@ import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
 import yesman.epicfight.api.animation.types.ComboAttackAnimation;
 import yesman.epicfight.api.animation.types.DashAttackAnimation;
+import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.registry.entries.EpicFightSounds;
@@ -37,6 +38,12 @@ public final class MurimAnimations {
      * its own root motion, the long dash collider on the root joint).
      */
     public static AnimationAccessor<DashAttackAnimation> CLOUD_STEP_SLASH;
+    /**
+     * Cloud Step Slash held: the draw stance (the blade sheathed back along the left hip) while the key is down, looping;
+     * the player cannot walk but turns with the camera to aim. Let go, the dash. Both from Blockbench
+     * (art/blockbench/azure_cloud_step.bbmodel).
+     */
+    public static AnimationAccessor<StaticAnimation> CLOUD_STEP_AIM;
     /**
      * The path Cloud Step Slash cuts: a box 1.6 wide, 1.6 high and 5.4 long, from the player to the end of the dash
      * (Epic Fight's joint space: -Z is forward). The server does not move a player during a dash (the client does, and
@@ -107,15 +114,36 @@ public final class MurimAnimations {
         CARRY_WALK = builder.nextAccessor("biped/murim/carry_walk", accessor -> new MovementAnimation(true, accessor, Armatures.BIPED));
         CARRIED = builder.nextAccessor("biped/murim/carried", accessor -> new StaticAnimation(true, accessor, Armatures.BIPED));
         FINISH_GENERIC = builder.nextAccessor("biped/murim/finish_generic", accessor -> new ActionAnimation(0.1F, accessor, Armatures.BIPED));
-        // transition, antic, preDelay, contact, recovery: the blade cuts from the start of the dash to the end of the sweep.
+        CLOUD_STEP_AIM = builder.nextAccessor("biped/murim/cloud_step_aim", accessor -> new HeldStance(0.12F, accessor));
+        // transition, antic, preDelay, contact, recovery: out of the draw stance, the blade cuts from the launch to the end
+        // of the draw (the 5 blocks take 0.2 s); then the pose past the target and the flick.
         CLOUD_STEP_SLASH = builder.nextAccessor("biped/murim/cloud_step_slash", accessor ->
-                new DashAttackAnimation(0.08F, 0.12F, 0.16F, 0.46F, 0.66F, CLOUD_STEP_PATH, Armatures.BIPED.get().rootJoint, accessor, Armatures.BIPED)
+                new DashAttackAnimation(0.04F, 0.02F, 0.04F, 0.22F, 0.55F, CLOUD_STEP_PATH, Armatures.BIPED.get().rootJoint, accessor, Armatures.BIPED)
                         .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(1.4F))
                         .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(3))
                         .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
                         .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.6F)
                         .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
         buildAzureCloudSword(builder);
+    }
+
+    /**
+     * A stance held in a loop: the feet still, the body free to turn (to aim), no attack, skill or item meanwhile, and
+     * Epic Fight's walking and idling kept from replacing it. Its states hold over the whole loop.
+     */
+    private static final class HeldStance extends StaticAnimation {
+        HeldStance(float transition, AnimationAccessor<? extends StaticAnimation> accessor) {
+            super(transition, true, accessor, Armatures.BIPED);
+            this.stateSpectrumBlueprint.clear().newTimePair(0.0F, Float.MAX_VALUE)
+                    .addState(EntityState.MOVEMENT_LOCKED, true)
+                    .addState(EntityState.TURNING_LOCKED, false)
+                    .addState(EntityState.INACTION, true)
+                    .addState(EntityState.UPDATE_LIVING_MOTION, false)
+                    .addState(EntityState.COMBO_ATTACKS_DOABLE, false)
+                    .addState(EntityState.SKILL_EXECUTABLE, false)
+                    .addState(EntityState.CAN_USE_ITEM, false)
+                    .addState(EntityState.CAN_SWITCH_HAND_ITEM, false);
+        }
     }
 
     private static Joint root() {

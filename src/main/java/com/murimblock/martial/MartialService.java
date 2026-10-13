@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -85,16 +86,11 @@ public final class MartialService {
     public static CastResult castSlot(ServerPlayer player, int slot) {
         ResourceLocation id = data(player).slot(slot).orElse(null);
         MartialArts.Technique technique = id == null ? null : MartialArts.technique(id);
-        if (technique == null || !data(player).hasTechnique(id)) return CastResult.NO_TECHNIQUE;
-        if (!CombatService.isInCombatMode(player)) return CastResult.NOT_IN_COMBAT;
+        CastResult check = check(player, technique);
+        if (check != CastResult.CAST) return check;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
-        if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || QiChargeService.isCharging(player)) return CastResult.HINDERED;
-        if (EpicFightBridge.isBusy(player) && !(riposte != null && guardRecoil(player))) return CastResult.HINDERED;
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
-        if (cooldownLeft(player, id) > 0 && !secondStep) return CastResult.COOLDOWN;
         double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
-        if (QiService.getQi(player) < cost) return CastResult.NO_QI;
-        if (!Techniques.canUse(player, technique)) return CastResult.NO_WEAPON;
         if (!Techniques.perform(player, technique, riposte)) return CastResult.FAILED;
         if (riposte != null) MartialCombat.consumeRiposte(player);
         if (cost > 0) QiService.removeQi(player, cost);
@@ -105,6 +101,38 @@ public final class MartialService {
             if (technique == MartialArts.CLOUD_STEP_SLASH && data(player).evolved(AzureCloudSword.art(), id)) MartialCombat.openSecondStep(player);
         }
         return CastResult.CAST;
+    }
+
+    /**
+     * Whether a technique could be cast now (CAST if so, else why not): known, in combat mode, free to act (a riposte may
+     * cut a guard's recoil short; Cloud Step Slash's draw stance is there to be let go), off cooldown, enough Qi, the
+     * weapon it needs.
+     */
+    private static CastResult check(ServerPlayer player, @Nullable MartialArts.Technique technique) {
+        if (technique == null || !data(player).hasTechnique(technique.id())) return CastResult.NO_TECHNIQUE;
+        if (!CombatService.isInCombatMode(player)) return CastResult.NOT_IN_COMBAT;
+        MartialCombat.Riposte riposte = MartialCombat.riposte(player);
+        if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || QiChargeService.isCharging(player)) return CastResult.HINDERED;
+        if (EpicFightBridge.isBusy(player) && !(riposte != null && guardRecoil(player)) && !AzureCloudSword.aiming(player)) return CastResult.HINDERED;
+        ResourceLocation id = technique.id();
+        boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
+        if (cooldownLeft(player, id) > 0 && !secondStep) return CastResult.COOLDOWN;
+        double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
+        if (QiService.getQi(player) < cost) return CastResult.NO_QI;
+        if (!Techniques.canUse(player, technique)) return CastResult.NO_WEAPON;
+        return CastResult.CAST;
+    }
+
+    /**
+     * The key of a slot went down. For Cloud Step Slash on the ground (no riposte to answer), if it could be cast, the
+     * player takes its draw stance and aims with the camera; letting the key go casts it ({@link #castSlot}) where they
+     * face. Nothing otherwise: the release casts whatever applies, or says why not. True if the stance was taken.
+     */
+    public static boolean aim(ServerPlayer player, int slot) {
+        ResourceLocation id = data(player).slot(slot).orElse(null);
+        MartialArts.Technique technique = id == null ? null : MartialArts.technique(id);
+        if (technique != MartialArts.CLOUD_STEP_SLASH || check(player, technique) != CastResult.CAST) return false;
+        return AzureCloudSword.aim(player);
     }
 
     /** The player is busy only with a guard's recoil (holding the guard, or the parry's motion). */

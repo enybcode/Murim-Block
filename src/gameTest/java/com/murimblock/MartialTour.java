@@ -97,7 +97,7 @@ public final class MartialTour {
             mc.getConnection().send(new net.minecraft.network.protocol.game.ServerboundMovePlayerPacket.PosRot(
                     mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.getYRot(), mc.player.getXRot(), mc.player.onGround()));
         }
-        record(mc, "02-cloud-step-slash", 86, 116, 1);
+        record(mc, "02-cloud-step-slash", 86, 126, 1);
         // The side camera holds through the attacks (the game puts the view back on the player otherwise).
         if (camera != null && (ticks < 278 || (ticks >= 316 && ticks < 380)) && !(ticks >= 128 && ticks < 136) && mc.getCameraEntity() != camera) {
             if (ticks > 61) LOGGER.info("Martial tour: camera taken back at tick {}", ticks);
@@ -168,8 +168,21 @@ public final class MartialTour {
                 mc.setCameraEntity(camera);
             }
             case 84 -> capture(mc, "02-before.png");
-            // The real key 1 (the first hotbar key), in combat mode.
-            case 88 -> KeyMapping.click(mc.options.keyHotbarSlots[0].getKey());
+            // The real key 1 (the first hotbar key), in combat mode, held: Cloud Step Slash's draw stance, to aim.
+            // (Held again every tick: Minecraft reads the real keyboard back when its window is not in front.)
+            case 88 -> {
+                mc.options.keyHotbarSlots[0].setDown(true);
+                KeyMapping.click(mc.options.keyHotbarSlots[0].getKey());
+            }
+            case 89, 90, 91, 92, 93, 94, 95, 97, 98, 99 -> mc.options.keyHotbarSlots[0].setDown(true);
+            case 96 -> {
+                mc.options.keyHotbarSlots[0].setDown(true);
+                check(clientPlaying(mc, MurimAnimations.CLOUD_STEP_AIM), "holding key 1 takes Cloud Step Slash's draw stance");
+                capture(mc, "02b-aim.png");
+                server.execute(() -> check(Math.abs(QiService.getQi(self(server)) - 100) < 0.2, "the stance alone costs no Qi (" + QiService.getQi(self(server)) + ")"));
+            }
+            // Let go: the dash (filmed into 02-cloud-step-slash, with its afterimages and wind).
+            case 100 -> mc.options.keyHotbarSlots[0].setDown(false);
             case 120 -> {
                 capture(mc, "03-after.png");
                 double moved = mc.player.position().subtract(start).horizontalDistance();
@@ -380,9 +393,11 @@ public final class MartialTour {
     private static void capture(Minecraft mc, String name) throws Exception {
         Path file = mc.gameDirectory.toPath().resolve("screenshots").resolve(name);
         Files.createDirectories(file.getParent());
-        try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
-            image.writeToFile(file);
-        }
+        // Written off the render thread: a slow write would hold the game back and the frames would bunch up.
+        var image = Screenshot.takeScreenshot(mc.getMainRenderTarget());
+        net.minecraft.Util.ioPool().execute(() -> {
+            try (image) { image.writeToFile(file); } catch (Exception e) { LOGGER.error("Frame write failed", e); }
+        });
     }
 
     private static void check(boolean ok, String what) {

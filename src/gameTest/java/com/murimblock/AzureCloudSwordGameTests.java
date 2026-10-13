@@ -361,6 +361,45 @@ public final class AzureCloudSwordGameTests {
         end(helper, player);
     }
 
+    @GameTest(template = "foundation_arena", batch = "azure_cloud_step_aim", timeoutTicks = 200)
+    public static void cloudStepIsHeldToAimAndGoesWhenLetGo(GameTestHelper helper) {
+        ServerPlayer player = adept(helper, 0.5);
+        double qi = QiService.getQi(player);
+        helper.assertTrue(MartialService.aim(player, 0), "The draw stance was refused");
+        helper.assertTrue(playing(player, MurimAnimations.CLOUD_STEP_AIM), "Not in the draw stance");
+        helper.assertTrue(QiService.getQi(player) == qi && MartialService.cooldownLeft(player, MartialArts.CLOUD_STEP_SLASH.id()) == 0,
+                "The stance alone should cost nothing");
+        // Held past a loop of the stance (1.2 s), then let go.
+        tickFor(helper, player, 1, 40);
+        helper.runAfterDelay(10, () -> {
+            // Past the blend into it: the stance holds the feet and leaves the aim free.
+            var state = patch(player).getEntityState();
+            helper.assertTrue(state.movementLocked() && !state.turningLocked(), "The stance should hold the feet and leave the aim free: " + state);
+        });
+        helper.runAfterDelay(42, () -> {
+            helper.assertTrue(playing(player, MurimAnimations.CLOUD_STEP_AIM), "The stance did not hold");
+            CastResult result = MartialService.castSlot(player, 0);
+            helper.assertTrue(result == CastResult.CAST && playing(player, MurimAnimations.CLOUD_STEP_SLASH), "Letting go did not dash: " + result);
+            helper.assertTrue(QiService.getQi(player) == qi - MartialArts.CLOUD_STEP_SLASH.qiCost(), "The dash did not take its Qi");
+            stopAnimation(player);
+            helper.assertTrue(!MartialService.aim(player, 0), "The stance was taken on cooldown");
+            // In the air: no stance (the dive goes at once, on the release).
+            MartialService.clearCooldownsForTests(player);
+            player.moveTo(player.getX(), player.getY() + 2.5, player.getZ(), 0, 0);
+            player.setOnGround(false);
+            helper.assertTrue(!MartialService.aim(player, 0), "A stance in the air");
+            player.moveTo(player.getX(), player.getY() - 2.5, player.getZ(), 0, 0);
+            player.setOnGround(true);
+            // A stance whose release never comes is dropped.
+            helper.assertTrue(MartialService.aim(player, 0), "The draw stance was refused the second time");
+        });
+        tickFor(helper, player, 43, 150);
+        helper.runAfterDelay(194, () -> {
+            helper.assertTrue(!playing(player, MurimAnimations.CLOUD_STEP_AIM), "A stance held forever");
+            end(helper, player);
+        });
+    }
+
     // ---------------------------------------------------------------- combos, quests, mastery
 
     @GameTest(template = "foundation_arena", batch = "azure_combo", timeoutTicks = 120)

@@ -27,7 +27,7 @@ final class Techniques {
     static boolean perform(ServerPlayer player, MartialArts.Technique technique, @Nullable MartialCombat.Riposte riposte) {
         PlayerPatch<?> patch = EpicFightBridge.patch(player);
         if (patch == null) return false;
-        if (patch.getEntityState().inaction() && !(riposte != null && AzureCloudSword.inGuardMotion(patch))) return false;
+        if (patch.getEntityState().inaction() && !(riposte != null && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player)) return false;
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.perform(player, patch, technique, riposte);
         return false;
     }
