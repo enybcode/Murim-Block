@@ -298,10 +298,37 @@ public final class MartialTour {
                 int strike = (ticks - 332) / 14 + 1;
                 server.execute(() -> check(zombies.getFirst().getHealth() < chainHealth, "M1 " + strike + " lands on the zombie in front"));
             }
+            // Last, Cloud Step Slash as its player sees it: first person, two zombies on the way.
             case 380 -> {
                 mc.setCameraEntity(mc.player);
                 mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
                 mc.setScreen(null);
+                mc.player.setXRot(8);
+                server.execute(() -> {
+                    ServerPlayer self = self(server);
+                    zombies.forEach(Zombie::discard);
+                    zombies.clear();
+                    MartialService.resetCooldowns(self);
+                    QiService.setQi(self, 100);
+                    Vec3 ahead = Vec3.directionFromRotation(0, self.getYRot());
+                    for (double d : new double[]{2.2, 4.0}) {
+                        Zombie z = EntityType.ZOMBIE.create(server.overworld());
+                        z.moveTo(self.getX() + ahead.x * d, self.getY(), self.getZ() + ahead.z * d, self.getYRot() + 180, 0);
+                        z.setNoAi(true);
+                        z.setPersistenceRequired();
+                        z.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+                        server.overworld().addFreshEntity(z);
+                        zombies.add(z);
+                    }
+                });
+            }
+            case 388 -> {
+                mc.options.keyHotbarSlots[0].setDown(true);
+                KeyMapping.click(mc.options.keyHotbarSlots[0].getKey());
+            }
+            case 389, 390, 391, 392, 393, 394, 395, 396, 397 -> mc.options.keyHotbarSlots[0].setDown(true);
+            case 398 -> mc.options.keyHotbarSlots[0].setDown(false);
+            case 430 -> {
                 server.execute(() -> zombies.forEach(Zombie::discard));
                 finish(mc);
             }
@@ -312,6 +339,7 @@ public final class MartialTour {
         record(mc, "07-drizzle-wave", 206, 226, 1);
         record(mc, "08-crescent", 234, 262, 1);
         record(mc, "12-m1-chain", 318, 378, 1);
+        record(mc, "13-first-person", 384, 426, 1);
         if (ticks >= 234 && ticks <= 262) {
             peakY = Math.max(peakY, mc.player.getY());
             // The zombie as this client sees it.

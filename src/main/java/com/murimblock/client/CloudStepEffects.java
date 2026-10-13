@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LightTexture;
@@ -31,6 +32,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.common.util.TriState;
@@ -41,7 +43,7 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 /**
  * What Cloud Step Slash's dash looks like besides its animation (docs/combat/styles/azure-cloud-sword.md): pale azure
  * afterimages of the player left along the way, fading; thin speed lines trailing behind; a puff of dust where it leaves;
- * and, for the one who dashes, a short push of the field of view. Each client draws it for every player it sees dash
+ * and, for the one who dashes, a short push of the field of view (and in first person, speed lines on the screen). Each client draws it for every player it sees dash
  * (it reads their Epic Fight animation): nothing goes through the network.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -110,13 +112,15 @@ public final class CloudStepEffects {
                         Math.cos(a) * 0.08 - forward.x * 0.1, 0.02, Math.sin(a) * 0.08 - forward.z * 0.1);
             }
         }
-        // Speed lines: thin streaks of light around the body, trailing back along the way.
-        for (int i = 0; i < 5; i++) {
+        // Speed lines: thin streaks of light around the body, trailing back along the way (not for one's own eyes: they
+        // would cross the camera; the screen has its own, onRenderGui).
+        boolean ownEyes = player == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson();
+        for (int i = 0; i < (ownEyes ? 0 : 5); i++) {
             double side = (random.nextDouble() - 0.5) * 1.6, up = 0.15 + random.nextDouble() * 1.7;
             Vec3 from = at.add(-forward.z * side, up, forward.x * side).add(forward.scale(random.nextDouble() * 0.8));
             STREAKS.add(new Streak(from, from.subtract(forward.scale(1.4 + random.nextDouble() * 1.6)), level.getGameTime()));
         }
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < (ownEyes ? 0 : 2); i++) {
             Vec3 p = at.add((random.nextDouble() - 0.5) * 0.8, 0.4 + random.nextDouble() * 1.2, (random.nextDouble() - 0.5) * 0.8);
             level.addParticle(AZURE, p.x, p.y, p.z, 0, 0, 0);
         }
@@ -200,6 +204,50 @@ public final class CloudStepEffects {
     @SubscribeEvent
     public static void onNameTag(RenderNameTagEvent event) {
         if (drawingGhosts) event.setCanRender(TriState.FALSE);
+    }
+
+    /** Seen from the eyes: how many speed lines rush in from the edges of the screen. */
+    private static final int SCREEN_LINES = 30;
+
+    /**
+     * For the one who dashes in first person (the afterimages and the lines around the body are behind the camera):
+     * speed lines rushing in from the edges of the screen, as in a drawn fight, strong as the body leaves, gone as it
+     * stops. They move every tick.
+     */
+    @SubscribeEvent
+    public static void onRenderGui(RenderGuiEvent.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null || !mc.options.getCameraType().isFirstPerson() || mc.options.hideGui) return;
+        float t = dashTime(mc.player);
+        if (t < 0 || t > 0.34F) return;
+        // Up in a few hundredths of a second, down over the rest of the dash and the stop.
+        float strength = t < 0.06F ? t / 0.06F : Mth.clamp(1 - (t - 0.06F) / 0.28F, 0, 1);
+        if (strength <= 0) return;
+        GuiGraphics g = event.getGuiGraphics();
+        float cx = g.guiWidth() / 2.0F, cy = g.guiHeight() / 2.0F, reach = (float) Math.hypot(cx, cy);
+        var random = net.minecraft.util.RandomSource.create(mc.level.getGameTime() * 31L);
+        for (int i = 0; i < SCREEN_LINES; i++) {
+            float angle = (i + random.nextFloat()) * 360.0F / SCREEN_LINES;
+            float inner = reach * (0.55F + random.nextFloat() * 0.25F + 0.15F * (1 - strength));
+            float width = 0.5F + random.nextFloat() * 1.5F;
+            int alpha = (int) (strength * (90 + random.nextInt(80)));
+            g.pose().pushPose();
+            g.pose().translate(cx, cy, 0);
+            g.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(angle));
+            // Bright toward the middle, a touch of azure at the edge.
+            g.fillGradient((int) inner, (int) -width, (int) reach + 4, (int) Math.ceil(width), (alpha << 24) | 0xFFFFFF, ((alpha / 2) << 24) | 0xBFE0FF);
+            g.pose().popPose();
+        }
+    }
+
+    /** In first person, a body the dash goes through is not drawn while the eye is inside it (only its inside would show). */
+    // First, before Epic Fight draws the body its own way.
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
+    public static void onRenderLiving(net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || event.getEntity() == mc.player || !mc.options.getCameraType().isFirstPerson() || dashTime(mc.player) < 0) return;
+        Vec3 eye = mc.gameRenderer.getMainCamera().getPosition();
+        if (event.getEntity().getBoundingBox().inflate(0.3).contains(eye)) event.setCanceled(true);
     }
 
     /** For the one who dashes: the view pushed out a little as they leave, back as they stop. */
