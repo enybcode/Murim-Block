@@ -1,5 +1,10 @@
 # Reprise Murimblock Pour Claude
 
+> Point de reprise actualisé le 13 octobre : [là où je me suis arrêter](../l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md).
+> Ce fichier conserve l'historique du 12 octobre : les passages « Techniques vide »,
+> « crabe non intégré » et les anciens SHA/protocoles ne décrivent plus l'état courant.
+> La tranche garde/K.O./premier art est publiée dans `84b2cac`, protocole 10, PR #5.
+
 Etat prepare le 12 octobre 2026. Synthese des decisions humaines et du depot,
 pas une preuve de nouveaux tests ni une copie exhaustive des conversations.
 Lire les details seulement lorsque la tache les concerne. Le code prime sur

@@ -11,6 +11,7 @@
 
 ## Development And Delivery
 
+- [Point de reprise et installation sur un autre PC](../l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md): état courant, derniers échanges Claude, dépendances et suite.
 - [Local publication, 13 October](DELIVERY_2026_10_13.md): combat/techniques changes, current checks and remaining validation.
 - [Git workflow](GIT_WORKFLOW.md): `test` for pending validation, `main` stable.
 - [Codex and Claude](AI_COLLABORATION.md): shared rules, local setup and safe handoffs.

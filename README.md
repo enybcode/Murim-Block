@@ -52,10 +52,14 @@ Les textes affichés en jeu sont en anglais.
 
 ## La Suite
 
-Les arts martiaux propres à Murimblock, les styles liés aux techniques et les
-quatre coups M1 configurables restent à développer. L'onglet **Techniques** est
-encore vide. Les affrontements physiques entre les lames et d'autres contenus
-du monde font également partie de la direction envisagée, pas du contenu livré.
+Sur `test`, une première tranche d'art martial est présente : **Azure Cloud Sword**,
+son manuel, **Cloud Step Slash**, l'onglet **Techniques** et une barre de compétences.
+La garde Murim, le K.O. PvP, le portage et un finish générique sont aussi implémentés.
+Cette tranche attend encore sa validation en jeu avant promotion dans `main`.
+
+Les passifs/styles avancés, quatre coups M1 configurables, autres compétences,
+quêtes et mouvements secrets restent à développer. Les affrontements physiques
+entre les lames restent une direction future, pas du contenu livré.
 
 La priorité est de stabiliser l'existant avant d'élargir cette progression.
 
@@ -72,6 +76,7 @@ natifs d'Epic Fight ; consultez les [détails de compatibilité](docs/EPIC_FIGHT
 - **`test`** : changements à essayer et à valider.
 - **`main`** : version stable après validation, pas nécessairement tout le contenu de `test`.
 - [Documentation technique et guides de création](docs/README.md).
+- [Là où je me suis arrêté : état et installation sur un autre PC](l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md).
 - [Présentation détaillée des biomes](docs/biomes/README.md).
 
 Le mod n'est pas encore présenté comme une alpha finalisée.
