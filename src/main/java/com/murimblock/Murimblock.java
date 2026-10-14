@@ -55,6 +55,7 @@ public final class Murimblock {
         QiAttachments.register(modEventBus);
         KnockdownAttachments.register(modEventBus);
         MartialService.register(modEventBus);
+        com.murimblock.martial.BloodCrystalAttachments.register(modEventBus);
         MurimAnimations.registerMotions();
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
         EpicFightBridge.registerHooks();
@@ -103,6 +104,9 @@ public final class Murimblock {
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialService.forget(player);
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
+            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialCombat.forget(player);
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialCombat.forget(player);

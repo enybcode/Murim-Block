@@ -124,7 +124,7 @@ public final class MartialService {
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || MeditationService.isMeditating(player)) return CastResult.HINDERED;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
-        if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player)) return CastResult.HINDERED;
+        if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)) return CastResult.HINDERED;
         ResourceLocation id = technique.id();
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
         if (cooldownLeft(player, id) > 0 && !secondStep) return CastResult.COOLDOWN;
@@ -144,8 +144,9 @@ public final class MartialService {
     public static boolean aim(ServerPlayer player, int slot) {
         ResourceLocation id = data(player).slot(slot).orElse(null);
         MartialArts.Technique technique = id == null ? null : MartialArts.technique(id);
-        if (technique != MartialArts.CLOUD_STEP_SLASH || check(player, technique) != CastResult.CAST) return false;
-        return AzureCloudSword.aim(player);
+        if (check(player, technique) != CastResult.CAST) return false;
+        if (technique == MartialArts.BLOOD_CRYSTAL) return SanguineArt.aim(player, slot);
+        return technique == MartialArts.CLOUD_STEP_SLASH && AzureCloudSword.aim(player);
     }
 
     /** The player is busy only with a guard's recoil (holding the guard, or the parry's motion). */

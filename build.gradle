@@ -141,6 +141,14 @@ neoForge {
             disableIdeRun()
         }
 
+        sanguineTour {
+            client()
+            gameDirectory = project.file('build/sanguine-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.sanguineTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client check of Sensei Yun's model, idle, walk and cuts (see SenseiTour).
         senseiTour {
             client()
