@@ -4,6 +4,7 @@ import com.murimblock.Murimblock;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.martial.AzureCloudSword;
+import com.murimblock.martial.LongFist;
 import com.murimblock.network.FinishCinematicPayload;
 import com.murimblock.qi.charge.QiChargeService;
 import java.util.HashMap;
@@ -59,10 +60,17 @@ public final class KnockdownService {
     /** Carried players their carrier is putting down (the one dismount we allow). */
     private static final java.util.Set<UUID> RELEASING = new java.util.HashSet<>();
 
-    /** A finish being played: on whom, since when, and whose (its blow lands at its own tick). */
-    private record Execution(UUID victim, int started, boolean azure) {
+    /**
+     * A finish being played: on whom, since when, and which (FinishCinematicPayload's GENERIC, AZURE_CLOUD, LONG_FIST); its
+     * blow lands at its own tick.
+     */
+    private record Execution(UUID victim, int started, int finish) {
         int hitTick() {
-            return azure ? AzureCloudSword.FINISH_HIT_TICK : FINISH_HIT_TICK;
+            return switch (finish) {
+                case FinishCinematicPayload.AZURE_CLOUD -> AzureCloudSword.FINISH_HIT_TICK;
+                case FinishCinematicPayload.LONG_FIST -> LongFist.FINISH_HIT_TICK;
+                default -> FINISH_HIT_TICK;
+            };
         }
     }
 
@@ -205,15 +213,21 @@ public final class KnockdownService {
 
     /**
      * Validates and starts a finish on a knocked-down player within reach: the finish of the executor's main style
-     * (Last Rain Over the Clouds for the Azure Cloud Sword Art, a sword in hand), or the generic one.
+     * (Last Rain Over the Clouds for the Azure Cloud Sword Art, a sword in hand; Final Palm for the Long Fist, bare
+     * hands), or the generic one.
      */
     public static boolean execute(ServerPlayer executor, ServerPlayer target) {
         if (!canActOn(executor, target) || isCarried(target) || isBeingExecuted(target)) return false;
-        boolean azure = AzureCloudSword.finishes(executor);
-        EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount(), azure));
+        int finish = AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
+                : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST : FinishCinematicPayload.GENERIC;
+        EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount(), finish));
         PlayerPatch<?> patch = EpicFightBridge.patch(executor);
-        if (patch != null) patch.playAnimationSynchronized(azure ? MurimAnimations.FINISH_AZURE : MurimAnimations.FINISH_GENERIC, 0.0F);
-        cinematic(true, executor, target, azure ? FinishCinematicPayload.AZURE_CLOUD : FinishCinematicPayload.GENERIC);
+        if (patch != null) patch.playAnimationSynchronized(switch (finish) {
+            case FinishCinematicPayload.AZURE_CLOUD -> MurimAnimations.FINISH_AZURE;
+            case FinishCinematicPayload.LONG_FIST -> MurimAnimations.FINISH_LONG_FIST;
+            default -> MurimAnimations.FINISH_GENERIC;
+        }, 0.0F);
+        cinematic(true, executor, target, finish);
         return true;
     }
 
@@ -226,7 +240,8 @@ public final class KnockdownService {
             if (executor == null || victim == null || !executor.isAlive() || !isDowned(victim)
                     || executor.distanceTo(victim) > ACTION_REACH + 1) { EXECUTIONS.remove(entry.getKey()); continue; }
             int elapsed = server.getTickCount() - entry.getValue().started;
-            if (entry.getValue().azure) AzureCloudSword.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.AZURE_CLOUD) AzureCloudSword.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.LONG_FIST) LongFist.finishTick(executor, victim, elapsed);
             if (elapsed < entry.getValue().hitTick()) continue;
             // The blow lands: the finish is over (the animation plays out on its own).
             EXECUTIONS.remove(entry.getKey());

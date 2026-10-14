@@ -108,16 +108,17 @@ public final class MartialService {
     }
 
     /**
-     * Whether a technique could be cast now (CAST if so, else why not): known, in combat mode, free to act (a riposte may
-     * cut a guard's recoil short; Cloud Step Slash's draw stance is there to be let go), off cooldown, enough Qi, the
-     * weapon it needs.
+     * Whether a technique could be cast now (CAST if so, else why not): known, in combat mode, free to act (a riposte or
+     * Inch Force may cut a guard's recoil short; Cloud Step Slash's draw stance is there to be let go), off cooldown,
+     * enough Qi, the weapon it needs.
      */
     private static CastResult check(ServerPlayer player, @Nullable MartialArts.Technique technique) {
         if (technique == null || !data(player).hasTechnique(technique.id())) return CastResult.NO_TECHNIQUE;
         if (!CombatService.isInCombatMode(player)) return CastResult.NOT_IN_COMBAT;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || QiChargeService.isCharging(player)) return CastResult.HINDERED;
-        if (EpicFightBridge.isBusy(player) && !(riposte != null && guardRecoil(player)) && !AzureCloudSword.aiming(player)) return CastResult.HINDERED;
+        boolean counter = riposte != null || LongFist.countersParry(player, technique);
+        if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player)) return CastResult.HINDERED;
         ResourceLocation id = technique.id();
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
         if (cooldownLeft(player, id) > 0 && !secondStep) return CastResult.COOLDOWN;

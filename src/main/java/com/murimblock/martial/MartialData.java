@@ -207,9 +207,14 @@ public record MartialData(Set<ResourceLocation> arts, Set<ResourceLocation> tech
         return mainArt.map(MartialArts::art).map(MartialArts.Art::passive);
     }
 
-    /** The four strikes of the M1 chain for this passive: the player's choice, or the passive's defaults. */
+    /**
+     * The four strikes of the M1 chain for this passive: the player's choice (if it is this passive's), or the passive's
+     * defaults. Empty for a passive that keeps Epic Fight's own strikes (the Long Fist's).
+     */
     public List<ResourceLocation> strikes(MartialArts.Passive passive) {
-        return strikes.size() == MartialArts.Passive.M1_SLOTS ? strikes : passive.defaults();
+        if (passive.strikes().isEmpty()) return List.of();
+        boolean own = strikes.size() == MartialArts.Passive.M1_SLOTS && strikes.stream().allMatch(s -> passive.strike(s) != null);
+        return own ? strikes : passive.defaults();
     }
 
     /**

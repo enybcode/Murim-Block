@@ -1,5 +1,6 @@
 package com.murimblock.martial;
 
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.network.TechniquePayloads;
 import com.murimblock.qi.QiService;
 import java.util.ArrayList;
@@ -71,13 +72,14 @@ public final class MartialCombat {
     /** One animation of an art being played: what its hits count for, and what they already counted for. */
     private static final class Swing {
         final AnimationAccessor<? extends StaticAnimation> animation;
-        final ResourceLocation credit;
+        final ResourceLocation art, credit;
         final boolean strike, riposte;
         final Set<UUID> struck = new HashSet<>();
         boolean credited;
 
-        Swing(AnimationAccessor<? extends StaticAnimation> animation, ResourceLocation credit, boolean strike, boolean riposte) {
+        Swing(AnimationAccessor<? extends StaticAnimation> animation, ResourceLocation art, ResourceLocation credit, boolean strike, boolean riposte) {
             this.animation = animation;
+            this.art = art;
             this.credit = credit;
             this.strike = strike;
             this.riposte = riposte;
@@ -108,9 +110,13 @@ public final class MartialCombat {
 
     // ---------------------------------------------------------------- parry and riposte
 
-    /** A perfect parry (MurimGuardSkill): the quest counts it; with Flowing Cloud Stance, Qi back and a riposte window. */
+    /**
+     * A perfect parry (MurimGuardSkill): the quest counts it; with Flowing Cloud Stance, Qi back and a riposte window;
+     * with Steady Breath (the Long Fist), Qi back (its secret looks at the parry itself, MurimGuardSkill.parriedWithin).
+     */
     public static void onPerfectParry(ServerPlayer player, Entity attacker) {
         if (isEnemy(attacker, player)) MartialProgress.count(player, MartialArts.PATIENT_BLADE_PARRIES, 1);
+        if (LongFist.stanceActive(player)) QiService.addQi(player, LongFist.PARRY_QI);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -165,7 +171,8 @@ public final class MartialCombat {
 
     /** The next animation started for this player is this technique's (and a riposte or not). */
     static void expect(ServerPlayer player, AnimationAccessor<? extends StaticAnimation> animation, ResourceLocation technique, boolean riposte) {
-        PENDING.put(player.getUUID(), new Swing(animation, technique, false, riposte));
+        MartialArts.Technique t = MartialArts.technique(technique);
+        PENDING.put(player.getUUID(), new Swing(animation, t == null ? MartialArts.AZURE_CLOUD_SWORD : t.art(), technique, false, riposte));
     }
 
     /** An animation starts: one of an art's opens a swing (a technique as expected, or a strike of the passive). */
@@ -176,11 +183,16 @@ public final class MartialCombat {
             return;
         }
         ResourceLocation credit = AzureCloudSword.creditOf(animation);
-        if (credit == null) {
-            SWINGS.remove(player.getUUID());
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.AZURE_CLOUD_SWORD, credit, AzureCloudSword.isStrike(animation), false));
             return;
         }
-        SWINGS.put(player.getUUID(), new Swing(animation, credit, AzureCloudSword.isStrike(animation), false));
+        credit = LongFist.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.LONG_FIST, credit, LongFist.isStrike(animation), false));
+            return;
+        }
+        SWINGS.remove(player.getUUID());
     }
 
     @Nullable private static Swing swing(ServerPlayer player, @Nullable AnimationAccessor<? extends StaticAnimation> animation) {
@@ -215,28 +227,35 @@ public final class MartialCombat {
         Swing swing = swing(player, animation);
         if (swing == null) return;
         LivingEntity target = event.getTarget();
-        AzureCloudSword.onHit(player, target, animation, swing.riposte);
         boolean enemy = isEnemy(target, player);
+        boolean fist = swing.art.equals(MartialArts.LONG_FIST);
+        if (fist) LongFist.onHit(player, target, animation, enemy);
+        else AzureCloudSword.onHit(player, target, animation, swing.riposte);
         // The combo: a knock-down ends it, and counts as complete after enough hits.
         long now = player.level().getGameTime();
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
-        if (AzureCloudSword.knocksDown(animation)) {
+        if (fist ? LongFist.knocksDown(animation) : AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
             COMBOS.put(target.getUUID(), new Combo(player.getUUID(), prior + 1, now));
         }
         if (!enemy) return;
-        MartialArts.Art art = MartialArts.art(MartialArts.AZURE_CLOUD_SWORD);
+        MartialArts.Art art = MartialArts.art(swing.art);
         if (swing.credit.equals(MartialArts.CLOUD_STEP_SLASH.id()) && swing.struck.add(target.getUUID()))
             MartialProgress.count(player, MartialArts.PATIENT_BLADE_DASH_HITS, 1);
+        // Tiger Step Punch's bound (not the secret, nor the dive) counts each enemy it strikes for First Steps.
+        if ((animation == MurimAnimations.TIGER_STEP_PUNCH
+                || animation == MurimAnimations.TIGER_STEP_PUNCH_LONG) && swing.struck.add(target.getUUID()))
+            MartialProgress.count(player, MartialArts.FIRST_STEPS_TIGER_HITS, 1);
         if (swing.credited) return;
         swing.credited = true;
         if (swing.strike) {
-            // Breath of the Blade: a strike that lands gives back Qi.
+            // Breath of the Blade, Steady Breath: a strike that lands gives back Qi.
             QiService.addQi(player, STRIKE_QI);
             MartialProgress.strikeLanded(player, art);
+            if (fist) MartialProgress.count(player, MartialArts.FIRST_STEPS_PUNCHES, 1);
         } else {
             MartialProgress.addMastery(player, art, swing.credit, 1);
         }
@@ -607,6 +626,7 @@ public final class MartialCombat {
         LEAPS.remove(id);
         SLAMS.remove(id);
         AzureCloudSword.forgetAim(id);
+        LongFist.forget(id);
     }
 
     public static void clearForTests() {
@@ -623,5 +643,6 @@ public final class MartialCombat {
         SLAMS.clear();
         HOVERS.clear();
         AzureCloudSword.forgetAim(null);
+        LongFist.forget(null);
     }
 }

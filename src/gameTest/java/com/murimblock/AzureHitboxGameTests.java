@@ -55,17 +55,17 @@ public final class AzureHitboxGameTests {
      * Ticks given to each case: the move plays with the zombie there (long enough for Thousand Drizzle's last thrust),
      * then without it until every animation of the art has ended on its own (at most 1.5 s).
      */
-    private static final int PLAY_TICKS = 30, CASE_TICKS = 40;
+    static final int PLAY_TICKS = 30, CASE_TICKS = 40;
 
     private AzureHitboxGameTests() { }
 
-    private record Case(String move, Supplier<AnimationAccessor<? extends StaticAnimation>> animation, double dx, double dz, boolean hits) { }
+    record Case(String move, Supplier<AnimationAccessor<? extends StaticAnimation>> animation, double dx, double dz, boolean hits) { }
 
-    private static Case hit(String move, Supplier<AnimationAccessor<? extends StaticAnimation>> a, double dx, double dz) {
+    static Case hit(String move, Supplier<AnimationAccessor<? extends StaticAnimation>> a, double dx, double dz) {
         return new Case(move, a, dx, dz, true);
     }
 
-    private static Case miss(String move, Supplier<AnimationAccessor<? extends StaticAnimation>> a, double dx, double dz) {
+    static Case miss(String move, Supplier<AnimationAccessor<? extends StaticAnimation>> a, double dx, double dz) {
         return new Case(move, a, dx, dz, false);
     }
 
@@ -138,10 +138,17 @@ public final class AzureHitboxGameTests {
 
     @GameTest(template = "foundation_arena", batch = "azure_hitboxes", timeoutTicks = 80 * CASE_TICKS)
     public static void everyMoveHitsWhereItIsDrawnAndNowhereElse(GameTestHelper helper) {
-        ServerPlayer player = player(helper);
+        survey(helper, "Azure", player(helper), cases());
+    }
+
+    /**
+     * Plays each case (the player held in place, a fresh zombie where the case puts it), logs the table ("<art> hitbox
+     * survey") and fails on any case that hit where it should miss or missed where it should hit. The player is set up
+     * (an art's needs: bare hands, a sword) by the caller; the test needs CASE_TICKS per case.
+     */
+    static void survey(GameTestHelper helper, String art, ServerPlayer player, List<Case> cases) {
         EpicFightCombatDefaults.enforce(player);
         PlayerPatch<?> patch = EpicFightBridge.patch(player);
-        List<Case> cases = cases();
         List<String> table = new ArrayList<>(), wrong = new ArrayList<>();
         Zombie[] zombie = new Zombie[1];
         boolean[] hitThisCase = new boolean[1];
@@ -206,7 +213,7 @@ public final class AzureHitboxGameTests {
             });
         }
         helper.runAfterDelay(2 + cases.size() * CASE_TICKS + 2, () -> {
-            LOGGER.info("Azure hitbox survey:\n{}", String.join("\n", table));
+            LOGGER.info("{} hitbox survey:\n{}", art, String.join("\n", table));
             MartialCombat.clearForTests();
             cleanup(player);
             helper.assertTrue(wrong.isEmpty(), "Hit boxes off: " + String.join(" | ", wrong));

@@ -15,6 +15,7 @@ import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
 import yesman.epicfight.api.animation.types.ComboAttackAnimation;
 import yesman.epicfight.api.animation.types.DashAttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
+import yesman.epicfight.api.animation.types.GuardAnimation;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.registry.entries.EpicFightSounds;
@@ -25,7 +26,8 @@ import yesman.epicfight.gameasset.Armatures;
 
 /**
  * Murim's own player animations for the Epic Fight biped (assets/murimblock/animmodels/animations/biped/murim, written
- * by scripts/animation/knockdown-animations.cjs and azure-cloud-animations.cjs), and the living motions that select them.
+ * by scripts/animation/knockdown-animations.cjs, azure-cloud-animations.cjs, the Blockbench projects and long-fist.cjs), and
+ * the living motions that select them.
  */
 public final class MurimAnimations {
     public static AnimationAccessor<StaticAnimation> DOWNED_IDLE;
@@ -129,7 +131,135 @@ public final class MurimAnimations {
                         .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.6F)
                         .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
         buildAzureCloudSword(builder);
+        buildLongFist(builder);
         buildBanditChief(builder);
+    }
+
+    // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)
+
+    /** The bare-hand guard: its pose while held, and the blow taken on it (normal or perfect parry). */
+    public static AnimationAccessor<StaticAnimation> LONG_FIST_GUARD;
+    public static AnimationAccessor<GuardAnimation> LONG_FIST_GUARD_HIT;
+    /** Tiger Step Punch: the bound (3 blocks; 5 evolved), and from the air the dive. */
+    public static AnimationAccessor<DashAttackAnimation> TIGER_STEP_PUNCH, TIGER_STEP_PUNCH_LONG, TIGER_STEP_DIVE;
+    /** Rapid Fists: five punches and a last one (seven evolved); in the air three and a hammer fist. */
+    public static AnimationAccessor<AttackAnimation> RAPID_FISTS, RAPID_FISTS_STORM, RAPID_FISTS_AIR;
+    /** Whirlwind Kick: the turn all round (wider evolved), and from the air the turn coming down. */
+    public static AnimationAccessor<AttackAnimation> WHIRLWIND_KICK, WHIRLWIND_KICK_GREAT, WHIRLWIND_DESCENT;
+    /** The secret, Inch Force: one punch with no room to swing. */
+    public static AnimationAccessor<AttackAnimation> INCH_FORCE;
+    /** The finish, Final Palm. */
+    public static AnimationAccessor<ActionAnimation> FINISH_LONG_FIST;
+
+    /** Rapid Fists' punches land every RAPID_FIST_GAP from RAPID_FIST_GAP on; the last one 0.24 s after the last of them. */
+    public static final float RAPID_FIST_GAP = 0.1F, RAPID_FIST_LAST = 0.24F;
+    /** How many quick punches before the last one (evolved: Hundred Fists). */
+    public static final int RAPID_FISTS_PUNCHES = 5, RAPID_FISTS_STORM_PUNCHES = 7;
+
+    /** The bound's fist: a box ahead of the body all along the way (3 blocks, so to 3.4 ahead; Tiger Leap: 5, to 5.4). */
+    private static final OBBCollider TIGER_PATH = new OBBCollider(0.7D, 0.8D, 1.7D, 0.0D, 1.0D, -1.7D);
+    private static final OBBCollider TIGER_LEAP_PATH = new OBBCollider(0.7D, 0.8D, 2.7D, 0.0D, 1.0D, -2.7D);
+    /** The dive's fist: ahead and low, where it meets the ground. */
+    private static final OBBCollider TIGER_DIVE_BOX = new OBBCollider(0.9D, 1.4D, 1.6D, 0.0D, 0.2D, -1.6D);
+    /** A punch of the flurry: straight ahead, two blocks. */
+    private static final OBBCollider FIST_BOX = new OBBCollider(0.6D, 0.7D, 1.0D, 0.0D, 1.2D, -1.2D);
+    /** The hammer fist from the air: ahead and below. */
+    private static final OBBCollider HAMMER_BOX = new OBBCollider(0.8D, 1.2D, 1.0D, 0.0D, 0.4D, -1.1D);
+    /** The whirlwind: all round, 2.5 blocks (3.5 evolved); coming down, low to the ground. */
+    private static final OBBCollider WHIRL = new OBBCollider(2.5D, 1.0D, 2.5D, 0.0D, 1.0D, 0.0D);
+    private static final OBBCollider WHIRL_GREAT = new OBBCollider(3.5D, 1.0D, 3.5D, 0.0D, 1.0D, 0.0D);
+    private static final OBBCollider WHIRL_LANDING = new OBBCollider(2.5D, 0.8D, 2.5D, 0.0D, 0.4D, 0.0D);
+    /** Inch Force: the fist already at the chest. */
+    private static final OBBCollider INCH_BOX = new OBBCollider(0.6D, 0.7D, 0.7D, 0.0D, 1.2D, -0.9D);
+
+    /**
+     * The Long Fist's techniques, played at their own pace (bare hands have no weapon speed to follow). Its M1 are Epic
+     * Fight's own bare-hand strikes, untouched.
+     */
+    private static void buildLongFist(AnimationBuilder builder) {
+        LONG_FIST_GUARD = builder.nextAccessor("biped/murim/long_fist_guard", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
+        LONG_FIST_GUARD_HIT = builder.nextAccessor("biped/murim/long_fist_guard_hit", a -> new GuardAnimation(0.05F, a, Armatures.BIPED));
+        // transition, antic, preDelay, contact, recovery: the fist is out ahead from the leap (0.1 s) to the landing.
+        TIGER_STEP_PUNCH = builder.nextAccessor("biped/murim/tiger_step_punch", a -> tigerStep(a, TIGER_PATH));
+        TIGER_STEP_PUNCH_LONG = builder.nextAccessor("biped/murim/tiger_step_punch_long", a -> tigerStep(a, TIGER_LEAP_PATH));
+        TIGER_STEP_DIVE = builder.nextAccessor("biped/murim/tiger_step_dive", a -> technique(new DashAttackAnimation(0.06F, 0.08F, 0.12F, 0.3F, 0.6F, TIGER_DIVE_BOX, root(), a, Armatures.BIPED), 1.3F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true)
+                .addProperty(ActionAnimationProperty.MOVE_VERTICAL, true));
+        RAPID_FISTS = builder.nextAccessor("biped/murim/rapid_fists", a -> flurry(a, RAPID_FISTS_PUNCHES));
+        RAPID_FISTS_STORM = builder.nextAccessor("biped/murim/rapid_fists_storm", a -> flurry(a, RAPID_FISTS_STORM_PUNCHES));
+        RAPID_FISTS_AIR = builder.nextAccessor("biped/murim/rapid_fists_air", a -> {
+            float[] punches = {0.08F, 0.18F, 0.28F};
+            Phase[] phases = new Phase[punches.length + 1];
+            float start = 0.0F;
+            for (int i = 0; i < punches.length; i++) {
+                float t = punches[i];
+                phases[i] = new Phase(start, t - 0.04F, t - 0.02F, t + 0.03F, t + 0.04F, t + 0.05F, root(), FIST_BOX)
+                        .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.3F))
+                        .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                        .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH.get());
+                start = t + 0.05F;
+            }
+            phases[punches.length] = new Phase(start, 0.42F, 0.44F, 0.56F, 0.8F, Float.MAX_VALUE, root(), HAMMER_BOX)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get());
+            return new AttackAnimation(0.05F, a, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
+        });
+        // The kick sweeps round from 0.26 to 0.52 s, the box turning with the body.
+        WHIRLWIND_KICK = builder.nextAccessor("biped/murim/whirlwind_kick", a -> technique(new AttackAnimation(0.06F, 0.2F, 0.26F, 0.52F, 0.86F, WHIRL, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(5))
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        WHIRLWIND_KICK_GREAT = builder.nextAccessor("biped/murim/whirlwind_kick_great", a -> technique(new AttackAnimation(0.06F, 0.2F, 0.26F, 0.52F, 0.86F, WHIRL_GREAT, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(7))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        WHIRLWIND_DESCENT = builder.nextAccessor("biped/murim/whirlwind_descent", a -> technique(new AttackAnimation(0.04F, 0.2F, 0.26F, 0.42F, 0.7F, WHIRL_LANDING, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(5))
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        // The dry twist: the fist lands from 0.08 to 0.14 s; the body then stays frozen while the target flies.
+        INCH_FORCE = builder.nextAccessor("biped/murim/inch_force", a -> technique(new AttackAnimation(0.02F, 0.06F, 0.08F, 0.14F, 0.72F, INCH_BOX, root(), a, Armatures.BIPED), 2.0F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get()));
+        FINISH_LONG_FIST = builder.nextAccessor("biped/murim/final_palm", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+    }
+
+    private static DashAttackAnimation tigerStep(AnimationAccessor<? extends DashAttackAnimation> accessor, OBBCollider path) {
+        return technique(new DashAttackAnimation(0.06F, 0.06F, 0.1F, 0.34F, 0.6F, path, root(), accessor, Armatures.BIPED), 1.3F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(1))
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true);
+    }
+
+    /**
+     * Rapid Fists: one phase per quick punch (a light hit that holds the target in place), then the last punch (heavier,
+     * pushes 3 blocks). Each phase strikes anew, so one target takes them all.
+     */
+    private static AttackAnimation flurry(AnimationAccessor<? extends AttackAnimation> accessor, int punches) {
+        Phase[] phases = new Phase[punches + 1];
+        float start = 0.0F;
+        for (int i = 0; i < punches; i++) {
+            float t = RAPID_FIST_GAP * (i + 1);
+            phases[i] = new Phase(start, t - 0.04F, t - 0.02F, t + 0.03F, t + 0.04F, t + 0.05F, root(), FIST_BOX)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.3F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH.get());
+            start = t + 0.05F;
+        }
+        float last = RAPID_FIST_GAP * punches + RAPID_FIST_LAST;
+        phases[punches] = new Phase(start, last - 0.04F, last - 0.02F, last + 0.08F, last + 0.4F, Float.MAX_VALUE, root(), FIST_BOX)
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get());
+        return new AttackAnimation(0.06F, accessor, Armatures.BIPED, phases)
+                .addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
     }
 
     /**
@@ -293,7 +423,9 @@ public final class MurimAnimations {
 
     /** Murim's living motions: what a knocked-down, carrying or carried player is doing. */
     public enum Motions implements LivingMotion {
-        DOWNED, CRAWL, CARRY, CARRY_WALK, CARRIED;
+        DOWNED, CRAWL, CARRY, CARRY_WALK, CARRIED,
+        /** The Long Fist's bare-hand guard held. */
+        FIST_GUARD;
 
         final int id;
 

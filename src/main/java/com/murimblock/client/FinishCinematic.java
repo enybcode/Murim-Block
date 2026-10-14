@@ -44,6 +44,8 @@ public final class FinishCinematic {
 
     static final Timing GENERIC = new Timing(2.0F, 0.5F, 0.86F, 1.3F);
     static final Timing AZURE_CLOUD = new Timing(2.6F, 0.95F, 1.46F, 1.95F);
+    /** Final Palm: the breath until 1.0 s, down on one knee, the palm at 1.4 s. */
+    static final Timing LONG_FIST = new Timing(2.4F, 0.9F, 1.36F, 1.85F);
     /** Length of the generic film, in seconds. */
     public static final float DURATION = GENERIC.duration();
     /** Height of each cinema bar, as a share of the screen. */
@@ -76,7 +78,7 @@ public final class FinishCinematic {
         if (mc.level == null || mc.player == null) return;
         Entity e = mc.level.getEntity(executor), v = mc.level.getEntity(victim);
         if (e == null || v == null) return;
-        timing = finish == FinishCinematicPayload.AZURE_CLOUD ? AZURE_CLOUD : GENERIC;
+        timing = finish == FinishCinematicPayload.AZURE_CLOUD ? AZURE_CLOUD : finish == FinishCinematicPayload.LONG_FIST ? LONG_FIST : GENERIC;
         executorId = executor;
         victimId = victim;
         lastExecutor = e.position();

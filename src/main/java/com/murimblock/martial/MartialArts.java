@@ -143,6 +143,30 @@ public final class MartialArts {
     public static final Evolution STORM_OF_NEEDLES = new Evolution(THOUSAND_DRIZZLE.id(), 60, "evolution.murimblock.storm_of_needles");
     public static final Evolution AZURE_HEAVEN_CRESCENT = new Evolution(HEAVEN_SPLITTING_CRESCENT.id(), 90, "evolution.murimblock.azure_heaven_crescent");
 
+    // ---------------------------------------------------------------- the Long Fist (docs/combat/styles/long-fist.md)
+
+    /** The first art of the fist: bare hands, Epic Fight's own bare-hand M1. */
+    public static final ResourceLocation LONG_FIST = id("long_fist");
+    public static final Technique TIGER_STEP_PUNCH = new Technique(id("tiger_step_punch"), LONG_FIST, 10, 100);
+    public static final Technique RAPID_FISTS = new Technique(id("rapid_fists"), LONG_FIST, 15, 160);
+    public static final Technique WHIRLWIND_KICK = new Technique(id("whirlwind_kick"), LONG_FIST, 20, 240);
+    /** The secret: Tiger Step Punch already at the target's chest, right after a perfect parry (costs what it costs). */
+    public static final Technique INCH_FORCE = new Technique(id("inch_force"), LONG_FIST, 0, 0, true);
+    /** Its passive keeps Epic Fight's bare-hand strikes (no strikes to choose); it only adds Qi on the hits. */
+    public static final Passive STEADY_BREATH = new Passive(id("steady_breath"), List.of(), List.of());
+
+    public static final String FIRST_STEPS_PUNCHES = "first_steps.punches";
+    public static final String FIRST_STEPS_TIGER_HITS = "first_steps.tiger_hits";
+    public static final String UNBROKEN_FLURRY_FULL = "unbroken_flurry.full";
+    public static final Quest FIRST_STEPS = new Quest("first_steps", RAPID_FISTS.id(),
+            List.of(new QuestStep(FIRST_STEPS_PUNCHES, 30), new QuestStep(FIRST_STEPS_TIGER_HITS, 5)));
+    public static final Quest UNBROKEN_FLURRY = new Quest("unbroken_flurry", WHIRLWIND_KICK.id(),
+            List.of(new QuestStep(UNBROKEN_FLURRY_FULL, 10)));
+
+    public static final Evolution TIGER_LEAP = new Evolution(TIGER_STEP_PUNCH.id(), 30, "evolution.murimblock.tiger_leap");
+    public static final Evolution HUNDRED_FISTS = new Evolution(RAPID_FISTS.id(), 60, "evolution.murimblock.hundred_fists");
+    public static final Evolution TORNADO_KICK = new Evolution(WHIRLWIND_KICK.id(), 90, "evolution.murimblock.tornado_kick");
+
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
     private static final Map<ResourceLocation, Technique> TECHNIQUES = new LinkedHashMap<>();
 
@@ -150,6 +174,9 @@ public final class MartialArts {
         add(new Art(AZURE_CLOUD_SWORD, List.of(CLOUD_STEP_SLASH, THOUSAND_DRIZZLE, HEAVEN_SPLITTING_CRESCENT, SWALLOW_RETURNS),
                 FLOWING_CLOUD_STANCE, List.of(THE_PATIENT_BLADE, ABOVE_THE_SEA_OF_CLOUDS),
                 List.of(THOUSAND_LI_CLOUD_STEP, STORM_OF_NEEDLES, AZURE_HEAVEN_CRESCENT)));
+        add(new Art(LONG_FIST, List.of(TIGER_STEP_PUNCH, RAPID_FISTS, WHIRLWIND_KICK, INCH_FORCE),
+                STEADY_BREATH, List.of(FIRST_STEPS, UNBROKEN_FLURRY),
+                List.of(TIGER_LEAP, HUNDRED_FISTS, TORNADO_KICK)));
     }
 
     private MartialArts() {

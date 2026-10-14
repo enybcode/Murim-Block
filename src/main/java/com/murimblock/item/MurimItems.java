@@ -65,6 +65,10 @@ public final class MurimItems {
     public static final DeferredItem<MartialManualItem> AZURE_CLOUD_SWORD_MANUAL = ITEMS.register("azure_cloud_sword_manual",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
 
+    /** Scroll of the first art of the fist: read once, it teaches the Long Fist. Where it is found is still to decide. */
+    public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), MartialArts.LONG_FIST));
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MURIMBLOCK_TAB = TABS.register("murimblock",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.murimblock"))
@@ -78,6 +82,7 @@ public final class MurimItems {
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
+                        output.accept(LONG_FIST_SCROLL.get());
                     })
                     .build());
 

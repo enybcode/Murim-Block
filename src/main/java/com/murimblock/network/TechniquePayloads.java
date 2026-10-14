@@ -44,7 +44,8 @@ public final class TechniquePayloads {
                         (MartialService.cooldownLeft(player, technique.id()) + 19) / 20), true);
                 case NO_QI -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_qi", name, (int) technique.qiCost()), true);
                 case NOT_IN_COMBAT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.not_in_combat"), true);
-                case NO_WEAPON -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_weapon", name), true);
+                case NO_WEAPON -> player.displayClientMessage(Component.translatable(technique.art().equals(MartialArts.LONG_FIST)
+                        ? "technique.murimblock.cast.bare_hands" : "technique.murimblock.cast.no_weapon", name), true);
                 case NO_ROOM -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_room", name), true);
                 default -> { }
             }
@@ -93,6 +94,18 @@ public final class TechniquePayloads {
 
         public static void handle(SetStrike payload, IPayloadContext context) {
             if (context.player() instanceof ServerPlayer player) MartialService.setStrike(player, payload.slot, payload.strike);
+        }
+    }
+
+    /** Client makes one of its known arts the main style (Techniques tab, on the art's passive). */
+    public record SetMainArt(ResourceLocation art) implements CustomPacketPayload {
+        public static final Type<SetMainArt> TYPE = new Type<>(id("main_art_set"));
+        public static final StreamCodec<ByteBuf, SetMainArt> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(SetMainArt::new, SetMainArt::art);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(SetMainArt payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player) MartialService.setMainArt(player, payload.art);
         }
     }
 
