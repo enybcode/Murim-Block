@@ -42,3 +42,15 @@ La charge suit l'articulation `Tool_R` du personnage. En première personne Epic
 `gradlew.bat build compileGameTestJava`, `gradlew.bat -PgameTests runGameTestServer`, puis `gradlew.bat -PgameTests runSanguineTour`. Les tests couvrent charge et collision, interruption, progression par contacts réels, activation manuelle, persistance, consommation, dégâts de salve, protection fixe et parade. La tour native (`runSanguineTour`, dans `build.gradle`) produit les captures et vérifie les touches, et que vos cristaux du dos restent hors de la vue à la première personne. Aucun monde de test ne fait partie du dépôt.
 
 Avant la fusion d'`origin/test`, le test `CultivationGameTests.theRemnantSoulGivesTheDaysMissions` échouait dans un monde de test réutilisé et passait dans un monde neuf. Les changements de cultivation reçus ensuite proviennent de cette fusion. Les fixtures de cet art réutilisent les chunks simulés de l'origine et nettoient joueurs et cibles, même lors d'un échec, pour éviter les interférences entre tests.
+
+## Blood Crystal, refait le 15/10/2026 (demande d'Enzo)
+
+Sur le modèle de la boule d'eau du Crab Man :
+
+- **Dans la main** : le cristal se forme (animation GeckoLib `form`), six petits fragments tournent autour de lui (`charge`). Il est penché vers l'avant.
+- **La charge consomme la jauge** : après 0,6 s, tant qu'on reste appuyé, il tire un point de la jauge de sang toutes les 0,2 s (`BloodCrystalCharge`) et grossit (échelle 0,6 + 0,34 par point). Dégâts : ×1,2 + 0,18 par point.
+- **À 10 points**, c'est le **grand cristal** : 3 blocs de large, plus lent et plus lourd. À l'impact, il **explose** (rayon 3,5 blocs, ×2 au centre à ×1 au bord, recul), sans casser de bloc. Le corps touché directement prend les dégâts du cristal, pas l'explosion.
+- **Physique** : lancé comme une pierre (traînée 0,99, gravité 0,025, 0,035 pour le grand), visé pour arriver où regarde le lanceur ; il tourne sur lui-même en vol. Les cristaux de la salve restent droits.
+- **Impacts** : il éclate selon ce qu'il touche (`shatter_ground`, `shatter_wall`, `shatter_body`), comme la boule d'eau ; le grand cristal joue `explode`. Un bref éclair rouge Photon à chaque impact ; **seule l'explosion lance des particules** Photon (160 éclats aux rouges du cristal, qui retombent et rebondissent).
+- Il part seul après 3 s. Interrompue, la charge perd les points tirés.
+- Modèle, animations, texture et éclat : `node scripts/animation/blood-crystal-shot.cjs`. Tests : `holdingDrawsTheGaugeIntoTheCrystal`, `aFullGaugeMakesAGreatCrystalThatExplodesWithoutBreakingBlocks`, `BloodCrystalChargeTest`, et la séquence « crystal-great » de `runSanguineTour`.

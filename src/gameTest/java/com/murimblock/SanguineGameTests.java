@@ -130,6 +130,47 @@ public final class SanguineGameTests {
             h.assertTrue(p.getHealth()==10,"Crystal healed its caster");h.assertTrue(QiService.getQi(p)>=82&&QiService.getQi(p)<83,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z);
         });
     }
+    private static BloodCrystalEntity held(GameTestHelper h,ServerPlayer p) {
+        return h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.getBoundingBox().inflate(5)).stream()
+                .filter(c->c.state()==BloodCrystalEntity.CHARGING).findFirst().orElse(null);
+    }
+    @GameTest(template="foundation_arena",batch="crystal_draw",timeoutTicks=100)
+    public static void holdingDrawsTheGaugeIntoTheCrystal(GameTestHelper h) {
+        var p=adept(h);var z=target(h,p,0,7);var side=target(h,p,2.2,7);
+        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(6,false,0));
+        h.assertTrue(MartialService.aim(p,0),"Charge refused");ticks(h,p,90);
+        h.runAfterDelay(45,()->{
+            var c=held(h,p);
+            h.assertTrue(SanguineArt.state(p).gauge()==0,"The charge did not draw the gauge: "+SanguineArt.state(p));
+            h.assertTrue(c!=null&&c.points()==6&&!c.great()&&c.crystalScale()>2.5F&&c.crystalScale()<2.8F,
+                    "The crystal does not hold six points: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale()));
+            cast(h,p,0);
+        });
+        h.runAfterDelay(85,()->{
+            h.assertTrue(z.getHealth()<500,"The charged crystal missed: "+z.getHealth());
+            h.assertTrue(side.getHealth()==500,"A crystal of six points exploded: "+side.getHealth());end(h,p,z,side);
+        });
+    }
+    @GameTest(template="foundation_arena",batch="crystal_great",timeoutTicks=125)
+    public static void aFullGaugeMakesAGreatCrystalThatExplodesWithoutBreakingBlocks(GameTestHelper h) {
+        var p=adept(h);var z=target(h,p,0,8);var near=target(h,p,1.8,9.2);
+        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(10,false,0));
+        h.assertTrue(MartialService.aim(p,0),"Charge refused");ticks(h,p,115);
+        h.runAfterDelay(56,()->{
+            var c=held(h,p);
+            h.assertTrue(c!=null&&c.great()&&Math.abs(c.crystalScale()-4F)<.01F&&SanguineArt.state(p).gauge()==0,
+                    "No great crystal of ten points: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale())+", "+SanguineArt.state(p));
+            h.assertTrue(Math.abs(c.getBbWidth()-3)<.01,"The great crystal is not 3 blocks across: "+c.getBbWidth());
+        });
+        h.runAfterDelay(110,()->{
+            h.assertTrue(z.getHealth()<500,"The great crystal missed: "+z.getHealth());
+            h.assertTrue(near.getHealth()<500,"The explosion spared the body beside it: "+near.getHealth());
+            h.assertTrue(z.getHealth()<near.getHealth(),"The body struck took less than the one beside: "+z.getHealth()+" / "+near.getHealth());
+            for(int dx=-2;dx<=2;dx++)for(int dz=0;dz<=10;dz++)
+                h.assertTrue(h.getLevel().getBlockState(BlockPos.containing(p.getX()+dx,119,8.5+dz)).is(Blocks.STONE),"The explosion broke a block");
+            h.assertTrue(QiService.getQi(p)>=82&&QiService.getQi(p)<83,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
+        });
+    }
     @GameTest(template="foundation_arena",batch="crystal_wall",timeoutTicks=90)
     public static void projectileStopsAtTheWall(GameTestHelper h) {
         var p=adept(h);var z=target(h,p,0,7);var wall=BlockPos.containing(p.getX(),120,p.getZ()+3);
@@ -144,11 +185,12 @@ public final class SanguineGameTests {
         h.runAfterDelay(5,()->idle(p));h.runAfterDelay(40,()->{
             h.assertTrue(z.getHealth()==500&&!SanguineArt.hasCharge(p),"Interrupted charge still threw");end(h,p,z);});
     }
-    @GameTest(template="foundation_arena",batch="crystal_cancel",timeoutTicks=65)
+    @GameTest(template="foundation_arena",batch="crystal_cancel",timeoutTicks=95)
     public static void aFailedAutomaticReleaseUnlocksTheHeldPose(GameTestHelper h) {
-        var p=adept(h);h.assertTrue(MartialService.aim(p,0),"Charge refused");ticks(h,p,50);
+        var p=adept(h);h.assertTrue(MartialService.aim(p,0),"Charge refused");ticks(h,p,80);
         h.runAfterDelay(8,()->QiService.setQi(p,0));
-        h.runAfterDelay(45,()->{
+        // The crystal leaves on its own after 3 s; without Qi that release fails.
+        h.runAfterDelay(75,()->{
             h.assertTrue(!SanguineArt.hasCharge(p)&&!SanguineArt.charging(p),"Failed release left the player in the charge animation");
             h.assertTrue(!EpicFightBridge.patch(p).getEntityState().inaction(),"Failed release kept actions locked");end(h,p);
         });

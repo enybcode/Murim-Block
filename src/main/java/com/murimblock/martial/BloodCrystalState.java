@@ -24,6 +24,10 @@ public record BloodCrystalState(int gauge, boolean active, int crystals) {
     public BloodCrystalState activate() {
         return !active && gauge == MAX_GAUGE ? new BloodCrystalState(0, true, 0) : this;
     }
+    /** Draws `amount` points out of the gauge (Blood Crystal's charge); none in the form, where the gauge is spent. */
+    public BloodCrystalState spend(int amount) {
+        return active || amount <= 0 ? this : new BloodCrystalState(Math.max(0, gauge - amount), false, 0);
+    }
     public BloodCrystalState consume() { return active ? new BloodCrystalState(0,true,0) : this; }
     public float damageFactor() { return active ? .85F : 1.0F; }
 }

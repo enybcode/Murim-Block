@@ -30,6 +30,8 @@ public final class SanguineArt {
         final BloodCrystalEntity crystal;
         final long started;
         final int slot;
+        /** Points of the blood gauge drawn into the crystal so far. */
+        int points;
         long throwAt=-1, launchAt=-1;
         Charge(ServerPlayer owner,int slot) {
             this.owner=owner;this.slot=slot;started=owner.level().getGameTime();
@@ -152,9 +154,15 @@ public final class SanguineArt {
         Charge c=CHARGES.get(id);long now=p.level().getGameTime();
         if(c!=null) {
             if(c.owner.level()!=c.crystal.level()||c.crystal.isRemoved()){cancelCharge(id);return;}
-            c.crystal.chargeScale((now-c.started)/(float)MartialArts.BLOOD_CRYSTAL_MAX_CHARGE);
+            long held=now-c.started;
+            // Still held: past the minimum charge, the crystal draws the blood gauge into itself, a point at a time.
+            if(c.throwAt<0&&BloodCrystalCharge.drawsPoint(held,c.points)) {
+                var gauge=state(p);
+                if(!gauge.active()&&gauge.gauge()>0){set(p,gauge.spend(1));c.points++;}
+            }
+            c.crystal.charge(BloodCrystalCharge.scale(held,c.points),c.points);
             if(c.launchAt>=0) {
-                if(now>=c.launchAt){c.crystal.launch(Math.max(1,TechniquePower.damage(p,MartialArts.SANGUINE_ART,1.2)),false);CHARGES.remove(id);}
+                if(now>=c.launchAt){c.crystal.launch(Math.max(.5F,TechniquePower.damage(p,MartialArts.SANGUINE_ART,1)),false);CHARGES.remove(id);}
             } else if(c.throwAt>=0&&now>=c.throwAt) {
                 c.launchAt=now+6;EpicFightBridge.patch(p).playAnimationSynchronized(MurimAnimations.SANGUINE_CRYSTAL_THROW,0);
             } else if(c.throwAt<0&&now-c.started>=MartialArts.BLOOD_CRYSTAL_MAX_CHARGE&&c.slot>=0) {

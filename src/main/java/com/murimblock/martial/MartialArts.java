@@ -170,7 +170,7 @@ public final class MartialArts {
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     public static final Technique BLOOD_CRYSTAL = new Technique(id("bloodbane_drain"), SANGUINE_ART, 18, 160);
-    public static final int BLOOD_CRYSTAL_MIN_CHARGE = 12, BLOOD_CRYSTAL_MAX_CHARGE = 30;
+    public static final int BLOOD_CRYSTAL_MIN_CHARGE = BloodCrystalCharge.MIN_TICKS, BLOOD_CRYSTAL_MAX_CHARGE = BloodCrystalCharge.AUTO_RELEASE_TICKS;
     public static final Technique SCARLET_TEAR = new Technique(id("scarlet_tear"), SANGUINE_ART, 24, 200);
     /** The previous third ability now activates the final crystal form. */
     public static final Technique BLOOD_CRYSTAL_FORM = new Technique(id("devourer_of_worlds"), SANGUINE_ART, 20, 80);

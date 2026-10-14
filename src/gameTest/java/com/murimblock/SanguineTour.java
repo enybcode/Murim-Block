@@ -133,14 +133,27 @@ public final class SanguineTour {
                 case 600 -> {com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.setDown(true);KeyMapping.click(com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.getKey());}
                 case 602 -> com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.setDown(false);
                 case 616 -> {check(!SanguineArt.state(mc.player).active(),"V exits combat and removes form");capture(mc,"combat-exit.png");}
-                case 630 -> finish(mc);
+                // The great crystal: a full gauge drawn into it while key 1 is held, then its explosion, filmed from the side.
+                case 632 -> server.execute(()->{var p=self(server);CombatService.setCombatMode(p,true);target(server,9);
+                    p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(10,false,0));});
+                case 636 -> viewAlong(mc,7.5,3.2,4.5);
+                case 640 -> press(mc,0);
+                case 690 -> server.execute(()->{var c=server.overworld().getEntitiesOfClass(com.murimblock.martial.BloodCrystalEntity.class,self(server).getBoundingBox().inflate(5)).stream()
+                        .filter(e->e.state()==com.murimblock.martial.BloodCrystalEntity.CHARGING).findFirst().orElse(null);
+                    check(c!=null&&c.great()&&SanguineArt.state(self(server)).gauge()==0,"holding key 1 draws the whole gauge into a great crystal: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale()));});
+                case 703 -> mc.options.keyHotbarSlots[0].setDown(false);
+                case 745 -> server.execute(()->{check(zombie.getHealth()<500,"the great crystal strikes: "+zombie.getHealth());
+                    check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>0,"its explosion throws Photon crystal shards");});
+                case 760 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;
             if(ticks>=470&&ticks<=495&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_THROW))throwSeen=true;
             if(ticks>=504&&ticks<=545&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_BARRAGE))barrageSeen=true;
             record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,304);
-            record(mc,"crystal-charge",452,495);record(mc,"barrage",502,548);
+            record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);
+            // Hold key 1 for the whole great charge: the key state is reset between ticks.
+            if(ticks>640&&ticks<703)mc.options.keyHotbarSlots[0].setDown(true);record(mc,"barrage",502,548);
         }catch(Exception e){check(false,"tour exception: "+e);finish(mc);}
     }
     private static void target(MinecraftServer server,double distance) {
@@ -153,6 +166,13 @@ public final class SanguineTour {
     }
     private static void view(Minecraft mc,double x,double y,double z) {
         Vec3 at=mc.player.position(),wanted=at.add(x,y,z),d=at.add(0,1.0,1).subtract(wanted),eye=wanted.add(d.normalize().scale(4));
+        camera=new Marker(EntityType.MARKER,mc.level);camera.setPos(eye);camera.xo=camera.xOld=eye.x;camera.yo=camera.yOld=eye.y;camera.zo=camera.zOld=eye.z;
+        camera.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));camera.setXRot((float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z))));
+        camera.yRotO=camera.getYRot();camera.xRotO=camera.getXRot();mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);mc.setCameraEntity(camera);
+    }
+    /** A camera beside the player, looking along the throw at the middle of the way (z+4.5). */
+    private static void viewAlong(Minecraft mc,double x,double y,double z) {
+        Vec3 at=mc.player.position(),eye=at.add(x,y,z),d=at.add(0,1.5,4.5).subtract(eye);
         camera=new Marker(EntityType.MARKER,mc.level);camera.setPos(eye);camera.xo=camera.xOld=eye.x;camera.yo=camera.yOld=eye.y;camera.zo=camera.zOld=eye.z;
         camera.setYRot((float)Math.toDegrees(Math.atan2(-d.x,d.z)));camera.setXRot((float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z))));
         camera.yRotO=camera.getYRot();camera.xRotO=camera.getXRot();mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);mc.setCameraEntity(camera);

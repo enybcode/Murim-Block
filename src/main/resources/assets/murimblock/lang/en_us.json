@@ -341,7 +341,7 @@
   "passive.murimblock.crimson_stance": "Crimson Stance",
   "passive.murimblock.crimson_stance.desc": "Bare-hand crimson strikes and guard. Landed M1 strikes build the blood gauge, then earn dorsal crystals while transformed.",
   "technique.murimblock.bloodbane_drain": "Blood Crystal",
-  "technique.murimblock.bloodbane_drain.desc": "Hold to grow a blood crystal in your hand, then release to throw it. It can be guarded or parried.",
+  "technique.murimblock.bloodbane_drain.desc": "Hold to grow a blood crystal in your hand, its fragments circling it. Held longer, it draws your blood gauge into itself and grows; at a full gauge it becomes a great crystal that explodes. Release to throw it. It can be guarded or parried.",
   "technique.murimblock.scarlet_tear": "Scarlet Tear",
   "technique.murimblock.scarlet_tear.desc": "Tear open a crimson arc. A landed cast builds 3 points toward Blood Crystal Form.",
   "technique.murimblock.devourer_of_worlds": "Blood Crystal Form",
