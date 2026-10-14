@@ -10,6 +10,7 @@
     "murimblock:peach_leaves",
     "murimblock:desert_poplar_leaves",
     "murimblock:tianshan_spruce_leaves",
+    "murimblock:camphor_leaves",
     "murimblock:moso_bamboo_leaves",
     "murimblock:karst_fern",
     "murimblock:rhododendron",
@@ -26,6 +27,7 @@
     "murimblock:cistanche",
     "murimblock:banyan_roots",
     "murimblock:willow_strands",
-    "murimblock:kunlun_sedge"
+    "murimblock:kunlun_sedge",
+    "murimblock:milk_vetch"
   ]
 }

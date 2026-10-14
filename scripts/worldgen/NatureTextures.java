@@ -378,6 +378,8 @@ public class NatureTextures {
             new Wood("desert_poplar", ramp(0x2F2B26, 0x45403A, 0x5C564E, 0x736C62, 0x8A8277), ramp(0x95794C, 0xAD915F, 0xC2A672, 0xD3B886, 0xE0C89A), "furrowed", 0, 0),
             // Tianshan spruce (Picea schrenkiana): grey-brown bark in thin round scales; pale, almost white wood.
             new Wood("tianshan_spruce", ramp(0x29231F, 0x3B332C, 0x4F463C, 0x645A4D, 0x7A6E5F), ramp(0xA68F6A, 0xBBA680, 0xCDBA96, 0xDCCCAA, 0xE8DCBD), "plated", 3.0, 1.8),
+            // Camphor: grey-brown bark in long shallow fissures; fragrant reddish-tan wood.
+            new Wood("camphor", ramp(0x2C2520, 0x40362F, 0x564A40, 0x6D5F53, 0x847466), ramp(0x965F40, 0xAE7452, 0xC28865, 0xD39D7A, 0xE1B391), "furrowed", 0, 0),
     };
 
     static void bark(Wood w) throws Exception {
@@ -586,6 +588,10 @@ public class NatureTextures {
         pop.save("desert_poplar_leaves");
         // Tianshan spruce: short stiff needles, very dark blue-green (the darkest crown of the mod), densely set.
         leafBase("tianshan_spruce_leaves", ramp(0x0D241E, 0x143428, 0x1D4432, 0x28553E, 0x386A4E), 3, 0.08, "needles").save("tianshan_spruce_leaves");
+        // Camphor: broad glossy dark leaves in round tufts, a few bronze-red young leaves of the spring flush.
+        Img camphor = leafBase("camphor_leaves", ramp(0x163A1D, 0x225026, 0x316732, 0x447E41, 0x5C9756), 4, 0.0, "broad");
+        flowers(camphor, 5, rgb(0xA4643A), rgb(0x6E3F24));
+        camphor.save("camphor_leaves");
         // Moso bamboo: slender lanceolate leaves at a slant.
         leafBase("moso_bamboo_leaves", ramp(0x253F1A, 0x345722, 0x46702B, 0x5B8A35, 0x76A445), 4, 0.05, "slender").save("moso_bamboo_leaves");
     }
@@ -967,6 +973,25 @@ public class NatureTextures {
                 "...llmmffmmll..."},
                 'h', 0xB5C878, 'i', 0xD6E3A4, 'j', 0xEEF1CF, 'p', 0x8E5A9E, 'q', 0x5E3570, 'g', 0x7E9A55,
                 'f', 0x5E7A45, 'l', 0x667F63, 'm', 0x93A98F, 'n', 0xBFCDB9);
+        // Chinese milk vetch: round heads of pink-purple pea flowers on thin stems, small pinnate leaves below.
+        sprite("milk_vetch", new String[]{
+                "................",
+                "..ppq.....pq....",
+                ".prpq....prpq...",
+                ".qpqp....qprp...",
+                "..qq..pq..qq....",
+                "...s.prpq..s....",
+                "...s.qpqp..s....",
+                "...s..qq...s....",
+                "..ls...s..sl....",
+                ".l.s...s..s.l...",
+                "...sl..s.ls.....",
+                "..l.s.ls.s.l....",
+                "....s.l.ss......",
+                "...l.sl.sl......",
+                ".....ssss.......",
+                "......ss........"},
+                'p', 0xC77BB8, 'q', 0x9C4E92, 'r', 0xEFB5E0, 's', 0x5C7F3A, 'l', 0x7EA352);
         // Alpine sedge: a tight tussock of fine blades, yellowing and dry at the tips.
         sprite("kunlun_sedge", new String[]{
                 "................",
@@ -1541,6 +1566,7 @@ public class NatureTextures {
         sapling("peach", ramp(0x8F2F52, 0xB24C72, 0xCF6E93, 0xE596B2, 0xF5BDD0), rgb(0x6B3A33), "sparse", 0);
         sapling("desert_poplar", ramp(0x6E4E10, 0x926E16, 0xBA921F, 0xD6B034, 0xEDCC57), rgb(0x5C564E), "sparse", 0);
         sapling("tianshan_spruce", ramp(0x0D241E, 0x143428, 0x1D4432, 0x28553E, 0x386A4E), rgb(0x4F463C), "tiers", 0);
+        sapling("camphor", ramp(0x163A1D, 0x225026, 0x316732, 0x447E41, 0x5C9756), rgb(0x564A40), "round", rgb(0xA4643A));
     }
 
     static void sapling(String name, int[] leaves, int bark, String form, int accent) throws Exception {

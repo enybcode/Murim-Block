@@ -83,6 +83,8 @@ public final class BiomeTour {
         SIGNATURE.put(MurimBiomes.PEACH_BLOSSOM_VALLEY, s -> s.is(MurimBlocks.PEACH.log().get()) || s.is(MurimBlocks.PILLAR_SANDSTONE.get()));
         SIGNATURE.put(MurimBiomes.TIANSHAN_SNOWFIELDS, s -> s.is(MurimBlocks.TIANSHAN_SPRUCE.log().get()) || s.is(MurimBlocks.KUNLUN_SEDGE.get())
                 || s.is(MurimBlocks.SNOW_LOTUS.get()) || s.is(net.minecraft.world.level.block.Blocks.SNOW_BLOCK));
+        SIGNATURE.put(MurimBiomes.CAMPHOR_HILLS, s -> s.is(MurimBlocks.CAMPHOR.log().get()) || s.is(MurimBlocks.CAMPHOR.leaves().get())
+                || s.is(MurimBlocks.MILK_VETCH.get()));
         SIGNATURE.put(MurimBiomes.KUNLUN_GLACIERS, s -> s.is(MurimBlocks.KUNLUN_ROCK.get()) || s.is(MurimBlocks.RAW_WHITE_JADE.get())
                 || s.is(net.minecraft.world.level.block.Blocks.PACKED_ICE));
     }
@@ -94,6 +96,7 @@ public final class BiomeTour {
         if (biome == MurimBiomes.HEXI_FRONTIER_DESERT || biome == MurimBiomes.LOESS_PLATEAU) return new BlockPos(-far, 80, 0);
         if (biome == MurimBiomes.JADE_KARST_FOREST || biome == MurimBiomes.SHU_BAMBOO_SEA) return new BlockPos(0, 80, far);
         if (biome == MurimBiomes.JIANGNAN_WATERLANDS) return new BlockPos(far, 80, 0);
+        if (biome == MurimBiomes.CAMPHOR_HILLS) return new BlockPos(far, 80, 0);
         return new BlockPos(0, 80, 0);
     }
 

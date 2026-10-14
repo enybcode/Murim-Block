@@ -40,11 +40,19 @@ class MurimMapTest {
     }
 
     @Test
-    void onlyTheNorthIsRaisedIntoRanges() {
-        // Nothing raised at the centre, in the south, west or east, nor in the ocean.
-        for (int[] p : new int[][]{{0, 0}, {0, 50_000}, {-50_000, 0}, {50_000, 0}, {0, -82_000}}) {
+    void theNorthRisesIntoRangesTheEastAndSouthIntoHills() {
+        // Nothing raised at the centre, in the west, nor in the ocean.
+        for (int[] p : new int[][]{{0, 0}, {-50_000, 0}, {0, -82_000}, {82_000, 0}}) {
             assertEquals(0, MurimMap.uplift(p[0], p[1]), 1e-9, "raised at " + p[0] + ", " + p[1]);
         }
+        // The east and the south: rolling hills, never more than the hills' height, the south's lower.
+        double east = 0, south = 0;
+        for (int k = -15_000; k <= 15_000; k += 500) {
+            east = Math.max(east, MurimMap.uplift(50_000, k));
+            south = Math.max(south, MurimMap.uplift(k, 50_000));
+        }
+        assertTrue(east > MurimMap.HILLS * 0.5 && east <= MurimMap.HILLS + 1e-9, "the east's hills: " + east);
+        assertTrue(south > 0 && south <= MurimMap.HILLS * 0.5 + 1e-9, "the south's hills: " + south);
         // The north: at least its plateau everywhere, and somewhere along it the ranges reach high.
         double highest = 0;
         for (int x = -15_000; x <= 15_000; x += 500) { // the heart of the north (its edges fade out on purpose)
@@ -62,7 +70,8 @@ class MurimMapTest {
         assertEquals(MurimBiomes.HEXI_FRONTIER_DESERT, MurimBiomeSource.pick(MurimMap.Region.WEST, 0, -0.5F));
         assertEquals(MurimBiomes.LOESS_PLATEAU, MurimBiomeSource.pick(MurimMap.Region.WEST, 0, 0.3F));
         assertEquals(MurimBiomes.JADE_KARST_FOREST, MurimBiomeSource.pick(MurimMap.Region.SOUTH, 0, 0.5F));
-        assertEquals(MurimBiomes.SHU_BAMBOO_SEA, MurimBiomeSource.pick(MurimMap.Region.SOUTH, 0, -0.5F));
+        assertEquals(MurimBiomes.SHU_BAMBOO_SEA, MurimBiomeSource.pick(MurimMap.Region.SOUTH, -0.5F, -0.5F));
+        assertEquals(MurimBiomes.CAMPHOR_HILLS, MurimBiomeSource.pick(MurimMap.Region.SOUTH, 0.2F, -0.5F));
         assertEquals(MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomeSource.pick(MurimMap.Region.CENTER, -0.6F, 0));
         assertEquals(MurimBiomes.PEACH_BLOSSOM_VALLEY, MurimBiomeSource.pick(MurimMap.Region.CENTER, 0.2F, 0));
         assertEquals(MurimBiomes.JIANGNAN_WATERLANDS, MurimBiomeSource.pick(MurimMap.Region.EAST, 0.2F, 0));

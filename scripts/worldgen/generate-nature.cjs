@@ -25,7 +25,7 @@ const blockTex = n => `${NS}:block/${n}`;
 const WOODS = {
   osmanthus: 'Sweet Osmanthus', banyan: 'Banyan', huangshan_pine: 'Huangshan Pine', jujube: 'Jujube',
   dove_tree: 'Dove Tree', willow: 'Weeping Willow', peach: 'Peach', desert_poplar: 'Desert Poplar',
-  tianshan_spruce: 'Tianshan Spruce',
+  tianshan_spruce: 'Tianshan Spruce', camphor: 'Camphor',
 };
 const STONES = {
   karst_limestone: ['Karst Limestone', 'pickaxe', 'all'], mossy_karst_limestone: ['Mossy Karst Limestone', 'pickaxe', 'all'],
@@ -41,12 +41,13 @@ const PLANTS = {
   wild_rice: ['Wild Rice', 'tall'], chrysanthemum: ['Chrysanthemum', 'flower'], rapeseed: ['Rapeseed Flower', 'flower'],
   tamarisk: ['Tamarisk', 'tall'], saxaul: ['Saxaul', 'cross'], cistanche: ['Cistanche', 'cross'],
   banyan_roots: ['Banyan Aerial Roots', 'strand'], willow_strands: ['Willow Strands', 'strand'],
-  snow_lotus: ['Snow Lotus', 'cross'], kunlun_sedge: ['Kunlun Sedge', 'cross'],
+  snow_lotus: ['Snow Lotus', 'cross'], kunlun_sedge: ['Kunlun Sedge', 'cross'], milk_vetch: ['Chinese Milk Vetch', 'flower'],
 };
 const BIOME_NAMES = {
   jade_karst_forest: 'Jade Karst Forest', loess_plateau: 'Loess Plateau', hexi_frontier_desert: 'Hexi Frontier Desert',
   cloud_sea_peaks: 'Cloud Sea Peaks', shu_bamboo_sea: 'Shu Bamboo Sea', jiangnan_waterlands: 'Jiangnan Waterlands',
   peach_blossom_valley: 'Peach Blossom Valley', tianshan_snowfields: 'Tianshan Snowfields', kunlun_glaciers: 'Kunlun Glaciers',
+  camphor_hills: 'Camphor Hill Country',
 };
 
 // ---------------------------------------------------------------- assets
@@ -259,6 +260,14 @@ tree('desert_poplar', 'desert_poplar', { type: 'minecraft:forking_trunk_placer',
 // spruces (it sheds the snow), in close stands on the shaded slopes.
 tree('tianshan_spruce', 'tianshan_spruce', { type: 'minecraft:straight_trunk_placer', base_height: 11, height_rand_a: 5, height_rand_b: 3 },
   { type: 'minecraft:spruce_foliage_placer', offset: uniform(0, 1), radius: uniform(1, 2), trunk_height: uniform(2, 4) }, twoLayers(2, 0, 2));
+// Camphor (Cinnamomum camphora): a stout trunk branching low, a broad round crown of glossy dark leaves; the ancient
+// village camphors, fengshui trees two thousand years old, spread on a massive trunk (from 2x2 saplings, or rarely wild).
+tree('camphor', 'camphor', { type: 'minecraft:fancy_trunk_placer', base_height: 5, height_rand_a: 3, height_rand_b: 0 },
+  { type: 'minecraft:fancy_foliage_placer', height: 4, offset: 4, radius: 3 },
+  { type: 'minecraft:two_layers_feature_size', limit: 0, lower_size: 0, min_clipped_height: 4, upper_size: 0 });
+tree('camphor_ancient', 'camphor', { type: 'minecraft:dark_oak_trunk_placer', base_height: 7, height_rand_a: 3, height_rand_b: 2 },
+  { type: 'minecraft:dark_oak_foliage_placer', offset: 0, radius: 2 },
+  { type: 'minecraft:three_layers_feature_size', limit: 1, lower_size: 0, middle_size: 1, upper_limit: 1, upper_size: 2 });
 // "Dead for a thousand years, standing": bare poplar snags in the gravel.
 CF('desert_poplar_snag', 'minecraft:block_column', { allowed_placement: { type: 'minecraft:matching_blocks', blocks: 'minecraft:air' },
   direction: 'up', prioritize_tip: false, layers: [{ height: uniform(2, 5), provider: logState('desert_poplar') }] });
@@ -288,6 +297,8 @@ patch('patch_dead_bush', 'minecraft:dead_bush', 6, 6);
 // The north: tussocks of sedge over the cold meadows; the snow lotus alone or two together, among rocks and snow.
 patch('patch_kunlun_sedge', id('kunlun_sedge'), 40, 6);
 patch('patch_snow_lotus', id('snow_lotus'), 3, 3);
+// Chinese milk vetch: the green manure sown in the rice country, purple carpets over the fields in spring.
+patch('patch_milk_vetch', id('milk_vetch'), 64, 7);
 for (const tall of ['rhododendron', 'tree_fern', 'wild_rice', 'tamarisk']) {
   CF(`patch_${tall}`, 'minecraft:random_patch', { tries: tall === 'wild_rice' ? 48 : 24, xz_spread: 6, y_spread: 3, feature: {
     feature: { type: 'minecraft:simple_block', config: { to_place: provider(id(tall), half) } },
@@ -396,6 +407,12 @@ PF('trees_huangshan_pine', id('huangshan_pine'), treePlacement(patchy(0, 1, 4), 
 // The spruce belt: close stands where the vegetation noise is high, open snowfields between; a few on the glaciers.
 PF('trees_tianshan_spruce', id('tianshan_spruce'), treePlacement(patchy(0.1, 0, 9), 'tianshan_spruce_sapling'));
 PF('trees_glacier_spruce', id('tianshan_spruce'), treePlacement(chance(6), 'tianshan_spruce_sapling'));
+// Camphor woods with clean edges: a close stand where the vegetation noise is above its level, nothing below (open
+// meadow), so every wood ends on a clear line; a few lone camphors out in the meadows; rarely an ancient one.
+PF('trees_camphor_woods', id('camphor'), treePlacement(patchy(0.05, 0, 11), 'camphor_sapling'));
+PF('trees_camphor_lone', id('camphor'), treePlacement(chance(5), 'camphor_sapling'));
+PF('trees_camphor_ancient', id('camphor_ancient'), [chance(40), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id('camphor_sapling'), { stage: '0' })), away(10)]);
+PF('patch_milk_vetch', id('patch_milk_vetch'), surfacePatch(patchy(0.35, 0, 5)));
 PF('patch_kunlun_sedge', id('patch_kunlun_sedge'), surfacePatch(patchy(0, 0, 4)));
 PF('patch_kunlun_sedge_sparse', id('patch_kunlun_sedge'), surfacePatch(chance(3)));
 PF('patch_snow_lotus', id('patch_snow_lotus'), surfacePatch(chance(5)));
@@ -443,11 +460,12 @@ const ORDER = {
   1: ['jiangnan_waterlands', 'jiangnan_pond'],
   2: ['karst_tower', 'granite_spire', 'sandstone_pillar', 'yardang'],
   9: ['trees_karst', 'trees_karst_giant', 'bamboo_clumps_karst', 'trees_loess', 'trees_desert_poplar', 'desert_poplar_snag',
-    'trees_huangshan_pine', 'trees_tianshan_spruce', 'trees_glacier_spruce', 'cliff_pine', 'moso_bamboo_grove', 'trees_dove_tree', 'trees_willow', 'trees_peach',
+    'trees_huangshan_pine', 'trees_tianshan_spruce', 'trees_glacier_spruce', 'trees_camphor_woods', 'trees_camphor_lone',
+    'trees_camphor_ancient', 'cliff_pine', 'moso_bamboo_grove', 'trees_dove_tree', 'trees_willow', 'trees_peach',
     'patch_karst_fern', 'patch_feather_grass', 'patch_sea_buckthorn', 'patch_tamarisk', 'patch_saxaul', 'patch_cistanche',
     'patch_dead_bush', 'patch_rhododendron', 'patch_arrow_bamboo', 'patch_tree_fern', 'patch_bamboo_shoot', 'patch_wild_rice',
     'patch_lotus', 'flower_chrysanthemum', 'flower_rapeseed', 'patch_pink_petals', 'patch_grass_lush', 'patch_kunlun_sedge',
-    'patch_kunlun_sedge_sparse', 'patch_snow_lotus', 'patch_snow_lotus_glacier'],
+    'patch_kunlun_sedge_sparse', 'patch_snow_lotus', 'patch_snow_lotus_glacier', 'patch_milk_vetch'],
   // After vanilla's own ores and disks of the step: the jade.
   6: ['ore_white_jade', 'disk_white_jade'],
 };
@@ -532,6 +550,13 @@ biome('kunlun_glaciers', { temperature: -0.7, downfall: 0.5, sky: '#9CB2CC', fog
   creatures: [spawn('goat', 6, 1, 3), spawn('rabbit', 3, 2, 3)], monsters: SNOW_MONSTERS,
   mine: ['ground_body_kunlun', 'ore_white_jade', 'disk_white_jade', 'trees_glacier_spruce', 'patch_kunlun_sedge_sparse', 'patch_snow_lotus_glacier'] });
 
+// The camphor hill country (14/10/2026): the rolling hills of the south and the east, between rice country and forest.
+biome('camphor_hills', { temperature: 0.8, downfall: 0.85, sky: '#9FBBD0', fog: '#D6DDD8', water: '#4C8C8A', waterFog: '#2F5C5A',
+  grass: '#6FA24C', foliage: '#3E7A36', music: 'minecraft:music.overworld.forest',
+  creatures: [spawn('cow', 8, 2, 4), spawn('sheep', 8, 2, 4), spawn('horse', 4, 2, 5), spawn('chicken', 8, 2, 4), spawn('pig', 6, 2, 4)],
+  mine: ['trees_camphor_woods', 'trees_camphor_lone', 'trees_camphor_ancient', 'patch_milk_vetch', 'patch_grass_lush'],
+  vanilla: ['minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'minecraft:patch_pumpkin'] });
+
 // Biome tags.
 const all = Object.keys(BIOME_NAMES).map(id);
 tag('worldgen/biome', 'murim_biomes', all, NS);
@@ -546,12 +571,13 @@ tag('worldgen/biome', 'misty', [id('jade_karst_forest'), id('cloud_sea_peaks'), 
 tag('worldgen/biome', 'is_desert', [id('hexi_frontier_desert')], 'c');
 tag('worldgen/biome', 'is_mountain', [id('cloud_sea_peaks'), id('kunlun_glaciers')], 'c');
 tag('worldgen/biome', 'is_snowy', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'c');
+tag('worldgen/biome', 'is_plains', [id('camphor_hills')], 'c');
 tag('worldgen/biome', 'is_cold', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'c');
 tag('worldgen/biome', 'spawns_snow_foxes', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'minecraft');
 tag('worldgen/biome', 'spawns_white_rabbits', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'minecraft');
 tag('worldgen/biome', 'is_plateau', [id('loess_plateau')], 'c');
 tag('worldgen/biome', 'is_jungle', [id('jade_karst_forest')], 'c');
-tag('worldgen/biome', 'is_forest', [id('shu_bamboo_sea'), id('peach_blossom_valley')], 'c');
+tag('worldgen/biome', 'is_forest', [id('shu_bamboo_sea'), id('peach_blossom_valley'), id('camphor_hills')], 'c');
 tag('worldgen/biome', 'is_wet', [id('jiangnan_waterlands'), id('jade_karst_forest'), id('shu_bamboo_sea')], 'c');
 tag('worldgen/biome', 'is_dry', [id('hexi_frontier_desert'), id('loess_plateau')], 'c');
 tag('worldgen/biome', 'is_overworld', all, 'c');

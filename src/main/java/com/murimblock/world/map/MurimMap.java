@@ -33,7 +33,7 @@ public final class MurimMap {
     public static final double CENTER_SHARE = 0.30;
 
     private static final long LAYOUT_SEED = 0x4D7552494D4D4150L; // "MuRIMMAP": the same layout in every world
-    private static volatile SimplexNoise noiseA, noiseB, noiseC, noiseD, noiseE;
+    private static volatile SimplexNoise noiseA, noiseB, noiseC, noiseD, noiseE, noiseF, noiseG;
 
     private MurimMap() {
     }
@@ -47,7 +47,11 @@ public final class MurimMap {
             noiseC = new SimplexNoise(random);
             noiseD = new SimplexNoise(random);
             noiseE = new SimplexNoise(random);
-            noiseA = new SimplexNoise(random);
+            // (Drawn in this order so the regions of every older world stay where they were: A, then the hills' F and G.)
+            SimplexNoise a = new SimplexNoise(random);
+            noiseF = new SimplexNoise(random);
+            noiseG = new SimplexNoise(random);
+            noiseA = a;
         }
     }
 
@@ -96,7 +100,31 @@ public final class MurimMap {
      */
     public static double uplift(int x, int z) {
         double[] wr = ranges(x, z);
-        return wr[0] <= 0 ? 0 : UPLIFT * wr[0] * (PLATEAU + (1 - PLATEAU) * wr[1]);
+        double north = wr[0] <= 0 ? 0 : UPLIFT * wr[0] * (PLATEAU + (1 - PLATEAU) * wr[1]);
+        return north + HILLS * hills(x, z);
+    }
+
+    /** How high the rolling hills of the east (and, lower, of the south) rise at most (vanilla depth: about 45 blocks). */
+    public static final double HILLS = 0.35;
+
+    /**
+     * The rolling hills of the east, and lower ones in the south (0 to 1, times HILLS): broad swells and finer ones, the
+     * Jiangnan's water country left in the hollows between them. Fades out towards the regions' borders and the coast.
+     */
+    public static double hills(int x, int z) {
+        init();
+        double u = (double) x / RADIUS + 0.16 * wander(noiseA, x, z);
+        double v = (double) z / RADIUS + 0.16 * wander(noiseB, x, z);
+        double r = Math.sqrt(u * u + v * v), a = Math.atan2(v, u);
+        double out = smooth((r - CENTER_SHARE) / 0.12);
+        double coast = smooth((RADIUS - 3_000 - reach(x, z)) / 5_000);
+        // The east sector (-pi/4 to pi/4) in full, the south (pi/4 to 3pi/4) at half.
+        double east = smooth(Math.min(a + Math.PI / 4, Math.PI / 4 - a) / 0.22);
+        double south = smooth(Math.min(a - Math.PI / 4, 3 * Math.PI / 4 - a) / 0.22) * 0.5;
+        double w = (east + south) * out * coast;
+        if (w <= 0) return 0;
+        double swell = 0.65 * noiseF.getValue(x / 3_200.0, z / 3_200.0) + 0.35 * noiseG.getValue(x / 900.0, z / 900.0);
+        return w * Math.max(0, swell + 0.15) / 1.15;
     }
 
     /** Jaggedness added on the north's ranges (vanilla's jagged peaks: spires and knife-edge ridges of ice and rock). */

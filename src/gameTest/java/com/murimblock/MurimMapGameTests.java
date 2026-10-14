@@ -49,15 +49,15 @@ public final class MurimMapGameTests {
             MurimMap.Region.CENTER, Set.of(MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.PEACH_BLOSSOM_VALLEY),
             MurimMap.Region.NORTH, Set.of(MurimBiomes.KUNLUN_GLACIERS, MurimBiomes.TIANSHAN_SNOWFIELDS),
             MurimMap.Region.WEST, Set.of(MurimBiomes.HEXI_FRONTIER_DESERT, MurimBiomes.LOESS_PLATEAU),
-            MurimMap.Region.SOUTH, Set.of(MurimBiomes.JADE_KARST_FOREST, MurimBiomes.SHU_BAMBOO_SEA),
-            MurimMap.Region.EAST, Set.of(MurimBiomes.JIANGNAN_WATERLANDS, MurimBiomes.CLOUD_SEA_PEAKS));
+            MurimMap.Region.SOUTH, Set.of(MurimBiomes.JADE_KARST_FOREST, MurimBiomes.SHU_BAMBOO_SEA, MurimBiomes.CAMPHOR_HILLS),
+            MurimMap.Region.EAST, Set.of(MurimBiomes.JIANGNAN_WATERLANDS, MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.CAMPHOR_HILLS));
 
     private static final Map<ResourceKey<Biome>, Integer> COLOURS = Map.of(
             MurimBiomes.CLOUD_SEA_PEAKS, 0xB8BEC4, MurimBiomes.PEACH_BLOSSOM_VALLEY, 0xE8A0B8,
             MurimBiomes.KUNLUN_GLACIERS, 0x9ED8F0, MurimBiomes.TIANSHAN_SNOWFIELDS, 0xF2F6FA,
             MurimBiomes.HEXI_FRONTIER_DESERT, 0xE2C27A, MurimBiomes.LOESS_PLATEAU, 0xB8904A,
             MurimBiomes.JADE_KARST_FOREST, 0x2E7A3A, MurimBiomes.SHU_BAMBOO_SEA, 0x7EC24A,
-            MurimBiomes.JIANGNAN_WATERLANDS, 0x4AA89A);
+            MurimBiomes.JIANGNAN_WATERLANDS, 0x4AA89A, MurimBiomes.CAMPHOR_HILLS, 0x3F6E35);
 
     @GameTest(template = "foundation_arena", batch = "murim_map_preset")
     public static void theNormalWorldPresetPutsTheMurimMapOnTheOverworld(GameTestHelper helper) {

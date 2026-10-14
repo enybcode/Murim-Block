@@ -1,6 +1,6 @@
 # Biomes Murim : la Chine féodale
 
-Neuf biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époque impériale (des Tang aux Ming), avant les déforestations, les barrages et les villes modernes : sept du premier jet, et depuis le 14/10/2026 les deux neiges du nord (Tianshan et Kunlun).
+Dix biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époque impériale (des Tang aux Ming), avant les déforestations, les barrages et les villes modernes : sept du premier jet, et depuis le 14/10/2026 les deux neiges du nord (Tianshan et Kunlun) et les collines aux camphriers du sud et de l'est.
 
 **Depuis le 14/10/2026, ils ne se mélangent plus au monde vanilla : ils forment la [carte Murim](murim-map.md)**, une bulle de 150 000 × 150 000 blocs aux régions fixes (centre, nord, ouest, sud, est), entourée de 10 000 blocs d'océan, puis le monde vanilla.
 
@@ -41,6 +41,7 @@ Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangsh
 | Vallée des fleurs de pêcher (`peach_blossom_valley`) | Moyen | La Source aux fleurs de pêcher de Tao Yuanming, piliers de grès de Wulingyuan | [peach_blossom_valley.md](peach_blossom_valley.md) |
 | Champs de neige du Tianshan (`tianshan_snowfields`) | Grand (nord) | Versant nord du Tianshan : forêts d'épicéas de Schrenk, prairies, lotus des neiges | [tianshan_snowfields.md](tianshan_snowfields.md) |
 | Glaciers du Kunlun (`kunlun_glaciers`) | Grand (nord, montagnes) | Kunlun : roche, glace, jade blanc de Hotan dans les torrents | [kunlun_glaciers.md](kunlun_glaciers.md) |
+| Collines aux camphriers (`camphor_hills`) | Grand (sud, est) | Collines du Jiangxi, du Hunan et de la Huizhou : camphriers sacrés, bosquets fengshui, astragale | [camphor_hills.md](camphor_hills.md) |
 
 ## Comment c'est construit
 

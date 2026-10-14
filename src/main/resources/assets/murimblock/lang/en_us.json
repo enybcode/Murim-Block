@@ -432,5 +432,11 @@
   "hud.murimblock.blood_crystals": "Crystals: %s/%s",
   "hud.murimblock.blood_ready": "Form ready",
   "death.attack.blood_crystal": "%1$s was pierced by %2$s's blood crystal",
-  "death.attack.blood_crystal.item": "%1$s was pierced by %2$s's blood crystal using %3$s"
+  "death.attack.blood_crystal.item": "%1$s was pierced by %2$s's blood crystal using %3$s",
+  "block.murimblock.camphor_log": "Camphor Log",
+  "block.murimblock.camphor_planks": "Camphor Planks",
+  "block.murimblock.camphor_leaves": "Camphor Leaves",
+  "block.murimblock.camphor_sapling": "Camphor Sapling",
+  "block.murimblock.milk_vetch": "Chinese Milk Vetch",
+  "biome.murimblock.camphor_hills": "Camphor Hill Country"
 }

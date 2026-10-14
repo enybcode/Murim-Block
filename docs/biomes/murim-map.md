@@ -4,7 +4,7 @@
 
 ![La carte de la graine 1](images/murim-map-1.png)
 
-*Un pixel = 400 blocs. Blanc : neiges du Tianshan ; bleu glacier : Kunlun ; ocre et brun : désert du Hexi et plateau de lœss ; vert vif et vert sombre : mer de bambous et karst ; turquoise : pays des eaux ; rose : vallée des pêchers ; gris clair : pics de la mer de nuages ; bleu nuit : l'océan ; au-delà, le monde vanilla.*
+*Un pixel = 400 blocs. Blanc : neiges du Tianshan ; bleu glacier : chaînes du Kunlun ; vert sombre : collines aux camphriers ; ocre et brun : désert du Hexi et plateau de lœss ; vert vif et vert sombre : mer de bambous et karst ; turquoise : pays des eaux ; rose : vallée des pêchers ; gris clair : pics de la mer de nuages ; bleu nuit : l'océan ; au-delà, le monde vanilla.*
 
 ## Les grandes lignes
 
@@ -23,8 +23,8 @@ La disposition est **la même dans tous les mondes** : on sait où est chaque ty
 | **Centre** : montagnes et vallées sacrées | Un disque d'environ 22 000 blocs de rayon autour de l'origine | Pics de la mer de nuages sur les montagnes, vallée des fleurs de pêcher ailleurs |
 | **Nord** : les neiges | Vers −z | Glaciers du Kunlun sur les montagnes, champs de neige du Tianshan ailleurs |
 | **Ouest** : les terres sèches | Vers −x | Désert du Hexi là où c'est sec, plateau de lœss ailleurs |
-| **Sud** : les terres humides | Vers +z | Karst de jade là où c'est humide, mer de bambous de Shu ailleurs |
-| **Est** : le pays des eaux | Vers +x | Pays des eaux du Jiangnan, pics de la mer de nuages sur les plus hauts sommets |
+| **Sud** : les terres humides et les plaines | Vers +z | Karst de jade là où c'est humide, collines aux camphriers sur les terres douces, mer de bambous sur les reliefs ; de basses collines |
+| **Est** : collines et pays des eaux | Vers +x | Collines aux camphriers sur les collines (environ 45 blocs, `MurimMap.hills`), pays des eaux du Jiangnan dans les creux, pics de la mer de nuages sur les plus hauts sommets |
 
 Les frontières entre régions ondulent sur des milliers de blocs (un bruit à graine fixe) : pas de ligne droite.
 

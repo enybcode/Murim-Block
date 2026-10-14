@@ -19,7 +19,8 @@
             "murimblock:jiangnan_waterlands",
             "murimblock:peach_blossom_valley",
             "murimblock:tianshan_snowfields",
-            "murimblock:kunlun_glaciers"
+            "murimblock:kunlun_glaciers",
+            "murimblock:camphor_hills"
           ]
         },
         "settings": "minecraft:overworld"

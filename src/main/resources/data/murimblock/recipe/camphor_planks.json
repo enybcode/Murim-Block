@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "murimblock:camphor_log"
+    }
+  ],
+  "result": {
+    "id": "murimblock:camphor_planks",
+    "count": 4
+  }
+}

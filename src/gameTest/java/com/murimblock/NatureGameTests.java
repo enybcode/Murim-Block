@@ -44,8 +44,9 @@ public final class NatureGameTests {
     public static void theMurimBiomesLoadWithTheirTags(GameTestHelper helper) {
         var biomes = helper.getLevel().registryAccess().registryOrThrow(Registries.BIOME);
         TagKey<Biome> murim = TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes"));
-        // Seven of the first slice and the two snows of the north (14/10/2026); where they grow is the Murim map's.
-        helper.assertTrue(MurimBiomes.ALL.size() == 9, "Expected nine Murim biomes");
+        // Seven of the first slice, the two snows of the north and the camphor hills (14/10/2026); where they grow is the
+        // Murim map's.
+        helper.assertTrue(MurimBiomes.ALL.size() == 10, "Expected ten Murim biomes");
         for (ResourceKey<Biome> key : MurimBiomes.ALL) {
             var holder = biomes.getHolder(key);
             helper.assertTrue(holder.isPresent(), "Biome not loaded: " + key.location());

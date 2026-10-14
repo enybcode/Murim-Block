@@ -74,6 +74,8 @@ public final class MurimBlocks {
     public static final Wood DESERT_POPLAR = wood("desert_poplar", MapColor.TERRACOTTA_LIGHT_GRAY, MapColor.GOLD, MurimTrees.DESERT_POPLAR, MurimPlantBlock.Soil.SAND);
     /** Schrenk's spruce of the Tianshan: tall, slender, dark. */
     public static final Wood TIANSHAN_SPRUCE = wood("tianshan_spruce", MapColor.PODZOL, MapColor.COLOR_GREEN, MurimTrees.TIANSHAN_SPRUCE, MurimPlantBlock.Soil.GRASS);
+    /** Camphor laurel, the village tree of the south: grey-brown fissured bark, fragrant reddish wood. */
+    public static final Wood CAMPHOR = wood("camphor", MapColor.TERRACOTTA_GRAY, MapColor.COLOR_GREEN, MurimTrees.CAMPHOR, MurimPlantBlock.Soil.GRASS);
 
     /** Hanging growth: banyan aerial roots and weeping willow fronds. */
     public static final DeferredBlock<HangingStrandBlock> BANYAN_ROOTS = register("banyan_roots", HangingStrandBlock::new, () -> strand(MapColor.TERRACOTTA_BROWN));
@@ -104,6 +106,8 @@ public final class MurimBlocks {
     public static final DeferredBlock<MurimPlantBlock> SNOW_LOTUS = plant("snow_lotus", MurimPlantBlock.Soil.ALPINE, 11, MapColor.SNOW);
     /** Alpine sedge (Carex) of the cold meadows. */
     public static final DeferredBlock<MurimPlantBlock> KUNLUN_SEDGE = plant("kunlun_sedge", MurimPlantBlock.Soil.ALPINE, 12, MapColor.PLANT);
+    /** Chinese milk vetch (Astragalus sinicus): the purple spring carpet of the southern rice country. */
+    public static final DeferredBlock<FlowerBlock> MILK_VETCH = flower("milk_vetch", MapColor.COLOR_PURPLE);
 
     private MurimBlocks() { }
 
@@ -111,7 +115,7 @@ public final class MurimBlocks {
     public record Wood(String name, DeferredBlock<RotatedPillarBlock> log, DeferredBlock<Block> planks,
                        DeferredBlock<LeavesBlock> leaves, DeferredBlock<MurimSaplingBlock> sapling) { }
 
-    public static final List<Wood> WOODS = List.of(OSMANTHUS, BANYAN, HUANGSHAN_PINE, JUJUBE, DOVE_TREE, WILLOW, PEACH, DESERT_POPLAR, TIANSHAN_SPRUCE);
+    public static final List<Wood> WOODS = List.of(OSMANTHUS, BANYAN, HUANGSHAN_PINE, JUJUBE, DOVE_TREE, WILLOW, PEACH, DESERT_POPLAR, TIANSHAN_SPRUCE, CAMPHOR);
 
     public static List<DeferredBlock<? extends Block>> creativeOrder() {
         return Collections.unmodifiableList(CREATIVE_ORDER);
@@ -132,7 +136,7 @@ public final class MurimBlocks {
         fire.setFlammable(MOSO_BAMBOO.get(), 5, 5);
         fire.setFlammable(MOSO_BAMBOO_LEAVES.get(), 30, 60);
         for (var plant : List.of(KARST_FERN, SEA_BUCKTHORN, FEATHER_GRASS, BAMBOO_SHOOT, ARROW_BAMBOO, CHRYSANTHEMUM, RAPESEED, SAXAUL,
-                CISTANCHE, RHODODENDRON, TREE_FERN, WILD_RICE, TAMARISK, BANYAN_ROOTS, WILLOW_STRANDS, SNOW_LOTUS, KUNLUN_SEDGE)) {
+                CISTANCHE, RHODODENDRON, TREE_FERN, WILD_RICE, TAMARISK, BANYAN_ROOTS, WILLOW_STRANDS, SNOW_LOTUS, KUNLUN_SEDGE, MILK_VETCH)) {
             fire.setFlammable(plant.get(), 60, 100);
         }
     }

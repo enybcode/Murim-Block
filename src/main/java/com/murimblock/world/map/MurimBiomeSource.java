@@ -26,8 +26,9 @@ import net.minecraft.world.level.biome.Climate;
  *   <li>north: the Kunlun glaciers on the immense ranges raised there (MurimMap.uplift) and the other mountains, the
  *   Tianshan snowfields elsewhere;</li>
  *   <li>west: the frontier desert where it is dry, the loess plateau elsewhere;</li>
- *   <li>south: the karst where it is humid, the bamboo sea elsewhere;</li>
- *   <li>east: cloud-sea peaks on the highest mountains, the Jiangnan water country elsewhere.</li>
+ *   <li>south: the karst where it is humid, the camphor hill country on the gentler land, the bamboo sea on the hills;</li>
+ *   <li>east: cloud-sea peaks on the highest mountains, the camphor hill country on its rolling hills (MurimMap.hills),
+ *   the Jiangnan water country in the hollows between them.</li>
  * </ul>
  */
 public final class MurimBiomeSource extends BiomeSource {
@@ -40,6 +41,8 @@ public final class MurimBiomeSource extends BiomeSource {
     static final float MOUNTAINS = -0.375F, HIGHEST = -0.78F;
     /** Raised past its plateau by a third of the ranges' height or more, the north is the Kunlun's ranges. */
     static final double KUNLUN_UPLIFT = MurimMap.UPLIFT * (MurimMap.PLATEAU + 0.33 * (1 - MurimMap.PLATEAU));
+    /** Above this share of their height, the east's hills are camphor country. */
+    static final double EAST_HILLS = 0.32;
 
     private final BiomeSource vanilla;
     private final HolderSet<Biome> biomes;
@@ -74,6 +77,9 @@ public final class MurimBiomeSource extends BiomeSource {
         MurimMap.Region region = MurimMap.region(bx, bz);
         // The north's raised ranges (MurimMap.uplift) are the Kunlun's glaciers, whatever vanilla's erosion says.
         ResourceKey<Biome> key = region == MurimMap.Region.NORTH && MurimMap.uplift(bx, bz) > KUNLUN_UPLIFT ? MurimBiomes.KUNLUN_GLACIERS
+                // The east's hills are camphor country; the Jiangnan's water country lies in the hollows between them.
+                : region == MurimMap.Region.EAST && MurimMap.hills(bx, bz) > EAST_HILLS
+                        && Climate.unquantizeCoord(p.erosion()) >= HIGHEST ? MurimBiomes.CAMPHOR_HILLS
                 : pick(region, Climate.unquantizeCoord(p.erosion()), Climate.unquantizeCoord(p.humidity()));
         Holder<Biome> murim = byKey.get(key);
         return murim != null ? murim : own;
@@ -91,7 +97,10 @@ public final class MurimBiomeSource extends BiomeSource {
             case CENTER -> erosion < MOUNTAINS ? MurimBiomes.CLOUD_SEA_PEAKS : MurimBiomes.PEACH_BLOSSOM_VALLEY;
             case NORTH -> erosion < MOUNTAINS ? MurimBiomes.KUNLUN_GLACIERS : MurimBiomes.TIANSHAN_SNOWFIELDS;
             case WEST -> humidity < -0.1F ? MurimBiomes.HEXI_FRONTIER_DESERT : MurimBiomes.LOESS_PLATEAU;
-            case SOUTH -> humidity > 0.1F ? MurimBiomes.JADE_KARST_FOREST : MurimBiomes.SHU_BAMBOO_SEA;
+            // The south: the karst where it is humid, the plains of the camphor country on the gentler land, the bamboo
+            // sea on the steeper hills.
+            case SOUTH -> humidity > 0.15F ? MurimBiomes.JADE_KARST_FOREST
+                    : erosion > -0.2F ? MurimBiomes.CAMPHOR_HILLS : MurimBiomes.SHU_BAMBOO_SEA;
             case EAST -> erosion < HIGHEST ? MurimBiomes.CLOUD_SEA_PEAKS : MurimBiomes.JIANGNAN_WATERLANDS;
         };
     }
