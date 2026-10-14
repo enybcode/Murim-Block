@@ -1,7 +1,7 @@
 {
   "loader": "neoforge:separate_transforms",
   "base": {
-    "parent": "murimblock:item/bandit_dao_3d"
+    "parent": "murimblock:item/bandit_dao_held"
   },
   "perspectives": {
     "gui": {

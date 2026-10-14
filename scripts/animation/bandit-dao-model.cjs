@@ -1,11 +1,18 @@
 // The Bandit Dao in 3D: a Blockbench project in the Java item model format (art/blockbench/bandit_dao.bbmodel) and the
-// game files it gives (assets/murimblock/models/item/bandit_dao_3d.json, its texture textures/item/bandit_dao_3d.png).
+// game files it gives, under assets/murimblock (texture textures/item/bandit_dao_3d.png):
+//   models/item/bandit_dao_body.json    the sword without its tassel;
+//   models/item/bandit_dao_tassel.json  the tassel alone, hanging straight down from the model's centre (8, 8, 8);
+//   models/item/bandit_dao_held.json    the hand's transforms only: client/BanditDaoRenderer draws the body, then the
+//                                       tassel turned about the pommel where its pendulum has swung it;
+//   models/item/bandit_dao.json         NeoForge's separate transforms: in the inventory, on the ground and in frames
+//                                       the game keeps the flat icon.
 // The sword is built upright, then every cube is turned 45 degrees about the model's centre so it lies on the same
 // diagonal as the 16x16 icon (pommel at the bottom left, point at the top right): with the vanilla swords' hand
-// transforms, it sits in the hand exactly as the flat dao did. In the inventory, on the ground and in frames the game
-// keeps the flat icon (models/item/bandit_dao.json, NeoForge's separate transforms).
-//   blade: thick 0.6, widening from 1.6 to 2.9 toward a clipped point, dark spine on one side, bright edge on the other;
-//   guard: a round brass disc; grip: wrapped in red cloth; pommel: brass, with a short red tassel.
+// transforms, it sits in the hand exactly as the flat dao did. The cord hangs from the pommel's end, (8, -3.5, 8)
+// upright, (8 - 11.5/sqrt 2, 8 - 11.5/sqrt 2, 8) once turned: BanditDaoRenderer's PIVOT. The grip is long (7.2) so the
+// pommel and its tassel come out of the fist.
+//   blade: thick 0.6, widening from 1.6 to 2.9 toward a clipped point, dark spine on top, bright edge below in the hand;
+//   guard: a round brass disc; grip: wrapped in red cloth; pommel: brass; a red tassel on a 2.6 cord.
 // Usage: node scripts/animation/bandit-dao-model.cjs
 const fs = require('fs');
 const path = require('path');
@@ -50,9 +57,12 @@ function png(w, h, rgba) {
 // ---------------------------------------------------------------- the cubes (upright: the blade up +y, flat in x, thin in z)
 
 /** Face UVs (in texture pixels) by material. */
+// The edge is on the -x side of the upright blade, the spine on the +x side: once turned onto the diagonal and put in a
+// hand with the vanilla sword transforms, the edge faces down and forward, the spine up (the other way round, the dao
+// was held edge up). A north face runs its u from +x to -x, a south face from -x to +x: both go dark at the spine.
 const MAT = {
-  flat: { north: [0, 0, 16, 1], south: [16, 1, 0, 2], east: [4, 2, 8, 3], west: [0, 2, 4, 3], up: [0, 2, 4, 3], down: [0, 2, 4, 3] },
-  tip: { north: [0, 0, 16, 1], south: [16, 1, 0, 2], east: [4, 2, 8, 3], west: [0, 2, 4, 3], up: [4, 2, 8, 3], down: [0, 2, 4, 3] },
+  flat: { north: [0, 0, 16, 1], south: [16, 1, 0, 2], east: [0, 2, 4, 3], west: [4, 2, 8, 3], up: [0, 2, 4, 3], down: [0, 2, 4, 3] },
+  tip: { north: [0, 0, 16, 1], south: [16, 1, 0, 2], east: [0, 2, 4, 3], west: [4, 2, 8, 3], up: [4, 2, 8, 3], down: [0, 2, 4, 3] },
   brass: { all: [0, 4, 4, 5] },
   brassDark: { all: [4, 4, 8, 5] },
   wrap: { all: [0, 5, 4, 9] },
@@ -61,24 +71,29 @@ const MAT = {
 const PARTS = [];
 const part = (name, from, to, mat) => PARTS.push({ name, from, to, mat });
 const Z0 = 7.7, Z1 = 8.3;
-part('tassel_tuft', [7.3, -3.3, 7.3], [8.7, -2.4, 8.7], 'tassel');
-part('tassel_cord', [7.7, -2.4, 7.7], [8.3, -0.5, 8.3], 'tassel');
-part('pommel', [7.2, -0.5, 7.2], [8.8, 0.7, 8.8], 'brass');
-part('grip', [7.4, 0.7, 7.4], [8.6, 4.9, 8.6], 'wrap');
+// The tassel, hanging from the model's centre (8, 8, 8): its own model, swung by the renderer.
+const TASSEL = [
+  { name: 'tassel_cord', from: [7.7, 5.4, 7.7], to: [8.3, 8.0, 8.3], mat: 'tassel' },
+  { name: 'tassel_tuft', from: [7.3, 4.2, 7.3], to: [8.7, 5.4, 8.7], mat: 'tassel' },
+];
+/** The pommel's end in the upright sword: where the cord hangs. */
+const POMMEL_END = -3.5;
+part('pommel', [7.2, POMMEL_END, 7.2], [8.8, POMMEL_END + 1.2, 8.8], 'brass');
+part('grip', [7.4, POMMEL_END + 1.2, 7.4], [8.6, 4.9, 8.6], 'wrap');
 part('guard', [6.1, 4.9, 6.9], [9.9, 5.7, 9.1], 'brass');
 part('guard_cross', [6.9, 4.9, 6.1], [9.1, 5.7, 9.9], 'brass');
 part('ferrule', [7.2, 5.7, 7.5], [8.8, 6.3, 8.5], 'brassDark');
-// The blade: the spine nearly straight on the -x side, the edge swelling out on the +x side toward the point.
+// The blade: the spine nearly straight on the +x side, the edge swelling out on the -x side toward the point.
 const widths = [1.6, 1.8, 2.05, 2.3, 2.6, 2.85];
 widths.forEach((w, i) => {
-  const y0 = 6.3 + i * 2, x0 = 7.25 + i * 0.05;
-  part('blade_' + i, [x0, y0, Z0], [x0 + w, y0 + 2, Z1], 'flat');
+  const y0 = 6.3 + i * 2, spine = 8.75 - i * 0.05;
+  part('blade_' + i, [spine - w, y0, Z0], [spine, y0 + 2, Z1], 'flat');
 });
 // The clipped point: the edge cut back toward the spine.
-const sx = 7.25 + 6 * 0.05;
-part('tip_0', [sx, 18.3, Z0], [sx + 2.4, 19.0, Z1], 'tip');
-part('tip_1', [sx, 19.0, Z0], [sx + 1.5, 19.6, Z1], 'tip');
-part('tip_2', [sx, 19.6, Z0], [sx + 0.7, 20.1, Z1], 'tip');
+const sx = 8.75 - 6 * 0.05;
+part('tip_0', [sx - 2.4, 18.3, Z0], [sx, 19.0, Z1], 'tip');
+part('tip_1', [sx - 1.5, 19.0, Z0], [sx, 19.6, Z1], 'tip');
+part('tip_2', [sx - 0.7, 19.6, Z0], [sx, 20.1, Z1], 'tip');
 
 const ROTATION = { angle: -45, axis: 'z', origin: [8, 8, 8] };
 
@@ -99,17 +114,21 @@ const DISPLAY = {
   head: { rotation: [0, 180, 0], translation: [0, 13, 7], scale: [1, 1, 1] },
 };
 
-const model3d = {
-  credit: 'Murimblock - scripts/animation/bandit-dao-model.cjs (Blockbench source: art/blockbench/bandit_dao.bbmodel)',
-  texture_size: [16, 16],
-  textures: { 0: 'murimblock:item/bandit_dao_3d', particle: 'murimblock:item/bandit_dao' },
+const CREDIT = 'Murimblock - scripts/animation/bandit-dao-model.cjs (Blockbench source: art/blockbench/bandit_dao.bbmodel)';
+const TEXTURES = { 0: 'murimblock:item/bandit_dao_3d', particle: 'murimblock:item/bandit_dao' };
+const bodyModel = {
+  credit: CREDIT, texture_size: [16, 16], textures: TEXTURES,
   elements: PARTS.map(p => ({ name: p.name, from: p.from, to: p.to, rotation: ROTATION, faces: faces(p.mat) })),
-  display: DISPLAY,
 };
+const tasselModel = {
+  credit: CREDIT, texture_size: [16, 16], textures: TEXTURES,
+  elements: TASSEL.map(p => ({ name: p.name, from: p.from, to: p.to, faces: faces(p.mat) })),
+};
+const heldModel = { credit: CREDIT, parent: 'builtin/entity', textures: { particle: 'murimblock:item/bandit_dao' }, display: DISPLAY };
 
 const itemModel = {
   loader: 'neoforge:separate_transforms',
-  base: { parent: 'murimblock:item/bandit_dao_3d' },
+  base: { parent: 'murimblock:item/bandit_dao_held' },
   perspectives: {
     gui: { parent: 'minecraft:item/handheld', textures: { layer0: 'murimblock:item/bandit_dao' } },
     ground: { parent: 'minecraft:item/handheld', textures: { layer0: 'murimblock:item/bandit_dao' } },
@@ -121,7 +140,10 @@ const itemModel = {
 
 const uuid = () => crypto.randomUUID();
 function bbmodel() {
-  const elements = PARTS.map(p => {
+  // The whole sword, its tassel at rest along the grip's line.
+  const drop = 8 - POMMEL_END;
+  const hanging = TASSEL.map(p => ({ ...p, from: [p.from[0], p.from[1] - drop, p.from[2]], to: [p.to[0], p.to[1] - drop, p.to[2]] }));
+  const elements = [...hanging, ...PARTS].map(p => {
     const f = faces(p.mat);
     for (const k of Object.keys(f)) f[k] = { uv: f[k].uv, texture: 0 };
     return { name: p.name, box_uv: false, rescale: false, locked: false, render_order: 'default', allow_mirror_modeling: true,
@@ -146,8 +168,10 @@ module.exports = { bbmodel };
 if (require.main === module) {
   const assets = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock');
   fs.writeFileSync(path.join(assets, 'textures', 'item', 'bandit_dao_3d.png'), png(16, 16, TEX));
-  fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao_3d.json'), JSON.stringify(model3d, null, 2) + '\n');
+  fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao_body.json'), JSON.stringify(bodyModel, null, 2) + '\n');
+  fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao_tassel.json'), JSON.stringify(tasselModel, null, 2) + '\n');
+  fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao_held.json'), JSON.stringify(heldModel, null, 2) + '\n');
   fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao.json'), JSON.stringify(itemModel, null, 2) + '\n');
   fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', 'bandit_dao.bbmodel'), JSON.stringify(bbmodel(), null, 1));
-  console.log('wrote the 3D dao:', PARTS.length, 'cubes');
+  console.log('wrote the 3D dao:', PARTS.length, 'cubes and a tassel of', TASSEL.length);
 }

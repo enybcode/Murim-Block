@@ -62,6 +62,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
+import yesman.epicfight.api.animation.AnimationManager;
+import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
@@ -132,6 +134,7 @@ public final class ClientVisualSmoke {
             mc.getToasts().clear();
             ticks++;
             nightFrames(mc);
+            banditCutFrames();
             switch (ticks) {
                 case 50 -> mc.setScreen(new MurimProfileScreen());
                 case 70 -> capture("01-profile.png");
@@ -371,9 +374,31 @@ public final class ClientVisualSmoke {
                     bandit.setVariant(1);
                     EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(MurimAnimations.DRIFTING_CUT, 0);
                 });
-                case 777, 779, 781, 783, 785, 787, 789, 791 -> capture(String.format("bandit-cut/%02d.png", (ticks - 777) / 2));
-                case 794 -> previewTurn = 0;
-                case 800 -> {
+                // The cut every tick for a second and a half: the dao's tassel trails, swings back and settles.
+                case 777, 778, 779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796,
+                     797, 798, 799, 800, 801, 802, 803, 804, 805, 806 -> capture(String.format("bandit-cut/%02d.png", ticks - 777));
+                case 808 -> previewTurn = 0;
+                // The same bandit in the world, seen from behind its right hand at the hand's height: the dao held edge
+                // down, its tassel hanging under the pommel, then trailing behind a cut.
+                case 810 -> {
+                    mc.setScreen(null);
+                    mc.options.hideGui = true;
+                    mc.getSingleplayerServer().execute(() -> {
+                        mc.getSingleplayerServer().overworld().setBlockAndUpdate(new BlockPos(-1, 78, -1), Blocks.STONE.defaultBlockState());
+                        mc.getSingleplayerServer().getPlayerList().getPlayers().get(0).connection.teleport(-0.5, 79, -0.5, -54, 0);
+                    });
+                }
+                case 820 -> capture("31-bandit-world.png");
+                // Each of the bandit's cuts, every tick, from where its edge shows: the level cut and its backhand from
+                // straight above (the blade flat, its edge on the side it sweeps toward), the falling cut from its right
+                // side (the edge leading down). Barriers (invisible) hold the camera up.
+                case 822 -> standAndLook(mc, new BlockPos(1, 82, 0), 1.5, 83, 0.5, 0, 90);
+                case 828 -> playBanditCut(mc, MurimAnimations.DRIFTING_CUT);
+                case 850 -> playBanditCut(mc, MurimAnimations.RETURNING_CUT);
+                case 872 -> standAndLook(mc, new BlockPos(-3, 78, 0), -2.5, 79, 0.5, -90, -6);
+                case 880 -> playBanditCut(mc, MurimAnimations.FALLING_RAIN);
+                case 902 -> mc.options.hideGui = false;
+                case 906 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
                             "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
@@ -390,6 +415,27 @@ public final class ClientVisualSmoke {
             failed = true;
             LOGGER.error("Murim client visual smoke failed", exception);
         }
+    }
+
+    /** The bandit's cuts, one capture a tick (see the cases 822 to 902). */
+    private static void banditCutFrames() throws Exception {
+        if (ticks >= 829 && ticks <= 846) capture(String.format("bandit-cuts/drifting/%02d.png", ticks - 829));
+        if (ticks >= 851 && ticks <= 868) capture(String.format("bandit-cuts/returning/%02d.png", ticks - 851));
+        if (ticks >= 881 && ticks <= 900) capture(String.format("bandit-cuts/falling/%02d.png", ticks - 881));
+    }
+
+    /** The player stands on a barrier at (x, y, z) and looks (yaw, pitch); the bandit preview mob stays where it is. */
+    private static void standAndLook(Minecraft mc, BlockPos floor, double x, double y, double z, float yaw, float pitch) {
+        mc.getSingleplayerServer().execute(() -> {
+            mc.getSingleplayerServer().overworld().setBlockAndUpdate(floor, Blocks.BARRIER.defaultBlockState());
+            mc.getSingleplayerServer().getPlayerList().getPlayers().get(0).connection.teleport(x, y, z, yaw, pitch);
+        });
+    }
+
+    private static void playBanditCut(Minecraft mc, AnimationManager.AnimationAccessor<? extends StaticAnimation> cut) {
+        mc.getSingleplayerServer().execute(() -> EpicFightCapabilities
+                .getEntityPatch(mc.getSingleplayerServer().overworld().getEntity(opponentId), MountainBanditPatch.class)
+                .playAnimationSynchronized(cut, 0));
     }
 
     private static int flashTick = -1;
