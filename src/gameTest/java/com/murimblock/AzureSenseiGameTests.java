@@ -196,15 +196,17 @@ public final class AzureSenseiGameTests {
         });
     }
 
-    /** Killed by a player, he drops the Azure Cloud and the manual, every time; by anything else, nothing. */
+    /** Killed by a player, he drops the Azure Cloud one time in 200 and the manual one time in four; otherwise, nothing. */
     @GameTest(template = "foundation_arena", batch = "sensei_loot")
     public static void theSenseiDropsHisSwordAndTheManual(GameTestHelper helper) {
         AzureSenseiEntity sensei = sensei(helper, new BlockPos(2, 1, 2));
         ServerPlayer player = player(helper);
         try {
-            var byPlayer = com.murimblock.testing.LootRolls.roll(helper.getLevel(), sensei, player, 50);
-            helper.assertTrue(byPlayer.rollsWith(MurimItems.AZURE_CLOUD_SWORD.get()) == 50, "The sword did not always drop: " + byPlayer.rollsWith());
-            helper.assertTrue(byPlayer.rollsWith(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 50, "The manual did not always drop: " + byPlayer.rollsWith());
+            // 20000 rolls: the shares stay close to theirs (the sword about 100 times).
+            var byPlayer = com.murimblock.testing.LootRolls.roll(helper.getLevel(), sensei, player, 20000);
+            double sword = byPlayer.rollsWith(MurimItems.AZURE_CLOUD_SWORD.get()) / 20000.0, manual = byPlayer.rollsWith(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) / 20000.0;
+            helper.assertTrue(sword > 0.0025 && sword < 0.0075, "The sword should drop one time in 200, not " + sword);
+            helper.assertTrue(Math.abs(manual - 0.25) < 0.02, "The manual should drop one time in four, not " + manual);
             helper.assertTrue(byPlayer.mostInOneRoll(MurimItems.AZURE_CLOUD_SWORD.get()) == 1 && byPlayer.mostInOneRoll(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 1,
                     "More than one sword or manual at once");
             helper.assertTrue(byPlayer.onlyContains(MurimItems.AZURE_CLOUD_SWORD.get(), MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()), "Something else dropped: " + byPlayer.rollsWith());

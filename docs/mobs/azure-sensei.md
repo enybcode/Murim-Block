@@ -45,8 +45,9 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
 - **Récupération** : quand personne ne le combat, il regagne 2 PV par seconde (le harceler puis fuir ne marche pas).
 - **Barre de boss** bleue « Sensei Yun » (10 crans) pour les joueurs proches de lui, encadrée de petits nuages en pixel
   art : un nuage à chaque bout de la barre, un petit de chaque côté de son nom (`client/SenseiBossBarClouds`).
-- **Butin**, tué par un joueur : son épée **Azure Cloud** et le **Azure Cloud Sword Manual**, à chaque fois
-  (`loot_table/entities/azure_sensei.json`) ; rien s'il meurt autrement. 100 XP.
+- **Butin**, tué par un joueur : son épée **Azure Cloud** une fois sur 200 (0,5 %, Looting : 0,75 % puis +0,25 point par
+  niveau) et le **Azure Cloud Sword Manual** une fois sur quatre (25 %, Looting : 30 % puis +5 points par niveau) (`loot_table/entities/azure_sensei.json`).
+  Rien s'il meurt autrement. 100 XP.
 - Les manuels sont consommés à la lecture : un livre, une lecture (un joueur qui connaît déjà l'art garde le sien).
 
 ## Mouvements

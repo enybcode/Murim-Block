@@ -49,8 +49,8 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
  * <p>A hard boss: 300 health, armour 12, hardly moved or staggered, 10 a cut. Below half his health he stops holding back
  * (his second phase: quicker, and the art's great techniques, AzureSenseiPatch); left alone he recovers, and back to full
  * health he is calm again. His health shows in an azure boss bar to the players near him, framed in clouds
- * (client/SenseiBossBarClouds). Killed by a player, he drops the Azure Cloud and the Azure Cloud Sword Manual
- * (loot_table/entities/azure_sensei.json).
+ * (client/SenseiBossBarClouds). Killed by a player, he drops the Azure Cloud one time in 200 and the Azure Cloud Sword
+ * Manual one time in four (loot_table/entities/azure_sensei.json).
  */
 public class AzureSenseiEntity extends PathfinderMob {
     /** How far from his home he strolls (blocks). */
