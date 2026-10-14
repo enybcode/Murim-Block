@@ -6,6 +6,7 @@ import com.murimblock.integration.epicfight.BanditChiefPatch;
 import com.murimblock.mob.BanditChiefEntity;
 import com.murimblock.mob.MurimEntities;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
@@ -30,6 +31,15 @@ import yesman.epicfight.client.renderer.patched.entity.PHumanoidRenderer;
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class BanditChiefRenderer extends HumanoidMobRenderer<BanditChiefEntity, PlayerModel<BanditChiefEntity>> {
     static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/bandit_chief.png");
+    /** One atlas per face (MobFaces.Face order): bandit_chief.png, then bandit_chief_<face>.png. */
+    private static final ResourceLocation[] FACES = new ResourceLocation[MobFaces.Face.values().length];
+    /** His face now, picked while Epic Fight draws him. Render thread only. */
+    private static MobFaces.Face face = MobFaces.Face.CALM;
+
+    static {
+        for (MobFaces.Face f : MobFaces.Face.values())
+            FACES[f.ordinal()] = f.suffix.isEmpty() ? TEXTURE : ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/bandit_chief_" + f.suffix + ".png");
+    }
     static final MeshAccessor<HumanoidMesh> MESH =
             MeshAccessor.create(Murimblock.MOD_ID, "entity/bandit_chief", loader -> loader.loadSkinnedMesh(HumanoidMesh::new));
     /** How much larger than a man he is drawn (his box is as much larger: MurimEntities.BANDIT_CHIEF). */
@@ -41,7 +51,7 @@ public final class BanditChiefRenderer extends HumanoidMobRenderer<BanditChiefEn
     }
 
     @Override public ResourceLocation getTextureLocation(BanditChiefEntity chief) {
-        return TEXTURE;
+        return FACES[face.ordinal()];
     }
 
     @SubscribeEvent
@@ -60,6 +70,17 @@ public final class BanditChiefRenderer extends HumanoidMobRenderer<BanditChiefEn
     static final class Patched extends PHumanoidRenderer<BanditChiefEntity, BanditChiefPatch, PlayerModel<BanditChiefEntity>, BanditChiefRenderer, HumanoidMesh> {
         Patched(EntityRendererProvider.Context context, EntityType<?> type) {
             super(MESH, context, type);
+        }
+
+        @Override
+        public void render(BanditChiefEntity chief, BanditChiefPatch patch, BanditChiefRenderer renderer, MultiBufferSource buffers,
+                           PoseStack poseStack, int light, float partialTicks) {
+            face = MobFaces.of(chief, patch);
+            try {
+                super.render(chief, patch, renderer, buffers, poseStack, light, partialTicks);
+            } finally {
+                face = MobFaces.Face.CALM;
+            }
         }
 
         @Override

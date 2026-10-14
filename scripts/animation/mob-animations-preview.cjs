@@ -1,9 +1,12 @@
 // Every animation the Mountain Bandit and the Bandit Chief play in game, on their own 3D models with their weapon in the
 // hand, as Blockbench projects to watch: build/blockbench/mountain_bandit_animations.bbmodel and
 // bandit_chief_animations.bbmodel. Open one in Blockbench, Animate tab, pick an animation and play.
-//   bandit: idle, walk, run (its chase), its three cuts (drifting_cut, returning_cut, falling_rain), hit_short, hit_long, death;
-//   chief:  hold_greatsword (his stance, the axe in both hands), walk_twohand (his walk and chase), chief_cleave, chief_sweep,
+//   bandit: bandit_idle (its own), walk, run (its chase), its three cuts (drifting_cut, returning_cut, falling_rain), hit_short,
+//           hit_long, death;
+//   chief:  chief_idle (his own: the axe on the shoulder), walk_twohand (his walk and chase), chief_cleave, chief_sweep,
 //           chief_slam, hit_short, death.
+// The faces' atlases come too (one texture per outfit and face, named <outfit>_<face>): put one on the head's front to
+// see a face; in game client/MobFaces changes them by itself.
 // The moves and reactions are Epic Fight's own, read from the installed jar: their authors' assets, so these projects
 // stay in build/, never in the repository. The cuts and the chief's attacks are ours (animmodels/animations/biped/murim).
 // The weapons are drawn as cubes on the Tool_R bone along the rig's sword line (blockbench-rig.cjs), the edge down as in
@@ -17,6 +20,9 @@ const { keysOf } = require('./epicfight-to-blockbench.cjs');
 const { png } = require('./mesh-kit.cjs');
 
 const ROOT = path.join(__dirname, '..', '..');
+const TEX = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock', 'textures', 'entity');
+const { OUTFITS, FACES: BANDIT_FACES } = require('./bandit-3d.cjs');
+const { FACES: CHIEF_FACES } = require('./bandit-chief-3d.cjs');
 const OURS = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock', 'animmodels', 'animations', 'biped', 'murim');
 const EF = name => 'assets/epicfight/animmodels/animations/biped/' + name + '.json';
 
@@ -70,8 +76,11 @@ function weapon(kind) {
 }
 
 /** A mob's model project (mesh-kit.cjs) with the weapon on Tool_R, the palette texture and the animations. */
-function build(modelFile, kind, anims, out) {
+function build(modelFile, kind, anims, out, faces = []) {
   const project = JSON.parse(fs.readFileSync(modelFile, 'utf8'));
+  // The faces' atlases: listed after the model's own textures, used by no face until one is put on the head.
+  faces.forEach(([name, file], i) => project.textures.push({ ...project.textures[0], name: name + '.png', id: String(project.textures.length),
+    uuid: '0f0f0f0f-0000-4000-a000-' + String(i).padStart(12, '0'), source: 'data:image/png;base64,' + fs.readFileSync(file).toString('base64') }));
   const tex = project.textures.length;
   project.textures.push({ ...project.textures[0], name: 'weapon.png', id: String(tex), width: 16, height: 16, uv_width: 16, uv_height: 16,
     uuid: '0e0e0e0e-0000-4000-a000-' + String(tex).padStart(12, '0'), source: 'data:image/png;base64,' + palette().toString('base64') });
@@ -95,13 +104,15 @@ if (require.main === module) {
   const art = path.join(ROOT, 'art', 'blockbench'), out = path.join(ROOT, 'build', 'blockbench');
   const ours = name => ({ src: path.join(OURS, name + '.json') });
   build(path.join(art, 'mountain_bandit.bbmodel'), 'dao', {
-    idle: { src: EF('living/idle'), loop: true }, walk: { src: EF('living/walk'), loop: true }, run: { src: EF('living/run'), loop: true },
+    bandit_idle: { ...ours('bandit_idle'), loop: true }, walk: { src: EF('living/walk'), loop: true }, run: { src: EF('living/run'), loop: true },
     drifting_cut: ours('drifting_cut'), returning_cut: ours('returning_cut'), falling_rain: ours('falling_rain'),
     hit_short: { src: EF('combat/hit_short') }, hit_long: { src: EF('combat/hit_long') }, death: { src: EF('living/death') },
-  }, path.join(out, 'mountain_bandit_animations.bbmodel'));
+  }, path.join(out, 'mountain_bandit_animations.bbmodel'),
+  OUTFITS.flatMap(o => Object.keys(BANDIT_FACES).filter(f => f !== 'calm').map(f => [o.key + '_' + f, path.join(TEX, 'mountain_bandit', '3d', o.key + '_' + f + '.png')])));
   build(path.join(art, 'bandit_chief.bbmodel'), 'axe', {
-    hold_greatsword: { src: EF('living/hold_greatsword'), loop: true }, walk_twohand: { src: EF('living/walk_twohand'), loop: true },
+    chief_idle: { ...ours('chief_idle'), loop: true }, walk_twohand: { src: EF('living/walk_twohand'), loop: true },
     chief_cleave: ours('chief_cleave'), chief_sweep: ours('chief_sweep'), chief_slam: ours('chief_slam'),
     hit_short: { src: EF('combat/hit_short') }, death: { src: EF('living/death') },
-  }, path.join(out, 'bandit_chief_animations.bbmodel'));
+  }, path.join(out, 'bandit_chief_animations.bbmodel'),
+  Object.keys(CHIEF_FACES).filter(f => f !== 'calm').map(f => ['chief_' + f, path.join(TEX, 'bandit_chief_' + f + '.png')]));
 }

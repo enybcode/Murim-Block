@@ -29,6 +29,16 @@ const CHIEF = { key: 'chief', c: {
 // a moustache and the beard.
 const FACE = ['ssssssss', 'SSSSSSYS', 'AAASSAYA', 'SWESSEYS', 'SSSssSYS', 'SAAMMAAS', 'AAAAAAAA', 'AAAAAAAA'];
 
+/**
+ * His faces (client/MobFaces picks one each tick), as changes to rows of FACE: 2 the brows (they knot in anger), 3 the
+ * eyes (the scarred left eye never moves), 5 the mouth under the moustache (it mutters, and bares the teeth in a shout).
+ */
+const FACES = {
+  calm: {}, blink: { 3: 'SssSSsYS' }, left: { 3: 'SEWSSEYS' }, right: { 3: 'SWESSEYS' }, mutter: { 5: 'SAAeeAAS' },
+  angry: { 2: 'sAAAAAYA' }, angry_blink: { 2: 'sAAAAAYA', 3: 'SssSSsYS' }, angry_left: { 2: 'sAAAAAYA', 3: 'SEWSSEYS' },
+  angry_right: { 2: 'sAAAAAYA' }, shout: { 2: 'sAAAAAYA', 5: 'SAWWWWAS' },
+};
+
 const PIECES = [];
 const piece = (bone, part, name, from, to, paint, extra = {}) => PIECES.push({ bone, part, name, from, to, paint, ...extra });
 /** Tiger fur: orange, wavy black bands across it (broken here and there), the last row white. */
@@ -42,8 +52,8 @@ const tiger = (f, u, v, w, h) => {
 const plate = (f, u, v, w, h) => (isSide(f) && v === 0 && u % 2 ? 'G' : isSide(f) && v === h - 1 ? 'i' : 'I');
 
 // ---- head: shaved, the hair knot and its tail, the braided beard, gold rings
-piece('Head', 'head', 'head', [-4, 24, -4], [4, 32, 4], (f, u, v, w, h) => {
-  if (f === 'north') return FACE[v][u];
+piece('Head', 'head', 'head', [-4, 24, -4], [4, 32, 4], (f, u, v, w, h, o) => {
+  if (f === 'north') return ((FACES[o.face || 'calm'] || {})[v] || FACE[v])[u];
   if (f === 'up') return (u + v) % 4 === 0 ? 's' : 'S';
   if (f === 'down') return 'A';
   if (f === 'south') return v > 5 ? 's' : 'S';
@@ -148,6 +158,9 @@ if (require.main === module) {
   const art = path.join(ROOT, 'art', 'blockbench');
   fs.mkdirSync(path.join(art, 'bandit_chief'), { recursive: true });
   fs.writeFileSync(path.join(assets, 'textures', 'entity', 'bandit_chief.png'), atlas);
+  // One atlas per face; the calm face keeps the plain name.
+  for (const face of Object.keys(FACES)) if (face !== 'calm')
+    fs.writeFileSync(path.join(assets, 'textures', 'entity', 'bandit_chief_' + face + '.png'), kit.png(ATLAS, ATLAS, kit.paintAtlas(faces, { ...CHIEF, face }, ATLAS)));
   fs.writeFileSync(path.join(art, 'bandit_chief', 'chief.png'), atlas);
   const m = kit.mesh(PIECES, ATLAS);
   fs.writeFileSync(path.join(assets, 'animmodels', 'entity', 'bandit_chief.json'), JSON.stringify(m));
@@ -156,4 +169,4 @@ if (require.main === module) {
   console.log('wrote the Bandit Chief:', PIECES.length, 'pieces,', m.vertices.positions.count, 'vertices, atlas rows used', used, 'of', ATLAS);
 }
 
-module.exports = { PIECES, CHIEF };
+module.exports = { PIECES, CHIEF, FACES };

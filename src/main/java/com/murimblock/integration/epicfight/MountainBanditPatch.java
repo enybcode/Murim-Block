@@ -2,13 +2,19 @@ package com.murimblock.integration.epicfight;
 
 import com.google.common.collect.ImmutableMap;
 import com.murimblock.mob.MountainBanditEntity;
+import com.mojang.datafixers.util.Pair;
+import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
+import yesman.epicfight.api.animation.LivingMotion;
+import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.world.capabilities.entitypatch.Factions;
 import yesman.epicfight.world.capabilities.entitypatch.HumanoidMobPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.entity.ai.goal.CombatBehaviors;
+
+import java.util.Set;
 
 /**
  * Epic Fight side of the Mountain Bandit: a humanoid on the biped skeleton, like the engine's own vindicator. The
@@ -18,6 +24,7 @@ import yesman.epicfight.world.entity.ai.goal.CombatBehaviors;
  *   <li>the double cut: a level cut from right to left, then the backhand from left to right (within 2.5 blocks);</li>
  *   <li>the falling cut: raised over the head and brought straight down, rarer (a 6 s cooldown).</li>
  * </ul>
+ * Standing, it plays its own idle (weight on one leg, a hand on the belt, a look along the dao's edge).
  */
 public class MountainBanditPatch extends HumanoidMobPatch<MountainBanditEntity> {
     public MountainBanditPatch(MountainBanditEntity entity) {
@@ -41,12 +48,15 @@ public class MountainBanditPatch extends HumanoidMobPatch<MountainBanditEntity> 
     protected void setWeaponMotions() {
         super.setWeaponMotions();
         weaponAttackMotions.put(CapabilityItem.WeaponCategories.SWORD, ImmutableMap.of(CapabilityItem.Styles.COMMON, swordCuts()));
+        // His own idle with the dao in hand (it comes after the sword's own stance, so it wins).
+        weaponLivingMotions.put(CapabilityItem.WeaponCategories.SWORD, ImmutableMap.of(CapabilityItem.Styles.COMMON,
+                Set.of(Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.IDLE, MurimAnimations.BANDIT_IDLE))));
     }
 
     @Override
     public void initAnimator(Animator animator) {
         super.initAnimator(animator);
-        animator.addLivingAnimation(LivingMotions.IDLE, Animations.BIPED_IDLE);
+        animator.addLivingAnimation(LivingMotions.IDLE, MurimAnimations.BANDIT_IDLE);
         animator.addLivingAnimation(LivingMotions.WALK, Animations.BIPED_WALK);
         animator.addLivingAnimation(LivingMotions.CHASE, Animations.BIPED_RUN);
         animator.addLivingAnimation(LivingMotions.FALL, Animations.BIPED_FALL);

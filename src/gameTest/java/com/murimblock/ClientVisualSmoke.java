@@ -432,7 +432,39 @@ public final class ClientVisualSmoke {
                 case 976 -> playChief(mc, MurimAnimations.CHIEF_SWEEP);
                 case 1004 -> playChief(mc, MurimAnimations.CHIEF_SLAM);
                 case 1042 -> mc.options.hideGui = false;
-                case 1046 -> {
+                // The faces up close in the preview: a bandit, then the chief, each in its own idle (blinks, glances).
+                case 1044 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var old = level.getEntity(opponentId);
+                    if (old != null) old.discard();
+                    opponentId = spawnPreviewMob(level, MurimEntities.MOUNTAIN_BANDIT.get());
+                    var bandit = (MountainBanditEntity) level.getEntity(opponentId);
+                    bandit.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.BANDIT_DAO.get()));
+                    bandit.setVariant(1);
+                });
+                case 1056 -> {
+                    previewTurn = -25;
+                    previewScale = 300;
+                    previewLift = 0.72F;
+                    previewTracked(MountainBanditPatch.class);
+                }
+                case 1132 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var old = level.getEntity(opponentId);
+                    if (old != null) old.discard();
+                    opponentId = spawnPreviewMob(level, MurimEntities.BANDIT_CHIEF.get());
+                    ((BanditChiefEntity) level.getEntity(opponentId)).setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.CHIEF_GREAT_AXE.get()));
+                });
+                case 1144 -> {
+                    previewLift = 0.95F;
+                    previewTracked(BanditChiefPatch.class);
+                }
+                case 1222 -> {
+                    previewTurn = 0;
+                    previewScale = 80;
+                    previewLift = 0.0625F;
+                }
+                case 1226 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
                             "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
@@ -456,6 +488,8 @@ public final class ClientVisualSmoke {
         if (ticks >= 947 && ticks <= 972) capture(String.format("chief-cleave/%02d.png", ticks - 947));
         if (ticks >= 977 && ticks <= 1000) capture(String.format("chief-sweep/%02d.png", ticks - 977));
         if (ticks >= 1005 && ticks <= 1036) capture(String.format("chief-slam/%02d.png", ticks - 1005));
+        if (ticks >= 1060 && ticks < 1130) capture(String.format("bandit-face/%02d.png", ticks - 1060));
+        if (ticks >= 1148 && ticks < 1218) capture(String.format("chief-face/%02d.png", ticks - 1148));
         if (ticks >= 829 && ticks <= 846) capture(String.format("bandit-cuts/drifting/%02d.png", ticks - 829));
         if (ticks >= 851 && ticks <= 868) capture(String.format("bandit-cuts/returning/%02d.png", ticks - 851));
         if (ticks >= 881 && ticks <= 900) capture(String.format("bandit-cuts/falling/%02d.png", ticks - 881));
@@ -532,6 +566,9 @@ public final class ClientVisualSmoke {
 
     /** How far to the side the preview looks (pixels of a mouse offset): 0 faces the camera, more turns it to three quarters. */
     private static float previewTurn;
+    /** The preview's size and the height it centres on (above the mob's middle, in blocks): raised for a face close up. */
+    private static int previewScale = 80;
+    private static float previewLift = 0.0625F;
 
     /** Frozen preview mob created directly (no finalizeSpawn, so the crab man comes without its escort). */
     private static UUID spawnPreviewMob(ServerLevel level, EntityType<? extends Mob> type) {
@@ -563,7 +600,7 @@ public final class ClientVisualSmoke {
             g.fill(0, 0, width, height, 0xFFF0E7CE);
             g.drawCenteredString(font, title, width / 2, 16, 0xFF202522);
             InventoryScreen.renderEntityInInventoryFollowsMouse(g,
-                    width / 2 - 90, 40, width / 2 + 90, height - 20, 80, 0.0625F, width / 2.0F + previewTurn, height / 2.0F, mob);
+                    width / 2 - 90, 40, width / 2 + 90, height - 20, previewScale, previewLift, width / 2.0F + previewTurn, height / 2.0F, mob);
         }
     }
 

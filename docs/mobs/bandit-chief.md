@@ -27,6 +27,10 @@ corde rouge, anneaux de bronze, houppe rouge. Tenue à deux mains (une grande é
     à 0,75 s, onde de choc de 3,2 blocs autour du point d'impact (0,6 × l'attaque, projette). Le saut est un seul coup :
     qui vient de prendre ou de parer la hache n'est pas touché par l'onde. Recharge 9 s.
 - Touché, il appelle les bandits autour de lui. Barre de boss rouge pour les joueurs proches.
+- Au repos, son idle à lui (`chief_idle`, `scripts/animation/mob-idles.cjs`) : la hache sur l'épaule droite, le poing gauche
+  sur la boucle, grandes respirations, un regard à gauche, la nuque roulée, le menton levé. Son visage vit (`MobFaces`) :
+  clignements, coups d'œil de son œil valide (l'œil balafré ne bouge pas), marmonnement ; en combat les sourcils se
+  nouent, il montre les dents quand il frappe.
 - Butin : 4 à 9 pépites d'or, cuir, viande cuite ; sa hache une fois sur dix. 40 XP, 20 Qi (+80 à la première victoire).
 
 ## Fichiers

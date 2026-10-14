@@ -40,7 +40,18 @@ const OUTFITS = [
 ];
 
 // The face, as on the sheet (8 x 8, the viewer's view: the bandit's right on the left).
-const FACE = ['AAAAAAAA', 'AAAAAAAA', 'ASSSSSSA', 'SEESSEES', 'SSSSSSSS', 'SSMMMMSS', 'SMMMMMMS', 'SSSSSSSS'];
+const FACE = ['AAAAAAAA', 'AAAAAAAA', 'AaaSSaaA', 'SZESSEZS', 'SSSssSSS', 'SSMMMMSS', 'SMMMMMMS', 'SSSSSSSS'];
+
+/**
+ * The faces it can make (client/MobFaces picks one each tick: blinks, glances, a mutter; a frown, a shout in combat), as
+ * changes to rows of FACE: 2 the brows, 3 the eyes (Z their whites), 5 and 6 the mouth. Each face is a copy of the atlas.
+ */
+const FACES = {
+  calm: {}, blink: { 3: 'SssSSssS' }, left: { 3: 'SEZSSEZS' }, right: { 3: 'SZESSZES' }, mutter: { 6: 'SMMeeMMS' },
+  angry: { 2: 'ASaaaaSA' }, angry_blink: { 2: 'ASaaaaSA', 3: 'SssSSssS' }, angry_left: { 2: 'ASaaaaSA', 3: 'SEZSSEZS' },
+  angry_right: { 2: 'ASaaaaSA', 3: 'SZESSZES' }, shout: { 2: 'ASaaaaSA', 5: 'SSMZZMSS', 6: 'SMeeeeMS' },
+};
+const faceRow = (o, v) => ((FACES[o.face || 'calm'] || {})[v] || FACE[v]);
 
 // ---------------------------------------------------------------- the pieces
 
@@ -53,7 +64,9 @@ const piece = (bone, part, name, from, to, paint, extra = {}) => PIECES.push({ b
 piece('Head', 'head', 'head', [-4, 24, -4], [4, 32, 4], (f, u, v, w, h, o) => {
   if (f === 'north') {
     if (o.mask && (v === 5 || v === 6)) return 'H';
-    return FACE[v][u];
+    const l = faceRow(o, v)[u];
+    // The whites of the eyes.
+    return l === 'Z' ? '#e9e4d8' : l;
   }
   if (f === 'up') return 'A';
   if (f === 'down') return 'S';
@@ -164,6 +177,10 @@ for (const [side, sx, part] of [['R', 1, 'right'], ['L', -1, 'left']]) {
 if (require.main === module) {
   const faces = kit.pack(PIECES, ATLAS);
   const atlases = OUTFITS.map(o => kit.png(ATLAS, ATLAS, kit.paintAtlas(faces, o, ATLAS)));
+  const faceDir = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock', 'textures', 'entity', 'mountain_bandit', '3d');
+  fs.mkdirSync(faceDir, { recursive: true });
+  for (const o of OUTFITS) for (const face of Object.keys(FACES)) if (face !== 'calm')
+    fs.writeFileSync(path.join(faceDir, o.key + '_' + face + '.png'), kit.png(ATLAS, ATLAS, kit.paintAtlas(faces, { ...o, face }, ATLAS)));
   const assets = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock');
   const art = path.join(ROOT, 'art', 'blockbench');
   fs.mkdirSync(path.join(assets, 'textures', 'entity', 'mountain_bandit', '3d'), { recursive: true });
@@ -179,4 +196,4 @@ if (require.main === module) {
   console.log('wrote the 3D bandit:', PIECES.length, 'pieces,', m.vertices.positions.count, 'vertices, atlas rows used', used, 'of', ATLAS);
 }
 
-module.exports = { PIECES, OUTFITS };
+module.exports = { PIECES, OUTFITS, FACES };

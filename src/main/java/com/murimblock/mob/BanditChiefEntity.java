@@ -120,6 +120,8 @@ public class BanditChiefEntity extends Monster {
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
         bossBar.setProgress(getHealth() / getMaxHealth());
+        // With a target, he is aggressive: the clients see it (his face frowns, MobFaces).
+        setAggressive(getTarget() != null);
     }
 
     // ---- the slam's shockwave

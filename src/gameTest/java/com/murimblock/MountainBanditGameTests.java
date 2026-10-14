@@ -25,6 +25,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationPlayer;
+import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
@@ -66,6 +67,18 @@ public final class MountainBanditGameTests {
         helper.runAfterDelay(2, () -> {
             helper.assertTrue(Math.abs(bandit.getAttributeValue(Attributes.ATTACK_DAMAGE) - 4) < 0.01,
                     "A bandit should hit for 4 with its dao, not " + bandit.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            bandit.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "bandit_idle")
+    public static void aBanditStandsInItsOwnIdle(GameTestHelper helper) {
+        MountainBanditEntity bandit = bandit(helper, new BlockPos(2, 1, 2));
+        helper.runAfterDelay(3, () -> {
+            LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(bandit, LivingEntityPatch.class);
+            var idle = patch.getAnimator().getLivingAnimation(LivingMotions.IDLE, null);
+            helper.assertTrue(idle == MurimAnimations.BANDIT_IDLE, "With its dao, the bandit should stand in its own idle, not " + idle);
             bandit.discard();
             helper.succeed();
         });

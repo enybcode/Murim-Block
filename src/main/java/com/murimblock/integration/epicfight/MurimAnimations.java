@@ -137,6 +137,8 @@ public final class MurimAnimations {
      * and parry. Played at their own pace. The boxes reach as far as his axe does (he is drawn 1.3 times larger).
      */
     public static AnimationAccessor<AttackAnimation> CHIEF_CLEAVE, CHIEF_SWEEP, CHIEF_SLAM;
+    /** The bandits' own idles (scripts/animation/mob-idles.cjs): five seconds that loop. */
+    public static AnimationAccessor<StaticAnimation> BANDIT_IDLE, CHIEF_IDLE;
     /** When the slam's axe meets the ground (seconds): the shockwave goes out then (BanditChiefEntity). */
     public static final float CHIEF_SLAM_IMPACT = 0.75F;
     /** The cleave: a long box ahead, from the chest down to the ground. */
@@ -147,6 +149,8 @@ public final class MurimAnimations {
     private static final OBBCollider CHIEF_SLAM_BOX = new OBBCollider(1.4D, 1.3D, 1.6D, 0.0D, 0.9D, -2.0D);
 
     private static void buildBanditChief(AnimationBuilder builder) {
+        BANDIT_IDLE = builder.nextAccessor("biped/murim/bandit_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));
+        CHIEF_IDLE = builder.nextAccessor("biped/murim/chief_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));
         // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact.
         CHIEF_CLEAVE = builder.nextAccessor("biped/murim/chief_cleave", a -> technique(new AttackAnimation(0.15F, 0.3F, 0.46F, 0.62F, 0.95F,
                 CHIEF_CLEAVE_BOX, root(), a, Armatures.BIPED), 1.3F)

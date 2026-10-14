@@ -104,6 +104,12 @@ public class MountainBanditEntity extends Monster {
         // Epic Fight installs its attack and chase goals for the dao in hand (MountainBanditPatch). No vanilla melee goal.
     }
 
+    /** With a target, it is aggressive: the clients see it (its face frowns, MobFaces). */
+    @Override protected void customServerAiStep() {
+        super.customServerAiStep();
+        setAggressive(getTarget() != null);
+    }
+
     @Override protected void populateDefaultEquipmentSlots(RandomSource random, DifficultyInstance difficulty) {
         setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.BANDIT_DAO.get()));
         setDropChance(EquipmentSlot.MAINHAND, DAO_DROP_CHANCE);

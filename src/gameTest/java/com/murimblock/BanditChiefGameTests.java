@@ -24,6 +24,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationPlayer;
+import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
@@ -67,6 +68,18 @@ public final class BanditChiefGameTests {
         helper.runAfterDelay(2, () -> {
             helper.assertTrue(Math.abs(chief.getAttributeValue(Attributes.ATTACK_DAMAGE) - 8) < 0.01,
                     "The chief should hit for 8 with his axe, not " + chief.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            chief.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "chief_idle")
+    public static void theChiefStandsInHisOwnIdle(GameTestHelper helper) {
+        BanditChiefEntity chief = chief(helper, new BlockPos(2, 1, 2));
+        helper.runAfterDelay(3, () -> {
+            LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(chief, LivingEntityPatch.class);
+            var idle = patch.getAnimator().getLivingAnimation(LivingMotions.IDLE, null);
+            helper.assertTrue(idle == MurimAnimations.CHIEF_IDLE, "With his axe, the chief should stand in his own idle, not " + idle);
             chief.discard();
             helper.succeed();
         });

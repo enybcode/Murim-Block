@@ -77,4 +77,52 @@ function write(dir, name, keys) {
 /** Where Murim's player animations live. */
 const MURIM_BIPED = path.join(__dirname, '..', '..', 'src', 'main', 'resources', 'assets', 'murimblock', 'animmodels', 'animations', 'biped', 'murim');
 
-module.exports = { arm, bind, locals, localsFromRotations, write, writeFrames, MURIM_BIPED };
+
+/** A rotation (the 3 x 3 part of a row-major 4 x 4) as a quaternion [x, y, z, w]. */
+function quat(m) {
+  const [a, b, c, , d, e, f, , g, h, i] = m, tr = a + e + i;
+  if (tr > 0) { const k = Math.sqrt(tr + 1) * 2; return [(h - f) / k, (c - g) / k, (d - b) / k, k / 4]; }
+  if (a > e && a > i) { const k = Math.sqrt(1 + a - e - i) * 2; return [k / 4, (b + d) / k, (c + g) / k, (h - f) / k]; }
+  if (e > i) { const k = Math.sqrt(1 + e - a - i) * 2; return [(b + d) / k, k / 4, (f + h) / k, (c - g) / k]; }
+  const k = Math.sqrt(1 + i - a - e) * 2; return [(c + g) / k, (f + h) / k, k / 4, (d - b) / k];
+}
+function slerp(p, q, t) {
+  let d = p.reduce((s, v, n) => s + v * q[n], 0);
+  if (d < 0) { q = q.map(v => -v); d = -d; }
+  if (d > 0.9995) { const r = p.map((v, n) => v + (q[n] - v) * t), l = Math.hypot(...r); return r.map(v => v / l); }
+  const th = Math.acos(d), sa = Math.sin((1 - t) * th) / Math.sin(th), sb = Math.sin(t * th) / Math.sin(th);
+  return p.map((v, n) => v * sa + q[n] * sb);
+}
+function matrix([x, y, z, w], [tx, ty, tz]) {
+  return [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w), tx,
+    2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w), ty,
+    2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y), tz, 0, 0, 0, 1];
+}
+const STEP = 1 / 40;
+/**
+ * Writes an Epic Fight animation from keyframes [{t, pose}] into MURIM_BIPED, every joint turning the shortest way from one
+ * key to the next (quaternions) and every key landing exactly on its time: two keys whose angles say the same turn two
+ * different ways never spin between them. Returns nothing; logs what it wrote.
+ */
+function writeSmooth(name, keys, dir = MURIM_BIPED) {
+  const L = keys.map(k => locals(k.pose)), end = keys[keys.length - 1].t, times = [];
+  for (let t = 0; t < end - 1e-9; t += STEP) times.push(Math.round(t * 1000) / 1000);
+  // Every key on time, exactly.
+  for (const k of keys) if (!times.includes(k.t)) times.push(k.t);
+  times.sort((x, y) => x - y);
+  const frames = times.map(t => {
+    let i = 0;
+    while (i < keys.length - 2 && t > keys[i + 1].t) i++;
+    const f = Math.min(1, Math.max(0, (t - keys[i].t) / (keys[i + 1].t - keys[i].t)));
+    const out = {};
+    for (const j of arm.order) {
+      const a = L[i][j], b = L[i + 1][j];
+      out[j] = matrix(slerp(quat(a), quat(b), f), [3, 7, 11].map(n => a[n] + (b[n] - a[n]) * f));
+    }
+    return out;
+  });
+  writeFrames(dir, name, times, frames);
+  console.log('wrote', name, times.length, 'frames,', end, 's');
+}
+
+module.exports = { arm, bind, locals, localsFromRotations, write, writeFrames, MURIM_BIPED, writeSmooth };

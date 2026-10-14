@@ -31,17 +31,21 @@ import yesman.epicfight.client.renderer.patched.entity.PHumanoidRenderer;
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MountainBanditRenderer extends HumanoidMobRenderer<MountainBanditEntity, PlayerModel<MountainBanditEntity>> {
     private static final ResourceLocation[] SKINS = new ResourceLocation[MountainBanditEntity.OUTFITS.length];
-    private static final ResourceLocation[] ATLASES = new ResourceLocation[MountainBanditEntity.OUTFITS.length];
+    /** Per outfit, one atlas per face (MobFaces.Face order): <outfit>.png, then <outfit>_<face>.png. */
+    private static final ResourceLocation[][] ATLASES = new ResourceLocation[MountainBanditEntity.OUTFITS.length][MobFaces.Face.values().length];
     static final MeshAccessor<HumanoidMesh> MESH =
             MeshAccessor.create(Murimblock.MOD_ID, "entity/mountain_bandit", loader -> loader.loadSkinnedMesh(HumanoidMesh::new));
     private static boolean patchedRendererHooked;
-    /** Set while Epic Fight draws a bandit: its 3D model takes the atlas, not the skin. Render thread only. */
+    /** Set while Epic Fight draws a bandit: its 3D model takes the atlas of its face now, not the skin. Render thread only. */
     private static boolean drawingMesh;
+    private static MobFaces.Face face = MobFaces.Face.CALM;
 
     static {
         for (int i = 0; i < SKINS.length; i++) {
             SKINS[i] = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/mountain_bandit/" + MountainBanditEntity.OUTFITS[i] + ".png");
-            ATLASES[i] = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/mountain_bandit/3d/" + MountainBanditEntity.OUTFITS[i] + ".png");
+            for (MobFaces.Face f : MobFaces.Face.values())
+                ATLASES[i][f.ordinal()] = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/mountain_bandit/3d/"
+                        + MountainBanditEntity.OUTFITS[i] + (f.suffix.isEmpty() ? "" : "_" + f.suffix) + ".png");
         }
     }
 
@@ -50,7 +54,7 @@ public final class MountainBanditRenderer extends HumanoidMobRenderer<MountainBa
     }
 
     @Override public ResourceLocation getTextureLocation(MountainBanditEntity bandit) {
-        return (drawingMesh ? ATLASES : SKINS)[bandit.getVariant()];
+        return drawingMesh ? ATLASES[bandit.getVariant()][face.ordinal()] : SKINS[bandit.getVariant()];
     }
 
     @SubscribeEvent
@@ -75,6 +79,7 @@ public final class MountainBanditRenderer extends HumanoidMobRenderer<MountainBa
         public void render(MountainBanditEntity bandit, MountainBanditPatch patch, MountainBanditRenderer renderer, MultiBufferSource buffers,
                            PoseStack poseStack, int light, float partialTicks) {
             drawingMesh = true;
+            face = MobFaces.of(bandit, patch);
             try {
                 super.render(bandit, patch, renderer, buffers, poseStack, light, partialTicks);
             } finally {

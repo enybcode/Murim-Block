@@ -62,6 +62,10 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   `textures/entity/bandit_chief.png`, projet Blockbench) ; `node scripts/animation/chief-axe-model.cjs` : sa grande hache ;
   `node scripts/animation/chief-axe.cjs` : ses trois attaques (`animations/biped/murim/chief_*.json`). Voir `docs/mobs/bandit-chief.md`.
   Les modèles 3D de mobs partagent `scripts/animation/mesh-kit.cjs`.
+- `node scripts/animation/mob-idles.cjs` : les idles du bandit et du chef (5 s en boucle : respiration, appui, regards ; le bandit
+  regarde le fil de son dao, le chef roule la nuque, hache sur l'épaule), écrits avec des rotations par quaternions
+  (`pose.cjs` writeSmooth). Les visages bougent par texture : 10 expressions par atlas (clignement, regards, marmonnement,
+  colère, cri), peintes par `bandit-3d.cjs` et `bandit-chief-3d.cjs`, choisies à chaque tick par `client/MobFaces`.
 - `node scripts/animation/mob-animations-preview.cjs` : toutes les animations du bandit et du chef sur leurs modèles 3D, arme en main,
   en projets Blockbench à regarder (`build/blockbench/*_animations.bbmodel`, onglet Animate). Les mouvements d'Epic Fight y sont lus
   dans son jar : ces projets restent dans `build/`, jamais dans le dépôt.
