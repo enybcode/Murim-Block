@@ -260,9 +260,9 @@ tree('desert_poplar', 'desert_poplar', { type: 'minecraft:forking_trunk_placer',
 // spruces (it sheds the snow), in close stands on the shaded slopes.
 tree('tianshan_spruce', 'tianshan_spruce', { type: 'minecraft:straight_trunk_placer', base_height: 11, height_rand_a: 5, height_rand_b: 3 },
   { type: 'minecraft:spruce_foliage_placer', offset: uniform(0, 1), radius: uniform(1, 2), trunk_height: uniform(2, 4) }, twoLayers(2, 0, 2));
-// Camphor (Cinnamomum camphora): a bare stout trunk flared by root buttresses, three to five great limbs climbing
-// outwards, each holding a flattened cloud of glossy leaves (CamphorTreeFeature); the ancient village camphor, the
-// fengshui tree, on a trunk two blocks thick (from 2x2 saplings, or rarely wild).
+// Camphor (Cinnamomum camphora): a bare stout trunk two blocks thick, flared, its great roots crawling over the
+// ground, four to six limbs climbing outwards into a rounded crown (CamphorTreeFeature); the ancient village camphor,
+// the fengshui tree, on a trunk three blocks thick (from 2x2 saplings, or rarely wild).
 CF('camphor', id('camphor_tree'), { ancient: false });
 CF('camphor_ancient', id('camphor_tree'), { ancient: true });
 // "Dead for a thousand years, standing": bare poplar snags in the gravel.
@@ -405,10 +405,11 @@ PF('trees_huangshan_pine', id('huangshan_pine'), treePlacement(patchy(0, 1, 4), 
 PF('trees_tianshan_spruce', id('tianshan_spruce'), treePlacement(patchy(0.1, 0, 9), 'tianshan_spruce_sapling'));
 PF('trees_glacier_spruce', id('tianshan_spruce'), treePlacement(chance(6), 'tianshan_spruce_sapling'));
 // Camphor woods with clean edges: a close stand where the vegetation noise is above its level, nothing below (open
-// meadow), so every wood ends on a clear line; a few lone camphors out in the meadows; rarely an ancient one.
-PF('trees_camphor_woods', id('camphor'), treePlacement(patchy(0.45, 0, 3), 'camphor_sapling'));
-PF('trees_camphor_lone', id('camphor'), treePlacement(chance(6), 'camphor_sapling'));
-PF('trees_camphor_ancient', id('camphor_ancient'), [chance(30), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id('camphor_sapling'), { stage: '0' })), away(10)]);
+// meadow), so every wood ends on a clear line; lone camphors
+// scattered over the meadows (one chunk in two); now and then an ancient one (14/10: Enzo wants more of them).
+PF('trees_camphor_woods', id('camphor'), treePlacement(patchy(0.3, 0, 4), 'camphor_sapling'));
+PF('trees_camphor_lone', id('camphor'), treePlacement(chance(2), 'camphor_sapling'));
+PF('trees_camphor_ancient', id('camphor_ancient'), [chance(12), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id('camphor_sapling'), { stage: '0' })), away(10)]);
 PF('patch_milk_vetch', id('patch_milk_vetch'), surfacePatch(patchy(0.35, 0, 5)));
 PF('patch_kunlun_sedge', id('patch_kunlun_sedge'), surfacePatch(patchy(0, 0, 4)));
 PF('patch_kunlun_sedge_sparse', id('patch_kunlun_sedge'), surfacePatch(chance(3)));
