@@ -1,6 +1,8 @@
 package com.murimblock.qi;
 
 import com.murimblock.Murimblock;
+import com.murimblock.cultivation.CultivationRules;
+import com.murimblock.cultivation.CultivationService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -39,8 +41,11 @@ public final class QiRewardManager {
             return Optional.empty();
         }
 
-        // TODO: Decider plus tard si le Qi excedentaire doit alimenter une progression de cultivation ou de breakthrough.
         QiService.addQi(player, reward.finalReward());
+        // A share of every kill also goes to Qi Max (the experience of combat); a boss's first defeat, its own share once.
+        double qiMax = reward.finalReward() * CultivationRules.KILL_SHARE;
+        if (reward.firstVictory()) qiMax += CultivationRules.firstVictoryQiMax(reward.entityTypeId().toString());
+        CultivationService.gainQiMax(player, qiMax, reward.firstVictory() ? CultivationService.Source.BOSS : CultivationService.Source.KILL);
         rememberFirstVictory(player, reward);
         rememberFullBossReward(player, reward, rewardTime(player));
         sendDebugMessage(player, killedEntity, reward);
@@ -113,6 +118,10 @@ public final class QiRewardManager {
         if (entity.getType() == EntityType.ELDER_GUARDIAN) {
             return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null, originMultiplier);
         }
+        // The Bandit Chief, a mini-boss: more for the first victory over him (as rewardTarget says).
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) {
+            return new RewardTarget(entityTypeId, baseReward, 80, entityTypeId, null, originMultiplier);
+        }
         if (entity.getType() == EntityType.WARDEN) {
             return new RewardTarget(entityTypeId, baseReward, 600, entityTypeId, null, originMultiplier);
         }
@@ -144,6 +153,8 @@ public final class QiRewardManager {
     private static int baseReward(EntityType<?> type, ResourceLocation id) {
         // Summoned integration fixtures must not become a source of progression rewards.
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "training_opponent"))) return 0;
+        // The Heart Demon and its shadow: no Qi for slaying oneself (the breakthrough and the mission are the reward).
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "heart_demon"))) return 0;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "armored_crab"))) return 3;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_man"))) return 10;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "mountain_bandit"))) return 4;

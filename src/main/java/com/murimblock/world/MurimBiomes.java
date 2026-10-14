@@ -30,6 +30,10 @@ public final class MurimBiomes {
     public static final List<ResourceKey<Biome>> ALL = List.of(JADE_KARST_FOREST, LOESS_PLATEAU, HEXI_FRONTIER_DESERT,
             CLOUD_SEA_PEAKS, SHU_BAMBOO_SEA, JIANGNAN_WATERLANDS, PEACH_BLOSSOM_VALLEY);
 
+    /** The seven Murim biomes as a tag (data/murimblock/tags/worldgen/biome/murim_biomes.json). */
+    public static final net.minecraft.tags.TagKey<Biome> MURIM_TAG = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BIOME,
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.murimblock.Murimblock.MOD_ID, "murim_biomes"));
+
     private MurimBiomes() { }
 
     private static ResourceKey<Biome> key(String name) {

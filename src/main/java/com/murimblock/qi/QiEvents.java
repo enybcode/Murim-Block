@@ -1,6 +1,10 @@
 package com.murimblock.qi;
 
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.combat.CombatService;
+import com.murimblock.cultivation.CultivationRegistries;
+import com.murimblock.cultivation.CultivationRules;
+import com.murimblock.cultivation.CultivationService;
+import com.murimblock.cultivation.MeditationService;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -40,11 +44,16 @@ public final class QiEvents {
             return;
         }
         if (player.tickCount % QiConstants.REGENERATION_INTERVAL_TICKS == 0) {
-            double rate = QiChargeService.isCharging(player)
-                    ? QiConstants.ACTIVE_CHARGE_REGENERATION_RATE_PER_MINUTE
-                    : QiConstants.PASSIVE_REGENERATION_RATE_PER_MINUTE;
-            QiService.regenerate(player, QiConstants.REGENERATION_INTERVAL_TICKS, rate);
+            double rate = regenerationRate(player);
+            if (rate > 0) QiService.regenerate(player, QiConstants.REGENERATION_INTERVAL_TICKS, rate);
         }
+    }
+
+    /** How fast the reserve comes back (share of Qi Max a minute): fast in meditation, slow in combat, none in a deviation. */
+    public static double regenerationRate(ServerPlayer player) {
+        if (player.hasEffect(CultivationRegistries.QI_DEVIATION)) return 0;
+        if (MeditationService.isMeditating(player)) return CultivationRules.REGEN_MEDITATION;
+        return CombatService.isInCombatMode(player) ? CultivationRules.REGEN_COMBAT : CultivationRules.REGEN_IDLE;
     }
 
     public static void onLivingDeath(LivingDeathEvent event) {
@@ -66,9 +75,8 @@ public final class QiEvents {
      */
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        double before = QiService.getQiMax(player);
-        QiService.applyDeathPenalty(player);
-        double lost = before - QiService.getQiMax(player);
+        // Never below the stage reached (CultivationRules.afterLoss).
+        double lost = CultivationService.deathPenalty(player);
         if (lost > 0) {
             player.sendSystemMessage(Component.translatable("qi.murimblock.death_penalty",
                     QiFormat.format(lost), QiFormat.format(QiService.getQiMax(player))));

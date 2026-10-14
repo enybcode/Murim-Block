@@ -96,6 +96,11 @@ public final class MurimProfileScreen extends Screen {
         screen.page = Page.TECHNIQUES;
         return screen;
     }
+    public static MurimProfileScreen cultivation() {
+        MurimProfileScreen screen = new MurimProfileScreen();
+        screen.page = Page.CULTIVATION;
+        return screen;
+    }
     public static MurimProfileScreen combatSettings() {
         MurimProfileScreen screen = new MurimProfileScreen();
         screen.page = Page.INFOS;
@@ -649,26 +654,68 @@ public final class MurimProfileScreen extends Screen {
         var next = MurimblockApi.cultivation().getNextCultivation(player);
         text(g, NEXT_REALM, next.map(MurimProfileScreen::realm).orElseGet(() -> label("cultivation.complete")));
         next.ifPresent(value -> text(g, layout.text(page, NEXT_STAGE), stage(value), MUTED));
-        text(g, layout.text(page, REQUIRED_QI), CultivationService.getRequiredQiMaxForNextStage(player)
-                .<Component>map(value -> label("cultivation.required", QiFormat.format(value))).orElseGet(() -> label("cultivation.no_requirement")), MUTED);
+        Box required = layout.text(page, REQUIRED_QI);
+        var requiredQi = CultivationService.getRequiredQiMaxForNextStage(player);
+        text(g, required, requiredQi.<Component>map(value -> label("cultivation.required", QiFormat.format(value))).orElseGet(() -> label("cultivation.no_requirement")), MUTED);
+        // Qi Max on its way to the next threshold, from where this stage began.
+        var data = CultivationService.getCultivation(player);
+        if (requiredQi.isPresent()) {
+            double from = com.murimblock.cultivation.CultivationRules.floorOf(data), to = requiredQi.get();
+            Box bar = new Box(required.x() + 1, required.y() + 13, required.width() - 2, 4);
+            fill(g, new Box(bar.x() - 1, bar.y() - 1, bar.width() + 2, bar.height() + 2), TRACK);
+            int reached = (int) Math.round(bar.width() * Math.clamp((qiMax - from) / Math.max(1, to - from), 0, 1));
+            if (reached > 0) fill(g, new Box(bar.x(), bar.y(), reached, bar.height()), GOLD);
+            text(g, new Box(required.x(), bar.y() + 7, required.width(), 9), label("cultivation.qi_max", QiFormat.format(Math.floor(qiMax)), QiFormat.format(to)), INK_SOFT);
+        }
         section(g, QI_LABEL, label("qi_reserve"));
         qiBar(g, layout.cultivationQiFill, qi, qiMax);
+        Box value = layout.text(page, QI_VALUE);
         text(g, QI_VALUE, qiValue(qi, qiMax));
+        // Where one stands (how much meditation condenses here), and what is left of the day's condensation.
+        var aura = com.murimblock.cultivation.MeditationService.aura(player);
+        var journal = CultivationService.journal(player);
+        long now = player.level().getGameTime();
+        var place = aura.placeKind();
+        text(g, new Box(value.x(), value.y() + 11, value.width(), 9), label("cultivation.place", label("cultivation.place." + place.key()),
+                QiFormat.format(place.condensation)), MUTED);
+        int left = Math.max(0, com.murimblock.cultivation.CultivationRules.DAILY_FULL_TICKS - journal.condensedOn(now));
+        text(g, new Box(value.x(), value.y() + 21, value.width(), 9), left > 0 ? label("cultivation.today", (left + 1199) / 1200) : label("cultivation.tired"), MUTED);
         section(g, BREAKTHROUGH_LABEL, label("cultivation.breakthrough"));
         boolean complete = next.isEmpty();
-        boolean ready = !complete && MurimblockApi.cultivation().canAttemptBreakthrough(player);
+        boolean bottleneck = !complete && com.murimblock.cultivation.CultivationRules.atBottleneck(data, qiMax);
         Box pill = layout.text(page, BREAKTHROUGH);
         if (complete) {
             fill(g, pill, FRAME);
             outline(g, pill, GOLD_DARK);
-        } else if (ready) {
+        } else if (bottleneck) {
             fill(g, pill, SEAL);
             outline(g, pill, GOLD);
         } else {
             outline(g, pill, PAPER_LINE);
         }
-        text(g, label(complete ? "cultivation.state.complete" : ready ? "cultivation.state.ready" : "cultivation.state.not_ready"),
-                new Box(pill.x() + 2, pill.y() + 5, pill.width() - 4, 9), complete ? GOLD_LIGHT : ready ? SEAL_TEXT : MUTED, true, 1);
+        Component state = complete ? label("cultivation.state.complete") : bottleneck ? label("cultivation.state.demon")
+                : com.murimblock.cultivation.CultivationRules.nextIsMajor(data) ? label("cultivation.state.gate") : label("cultivation.state.minor");
+        text(g, state, new Box(pill.x() + 2, pill.y() + 5, pill.width() - 4, 9), complete ? GOLD_LIGHT : bottleneck ? SEAL_TEXT : MUTED, true, 1);
+        // Under it: the Heart Demon's strength at the gate, the toxicity, a pill working, the failed attempts, the realm's gifts.
+        int y = pill.bottom() + 3;
+        double toxicity = journal.toxicityAt(now);
+        if (bottleneck) {
+            double strength = com.murimblock.cultivation.CultivationRules.demonStrength(new com.murimblock.cultivation.CultivationRules.Preparation(
+                    journal.breakingPillActive(now), place, journal.failures(), toxicity));
+            text(g, new Box(pill.x(), y, pill.width(), 9), label("cultivation.demon_strength", Math.round(strength * 100)), SEAL);
+            y += 10;
+        }
+        text(g, new Box(pill.x(), y, pill.width(), 9), journal.breakingPillActive(now)
+                ? label("cultivation.toxicity_pill", Math.round(toxicity), (journal.breakingPillUntil() - now + 1199) / 1200)
+                : label("cultivation.toxicity", Math.round(toxicity)), toxicity > com.murimblock.cultivation.CultivationRules.TOXICITY_HEAVY ? SEAL : MUTED);
+        y += 10;
+        if (journal.failures() > 0) {
+            text(g, new Box(pill.x(), y, pill.width(), 9), label("cultivation.failures", journal.failures()), MUTED);
+            y += 10;
+        }
+        var bonuses = com.murimblock.cultivation.CultivationRules.bonuses(data.realm());
+        if (bonuses.health() > 0) text(g, new Box(pill.x(), y, pill.width(), 9), label("cultivation.bonuses", Math.round(bonuses.health() / 2),
+                Math.round(bonuses.damage() * 100), Math.round(bonuses.fist())), INK_SOFT);
     }
     /** Early, Middle, Late, Peak as four marks; reached stages are red seals. */
     private void stagePips(GuiGraphics g, String stageId) {
@@ -695,7 +742,7 @@ public final class MurimProfileScreen extends Screen {
             text(g, CONTROL_QI, label("infos.charge_qi"));
             text(g, CONTROL_COMBAT, label("infos.combat_mode"));
             key(g, KEY_PROFILE, MurimblockKeyMappings.OPEN_PROFILE);
-            key(g, KEY_QI, MurimblockKeyMappings.CHARGE_QI);
+            key(g, KEY_QI, MurimblockKeyMappings.MEDITATE);
             key(g, KEY_COMBAT, MurimblockKeyMappings.COMBAT_MODE);
             text(g, STATUS, label("status_placeholder"));
             text(g, QI_VALUE, label("infos.qi_max", QiFormat.format(qiMax)));

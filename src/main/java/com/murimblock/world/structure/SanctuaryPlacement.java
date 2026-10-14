@@ -59,6 +59,14 @@ public final class SanctuaryPlacement extends SavedData {
         return overworld.getDataStorage().computeIfAbsent(FACTORY, NAME);
     }
 
+    /** Whether a position of the overworld lies within `reach` blocks (horizontally) of the sanctuary's spire. */
+    public static boolean near(ServerLevel overworld, BlockPos pos, double reach) {
+        BlockPos centre = get(overworld).centre();
+        if (centre == null) return false;
+        double dx = pos.getX() - centre.getX(), dz = pos.getZ() - centre.getZ();
+        return dx * dx + dz * dz <= reach * reach;
+    }
+
     /** Centre of the spire at its base, or null if the sanctuary is not built in this world. */
     @Nullable public BlockPos centre() { return centre; }
     /** The foot of the plank road. */

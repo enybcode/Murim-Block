@@ -66,7 +66,7 @@ public final class CombatQiHud {
                 && minecraft.gameMode != null
                 && player.jumpableVehicle() == null
                 && minecraft.gameMode.hasExperience()
-                && MurimblockApi.combat().isInCombatMode(player);
+                && (MurimblockApi.combat().isInCombatMode(player) || com.murimblock.cultivation.MeditationService.isMeditating(player));
     }
 
     private static void render(GuiGraphics guiGraphics) {
@@ -88,5 +88,16 @@ public final class CombatQiHud {
             guiGraphics.blitSprite(QI_BAR_PROGRESS_SPRITE, BAR_WIDTH, BAR_HEIGHT, 0, 0, x, y, filledWidth, BAR_HEIGHT);
         }
         RenderSystem.disableBlend();
+        // Meditating with a full reserve: a thin gold line under the bar, Qi Max on its way to the next stage.
+        if (com.murimblock.cultivation.MeditationService.isMeditating(player) && filledWidth >= BAR_WIDTH) {
+            var data = com.murimblock.cultivation.CultivationService.getCultivation(player);
+            var required = com.murimblock.cultivation.CultivationProgression.getRequiredQiMaxForNext(data);
+            if (required.isPresent()) {
+                double from = com.murimblock.cultivation.CultivationRules.floorOf(data);
+                double t = Math.clamp((qiMax - from) / Math.max(1, required.get() - from), 0, 1);
+                guiGraphics.fill(x, y + BAR_HEIGHT, x + BAR_WIDTH, y + BAR_HEIGHT + 1, 0x80000000);
+                guiGraphics.fill(x, y + BAR_HEIGHT, x + (int) Math.round(BAR_WIDTH * t), y + BAR_HEIGHT + 1, 0xFFEAC75A);
+            }
+        }
     }
 }

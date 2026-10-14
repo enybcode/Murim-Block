@@ -3,7 +3,7 @@ package com.murimblock.testing;
 import com.mojang.authlib.GameProfile;
 import com.murimblock.combat.CombatService;
 import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.MeditationService;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -52,7 +52,7 @@ public final class GameTestPlayers {
     }
 
     public static void cleanup(ServerPlayer player) {
-        QiChargeService.stopCharging(player);
+        MeditationService.forget(player);
         player.server.getPlayerList().remove(player);
     }
 }

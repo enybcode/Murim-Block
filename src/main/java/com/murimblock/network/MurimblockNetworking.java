@@ -5,17 +5,23 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
-     * 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
+     * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "15";
+    private static final String NETWORK_VERSION = "16";
 
     private MurimblockNetworking() {
     }
 
     public static void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(NETWORK_VERSION);
-        registrar.playToServer(QiChargeStatePayload.TYPE, QiChargeStatePayload.STREAM_CODEC, QiChargeStatePayload::handle);
+        // Cultivation: meditation (and the inner world), Qi Sense, breakthroughs shown.
+        registrar.playToServer(CultivationPayloads.Meditate.TYPE, CultivationPayloads.Meditate.STREAM_CODEC, CultivationPayloads.Meditate::handle);
+        registrar.playToServer(CultivationPayloads.Sense.TYPE, CultivationPayloads.Sense.STREAM_CODEC, CultivationPayloads.Sense::handle);
+        registrar.playToClient(CultivationPayloads.SenseReadings.TYPE, CultivationPayloads.SenseReadings.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.cultivation.QiSenseClient.readings(payload));
+        registrar.playToClient(CultivationPayloads.Breakthrough.TYPE, CultivationPayloads.Breakthrough.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.cultivation.AuraClient.breakthrough(payload.entityId(), payload.kind()));
         registrar.playToServer(
                 CombatModeTogglePayload.TYPE,
                 CombatModeTogglePayload.STREAM_CODEC,

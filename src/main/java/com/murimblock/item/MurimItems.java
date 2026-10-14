@@ -69,6 +69,14 @@ public final class MurimItems {
     public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), MartialArts.LONG_FIST));
 
+    /** Elixirs of cultivation (docs/cultivation/qi-cultivation.md), made from the flora of the Murim lands. */
+    public static final DeferredItem<com.murimblock.cultivation.PillItem> QI_GATHERING_PILL = ITEMS.register("qi_gathering_pill",
+            () -> new com.murimblock.cultivation.PillItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON),
+                    com.murimblock.cultivation.PillItem.Kind.QI_GATHERING));
+    public static final DeferredItem<com.murimblock.cultivation.PillItem> REALM_BREAKING_PILL = ITEMS.register("realm_breaking_pill",
+            () -> new com.murimblock.cultivation.PillItem(new Item.Properties().stacksTo(8).rarity(Rarity.RARE),
+                    com.murimblock.cultivation.PillItem.Kind.REALM_BREAKING));
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MURIMBLOCK_TAB = TABS.register("murimblock",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.murimblock"))
@@ -83,6 +91,8 @@ public final class MurimItems {
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
+                        output.accept(QI_GATHERING_PILL.get());
+                        output.accept(REALM_BREAKING_PILL.get());
                     })
                     .build());
 

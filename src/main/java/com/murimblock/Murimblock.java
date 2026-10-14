@@ -22,7 +22,6 @@ import com.murimblock.mob.MurimEntities;
 import com.murimblock.network.MurimblockNetworking;
 import com.murimblock.qi.QiAttachments;
 import com.murimblock.qi.QiEvents;
-import com.murimblock.qi.charge.QiChargeEvents;
 import com.murimblock.world.MurimWorldgen;
 import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.SanctuaryPlacement;
@@ -52,6 +51,7 @@ public final class Murimblock {
         MurimSkills.register(modEventBus);
         CombatAttachments.register(modEventBus);
         CultivationAttachments.register(modEventBus);
+        com.murimblock.cultivation.CultivationRegistries.register(modEventBus);
         QiAttachments.register(modEventBus);
         KnockdownAttachments.register(modEventBus);
         MartialService.register(modEventBus);
@@ -63,7 +63,7 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerClone);
-        NeoForge.EVENT_BUS.addListener(CultivationEvents::onPlayerLoggedIn);
+        CultivationEvents.register();
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(QiEvents::onLivingDeath);
@@ -71,10 +71,6 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerStarted);
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerStopped);
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerTick);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerTick);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerLoggedOut);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerChangedDimension);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerClone);
         NeoForge.EVENT_BUS.addListener(MurimblockCommands::onRegisterCommands);
         // The Cloud Cliff Sanctuary: built once near the spawn; every player gets the sect token that finds it.
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerStarted);

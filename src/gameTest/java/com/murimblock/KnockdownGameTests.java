@@ -2,7 +2,7 @@ package com.murimblock;
 
 import com.murimblock.combat.knockdown.KnockdownService;
 import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.MeditationService;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -87,7 +87,7 @@ public final class KnockdownGameTests {
         float before = attacker.getHealth();
         victim.attack(attacker);
         helper.assertTrue(attacker.getHealth() == before, "A downed player hit someone");
-        helper.assertTrue(!QiChargeService.canCharge(victim), "A downed player can charge Qi");
+        helper.assertTrue(!MeditationService.canStart(victim), "A downed player can meditate");
         victim.hurt(victim.damageSources().fellOutOfWorld(), 1000);
         helper.assertTrue(victim.isDeadOrDying(), "The void must still kill a downed player");
         end(helper, attacker, victim);

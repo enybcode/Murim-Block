@@ -2,7 +2,7 @@ package com.murimblock.integration.epicfight;
 
 import com.murimblock.combat.CombatService;
 import com.murimblock.combat.knockdown.KnockdownService;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.MeditationService;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -42,7 +42,7 @@ public final class EpicFightBridge {
         EpicFightEventHooks.Player.CAST_SKILL.registerEvent(event -> {
             if (!EpicFightCombatDefaults.allowed(event.getSkillContainer().getSkill())) event.cancel();
             if (event.getPlayerPatch().getOriginal() instanceof ServerPlayer player
-                    && QiChargeService.isCharging(player)) {
+                    && MeditationService.isMeditating(player)) {
                 event.cancel();
             }
             // Knocked down, carrying someone or performing a finish: no attack, guard or roll.

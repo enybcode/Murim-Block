@@ -133,6 +133,7 @@ public final class MurimAnimations {
         buildAzureCloudSword(builder);
         buildLongFist(builder);
         buildBanditChief(builder);
+        buildMeditation(builder);
     }
 
     // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)
@@ -421,11 +422,29 @@ public final class MurimAnimations {
                 .addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
     }
 
+    // ---------------------------------------------------------------- meditation (scripts/animation/meditation.cjs)
+
+    /** The lotus held (a slow breath, looping): the living motion of a meditating player. */
+    public static AnimationAccessor<StaticAnimation> MEDITATE;
+    /** Sitting down into the lotus, getting up from it; a small breakthrough's breath; a great one's rise; a deviation. */
+    public static AnimationAccessor<ActionAnimation> MEDITATE_SIT, MEDITATE_RISE, MEDITATE_PULSE, MEDITATE_ASCEND, MEDITATE_DEVIATION;
+
+    private static void buildMeditation(AnimationBuilder builder) {
+        MEDITATE = builder.nextAccessor("biped/murim/meditate", a -> new StaticAnimation(0.25F, true, a, Armatures.BIPED));
+        MEDITATE_SIT = builder.nextAccessor("biped/murim/meditate_sit", a -> new ActionAnimation(0.12F, a, Armatures.BIPED));
+        MEDITATE_RISE = builder.nextAccessor("biped/murim/meditate_rise", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MEDITATE_PULSE = builder.nextAccessor("biped/murim/meditate_pulse", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MEDITATE_ASCEND = builder.nextAccessor("biped/murim/meditate_ascend", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MEDITATE_DEVIATION = builder.nextAccessor("biped/murim/meditate_deviation", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+    }
+
     /** Murim's living motions: what a knocked-down, carrying or carried player is doing. */
     public enum Motions implements LivingMotion {
         DOWNED, CRAWL, CARRY, CARRY_WALK, CARRIED,
         /** The Long Fist's bare-hand guard held. */
-        FIST_GUARD;
+        FIST_GUARD,
+        /** Seated in the lotus, meditating. */
+        MEDITATE;
 
         final int id;
 
