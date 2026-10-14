@@ -15,6 +15,7 @@
 - [Addon API](ADDON_API.md) and [addon guide](ADDON_GUIDE.md): supported contracts.
 - [Murim biomes](biomes/README.md): the seven biomes, their blocks and textures (redrawn 14 October).
 - [Murim structures](structures/README.md): the Cloud Cliff Sanctuary and the six sites with their technical sheets.
+- [Murim factions](factions/README.md): proposal for the beta: Orthodox Alliance (centre) and Heavenly Demon Cult (desert), 12 arts, bosses, mobs (15 October, awaiting Enzo).
 
 ## Development And Delivery
 
