@@ -68,7 +68,8 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   propre (21 joints), 20 PV, armure 8 / tenacite 2, recul (jab `claw_snap` a
   fort impact), Vitesse I dans l'eau, ne brule pas, arrive toujours avec 2 crabes
   cuirasses. Spawn naturel rare pres de l'eau (memes biomes que le crabe, poids 3
-  contre 20, seul + escorte) ; structures plus tard. 10 XP, 10 Qi, sans butin.
+  contre 20, seul + escorte) ; structures plus tard. 10 XP, 10 Qi ; butin (14/10) : 1-2 morues, 0-1 saumon, trident
+  1 % tué par un joueur (le crabe cuirassé : une morue une fois sur deux, trident 1 % aussi).
   Attaques jouees a la vitesse animee (`ATTACK_SPEED_FACTOR` 0, crabe inclus).
   Boule d'eau (12/10/2026, demande d'Enzo, sans particules Minecraft) : clip
   `crab_man/water_ball` (ActionAnimation, vers 4 blocs : 3 a 6, ligne de vue, recharge

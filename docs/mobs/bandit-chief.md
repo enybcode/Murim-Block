@@ -34,7 +34,7 @@ corde rouge, anneaux de bronze, houppe rouge. Tenue à deux mains (une grande é
   sur la boucle, grandes respirations, un regard à gauche, la nuque roulée, le menton levé. Son visage vit (`MobFaces`) :
   clignements, coups d'œil de son œil valide (l'œil balafré ne bouge pas), marmonnement ; en combat les sourcils se
   nouent, il montre les dents quand il frappe.
-- Butin : 4 à 9 pépites d'or, cuir, viande cuite ; sa hache une fois sur dix. 40 XP, 20 Qi (+80 à la première victoire).
+- Butin : 4 à 9 pépites d'or, cuir, viande cuite ; sa hache 3 fois sur 100 (le Pillage l'augmente comme tout équipement tenu). 40 XP, 20 Qi (+80 à la première victoire).
 
 ## Fichiers
 

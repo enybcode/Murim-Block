@@ -44,7 +44,7 @@ public final class MurimItems {
     /**
      * The Bandit Chief's great axe: a crescent blade on a haft taller than a man, two-handed (a greatsword for Epic
      * Fight: data/murimblock/capabilities/weapons/chief_great_axe.json). Heavy and slow: 9 damage in a player's hand,
-     * the 8 of the chief's blows (his own attack is 0). He drops it one time in ten.
+     * the 8 of the chief's blows (his own attack is 0). He drops it 3 times in a hundred.
      */
     public static final DeferredItem<AxeItem> CHIEF_GREAT_AXE = ITEMS.register("chief_great_axe",
             () -> new AxeItem(Tiers.IRON, new Item.Properties().rarity(Rarity.UNCOMMON).attributes(AxeItem.createAttributes(Tiers.IRON, 6.0F, -3.3F))));
