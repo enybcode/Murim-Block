@@ -35,6 +35,7 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
   Il frappe avec les coups M1 de l'Art de l'Épée du Nuage Azur (`AzureSenseiPatch`) : Drifting Cut puis Returning Cut
   (≤ 2,5 blocs), Falling Rain plus rare (recharge 5 s). Tous parables (garde Murim). Les techniques de l'art (Cloud Step
   Slash, Thousand Drizzle…) ne sont pas encore branchées sur lui.
+- **Barre de boss** bleue « Sensei Yun » (10 crans) pour les joueurs proches de lui, comme celle du Bandit Chief.
 - Butin : rien pour l'instant (l'épée ne tombe pas) ; les drops seront décidés plus tard. 30 XP.
 
 ## Mouvements

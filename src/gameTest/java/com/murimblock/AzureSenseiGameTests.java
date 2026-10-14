@@ -117,6 +117,24 @@ public final class AzureSenseiGameTests {
         });
     }
 
+    /** His boss bar shows to a player near him and follows his health. */
+    @GameTest(template = "foundation_arena", batch = "sensei_boss_bar", timeoutTicks = 60)
+    public static void theSenseiHasABossBar(GameTestHelper helper) {
+        AzureSenseiEntity sensei = sensei(helper, new BlockPos(2, 1, 4));
+        ServerPlayer player = player(helper);
+        sensei.startSeenByPlayer(player);
+        helper.assertTrue(sensei.showsBossBarTo(player), "A player near the sensei does not see his boss bar");
+        sensei.setHealth(sensei.getMaxHealth() / 2);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(Math.abs(sensei.bossBarProgress() - 0.5F) < 0.01F, "His boss bar does not follow his health: " + sensei.bossBarProgress());
+            sensei.stopSeenByPlayer(player);
+            helper.assertTrue(!sensei.showsBossBarTo(player), "A player who no longer sees him still has his boss bar");
+            sensei.discard();
+            cleanup(player);
+            helper.succeed();
+        });
+    }
+
     /** Spoken to, he hands the player the manual; a second time, nothing more. Not while he fights them. */
     @GameTest(template = "foundation_arena", batch = "sensei_manual")
     public static void theSenseiGivesTheManualOnce(GameTestHelper helper) {

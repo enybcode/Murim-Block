@@ -6,10 +6,12 @@ import com.murimblock.martial.SectLibrary;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -40,13 +42,16 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
  * he strolls about his hall and watches whoever comes, and only draws on someone who strikes him (then he fights with
  * the Azure Cloud's cuts, AzureSenseiPatch). Spoken to (right-click), he hands each player their own copy of the Azure
  * Cloud Sword Manual, once (the same copy as the sanctuary library's, SectLibrary). He stays where he was placed: he never despawns and keeps to a few blocks
- * around his home. His sword does not drop (drops are decided later).
+ * around his home. His sword does not drop (drops are decided later). His health shows in an azure boss bar to the
+ * players near him, as the Bandit Chief's.
  */
 public class AzureSenseiEntity extends PathfinderMob {
     /** How far from his home he strolls (blocks). */
     public static final int HOME_RADIUS = 6;
     /** A stroll about once in this many ticks (12 s on average; the vanilla stroll comes every 6 s). */
     static final int STROLL_INTERVAL = 240;
+
+    private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_10);
 
     public AzureSenseiEntity(EntityType<? extends AzureSenseiEntity> type, Level level) {
         super(type, level);
@@ -79,7 +84,30 @@ public class AzureSenseiEntity extends PathfinderMob {
     /** With a target, he is aggressive: the clients see it (his brows knot, MobFaces). */
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
+        bossBar.setProgress(getHealth() / getMaxHealth());
         setAggressive(getTarget() != null);
+    }
+
+    // ---- the boss bar
+
+    @Override public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        bossBar.addPlayer(player);
+    }
+
+    @Override public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
+        bossBar.removePlayer(player);
+    }
+
+    /** Whether this player sees his boss bar. */
+    public boolean showsBossBarTo(ServerPlayer player) {
+        return bossBar.getPlayers().contains(player);
+    }
+
+    /** His boss bar's fill, 0 to 1 (his health). */
+    public float bossBarProgress() {
+        return bossBar.getProgress();
     }
 
     /** Spoken to, he gives the manual (not to someone he is fighting). */

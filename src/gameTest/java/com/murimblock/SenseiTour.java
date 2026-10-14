@@ -46,7 +46,7 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 /**
  * Development-only real-client check of Sensei Yun (gradlew -PgameTests runSenseiTour): in a fresh flat world the sensei
  * stands in his idle (filmed from the front, from the side, and close on the Azure Cloud and its tassel), walks six
- * blocks (filmed from the side), then fights a training zombie with the Azure Cloud's cuts. The client's own animator is
+ * blocks (filmed from the side), then fights a training zombie with the Azure Cloud's cuts; last, the HUD with his boss bar. The client's own animator is
  * checked to play his idle and his walk. Frame sequences go to build/sensei-tour-run/screenshots, the report to
  * sensei-tour-report.txt.
  */
@@ -102,7 +102,8 @@ public final class SenseiTour {
         record(mc, "02-idle-side", 150, 250, 2);
         record(mc, "03-sword-close", 254, 302, 2);
         record(mc, "04-walk", 312, 372, 1);
-        record(mc, "05-fight", 392, 462, 1);
+        record(mc, "05-fight", 392, 440, 1);
+        record(mc, "06-boss-bar", 462, 462, 1);
         // Standing scenes: he stays where he is, facing north (his stroll and his looks about would turn him away).
         if (ticks > 20 && ticks < 300) server.execute(() -> face(180));
         if (ticks >= 60 && ticks <= 240) sawIdle |= clientPlays(mc, MurimAnimations.SENSEI_IDLE);
@@ -170,6 +171,9 @@ public final class SenseiTour {
                 sensei.setTarget(zombie);
                 look(self(server), x + 4.5, sy + 1.7, z - 1.0, x, sy + 1.0, z - 1.0);
             });
+            // The HUD back for one picture: his azure boss bar at the top of the screen.
+            case 441 -> mc.options.hideGui = false;
+            case 462 -> server.execute(() -> check(sensei.showsBossBarTo(self(server)), "the camera player sees his boss bar"));
             case 470 -> {
                 check(sawIdle, "the client plays his own idle");
                 check(sawWalk, "the client plays his own walk");
