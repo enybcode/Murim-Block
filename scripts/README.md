@@ -50,9 +50,19 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
 - `java scripts/worldgen/ManualTexture.java src/main/resources/assets/murimblock/textures/item` : la texture du Manuel de l'Épée du Nuage Azur.
 - `java scripts/worldgen/TechniqueIcons.java src/main/resources/assets/murimblock/textures/gui/technique` : les icônes 32x32 des techniques (barre de combat, onglet Techniques).
 - `java scripts/worldgen/BanditDao.java src/main/resources/assets/murimblock/textures/item` : la texture 16x16 du Dao de bandit (icône d'inventaire, au sol, en cadre).
-- `node scripts/animation/bandit-dao-model.cjs` : le Dao de bandit en 3D tenu en main (`models/item/bandit_dao_3d.json`, sa texture,
+- `node scripts/animation/bandit-dao-model.cjs` : le Dao de bandit en 3D tenu en main, tranchant en bas (`models/item/bandit_dao_body.json`,
+  sa houppe seule `bandit_dao_tassel.json`, les transformations de la main `bandit_dao_held.json`, la texture `bandit_dao_3d.png`,
   `models/item/bandit_dao.json` en transformations séparées) et sa source Blockbench `art/blockbench/bandit_dao.bbmodel`.
-- `java scripts/worldgen/BanditSkins.java src/main/resources/assets/murimblock/textures/entity/mountain_bandit` : les cinq tenues du bandit, en skins 64x64 au format joueur.
+  `client/BanditDaoRenderer` dessine la lame puis la houppe, balancée par un pendule (`TasselPendulum`).
+- `node scripts/animation/bandit-3d.cjs` : le bandit en 3D sur le squelette biped d'Epic Fight (col croisé, ceinture nouée et ses pans, jupe de robe,
+  manches, bandes, sandales ; bandeau, chignon, épaulière, gourde, foulard, capuche de loup, turban, voile, masque selon la tenue) :
+  le mesh `animmodels/entity/mountain_bandit.json`, ses cinq atlas `textures/entity/mountain_bandit/3d/` et le projet
+  Blockbench `art/blockbench/mountain_bandit.bbmodel`.
+- `node scripts/animation/bandit-chief-3d.cjs` : le Bandit Chief en 3D (mesh `animmodels/entity/bandit_chief.json`, atlas
+  `textures/entity/bandit_chief.png`, projet Blockbench) ; `node scripts/animation/chief-axe-model.cjs` : sa grande hache ;
+  `node scripts/animation/chief-axe.cjs` : ses trois attaques (`animations/biped/murim/chief_*.json`). Voir `docs/mobs/bandit-chief.md`.
+  Les modèles 3D de mobs partagent `scripts/animation/mesh-kit.cjs`.
+- `java scripts/worldgen/BanditSkins.java src/main/resources/assets/murimblock/textures/entity/mountain_bandit` : les cinq tenues du bandit en skins 64x64 (rendu vanilla de secours, sans Epic Fight).
 - `java scripts/animation/FramesToGif.java <dossier> <sortie.gif> [délai ms] [largeur] [x,y,l,h]` assemble des images en GIF ; `--sheet` fait une planche contact.
 
 Les autres vérifications en vrai client sont des tâches Gradle :

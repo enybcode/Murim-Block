@@ -129,6 +129,36 @@ public final class MurimAnimations {
                         .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.6F)
                         .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
         buildAzureCloudSword(builder);
+        buildBanditChief(builder);
+    }
+
+    /**
+     * The Bandit Chief's great axe (scripts/animation/chief-axe.cjs): two-handed, slow to come so a player can read them
+     * and parry. Played at their own pace. The boxes reach as far as his axe does (he is drawn 1.3 times larger).
+     */
+    public static AnimationAccessor<AttackAnimation> CHIEF_CLEAVE, CHIEF_SWEEP, CHIEF_SLAM;
+    /** When the slam's axe meets the ground (seconds): the shockwave goes out then (BanditChiefEntity). */
+    public static final float CHIEF_SLAM_IMPACT = 0.75F;
+    /** The cleave: a long box ahead, from the chest down to the ground. */
+    private static final OBBCollider CHIEF_CLEAVE_BOX = new OBBCollider(1.0D, 1.5D, 1.7D, 0.0D, 1.2D, -2.0D);
+    /** The sweep: wide, at the waist, all across the front. */
+    private static final OBBCollider CHIEF_SWEEP_BOX = new OBBCollider(2.4D, 1.0D, 1.7D, 0.0D, 1.2D, -1.6D);
+    /** The slam's axe, where he lands (the root has carried him 1.8 blocks forward). */
+    private static final OBBCollider CHIEF_SLAM_BOX = new OBBCollider(1.4D, 1.3D, 1.6D, 0.0D, 0.9D, -2.0D);
+
+    private static void buildBanditChief(AnimationBuilder builder) {
+        // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact.
+        CHIEF_CLEAVE = builder.nextAccessor("biped/murim/chief_cleave", a -> technique(new AttackAnimation(0.15F, 0.3F, 0.46F, 0.62F, 0.95F,
+                CHIEF_CLEAVE_BOX, root(), a, Armatures.BIPED), 1.3F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2)));
+        CHIEF_SWEEP = builder.nextAccessor("biped/murim/chief_sweep", a -> technique(new AttackAnimation(0.15F, 0.3F, 0.44F, 0.62F, 0.9F,
+                CHIEF_SWEEP_BOX, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(4)));
+        CHIEF_SLAM = builder.nextAccessor("biped/murim/chief_slam", a -> technique(new AttackAnimation(0.15F, 0.5F, 0.68F, 0.82F, 1.25F,
+                CHIEF_SLAM_BOX, root(), a, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(3)));
     }
 
     /**

@@ -14,9 +14,11 @@ import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
 import com.murimblock.integration.epicfight.EpicFightContentPolicy;
 import com.murimblock.integration.epicfight.MurimSkills;
+import com.murimblock.integration.epicfight.BanditChiefPatch;
 import com.murimblock.integration.epicfight.MountainBanditPatch;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.item.MurimItems;
+import com.murimblock.mob.BanditChiefEntity;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.mob.WaterBallEntity;
@@ -62,6 +64,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
+import yesman.epicfight.api.animation.AnimationManager;
+import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
@@ -113,6 +117,11 @@ public final class ClientVisualSmoke {
                 mc.options.guiScale().set(3);
                 mc.options.renderDistance().set(4);
                 mc.options.tutorialStep = TutorialSteps.NONE;
+                // Every frame drawn, even behind other windows: with vsync on, Windows slows a client in the background
+                // to a few frames a second and the night flash falls between them; a paused client stops the scene.
+                mc.options.enableVsync().set(false);
+                mc.getWindow().updateVsync(false);
+                mc.options.pauseOnLostFocus = false;
                 mc.resizeDisplay();
                 mc.getSingleplayerServer().execute(() -> {
                     var player = mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID());
@@ -132,6 +141,7 @@ public final class ClientVisualSmoke {
             mc.getToasts().clear();
             ticks++;
             nightFrames(mc);
+            banditCutFrames();
             switch (ticks) {
                 case 50 -> mc.setScreen(new MurimProfileScreen());
                 case 70 -> capture("01-profile.png");
@@ -371,9 +381,58 @@ public final class ClientVisualSmoke {
                     bandit.setVariant(1);
                     EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(MurimAnimations.DRIFTING_CUT, 0);
                 });
-                case 777, 779, 781, 783, 785, 787, 789, 791 -> capture(String.format("bandit-cut/%02d.png", (ticks - 777) / 2));
-                case 794 -> previewTurn = 0;
-                case 800 -> {
+                // The cut every tick for a second and a half: the dao's tassel trails, swings back and settles.
+                case 777, 778, 779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796,
+                     797, 798, 799, 800, 801, 802, 803, 804, 805, 806 -> capture(String.format("bandit-cut/%02d.png", ticks - 777));
+                case 808 -> previewTurn = 0;
+                // The same bandit in the world, seen from behind its right hand at the hand's height: the dao held edge
+                // down, its tassel hanging under the pommel, then trailing behind a cut.
+                case 810 -> {
+                    mc.setScreen(null);
+                    mc.options.hideGui = true;
+                    mc.getSingleplayerServer().execute(() -> {
+                        mc.getSingleplayerServer().overworld().setBlockAndUpdate(new BlockPos(-1, 78, -1), Blocks.STONE.defaultBlockState());
+                        mc.getSingleplayerServer().getPlayerList().getPlayers().get(0).connection.teleport(-0.5, 79, -0.5, -54, 0);
+                    });
+                }
+                case 820 -> capture("31-bandit-world.png");
+                // Each of the bandit's cuts, every tick, from where its edge shows: the level cut and its backhand from
+                // straight above (the blade flat, its edge on the side it sweeps toward), the falling cut from its right
+                // side (the edge leading down). Barriers (invisible) hold the camera up.
+                case 822 -> standAndLook(mc, new BlockPos(1, 82, 0), 1.5, 83, 0.5, 0, 90);
+                case 828 -> playBanditCut(mc, MurimAnimations.DRIFTING_CUT);
+                case 850 -> playBanditCut(mc, MurimAnimations.RETURNING_CUT);
+                case 872 -> standAndLook(mc, new BlockPos(-3, 78, 0), -2.5, 79, 0.5, -90, -6);
+                case 880 -> playBanditCut(mc, MurimAnimations.FALLING_RAIN);
+                case 902 -> mc.options.hideGui = false;
+                // The Bandit Chief: in the preview with his great axe, then each of his attacks in the world, from his right.
+                case 906 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var old = level.getEntity(opponentId);
+                    if (old != null) old.discard();
+                    // Clear the bandit's camera barriers first: the chief stands 2.5 blocks tall.
+                    level.setBlockAndUpdate(new BlockPos(1, 82, 0), Blocks.AIR.defaultBlockState());
+                    level.setBlockAndUpdate(new BlockPos(-3, 78, 0), Blocks.AIR.defaultBlockState());
+                    opponentId = spawnPreviewMob(level, MurimEntities.BANDIT_CHIEF.get());
+                    ((BanditChiefEntity) level.getEntity(opponentId)).setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.CHIEF_GREAT_AXE.get()));
+                });
+                case 920 -> {
+                    previewTurn = -70;
+                    previewTracked(BanditChiefPatch.class);
+                }
+                case 926 -> capture("32-chief.png");
+                case 928 -> previewTurn = 0;
+                case 932 -> capture("33-chief-front.png");
+                case 936 -> {
+                    mc.setScreen(null);
+                    mc.options.hideGui = true;
+                    standAndLook(mc, new BlockPos(-7, 78, 1), -6.5, 79, 1.5, -90, -4);
+                }
+                case 946 -> playChief(mc, MurimAnimations.CHIEF_CLEAVE);
+                case 976 -> playChief(mc, MurimAnimations.CHIEF_SWEEP);
+                case 1004 -> playChief(mc, MurimAnimations.CHIEF_SLAM);
+                case 1042 -> mc.options.hideGui = false;
+                case 1046 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
                             "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
@@ -390,6 +449,36 @@ public final class ClientVisualSmoke {
             failed = true;
             LOGGER.error("Murim client visual smoke failed", exception);
         }
+    }
+
+    /** The bandit's cuts and the chief's attacks, one capture a tick (see the cases 822 to 1042). */
+    private static void banditCutFrames() throws Exception {
+        if (ticks >= 947 && ticks <= 972) capture(String.format("chief-cleave/%02d.png", ticks - 947));
+        if (ticks >= 977 && ticks <= 1000) capture(String.format("chief-sweep/%02d.png", ticks - 977));
+        if (ticks >= 1005 && ticks <= 1036) capture(String.format("chief-slam/%02d.png", ticks - 1005));
+        if (ticks >= 829 && ticks <= 846) capture(String.format("bandit-cuts/drifting/%02d.png", ticks - 829));
+        if (ticks >= 851 && ticks <= 868) capture(String.format("bandit-cuts/returning/%02d.png", ticks - 851));
+        if (ticks >= 881 && ticks <= 900) capture(String.format("bandit-cuts/falling/%02d.png", ticks - 881));
+    }
+
+    /** The player stands on a barrier at (x, y, z) and looks (yaw, pitch); the bandit preview mob stays where it is. */
+    private static void standAndLook(Minecraft mc, BlockPos floor, double x, double y, double z, float yaw, float pitch) {
+        mc.getSingleplayerServer().execute(() -> {
+            mc.getSingleplayerServer().overworld().setBlockAndUpdate(floor, Blocks.BARRIER.defaultBlockState());
+            mc.getSingleplayerServer().getPlayerList().getPlayers().get(0).connection.teleport(x, y, z, yaw, pitch);
+        });
+    }
+
+    private static void playChief(Minecraft mc, AnimationManager.AnimationAccessor<? extends StaticAnimation> attack) {
+        mc.getSingleplayerServer().execute(() -> EpicFightCapabilities
+                .getEntityPatch(mc.getSingleplayerServer().overworld().getEntity(opponentId), BanditChiefPatch.class)
+                .playAnimationSynchronized(attack, 0));
+    }
+
+    private static void playBanditCut(Minecraft mc, AnimationManager.AnimationAccessor<? extends StaticAnimation> cut) {
+        mc.getSingleplayerServer().execute(() -> EpicFightCapabilities
+                .getEntityPatch(mc.getSingleplayerServer().overworld().getEntity(opponentId), MountainBanditPatch.class)
+                .playAnimationSynchronized(cut, 0));
     }
 
     private static int flashTick = -1;

@@ -65,6 +65,9 @@ public final class ArmoredCrabEpicFight {
             // The bandit: a humanoid on the engine's own biped skeleton.
             event.registerEntityPatch(MurimEntities.MOUNTAIN_BANDIT.get(), MountainBanditPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.MOUNTAIN_BANDIT.get(), Armatures.BIPED);
+            // Their chief: the same skeleton, drawn larger.
+            event.registerEntityPatch(MurimEntities.BANDIT_CHIEF.get(), BanditChiefPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_CHIEF.get(), Armatures.BIPED);
         });
     }
 
