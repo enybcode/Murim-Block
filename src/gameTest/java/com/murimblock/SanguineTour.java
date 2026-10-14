@@ -148,7 +148,7 @@ public final class SanguineTour {
                 // Scarlet Tear's blood sword: it forms in the hand, the arc strikes, the sword is thrown and explodes.
                 case 765 -> server.execute(()->{target(server,2.2);var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,100);
                     p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,com.murimblock.martial.BloodCrystalState.EMPTY);});
-                case 770 -> {view(mc,3.4,1.6,1.2);shardsBefore=com.murimblock.client.BloodCrystalEffects.shardsThrown();}
+                case 770 -> {view(mc,4.6,1.3,1.0);shardsBefore=com.murimblock.client.BloodCrystalEffects.shardsThrown();}
                 case 774 -> press(mc,1);
                 case 776 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 786 -> server.execute(()->check(SanguineArt.holdsSword(self(server)),"Scarlet Tear forms a blood sword in the hand"));

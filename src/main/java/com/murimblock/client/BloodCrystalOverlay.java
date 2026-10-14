@@ -58,6 +58,13 @@ public final class BloodCrystalOverlay {
         @Override public void render(PoseStack stack,MultiBufferSource buffers,int light,AbstractClientPlayer player,
                 float limb,float amount,float partial,float age,float headYaw,float headPitch) { }
     }
+    /** From this time into Scarlet Tear (s), the sword turns into a javelin grip: the arc is over, the throw begins. */
+    static final float JAVELIN_FROM=.98F;
+    /** How far into Scarlet Tear the player is (s), or -1. */
+    static float scarletTime(yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch<?> patch) {
+        var clock=patch.getAnimator().getPlayerFor(com.murimblock.integration.epicfight.MurimAnimations.SCARLET_TEAR);
+        return clock!=null&&!clock.isEmpty()&&clock.getRealAnimation()==com.murimblock.integration.epicfight.MurimAnimations.SCARLET_TEAR?clock.getElapsedTime():-1;
+    }
     private static final class Layer<E extends AbstractClientPlayer,P extends AbstractClientPlayerPatch<E>>
             extends PatchedLayer<E,P,PlayerModel<E>,RenderLayer<E,PlayerModel<E>>> {
         final Function<P,SkinnedMesh> firstMesh;
@@ -74,9 +81,25 @@ public final class BloodCrystalOverlay {
                     var hand=poses[joint.getId()];
                     yesman.epicfight.api.utils.math.MathUtils.mulStack(stack,hand);
                     // The blade carries on the forearm's line: from the elbow joint through the hand, in the hand's frame.
-                    var elbow=OpenMatrix4f.transform(poses[patch.getArmature().searchJointByName("Hand_R").getId()],net.minecraft.world.phys.Vec3.ZERO);
-                    var back=OpenMatrix4f.transform(new OpenMatrix4f(hand).invert(),elbow);
-                    BloodCrystalRenderer.swordAlong((float)-back.x,(float)-back.y,(float)-back.z,firstMesh!=null);
+                    var armature=patch.getArmature();var inverse=new OpenMatrix4f(hand).invert();
+                    var zero=net.minecraft.world.phys.Vec3.ZERO;
+                    var elbow=OpenMatrix4f.transform(poses[armature.searchJointByName("Hand_R").getId()],zero);
+                    var blade=OpenMatrix4f.transform(inverse,elbow).scale(-1).normalize();
+                    // After the arc the sword is carried like a javelin: its point toward the front of the body, a
+                    // little up, whatever the arm does, until it leaves the hand.
+                    float t=scarletTime(patch);
+                    if(t>=JAVELIN_FROM) {
+                        var right=OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_R").getId()],zero)
+                                .subtract(OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_L").getId()],zero));
+                        // Armature space: Y up, the right arm root at +X; the body faces up × right.
+                        var up=new net.minecraft.world.phys.Vec3(0,1,0);
+                        var forward=up.cross(right).normalize().scale(Math.cos(Math.toRadians(10))).add(up.scale(Math.sin(Math.toRadians(10))));
+                        var origin=OpenMatrix4f.transform(hand,zero);
+                        var javelin=OpenMatrix4f.transform(inverse,origin.add(forward)).subtract(OpenMatrix4f.transform(inverse,origin)).normalize();
+                        double f=Math.min(1,(t-JAVELIN_FROM)/.1);
+                        blade=blade.scale(1-f).add(javelin.scale(f)).normalize();
+                    }
+                    BloodCrystalRenderer.swordAlong((float)blade.x,(float)blade.y,(float)blade.z,firstMesh!=null);
                     if(Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(sword) instanceof BloodCrystalRenderer renderer)
                         renderer.renderInHand(sword,partial,stack,buffers,light);
                 }finally {stack.popPose();}

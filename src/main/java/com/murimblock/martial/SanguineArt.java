@@ -42,7 +42,7 @@ public final class SanguineArt {
     private static final Map<UUID,Charge> CHARGES=new HashMap<>();
     private static final Map<UUID,List<BloodCrystalEntity>> CRYSTALS=new HashMap<>(), SALVOS=new HashMap<>();
     private static final Set<UUID> CREDITED=new HashSet<>();
-    /** Scarlet Tear's sword in hand, and the tick it is thrown: 1.35 s in, the arm stretched forward, point first. */
+    /** Scarlet Tear's sword in hand, and the tick it is thrown: 1.35 s in, the javelin's release, point first. */
     private record Sword(BloodCrystalEntity entity,long throwAt) { }
     private static final Map<UUID,Sword> SWORDS=new HashMap<>();
     public static final int SWORD_THROW_TICKS=27;

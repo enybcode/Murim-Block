@@ -111,16 +111,23 @@ const tear = [
     Arm_L:[['x',30],['y',26]],Hand_L:[['x',106]],Chest:[['x',4],['z',-8]]})),
   K(.97,pose({y:.095,h:.598,turn:-42,lean:-13},{Arm_R:[['x',78],['y',54],['z',4]],Hand_R:[['x',30]],
     Arm_L:[['x',34],['y',26]],Hand_L:[['x',104]],Chest:[['x',3],['z',-8]]})),
-  // The throw: the arm draws back behind the head, the body leans back...
-  K(1.12,pose({y:.02,h:.632,turn:26,lean:7},{Arm_R:[['x',200],['y',-12],['z',14]],Hand_R:[['x',48]],Tool_R:[['x',-25]],
-    Shoulder_R:[['z',-8]],Arm_L:[['x',78],['y',18]],Hand_L:[['x',84]],Chest:[['x',6]]})),
-  // ...whips forward over it, and the arm stretches out at the target: the sword leaves the hand point first.
-  K(1.24,pose({y:.10,h:.612,turn:-24,lean:-15},{Arm_R:[['x',118],['y',-6],['z',18]],Hand_R:[['x',6]],Tool_R:[['x',-12]],
-    Arm_L:[['x',30],['y',20]],Hand_L:[['x',104]]})),
-  K(1.35,pose({y:.11,h:.608,turn:-28,lean:-16},{Arm_R:[['x',92],['y',-4],['z',20]],Hand_R:[['x',4]],
-    Arm_L:[['x',30],['y',20]],Hand_L:[['x',104]]})),
-  K(1.45,pose({y:.11,h:.608,turn:-30,lean:-15},{Arm_R:[['x',72],['y',-4],['z',24]],Hand_R:[['x',8]]})),
-  K(1.62,pose({h:.635,turn:-16})), K(1.85,G),
+  // The javelin throw. Withdrawal: the body turns side-on, the right arm reaches straight back at shoulder height
+  // carrying the sword over the shoulder point forward, the left arm points at the target, the weight goes back.
+  K(1.06,pose({y:-.05,h:.615,turn:48,lean:10},{Arm_R:[['x',-72],['y',-14],['z',8]],Hand_R:[['x',6]],Tool_R:[['x',-10]],
+    Shoulder_R:[['z',-4]],Arm_L:[['x',92],['y',8],['z',-4]],Hand_L:[['x',12]],Chest:[['x',-4],['z',10]],Head:[['x',-6],['z',-30]]})),
+  // The block: still further back, the front foot plants.
+  K(1.18,pose({y:-.02,h:.6,turn:52,lean:15},{Arm_R:[['x',-80],['y',-12],['z',6]],Hand_R:[['x',4]],Tool_R:[['x',-10]],
+    Shoulder_R:[['z',-6]],Arm_L:[['x',96],['y',6],['z',-4]],Hand_L:[['x',8]],Chest:[['x',-6],['z',12]],Head:[['x',-8],['z',-34]]})),
+  // The whip: hips and torso turn first, the elbow comes up high over the shoulder, the hand still behind.
+  K(1.28,pose({y:.05,h:.62,turn:8,lean:2},{Arm_R:[['x',152],['y',-10],['z',20]],Hand_R:[['x',72]],Tool_R:[['x',-14]],
+    Shoulder_R:[['z',-8]],Arm_L:[['x',58],['y',22],['z',-6]],Hand_L:[['x',70]],Chest:[['x',4],['z',-4]],Head:[['x',-2],['z',-6]]})),
+  // The release: the arm unfolds high and forward, the left arm pulls down to the hip; the sword leaves point first.
+  K(1.35,pose({y:.12,h:.612,turn:-30,lean:-14},{Arm_R:[['x',124],['y',-4],['z',16]],Hand_R:[['x',4]],Tool_R:[['x',-8]],
+    Arm_L:[['x',18],['y',30]],Hand_L:[['x',96]],Chest:[['x',6],['z',-10]]})),
+  // The follow-through: the body falls forward over the front leg, the arm sweeps down across it.
+  K(1.50,pose({y:.16,h:.575,turn:-42,lean:-24},{Arm_R:[['x',62],['y',34],['z',8]],Hand_R:[['x',18]],
+    Arm_L:[['x',22],['y',32]],Hand_L:[['x',100]],Chest:[['x',8],['z',-12]]})),
+  K(1.72,pose({y:.08,h:.615,turn:-24,lean:-10},{Arm_R:[['x',44],['y',-4]],Hand_R:[['x',70]]})), K(1.95,G),
 ];
 
 // Crystallization: brace across the chest, open the shoulders, then settle in guard.

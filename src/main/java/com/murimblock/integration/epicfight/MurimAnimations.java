@@ -196,7 +196,7 @@ public final class MurimAnimations {
         SANGUINE_RISE = builder.nextAccessor("biped/murim/sanguine_rise", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.16F, 0.21F, 0.34F, 0.8F, fist, root(), a, Armatures.BIPED), 1.2F)));
         SANGUINE_CRYSTAL_CHARGE = builder.nextAccessor("biped/murim/sanguine_crystal_charge", a -> new HeldStance(0.12F, a));
         SANGUINE_CRYSTAL_THROW = builder.nextAccessor("biped/murim/sanguine_crystal_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
-        SCARLET_TEAR = builder.nextAccessor("biped/murim/sanguine_scarlet_tear", a -> noHitPuff(technique(new AttackAnimation(0.06F, 0.70F, 0.75F, 0.90F, 1.75F, tear, root(), a, Armatures.BIPED), 1.5F))
+        SCARLET_TEAR = builder.nextAccessor("biped/murim/sanguine_scarlet_tear", a -> noHitPuff(technique(new AttackAnimation(0.06F, 0.70F, 0.75F, 0.90F, 1.85F, tear, root(), a, Armatures.BIPED), 1.5F))
                 .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(4))
                 .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(2))
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG));
