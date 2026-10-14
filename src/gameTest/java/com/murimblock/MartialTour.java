@@ -204,6 +204,24 @@ public final class MartialTour {
                 });
             }
             case 124 -> capture(mc, "04-cooldown-bar.png");
+            // The HUD size setting: Combat Settings' seventh row, Normal -> Large -> Huge, then the larger bottom HUD.
+            case 125 -> mc.setScreen(MurimProfileScreen.combatSettings());
+            case 126 -> {
+                for (int i = 0; i < 2; i++) {
+                    var button = mc.screen.children().stream()
+                            .filter(c -> c instanceof net.minecraft.client.gui.components.Button b && b.getMessage().getString().startsWith("HUD size:"))
+                            .map(c -> (net.minecraft.client.gui.components.Button) c).findFirst().orElseThrow();
+                    mc.screen.mouseClicked(button.getX() + button.getWidth() / 2.0, button.getY() + button.getHeight() / 2.0, 0);
+                }
+                check(com.murimblock.client.hud.HudSize.current() == com.murimblock.client.hud.HudSize.HUGE, "two clicks on HUD size give Huge");
+                capture(mc, "04b-settings-hud-size.png");
+            }
+            case 127 -> mc.setScreen(null);
+            case 128 -> {
+                check(com.murimblock.client.hud.HudScale.factor() > 1, "the Huge HUD is drawn larger (factor " + com.murimblock.client.hud.HudScale.factor() + ")");
+                capture(mc, "04c-hud-huge.png");
+            }
+            case 129 -> com.murimblock.client.hud.HudSize.set(com.murimblock.client.hud.HudSize.NORMAL);
             // The rest of the art: a sturdy zombie in front, the three techniques on keys 1 to 3, half the Qi.
             case 130 -> server.execute(() -> {
                 ServerPlayer self = self(server);

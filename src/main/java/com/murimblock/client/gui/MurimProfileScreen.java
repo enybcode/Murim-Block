@@ -6,6 +6,7 @@ import com.murimblock.api.cultivation.CultivationSnapshot;
 import com.murimblock.client.CombatBarClient;
 import com.murimblock.client.MurimblockKeyMappings;
 import com.murimblock.client.TechniqueIcons;
+import com.murimblock.client.hud.HudSize;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationStage;
 import com.murimblock.martial.MartialArts;
@@ -689,6 +690,8 @@ public final class MurimProfileScreen extends Screen {
         toggle(3, "first_person_model", () -> ClientConfig.enableAnimatedFirstPersonModel, () -> ClientConfig.enableAnimatedFirstPersonModel = !ClientConfig.enableAnimatedFirstPersonModel);
         toggle(4, "lock_on", () -> ClientConfig.lockOnSnapping, () -> ClientConfig.lockOnSnapping = !ClientConfig.lockOnSnapping);
         toggle(5, "blood", () -> ClientConfig.bloodEffects, () -> ClientConfig.bloodEffects = !ClientConfig.bloodEffects);
+        // Murim's own setting, saved in its client config rather than Epic Fight's.
+        setting(6, "hud_size", () -> label("settings.hud_size." + HudSize.current().id()), () -> HudSize.set(HudSize.current().next()), null);
         button(layout.keybinds, () -> label("settings.keybinds"), () -> minecraft.setScreen(new ControlsScreen(this, minecraft.options)), true);
     }
     private void toggle(int row, String name, BooleanSupplier enabled, Runnable action) {
