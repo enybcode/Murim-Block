@@ -19,6 +19,9 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
 /** Murim entities have stable IDs; the training fixture has no natural spawn, the crabs, the crab man and the bandit do. */
 public final class MurimEntities {
     public static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, Murimblock.MOD_ID);
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.BloodCrystalEntity>> BLOOD_CRYSTAL =
+            TYPES.register("blood_crystal", () -> EntityType.Builder.<com.murimblock.martial.BloodCrystalEntity>of(com.murimblock.martial.BloodCrystalEntity::new,MobCategory.MISC)
+                    .sized(.25F,.25F).clientTrackingRange(8).updateInterval(2).build("murimblock:blood_crystal"));
     public static final DeferredHolder<EntityType<?>, EntityType<TrainingOpponentEntity>> TRAINING_OPPONENT =
             TYPES.register("training_opponent", () -> EntityType.Builder.of(TrainingOpponentEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("murimblock:training_opponent"));

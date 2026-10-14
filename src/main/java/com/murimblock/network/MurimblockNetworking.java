@@ -5,10 +5,12 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
-     * 17: conversations (the old master's dialogue, its pages and answers). 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
+     * 18: synchronized blood crystal combat state and projectile entity.
+     * 17: conversations (the old master's dialogue, its pages and answers).
+     * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "17";
+    private static final String NETWORK_VERSION = "18";
 
     private MurimblockNetworking() {
     }

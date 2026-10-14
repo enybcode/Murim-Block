@@ -132,6 +132,7 @@ public final class MurimAnimations {
                         .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
         buildAzureCloudSword(builder);
         buildLongFist(builder);
+        buildSanguineArt(builder);
         buildBanditChief(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
@@ -178,6 +179,31 @@ public final class MurimAnimations {
      * The Long Fist's techniques, played at their own pace (bare hands have no weapon speed to follow). Its M1 are Epic
      * Fight's own bare-hand strikes, untouched.
      */
+    public static AnimationAccessor<StaticAnimation> SANGUINE_GUARD;
+    public static AnimationAccessor<GuardAnimation> SANGUINE_GUARD_HIT;
+    public static AnimationAccessor<AttackAnimation> SANGUINE_STRAIGHT, SANGUINE_CROSS, SANGUINE_RISE;
+    public static AnimationAccessor<AttackAnimation> SCARLET_TEAR;
+    public static AnimationAccessor<StaticAnimation> SANGUINE_CRYSTAL_CHARGE;
+    public static AnimationAccessor<ActionAnimation> SANGUINE_CRYSTAL_THROW, SANGUINE_CRYSTAL_FORM, SANGUINE_CRYSTAL_BARRAGE;
+
+    private static void buildSanguineArt(AnimationBuilder builder) {
+        OBBCollider fist = new OBBCollider(0.65D, 0.7D, 0.9D, 0, 1.0D, -0.8D);
+        OBBCollider tear = new OBBCollider(1.5D, 0.9D, 1.4D, 0, 1.0D, -1.6D);
+        SANGUINE_GUARD = builder.nextAccessor("biped/murim/sanguine_guard", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
+        SANGUINE_GUARD_HIT = builder.nextAccessor("biped/murim/sanguine_guard_hit", a -> new GuardAnimation(0.05F, a, Armatures.BIPED));
+        SANGUINE_STRAIGHT = builder.nextAccessor("biped/murim/sanguine_straight", a -> fistStrike(new AttackAnimation(0.05F, 0.09F, 0.14F, 0.23F, 0.36F, fist, root(), a, Armatures.BIPED), 1.0F));
+        SANGUINE_CROSS = builder.nextAccessor("biped/murim/sanguine_cross", a -> fistStrike(new AttackAnimation(0.05F, 0.08F, 0.12F, 0.24F, 0.38F, fist, root(), a, Armatures.BIPED), 1.0F));
+        SANGUINE_RISE = builder.nextAccessor("biped/murim/sanguine_rise", a -> fistStrike(new AttackAnimation(0.05F, 0.16F, 0.21F, 0.34F, 0.8F, fist, root(), a, Armatures.BIPED), 1.2F));
+        SANGUINE_CRYSTAL_CHARGE = builder.nextAccessor("biped/murim/sanguine_crystal_charge", a -> new HeldStance(0.12F, a));
+        SANGUINE_CRYSTAL_THROW = builder.nextAccessor("biped/murim/sanguine_crystal_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        SCARLET_TEAR = builder.nextAccessor("biped/murim/sanguine_scarlet_tear", a -> technique(new AttackAnimation(0.06F, 0.30F, 0.40F, 0.58F, 1.35F, tear, root(), a, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(4))
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(2))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG));
+        SANGUINE_CRYSTAL_FORM = builder.nextAccessor("biped/murim/sanguine_crystal_form", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        SANGUINE_CRYSTAL_BARRAGE = builder.nextAccessor("biped/murim/sanguine_crystal_barrage", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+    }
+
     private static void buildLongFist(AnimationBuilder builder) {
         LONG_FIST_GUARD = builder.nextAccessor("biped/murim/long_fist_guard", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
         LONG_FIST_GUARD_HIT = builder.nextAccessor("biped/murim/long_fist_guard_hit", a -> new GuardAnimation(0.05F, a, Armatures.BIPED));
@@ -404,6 +430,13 @@ public final class MurimAnimations {
         return animation;
     }
 
+    /** These clips are authored for unarmed speed (4), rather than a sword's 1.6. */
+    private static <A extends AttackAnimation> A fistStrike(A animation, float damage) {
+        animation.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(damage));
+        animation.addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 4.0F);
+        return animation;
+    }
+
     /** A technique: its damage, at its own pace whatever the weapon's speed. */
     private static <A extends AttackAnimation> A technique(A animation, float damage) {
         animation.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(damage));
@@ -457,7 +490,8 @@ public final class MurimAnimations {
         /** The Long Fist's bare-hand guard held. */
         FIST_GUARD,
         /** Seated in the lotus, meditating. */
-        MEDITATE;
+        MEDITATE,
+        SANGUINE_GUARD;
 
         final int id;
 
