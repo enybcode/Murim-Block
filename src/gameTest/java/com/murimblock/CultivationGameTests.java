@@ -326,11 +326,12 @@ public final class CultivationGameTests {
         ServerLevel inner = player.serverLevel();
         // The chunks round the island come into view on the next ticks (as for a player arriving anywhere).
         RemnantSoulEntity[] soul = new RemnantSoulEntity[1];
-        helper.runAfterDelay(4, () -> {
+        tickFor(helper, player, 1, 20);
+        helper.runAfterDelay(22, () -> {
             soul[0] = inner.getEntitiesOfClass(RemnantSoulEntity.class, player.getBoundingBox().inflate(40)).get(0);
             InnerMissions.talk(player, soul[0]);
         });
-        helper.runAfterDelay(8, () -> {
+        helper.runAfterDelay(26, () -> {
             List<QiMoteEntity> motes = inner.getEntitiesOfClass(QiMoteEntity.class, player.getBoundingBox().inflate(40));
             helper.assertTrue(motes.size() == InnerMissions.MOTES, "Not ten motes for the storm: " + motes.size());
             double before = QiService.getQiMax(player);
@@ -343,7 +344,7 @@ public final class CultivationGameTests {
             helper.assertTrue(CultivationService.journal(player).missionDone("storm", inner.getGameTime()), "The storm not marked done today");
             InnerMissions.talk(player, soul[0]);
         });
-        helper.runAfterDelay(13, () -> {
+        helper.runAfterDelay(31, () -> {
             List<HeartDemonEntity> shadows = inner.getEntitiesOfClass(HeartDemonEntity.class, player.getBoundingBox().inflate(40));
             helper.assertTrue(shadows.size() == 1 && shadows.get(0).shadow(), "The second mission is not the shadow sparring");
             player.invulnerableTime = 0;
