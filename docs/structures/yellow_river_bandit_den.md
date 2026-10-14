@@ -3,6 +3,7 @@
 ![Vue aérienne : la cour enfoncée dans le plateau](images/sites/yellow_river_bandit_den-a.jpg)
 ![L'autre côté, la vigie et la porte](images/sites/yellow_river_bandit_den-b.jpg)
 ![La porte en haut de la rampe](images/sites/yellow_river_bandit_den-ground.jpg)
+![Le Bandit Chief dans sa grotte](images/sites/yellow_river_bandit_den-chief.jpg)
 
 | Fiche | |
 |---|---|
@@ -33,6 +34,10 @@ De loin, on ne voit qu'un trou carré dans la plaine, bordé d'un muret, et une 
 - **L'entrée** : une porte couverte sur le plateau (poteaux, linteau, petit toit, lanternes, bannières rouges), une rampe de 7 marches dans une tranchée qui devient tunnel, puis un porche voûté dans la cour.
 - **Le bord** : un petit avant-toit de tuiles grises fait le tour de la cour, un muret de briques crues borde le trou et la tranchée.
 - **La vigie** sur le plateau : plateforme sur quatre poteaux, garde-corps, échelle, lanterne.
+- **Ses occupants** (14/10, demande d'Enzo), apparus avec le repaire et qui ne disparaissent pas :
+  - le **Bandit Chief** (`murimblock:bandit_chief`) dans sa grotte, devant son trône, sur la peau de tigre ;
+  - 4 **Mountain Bandits** (`murimblock:mountain_bandit`) : deux dans la cour, un dans la salle des festins, un guetteur sur la vigie.
+  - Ils ne reviennent pas une fois tués. En difficulté Paisible, Minecraft les retire comme tous les monstres : le repaire est alors vide.
 
 **Chemins** : porte → rampe → cour → allée de briques → toutes les portes. Aucun chemin ne finit dans le vide.
 
@@ -42,12 +47,14 @@ De loin, on ne voit qu'un trou carré dans la plaine, bordé d'un muret, et une 
 - **Visite en vrai client** (`gradlew -PgameTests runSiteTour`, monde neuf, graine 20261012) :
   - `/locate structure murimblock:yellow_river_bandit_den` répond en 201 ms : `[1296, ~, -2272]`, à 2615 blocs du point de départ ;
   - le site généré est dans `loess_plateau` (origine 1304 71 -2264, tourné NONE, niveau du sol 71) ;
-  - 16 vérifications sur le site réellement généré : aucun toit ouvert, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide.
+  - 16 vérifications sur le site réellement généré : aucun toit ouvert, plafond posé sur chaque pièce, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide ;
+  - en difficulté Normale : le chef dans sa grotte et les 4 bandits (3 dans la fosse, 1 sur la vigie) sont bien là.
+- Les GameTests vérifient aussi qu'il y a exactement 1 chef et 4 bandits, construit d'un coup comme chunk par chunk (jamais en double), chacun libre, debout sur du solide, le chef dans sa grotte.
 
 ## Conseils : ce qu'on devrait y mettre
 
-- **Ennemis** : des Bandits des montagnes (`mountain_bandit`) qui apparaissent dans la cour et les grottes (par `spawn_overrides` de la structure, ou des points d'apparition fixes), un guetteur sur la vigie.
-- **Boss** : le **Bandit Chief** (`murimblock:bandit_chief`, le mini-boss à la grande hache) dans sa grotte : c'est exactement le « camp de bandits » que sa fiche annonce. Sa grotte, la rampe, le porche et la porte du plateau lui laissent au moins 3 blocs de hauteur ; seules les autres grottes ont des portes de 2 blocs.
+- **Ennemis** : les 4 bandits et le guetteur sont en place. Pour un repaire qui se repeuple, on pourrait ajouter des `spawn_overrides` à la structure (des bandits qui réapparaissent la nuit dans la fosse).
+- **Boss** : le **Bandit Chief** est en place dans sa grotte : c'est le « camp de bandits » que sa fiche annonce. Sa grotte, la rampe, le porche et la porte du plateau lui laissent au moins 3 blocs de hauteur ; seules les autres grottes ont des portes de 2 blocs. Reste à décider sa récompense (coffre, Qi de première victoire).
 - **Prisonnier** : un PNJ enfermé dans la prison, à libérer (quête) ; il peut être un disciple de la secte du joueur ou un marchand qui récompense.
 - **Butin** : coffre du chef (pièces, Bandit Dao rare, carte d'un autre repaire), armurerie (armes, flèches), cuisine (nourriture).
 - **Faction** : les « bandits justiciers » du Fleuve Jaune ou une branche de la secte des Mendiants ; selon la réputation, le repaire peut être hostile ou neutre.
