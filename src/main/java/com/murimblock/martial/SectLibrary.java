@@ -1,9 +1,7 @@
 package com.murimblock.martial;
 
 import com.murimblock.item.MurimItems;
-import com.murimblock.world.structure.SanctuaryBuilder;
 import com.murimblock.world.structure.SanctuaryPlacement;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -16,19 +14,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
- * The library of the Cloud Cliff Sanctuary: its lectern hands every player their own copy of the Azure Cloud Sword
- * Manual, once (docs/combat/styles/azure-cloud-sword.md). Sensei Yun, in the Misty Bamboo Temple, hands out the same
- * copy: a player receives one, from either.
+ * The Azure Cloud Sword Manual's only source is Sensei Yun, in the Misty Bamboo Temple (decision of 14/10/2026): spoken
+ * to, he hands every player their copy once; defeated, he may drop it. The Cloud Cliff Sanctuary's lectern gives nothing
+ * any more. Its bell still counts for "Above the Sea of Clouds".
  */
 public final class SectLibrary {
     private SectLibrary() {
-    }
-
-    /** The library's lectern in this world, or null without a sanctuary. */
-    @Nullable public static BlockPos lectern(ServerLevel overworld) {
-        SanctuaryPlacement data = SanctuaryPlacement.get(overworld);
-        if (data.centre() == null) return null;
-        return SanctuaryBuilder.libraryLectern(data.centre(), data.top());
     }
 
     /** How far from the sanctuary's centre its bell tower stands, at most (blocks, horizontally). */
@@ -39,13 +30,7 @@ public final class SectLibrary {
         // Ringing the sanctuary's bell (it rings as usual): the first step of "Above the Sea of Clouds".
         if (player.level().getBlockState(event.getPos()).is(Blocks.BELL) && nearSanctuary(player.serverLevel(), event.getPos())) {
             MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_BELL, 1);
-            return;
         }
-        if (!player.level().getBlockState(event.getPos()).is(Blocks.LECTERN)) return;
-        BlockPos lectern = lectern(player.serverLevel());
-        if (lectern == null || !lectern.equals(event.getPos())) return;
-        event.setCanceled(true);
-        give(player);
     }
 
     /** Whether a block belongs to this world's sanctuary (its bell tower). */
@@ -56,12 +41,7 @@ public final class SectLibrary {
         return dx * dx + dz * dz <= BELL_REACH * BELL_REACH;
     }
 
-    /** Gives the player their copy of the manual, if they never received one. */
-    public static boolean give(ServerPlayer player) {
-        return give(player, "art.murimblock.library.given", "art.murimblock.library.already");
-    }
-
-    /** The same, in the giver's own words (translation keys): when it is given, and when it was already. */
+    /** Gives the player their copy of the manual, if they never received one, in the giver's own words (translation keys). */
     public static boolean give(ServerPlayer player, String given, String already) {
         MartialData data = MartialService.data(player);
         if (data.manualsReceived().contains(MartialArts.AZURE_CLOUD_SWORD)) {

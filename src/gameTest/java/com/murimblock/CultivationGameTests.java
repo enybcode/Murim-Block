@@ -69,6 +69,17 @@ public final class CultivationGameTests {
         return player;
     }
 
+    /**
+     * The living entities of a kind near the player, among all the level's: one just added (or in a chunk just loaded)
+     * is not found by area for a few ticks.
+     */
+    private static <T extends net.minecraft.world.entity.Entity> List<T> near(ServerPlayer player, Class<T> type) {
+        List<T> out = new java.util.ArrayList<>();
+        for (var e : player.serverLevel().getAllEntities())
+            if (type.isInstance(e) && e.isAlive() && e.distanceTo(player) < 80) out.add(type.cast(e));
+        return out;
+    }
+
     private static void tickFor(GameTestHelper helper, ServerPlayer player, int from, int ticks) {
         for (int t = from; t < from + ticks; t++) helper.runAfterDelay(t, player::doTick);
     }
@@ -135,6 +146,22 @@ public final class CultivationGameTests {
         double fromKill = QiService.getQiMax(player) - before;
         helper.assertTrue(Math.abs(fromKill - 0.2) < 1e-6, "A zombie (4 Qi) should give 0.2 Qi Max, gave " + fromKill);
         zombie.discard();
+        end(helper, player);
+    }
+
+    @GameTest(template = "foundation_arena", batch = "cultivation_sensei")
+    public static void slayingSenseiYunTheFirstTimeGivesThirtyQiMax(GameTestHelper helper) {
+        ServerPlayer player = cultivator(helper);
+        com.murimblock.mob.AzureSenseiEntity sensei = helper.spawn(com.murimblock.mob.MurimEntities.AZURE_SENSEI.get(), new BlockPos(2, 1, 4));
+        double before = QiService.getQiMax(player);
+        QiRewardManager.awardKillReward(player, sensei);
+        double first = QiService.getQiMax(player) - before;
+        // +30 for the first victory, and the usual 5 % of the kill's Qi on top.
+        helper.assertTrue(first >= 30 && first < 40, "The first victory over Sensei Yun should give about 30 Qi Max, gave " + first);
+        before = QiService.getQiMax(player);
+        QiRewardManager.awardKillReward(player, sensei);
+        helper.assertTrue(QiService.getQiMax(player) - before < 5, "A second victory gave the first victory's Qi Max again");
+        sensei.discard();
         end(helper, player);
     }
 
@@ -435,13 +462,13 @@ public final class CultivationGameTests {
         RemnantSoulEntity[] soul = new RemnantSoulEntity[1];
         tickFor(helper, player, 1, 20);
         helper.runAfterDelay(22, () -> {
-            soul[0] = inner.getEntitiesOfClass(RemnantSoulEntity.class, player.getBoundingBox().inflate(40)).get(0);
+            soul[0] = near(player, RemnantSoulEntity.class).get(0);
             SoulDialogue.choose(player, soul[0], "train");
             helper.assertTrue(options(DialogueService.last(player)).contains("storm"), "The first mission offered is not the storm");
             SoulDialogue.choose(player, soul[0], "storm");
         });
         helper.runAfterDelay(26, () -> {
-            List<QiMoteEntity> motes = inner.getEntitiesOfClass(QiMoteEntity.class, player.getBoundingBox().inflate(40));
+            List<QiMoteEntity> motes = near(player, QiMoteEntity.class);
             helper.assertTrue(motes.size() == InnerMissions.MOTES, "Not ten motes for the storm: " + motes.size());
             double before = QiService.getQiMax(player);
             for (QiMoteEntity mote : motes) {
@@ -454,7 +481,7 @@ public final class CultivationGameTests {
             SoulDialogue.choose(player, soul[0], "sparring");
         });
         helper.runAfterDelay(31, () -> {
-            List<HeartDemonEntity> shadows = inner.getEntitiesOfClass(HeartDemonEntity.class, player.getBoundingBox().inflate(40));
+            List<HeartDemonEntity> shadows = near(player, HeartDemonEntity.class);
             helper.assertTrue(shadows.size() == 1 && shadows.get(0).shadow(), "The second mission is not the shadow sparring");
             player.invulnerableTime = 0;
             player.hurt(player.damageSources().generic(), 1000);

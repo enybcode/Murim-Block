@@ -182,7 +182,7 @@ final class PeachHamlet extends Site {
                 h.set(x, y, -1, stair(Blocks.OAK_STAIRS, Direction.NORTH, Half.BOTTOM));
             }
             h.set(0, y, -1, s(Blocks.LECTERN));
-            h.set(-4, y, -1, s(Blocks.BARREL));
+            h.stocked(-4, y, -1, s(Blocks.BARREL), SiteLoot.CACHE);
             h.set(4, y, -1, litCandles(3));
             h.set(4, y, 1, s(Blocks.POTTED_FLOWERING_AZALEA));
             h.set(-4, y, 1, s(Blocks.COMPOSTER));

@@ -122,6 +122,10 @@ public final class QiRewardManager {
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) {
             return new RewardTarget(entityTypeId, baseReward, 80, entityTypeId, null, originMultiplier);
         }
+        // Sensei Yun, the Azure Cloud's master: the first victory over him counts (and gives its Qi Max).
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) {
+            return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null, originMultiplier);
+        }
         if (entity.getType() == EntityType.WARDEN) {
             return new RewardTarget(entityTypeId, baseReward, 600, entityTypeId, null, originMultiplier);
         }
@@ -137,6 +141,9 @@ public final class QiRewardManager {
         // The Bandit Chief, a mini-boss: more for the first victory over him.
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) {
             return new RewardTarget(entityTypeId, baseReward, 80, entityTypeId, null);
+        }
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) {
+            return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null);
         }
         if (entityType == EntityType.WARDEN) {
             return new RewardTarget(entityTypeId, baseReward, 600, entityTypeId, null);
@@ -159,6 +166,7 @@ public final class QiRewardManager {
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_man"))) return 10;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "mountain_bandit"))) return 4;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) return 20;
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) return 30;
         return FIXED_REWARDS.getOrDefault(type, 1);
     }
 

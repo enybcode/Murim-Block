@@ -92,6 +92,13 @@ public final class SiteGameTests {
             List<String> problems = SiteChecks.verify(level, checks);
             long whole = fingerprint(level, box, y0, y1);
             int blocks = count(level, box, y0, y1);
+            // Its cache: a barrel it already had, holding the sites' loot (a weaponsmith's, and often the Long Fist Scroll); the
+            // Lotus Moon Garden has no barrel, so none.
+            int caches = 0;
+            for (BlockPos p : BlockPos.betweenClosed(box.minX(), y0, box.minZ(), box.maxX(), y1, box.maxZ()))
+                if (level.getBlockEntity(p) instanceof net.minecraft.world.RandomizableContainer chest
+                        && com.murimblock.world.structure.site.SiteLoot.CACHE.equals(chest.getLootTable())) caches++;
+            helper.assertTrue(plan == SitePlan.LOTUS_GARDEN ? caches == 0 : caches >= 1, structure + " has " + caches + " cache(s)");
             // Residents (villagers, bandits): the expected number of each, none twice, all really in the world, standing free
             // on solid ground; villagers in a roofed room (a house) with their trade, the chief in a room (his cave).
             List<Mob> spawned = built.spawned().stream().filter(m -> !m.isRemoved()).toList();

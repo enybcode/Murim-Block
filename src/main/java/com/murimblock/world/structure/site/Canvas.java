@@ -138,6 +138,19 @@ public final class Canvas implements BuildKit.Sink {
         }
     }
 
+    /**
+     * A container block (a barrel, as the site had it) that holds a loot table, rolled when it is first opened: the site
+     * looks the same, its barrel simply is not empty. The seed is a hash of the position, as all of a site's choices.
+     */
+    public void stocked(int x, int y, int z, BlockState container, net.minecraft.resources.ResourceKey<net.minecraft.world.level.storage.loot.LootTable> loot) {
+        if (!inside(x, z)) return;
+        set(x, y, z, container);
+        pos.set(wx(x, z), y, wz(x, z));
+        if (level.getBlockEntity(pos) instanceof net.minecraft.world.RandomizableContainer stock) {
+            stock.setLootTable(loot, (long) (rand(x, y, z) * Long.MAX_VALUE));
+        }
+    }
+
     public BlockState get(int x, int y, int z) {
         return level.getBlockState(pos.set(wx(x, z), y, wz(x, z)));
     }

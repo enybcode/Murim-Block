@@ -50,6 +50,7 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
 - **Butin**, tué par un joueur : son épée **Azure Cloud** une fois sur 200 (0,5 %, Looting : 0,75 % puis +0,25 point par
   niveau) et le **Azure Cloud Sword Manual** une fois sur quatre (25 %, Looting : 30 % puis +5 points par niveau) (`loot_table/entities/azure_sensei.json`).
   Rien s'il meurt autrement. 100 XP.
+- **Qi** (14/10) : la première victoire sur lui donne **+30 de Qi Max** (une fois par joueur, comme le Bandit Chief), plus les 5 % habituels du Qi du kill (30 de base, 100 de bonus de première victoire). Il est désormais la seule source du manuel : le pupitre du sanctuaire ne le donne plus.
 - Les manuels sont consommés à la lecture : un livre, une lecture (un joueur qui connaît déjà l'art garde le sien).
 
 ## Mouvements

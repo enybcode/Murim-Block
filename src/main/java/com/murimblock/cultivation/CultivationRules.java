@@ -72,6 +72,7 @@ public final class CultivationRules {
     public static double firstVictoryQiMax(String entityId) {
         return switch (entityId) {
             case "murimblock:bandit_chief" -> 30;
+            case "murimblock:azure_sensei" -> 30;
             case "minecraft:elder_guardian" -> 100;
             case "minecraft:warden" -> 250;
             case "minecraft:wither" -> 400;

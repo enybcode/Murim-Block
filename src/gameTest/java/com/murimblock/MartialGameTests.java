@@ -32,7 +32,7 @@ import static com.murimblock.testing.GameTestPlayers.cleanup;
 import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
- * The Azure Cloud Sword Art's first slice: the sanctuary library hands each player one manual, reading it teaches the
+ * The Azure Cloud Sword Art's first slice: Sensei Yun hands each player one manual (the sanctuary's lectern no longer does), reading it teaches the
  * art and puts Cloud Step Slash on the combat bar, the cast checks (combat mode, Qi, sword, cooldown), and a real Cloud
  * Step Slash cutting a zombie through Epic Fight.
  */
@@ -42,7 +42,7 @@ public final class MartialGameTests {
     private MartialGameTests() { }
 
     @GameTest(template = "foundation_arena", batch = "martial_library")
-    public static void theLibraryLecternGivesEachPlayerOneManual(GameTestHelper helper) {
+    public static void theLibraryLecternNoLongerGivesTheManual(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         SanctuaryPlacement data = SanctuaryPlacement.get(player.server.overworld());
         // A sanctuary recorded around the arena, so its library lectern falls on a block of the arena.
@@ -54,12 +54,11 @@ public final class MartialGameTests {
             helper.getLevel().setBlockAndUpdate(lectern, Blocks.LECTERN.defaultBlockState());
             player.getInventory().clearContent();
             var hit = new BlockHitResult(Vec3.atCenterOf(lectern), Direction.UP, lectern, false);
-            var first = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, lectern, hit);
-            SectLibrary.onRightClickBlock(first);
-            helper.assertTrue(first.isCanceled(), "The library lectern did not answer");
-            helper.assertTrue(player.getInventory().countItem(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 1, "No manual from the library");
-            SectLibrary.onRightClickBlock(new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, lectern, hit));
-            helper.assertTrue(player.getInventory().countItem(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 1, "The library gave a second copy");
+            // Sensei Yun is the manual's only source: the sanctuary's lectern is an ordinary lectern.
+            var click = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, lectern, hit);
+            SectLibrary.onRightClickBlock(click);
+            helper.assertTrue(!click.isCanceled(), "The library lectern still answers");
+            helper.assertTrue(player.getInventory().countItem(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 0, "The library still gives the manual");
             helper.succeed();
         } finally {
             data.clear();

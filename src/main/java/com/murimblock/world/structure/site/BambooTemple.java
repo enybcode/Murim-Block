@@ -108,7 +108,7 @@ final class BambooTemple extends Site {
         // The bays: a bell on the west, a drum on the east.
         c.set(-3, l + 4, 17, Blocks.BELL.defaultBlockState().setValue(BellBlock.ATTACHMENT, BellAttachType.CEILING).setValue(BellBlock.FACING, Direction.NORTH));
         c.set(3, l + 1, 17, s(Blocks.NOTE_BLOCK));
-        c.set(3, l + 1, 18, s(Blocks.BARREL));
+        c.stocked(3, l + 1, 18, s(Blocks.BARREL), SiteLoot.CACHE);
         c.set(-3, l + 1, 18, litCandles(2));
         for (int x : new int[]{-1, 1}) c.set(x, l + 4, 17, hangingLantern());
         // Lanterns either side of the way in.

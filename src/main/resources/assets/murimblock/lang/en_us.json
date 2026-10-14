@@ -291,8 +291,6 @@
   "art.murimblock.azure_cloud_sword": "Azure Cloud Sword Art",
   "art.murimblock.learned": "You learned the %s. First technique: %s",
   "art.murimblock.already_known": "You already know the %s",
-  "art.murimblock.library.given": "The sect's library lends you your own copy of the Azure Cloud Sword Manual",
-  "art.murimblock.library.already": "The library already gave you your copy",
   "message.murimblock.sensei.given": "Sensei Yun: \"Clouds drift, yet the sword stays true. Take this manual, and learn the Azure Cloud Sword Art.\"",
   "message.murimblock.sensei.second_phase": "Sensei Yun: \"Enough courtesy. Now, see the Azure Cloud.\"",
   "message.murimblock.sensei.already": "Sensei Yun: \"You already have your copy of the manual. Practise, and come back stronger.\"",

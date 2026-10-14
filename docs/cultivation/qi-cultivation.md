@@ -78,7 +78,7 @@ Deux règles simples, toujours après l'anti-farm existant :
 - **Les méridiens s'élargissent** : **5 %** du Qi dépensé en techniques va au Qi Max. Une technique à 10 Qi rapporte 0,5.
 - **L'expérience du combat** : **5 %** de la récompense de chaque kill va au Qi Max, en plus de la réserve. Exemple : un zombie (4 Qi) rapporte 0,2 Qi Max.
 
-**Première victoire sur un boss** : son bonus de première victoire va **au Qi Max**, une seule fois par joueur.
+**Première victoire sur un boss** : son bonus de première victoire va **au Qi Max**, une seule fois par joueur. En jeu : Bandit Chief +30, **Sensei Yun +30** (14/10), Elder Guardian +100, Warden +250, Wither +400, Ender Dragon +600, plus les 5 % habituels du Qi du kill.
 - Bandit Chief : +30 Qi Max.
 - Gardien ancien : +100 Qi Max.
 - Warden : +250 Qi Max.

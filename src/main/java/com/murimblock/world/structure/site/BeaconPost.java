@@ -145,7 +145,7 @@ final class BeaconPost extends Site {
         door(c, 4, f + 1, 13, Blocks.DARK_OAK_DOOR, Direction.WEST);
         c.set(0, f + 1, 14, Blocks.BELL.defaultBlockState().setValue(BellBlock.ATTACHMENT, BellAttachType.FLOOR).setValue(BellBlock.FACING, Direction.EAST));
         c.set(-2, f + 1, 14, s(Blocks.NOTE_BLOCK));
-        c.set(2, f + 1, 14, s(Blocks.BARREL));
+        c.stocked(2, f + 1, 14, s(Blocks.BARREL), SiteLoot.CACHE);
         c.set(0, f + 4, 13, hangingLantern());
         c.kit().roof(-4, 12, 4, 15, f + 5, RoofTiles.GREY, false);
         c.room(-3, f + 1, 13, 3, f + 4, 14);

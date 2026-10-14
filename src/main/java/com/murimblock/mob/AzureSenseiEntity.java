@@ -44,7 +44,7 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
  * old swordsman in azure robes and a straw hat, the left hand behind his back, the Azure Cloud low in his right. Neutral:
  * he strolls about his hall and watches whoever comes, and only draws on someone who strikes him (then he fights with
  * the Azure Cloud Sword Art, AzureSenseiPatch). Spoken to (right-click), he hands each player their own copy of the
- * Azure Cloud Sword Manual, once (the same copy as the sanctuary library's, SectLibrary). He stays where he was placed: he
+ * Azure Cloud Sword Manual, once (its only source, SectLibrary). He stays where he was placed: he
  * never despawns and keeps to a few blocks around his home.
  * <p>A hard boss: 300 health, armour 12, hardly moved or staggered, 10 a cut. Below half his health he stops holding back
  * (his second phase: quicker, and the art's great techniques, AzureSenseiPatch); left alone he recovers, and back to full
