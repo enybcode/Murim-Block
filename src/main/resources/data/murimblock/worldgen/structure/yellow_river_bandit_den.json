@@ -1,0 +1,8 @@
+{
+  "type": "murimblock:site",
+  "plan": "bandit_den",
+  "biomes": "#murimblock:has_structure/yellow_river_bandit_den",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

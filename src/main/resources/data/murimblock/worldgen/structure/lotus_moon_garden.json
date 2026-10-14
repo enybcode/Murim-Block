@@ -1,0 +1,8 @@
+{
+  "type": "murimblock:site",
+  "plan": "lotus_garden",
+  "biomes": "#murimblock:has_structure/lotus_moon_garden",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

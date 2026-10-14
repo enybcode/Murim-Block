@@ -1,0 +1,8 @@
+{
+  "type": "murimblock:site",
+  "plan": "peach_hamlet",
+  "biomes": "#murimblock:has_structure/peach_spring_hamlet",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

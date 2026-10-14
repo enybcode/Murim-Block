@@ -21,22 +21,38 @@ import net.minecraft.world.level.block.state.properties.StairsShape;
 public final class BuildKit {
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
+    /** Where the kit's blocks go: a live level, or a structure piece being generated (with its own frame). */
+    public interface Sink {
+        void set(int x, int y, int z, BlockState state);
+    }
+
     private final ServerLevel level;
+    private final Sink sink;
     private final int originX, originZ;
 
     public BuildKit(ServerLevel level, int originX, int originZ) {
         this.level = level;
+        this.sink = (x, y, z, state) -> level.setBlock(new BlockPos(x, y, z), state, FLAGS);
         this.originX = originX;
         this.originZ = originZ;
     }
 
+    /** A kit writing to a sink in its own coordinates (origin 0, 0). */
+    public BuildKit(Sink sink) {
+        this.level = null;
+        this.sink = sink;
+        this.originX = 0;
+        this.originZ = 0;
+    }
+
+    /** The live level, or null for a kit writing to a sink. */
     public ServerLevel level() { return level; }
 
     // ---------------------------------------------------------------- placing blocks
 
     /** Sets a block in world coordinates, without neighbour updates (structures are placed whole). */
     public void set(int x, int y, int z, BlockState state) {
-        level.setBlock(new BlockPos(x, y, z), state, FLAGS);
+        sink.set(x, y, z, state);
     }
 
     /** Sets a block relative to the origin. */
@@ -119,6 +135,51 @@ public final class BuildKit {
         } else {
             set((x0 + x1) / 2, yy, (z0 + z1) / 2, ridge.defaultBlockState());
             set((x0 + x1) / 2, yy + 1, (z0 + z1) / 2, Blocks.LIGHTNING_ROD.defaultBlockState());
+        }
+    }
+
+    /**
+     * Two-slope roof of a house over walls x0..x1, z0..z1 (ridge along x), its lowest course at {@code y}: stair courses
+     * one block out all round, a solid ceiling at {@code y} over the walls (so nothing shows under the roof), the gable
+     * ends walled with {@code gable} up to the ridge, and a ridge of full tiles whose ends rise one block. An odd number
+     * of rows (z1 - z0 odd) gives a single ridge row.
+     */
+    public void gableRoof(int x0, int z0, int x1, int z1, int y, RoofTiles tiles, BlockState ceiling, BlockState gable) {
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) set(x, y, z, ceiling);
+        int a = z0 - 1, b = z1 + 1, k = 0;
+        while (a + k <= b - k) {
+            int n = a + k, s = b - k, h = y + k;
+            boolean ridgeRow = s - n <= 1;
+            for (int x = x0 - 1; x <= x1 + 1; x++) {
+                if (ridgeRow) {
+                    set(x, h, n, tiles.ridge().defaultBlockState());
+                    set(x, h, s, tiles.ridge().defaultBlockState());
+                } else {
+                    set(x, h, n, stair(tiles.stairs(), Direction.SOUTH, Half.BOTTOM));
+                    set(x, h, s, stair(tiles.stairs(), Direction.NORTH, Half.BOTTOM));
+                }
+            }
+            // Gable ends: the wall triangle under this course.
+            if (k > 0) for (int z = n + 1; z < s; z++) { set(x0, h, z, gable); set(x1, h, z, gable); }
+            if (ridgeRow) {
+                for (int z = n; z <= s; z++) { set(x0 - 1, h + 1, z, tiles.ridge().defaultBlockState()); set(x1 + 1, h + 1, z, tiles.ridge().defaultBlockState()); }
+                break;
+            }
+            k++;
+        }
+    }
+
+    /**
+     * Single-slope roof (a lean-to) over walls x0..x1, z0..z1, high at the back (z0) and low at the front: eaves one block
+     * out at the front and sides, a solid ceiling at {@code y}, the side and back walls closed with {@code gable} under it.
+     */
+    public void shedRoof(int x0, int z0, int x1, int z1, int y, RoofTiles tiles, BlockState ceiling, BlockState gable) {
+        for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) set(x, y, z, ceiling);
+        for (int i = 0, z = z1 + 1; z >= z0; i++, z--) {
+            int h = y + i;
+            for (int x = x0 - 1; x <= x1 + 1; x++) set(x, h, z, stair(tiles.stairs(), Direction.NORTH, Half.BOTTOM));
+            if (z <= z1) for (int yy = y + 1; yy < h; yy++) { set(x0, yy, z, gable); set(x1, yy, z, gable); }
+            if (z == z0) for (int x = x0 + 1; x < x1; x++) for (int yy = y + 1; yy < h; yy++) set(x, yy, z, gable);
         }
     }
 }

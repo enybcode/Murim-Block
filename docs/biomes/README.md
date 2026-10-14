@@ -2,7 +2,7 @@
 
 Sept biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époque impériale (des Tang aux Ming), avant les déforestations, les barrages et les villes modernes. Trois sont grands, quatre sont moyens.
 
-Ils sont livrés **sans structures**. Chaque fiche décrit et illustre, en maquettes voxel, les structures prévues pour la suite.
+Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangshan, un site pour chacun des six autres) : voir [les structures Murim](../structures/README.md). Chaque fiche de biome décrit aussi, en maquettes voxel, d'autres structures prévues pour la suite.
 
 ![Les sept biomes en jeu](images/biomes-en-jeu.jpg)
 

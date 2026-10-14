@@ -2,6 +2,7 @@ package com.murimblock.world;
 
 import com.murimblock.Murimblock;
 import com.murimblock.world.block.MurimBlocks;
+import com.murimblock.world.feature.AwayFromSitesFilter;
 import com.murimblock.world.feature.CliffPineFeature;
 import com.murimblock.world.feature.GroundBodyFeature;
 import com.murimblock.world.feature.HangingStrandDecorator;
@@ -12,10 +13,14 @@ import com.murimblock.world.feature.TieredPineFeature;
 import com.murimblock.world.feature.WaterlandsFeature;
 import com.murimblock.world.feature.YardangFeature;
 import com.murimblock.world.structure.SanctuaryStructure;
+import com.murimblock.world.structure.site.SitePiece;
+import com.murimblock.world.structure.site.SiteStructure;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
+import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -46,6 +51,15 @@ public final class MurimWorldgen {
     /** The Cloud Cliff Sanctuary (built by SanctuaryPlacement; registered so /locate structure knows it). */
     public static final DeferredHolder<StructureType<?>, StructureType<SanctuaryStructure>> SANCTUARY_STRUCTURE =
             STRUCTURE_TYPES.register("cloud_cliff_sanctuary", () -> () -> SanctuaryStructure.CODEC);
+    /** The Murim sites (docs/structures): real structures placed by structure sets, found by /locate. */
+    public static final DeferredHolder<StructureType<?>, StructureType<SiteStructure>> SITE_STRUCTURE =
+            STRUCTURE_TYPES.register("site", () -> () -> SiteStructure.CODEC);
+    public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES = DeferredRegister.create(Registries.STRUCTURE_PIECE, Murimblock.MOD_ID);
+    public static final DeferredHolder<StructurePieceType, StructurePieceType> SITE_PIECE = STRUCTURE_PIECES.register("site", () -> SitePiece::new);
+    public static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIERS = DeferredRegister.create(Registries.PLACEMENT_MODIFIER_TYPE, Murimblock.MOD_ID);
+    /** Keeps trees, bamboo and rock peaks off the Murim sites. */
+    public static final DeferredHolder<PlacementModifierType<?>, PlacementModifierType<AwayFromSitesFilter>> AWAY_FROM_SITES =
+            PLACEMENT_MODIFIERS.register("away_from_sites", () -> () -> AwayFromSitesFilter.CODEC);
     public static final DeferredHolder<TreeDecoratorType<?>, TreeDecoratorType<HangingStrandDecorator>> HANGING_STRANDS =
             DECORATORS.register("hanging_strands", () -> new TreeDecoratorType<>(HangingStrandDecorator.CODEC));
 
@@ -55,6 +69,8 @@ public final class MurimWorldgen {
         FEATURES.register(bus);
         DECORATORS.register(bus);
         STRUCTURE_TYPES.register(bus);
+        STRUCTURE_PIECES.register(bus);
+        PLACEMENT_MODIFIERS.register(bus);
         bus.addListener(MurimWorldgen::setup);
     }
 

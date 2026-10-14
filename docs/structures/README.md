@@ -1,13 +1,49 @@
 # Structures Murim
 
+## Les six sites du 14/10/2026
+
+Six structures de plus, une par biome Murim (le Huangshan a déjà le sanctuaire). Ce sont de vraies structures Minecraft : elles apparaissent toutes seules dans les mondes neufs et `/locate structure murimblock:<id>` les trouve. Chacune a sa fiche technique, avec des conseils sur ce qu'on devrait y mettre.
+
+![Les six sites en jeu, trouvés avec /locate dans un monde neuf](images/sites/sites.jpg)
+
+| Structure (id) | Biome | Ce que c'est | Fiche |
+|---|---|---|---|
+| Village sur pilotis de la rivière de Jade (`jade_river_stilt_village`) | Forêt des pics de jade | Hameau zhuang : 3 maisons ganlan, grenier, banian sacré, rizières, porte | [fiche](jade_river_stilt_village.md) |
+| Repaire des Bandits du Fleuve Jaune (`yellow_river_bandit_den`) | Plateau de lœss | Cour enfoncée et 7 grottes voûtées, rampe, vigie | [fiche](yellow_river_bandit_den.md) |
+| Relais de la Tour à Signaux de la Porte de Jade (`jade_gate_beacon_post`) | Désert du Hexi | Relais fortifié de la route de la soie, tour à signaux fumante | [fiche](jade_gate_beacon_post.md) |
+| Temple taoïste de la Mer de Bambous brumeuse (`misty_bamboo_temple`) | Mer de bambous de Shu | Trois terrasses, taiji, escalier couvert, salle des Trois Purs | [fiche](misty_bamboo_temple.md) |
+| Jardin de la Lune et des Lotus (`lotus_moon_garden`) | Pays des eaux du Jiangnan | Jardin de lettré : porte de lune, étang, pont en zigzag, galerie | [fiche](lotus_moon_garden.md) |
+| Hameau de la Source aux Fleurs de Pêcher (`peach_spring_hamlet`) | Vallée des fleurs de pêcher | Maisons de terre et de chaume, champs, temple du dieu du sol | [fiche](peach_spring_hamlet.md) |
+
+### Comment elles sont faites
+
+- **Une structure par site** (`SiteStructure`, type `murimblock:site`), avec sa propre structure set (`random_spread`) et son tag de biome `has_structure/<id>`. Le JSON est écrit par `scripts/worldgen/generate-nature.cjs`.
+- **Où elle se pose** : au centre de son chunk, l'entrée tournée vers le côté le plus bas du terrain, et seulement si la place convient (dénivelé limité, pas d'eau sauf pour le jardin, toute l'emprise dans le biome). Sinon Minecraft essaie la case suivante de la grille.
+- **Le terrain** est modelé par Minecraft lui-même autour de chaque partie (`terrain_adaptation: beard_thin`, comme les villages vanilla) : le sol monte ou descend en pente douce jusqu'au site, sans falaise ni trou.
+- **Jamais de vide en dessous** : chaque sol, chaque mur et chaque poteau est fondé jusqu'au terrain naturel, à travers l'air ou l'eau (`Canvas.footing`).
+- **Jamais d'entrée sur le vide** : devant chaque porte, un abord sur sol plein (route, chemin, débarcadère), même si un ravin du lœss ou une rivière passe juste à côté.
+- **Jamais de trou dans un toit** : les toits du kit (`BuildKit.roof`, `gableRoof`, `shedRoof`) posent un plafond plein sous les tuiles.
+- **Rien ne pousse dedans** : un filtre de placement (`murimblock:away_from_sites`) écarte des sites les arbres, les bambous géants, les tours karstiques, les aiguilles, les piliers, les yardangs et les étangs.
+- **Construites en code**, morceau par morceau (`SitePiece`), chunk par chunk comme toute structure ; le hasard est tiré de la position (jamais d'une suite), donc chaque chunk voit les mêmes choix. Le cadre `Canvas` tourne le plan, le découpe au chunk et note ce qu'il faut vérifier.
+- **Code** : [world/structure/site](../../src/main/java/com/murimblock/world/structure/site/), un fichier par site.
+
+### Vérification
+
+- **GameTests** (`SiteGameTests`, un par site, dans `gradlew -PgameTests runGameTestServer`) : le site construit sur un sol de pierre passe toutes ses vérifications (chaque pièce couverte sur chaque colonne, rien de naturel dedans, chaque sol et chaque fondation portés) ; construit chunk par chunk comme en génération, il est identique bloc pour bloc au site construit d'un coup ; la structure et sa structure set sont enregistrées.
+- **Visite en vrai client** (`gradlew -PgameTests runSiteTour`) : un monde neuf (graine 20261012, génération des structures activée) ; pour chaque site, la vraie commande `/locate structure`, puis le site trouvé est généré et vérifié de la même façon, dans le bon biome, et photographié. Rapport : `build/site-tour-run/site-tour-report.txt`.
+- **Résultat du 14/10/2026** : les six `/locate` répondent en moins d'une seconde, de 487 blocs (le temple) à 7 058 blocs (le relais, le Hexi étant loin du départ sur cette graine) ; les six sites générés sont dans leur biome et passent toutes leurs vérifications.
+- **Fréquence** : une tentative par carré de 22 à 26 chunks de côté, refusée si la place ne convient pas ; sur la graine de test, d'une place sur cinq à une sur deux est acceptée là où le biome est le bon, selon le relief du biome. Pour en voir plus souvent, il suffit de baisser `spacing` dans `generate-nature.cjs`.
+
+## Les propositions du 12/10/2026
+
 Les quatre propositions du 12/10/2026, avec leur maquette voxel :
 
 | Structure | Biome | État | Maquette |
 |---|---|---|---|
 | Sanctuaire de la Falaise des Nuages | Pics de la mer de nuages | **Construit** (unique, près du spawn) | ![](images/sanctuary.jpg) |
-| Village sur pilotis de la rivière de Jade | Forêt des pics de jade | Proposé | ![](images/village.jpg) |
-| Repaire des Bandits du Fleuve Jaune | Plateau de lœss | Proposé | ![](images/lair.jpg) |
-| Forteresse de la Passe de Jade | Désert de la frontière du Hexi | Proposé | ![](images/fortress.jpg) |
+| Village sur pilotis de la rivière de Jade | Forêt des pics de jade | **Construit** le 14/10 (`jade_river_stilt_village`) | ![](images/village.jpg) |
+| Repaire des Bandits du Fleuve Jaune | Plateau de lœss | **Construit** le 14/10 (`yellow_river_bandit_den`) | ![](images/lair.jpg) |
+| Forteresse de la Passe de Jade | Désert de la frontière du Hexi | Devenue le relais `jade_gate_beacon_post` (14/10) | ![](images/fortress.jpg) |
 
 Les plans et les intentions de jeu de chaque proposition ont été donnés à Enzo le 12/10/2026. Les maquettes se régénèrent avec `node scripts/concepts/render-proposals.cjs`, qui demande un Blockbench isolé lancé sur le port 9232.
 
@@ -92,4 +128,4 @@ Le test de construction du sanctuaire affiche une empreinte de tous ses blocs (`
 - Le maître de la secte (PNJ), l'éveil du Qi et la première technique.
 - Les lanternes lumineuses avec Photon, pour le repère de nuit.
 - La source du jeton de remplacement.
-- Les autres structures : village, repaire, forteresse.
+- Le contenu des six sites (PNJ, ennemis, butin, quêtes) : voir les conseils de chaque fiche.

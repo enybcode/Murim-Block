@@ -8,6 +8,8 @@
 - [Qi rewards](QI_REWARDS.md): balance and temporary anti-farm history.
 - [Armored crab](ARMORED_CRAB_DELIVERY.md): integrated assets, behavior and local verification.
 - [Addon API](ADDON_API.md) and [addon guide](ADDON_GUIDE.md): supported contracts.
+- [Murim biomes](biomes/README.md): the seven biomes, their blocks and textures (redrawn 14 October).
+- [Murim structures](structures/README.md): the Cloud Cliff Sanctuary and the six sites with their technical sheets.
 
 ## Development And Delivery
 

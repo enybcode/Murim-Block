@@ -350,12 +350,14 @@ const chance = n => ({ type: 'minecraft:rarity_filter', chance: n });
 const heightmap = h => ({ type: 'minecraft:heightmap', heightmap: h });
 const dry = { type: 'minecraft:surface_water_depth_filter', max_water_depth: 0 };
 const survives = s => ({ type: 'minecraft:block_predicate_filter', predicate: { type: 'minecraft:would_survive', state: s } });
+// Keeps a feature off the Murim sites (structures): no tree through a roof, no karst tower through a courtyard.
+const away = margin => ({ type: id('away_from_sites'), margin });
 // Patchy like Minecraft's own vegetation: many where the 2D biome noise is high, few where it is low (groves and
 // clearings, fields of flowers) instead of an even sprinkle.
 const patchy = (level, below, above) => ({ type: 'minecraft:noise_threshold_count', noise_level: level, below_noise: below, above_noise: above });
 const weightedCount = pairs => ({ type: 'minecraft:count', count: { type: 'minecraft:weighted_list',
   distribution: pairs.map(([data, weight]) => ({ data, weight })) } });
-const treePlacement = (n, sapling) => [n, inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id(sapling), { stage: '0' }))];
+const treePlacement = (n, sapling) => [n, inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id(sapling), { stage: '0' })), away(6)];
 const surfacePatch = n => [...(typeof n === 'number' ? [count(n)] : [n]), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter];
 // A tree list feature: pick one tree per attempt.
 function treeMix(name, entries, fallback) {
@@ -365,15 +367,15 @@ function treeMix(name, entries, fallback) {
 }
 treeMix('trees_karst', [[id('banyan'), 0.25]], id('osmanthus'));
 PF('trees_karst', id('trees_karst'), treePlacement(patchy(0, 1, 6), 'osmanthus_sapling'));
-PF('trees_karst_giant', id('banyan_giant'), [chance(18), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id('banyan_sapling'), { stage: '0' }))]);
-PF('bamboo_clumps_karst', 'minecraft:bamboo_no_podzol', [chance(3), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter]);
+PF('trees_karst_giant', id('banyan_giant'), [chance(18), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id('banyan_sapling'), { stage: '0' })), away(10)]);
+PF('bamboo_clumps_karst', 'minecraft:bamboo_no_podzol', [chance(3), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter, away(3)]);
 PF('trees_loess', id('jujube'), treePlacement(patchy(0.35, 0, 2), 'jujube_sapling'));
-PF('trees_desert_poplar', id('desert_poplar'), [chance(5), weightedCount([[2, 1], [4, 1]]), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter]);
-PF('desert_poplar_snag', id('desert_poplar_snag'), [chance(10), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter]);
+PF('trees_desert_poplar', id('desert_poplar'), [chance(5), weightedCount([[2, 1], [4, 1]]), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, away(6)]);
+PF('desert_poplar_snag', id('desert_poplar_snag'), [chance(10), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter, away(4)]);
 PF('trees_huangshan_pine', id('huangshan_pine'), treePlacement(patchy(0, 1, 4), 'huangshan_pine_sapling'));
 PF('cliff_pine', id('cliff_pine'), [count(14), inSquare, { type: 'minecraft:height_range', height: { type: 'minecraft:uniform',
   min_inclusive: { absolute: 72 }, max_inclusive: { absolute: 240 } } }, biomeFilter]);
-PF('moso_bamboo_grove', id('moso_bamboo_grove'), [count(3), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter]);
+PF('moso_bamboo_grove', id('moso_bamboo_grove'), [count(3), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter, away(6)]);
 PF('trees_dove_tree', id('dove_tree'), treePlacement(weightedCount([[0, 3], [1, 2]]), 'dove_tree_sapling'));
 PF('trees_willow', id('willow'), treePlacement(patchy(-0.2, 1, 4), 'willow_sapling'));
 PF('trees_peach', id('peach'), treePlacement(patchy(0, 1, 4), 'peach_sapling'));
@@ -394,11 +396,11 @@ PF('flower_chrysanthemum', id('flower_chrysanthemum'), surfacePatch(chance(2)));
 PF('flower_rapeseed', id('flower_rapeseed'), surfacePatch(patchy(0.25, 0, 8)));
 PF('patch_pink_petals', id('patch_pink_petals'), surfacePatch(patchy(0, 0, 4)));
 PF('patch_grass_lush', id('patch_grass_lush'), surfacePatch(patchy(-0.2, 2, 6)));
-PF('karst_tower', id('karst_tower'), [weightedCount([[0, 4], [1, 4], [2, 1]]), inSquare, biomeFilter]);
-PF('granite_spire', id('granite_spire'), [weightedCount([[0, 2], [1, 3], [2, 1]]), inSquare, biomeFilter]);
-PF('sandstone_pillar', id('sandstone_pillar'), [weightedCount([[0, 5], [1, 3], [2, 1]]), inSquare, biomeFilter]);
-PF('yardang', id('yardang'), [chance(3), inSquare, biomeFilter]);
-PF('jiangnan_pond', id('jiangnan_pond'), [count(2), inSquare, heightmap('OCEAN_FLOOR_WG'), biomeFilter]);
+PF('karst_tower', id('karst_tower'), [weightedCount([[0, 4], [1, 4], [2, 1]]), inSquare, biomeFilter, away(22)]);
+PF('granite_spire', id('granite_spire'), [weightedCount([[0, 2], [1, 3], [2, 1]]), inSquare, biomeFilter, away(22)]);
+PF('sandstone_pillar', id('sandstone_pillar'), [weightedCount([[0, 5], [1, 3], [2, 1]]), inSquare, biomeFilter, away(16)]);
+PF('yardang', id('yardang'), [chance(3), inSquare, biomeFilter, away(30)]);
+PF('jiangnan_pond', id('jiangnan_pond'), [count(2), inSquare, heightmap('OCEAN_FLOOR_WG'), biomeFilter, away(8)]);
 for (const g of ['karst', 'loess', 'gobi', 'peaks', 'peach']) PF(`ground_body_${g}`, id(`ground_body_${g}`), []);
 PF('jiangnan_waterlands', id('jiangnan_waterlands'), []);
 
@@ -502,5 +504,24 @@ tag('worldgen/biome', 'is_forest', [id('shu_bamboo_sea'), id('peach_blossom_vall
 tag('worldgen/biome', 'is_wet', [id('jiangnan_waterlands'), id('jade_karst_forest'), id('shu_bamboo_sea')], 'c');
 tag('worldgen/biome', 'is_dry', [id('hexi_frontier_desert'), id('loess_plateau')], 'c');
 tag('worldgen/biome', 'is_overworld', all, 'c');
+
+// ---------------------------------------------------------------- Murim sites (docs/structures)
+// Real structures, built in code by SiteStructure (plan = the Java site), placed by their own structure set inside
+// their biome; beard_thin shapes the ground round them like a village. /locate structure murimblock:<name> finds them.
+const SITES = [
+  ['jade_river_stilt_village', 'stilt_village', 'jade_karst_forest', 24, 8, 71001],
+  ['yellow_river_bandit_den', 'bandit_den', 'loess_plateau', 24, 8, 71002],
+  ['jade_gate_beacon_post', 'beacon_post', 'hexi_frontier_desert', 26, 9, 71003],
+  ['misty_bamboo_temple', 'bamboo_temple', 'shu_bamboo_sea', 22, 7, 71004],
+  ['lotus_moon_garden', 'lotus_garden', 'jiangnan_waterlands', 22, 7, 71005],
+  ['peach_spring_hamlet', 'peach_hamlet', 'peach_blossom_valley', 22, 7, 71006],
+];
+for (const [name, plan, biome, spacing, separation, salt] of SITES) {
+  tag('worldgen/biome', `has_structure/${name}`, [id(biome)], NS);
+  write(D(NS, 'worldgen', 'structure', `${name}.json`), { type: id('site'), plan, biomes: `#${NS}:has_structure/${name}`,
+    spawn_overrides: {}, step: 'surface_structures', terrain_adaptation: 'beard_thin' });
+  write(D(NS, 'worldgen', 'structure_set', `${name}.json`), { structures: [{ structure: id(name), weight: 1 }],
+    placement: { type: 'minecraft:random_spread', spacing, separation, salt } });
+}
 
 console.log(`wrote ${written.length} files`);
