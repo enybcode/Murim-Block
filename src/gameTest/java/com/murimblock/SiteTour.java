@@ -142,6 +142,27 @@ public final class SiteTour {
                     lookAbs(mc, s.origin().getX() + 0.5 + fx * (s.reach() - 1), s.origin().getY() + 2.7, s.origin().getZ() + 0.5 + fz * (s.reach() - 1),
                             s.origin().getX() + 0.5, s.origin().getY() + 3.5, s.origin().getZ() + 0.5);
                 }
+                // As in a world older than its residents: they are taken away and the site forgotten; SiteResidents
+                // must put them back by itself, the player being there.
+                case 290 -> {
+                    if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    mc.getSingleplayerServer().execute(() -> {
+                        residents(mc, site).forEach(Mob::discard);
+                        com.murimblock.world.structure.site.SiteResidents.forgetForTests(mc.getSingleplayerServer().overworld(), site.origin());
+                    });
+                }
+                case 350 -> {
+                    if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    mc.getSingleplayerServer().execute(() -> {
+                        Map<String, Integer> found = new TreeMap<>();
+                        for (Mob m : residents(mc, site)) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
+                        Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
+                        String line = name + ": residents put back in an emptied site " + found + ", expected " + expected;
+                        report.add(line);
+                        LOGGER.info("Site tour: {}", line);
+                        if (!found.equals(expected)) failed = true;
+                    });
+                }
                 case 360 -> capture(mc, name + "-ground.png");
                 // A resident at home (the chief before his throne, a householder of the village, the sensei before his altar).
                 case 361 -> {

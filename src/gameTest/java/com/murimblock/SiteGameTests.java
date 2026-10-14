@@ -5,6 +5,7 @@ import com.murimblock.mob.BanditChiefEntity;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.world.structure.site.Canvas;
 import com.murimblock.world.structure.site.SitePiece;
+import com.murimblock.world.structure.site.SiteResidents;
 import com.murimblock.world.structure.site.SitePlan;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,8 +68,16 @@ public final class SiteGameTests {
         BoundingBox box = SitePiece.wholeBox(plan, x, Z, rotation, levels).inflatedBy(3);
         int y0 = GROUND - 14, y1 = box.maxY() + 8;
         for (int cx = box.minX() >> 4; cx <= box.maxX() >> 4; cx++) for (int cz = box.minZ() >> 4; cz <= box.maxZ() >> 4; cz++) level.setChunkForced(cx, cz, true);
-        // Forced chunks take a few ticks to load their entities: build once they have (the villagers must be seen).
-        helper.runAfterDelay(20, () -> run(helper, level, plan, structure, x, rotation, box, y0, y1, levels));
+        // Forced chunks take a few ticks to load their entities: build once they all have (the residents must be seen).
+        whenLoaded(helper, level, box, 0, () -> run(helper, level, plan, structure, x, rotation, box, y0, y1, levels));
+    }
+
+    /** Runs {@code then} once every chunk under {@code box} has its entities loaded (looked at every 5 ticks, 20 s at most). */
+    private static void whenLoaded(GameTestHelper helper, ServerLevel level, BoundingBox box, int waited, Runnable then) {
+        helper.runAfterDelay(5, () -> {
+            if (SiteResidents.entitiesLoaded(level, box) || waited >= 400) then.run();
+            else whenLoaded(helper, level, box, waited + 5, then);
+        });
     }
 
     private static void run(GameTestHelper helper, ServerLevel level, SitePlan plan, String structure, int x, Rotation rotation,
@@ -119,6 +128,16 @@ public final class SiteGameTests {
             Map<String, Integer> chunkedResidents = tally(canvases.stream().flatMap(c -> c.spawned().stream()).filter(m -> !m.isRemoved()).toList());
             canvases.forEach(c -> c.spawned().forEach(m -> m.discard()));
             Map<String, Integer> expected = expectedResidents(plan);
+            // A site generated before it had residents (an older world): SiteResidents places them, once.
+            residents(level, box).forEach(m -> m.discard());
+            List<SitePiece> pieces = new ArrayList<>();
+            for (int part = 0; part < plan.site().parts().size(); part++) pieces.add(new SitePiece(plan, part, x, Z, rotation, seed, levels));
+            BoundingBox siteBox = SitePiece.wholeBox(plan, x, Z, rotation, levels);
+            int late = SiteResidents.settle(level, pieces, siteBox);
+            int again = SiteResidents.settle(level, pieces, siteBox);
+            Map<String, Integer> lateResidents = tally(level.getEntitiesOfClass(Mob.class, AABB.of(siteBox).inflate(4, 16, 4),
+                    m -> expected.containsKey(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString())));
+            int expectedCount = expected.values().stream().mapToInt(Integer::intValue).sum();
             var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
             var sets = level.registryAccess().registryOrThrow(Registries.STRUCTURE_SET);
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, structure);
@@ -130,6 +149,11 @@ public final class SiteGameTests {
             helper.assertTrue(wholeResidents.equals(expected) && chunkedResidents.equals(expected),
                     structure + ": residents " + wholeResidents + " built whole, " + chunkedResidents + " chunk by chunk, expected " + expected);
             helper.assertTrue(misplaced.isEmpty(), structure + ": " + misplaced);
+            helper.assertTrue(late == expectedCount && lateResidents.equals(expected),
+                    structure + ": an empty older site got " + late + " resident(s) " + lateResidents + ", expected " + expected
+                            + "; planned at " + pieces.stream().flatMap(pc -> pc.residents().stream()).map(r -> r.at().toShortString() + (level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(r.at())) ? "" : " (entities not loaded)")).toList()
+                            + ", found at " + level.getEntitiesOfClass(Mob.class, AABB.of(siteBox).inflate(8, 32, 8)).stream().map(m -> m.getType().toShortString() + " " + m.blockPosition().toShortString() + (m.isRemoved() ? " removed" : "")).toList());
+            helper.assertTrue(again == 0, structure + ": its residents were placed a second time (" + again + ")");
             helper.assertTrue(registry.containsKey(id) && sets.containsKey(id), structure + " is not registered as a structure with its structure set");
             helper.succeed();
         } finally {
@@ -159,7 +183,8 @@ public final class SiteGameTests {
 
     /** Residents a site may leave in the test world: villagers and bandits. */
     private static List<Mob> residents(ServerLevel level, BoundingBox box) {
-        return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity);
+        return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8, 48, 8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity
+                || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */

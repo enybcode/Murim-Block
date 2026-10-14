@@ -38,18 +38,24 @@ public final class Canvas implements BuildKit.Sink {
     private final List<BlockPos> shapes;
     /** Live levels only (tests): the mobs this canvas spawned. */
     private final List<Mob> spawned;
+    /** A planning canvas only: the mobs the site would place, without placing anything (SiteResidents). */
+    private final List<Planned> planned;
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     private BuildKit kit;
 
     /** A box in world coordinates that a check covers: a room that must be roofed, or a footing that must be carried. */
     public record Check(boolean room, BoundingBox box) { }
 
+    /** A resident the site places: what, on which block (world), facing which way, and how it is set up. */
+    public record Planned(EntityType<? extends Mob> type, BlockPos at, float yaw, Consumer<Mob> setup) { }
+
     public Canvas(WorldGenLevel level, BoundingBox clip, int ox, int oz, Rotation rotation, long seed, List<Check> checks) {
         this(level, clip, ox, oz, rotation, seed, checks, level instanceof ServerLevel ? new ArrayList<>() : null,
-                level instanceof ServerLevel ? new ArrayList<>() : null);
+                level instanceof ServerLevel ? new ArrayList<>() : null, null);
     }
 
-    private Canvas(WorldGenLevel level, BoundingBox clip, int ox, int oz, Rotation rotation, long seed, List<Check> checks, List<BlockPos> shapes, List<Mob> spawned) {
+    private Canvas(WorldGenLevel level, BoundingBox clip, int ox, int oz, Rotation rotation, long seed, List<Check> checks, List<BlockPos> shapes,
+                   List<Mob> spawned, List<Planned> planned) {
         this.level = level;
         this.clip = clip;
         this.ox = ox;
@@ -59,13 +65,19 @@ public final class Canvas implements BuildKit.Sink {
         this.checks = checks;
         this.shapes = shapes;
         this.spawned = spawned;
+        this.planned = planned;
     }
 
     private static final BoundingBox NOWHERE = new BoundingBox(Integer.MIN_VALUE, 0, Integer.MIN_VALUE, Integer.MIN_VALUE, 0, Integer.MIN_VALUE);
 
     /** A canvas that touches no block: for its coordinates, and to record a site's checks. */
     public static Canvas dry(int ox, int oz, Rotation rotation, long seed, List<Check> checks) {
-        return new Canvas(null, NOWHERE, ox, oz, rotation, seed, checks, null, null);
+        return new Canvas(null, NOWHERE, ox, oz, rotation, seed, checks, null, null, null);
+    }
+
+    /** A canvas that touches no block and records the residents the site would place, into {@code planned}. */
+    public static Canvas planning(int ox, int oz, Rotation rotation, long seed, List<Planned> planned) {
+        return new Canvas(null, NOWHERE, ox, oz, rotation, seed, null, null, null, planned);
     }
 
     public static Canvas dry(int ox, int oz, Rotation rotation) {
@@ -74,7 +86,7 @@ public final class Canvas implements BuildKit.Sink {
 
     /** A sub-frame: its origin at local (dx, dz), turned by {@code turn} (its front, local +z, then faces that way). */
     public Canvas frame(int dx, int dz, Rotation turn) {
-        return new Canvas(level, clip, wx(dx, dz), wz(dx, dz), rotation.getRotated(turn), mix(seed + dx * 31L + dz * 1013L), checks, shapes, spawned);
+        return new Canvas(level, clip, wx(dx, dz), wz(dx, dz), rotation.getRotated(turn), mix(seed + dx * 31L + dz * 1013L), checks, shapes, spawned, planned);
     }
 
     public BuildKit kit() {
@@ -153,20 +165,34 @@ public final class Canvas implements BuildKit.Sink {
      * Places a mob standing at the centre of local block (x, y, z), facing local {@code facing}: created only by the
      * chunk that holds that block (so once per site), set up as a structure spawn, kept from despawning.
      */
+    @SuppressWarnings("unchecked")
     public <T extends Mob> void spawn(int x, int y, int z, Direction facing, EntityType<T> type, Consumer<T> setup) {
-        if (!inside(x, z)) return;
-        T mob = type.create(level.getLevel());
-        if (mob == null) return;
         BlockPos at = new BlockPos(wx(x, z), y, wz(x, z));
-        // Standing on whatever covers the floor there (a carpet, a slab), not in it.
+        float yaw = rotation.rotate(facing).toYRot();
+        if (planned != null) {
+            planned.add(new Planned(type, at, yaw, mob -> setup.accept((T) mob)));
+            return;
+        }
+        if (!inside(x, z)) return;
+        T mob = place(level, type, at, yaw, setup);
+        if (mob != null && spawned != null) spawned.add(mob);
+    }
+
+    /**
+     * Places a mob standing at the centre of block {@code at} (world): on whatever covers the floor there (a carpet, a
+     * slab), not in it; set up as a structure spawn and kept from despawning. During world generation as afterwards.
+     */
+    public static <T extends Mob> T place(WorldGenLevel level, EntityType<T> type, BlockPos at, float yaw, Consumer<T> setup) {
+        T mob = type.create(level.getLevel());
+        if (mob == null) return null;
         var shape = level.getBlockState(at).getCollisionShape(level, at);
         double lift = shape.isEmpty() ? 0 : shape.max(Direction.Axis.Y);
-        mob.moveTo(at.getX() + 0.5, y + lift, at.getZ() + 0.5, rotation.rotate(facing).toYRot(), 0);
+        mob.moveTo(at.getX() + 0.5, at.getY() + lift, at.getZ() + 0.5, yaw, 0);
         EventHooks.finalizeMobSpawn(mob, level, level.getCurrentDifficultyAt(at), MobSpawnType.STRUCTURE, null);
         setup.accept(mob);
         mob.setPersistenceRequired();
         level.addFreshEntityWithPassengers(mob);
-        if (spawned != null) spawned.add(mob);
+        return mob;
     }
 
     /** Live levels (tests): the mobs spawned through this canvas and its frames. */
