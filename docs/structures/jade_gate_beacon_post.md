@@ -26,6 +26,10 @@
 - **Le dortoir des voyageurs** (ouest) et **les écuries** (est) : bâtiments bas sous des toits à une pente adossés au mur ; lits et tonneaux d'un côté, stalles en barrières, foin et abreuvoirs de l'autre, ouvertes sur la cour.
 - **La cour** : sable, allée dallée de la porte à la salle, puits à margelle et treuil, cargaisons des caravanes (tonneaux, foin), barre d'attache devant les écuries, lanternes sur bornes.
 
+- **Ses occupants** (14/10, demande d'Enzo) : le relais a été pris par des pillards, **4 Mountain Bandits en tenue Dune Raider** (`murimblock:mountain_bandit`) : leur meneur dans la salle de l'officier, au-dessus du registre, un dans la cour, un près des marchandises, un dans le dortoir. Ils ne disparaissent pas et ne reviennent pas une fois tués ; en Paisible, Minecraft les retire.
+
+![Un pillard dans le dortoir](images/sites/jade_gate_beacon_post-bandit.jpg)
+
 **Chemins** : porte → allée → salle ; escalier → chemin de ronde → pavillon de la porte ; tourelle → échelle → feu de signal. Aucun chemin ne finit dans le vide.
 
 ## Vérification (14/10/2026)

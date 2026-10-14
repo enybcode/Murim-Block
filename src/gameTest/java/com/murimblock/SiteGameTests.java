@@ -171,6 +171,8 @@ public final class SiteGameTests {
             case BANDIT_DEN -> Map.of("murimblock:bandit_chief", 1, "murimblock:mountain_bandit", 4);
             case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1);
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
+            case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
+            case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
             default -> Map.of();
         };
     }

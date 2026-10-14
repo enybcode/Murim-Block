@@ -172,7 +172,7 @@ public final class SiteTour {
                         if (residents.isEmpty()) return;
                         // From the corner of the resident's own room farthest from them, at eye height.
                         Mob v = residents.get(0);
-                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : "chief";
+                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
