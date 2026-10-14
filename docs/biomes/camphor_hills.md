@@ -15,8 +15,9 @@
 
 ## Dans le jeu
 
-- **Où.** Sur la [carte Murim](murim-map.md) : dans le sud, les terres plus douces (ni le karst humide ni les reliefs de la mer de bambous) ; dans l'est, les **collines** désormais soulevées (environ 45 blocs, `MurimMap.hills`), le pays des eaux du Jiangnan restant dans les creux entre elles.
-- **Bois aux lisières nettes.** Les camphriers poussent en peuplements serrés là où le bruit de végétation dépasse son seuil, et rien en dessous : chaque bois finit sur une lisière franche, avec des prairies ouvertes entre eux. Quelques **camphriers isolés** dans les prés, et rarement un **camphrier ancien** à tronc massif.
+- **Où.** Sur la [carte Murim](murim-map.md) : dans le sud, les terres plus douces (ni le karst humide ni les reliefs de la mer de bambous) ; dans l'est, de **longues collines** désormais soulevées (environ 45 blocs, des crêtes de plusieurs kilomètres côte à côte, orientées à 30° de l'est, `MurimMap.hills`), le pays des eaux du Jiangnan restant dans les vallées entre elles.
+- **De grands arbres** (`CamphorTreeFeature`, demande d'Enzo : « de beaux arbres aux troncs massifs pour de grandes plaines ») : un tronc nu **de 2 × 2 blocs**, haut de 6 à 8, évasé au pied par des racines-contreforts, qui se divise en 4 à 6 grosses branches montantes (doublées à leur départ), chacune portant un nuage de feuilles aplati ; la couronne est un large dôme irrégulier porté haut, on voit le tronc et l'ombre dessous. Le **camphrier ancien** (arbre fengshui) a un tronc de **3 × 3** blocs, haut de 8 à 10, et une couronne immense.
+- **Grandes plaines aux lisières nettes.** Peu d'arbres : de petits bois clairs là où le bruit de végétation dépasse son seuil (rien en dessous, d'où une lisière franche), des camphriers isolés dans les prés, de temps en temps un ancien.
 - **Prairies.** Herbe et fougères, champs d'**astragale** violette par taches.
 - **Climat et couleurs.** Température 0,8, humidité 0,85. Ciel #9FBBD0, brouillard #D6DDD8, herbe #6FA24C, feuillage #3E7A36. Musique de la forêt.
 - **Faune.** Vaches, moutons, chevaux, cochons, poules.

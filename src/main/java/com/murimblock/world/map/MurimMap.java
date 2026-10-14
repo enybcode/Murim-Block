@@ -106,10 +106,12 @@ public final class MurimMap {
 
     /** How high the rolling hills of the east (and, lower, of the south) rise at most (vanilla depth: about 45 blocks). */
     public static final double HILLS = 0.35;
+    /** The long hills run this way (30 degrees off east). */
+    private static final double COS = Math.cos(Math.toRadians(30)), SIN = Math.sin(Math.toRadians(30));
 
     /**
-     * The rolling hills of the east, and lower ones in the south (0 to 1, times HILLS): broad swells and finer ones, the
-     * Jiangnan's water country left in the hollows between them. Fades out towards the regions' borders and the coast.
+     * The long rolling hills of the east, and lower ones in the south (0 to 1, times HILLS): crests kilometres long, side
+     * by side, the Jiangnan's water country left in the long valleys between them. Fades out towards the regions' borders and the coast.
      */
     public static double hills(int x, int z) {
         init();
@@ -123,8 +125,13 @@ public final class MurimMap {
         double south = smooth(Math.min(a - Math.PI / 4, 3 * Math.PI / 4 - a) / 0.22) * 0.5;
         double w = (east + south) * out * coast;
         if (w <= 0) return 0;
-        double swell = 0.65 * noiseF.getValue(x / 3_200.0, z / 3_200.0) + 0.35 * noiseG.getValue(x / 900.0, z / 900.0);
-        return w * Math.max(0, swell + 0.15) / 1.15;
+        // Long hills: ridged noise stretched along one direction (turned 30 degrees off east, made to wander), so the
+        // crests run on for kilometres, side by side, with long valleys between them.
+        double along = x * COS + z * SIN, across = -x * SIN + z * COS + 1_400 * noiseG.getValue(x / 6_000.0, z / 6_000.0);
+        double crest = 1 - Math.abs(noiseF.getValue(along / 9_000.0, across / 1_700.0));
+        double fine = 1 - Math.abs(noiseG.getValue(along / 2_600.0, across / 650.0));
+        double h = crest * crest * 0.75 + fine * fine * 0.25;
+        return w * Math.max(0, (h - 0.3) / 0.7);
     }
 
     /** Jaggedness added on the north's ranges (vanilla's jagged peaks: spires and knife-edge ridges of ice and rock). */

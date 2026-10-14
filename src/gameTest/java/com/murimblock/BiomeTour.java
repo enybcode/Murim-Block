@@ -197,7 +197,10 @@ public final class BiomeTour {
                 // (The Kunlun's ranges rise over the clouds: seen from below instead, from the snows at their foot.)
                 case 281 -> mc.getSingleplayerServer().execute(() -> { if (biome == MurimBiomes.KUNLUN_GLACIERS) fromBelow(mc, found, surfaceY); else farView(mc, found, surfaceY); });
                 case 360 -> capture(mc, name + "-far.png");
-                case 361 -> { index++; stepTicks = 0; }
+                // The camphor country: also the edge of one of its woods, seen from the meadow.
+                case 361 -> { if (biome == MurimBiomes.CAMPHOR_HILLS) mc.getSingleplayerServer().execute(() -> edgeView(mc, found)); else { index++; stepTicks = 0; } }
+                case 440 -> capture(mc, name + "-edge.png");
+                case 441 -> { index++; stepTicks = 0; }
                 default -> { }
             }
         } catch (Exception e) {
@@ -425,6 +428,49 @@ public final class BiomeTour {
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
         float pitch = (float) -Math.toDegrees(Math.atan2(top - bestY - 4, Math.hypot(dx, dz)));
         teleport(mc, bestX + 0.5, bestY + 4, bestZ + 0.5, yaw, pitch);
+    }
+
+    /**
+     * A wood's edge: near the target, a column under camphor leaves whose neighbour 12 blocks away (in one of eight
+     * directions) is open meadow; the camera stands further out in the meadow, low, looking at the edge.
+     */
+    private static void edgeView(Minecraft mc, BlockPos target) {
+        ServerLevel level = mc.getSingleplayerServer().overworld();
+        var leaves = MurimBlocks.CAMPHOR.leaves().get();
+        java.util.function.BiPredicate<Integer, Integer> canopy = (x, z) -> {
+            level.getChunk(x >> 4, z >> 4);
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+            return level.getBlockState(new BlockPos(x, y - 1, z)).is(leaves);
+        };
+        // How much of a 15 x 15 square round a point is under camphor leaves (25 samples).
+        java.util.function.BiFunction<Integer, Integer, Integer> cover = (x, z) -> {
+            int n = 0;
+            for (int i = -6; i <= 6; i += 3) for (int j = -6; j <= 6; j += 3) if (canopy.test(x + i, z + j)) n++;
+            return n;
+        };
+        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int r = 0; r <= 320; r += 16) for (int dx = -r; dx <= r; dx += 16) for (int dz = -r; dz <= r; dz += 16) {
+            if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+            int px = target.getX() + dx, pz = target.getZ() + dz;
+            if (cover.apply(px, pz) < 18) continue; // a real wood
+            for (int[] d : dirs) {
+                if (cover.apply(px + d[0] * 24, pz + d[1] * 24) > 1 || cover.apply(px + d[0] * 36, pz + d[1] * 36) > 1) continue; // open meadow out there
+                // The edge itself: walking out of the wood, the last column under leaves.
+                int k = 0;
+                while (k < 24 && canopy.test(px + d[0] * (k + 1), pz + d[1] * (k + 1))) k++;
+                int edgeX = px + d[0] * k, edgeZ = pz + d[1] * k;
+                int ex = edgeX + d[0] * 30, ez = edgeZ + d[1] * 30;
+                int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, ex, ez);
+                int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, edgeX, edgeZ);
+                double ddx = edgeX - ex, ddz = edgeZ - ez;
+                float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz));
+                float pitch = (float) -Math.toDegrees(Math.atan2(top - 3 - (ground + 9), Math.hypot(ddx, ddz)));
+                LOGGER.info("Biome tour: a camphor wood's edge at {} {}, seen from {} {}", edgeX, edgeZ, ex, ez);
+                teleport(mc, ex + 0.5, ground + 9, ez + 0.5, yaw, pitch);
+                return;
+            }
+        }
+        LOGGER.info("Biome tour: no camphor wood edge found near {}", target);
     }
 
     /** From 170 blocks south of the target and 70 above the ground there, looking at it. */

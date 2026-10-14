@@ -45,6 +45,8 @@ public final class MurimWorldgen {
     public static final DeferredHolder<Feature<?>, ShallowPondFeature> SHALLOW_POND = FEATURES.register("shallow_pond", ShallowPondFeature::new);
     public static final DeferredHolder<Feature<?>, GroundBodyFeature> GROUND_BODY = FEATURES.register("ground_body", GroundBodyFeature::new);
     public static final DeferredHolder<Feature<?>, TieredPineFeature> TIERED_PINE = FEATURES.register("tiered_pine", TieredPineFeature::new);
+    public static final DeferredHolder<Feature<?>, com.murimblock.world.feature.CamphorTreeFeature> CAMPHOR_TREE =
+            FEATURES.register("camphor_tree", com.murimblock.world.feature.CamphorTreeFeature::new);
     public static final DeferredHolder<Feature<?>, WaterlandsFeature> WATERLANDS = FEATURES.register("waterlands", WaterlandsFeature::new);
     public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES =
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Murimblock.MOD_ID);
