@@ -99,14 +99,18 @@ public final class CultivationService {
 
     /** How rich in Qi the place where the player is: the sanctuary, the peaks, a Murim land, the inner world. */
     public static CultivationRules.Place placeOf(ServerPlayer player) {
-        var level = player.serverLevel();
+        return placeAt(player.serverLevel(), player.blockPosition(), player.getY());
+    }
+
+    /** How rich in Qi this spot is (see placeOf). */
+    public static CultivationRules.Place placeAt(net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos pos, double y) {
         if (com.murimblock.cultivation.inner.InnerWorldService.isInnerWorld(level)) return CultivationRules.Place.INNER_WORLD;
         if (level.dimension() == net.minecraft.world.level.Level.OVERWORLD
-                && com.murimblock.world.structure.SanctuaryPlacement.near(level, player.blockPosition(), SANCTUARY_REACH)) {
+                && com.murimblock.world.structure.SanctuaryPlacement.near(level, pos, SANCTUARY_REACH)) {
             return CultivationRules.Place.POWER;
         }
-        if (player.getY() > CultivationRules.HIGH_Y) return CultivationRules.Place.HIGH;
-        if (level.getBiome(player.blockPosition()).is(com.murimblock.world.MurimBiomes.MURIM_TAG)) return CultivationRules.Place.MURIM_LAND;
+        if (y > CultivationRules.HIGH_Y) return CultivationRules.Place.HIGH;
+        if (level.getBiome(pos).is(com.murimblock.world.MurimBiomes.MURIM_TAG)) return CultivationRules.Place.MURIM_LAND;
         return CultivationRules.Place.ORDINARY;
     }
 

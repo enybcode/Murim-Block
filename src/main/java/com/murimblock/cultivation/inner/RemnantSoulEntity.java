@@ -22,10 +22,11 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * The remnant soul of an old master who dwells in a cultivator's inner world (a classic of the genre: a soul hidden in
- * the dantian). It does not fight and cannot be hurt; spoken to, it gives the day's missions (InnerMissions). Drawn with
+ * the dantian). It does not fight and cannot be hurt; spoken to, it talks (SoulDialogue): the day's missions, advice, and
+ * at the gate of a realm, the trial against oneself. Drawn with
  * GeckoLib: a legless ghost whose robe thins into a tail of mist (scripts/animation/remnant-soul.cjs).
  */
-public class RemnantSoulEntity extends PathfinderMob implements GeoEntity {
+public class RemnantSoulEntity extends PathfinderMob implements GeoEntity, com.murimblock.dialogue.DialogueService.Speaker {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("idle");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     /** Client side: the last tick its renderer let a wisp of Qi go. */
@@ -81,8 +82,13 @@ public class RemnantSoulEntity extends PathfinderMob implements GeoEntity {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
-        if (player instanceof ServerPlayer server) InnerMissions.talk(server, this);
+        if (player instanceof ServerPlayer server) SoulDialogue.greet(server, this);
         return InteractionResult.sidedSuccess(level().isClientSide);
+    }
+
+    @Override
+    public void choose(ServerPlayer player, String option) {
+        SoulDialogue.choose(player, this, option);
     }
 
     @Override

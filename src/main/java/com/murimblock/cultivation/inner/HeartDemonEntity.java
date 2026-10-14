@@ -36,7 +36,7 @@ import net.minecraft.world.level.Level;
 /**
  * The Heart Demon (心魔): a cultivator's own darkness, faced in the inner world at each great breakthrough. A dark copy
  * of its owner, wearing their skin and their main style (a sword for the Azure Cloud Sword, bare fists for the Long
- * Fist), as strong as they are, less what they prepared (InnerWorldService). Slain, the realm opens; it wins, the Qi
+ * Fist), with all their stats; how hard its blows land depends on what they prepared (InnerWorldService). Slain, the realm opens; it wins, the Qi
  * deviates. As a "shadow", the same double half as strong: a sparring mission that costs nothing.
  */
 public class HeartDemonEntity extends Monster {
@@ -61,20 +61,28 @@ public class HeartDemonEntity extends Monster {
                 .add(Attributes.FOLLOW_RANGE, 48).add(Attributes.KNOCKBACK_RESISTANCE, 0.3));
     }
 
-    /** Takes its owner's shape: their skin and style, their health and blows scaled by `strength`. */
-    public void setup(ServerPlayer owner, double strength, boolean shadow) {
+    /**
+     * Takes its owner's shape: their skin and style, and their very stats: the same health, armour and blows (the realm's
+     * bonuses included), and the same sword if they fight with one. A shadow has half of it all.
+     */
+    public void setup(ServerPlayer owner, boolean shadow) {
+        double strength = shadow ? com.murimblock.cultivation.CultivationRules.SHADOW_STRENGTH : 1.0;
         entityData.set(OWNER, Optional.of(owner.getUUID()));
         entityData.set(SHADOW, shadow);
         Optional<net.minecraft.resources.ResourceLocation> art = MartialService.data(owner).mainArt();
         entityData.set(ART, art.map(Object::toString).orElse(""));
         ownerCultivation = CultivationService.getCultivation(owner);
         boolean sword = art.filter(MartialArts.AZURE_CLOUD_SWORD::equals).isPresent();
-        setItemSlot(EquipmentSlot.MAINHAND, sword ? new ItemStack(Items.IRON_SWORD) : ItemStack.EMPTY);
+        ItemStack held = owner.getMainHandItem();
+        ItemStack weapon = !sword ? ItemStack.EMPTY : held.is(net.minecraft.tags.ItemTags.SWORDS) ? held.copyWithCount(1) : new ItemStack(Items.IRON_SWORD);
+        setItemSlot(EquipmentSlot.MAINHAND, weapon);
         setDropChance(EquipmentSlot.MAINHAND, 0);
-        double health = Math.max(20, owner.getMaxHealth() * 1.2 * strength);
+        double health = Math.max(1, owner.getMaxHealth() * strength);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
         setHealth((float) health);
-        // Its blows: its owner's own (a bare hand, harder with the realm; the sword adds its own), scaled.
+        getAttribute(Attributes.ARMOR).setBaseValue(owner.getAttributeValue(Attributes.ARMOR) * strength);
+        getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(owner.getAttributeValue(Attributes.ARMOR_TOUGHNESS) * strength);
+        // Its blows: its owner's own (a bare hand, harder with the realm; the sword adds its own).
         var bonuses = com.murimblock.cultivation.CultivationRules.bonuses(ownerCultivation.realm());
         double attack = (1 + (sword ? 0 : bonuses.fist())) * (1 + bonuses.damage()) * strength;
         getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(Math.max(0.5, attack));

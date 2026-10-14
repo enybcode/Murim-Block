@@ -10,6 +10,8 @@ import com.murimblock.cultivation.MeditationService;
 import com.murimblock.cultivation.QiSense;
 import com.murimblock.cultivation.inner.HeartDemonEntity;
 import com.murimblock.cultivation.inner.InnerMissions;
+import com.murimblock.cultivation.inner.SoulDialogue;
+import com.murimblock.dialogue.DialogueService;
 import com.murimblock.cultivation.inner.InnerWorldService;
 import com.murimblock.cultivation.inner.MeditatingBodyEntity;
 import com.murimblock.cultivation.inner.QiMoteEntity;
@@ -248,30 +250,108 @@ public final class CultivationGameTests {
         });
     }
 
-    @GameTest(template = "foundation_arena", batch = "cultivation_demon_won", timeoutTicks = 100)
-    public static void slainHeartDemonOpensTheNextRealm(GameTestHelper helper) {
+    /** A cultivator at the gate of Qi Guiding (the Peak of Qi Sensing, Qi Max full), seated with a full reserve. */
+    private static ServerPlayer atTheGate(GameTestHelper helper) {
         ServerPlayer player = cultivator(helper);
         CultivationService.gainQiMax(player, 500, CultivationService.Source.COMMAND);
         helper.assertTrue(MeditationService.start(player), "Could not sit down");
         QiService.refillQi(player);
+        return player;
+    }
+
+    private static List<HeartDemonEntity> demonsOf(ServerPlayer player) {
+        return player.serverLevel().getEntitiesOfClass(HeartDemonEntity.class, player.getBoundingBox().inflate(60),
+                d -> !d.shadow() && d.isAlive() && player.getUUID().equals(d.owner()));
+    }
+
+    @GameTest(template = "foundation_arena", batch = "cultivation_demon_won", timeoutTicks = 220)
+    public static void slainHeartDemonOpensTheNextRealm(GameTestHelper helper) {
+        ServerPlayer player = atTheGate(helper);
         helper.assertTrue(InnerWorldService.enter(player), "Could not open the inner world at the gate");
         // A mock player never acknowledges its teleport: it would stay invulnerable, as one changing dimension.
         player.hasChangedDimension();
+        helper.assertTrue(demonsOf(player).isEmpty(), "A Heart Demon rose before the trial was accepted");
+        // A mock player keeps no chunk loaded (a real one's view does): the demon's spot held for the test.
+        net.minecraft.world.level.ChunkPos spot = new net.minecraft.world.level.ChunkPos(InnerWorldService.layoutOf(player).demon());
         ServerLevel inner = player.serverLevel();
-        List<HeartDemonEntity> demons = inner.getEntitiesOfClass(HeartDemonEntity.class, player.getBoundingBox().inflate(30));
-        helper.assertTrue(demons.size() == 1 && !demons.get(0).shadow(), "No Heart Demon at the gate");
-        HeartDemonEntity demon = demons.get(0);
-        helper.assertTrue(player.getUUID().equals(demon.owner()), "The demon is not the player's");
-        helper.assertTrue(Math.abs(demon.getMaxHealth() - 24) < 1e-3, "The demon should have 1.2 x the player's health: " + demon.getMaxHealth());
-        demon.hurt(player.damageSources().playerAttack(player), 1000);
-        helper.assertTrue(!demon.isAlive(), "The demon did not die");
-        tickFor(helper, player, 1, 50);
-        helper.runAfterDelay(52, () -> {
+        inner.setChunkForced(spot.x, spot.z, true);
+        helper.runAfterDelay(InnerWorldService.TRIAL_RISE_TICKS + 84, () -> inner.setChunkForced(spot.x, spot.z, false));
+        helper.assertTrue(InnerWorldService.beginTrial(player), "The trial could not begin at the gate");
+        helper.assertTrue(!InnerWorldService.beginTrial(player), "The trial began twice");
+        // The demon rises, then comes into view (an entity is seen a few ticks after it is added).
+        tickFor(helper, player, 1, InnerWorldService.TRIAL_RISE_TICKS + 30);
+        helper.runAfterDelay(InnerWorldService.TRIAL_RISE_TICKS + 32, () -> {
+            List<HeartDemonEntity> demons = demonsOf(player);
+            int all = 0;
+            for (var e : player.serverLevel().getAllEntities()) if (e instanceof HeartDemonEntity) all++;
+            helper.assertTrue(demons.size() == 1, "No Heart Demon after the trial began: " + demons.size() + " (in the level: " + all + ", underway "
+                    + InnerWorldService.trialUnderway(player) + ", inside " + InnerWorldService.isInside(player) + ", time " + player.level().getGameTime() + ")");
+            HeartDemonEntity demon = demons.get(0);
+            // A double with all its owner's stats.
+            helper.assertTrue(Math.abs(demon.getMaxHealth() - player.getMaxHealth()) < 1e-3, "The demon should have the player's health: " + demon.getMaxHealth());
+            helper.assertTrue(Math.abs(demon.getAttributeValue(Attributes.ARMOR) - player.getAttributeValue(Attributes.ARMOR)) < 1e-3, "The demon should have the player's armour");
+            // Its blow lands as the preparation leaves it (none here: its full weight).
+            float expected = (float) (4 * InnerWorldService.session(player).strength());
+            float blow = InnerWorldService.demonBlow(player, player.damageSources().mobAttack(demon), 4);
+            helper.assertTrue(Math.abs(blow - expected) < 1e-3, "The demon's blow should weigh " + expected + ", weighs " + blow);
+            helper.assertTrue(InnerWorldService.demonBlow(player, player.damageSources().generic(), 4) == 4, "Another blow was weighed");
+            demon.hurt(player.damageSources().playerAttack(player), 1000);
+            helper.assertTrue(!demon.isAlive(), "The demon did not die");
+        });
+        tickFor(helper, player, InnerWorldService.TRIAL_RISE_TICKS + 33, 50);
+        helper.runAfterDelay(InnerWorldService.TRIAL_RISE_TICKS + 85, () -> {
             helper.assertTrue(!InnerWorldService.isInside(player), "Still in the inner world after the victory");
             helper.assertTrue(CultivationService.getRealm(player) == CultivationRealm.QI_GUIDING, "No great breakthrough: " + CultivationService.getCultivation(player));
             helper.assertTrue(player.getMaxHealth() == 24, "Qi Guiding's bonuses not given");
             end(helper, player);
         });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "cultivation_trial_dialogue", timeoutTicks = 60)
+    public static void theOldMasterOffersTheTrialAndWaitingCostsNothing(GameTestHelper helper) {
+        ServerPlayer player = atTheGate(helper);
+        helper.assertTrue(InnerWorldService.enter(player), "Could not open the inner world at the gate");
+        player.hasChangedDimension();
+        tickFor(helper, player, 1, 20);
+        helper.runAfterDelay(22, () -> {
+            RemnantSoulEntity soul = player.serverLevel().getEntitiesOfClass(RemnantSoulEntity.class, player.getBoundingBox().inflate(60)).get(0);
+            // The first meeting, then the gate: the answers offered.
+            SoulDialogue.greet(player, soul);
+            helper.assertTrue(key(DialogueService.last(player)).endsWith(".first"), "The first words are not the first meeting: " + key(DialogueService.last(player)));
+            SoulDialogue.greet(player, soul);
+            var gate = DialogueService.last(player);
+            helper.assertTrue(key(gate).endsWith(".gate") && options(gate).equals(List.of("beyond", "ready", "not_yet")), "At the gate he should offer the trial: " + key(gate) + options(gate));
+            SoulDialogue.choose(player, soul, "beyond");
+            SoulDialogue.choose(player, soul, "myself");
+            SoulDialogue.choose(player, soul, "ready");
+            helper.assertTrue(options(DialogueService.last(player)).equals(List.of("summon", "not_yet")), "No warning before the trial");
+            // Not yet: no demon, and leaving now costs nothing.
+            SoulDialogue.choose(player, soul, "not_yet");
+            helper.assertTrue(!InnerWorldService.trialUnderway(player), "Declining began the trial");
+            InnerWorldService.leave(player, InnerWorldService.Exit.WOKE);
+            helper.assertTrue(!player.hasEffect(CultivationRegistries.QI_DEVIATION) && CultivationService.journal(player).failures() == 0,
+                    "Leaving before the trial deviated the Qi");
+            // No mission at the gate: the Qi can grow no more in this realm.
+            end(helper, player);
+        });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "cultivation_hold")
+    public static void theInnerWorldOpensOnlyAfterFifteenSecondsSeated(GameTestHelper helper) {
+        ServerPlayer player = seated(helper);
+        // A client claiming a full hold right after sitting down is not heard.
+        MeditationService.held(player);
+        helper.assertTrue(!InnerWorldService.isInside(player), "The inner world opened without the fifteen seconds");
+        helper.assertTrue(MeditationService.ENTER_HOLD_TICKS == 300, "Entering should take fifteen seconds");
+        end(helper, player);
+    }
+
+    private static String key(com.murimblock.network.DialoguePayloads.Page page) {
+        return page != null && page.line().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t ? t.getKey() : "";
+    }
+
+    private static List<String> options(com.murimblock.network.DialoguePayloads.Page page) {
+        return page == null ? List.of() : page.options().stream().map(com.murimblock.network.DialoguePayloads.Option::id).toList();
     }
 
     @GameTest(template = "foundation_arena", batch = "cultivation_demon_lost", timeoutTicks = 60)
@@ -329,7 +409,9 @@ public final class CultivationGameTests {
         tickFor(helper, player, 1, 20);
         helper.runAfterDelay(22, () -> {
             soul[0] = inner.getEntitiesOfClass(RemnantSoulEntity.class, player.getBoundingBox().inflate(40)).get(0);
-            InnerMissions.talk(player, soul[0]);
+            SoulDialogue.choose(player, soul[0], "train");
+            helper.assertTrue(options(DialogueService.last(player)).contains("storm"), "The first mission offered is not the storm");
+            SoulDialogue.choose(player, soul[0], "storm");
         });
         helper.runAfterDelay(26, () -> {
             List<QiMoteEntity> motes = inner.getEntitiesOfClass(QiMoteEntity.class, player.getBoundingBox().inflate(40));
@@ -342,7 +424,7 @@ public final class CultivationGameTests {
             double reward = CultivationRules.missionReward(CultivationRealm.QI_SENSING, CultivationRules.STORM_SHARE);
             helper.assertTrue(Math.abs(QiService.getQiMax(player) - before - reward) < 1e-6, "The storm's reward not given");
             helper.assertTrue(CultivationService.journal(player).missionDone("storm", inner.getGameTime()), "The storm not marked done today");
-            InnerMissions.talk(player, soul[0]);
+            SoulDialogue.choose(player, soul[0], "sparring");
         });
         helper.runAfterDelay(31, () -> {
             List<HeartDemonEntity> shadows = inner.getEntitiesOfClass(HeartDemonEntity.class, player.getBoundingBox().inflate(40));
