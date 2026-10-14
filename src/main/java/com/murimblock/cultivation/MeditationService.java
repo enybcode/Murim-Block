@@ -96,10 +96,16 @@ public final class MeditationService {
         return true;
     }
 
-    /** The key held down while seated (or anywhere in the inner world): into the inner world, or back out of it. */
+    /** How long the meditation key is held, seated, to open the inner world (15 s), and anywhere inside to leave it (ticks). */
+    public static final int ENTER_HOLD_TICKS = 15 * 20, LEAVE_HOLD_TICKS = 30;
+
+    /**
+     * The key held down while seated (or anywhere in the inner world): into the inner world, or back out of it. One
+     * cannot have held it seated for longer than one has sat: a client claiming so sooner is not heard.
+     */
     public static void held(ServerPlayer player) {
         if (InnerWorldService.isInside(player)) InnerWorldService.leave(player, InnerWorldService.Exit.WOKE);
-        else if (isMeditating(player)) InnerWorldService.enter(player);
+        else if (isMeditating(player) && seatedFor(player) >= ENTER_HOLD_TICKS - 10) InnerWorldService.enter(player);
     }
 
     /** Every tick of a player: the aura's state for others, then the meditation itself. */

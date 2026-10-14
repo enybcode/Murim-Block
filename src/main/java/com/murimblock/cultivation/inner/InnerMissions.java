@@ -16,7 +16,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * The day's missions in the inner world, given by the remnant soul (docs/cultivation/qi-cultivation.md), each once per
+ * The day's missions in the inner world, given by the remnant soul (SoulDialogue) (docs/cultivation/qi-cultivation.md), each once per
  * in-game day, each worth a share of the realm's span of Qi Max:
  * <ul>
  *   <li><b>Gather the Scattered Qi</b>: motes of Qi drift over the island; touch them all within a minute;</li>
@@ -55,26 +55,15 @@ public final class InnerMissions {
     private InnerMissions() {
     }
 
-    /** The remnant soul spoken to: the mission under way, or the next one of the day, or nothing more today. */
-    public static void talk(ServerPlayer player, RemnantSoulEntity soul) {
-        if (!InnerWorldService.isInside(player)) return;
-        if (InnerWorldService.session(player).breakthrough()) {
-            player.sendSystemMessage(Component.translatable("cultivation.murimblock.soul.demon_first"));
-            return;
-        }
+    /** The mission under way, if any. */
+    @javax.annotation.Nullable public static Mission running(ServerPlayer player) {
         Running running = RUNNING.get(player.getUUID());
-        if (running != null) {
-            player.sendSystemMessage(Component.translatable("cultivation.murimblock.soul.busy." + running.mission.id));
-            return;
-        }
-        long now = player.level().getGameTime();
-        CultivationJournal journal = CultivationService.journal(player);
-        for (Mission mission : Mission.values()) {
-            if (journal.missionDone(mission.id, now)) continue;
-            start(player, mission);
-            return;
-        }
-        player.sendSystemMessage(Component.translatable("cultivation.murimblock.soul.tomorrow"));
+        return running == null ? null : running.mission;
+    }
+
+    /** Given up (from the old master): the island cleared, nothing gained, nothing lost; it may be tried again today. */
+    public static void abandon(ServerPlayer player) {
+        if (RUNNING.remove(player.getUUID()) != null) InnerWorldService.clearIsland(player);
     }
 
     public static void start(ServerPlayer player, Mission mission) {
@@ -96,7 +85,7 @@ public final class InnerMissions {
             }
             level.playSound(null, c, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.2F);
         } else {
-            InnerWorldService.summonDemon(player, level, layout, CultivationRules.SHADOW_STRENGTH, true);
+            InnerWorldService.summonDemon(player, level, layout, true);
         }
     }
 
