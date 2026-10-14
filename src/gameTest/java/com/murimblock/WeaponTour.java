@@ -258,6 +258,15 @@ public final class WeaponTour {
             // On the spot: the client is told the bandit walks (Epic Fight's client animator picks the walk or the run from it).
             seen.walkAnimation.setSpeed(t.motion() == LivingMotions.CHASE ? 0.95F : 0.55F);
         }
+        if (t.actor() == Actor.AXE && seen != null) {
+            // Epic Fight walks a player from the movement keys its own client sends; this one has none: forward, held
+            // while it walks or runs, released otherwise.
+            PlayerPatch<?> remote = EpicFightCapabilities.getEntityPatch(seen, PlayerPatch.class);
+            if (remote != null) {
+                remote.dx = 0;
+                remote.dz = moving && at > 2 ? 1 : 0;
+            }
+        }
         if (moving && t.actor() == Actor.AXE && at > 2) {
             double step = t.motion() == LivingMotions.RUN ? SPRINT_SPEED : WALK_SPEED;
             server.execute(() -> {
@@ -372,6 +381,9 @@ public final class WeaponTour {
             LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
             LivingMotion motion = patch == null ? null : patch.getCurrentLivingMotion();
             check(motion == t.motion(), what + ": living motion " + motion);
+            if (t.actor() == Actor.AXE && t.motion() != LivingMotions.IDLE) {
+                report.add(String.format("info   %s: z from %.2f, server %.2f, client %.2f", what, baseZ, wielder.getZ(), seen.getZ()));
+            }
         }
     }
 
