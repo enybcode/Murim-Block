@@ -118,8 +118,9 @@ public final class MartialTour {
                 manual.use(level, self, InteractionHand.MAIN_HAND);
                 check(MartialService.data(self).hasTechnique(MartialArts.CLOUD_STEP_SLASH.id()), "reading the manual teaches Cloud Step Slash");
             });
-            // The Techniques tab, Cloud Step Slash selected.
+            // The Techniques tab: the library of manuals, then the manual open on Cloud Step Slash.
             case 30 -> mc.setScreen(MurimProfileScreen.techniques());
+            case 33 -> capture(mc, "00-library.png");
             case 34 -> {
                 var screen = (MurimProfileScreen) mc.screen;
                 screen.selectForTests(MartialArts.CLOUD_STEP_SLASH.id());
