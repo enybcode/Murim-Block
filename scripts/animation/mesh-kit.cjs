@@ -130,9 +130,10 @@ function tilt(p, [x, y, z]) {
 /** Blockbench pixels to Epic Fight's mesh space: blocks, z up, the front toward +y. */
 const toMesh = ([x, y, z]) => [x / 16, -z / 16, y / 16];
 
-function mesh(pieces, atlas) {
+/** The mesh of `pieces` (a HumanoidMesh's parts by default; an armour's mesh names its own, e.g. torso, leftArm, rightArm). */
+function mesh(pieces, atlas, partNames = PARTS) {
   const positions = [], uvs = [], normals = [], vcounts = [], vindices = [], weights = [1, 0.5];
-  const parts = Object.fromEntries(PARTS.map(n => [n, []]));
+  const parts = Object.fromEntries(partNames.map(n => [n, []]));
   const normalIndex = n => {
     for (let i = 0; i < normals.length; i += 3) if (Math.abs(normals[i] - n[0]) + Math.abs(normals[i + 1] - n[1]) + Math.abs(normals[i + 2] - n[2]) < 1e-4) return i / 3;
     normals.push(...n); return normals.length / 3 - 1;

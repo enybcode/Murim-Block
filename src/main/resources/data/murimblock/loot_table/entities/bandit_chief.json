@@ -38,6 +38,20 @@
           ]
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        { "condition": "minecraft:killed_by_player" },
+        { "condition": "minecraft:random_chance_with_enchanted_bonus", "enchantment": "minecraft:looting", "unenchanted_chance": 0.2,
+          "enchanted_chance": { "type": "minecraft:linear", "base": 0.25, "per_level_above_first": 0.05 } }
+      ],
+      "entries": [
+        { "type": "minecraft:item", "name": "murimblock:chief_brow_band" },
+        { "type": "minecraft:item", "name": "murimblock:chief_lamellar_vest" },
+        { "type": "minecraft:item", "name": "murimblock:chief_tassets" },
+        { "type": "minecraft:item", "name": "murimblock:chief_fur_boots" }
+      ]
     }
   ]
 }

@@ -34,7 +34,8 @@ corde rouge, anneaux de bronze, houppe rouge. Tenue à deux mains (une grande é
   sur la boucle, grandes respirations, un regard à gauche, la nuque roulée, le menton levé. Son visage vit (`MobFaces`) :
   clignements, coups d'œil de son œil valide (l'œil balafré ne bouge pas), marmonnement ; en combat les sourcils se
   nouent, il montre les dents quand il frappe.
-- Butin : 4 à 9 pépites d'or, cuir, viande cuite ; sa hache 3 fois sur 100 (le Pillage l'augmente comme tout équipement tenu). 40 XP, 20 Qi (+80 à la première victoire).
+- Butin : 4 à 9 pépites d'or, cuir, viande cuite ; sa hache 3 fois sur 100 (le Pillage l'augmente comme tout équipement tenu) ;
+  tué par un joueur, une pièce de son armure une fois sur cinq (+5 % par niveau de Pillage), jamais deux à la fois. 40 XP, 20 Qi (+80 à la première victoire).
 
 ## Fichiers
 
@@ -50,6 +51,16 @@ corde rouge, anneaux de bronze, houppe rouge. Tenue à deux mains (une grande é
   corps par la hache ou les mains, la prise cède un peu (main déplacée de 0,3 bloc au plus, hache tournée de 35° au plus,
   chaque main à portée de son épaule) ; entre deux poses, une pose intermédiaire est ajoutée là où les articulations
   feraient passer la hache dans le corps ; le script signale ce qui reste (`check`).
+- Armure du chef, pour le joueur (`Chief's Iron Brow Band`, `Chief's Lamellar Vest`, `Chief's Lamellar Tassets`,
+  `Chief's Fur Boots`) : son allure à taille d'homme. Bandeau de fer à plaque de tigre, oreillettes, couronne de bronze et
+  rubans rouges ; cuirasse de lamelles lacées de rouge, ceinture à boucle de tigre, peau de tigre dans le dos et sur
+  l'épaule gauche (sa tête sur l'épaule), spalière à pointe à droite, brassards ; pantalon cramoisi et tassettes
+  lamellaires ; bottes à revers de fourrure. 17 d'armure et 4 de robustesse à quatre pièces (entre fer et diamant),
+  durabilité 25, réparée au fer (`MurimArmorMaterials.CHIEF_LAMELLAR`). `scripts/animation/chief-armor.cjs` → les
+  meshes Epic Fight `animmodels/armor/<pièce>.json` (Epic Fight dessine l'armure d'un mod avec le mesh qu'il y trouve,
+  dans la texture qu'il nomme : `textures/models/armor/chief_lamellar_3d.png`), l'armure plate de Minecraft
+  (`chief_lamellar_layer_1/2.png`, sans Epic Fight), les icônes, `art/blockbench/chief_armor.bbmodel`. Vue en vrai
+  client : `MURIM_TOUR_ONLY=armour gradlew -PgameTests runWeaponTour`.
 - Code : `BanditChiefEntity`, `BanditChiefPatch`, `BanditChiefRenderer`, `MurimAnimations.buildBanditChief`.
 - Tests : `BanditChiefGameTests` (hache à deux mains, ses attaques, chacune parée, l'onde de choc) ; captures
   `32-chief.png`, `33-chief-front.png`, `chief-cleave/`, `chief-sweep/`, `chief-slam/` du smoke client.

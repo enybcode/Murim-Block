@@ -69,8 +69,10 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
  *   <li>a player (a server player on a mock connection) with the Bandit Chief's great axe: standing, walking, running
  *   (it really moves; Epic Fight walks a player that moves) and its M1 chain, read from the axe itself: the combo,
  *   the dash attack and the air attack.</li>
+ *   <li>the same player in the Bandit Chief's armour (its four pieces, Epic Fight's armour meshes): standing, walking,
+ *   running and the axe's first two M1s.</li>
  * </ul>
- * MURIM_TOUR_ONLY=bandit or =axe films one of the two. The camera follows the actor (the cuts carry it forward), and
+ * MURIM_TOUR_ONLY=bandit, =axe or =armour films one of them. The camera follows the actor (the cuts carry it forward), and
  * Epic Fight's red outline of the aimed-at entity is turned off. Frames go to
  * build/weapon-tour-run/screenshots/&lt;take&gt;/&lt;side&gt;/, the report to weapon-tour-report.txt.
  */
@@ -87,7 +89,8 @@ public final class WeaponTour {
     private static final double WALK_SPEED = 0.216, SPRINT_SPEED = 0.28;
 
     /** Who is filmed. */
-    private enum Actor { BANDIT, AXE }
+    /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
+    private enum Actor { BANDIT, AXE, ARMOUR }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -137,6 +140,10 @@ public final class WeaponTour {
         TAKES.add(new Take("axe-" + name, Actor.AXE, side, null, combo, motion, frames, every));
     }
 
+    private static void armour(String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("armour-" + name, Actor.ARMOUR, side, null, combo, motion, frames, every));
+    }
+
     /** The takes, listed once in game: the animations' accessors are only filled in once Epic Fight has built them. */
     private static void listTakes() {
         // The bandit standing: one picture from each side, then its 5 s loop.
@@ -166,6 +173,14 @@ public final class WeaponTour {
         String[] chain = {"m1-1", "m1-2", "dash", "air"};
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT, Side.TOP)) {
             for (int i = 0; i < chain.length; i++) axe(chain[i], side, i, null, 24, 1);
+        }
+        // The same player in the chief's armour: from every side standing, walking and running, two M1s.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT, Side.TOP)) armour("idle", side, -1, LivingMotions.IDLE, 1, 1);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.BACK)) armour("walk", side, -1, LivingMotions.WALK, 16, 2);
+        armour("run", Side.RIGHT, -1, LivingMotions.RUN, 12, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.BACK)) {
+            armour("m1-1", side, 0, null, 24, 1);
+            armour("m1-2", side, 1, null, 24, 1);
         }
         String only = System.getenv("MURIM_TOUR_ONLY");
         if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().equalsIgnoreCase(only.trim()));
@@ -258,7 +273,7 @@ public final class WeaponTour {
             // On the spot: the client is told the bandit walks (Epic Fight's client animator picks the walk or the run from it).
             seen.walkAnimation.setSpeed(t.motion() == LivingMotions.CHASE ? 0.95F : 0.55F);
         }
-        if (t.actor() == Actor.AXE && seen != null) {
+        if (t.actor() != Actor.BANDIT && seen != null) {
             // Epic Fight walks a player from the movement keys its own client sends; this one has none: forward, held
             // while it walks or runs, released otherwise.
             PlayerPatch<?> remote = EpicFightCapabilities.getEntityPatch(seen, PlayerPatch.class);
@@ -267,7 +282,7 @@ public final class WeaponTour {
                 remote.dz = moving && at > 2 ? 1 : 0;
             }
         }
-        if (moving && t.actor() == Actor.AXE && at > 2) {
+        if (moving && t.actor() != Actor.BANDIT && at > 2) {
             double step = t.motion() == LivingMotions.RUN ? SPRINT_SPEED : WALK_SPEED;
             server.execute(() -> {
                 wielder.moveTo(wielder.getX(), baseY, wielder.getZ() + step, 0, 0);
@@ -325,6 +340,12 @@ public final class WeaponTour {
             wielder.setYBodyRot(0);
             wielder.setOnGround(lift == 0);
             wielder.setSprinting(t.motion() == LivingMotions.RUN);
+            // The chief's armour on for its takes, off for the axe's.
+            boolean armoured = t.actor() == Actor.ARMOUR;
+            wielder.setItemSlot(EquipmentSlot.HEAD, armoured ? new ItemStack(MurimItems.CHIEF_BROW_BAND.get()) : ItemStack.EMPTY);
+            wielder.setItemSlot(EquipmentSlot.CHEST, armoured ? new ItemStack(MurimItems.CHIEF_LAMELLAR_VEST.get()) : ItemStack.EMPTY);
+            wielder.setItemSlot(EquipmentSlot.LEGS, armoured ? new ItemStack(MurimItems.CHIEF_TASSETS.get()) : ItemStack.EMPTY);
+            wielder.setItemSlot(EquipmentSlot.FEET, armoured ? new ItemStack(MurimItems.CHIEF_FUR_BOOTS.get()) : ItemStack.EMPTY);
         }
         Side s = t.side();
         double y = t.name().equals("axe-air") ? baseY + 1.4 : baseY;
@@ -381,7 +402,7 @@ public final class WeaponTour {
             LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
             LivingMotion motion = patch == null ? null : patch.getCurrentLivingMotion();
             check(motion == t.motion(), what + ": living motion " + motion);
-            if (t.actor() == Actor.AXE && t.motion() != LivingMotions.IDLE) {
+            if (t.actor() != Actor.BANDIT && t.motion() != LivingMotions.IDLE) {
                 report.add(String.format("info   %s: z from %.2f, server %.2f, client %.2f", what, baseZ, wielder.getZ(), seen.getZ()));
             }
         }

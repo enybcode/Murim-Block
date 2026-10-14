@@ -10,6 +10,9 @@ import com.murimblock.item.MurimItems;
 import com.murimblock.mob.BanditChiefEntity;
 import com.murimblock.mob.MurimEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,6 +23,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import yesman.epicfight.api.animation.AnimationManager;
@@ -217,5 +224,57 @@ public final class BanditChiefGameTests {
             cleanup(player);
             helper.succeed();
         });
+    }
+
+    /** His armour, the four pieces together: 17 armour and 4 toughness, between iron (15, 0) and diamond (20, 8). */
+    @GameTest(template = "foundation_arena", batch = "chief_armour")
+    public static void hisArmourIsBetweenIronAndDiamond(GameTestHelper helper) {
+        int armour = 0;
+        float toughness = 0;
+        for (var piece : java.util.List.of(MurimItems.CHIEF_BROW_BAND, MurimItems.CHIEF_LAMELLAR_VEST, MurimItems.CHIEF_TASSETS, MurimItems.CHIEF_FUR_BOOTS)) {
+            armour += piece.get().getDefense();
+            toughness += piece.get().getToughness();
+        }
+        helper.assertTrue(armour == 17, "The chief's armour should give 17, not " + armour);
+        helper.assertTrue(Math.abs(toughness - 4) < 0.01, "The chief's armour should give toughness 4, not " + toughness);
+        helper.assertTrue(MurimItems.CHIEF_LAMELLAR_VEST.get().getEquipmentSlot() == EquipmentSlot.CHEST, "The vest is not worn on the chest");
+        helper.succeed();
+    }
+
+    /**
+     * Killed by a player, the chief drops one piece of his armour about one time in five (never two at once), any of
+     * the four; killed by anything else, none.
+     */
+    @GameTest(template = "foundation_arena", batch = "chief_armour_drop")
+    public static void heDropsAPieceOfHisArmourNowAndThen(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        BanditChiefEntity chief = chief(helper, new BlockPos(2, 1, 2));
+        LootTable table = helper.getLevel().getServer().reloadableRegistries().getLootTable(ResourceKey.create(Registries.LOOT_TABLE,
+                ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "entities/bandit_chief")));
+        var pieces = java.util.Set.of(MurimItems.CHIEF_BROW_BAND.get(), MurimItems.CHIEF_LAMELLAR_VEST.get(),
+                MurimItems.CHIEF_TASSETS.get(), MurimItems.CHIEF_FUR_BOOTS.get());
+        int rolls = 400, dropped = 0;
+        var seen = new java.util.HashSet<net.minecraft.world.item.Item>();
+        for (boolean byPlayer : new boolean[] {true, false}) {
+            LootParams.Builder params = new LootParams.Builder(helper.getLevel())
+                    .withParameter(LootContextParams.THIS_ENTITY, chief)
+                    .withParameter(LootContextParams.ORIGIN, chief.position())
+                    .withParameter(LootContextParams.DAMAGE_SOURCE, byPlayer ? helper.getLevel().damageSources().playerAttack(player)
+                            : helper.getLevel().damageSources().generic());
+            if (byPlayer) params.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, player).withParameter(LootContextParams.ATTACKING_ENTITY, player);
+            LootParams built = params.create(LootContextParamSets.ENTITY);
+            for (int i = 0; i < rolls; i++) {
+                long armour = table.getRandomItems(built).stream().filter(stack -> pieces.contains(stack.getItem())).peek(stack -> seen.add(stack.getItem())).count();
+                helper.assertTrue(armour <= 1, "The chief dropped " + armour + " pieces of his armour at once");
+                if (!byPlayer) helper.assertTrue(armour == 0, "The chief dropped his armour without a player killing him");
+                dropped += byPlayer ? (int) armour : 0;
+            }
+        }
+        // One time in five: 80 of 400 expected, well within 50..115.
+        helper.assertTrue(dropped >= 50 && dropped <= 115, "The chief dropped his armour " + dropped + " times in " + rolls + ", not about one in five");
+        helper.assertTrue(seen.size() == 4, "Not every piece of his armour dropped: " + seen);
+        chief.discard();
+        cleanup(player);
+        helper.succeed();
     }
 }
