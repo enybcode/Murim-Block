@@ -106,7 +106,9 @@
     }
    },
    "type": "cube",
-   "uuid": "667a376a-a86b-4da9-ae93-6b61f4da5bb5"
+   "uuid": "667a376a-a86b-4da9-ae93-6b61f4da5bb5",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_chest",
@@ -194,7 +196,9 @@
     }
    },
    "type": "cube",
-   "uuid": "f7be7277-6eaf-4fd7-ac88-fe9ee32ae1bc"
+   "uuid": "f7be7277-6eaf-4fd7-ac88-fe9ee32ae1bc",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_belly",
@@ -282,7 +286,9 @@
     }
    },
    "type": "cube",
-   "uuid": "5f20d73d-0099-46b6-a228-f79201cefee3"
+   "uuid": "5f20d73d-0099-46b6-a228-f79201cefee3",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_arm_r",
@@ -370,7 +376,9 @@
     }
    },
    "type": "cube",
-   "uuid": "96a72e0e-a5fc-4d1d-a47e-ec1b2c525fba"
+   "uuid": "96a72e0e-a5fc-4d1d-a47e-ec1b2c525fba",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_forearm_r",
@@ -458,7 +466,9 @@
     }
    },
    "type": "cube",
-   "uuid": "e0291eb3-654d-4fbc-a368-1f278625ee13"
+   "uuid": "e0291eb3-654d-4fbc-a368-1f278625ee13",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_arm_l",
@@ -546,7 +556,9 @@
     }
    },
    "type": "cube",
-   "uuid": "74c8dcf0-f6e3-4513-ad25-8a64cbb70e8a"
+   "uuid": "74c8dcf0-f6e3-4513-ad25-8a64cbb70e8a",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_forearm_l",
@@ -634,7 +646,9 @@
     }
    },
    "type": "cube",
-   "uuid": "850d5e27-bc94-4262-a44a-ce8a301e7a83"
+   "uuid": "850d5e27-bc94-4262-a44a-ce8a301e7a83",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_thigh_r",
@@ -722,7 +736,9 @@
     }
    },
    "type": "cube",
-   "uuid": "2fe61b01-fcd5-4882-ac0b-cdcaf4bfbed8"
+   "uuid": "2fe61b01-fcd5-4882-ac0b-cdcaf4bfbed8",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_shin_r",
@@ -810,7 +826,9 @@
     }
    },
    "type": "cube",
-   "uuid": "42b8563d-8b84-435d-a619-f82248dd5814"
+   "uuid": "42b8563d-8b84-435d-a619-f82248dd5814",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_thigh_l",
@@ -898,7 +916,9 @@
     }
    },
    "type": "cube",
-   "uuid": "bcfffb75-780e-4d0b-a8ab-ff31465f533c"
+   "uuid": "bcfffb75-780e-4d0b-a8ab-ff31465f533c",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "body_shin_l",
@@ -986,7 +1006,9 @@
     }
    },
    "type": "cube",
-   "uuid": "2ecb19ec-8b5b-4769-a1fd-16f7d831dc83"
+   "uuid": "2ecb19ec-8b5b-4769-a1fd-16f7d831dc83",
+   "visibility": false,
+   "export": false
   },
   {
    "name": "veins_chest",

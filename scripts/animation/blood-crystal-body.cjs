@@ -6,8 +6,12 @@
 // forward), so they show in first person.
 // Apart from the body: ten small crystals of blood floating behind the back in a fan, each its own group (its pivot at its
 // middle) to be animated on its own: drifting, turning, flying off.
-// The changed skin is a layer a quarter pixel over the body (clear where the skin shows), the shards stand on it. A plain
-// body (its pieces named body_*) is in the project to see the change on; it is not part of it.
+// It is drawn over the player's own skin, whatever it is: a layer a quarter pixel over the body, clear where the skin
+// shows, the crusts and shards standing on it. A plain body (pieces body_*) is in the project to see it on, hidden and
+// not exported; it is not part of the change.
+// With --kit, the kit to implement it (build/blood-crystal-kit, zipped): the overlay as an Epic Fight skinned mesh on the
+// biped's joints (assets/murimblock/animmodels/overlay/blood_crystal_body.json), the floating crystals as a GeckoLib
+// model and its hover animation (geo/, animations/), the texture, previews, a README and a prompt for Codex.
 // On a player's body (Blockbench pixels: x the wearer's right, y up, z its back; it faces north, -z), each piece on the
 // biped joint that carries it, as the armours (chief-armor.cjs): the waist bends at 18, the elbows at 17.
 // Usage: node scripts/animation/blood-crystal-body.cjs
@@ -172,7 +176,59 @@ function project() {
       uuid: kit.stableId('blood_crystal_body/float/' + n) });
   }
   bb.outliner.push({ ...root, name: 'floating_crystals', origin: [0, 20, 8], children: groups, uuid: kit.stableId('blood_crystal_body/floating') });
+  // The plain body: shown off, never exported.
+  PIECES.forEach((p, i) => { if (p.name.startsWith('body_')) { bb.elements[i].visibility = false; bb.elements[i].export = false; } });
   return { bb, atlas, rows: Math.max(...faces.map(f => f.v + f.h)) };
+}
+
+/** Each overlay piece's mesh part, from its joint: the player's parts, so a renderer can hide an arm or a leg. */
+const PART_OF = { Chest: 'torso', Torso: 'torso', Arm_R: 'rightArm', Hand_R: 'rightArm', Arm_L: 'leftArm', Hand_L: 'leftArm',
+  Thigh_R: 'rightLeg', Leg_R: 'rightLeg', Thigh_L: 'leftLeg', Leg_L: 'leftLeg' };
+
+/**
+ * The overlay as an Epic Fight skinned mesh. A shard turned about any axes is a box Epic Fight cannot turn: its corners
+ * are turned here (about its root, x then y then z as Blockbench does) and written as they stand.
+ */
+function overlayMesh() {
+  const overlay = PIECES.filter(p => !p.name.startsWith('body_') && !p.crystal).map(p => ({ ...p, part: PART_OF[p.bone] }));
+  const turn = (p, [x, y, z]) => {
+    if (!p.rot) return [x, y, z];
+    const [ax, ay, az] = p.rot.map(a => a * Math.PI / 180), o = p.pivot;
+    let [a, b, c] = [x - o[0], y - o[1], z - o[2]];
+    [b, c] = [b * Math.cos(ax) - c * Math.sin(ax), b * Math.sin(ax) + c * Math.cos(ax)];
+    [a, c] = [a * Math.cos(ay) + c * Math.sin(ay), -a * Math.sin(ay) + c * Math.cos(ay)];
+    [a, b] = [a * Math.cos(az) - b * Math.sin(az), a * Math.sin(az) + b * Math.cos(az)];
+    return [a + o[0], b + o[1], c + o[2]];
+  };
+  const m = kit.mesh(overlay.map(p => (p.rot ? { ...p, turnCorner: c => turn(p, c) } : p)), ATLAS,
+    ['torso', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg']);
+  return { ...m, render_properties: { texture_path: 'murimblock:textures/entity/blood_crystal.png', transparent: false } };
+}
+
+/** The floating crystals as a GeckoLib (Bedrock) model: Bedrock's x runs the other way, so x and the turns about y flip. */
+function floatingGeo() {
+  const flipFace = { east: 'west', west: 'east' };
+  const bones = [{ name: 'floating_crystals', pivot: [0, 19, 13] }];
+  for (let n = 1; n <= 10; n++) {
+    const parts = PIECES.filter(p => p.crystal === n), c = parts[0].centre;
+    bones.push({ name: 'float_crystal_' + n, parent: 'floating_crystals', pivot: [-c[0], c[1], c[2]],
+      cubes: parts.map(p => ({
+        origin: [-p.to[0], p.from[1], p.from[2]], size: p.to.map((v, k) => Math.round((v - p.from[k]) * 1000) / 1000),
+        pivot: [-p.pivot[0], p.pivot[1], p.pivot[2]], rotation: [p.rot[0], -p.rot[1], -p.rot[2]],
+        uv: Object.fromEntries(kit.FACES.map(face => { const [u0, v0, u1, v1] = p.uv[face]; return [flipFace[face] || face, { uv: [u0, v0], uv_size: [u1 - u0, v1 - v0] }]; })),
+      })) });
+  }
+  return { format_version: '1.12.0', 'minecraft:geometry': [{ description: { identifier: 'geometry.blood_crystal_floating',
+    texture_width: ATLAS, texture_height: ATLAS, visible_bounds_width: 4, visible_bounds_height: 4, visible_bounds_offset: [0, 1.5, 0] }, bones }] };
+}
+
+/** Their hover: each bobs and turns on its own beat (GeckoLib, Molang; degrees). */
+function floatingAnimation() {
+  const bones = {};
+  for (let n = 1; n <= 10; n++)
+    bones['float_crystal_' + n] = { position: [0, `math.sin((query.anim_time + ${(n * 0.37).toFixed(2)}) * 120) * 0.7`, 0],
+      rotation: [0, `query.anim_time * ${n % 2 ? 90 : -70}`, 0] };
+  return { format_version: '1.8.0', animations: { 'animation.blood_crystal_floating.hover': { loop: true, animation_length: 12, bones } } };
 }
 
 if (require.main === module) {
@@ -182,6 +238,16 @@ if (require.main === module) {
   fs.writeFileSync(path.join(art, 'blood_crystal_body', 'blood_crystal.png'), atlas);
   fs.writeFileSync(path.join(art, 'blood_crystal_body.bbmodel'), JSON.stringify(bb, null, 1));
   console.log('wrote the blood-crystal body:', PIECES.length, 'pieces, atlas rows used', rows, 'of', ATLAS);
+  if (process.argv.includes('--kit')) {
+    const out = path.join(ROOT, 'build', 'blood-crystal-kit'), a = path.join(out, 'assets', 'murimblock');
+    for (const d of ['blockbench', 'animmodels/overlay', 'textures/entity', 'geo', 'animations']) fs.mkdirSync(d === 'blockbench' ? path.join(out, d) : path.join(a, d), { recursive: true });
+    fs.writeFileSync(path.join(out, 'blockbench', 'blood_crystal_body.bbmodel'), JSON.stringify(bb, null, 1));
+    fs.writeFileSync(path.join(a, 'textures', 'entity', 'blood_crystal.png'), atlas);
+    fs.writeFileSync(path.join(a, 'animmodels', 'overlay', 'blood_crystal_body.json'), JSON.stringify(overlayMesh()));
+    fs.writeFileSync(path.join(a, 'geo', 'blood_crystal_floating.geo.json'), JSON.stringify(floatingGeo(), null, 1));
+    fs.writeFileSync(path.join(a, 'animations', 'blood_crystal_floating.animation.json'), JSON.stringify(floatingAnimation(), null, 1));
+    console.log('wrote the kit in', out);
+  }
 }
 
 module.exports = { PIECES, BLOOD, project };

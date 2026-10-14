@@ -121,7 +121,9 @@ function corners(p, f) {
   }
 }
 
+/** A corner of a piece as it stands: turned by its own turnCorner (any axes) if it has one, else tilted about x. */
 function tilt(p, [x, y, z]) {
+  if (p.turnCorner) return p.turnCorner([x, y, z]);
   if (!p.tilt) return [x, y, z];
   const a = p.tilt * Math.PI / 180, [, py, pz] = p.pivot, dy = y - py, dz = z - pz;
   return [x, py + dy * Math.cos(a) - dz * Math.sin(a), pz + dy * Math.sin(a) + dz * Math.cos(a)];
