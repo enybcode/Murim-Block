@@ -271,6 +271,11 @@ public final class CultivationGameTests {
         // A mock player never acknowledges its teleport: it would stay invulnerable, as one changing dimension.
         player.hasChangedDimension();
         helper.assertTrue(demonsOf(player).isEmpty(), "A Heart Demon rose before the trial was accepted");
+        // A mock player keeps no chunk loaded (a real one's view does): the demon's spot held for the test.
+        net.minecraft.world.level.ChunkPos spot = new net.minecraft.world.level.ChunkPos(InnerWorldService.layoutOf(player).demon());
+        ServerLevel inner = player.serverLevel();
+        inner.setChunkForced(spot.x, spot.z, true);
+        helper.runAfterDelay(InnerWorldService.TRIAL_RISE_TICKS + 84, () -> inner.setChunkForced(spot.x, spot.z, false));
         helper.assertTrue(InnerWorldService.beginTrial(player), "The trial could not begin at the gate");
         helper.assertTrue(!InnerWorldService.beginTrial(player), "The trial began twice");
         // The demon rises, then comes into view (an entity is seen a few ticks after it is added).
