@@ -219,7 +219,7 @@ public final class CultivationTour {
                 demons(server).forEach(d -> check(Math.abs(d.getMaxHealth() - self(server).getMaxHealth()) < 1e-3, "the Heart Demon has its owner's health"));
             });
             case 336, 346, 354 -> KeyMapping.click(mc.options.keyAttack.getKey());
-            case 360 -> server.execute(() -> demons(server).forEach(d -> d.hurt(self(server).damageSources().playerAttack(self(server)), 1000)));
+            case 360 -> server.execute(() -> demons(server).forEach(d -> { d.setHealth(1); d.hurt(self(server).damageSources().playerAttack(self(server)), 1000); }));
             case 396 -> release(mc);
             case 412 -> {
                 check(!InnerWorldService.isInside(mc.player), "back in the body after the victory");

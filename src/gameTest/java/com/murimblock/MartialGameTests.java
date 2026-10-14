@@ -161,6 +161,56 @@ public final class MartialGameTests {
         }
     }
 
+    @GameTest(template = "foundation_arena", batch = "martial_power")
+    public static void aTechniqueStrikesAsItsWeaponAndItsQiAllow(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        try {
+            // An iron sword (6), 100 Qi Max: the technique as authored; 400 Qi Max: +24 %. (A tick puts the sword's attack on.)
+            player.doTick();
+            helper.assertTrue(Math.abs(com.murimblock.martial.TechniquePower.factor(player, MartialArts.AZURE_CLOUD_SWORD) - 1.0) < 1e-6, "A beginner's sword technique was scaled");
+            QiService.setQiMax(player, 400);
+            helper.assertTrue(Math.abs(com.murimblock.martial.TechniquePower.damage(player, MartialArts.AZURE_CLOUD_SWORD, 1.0) - 6 * 1.24) < 1e-4,
+                    "400 Qi Max with an iron sword: 6 x 1.24, got " + com.murimblock.martial.TechniquePower.damage(player, MartialArts.AZURE_CLOUD_SWORD, 1.0));
+            // Bare hands for the Long Fist: the hand (1) and its training (3).
+            QiService.setQiMax(player, 100);
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.doTick();
+            helper.assertTrue(Math.abs(com.murimblock.martial.TechniquePower.damage(player, MartialArts.LONG_FIST, 1.0) - 4) < 1e-4,
+                    "A beginner's trained fist should strike as 4, got " + com.murimblock.martial.TechniquePower.damage(player, MartialArts.LONG_FIST, 1.0));
+            helper.succeed();
+        } finally {
+            cleanup(player);
+        }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "martial_burst", timeoutTicks = 100)
+    public static void noComboFellsAPlayerFromFullHealth(GameTestHelper helper) {
+        helper.getLevel().getServer().setPvpAllowed(true);
+        ServerPlayer attacker = player(helper), victim = player(helper);
+        com.murimblock.combat.BurstGuard.clearForTests();
+        // Three blows of 8 in a row on 20 health: 8, 4, then nothing (60 % at most in three seconds).
+        for (int i = 0; i < 3; i++) {
+            victim.invulnerableTime = 0;
+            victim.hurt(victim.damageSources().playerAttack(attacker), 8);
+        }
+        helper.assertTrue(Math.abs(victim.getHealth() - 8) < 1e-3, "A combo took more than 60 %: health " + victim.getHealth());
+        helper.assertTrue(!com.murimblock.combat.knockdown.KnockdownService.isDowned(victim), "A combo knocked a full-health player down");
+        // Three seconds later, a new combo may go on.
+        helper.runAfterDelay(com.murimblock.combat.BurstGuard.WINDOW_TICKS + 2, () -> {
+            try {
+                victim.invulnerableTime = 0;
+                victim.hurt(victim.damageSources().playerAttack(attacker), 4);
+                helper.assertTrue(Math.abs(victim.getHealth() - 4) < 1e-3, "The next combo dealt nothing: health " + victim.getHealth());
+                helper.succeed();
+            } finally {
+                com.murimblock.combat.knockdown.KnockdownService.clearForTests();
+                helper.getLevel().getServer().setPvpAllowed(false);
+                cleanup(attacker);
+                cleanup(victim);
+            }
+        });
+    }
+
     @GameTest(template = "foundation_arena", batch = "martial_cast", timeoutTicks = 80)
     public static void cloudStepSlashCutsAZombieOnItsPathAndHasACooldown(GameTestHelper helper) {
         ServerPlayer player = adept(helper);

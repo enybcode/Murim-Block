@@ -362,7 +362,7 @@ public final class AzureCloudSword {
         player.serverLevel().playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 0.8F, 1.3F);
         target.invulnerableTime = 0;
         target.hurt(player.damageSources().playerAttack(player),
-                (float) (player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * DELAYED_CUTS_SHARE));
+                TechniquePower.damage(player, MartialArts.AZURE_CLOUD_SWORD, DELAYED_CUTS_SHARE));
     }
 
     // ---------------------------------------------------------------- effects
@@ -407,7 +407,7 @@ public final class AzureCloudSword {
             blastBy = null;
             blastOn = null;
         }
-        float damage = (float) (player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * SLAM_LANDING_SHARE);
+        float damage = TechniquePower.damage(player, MartialArts.AZURE_CLOUD_SWORD, SLAM_LANDING_SHARE);
         target.invulnerableTime = 0;
         if (target instanceof ServerPlayer victim) {
             // A player is not knocked down by this landing but executed: already down, they die at once; a blow that
