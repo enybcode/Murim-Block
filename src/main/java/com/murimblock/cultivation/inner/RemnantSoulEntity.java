@@ -13,12 +13,24 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * The remnant soul of an old master who dwells in a cultivator's inner world (a classic of the genre: a soul hidden in
- * the dantian). It does not fight and cannot be hurt; spoken to, it gives the day's missions (InnerMissions).
+ * the dantian). It does not fight and cannot be hurt; spoken to, it gives the day's missions (InnerMissions). Drawn with
+ * GeckoLib: a legless ghost whose robe thins into a tail of mist (scripts/animation/remnant-soul.cjs).
  */
-public class RemnantSoulEntity extends PathfinderMob {
+public class RemnantSoulEntity extends PathfinderMob implements GeoEntity {
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("idle");
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    /** Client side: the last tick its renderer let a wisp of Qi go. */
+    public int wispTick = -1;
+
     public RemnantSoulEntity(EntityType<? extends RemnantSoulEntity> type, Level level) {
         super(type, level);
         setInvulnerable(true);
@@ -71,6 +83,16 @@ public class RemnantSoulEntity extends PathfinderMob {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
         if (player instanceof ServerPlayer server) InnerMissions.talk(server, this);
         return InteractionResult.sidedSuccess(level().isClientSide);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "main", 0, state -> state.setAndContinue(IDLE)));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
 
     @Override public boolean hurt(DamageSource source, float amount) { return false; }
