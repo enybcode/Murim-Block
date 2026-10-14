@@ -22,15 +22,15 @@ final class ClientCaptureChecks {
             for (int y = 0; y < image.getHeight(); y++) {
                 for (int x = 0; x < image.getWidth(); x++) {
                     int color = image.getRGB(x, y) & 0xFFFFFF;
-                    if (color == 0xF3EBD4 || color == 0xEAE0C4) paper++;
-                    if (color == 0x1F2420) ink++;
-                    if (color == 0xC9A74B) gold++;
+                    if (color == 0x2B2721 || color == 0x332E27 || color == 0x2F2A24) paper++;
+                    if (color == 0x1A1714) ink++;
+                    if (color == 0xC9A45C) gold++;
                 }
             }
             int pixels = image.getWidth() * image.getHeight();
             // The compact menu (max 320 x 200 GUI units) covers less of large viewports than the old one.
             require(paper > pixels / 12 && ink > pixels / 60 && gold > 100,
-                    "Clear Manuscript palette missing from real capture: " + name
+                    "Ink Night palette missing from real capture: " + name
                             + " (paper " + paper + ", ink " + ink + ", gold " + gold + " of " + pixels + ")");
         }
         BufferedImage idle = read(directory.resolve("13-mob-idle.png"));

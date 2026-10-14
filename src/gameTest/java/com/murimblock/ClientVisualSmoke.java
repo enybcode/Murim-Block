@@ -14,6 +14,10 @@ import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
 import com.murimblock.integration.epicfight.EpicFightContentPolicy;
 import com.murimblock.integration.epicfight.MurimSkills;
+import com.murimblock.integration.epicfight.MountainBanditPatch;
+import com.murimblock.integration.epicfight.MurimAnimations;
+import com.murimblock.item.MurimItems;
+import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.mob.WaterBallEntity;
 import com.murimblock.qi.QiService;
@@ -47,6 +51,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -341,7 +346,34 @@ public final class ClientVisualSmoke {
                         level.setDayTime(6000);
                     });
                 }
-                case 700 -> {
+                // The Mountain Bandit: its five outfits holding the Bandit Dao, then one cut with it.
+                case 705 -> mc.getSingleplayerServer().execute(() -> {
+                    var level = mc.getSingleplayerServer().overworld();
+                    var old = level.getEntity(opponentId);
+                    if (old != null) old.discard();
+                    opponentId = spawnPreviewMob(level, MurimEntities.MOUNTAIN_BANDIT.get());
+                    var bandit = (MountainBanditEntity) level.getEntity(opponentId);
+                    bandit.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.BANDIT_DAO.get()));
+                });
+                case 725 -> {
+                    // Three quarters, so the dao shows along its length (face on, it points at the camera).
+                    previewTurn = -70;
+                    previewTracked(MountainBanditPatch.class);
+                }
+                case 731, 741, 751, 761, 771 -> capture(String.format("%02d-bandit-%s.png", 26 + (ticks - 731) / 10, MountainBanditEntity.OUTFITS[(ticks - 731) / 10]));
+                case 735, 745, 755, 765 -> {
+                    int outfit = (ticks - 735) / 10 + 1;
+                    mc.getSingleplayerServer().execute(() ->
+                            ((MountainBanditEntity) mc.getSingleplayerServer().overworld().getEntity(opponentId)).setVariant(outfit));
+                }
+                case 775 -> mc.getSingleplayerServer().execute(() -> {
+                    var bandit = (MountainBanditEntity) mc.getSingleplayerServer().overworld().getEntity(opponentId);
+                    bandit.setVariant(1);
+                    EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(MurimAnimations.DRIFTING_CUT, 0);
+                });
+                case 777, 779, 781, 783, 785, 787, 789, 791 -> capture(String.format("bandit-cut/%02d.png", (ticks - 777) / 2));
+                case 794 -> previewTurn = 0;
+                case 800 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
                             "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
@@ -409,6 +441,9 @@ public final class ClientVisualSmoke {
         require(value.getAsBoolean() == before, "Setting did not restore: " + label);
     }
 
+    /** How far to the side the preview looks (pixels of a mouse offset): 0 faces the camera, more turns it to three quarters. */
+    private static float previewTurn;
+
     /** Frozen preview mob created directly (no finalizeSpawn, so the crab man comes without its escort). */
     private static UUID spawnPreviewMob(ServerLevel level, EntityType<? extends Mob> type) {
         var mob = type.create(level);
@@ -439,7 +474,7 @@ public final class ClientVisualSmoke {
             g.fill(0, 0, width, height, 0xFFF0E7CE);
             g.drawCenteredString(font, title, width / 2, 16, 0xFF202522);
             InventoryScreen.renderEntityInInventoryFollowsMouse(g,
-                    width / 2 - 90, 40, width / 2 + 90, height - 20, 80, 0.0625F, width / 2.0F, height / 2.0F, mob);
+                    width / 2 - 90, 40, width / 2 + 90, height - 20, 80, 0.0625F, width / 2.0F + previewTurn, height / 2.0F, mob);
         }
     }
 

@@ -142,6 +142,7 @@ public final class QiRewardManager {
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "training_opponent"))) return 0;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "armored_crab"))) return 3;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_man"))) return 10;
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "mountain_bandit"))) return 4;
         return FIXED_REWARDS.getOrDefault(type, 1);
     }
 

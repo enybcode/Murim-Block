@@ -62,6 +62,9 @@ public final class ArmoredCrabEpicFight {
             // Runs once on the main thread during common setup; the mapping is not cleared on reload.
             Armatures.registerEntityTypeArmature(MurimEntities.ARMORED_CRAB.get(), ARMATURE);
             CrabManEpicFight.registerPatch(event);
+            // The bandit: a humanoid on the engine's own biped skeleton.
+            event.registerEntityPatch(MurimEntities.MOUNTAIN_BANDIT.get(), MountainBanditPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.MOUNTAIN_BANDIT.get(), Armatures.BIPED);
         });
     }
 

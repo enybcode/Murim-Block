@@ -149,14 +149,14 @@ final class MurimProfileLayout {
         put(Page.INFOS, Field.STATUS, status.x() + 6, cy + 26, status.width() - 12, 9);
         put(Page.INFOS, Field.QI_VALUE, status.x() + 6, cy + 42, status.width() - 12, 9);
 
-        // Combat Settings (inside Info): six rows and a Keybinds button.
+        // Combat Settings (inside Info): seven rows and a Keybinds button.
         int settingWidth = cw * 62 / 100;
         settingsHeader = new Box(cx, cy, settingWidth - 6, 14);
         // Status column text and Keybinds sit 6 px inside the card drawn around them.
         settingsStatus = new Box(cx + settingWidth + 12, cy + 22, cw - settingWidth - 18, 9);
         keybinds = new Box(settingsStatus.x(), content.bottom() - 22, settingsStatus.width(), 16);
-        int settingStep = (ch - 18) / 6;
-        settingRows = IntStream.range(0, 6).mapToObj(i ->
+        int settingStep = (ch - 18) / 7;
+        settingRows = IntStream.range(0, 7).mapToObj(i ->
                 new Box(cx, cy + 18 + i * settingStep, settingWidth - 6, settingStep - 2)).toList();
     }
     Box tab(Page page) { return tabs.get(page); }

@@ -1,5 +1,6 @@
 package com.murimblock;
 
+import com.murimblock.client.hud.HudSize;
 import com.murimblock.combat.CombatAttachments;
 import com.murimblock.combat.CombatEvents;
 import com.murimblock.combat.knockdown.KnockdownAttachments;
@@ -27,7 +28,9 @@ import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.SanctuaryPlacement;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
@@ -37,7 +40,8 @@ import net.neoforged.neoforge.common.NeoForge;
 public final class Murimblock {
     public static final String MOD_ID = "murimblock";
 
-    public Murimblock(IEventBus modEventBus) {
+    public Murimblock(IEventBus modEventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.CLIENT, HudSize.SPEC);
         MurimEntities.register(modEventBus);
         // Blocks first: they add their block items to MurimItems before its registry is attached.
         MurimBlocks.register(modEventBus);
