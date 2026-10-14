@@ -183,6 +183,7 @@ public final class MartialCommands {
     private static String strikes(MartialData data) {
         List<String> names = new ArrayList<>();
         data.passive().ifPresent(passive -> {
+            if (passive.strikes().isEmpty()) names.add("(bare-hand strikes)");
             for (ResourceLocation id : data.strikes(passive)) {
                 MartialArts.Strike strike = passive.strike(id);
                 names.add(strike == null ? id.toString() : Component.translatable(strike.translationKey()).getString());

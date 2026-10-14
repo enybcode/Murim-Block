@@ -4,8 +4,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
-    /** 14: Cloud Step Slash held to aim (12), Thousand Drizzle's delayed cuts (13), the crescent's slam ready on the bar. */
-    private static final String NETWORK_VERSION = "14";
+    /**
+     * 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
+     * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
+     */
+    private static final String NETWORK_VERSION = "15";
 
     private MurimblockNetworking() {
     }
@@ -23,6 +26,7 @@ public final class MurimblockNetworking {
         registrar.playToServer(TechniquePayloads.Aim.TYPE, TechniquePayloads.Aim.STREAM_CODEC, TechniquePayloads.Aim::handle);
         registrar.playToServer(TechniquePayloads.Assign.TYPE, TechniquePayloads.Assign.STREAM_CODEC, TechniquePayloads.Assign::handle);
         registrar.playToServer(TechniquePayloads.SetStrike.TYPE, TechniquePayloads.SetStrike.STREAM_CODEC, TechniquePayloads.SetStrike::handle);
+        registrar.playToServer(TechniquePayloads.SetMainArt.TYPE, TechniquePayloads.SetMainArt.STREAM_CODEC, TechniquePayloads.SetMainArt::handle);
         registrar.playToClient(TechniquePayloads.Cooldown.TYPE, TechniquePayloads.Cooldown.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.CombatBarClient.cooldown(payload.technique(), payload.ticks()));
         registrar.playToClient(TechniquePayloads.Riposte.TYPE, TechniquePayloads.Riposte.STREAM_CODEC,

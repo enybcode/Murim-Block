@@ -1,6 +1,7 @@
 package com.murimblock.integration.epicfight;
 
 import com.murimblock.combat.knockdown.KnockdownService;
+import com.murimblock.martial.LongFist;
 import com.murimblock.martial.MartialCombat;
 import java.util.List;
 import java.util.Map;
@@ -63,9 +64,16 @@ public class MurimGuardSkill extends ParryingSkill {
         super(builder);
     }
 
-    /** Epic Fight's guard animations, with its parrying animations for the perfect parry. */
+    /**
+     * Epic Fight's guard animations, with its parrying animations for the perfect parry; and bare hands (Epic Fight's
+     * fist category) guard with the forearms, only for a player whose main style is the Long Fist (otherwise no guard
+     * motion, so no guard, as before).
+     */
     public static GuardSkill.Builder createMurimGuardBuilder() {
         return GuardSkill.createGuardBuilder(MurimGuardSkill::new)
+                .addGuardMotion(WeaponCategories.FIST, (item, player) -> LongFist.guardsBareHanded(player.getOriginal()) ? MurimAnimations.LONG_FIST_GUARD_HIT : null)
+                .addAdvancedGuardMotion(WeaponCategories.FIST, (item, player) -> LongFist.guardsBareHanded(player.getOriginal())
+                        ? List.of(MurimAnimations.LONG_FIST_GUARD_HIT) : null)
                 .addAdvancedGuardMotion(WeaponCategories.SWORD, (item, player) -> item.getStyle(player) == Styles.ONE_HAND
                         ? List.of(Animations.SWORD_GUARD_ACTIVE_HIT1, Animations.SWORD_GUARD_ACTIVE_HIT2)
                         : List.of(Animations.SWORD_GUARD_ACTIVE_HIT2, Animations.SWORD_GUARD_ACTIVE_HIT3))

@@ -114,6 +114,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the Long Fist (see LongFistTour).
+        longFistTour {
+            client()
+            gameDirectory = project.file('build/long-fist-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.longFistTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client check of the weapons in hand, the Bandit Dao and the great axe (see WeaponTour).
         weaponTour {
             client()
@@ -347,6 +356,22 @@ tasks.named('runMartialTour').configure {
     doLast {
         def report = martialTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Martial tour failed; see build/martial-tour-run/martial-tour-report.txt')
+    }
+}
+
+def longFistTourSave = layout.buildDirectory.dir('long-fist-tour-run/saves/murim-long-fist')
+def longFistTourReport = layout.buildDirectory.file('long-fist-tour-run/long-fist-tour-report.txt')
+def longFistTourShots = layout.buildDirectory.dir('long-fist-tour-run/screenshots')
+tasks.named('runLongFistTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Long Fist tour.')
+        longFistTourSave.get().asFile.deleteDir()
+        longFistTourShots.get().asFile.deleteDir()
+        longFistTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = longFistTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Long Fist tour failed; see build/long-fist-tour-run/long-fist-tour-report.txt')
     }
 }
 

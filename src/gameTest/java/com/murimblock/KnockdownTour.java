@@ -315,6 +315,7 @@ public final class KnockdownTour {
             case CARRY -> MurimAnimations.CARRY_IDLE;
             case CARRY_WALK -> MurimAnimations.CARRY_WALK;
             case CARRIED -> MurimAnimations.CARRIED;
+            case FIST_GUARD -> MurimAnimations.LONG_FIST_GUARD;
         };
         check(motion == expected && playing != null && playing.registryName().equals(wanted.registryName()),
                 what + ": motion " + motion + ", playing " + (playing == null ? null : playing.registryName()));

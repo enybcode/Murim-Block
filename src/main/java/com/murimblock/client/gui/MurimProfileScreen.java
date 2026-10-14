@@ -284,6 +284,8 @@ public final class MurimProfileScreen extends Screen {
     /** Clickable manual covers, the "Library" button, technique tiles, bar slots and M1 slots, as last drawn. */
     private final List<Map.Entry<Box, ResourceLocation>> covers = new ArrayList<>();
     @Nullable private Box backButton;
+    /** On the passive of an art that is not the main style: the button that makes it so, and the art. */
+    @Nullable private Map.Entry<Box, ResourceLocation> mainButton;
     private final List<Map.Entry<Box, ResourceLocation>> techniqueRows = new ArrayList<>();
     private final List<Box> barSlots = new ArrayList<>();
     private final List<Box> strikeSlots = new ArrayList<>();
@@ -296,6 +298,7 @@ public final class MurimProfileScreen extends Screen {
         barSlots.clear();
         strikeSlots.clear();
         backButton = null;
+        mainButton = null;
         MartialData data = minecraft == null || minecraft.player == null ? MartialData.EMPTY : MartialService.data(minecraft.player);
         MartialArts.Art art = openArt == null ? null : MartialArts.art(openArt);
         if (art == null || !data.knowsArt(art.id())) {
@@ -519,12 +522,27 @@ public final class MurimProfileScreen extends Screen {
         MartialArts.Passive passive = art.passive();
         boolean main = data.mainArt().filter(art.id()::equals).isPresent();
         text(g, new Box(info.x(), info.y(), info.width(), 9), Component.translatable(passive.translationKey()), GOLD_LIGHT);
-        text(g, new Box(info.x(), info.y() + 11, info.width(), 9), label(main ? "techniques.passive_main" : "techniques.passive_inactive"), main ? AZURE_TEXT : SEAL);
+        if (main) {
+            text(g, new Box(info.x(), info.y() + 11, info.width(), 9), label("techniques.passive_main"), AZURE_TEXT);
+        } else {
+            // Not the main style: a seal button makes it the main style (its passive, M1 and guard).
+            Box button = new Box(info.x(), info.y() + 10, Math.min(info.width(), 96), 11);
+            boolean hot = button.contains(pointerX, pointerY);
+            fill(g, button, hot ? 0xFFC0473A : SEAL);
+            text(g, label("techniques.make_main"), new Box(button.x(), button.y() + 1, button.width(), 9), SEAL_TEXT, true, 1);
+            if (hot) hoveredText = label("techniques.passive_inactive");
+            mainButton = Map.entry(button, art.id());
+        }
         text(g, new Box(info.x(), info.y() + 22, info.width(), 9), label("techniques.style_mastery", data.mastery(passive.id()), data.styleMastery(art)), MUTED);
         int aboutY = info.y() + 35;
         if (info.bottom() - aboutY >= 9) about(g, Component.translatable(passive.translationKey() + ".desc"), new Box(info.x(), aboutY, info.width(), info.bottom() - aboutY));
 
         section(g, new Box(side.x(), side.y(), side.width(), 9), label("techniques.strikes"));
+        if (passive.strikes().isEmpty()) {
+            // A passive that keeps the bare-hand strikes as they are (the Long Fist's): nothing to choose.
+            text(g, label("techniques.strikes_bare_hands"), new Box(side.x(), side.y() + 14, side.width(), side.bottom() - side.y() - 14), INK, false, 1);
+            return;
+        }
         List<ResourceLocation> strikes = data.strikes(passive);
         int gap = 3, sw = Math.max(20, (side.width() - gap) / 2);
         for (int i = 0; i < MartialArts.Passive.M1_SLOTS; i++) {
@@ -554,6 +572,7 @@ public final class MurimProfileScreen extends Screen {
     /** The strike to place in an M1 slot after (or before) the one there: the next of the passive's that keeps the chain valid. */
     @Nullable static ResourceLocation cycleStrike(MartialData data, MartialArts.Passive passive, int slot, boolean forward) {
         List<MartialArts.Strike> all = passive.strikes();
+        if (all.isEmpty()) return null;
         ResourceLocation current = data.strikes(passive).get(slot);
         int at = 0;
         for (int i = 0; i < all.size(); i++) if (all.get(i).id().equals(current)) at = i;
@@ -585,6 +604,10 @@ public final class MurimProfileScreen extends Screen {
             }
             if (backButton != null && backButton.contains(mx, my)) {
                 openArt = null;
+                return true;
+            }
+            if (mainButton != null && mainButton.getKey().contains(mx, my)) {
+                PacketDistributor.sendToServer(new TechniquePayloads.SetMainArt(mainButton.getValue()));
                 return true;
             }
             for (Map.Entry<Box, ResourceLocation> row : techniqueRows) {

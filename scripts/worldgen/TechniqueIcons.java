@@ -13,10 +13,19 @@ import javax.imageio.ImageIO;
  *   heaven_splitting_crescent: a crescent rising, the blade pointed at the sky, speed lines under it, the ground below;
  *   swallow_returns: a swallow in profile turning back on its trail (the secret; red eye);
  *   flowing_cloud_stance: the passive, the blade held in guard over drifting cloud bands.
+ * And the Long Fist's, "ember night": the same frame and light, warm (dark umber, amber light, a pale fist):
+ *   tiger_step_punch: a fist thrown forward, streaks of the bound behind it, dust kicked up below;
+ *   rapid_fists: a fist in the middle of a burst of small impacts and short streaks (the flurry);
+ *   whirlwind_kick: a sweeping ring of motion round a foot at its end, dust at the ground;
+ *   inch_force: a fist pressed to a line, a ring of white at the contact, waves going out beyond it (the secret; red);
+ *   steady_breath: the passive, a closed fist under three rising lines of breath.
  */
 public class TechniqueIcons {
     static final int W = 32;
-    static final String[] NAMES = {"cloud_step_slash", "thousand_drizzle", "heaven_splitting_crescent", "swallow_returns", "flowing_cloud_stance"};
+    static final String[] NAMES = {"cloud_step_slash", "thousand_drizzle", "heaven_splitting_crescent", "swallow_returns", "flowing_cloud_stance",
+            "tiger_step_punch", "rapid_fists", "whirlwind_kick", "inch_force", "steady_breath"};
+    /** Where the Long Fist's icons start in NAMES. */
+    static final int FIST = 5;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -25,7 +34,8 @@ public class TechniqueIcons {
             BufferedImage img = new BufferedImage(W, W, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = img.createGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-            jade(g, img, i);
+            if (i < FIST) jade(g, img, i);
+            else ember(g, img, i - FIST);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -143,6 +153,117 @@ public class TechniqueIcons {
                 }
                 sword(g, 9, 22, -45, 19, STEEL, WHITE, GOLD);
                 disc(g, 24, 7, 1.2, WHITE);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ B: ember night, the Long Fist
+
+    static void emberBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 15.5) / 22.0;
+            int r = (int) (30 + 34 * (1 - d)), gg = (int) (16 + 18 * (1 - d)), b = (int) (12 + 10 * (1 - d));
+            img.setRGB(x, y, c(r, gg, b).getRGB());
+        }
+        g.setColor(c(226, 168, 92));
+        g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(92, 52, 30));
+        g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    static final Color AMBER = c(255, 190, 110), AMBER_DIM = c(168, 98, 56), WARM_WHITE = c(255, 246, 228),
+            SKIN = c(236, 198, 160), SKIN_DARK = c(168, 112, 78), RED = c(214, 64, 48),
+            SLEEVE = c(120, 38, 34), CUFF = c(230, 214, 180), PANTS = c(60, 52, 70);
+
+    /**
+     * A closed fist seen from the side, knuckles toward dir (1 right, -1 left), its middle at (x, y), s pixels tall:
+     * the hand, the folds between the fingers, the thumb across below, a light on the knuckles.
+     */
+    static void fist(Graphics2D g, BufferedImage img, double x, double y, double s, int dir) {
+        double w = s * 1.15, h = s;
+        // The forearm in its sleeve, behind the fist, and the cuff.
+        double back = x - dir * (w / 2 + s * 0.9);
+        g.setColor(SLEEVE);
+        g.fill(new Rectangle2D.Double(Math.min(back, x - dir * w * 0.3), y - h * 0.32, Math.abs(x - dir * w * 0.3 - back), h * 0.64));
+        line(g, x - dir * w * 0.42, y - h * 0.34, x - dir * w * 0.42, y + h * 0.3, 1.4f, CUFF);
+        g.setColor(SKIN_DARK);
+        g.fill(new RoundRectangle2D.Double(x - w / 2 - 1, y - h / 2 - 1, w + 2, h + 2, s * 0.6, s * 0.6));
+        g.setColor(SKIN);
+        g.fill(new RoundRectangle2D.Double(x - w / 2, y - h / 2, w, h, s * 0.5, s * 0.5));
+        double kx = x + dir * w * 0.22;
+        for (int k = 1; k <= 3; k++) {
+            int py = (int) Math.round(y - h / 2 + h * k / 4.0);
+            line(g, kx - dir * w * 0.12, py, kx + dir * w * 0.32, py, 1f, SKIN_DARK);
+        }
+        line(g, x - dir * w * 0.35, y + h * 0.3, x + dir * w * 0.15, y + h * 0.3, 1.4f, SKIN_DARK);
+        px(img, (int) Math.round(x + dir * w * 0.42), (int) Math.round(y - h * 0.32), WARM_WHITE);
+    }
+
+    /** A small impact: a four-pointed burst of radius r. */
+    static void burst(Graphics2D g, double x, double y, double r, Color col) {
+        g.setColor(col);
+        Path2D p = new Path2D.Double();
+        p.moveTo(x, y - r); p.lineTo(x + r * 0.28, y); p.lineTo(x, y + r); p.lineTo(x - r * 0.28, y); p.closePath();
+        g.fill(p);
+        Path2D q = new Path2D.Double();
+        q.moveTo(x - r, y); q.lineTo(x, y - r * 0.28); q.lineTo(x + r, y); q.lineTo(x, y + r * 0.28); q.closePath();
+        g.fill(q);
+    }
+
+    static void ember(Graphics2D g, BufferedImage img, int i) {
+        emberBack(img, g);
+        switch (i) {
+            case 0 -> { // Tiger Step Punch: the bound's streaks behind, the fist thrown, dust below.
+                for (int k = 0; k < 3; k++) taper(g, 3, 10 + k * 5, 10, 10 + k * 5, 18, 12 + k * 3, 0.3, 2.4 - k * 0.5, k == 1 ? AMBER : AMBER_DIM);
+                fist(g, img, 23, 15, 9, 1);
+                for (int k = 0; k < 3; k++) { px(img, 5 + k * 4, 27, AMBER_DIM); px(img, 6 + k * 4, 26, AMBER_DIM); }
+                g.setColor(c(110, 80, 60));
+                g.fillRect(3, 28, 26, 1);
+            }
+            case 1 -> { // Rapid Fists: a fist amid a burst of impacts and short streaks.
+                double[][] hits = {{8, 8, 3}, {25, 8, 2.5}, {6, 23, 2.5}, {25, 24, 3}, {16, 5, 2}};
+                for (double[] h : hits) burst(g, h[0], h[1], h[2], AMBER);
+                for (int k = 0; k < 4; k++) line(g, 3, 13 + k * 2, 8 + k % 2 * 2, 13 + k * 2, 1f, AMBER_DIM);
+                fist(g, img, 17, 17, 9, 1);
+                burst(g, 27, 16, 2.5, WARM_WHITE);
+            }
+            case 2 -> { // Whirlwind Kick: a sweeping ring round a foot at its end, dust at the ground.
+                g.setColor(AMBER_DIM);
+                g.setStroke(new BasicStroke(3.2f));
+                g.draw(new Arc2D.Double(4, 6, 22, 16, 30, 280, Arc2D.OPEN));
+                g.setColor(AMBER);
+                g.setStroke(new BasicStroke(1.4f));
+                g.draw(new Arc2D.Double(4, 6, 22, 16, 60, 250, Arc2D.OPEN));
+                // The leg along the end of the sweep, the boot at its end.
+                taper(g, 12, 12, 15, 9, 21, 8.5, 4.2, 3.6, PANTS);
+                g.setColor(c(80, 56, 40));
+                g.fill(new RoundRectangle2D.Double(20, 6, 9, 5, 3, 3));
+                g.setColor(CUFF);
+                g.fillRect(19, 7, 1, 3);
+                for (int k = 0; k < 5; k++) px(img, 6 + k * 5, 26 - k % 2, AMBER_DIM);
+                g.setColor(c(110, 80, 60));
+                g.fillRect(3, 28, 26, 1);
+            }
+            case 3 -> { // Inch Force: the fist pressed to a line, a white ring at the contact, red waves beyond.
+                line(g, 18, 5, 18, 27, 2f, c(150, 110, 90));
+                fist(g, img, 11, 16, 9, 1);
+                g.setColor(WARM_WHITE);
+                g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Ellipse2D.Double(15, 12, 7, 8));
+                g.setColor(RED);
+                for (int k = 0; k < 3; k++) g.draw(new Arc2D.Double(15 + k * 4, 9 + k, 9, 14 - k * 2, -60, 120, Arc2D.OPEN));
+            }
+            default -> { // Steady Breath: three rising lines of breath over a closed fist.
+                for (int k = 0; k < 3; k++) {
+                    g.setColor(k == 1 ? AMBER : AMBER_DIM);
+                    g.setStroke(new BasicStroke(1.4f));
+                    Path2D p = new Path2D.Double();
+                    double x0 = 10 + k * 6;
+                    p.moveTo(x0, 17);
+                    p.curveTo(x0 - 3, 13, x0 + 3, 9, x0, 4);
+                    g.draw(p);
+                }
+                fist(g, img, 16, 23, 10, 1);
             }
         }
     }
