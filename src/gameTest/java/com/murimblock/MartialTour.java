@@ -265,11 +265,16 @@ public final class MartialTour {
                 server.execute(() -> check(zombies.getFirst().getHealth() < 200, "the crescent cuts the zombie"));
             }
             // Hanging at the top: an M1 in the air, then key 3 again, the slam that throws the zombie back down.
+            case 258 -> {
+                check(com.murimblock.client.CombatBarClient.slamReady(), "hanging at the top, the bar shows the slam ready on the crescent's slot");
+                capture(mc, "08b-slam-ready.png");
+            }
             case 254 -> KeyMapping.click(mc.options.keyAttack.getKey());
             case 260 -> {
                 server.execute(() -> slamHealth = zombies.getFirst().getHealth());
                 KeyMapping.click(mc.options.keyHotbarSlots[2].getKey());
             }
+            case 263 -> check(!com.murimblock.client.CombatBarClient.slamReady(), "the slot stops glowing once the slam is cast");
             case 264 -> check(clientPlaying(mc, MurimAnimations.CRESCENT_SLAM), "key 3 again at the top plays the slam (playing: " + clientAnimation(mc) + ")");
             case 276 -> server.execute(() -> {
                 Zombie z = zombies.getFirst();

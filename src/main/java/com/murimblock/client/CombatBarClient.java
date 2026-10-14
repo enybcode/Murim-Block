@@ -46,6 +46,21 @@ public final class CombatBarClient {
         if (mc.level != null) riposteUntil = mc.level.getGameTime() + ticks;
     }
 
+    /** Client game time until which the crescent's slam is ready (the player hangs at the top of its rise). */
+    private static long slamUntil;
+
+    /** From the server: hanging at the top of the crescent for that many ticks, the slam ready on its key (0: no longer). */
+    public static void slamReady(int ticks) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) slamUntil = ticks > 0 ? mc.level.getGameTime() + ticks : 0;
+    }
+
+    /** Whether this client shows the crescent's slam ready. */
+    public static boolean slamReady() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level != null && mc.level.getGameTime() < slamUntil;
+    }
+
     /** Whether this client shows a riposte window open. */
     public static boolean riposteOpen() {
         Minecraft mc = Minecraft.getInstance();
@@ -169,6 +184,18 @@ public final class CombatBarClient {
             MartialArts.Technique technique = id.map(MartialArts::technique).orElse(null);
             if (technique != null) {
                 TechniqueIcons.draw(g, technique, x, y + 3, 16);
+                // Hanging at the top of the crescent: its slot glows, pulsing azure, "Slam" beside the bar.
+                if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && slamReady() && mc.level != null) {
+                    float pulse = 0.5F + 0.5F * net.minecraft.util.Mth.sin((mc.level.getGameTime() + mc.getTimer().getGameTimeDeltaPartialTick(false)) * 0.9F);
+                    int alpha = (int) (110 + 120 * pulse);
+                    g.fill(x, y + 3, x + 16, y + 19, ((alpha / 3) << 24) | 0x8FD3FF);
+                    int frame = (alpha << 24) | 0xA8E0FF;
+                    g.fill(x - 2, y + 1, x + 18, y + 2, frame);
+                    g.fill(x - 2, y + 20, x + 18, y + 21, frame);
+                    g.fill(x - 2, y + 2, x - 1, y + 20, frame);
+                    g.fill(x + 17, y + 2, x + 18, y + 20, frame);
+                    g.drawString(mc.font, Component.translatable("technique.murimblock.slam_ready"), x0 + width + 6, y - 4, 0xFFA8E0FF, true);
+                }
                 long[] cd = COOLDOWNS.get(technique.id());
                 if (cd != null && mc.level != null) {
                     long left = cd[0] - mc.level.getGameTime();

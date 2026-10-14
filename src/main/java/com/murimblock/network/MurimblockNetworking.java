@@ -4,8 +4,8 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
-    /** 13: Cloud Step Slash held to aim (12), Thousand Drizzle's delayed cuts. */
-    private static final String NETWORK_VERSION = "13";
+    /** 14: Cloud Step Slash held to aim (12), Thousand Drizzle's delayed cuts (13), the crescent's slam ready on the bar. */
+    private static final String NETWORK_VERSION = "14";
 
     private MurimblockNetworking() {
     }
@@ -27,6 +27,8 @@ public final class MurimblockNetworking {
                 (payload, context) -> com.murimblock.client.CombatBarClient.cooldown(payload.technique(), payload.ticks()));
         registrar.playToClient(TechniquePayloads.Riposte.TYPE, TechniquePayloads.Riposte.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.CombatBarClient.riposte(payload.ticks()));
+        registrar.playToClient(TechniquePayloads.SlamReady.TYPE, TechniquePayloads.SlamReady.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.CombatBarClient.slamReady(payload.ticks()));
         registrar.playToClient(TechniquePayloads.DelayedCuts.TYPE, TechniquePayloads.DelayedCuts.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.DrizzleSlashEffects.delayedCuts(payload.attackerId(), payload.targetId()));
         // Client only: only ever sent to clients, so the client classes are never loaded on a dedicated server.

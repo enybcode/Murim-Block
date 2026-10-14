@@ -335,6 +335,7 @@ public final class MartialCombat {
 
     static void hover(ServerPlayer player, LivingEntity target, Vec3 offset, boolean riposte) {
         HOVERS.put(player.getUUID(), new Hover(target, offset, player.level().getGameTime() + HOVER_TICKS, riposte, false));
+        if (player.connection != null) PacketDistributor.sendToPlayer(player, new TechniquePayloads.SlamReady(HOVER_TICKS));
         player.setNoGravity(true);
         player.setDeltaMovement(0, 0, 0);
         player.hurtMarked = true;
@@ -359,6 +360,7 @@ public final class MartialCombat {
     static boolean startSlam(ServerPlayer player) {
         Hover h = HOVERS.get(player.getUUID());
         if (h == null || h.slamming) return false;
+        if (player.connection != null) PacketDistributor.sendToPlayer(player, new TechniquePayloads.SlamReady(0));
         HOVERS.put(player.getUUID(), new Hover(h.target, h.offset, player.level().getGameTime() + SLAM_CUT_TICKS, h.riposte, true));
         return true;
     }
@@ -366,6 +368,7 @@ public final class MartialCombat {
     /** The hanging ends: the player falls again (slowly), the body is let go if it was not thrown down. */
     private static void endHover(ServerPlayer player, boolean letGo) {
         Hover h = HOVERS.remove(player.getUUID());
+        if (player.connection != null) PacketDistributor.sendToPlayer(player, new TechniquePayloads.SlamReady(0));
         player.setNoGravity(false);
         slowFall(player, 30);
         // Seven blocks up: the way down is forgiven.

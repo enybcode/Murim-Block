@@ -104,6 +104,14 @@ public final class TechniquePayloads {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Server to a player hanging at the top of the crescent: the slam is ready on its key for that many ticks (0: no longer). */
+    public record SlamReady(int ticks) implements CustomPacketPayload {
+        public static final Type<SlamReady> TYPE = new Type<>(id("technique_slam_ready"));
+        public static final StreamCodec<ByteBuf, SlamReady> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(SlamReady::new, SlamReady::ticks);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Server to the clients near a body: Thousand Drizzle's delayed cuts open on it now (the attacker gives their angle). */
     public record DelayedCuts(int attackerId, int targetId) implements CustomPacketPayload {
         public static final Type<DelayedCuts> TYPE = new Type<>(id("technique_delayed_cuts"));
