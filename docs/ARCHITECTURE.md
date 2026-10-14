@@ -118,6 +118,7 @@ Main classes:
 - `EpicFightStrayEquipmentMixin`: keep skeleton combat initialization but skip the
   native robe assignment that would overwrite a Stray's vanilla equipment.
 - `CombatCommands`: `/combat check`, `/combat on`, `/combat off`, `/combat toggle`.
+- `MartialCommands` (operators): `/martial info|learn|unlock|forget|mastery set/add|bar set/clear|cooldown reset`, optional player targets; see the class Javadoc.
 - `CombatModeTogglePayload`: client to server toggle request with no client-chosen state.
 - `CombatModeClientHandler`: sends toggle requests when the configurable key is pressed.
 

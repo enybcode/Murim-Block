@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
@@ -148,7 +149,7 @@ public final class MurimBlocks {
         return register(name, Block::new, () -> BlockBehaviour.Properties.of().mapColor(color).strength(0.6F).sound(sound));
     }
 
-    private static Wood wood(String name, MapColor bark, MapColor foliage, net.minecraft.world.level.block.grower.TreeGrower grower,
+    private static Wood wood(String name, MapColor bark, MapColor foliage, TreeGrower grower,
                              MurimPlantBlock.Soil soil) {
         var log = register(name + "_log", RotatedPillarBlock::new, () -> BlockBehaviour.Properties.of().mapColor(bark)
                 .instrument(NoteBlockInstrument.BASS).strength(2.0F).sound(SoundType.WOOD).ignitedByLava());

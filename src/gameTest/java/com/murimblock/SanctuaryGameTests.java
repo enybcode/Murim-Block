@@ -1,21 +1,29 @@
 package com.murimblock;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.logging.LogUtils;
 import com.murimblock.item.MurimItems;
 import com.murimblock.item.SectTokenItem;
 import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.SanctuaryBuilder;
 import com.murimblock.world.structure.SanctuaryPlacement;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -30,7 +38,7 @@ public final class SanctuaryGameTests {
 
     private SanctuaryGameTests() { }
 
-    private static void forEach(ServerLevel level, int y0, int y1, java.util.function.Consumer<BlockPos> action) {
+    private static void forEach(ServerLevel level, int y0, int y1, Consumer<BlockPos> action) {
         BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
         for (int x = X - R; x <= X + R; x++) for (int z = Z - R; z <= Z + R; z++) for (int y = y0; y <= y1; y++) action.accept(p.set(x, y, z));
     }
@@ -48,8 +56,13 @@ public final class SanctuaryGameTests {
         forEach(level, GROUND - 1, GROUND - 1, p -> level.setBlock(p, Blocks.STONE.defaultBlockState(), 2));
         try {
             SanctuaryBuilder builder = new SanctuaryBuilder(level, X, GROUND, Z, RandomSource.create(7));
-            builder.build();
+            // Step by step, as in a live world (one small step per call): the result must be the full sanctuary.
+            while (builder.buildSome(0)) { }
             int top = builder.top();
+            // Fingerprint of every block of the build: unchanged by a refactoring that must not change the sanctuary.
+            long[] print = {17};
+            forEach(level, GROUND - 6, GROUND + SanctuaryBuilder.HEIGHT + 30, q -> print[0] = print[0] * 31 + Block.getId(level.getBlockState(q)));
+            LogUtils.getLogger().info("SANCTUARY_FINGERPRINT {}", Long.toHexString(print[0]));
             int granite = count(level, s -> s.is(MurimBlocks.PALE_GRANITE.get()));
             int greenRoof = count(level, s -> s.is(Blocks.PRISMARINE_BRICK_STAIRS) || s.is(Blocks.PRISMARINE_BRICK_SLAB));
             int columns = count(level, s -> s.is(Blocks.STRIPPED_MANGROVE_LOG));
@@ -114,26 +127,26 @@ public final class SanctuaryGameTests {
     public static void vanillaLocateFindsTheSanctuary(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
         SanctuaryPlacement data = SanctuaryPlacement.get(server.overworld());
-        var source = server.createCommandSourceStack().withLevel(server.overworld()).withPosition(net.minecraft.world.phys.Vec3.ZERO).withSuppressedOutput();
+        var source = server.createCommandSourceStack().withLevel(server.overworld()).withPosition(Vec3.ZERO).withSuppressedOutput();
         var dispatcher = server.getCommands().getDispatcher();
         boolean notFoundWithoutSanctuary = false;
         try {
             dispatcher.execute("locate structure murimblock:cloud_cliff_sanctuary", source);
-        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+        } catch (CommandSyntaxException e) {
             notFoundWithoutSanctuary = true; // "Could not find a structure..." in a flat world
         }
         data.record(new BlockPos(1200, 90, -800), new BlockPos(1200, 91, -784), 160);
         try {
             int found = dispatcher.execute("locate structure murimblock:cloud_cliff_sanctuary", source);
             var direct = server.overworld().getChunkSource().getGenerator().findNearestMapStructure(server.overworld(),
-                    net.minecraft.core.HolderSet.direct(server.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE)
+                    HolderSet.direct(server.registryAccess().registryOrThrow(Registries.STRUCTURE)
                             .getHolderOrThrow(SanctuaryPlacement.STRUCTURE)), BlockPos.ZERO, 100, false);
             helper.assertTrue(notFoundWithoutSanctuary, "/locate found a sanctuary in a world without one");
             // /locate returns the distance in blocks.
             helper.assertTrue(found > 0 && direct != null && direct.getFirst().getX() == 1200 && direct.getFirst().getZ() == -800,
                     "/locate did not find the sanctuary: " + found + " " + direct);
             helper.succeed();
-        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+        } catch (CommandSyntaxException e) {
             helper.fail("/locate structure failed: " + e.getMessage());
         } finally {
             data.clear();
@@ -151,8 +164,8 @@ public final class SanctuaryGameTests {
         // The test helper puts a sword in the first slot after login: replay the first login on a clean inventory.
         player.getInventory().clearContent();
         player.getPersistentData().remove("murimblock_sect_token_received");
-        SectTokenItem.onPlayerLoggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(player));
-        SectTokenItem.onPlayerLoggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(player));
+        SectTokenItem.onPlayerLoggedIn(new PlayerEvent.PlayerLoggedInEvent(player));
+        SectTokenItem.onPlayerLoggedIn(new PlayerEvent.PlayerLoggedInEvent(player));
         int tokens = player.getInventory().countItem(MurimItems.SECT_TOKEN.get());
         ItemStack token = null;
         for (ItemStack stack : player.getInventory().items) if (stack.is(MurimItems.SECT_TOKEN.get())) token = stack;

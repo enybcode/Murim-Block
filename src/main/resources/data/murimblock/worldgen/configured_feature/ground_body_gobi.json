@@ -6,9 +6,9 @@
       "Name": "minecraft:sandstone"
     },
     "band": {
-      "Name": "minecraft:terracotta"
+      "Name": "minecraft:smooth_sandstone"
     },
     "depth": 10,
-    "band_spacing": 5
+    "band_spacing": 9
   }
 }

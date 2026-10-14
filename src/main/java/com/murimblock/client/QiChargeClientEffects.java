@@ -1,6 +1,7 @@
 package com.murimblock.client;
 
 import com.murimblock.Murimblock;
+import com.murimblock.qi.QiConstants;
 import com.murimblock.qi.QiService;
 import com.murimblock.qi.charge.QiChargeVisuals;
 import net.minecraft.client.Camera;
@@ -44,7 +45,7 @@ public final class  QiChargeClientEffects {
     }
 
     static int nextForegroundCooldown(RandomSource random) {
-        return nextForegroundCooldown(random, com.murimblock.qi.QiConstants.INITIAL_QI_MAX);
+        return nextForegroundCooldown(random, QiConstants.INITIAL_QI_MAX);
     }
 
     static int nextForegroundCooldown(RandomSource random, double qiMax) {

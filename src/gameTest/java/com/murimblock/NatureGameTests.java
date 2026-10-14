@@ -4,6 +4,7 @@ import com.murimblock.world.MurimBiomes;
 import com.murimblock.world.MurimTrees;
 import com.murimblock.world.block.MurimBlocks;
 import java.util.List;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -15,12 +16,16 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import terrablender.api.RegionType;
@@ -51,9 +56,9 @@ public final class NatureGameTests {
         long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
         for (var block : MurimBlocks.creativeOrder()) {
-            helper.assertTrue(block.get().asItem() != net.minecraft.world.item.Items.AIR, "No item for " + block.getId());
+            helper.assertTrue(block.get().asItem() != Items.AIR, "No item for " + block.getId());
             var loot = helper.getLevel().getServer().reloadableRegistries().getLootTable(block.get().getLootTable());
-            helper.assertTrue(loot != net.minecraft.world.level.storage.loot.LootTable.EMPTY, "No loot table for " + block.getId());
+            helper.assertTrue(loot != LootTable.EMPTY, "No loot table for " + block.getId());
         }
         helper.succeed();
     }
@@ -79,10 +84,10 @@ public final class NatureGameTests {
             BlockPos p = new BlockPos(x + dx, y, dz);
             if (!level.getBlockState(p).isAir()) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16);
         }
-        for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(x - 14, 60, -14, x + 14, 150, 14))) e.discard();
+        for (var e : level.getEntitiesOfClass(ItemEntity.class, new AABB(x - 14, 60, -14, x + 14, 150, 14))) e.discard();
     }
 
-    private static int count(GameTestHelper helper, int x, java.util.function.Predicate<BlockState> what) {
+    private static int count(GameTestHelper helper, int x, Predicate<BlockState> what) {
         int n = 0;
         for (int dx = -12; dx <= 12; dx++) for (int dz = -12; dz <= 12; dz++) for (int y = 64; y < 140; y++) {
             if (what.test(helper.getLevel().getBlockState(new BlockPos(x + dx, y, dz)))) n++;

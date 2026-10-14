@@ -1,0 +1,8 @@
+{
+  "type": "murimblock:site",
+  "plan": "beacon_post",
+  "biomes": "#murimblock:has_structure/jade_gate_beacon_post",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

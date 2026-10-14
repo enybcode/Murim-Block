@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -125,6 +125,10 @@ public final class QiRewardManager {
         if (entityType == EntityType.ELDER_GUARDIAN) {
             return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null);
         }
+        // The Bandit Chief, a mini-boss: more for the first victory over him.
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) {
+            return new RewardTarget(entityTypeId, baseReward, 80, entityTypeId, null);
+        }
         if (entityType == EntityType.WARDEN) {
             return new RewardTarget(entityTypeId, baseReward, 600, entityTypeId, null);
         }
@@ -142,6 +146,8 @@ public final class QiRewardManager {
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "training_opponent"))) return 0;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "armored_crab"))) return 3;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_man"))) return 10;
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "mountain_bandit"))) return 4;
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) return 20;
         return FIXED_REWARDS.getOrDefault(type, 1);
     }
 
@@ -202,7 +208,7 @@ public final class QiRewardManager {
             return;
         }
 
-        player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+        player.sendSystemMessage(Component.literal(
                 killedEntity.getType().toShortString()
                         + " killed | Base Qi: " + reward.baseReward()
                         + " | Anti-farm: " + Math.round(reward.antiFarmMultiplier() * 100.0) + " %"

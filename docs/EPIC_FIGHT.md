@@ -5,7 +5,7 @@
 - Minecraft 1.21.1, NeoForge 21.1.248, Java 21.
 - Epic Fight **21.17.3.1**, published Modrinth artifact **8HHhJt6i**.
 - Exact required dependency on client and server, installed by Gradle for IntelliJ.
-- Murimblock network protocol **7** requires matching client/server builds.
+- Murimblock network protocol **10** requires matching client/server builds.
 - No extracted Epic Fight classes, textures, meshes or animations in Murim's jar.
 
 The published binary and sources jar were inspected, not only the README or an
@@ -80,9 +80,10 @@ could reinsert content after our filter. No unrelated save migration is performe
 
 ## Interface And Controls
 
-- Defaults: **K** Profile, **V** combat mode, **R** charge Qi; guard right mouse,
+- Defaults: **K** Profile, **V** combat mode (carry / put down next to a knocked-down
+  player), **B** execute a knocked-down player, **R** charge Qi; guard right mouse,
   dodge Left Alt, attack left mouse, lock-on G. User bindings may differ.
-- One Murim category with **ten** visible controls: three Murim controls, attack,
+- One Murim category with **twelve** visible controls: five Murim controls (with the combat bar's tenth slot), attack,
   guard, dodge and four target-lock controls. Eight native presentation rows are
   hidden; native menu/mode/debug/emote/innate/mover shortcuts are disabled including
   reset defaults. Engine input objects remain registered; unrelated bindings stay.
@@ -162,7 +163,8 @@ delivery adds tests and has its own current report linked above.
 - Existing mode/Qi/cultivation, charging movement/lifecycle/save tests remain.
   Actual grounded dodge and front-only guard still spend no stamina or Qi.
 - Real client checks: native screen routes, empty Techniques (five navigation
-  widgets only), synchronized guard/roll, one category with ten controls, rebuilt
+  widgets only), synchronized guard/roll, one category with ten controls (eleven since the
+  knock-down added Execute), rebuilt
   creative/search tabs without engine items and common-side stamina policy.
 - Captures cover four tabs, settings, controls, HUD, small window and actual creative
   inventory at 427x240 and 320x240 GUI sizes. A final passed marker, not process exit

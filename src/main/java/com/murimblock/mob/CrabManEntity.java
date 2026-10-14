@@ -1,6 +1,10 @@
 package com.murimblock.mob;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -22,9 +26,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Infected crab man: a tougher hostile human with a crab claw and a shell (zombie health, armour).
@@ -114,8 +115,8 @@ public final class CrabManEntity extends Monster {
 
     /** Same rule as the armored crab: not in Peaceful, solid ground, water within reach, any hour. */
     public static boolean checkCrabManSpawnRules(EntityType<CrabManEntity> type, ServerLevelAccessor level,
-                                                 MobSpawnType reason, BlockPos pos, net.minecraft.util.RandomSource random) {
-        if (level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) return false;
+                                                 MobSpawnType reason, BlockPos pos, RandomSource random) {
+        if (level.getDifficulty() == Difficulty.PEACEFUL) return false;
         if (!checkMobSpawnRules(type, level, reason, pos, random)) return false;
         return reason == MobSpawnType.SPAWNER || reason == MobSpawnType.STRUCTURE || ArmoredCrabEntity.isNearWater(level, pos);
     }

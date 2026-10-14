@@ -11,8 +11,9 @@
     "force_dirt": false,
     "ignore_vines": true,
     "foliage_placer": {
-      "type": "minecraft:blob_foliage_placer",
-      "height": 3,
+      "type": "minecraft:random_spread_foliage_placer",
+      "foliage_height": 4,
+      "leaf_placement_attempts": 90,
       "offset": 0,
       "radius": 3
     },

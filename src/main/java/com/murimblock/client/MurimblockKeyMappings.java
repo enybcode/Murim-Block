@@ -30,6 +30,22 @@ public final class MurimblockKeyMappings {
             CATEGORY
     );
 
+    /** Executes a knocked-down player (V carries them: the combat mode key, next to a downed player). */
+    public static final KeyMapping EXECUTE = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".execute",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_B,
+            CATEGORY
+    );
+
+    /** Tenth slot of the combat bar (Minecraft has nine hotbar keys; the first nine slots use them). */
+    public static final KeyMapping COMBAT_SLOT_10 = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".combat_slot_10",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_0,
+            CATEGORY
+    );
+
     private MurimblockKeyMappings() {
     }
 
@@ -38,5 +54,7 @@ public final class MurimblockKeyMappings {
         event.register(CHARGE_QI);
         event.register(COMBAT_MODE);
         event.register(OPEN_PROFILE);
+        event.register(EXECUTE);
+        event.register(COMBAT_SLOT_10);
     }
 }

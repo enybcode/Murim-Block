@@ -176,4 +176,15 @@ class QiDataTest {
         QiData data = new QiData(0, Double.MAX_VALUE);
         assertEquals(data, data.regenerateForTicks(Long.MAX_VALUE, 0));
     }
+
+    @Test
+    void deathCostsTenPercentOfTheMaximumForGoodButNotBelowTheStart() {
+        QiData strong = new QiData(800.0, 1_000.0).afterDeath();
+        assertEquals(900.0, strong.qiMax(), EPSILON);
+        assertEquals(800.0, strong.qi(), EPSILON);
+        assertEquals(900.0, new QiData(1_000.0, 1_000.0).afterDeath().qi(), EPSILON);
+        assertEquals(100.0, new QiData(100.0, 105.0).afterDeath().qiMax(), EPSILON);
+        assertEquals(100.0, QiData.initial().afterDeath().qiMax(), EPSILON);
+        assertEquals(60.0, new QiData(10.0, 60.0).afterDeath().qiMax(), EPSILON);
+    }
 }

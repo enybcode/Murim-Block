@@ -55,12 +55,22 @@ public final class ArmoredCrabEpicFight {
         modBus.addListener(AnimationRegistryEvent.class, event -> event.newBuilder(Murimblock.MOD_ID, builder -> {
             buildAnimations(builder);
             CrabManEpicFight.buildAnimations(builder);
+            MurimAnimations.buildAnimations(builder);
         }));
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
             event.registerEntityPatch(MurimEntities.ARMORED_CRAB.get(), ArmoredCrabPatch::new);
             // Runs once on the main thread during common setup; the mapping is not cleared on reload.
             Armatures.registerEntityTypeArmature(MurimEntities.ARMORED_CRAB.get(), ARMATURE);
             CrabManEpicFight.registerPatch(event);
+            // The bandit: a humanoid on the engine's own biped skeleton.
+            event.registerEntityPatch(MurimEntities.MOUNTAIN_BANDIT.get(), MountainBanditPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.MOUNTAIN_BANDIT.get(), Armatures.BIPED);
+            // Their chief: the same skeleton, drawn larger.
+            event.registerEntityPatch(MurimEntities.BANDIT_CHIEF.get(), BanditChiefPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_CHIEF.get(), Armatures.BIPED);
+            // Sensei Yun: the same skeleton, his own model.
+            event.registerEntityPatch(MurimEntities.AZURE_SENSEI.get(), AzureSenseiPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.AZURE_SENSEI.get(), Armatures.BIPED);
         });
     }
 

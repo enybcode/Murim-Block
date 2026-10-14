@@ -30,6 +30,10 @@
           }
         }
       }
+    },
+    {
+      "type": "murimblock:away_from_sites",
+      "margin": 10
     }
   ]
 }

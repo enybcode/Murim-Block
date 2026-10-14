@@ -12,7 +12,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 /** The sect token's needle: the vanilla compass "angle" property, aimed at the token's lodestone target. */
-@EventBusSubscriber(modid = Murimblock.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class SectTokenClient {
     private SectTokenClient() { }
 

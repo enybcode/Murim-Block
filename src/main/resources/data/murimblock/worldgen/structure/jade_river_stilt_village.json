@@ -1,0 +1,8 @@
+{
+  "type": "murimblock:site",
+  "plan": "stilt_village",
+  "biomes": "#murimblock:has_structure/jade_river_stilt_village",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

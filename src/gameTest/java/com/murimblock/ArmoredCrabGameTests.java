@@ -3,10 +3,12 @@ package com.murimblock;
 import com.murimblock.integration.epicfight.ArmoredCrabArmature;
 import com.murimblock.integration.epicfight.ArmoredCrabEpicFight;
 import com.murimblock.integration.epicfight.ArmoredCrabPatch;
+import com.murimblock.item.MurimItems;
 import com.murimblock.mob.ArmoredCrabEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.qi.QiRewardManager;
 import com.murimblock.qi.QiService;
+import com.murimblock.testing.LootRolls;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -16,6 +18,9 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -70,7 +75,7 @@ public final class ArmoredCrabGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "crab")
-    public static void armoredCrabGivesChickenExperienceThreeQiAndNoLoot(GameTestHelper helper) {
+    public static void armoredCrabGivesChickenExperienceThreeQiAndFish(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         var crab = helper.spawn(MurimEntities.ARMORED_CRAB.get(), new BlockPos(1, 1, 1));
         crab.setNoAi(true);
@@ -83,7 +88,11 @@ public final class ArmoredCrabGameTests {
             AtomicInteger deaths = new AtomicInteger();
             Consumer<LivingDropsEvent> observer = event -> {
                 if (event.getEntity() != crab) return;
-                helper.assertTrue(event.getDrops().isEmpty(), "Crab dropped loot");
+                for (var drop : event.getDrops()) {
+                    ItemStack stack = drop.getItem();
+                    helper.assertTrue(stack.is(Items.COD) && stack.getCount() <= 1 || stack.is(Items.TRIDENT),
+                            "Crab dropped something else than a cod or a trident: " + stack);
+                }
                 deaths.incrementAndGet();
             };
             NeoForge.EVENT_BUS.addListener(observer);
@@ -91,6 +100,28 @@ public final class ArmoredCrabGameTests {
                 crab.hurt(player.damageSources().playerAttack(player), 1000);
                 helper.assertTrue(!crab.isAlive() && deaths.get() == 1, "Crab death pipeline did not run");
             } finally { NeoForge.EVENT_BUS.unregister(observer); }
+            helper.succeed();
+        } finally { crab.discard(); cleanup(player); }
+    }
+
+    /** Its loot rolled 4000 times: a cod one time in two, and a trident one time in a hundred, only for a player's kill. */
+    @GameTest(template = "foundation_arena", batch = "crab")
+    public static void armoredCrabDropsACodHalfTheTimeAndARareTrident(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        var crab = helper.spawn(MurimEntities.ARMORED_CRAB.get(), new BlockPos(1, 1, 1));
+        crab.setNoAi(true);
+        try {
+            var byPlayer = LootRolls.roll(helper.getLevel(), crab, player, 4000);
+            helper.assertTrue(byPlayer.onlyContains(Items.COD, Items.TRIDENT), "Crab loot holds something else: " + byPlayer.rollsWith());
+            helper.assertTrue(byPlayer.mostInOneRoll(Items.COD) == 1, "Crab gave more than one cod: " + byPlayer.mostInOneRoll(Items.COD));
+            helper.assertTrue(byPlayer.rollsWith(Items.COD) > 1600 && byPlayer.rollsWith(Items.COD) < 2400,
+                    "Crab cod not one time in two: " + byPlayer.rollsWith(Items.COD) + " in 4000");
+            // About 40 in 4000; outside 10 to 80 would take odds of under one in a hundred thousand.
+            helper.assertTrue(byPlayer.rollsWith(Items.TRIDENT) >= 10 && byPlayer.rollsWith(Items.TRIDENT) <= 80,
+                    "Crab trident not one time in a hundred: " + byPlayer.rollsWith(Items.TRIDENT) + " in 4000");
+            helper.assertTrue(byPlayer.mostInOneRoll(Items.TRIDENT) <= 1, "Crab gave two tridents");
+            var byNothing = LootRolls.roll(helper.getLevel(), crab, null, 2000);
+            helper.assertTrue(byNothing.rollsWith(Items.TRIDENT) == 0, "Crab gave a trident to no player");
             helper.succeed();
         } finally { crab.discard(); cleanup(player); }
     }
@@ -119,12 +150,12 @@ public final class ArmoredCrabGameTests {
 
     @GameTest(template = "foundation_arena", batch = "crab")
     public static void murimblockCreativeTabOffersTheCrabSpawnEgg(GameTestHelper helper) {
-        var egg = com.murimblock.item.MurimItems.ARMORED_CRAB_SPAWN_EGG.get();
-        helper.assertTrue(egg.getType(new net.minecraft.world.item.ItemStack(egg)) == MurimEntities.ARMORED_CRAB.get(),
+        var egg = MurimItems.ARMORED_CRAB_SPAWN_EGG.get();
+        helper.assertTrue(egg.getType(new ItemStack(egg)) == MurimEntities.ARMORED_CRAB.get(),
                 "Spawn egg does not create an armored crab");
-        var tab = com.murimblock.item.MurimItems.MURIMBLOCK_TAB.get();
+        var tab = MurimItems.MURIMBLOCK_TAB.get();
         var level = helper.getLevel();
-        tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(
+        tab.buildContents(new CreativeModeTab.ItemDisplayParameters(
                 level.enabledFeatures(), false, level.registryAccess()));
         helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(egg)), "Murimblock tab lacks the crab egg");
         helper.assertTrue(tab.getIconItem().is(egg), "Murimblock tab icon is not the crab egg");

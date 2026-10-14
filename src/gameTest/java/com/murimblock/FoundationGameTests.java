@@ -1,14 +1,22 @@
 package com.murimblock;
 
 import com.murimblock.combat.CombatService;
-import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationRealm;
+import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationStage;
-import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
+import com.murimblock.integration.epicfight.MurimSkills;
 import com.murimblock.integration.epicfight.EpicFightContentPolicy;
+import com.murimblock.mob.MurimEntities;
+import com.murimblock.qi.QiRewardManager;
+import com.murimblock.qi.QiService;
+import com.murimblock.qi.charge.QiChargeService;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -19,30 +27,50 @@ import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import yesman.epicfight.api.data.reloader.MobPatchReloadListener;
+import yesman.epicfight.gameasset.Animations;
+import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.registry.entries.EpicFightItems;
 import yesman.epicfight.registry.entries.EpicFightSkills;
-import yesman.epicfight.skill.SkillSlots;
-import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.skill.Skill;
+import yesman.epicfight.skill.SkillSlots;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+import yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
+import yesman.epicfight.world.entity.ai.goal.AnimatedAttackGoal;
+import yesman.epicfight.world.entity.ai.goal.TargetChasingGoal;
 
 import static com.murimblock.testing.GameTestPlayers.player;
 import static com.murimblock.testing.GameTestPlayers.cleanup;
@@ -77,7 +105,7 @@ public final class FoundationGameTests {
         var target = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 3));
         target.setNoAi(true);
         target.setNoGravity(true);
-        target.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+        target.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
         AtomicInteger contacts = new AtomicInteger();
         Consumer<LivingDamageEvent.Post> observer = event -> {
             if (event.getEntity() == target && event.getSource().getEntity() == player) contacts.incrementAndGet();
@@ -232,7 +260,7 @@ public final class FoundationGameTests {
             EpicFightCombatDefaults.enforce(player);
             EpicFightCombatDefaults.enforce(player);
             helper.assertTrue(passive.isEmpty() && innate.isEmpty(), "Native progression was not cleared");
-            helper.assertTrue(patch.getSkill(SkillSlots.GUARD).getSkill() == EpicFightSkills.GUARD.get(), "Default guard missing");
+            helper.assertTrue(patch.getSkill(SkillSlots.GUARD).getSkill() == MurimSkills.MURIM_GUARD.get(), "Default (Murim) guard missing");
             helper.assertTrue(patch.getSkill(SkillSlots.DODGE).getSkill() == EpicFightSkills.ROLL.get(), "Default dodge missing");
             helper.assertTrue(QiService.getQi(player) == 100, "Default actions changed Qi");
             helper.succeed();
@@ -268,13 +296,13 @@ public final class FoundationGameTests {
 
     @GameTest(template = "foundation_arena", batch = "foundation")
     public static void lootModifierRemovesOnlyNativeItems(GameTestHelper helper) {
-        var loot = new it.unimi.dsi.fastutil.objects.ObjectArrayList<ItemStack>();
+        var loot = new ObjectArrayList<ItemStack>();
         loot.add(new ItemStack(EpicFightItems.SKILLBOOK.get(), 4));
         loot.add(new ItemStack(Items.DIAMOND, 3));
-        var params = new net.minecraft.world.level.storage.loot.LootParams.Builder(helper.getLevel())
-                .create(net.minecraft.world.level.storage.loot.parameters.LootContextParamSets.EMPTY);
-        var context = new net.minecraft.world.level.storage.loot.LootContext.Builder(params).create(java.util.Optional.empty());
-        loot = net.neoforged.neoforge.common.CommonHooks.modifyLoot(ResourceLocation.parse("murimblock:test_loot"), loot, context);
+        var params = new LootParams.Builder(helper.getLevel())
+                .create(LootContextParamSets.EMPTY);
+        var context = new LootContext.Builder(params).create(Optional.empty());
+        loot = CommonHooks.modifyLoot(ResourceLocation.parse("murimblock:test_loot"), loot, context);
         helper.assertTrue(loot.size() == 1 && loot.getFirst().is(Items.DIAMOND) && loot.getFirst().getCount() == 3, "Loot filter changed vanilla drops");
         helper.succeed();
     }
@@ -283,16 +311,16 @@ public final class FoundationGameTests {
     public static void openedContainersAreCleanedAndBookUseIsRejected(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         try {
-            var chest = new net.minecraft.world.SimpleContainer(27);
+            var chest = new SimpleContainer(27);
             chest.setItem(0, new ItemStack(EpicFightItems.SKILLBOOK.get()));
             chest.setItem(1, new ItemStack(Items.GOLD_INGOT, 6));
-            var menu = net.minecraft.world.inventory.ChestMenu.threeRows(0, player.getInventory(), chest);
+            var menu = ChestMenu.threeRows(0, player.getInventory(), chest);
             menu.setCarried(new ItemStack(EpicFightItems.SKILLBOOK.get()));
-            NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Open(player, menu));
+            NeoForge.EVENT_BUS.post(new PlayerContainerEvent.Open(player, menu));
             helper.assertTrue(chest.getItem(0).isEmpty() && menu.getCarried().isEmpty(), "Opened legacy contents remained");
             helper.assertTrue(chest.getItem(1).getCount() == 6 && chest.getItem(1).is(Items.GOLD_INGOT), "Vanilla chest content changed");
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(EpicFightItems.SKILLBOOK.get()));
-            var use = new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem(player, InteractionHand.MAIN_HAND);
+            var use = new PlayerInteractEvent.RightClickItem(player, InteractionHand.MAIN_HAND);
             NeoForge.EVENT_BUS.post(use);
             helper.assertTrue(use.isCanceled() && use.getCancellationResult() == InteractionResult.FAIL, "Native book use not rejected");
             helper.succeed();
@@ -301,9 +329,9 @@ public final class FoundationGameTests {
 
     @GameTest(template = "foundation_arena", batch = "foundation")
     public static void documentedBehaviorFragmentUsesPinnedEngineSchema(GameTestHelper helper) throws Exception {
-        String json = java.nio.file.Files.readString(java.nio.file.Path.of("../../docs/examples/mobs/humanoid_behavior.fragment.json"));
-        var tag = net.minecraft.nbt.TagParser.parseTag(json);
-        var behaviors = yesman.epicfight.api.data.reloader.MobPatchReloadListener
+        String json = Files.readString(Path.of("../../docs/examples/mobs/humanoid_behavior.fragment.json"));
+        var tag = TagParser.parseTag(json);
+        var behaviors = MobPatchReloadListener
                 .deserializeHumanoidCombatBehaviors(tag.getList("combat_behavior", 10));
         helper.assertTrue(!behaviors.isEmpty(), "Example behavior was not deserialized by the real engine");
         helper.succeed();
@@ -313,18 +341,18 @@ public final class FoundationGameTests {
     public static void nativeDropsAreRejectedAndStrayKeepsVanillaEquipment(GameTestHelper helper) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(new BlockPos(2, 1, 2));
-        var dropped = new net.minecraft.world.entity.item.ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(),
+        var dropped = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(),
                 new ItemStack(EpicFightItems.SKILLBOOK.get()));
         helper.assertFalse(level.addFreshEntity(dropped), "Native item entity was added");
         var stray = EntityType.STRAY.create(level);
         stray.moveTo(pos.getX(), pos.getY(), pos.getZ());
         stray.setNoAi(true);
-        stray.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+        stray.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
         helper.assertTrue(level.addFreshEntity(stray), "Stray spawn failed");
-        helper.assertTrue(stray.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).is(Items.IRON_HELMET), "Stray combat patch overwrote vanilla helmet");
-        for (var slot : net.minecraft.world.entity.EquipmentSlot.values()) helper.assertFalse(EpicFightContentPolicy.blocked(stray.getItemBySlot(slot)), "Native mob equipment remained");
-        helper.assertTrue(yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(stray,
-                yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch.class) != null, "Stray engine patch missing");
+        helper.assertTrue(stray.getItemBySlot(EquipmentSlot.HEAD).is(Items.IRON_HELMET), "Stray combat patch overwrote vanilla helmet");
+        for (var slot : EquipmentSlot.values()) helper.assertFalse(EpicFightContentPolicy.blocked(stray.getItemBySlot(slot)), "Native mob equipment remained");
+        helper.assertTrue(EpicFightCapabilities.getEntityPatch(stray,
+                LivingEntityPatch.class) != null, "Stray engine patch missing");
         stray.discard();
         helper.succeed();
     }
@@ -335,7 +363,7 @@ public final class FoundationGameTests {
         var target = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 3));
         target.setNoAi(true);
         target.setNoGravity(true);
-        target.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+        target.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
         // Vanilla GameTest scatters arenas millions of blocks away; float-based engine colliders need a local fixture.
         helper.getLevel().getChunk(0, 0);
         helper.getLevel().setChunkForced(0, 0, true);
@@ -370,11 +398,11 @@ public final class FoundationGameTests {
 
     @GameTest(template = "foundation_arena", batch = "foundation")
     public static void everyVanillaSwordResolvesToAnEpicFightSword(GameTestHelper helper) {
-        for (var item : java.util.List.of(Items.WOODEN_SWORD, Items.STONE_SWORD, Items.IRON_SWORD,
+        for (var item : List.of(Items.WOODEN_SWORD, Items.STONE_SWORD, Items.IRON_SWORD,
                 Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD)) {
-            var capability = yesman.epicfight.world.capabilities.EpicFightCapabilities.getItemStackCapability(new ItemStack(item));
+            var capability = EpicFightCapabilities.getItemStackCapability(new ItemStack(item));
             helper.assertTrue(capability.getWeaponCategory()
-                    == yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories.SWORD,
+                    == CapabilityItem.WeaponCategories.SWORD,
                     "Invalid sword capability: " + item);
         }
         helper.succeed();
@@ -460,24 +488,24 @@ public final class FoundationGameTests {
 
     @GameTest(template = "foundation_arena", batch = "mob_integration")
     public static void trainingOpponentReceivesEngineAttributesAndOnlyAnimatedMeleeGoals(GameTestHelper helper) {
-        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        var mob = helper.spawn(MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
         try {
-            var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mob,
-                    yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+            var patch = EpicFightCapabilities.getEntityPatch(mob,
+                    ZombiePatch.class);
             helper.assertTrue(patch != null && patch.getArmature() != null, "Custom mob patch or armature missing");
-            for (var attribute : java.util.List.of(yesman.epicfight.registry.entries.EpicFightAttributes.WEIGHT,
-                    yesman.epicfight.registry.entries.EpicFightAttributes.IMPACT,
-                    yesman.epicfight.registry.entries.EpicFightAttributes.MAX_STRIKES,
-                    yesman.epicfight.registry.entries.EpicFightAttributes.OFFHAND_IMPACT)) {
+            for (var attribute : List.of(EpicFightAttributes.WEIGHT,
+                    EpicFightAttributes.IMPACT,
+                    EpicFightAttributes.MAX_STRIKES,
+                    EpicFightAttributes.OFFHAND_IMPACT)) {
                 helper.assertTrue(mob.getAttribute(attribute) != null, "Custom mob engine attribute missing: " + attribute);
             }
             long animated = mob.goalSelector.getAvailableGoals().stream().filter(goal -> goal.getGoal()
-                    instanceof yesman.epicfight.world.entity.ai.goal.AnimatedAttackGoal).count();
+                    instanceof AnimatedAttackGoal).count();
             helper.assertTrue(animated == 1, "Expected exactly one animated melee goal, got " + animated);
             // Epic Fight's TargetChasingGoal extends MeleeAttackGoal but overrides its damage callback with a no-op.
             helper.assertFalse(mob.goalSelector.getAvailableGoals().stream().anyMatch(goal -> goal.getGoal()
-                    instanceof net.minecraft.world.entity.ai.goal.MeleeAttackGoal
-                    && !(goal.getGoal() instanceof yesman.epicfight.world.entity.ai.goal.TargetChasingGoal)),
+                    instanceof MeleeAttackGoal
+                    && !(goal.getGoal() instanceof TargetChasingGoal)),
                     "Vanilla melee goal would double attacks");
             helper.assertTrue(mob.getMainHandItem().is(Items.IRON_SWORD), "Fixture sword missing");
             mob.setBaby(true);
@@ -485,7 +513,7 @@ public final class FoundationGameTests {
             CompoundTag saved = new CompoundTag();
             mob.saveWithoutId(saved);
             saved.remove("UUID");
-            var restored = com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get().create(helper.getLevel());
+            var restored = MurimEntities.TRAINING_OPPONENT.get().create(helper.getLevel());
             restored.load(saved);
             helper.assertTrue(restored.getMainHandItem().is(Items.IRON_SWORD) && !restored.isBaby(), "Mob save/load changed equipment or rig");
             helper.succeed();
@@ -495,19 +523,19 @@ public final class FoundationGameTests {
     @GameTest(template = "foundation_arena", batch = "mob_integration")
     public static void trainingOpponentCannotAwardQiLootOrExperience(GameTestHelper helper) {
         ServerPlayer player = player(helper);
-        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(1, 1, 1));
+        var mob = helper.spawn(MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(1, 1, 1));
         mob.setNoAi(true);
         mob.setNoGravity(true);
         try {
-            helper.assertTrue(com.murimblock.qi.QiRewardManager.rewardTarget(mob.getType()).baseReward() == 0,
+            helper.assertTrue(QiRewardManager.rewardTarget(mob.getType()).baseReward() == 0,
                     "Prototype type received the fallback Qi reward");
             QiService.setQi(player, 50);
-            helper.assertTrue(com.murimblock.qi.QiRewardManager.awardKillReward(player, mob).isEmpty()
+            helper.assertTrue(QiRewardManager.awardKillReward(player, mob).isEmpty()
                     && QiService.getQi(player) == 50, "Fixture awarded progression Qi");
             helper.assertTrue(mob.getExperienceReward(helper.getLevel(), player) == 0, "Fixture awarded XP");
             // Observe the actual death pipeline, including equipment (not just the empty JSON loot table).
             AtomicInteger deathEvents = new AtomicInteger();
-            Consumer<net.neoforged.neoforge.event.entity.living.LivingDropsEvent> observer = event -> {
+            Consumer<LivingDropsEvent> observer = event -> {
                 if (event.getEntity() != mob) return;
                 helper.assertTrue(event.getDrops().isEmpty(), "Fixture death generated equipment or loot");
                 deathEvents.incrementAndGet();
@@ -524,7 +552,7 @@ public final class FoundationGameTests {
     @GameTest(template = "foundation_arena", batch = "mob_integration", timeoutTicks = 60)
     public static void customMobAnimatedSwordDealsOneContactWithoutSpendingPlayerQi(GameTestHelper helper) {
         ServerPlayer player = player(helper);
-        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        var mob = helper.spawn(MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
         mob.setNoAi(true);
         mob.setNoGravity(true);
         helper.getLevel().getChunk(0, 0);
@@ -533,8 +561,8 @@ public final class FoundationGameTests {
         player.moveTo(0.5, 70, 1.7, 180, 0);
         mob.setTarget(player);
         player.connection.tick();
-        var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mob,
-                yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+        var patch = EpicFightCapabilities.getEntityPatch(mob,
+                ZombiePatch.class);
         mob.yBodyRot = 0;
         mob.yHeadRot = 0;
         AtomicInteger contacts = new AtomicInteger();
@@ -567,7 +595,7 @@ public final class FoundationGameTests {
     @GameTest(template = "foundation_arena", batch = "mob_interrupt", timeoutTicks = 60)
     public static void removingTrainingOpponentDuringWindupCannotLeaveADelayedHit(GameTestHelper helper) {
         ServerPlayer player = player(helper);
-        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        var mob = helper.spawn(MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
         helper.getLevel().getChunk(0, 0);
         helper.getLevel().setChunkForced(0, 0, true);
         mob.setNoAi(true);
@@ -576,8 +604,8 @@ public final class FoundationGameTests {
         mob.yBodyRot = 0;
         player.moveTo(0.5, 70, 1.7, 180, 0);
         player.connection.tick();
-        var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(mob,
-                yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch.class);
+        var patch = EpicFightCapabilities.getEntityPatch(mob,
+                ZombiePatch.class);
         float health = player.getHealth();
         patch.playAnimationSynchronized(Animations.BIPED_MOB_ONEHAND1, 0);
         helper.runAfterDelay(4, mob::discard);
@@ -593,7 +621,7 @@ public final class FoundationGameTests {
     @GameTest(template = "foundation_arena", batch = "mob_ai", timeoutTicks = 100)
     public static void trainingOpponentAiSelectsAnAnimatedAttack(GameTestHelper helper) {
         ServerPlayer player = player(helper);
-        var mob = helper.spawn(com.murimblock.mob.MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
+        var mob = helper.spawn(MurimEntities.TRAINING_OPPONENT.get(), new BlockPos(2, 1, 2));
         helper.getLevel().getChunk(0, 0);
         helper.getLevel().setChunkForced(0, 0, true);
         mob.setNoGravity(true);

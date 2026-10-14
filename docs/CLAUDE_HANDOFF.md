@@ -1,5 +1,14 @@
 # Reprise Murimblock Pour Claude
 
+> Point de reprise actualisé le 13 octobre : [là où je me suis arrêter](../l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md).
+> Ce fichier conserve l'historique du 12 octobre : les passages « Techniques vide »,
+> « crabe non intégré » et les anciens SHA/protocoles ne décrivent plus l'état courant.
+> La tranche garde/K.O./premier art est publiée dans `84b2cac`, protocole 10, PR #5.
+> 13 octobre au soir : art Azure Cloud Sword complet (passif, variantes, secret, quêtes, maîtrise, évolutions, finish),
+> protocole 11, voir `docs/combat/styles/azure-cloud-sword.md`. 14 octobre : Cloud Step Slash tenu pour viser puis relâché (garde de Zoro, images rémanentes), protocole 12 ; coupes retardées de Thousand Drizzle, protocole 13. Mountain Bandit en jeu (`MountainBanditEntity`, patch Epic Fight humanoïde, modèle 3D à 5 tenues (`scripts/animation/bandit-3d.cjs`, mesh `entity/mountain_bandit`), Dao de bandit 3D tenu tranchant en bas, houppe à pendule (`BanditDaoRenderer`), lâché 1 fois sur 100, coupes Murim tranchant en tête, toutes parables (`MountainBanditGameTests`), aussi fréquent que le zombie dans les biomes Murim). Bandit Chief, mini-boss sans apparition naturelle (œuf, /summon) : modèle 3D ×1,3, grande hache à deux mains, fendoir, fauchage et saut écrasant à onde de choc, tous parables, barre de boss (`docs/mobs/bandit-chief.md`). Idles propres au bandit et au chef (`mob-idles.cjs`) et visages vivants par texture, 10 expressions par atlas (`client/MobFaces`).; croissant à 7 blocs, suspension (case qui brille), plongée, explosion et exécution, protocole 14 ; validé à deux vrais clients (scripts/mp/run-mp-tour.sh). Checkout de ce PC : `C:\Users\enzob\Documents\Murimblock`.
+> 14 octobre : Poing Long (`docs/combat/styles/long-fist.md`), premier art à mains nues : rouleau, M1 d'Epic Fight, passif Steady Breath, garde à mains nues, Tiger Step Punch / Rapid Fists / Whirlwind Kick, secret Inch Force, quêtes, évolutions, finish Final Palm, bouton de style principal dans Techniques ; protocole 15. Lieu du rouleau à décider.
+> 14 octobre : Sensei Yun (`AzureSenseiEntity`, `docs/mobs/azure-sensei.md`), maître du Nuage Azur dans la salle des Trois Purs du temple de la Mer de Bambous : modèle 3D (`sensei-3d.cjs`), idle et marche (`sensei-motions.cjs`), épée Azure Cloud à houppe balancée (`TasselSwordRenderer`), neutre, coups M1 du Nuage Azur, clic droit = manuel une fois (même exemplaire que la bibliothèque). Pas encore ses techniques ; drops à décider. `runSenseiTour`.
+
 Etat prepare le 12 octobre 2026. Synthese des decisions humaines et du depot,
 pas une preuve de nouveaux tests ni une copie exhaustive des conversations.
 Lire les details seulement lorsque la tache les concerne. Le code prime sur
@@ -60,7 +69,8 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   propre (21 joints), 20 PV, armure 8 / tenacite 2, recul (jab `claw_snap` a
   fort impact), Vitesse I dans l'eau, ne brule pas, arrive toujours avec 2 crabes
   cuirasses. Spawn naturel rare pres de l'eau (memes biomes que le crabe, poids 3
-  contre 20, seul + escorte) ; structures plus tard. 10 XP, 10 Qi, sans butin.
+  contre 20, seul + escorte) ; structures plus tard. 10 XP, 10 Qi ; butin (14/10) : 1-2 morues, 0-1 saumon, trident
+  1 % tué par un joueur (le crabe cuirassé : une morue une fois sur deux, trident 1 % aussi).
   Attaques jouees a la vitesse animee (`ATTACK_SPEED_FACTOR` 0, crabe inclus).
   Boule d'eau (12/10/2026, demande d'Enzo, sans particules Minecraft) : clip
   `crab_man/water_ball` (ActionAnimation, vers 4 blocs : 3 a 6, ligne de vue, recharge
@@ -84,8 +94,25 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   au premier demarrage (SanctuaryPlacement, sauvegarde murimblock_sanctuary) au coeur des
   Pics de la mer de nuages les plus proches du spawn (4000 blocs), a 64 blocs au moins ;
   le point d'apparition n'est PAS deplace (demande d'Enzo). Le chemin finit au sud par
-  une passerelle dans l'axe du portique ; couche sous les toits fermee. Jeton de la Secte (boussole de jade) donne une
+  une passerelle dans l'axe du portique ; couche sous les toits fermee. Construction repartie sur
+  les ticks (SanctuaryPlacement.Job, ticket de chargement, ~50 ms max par tick). Kit commun pour
+  les structures : world/structure/kit (BuildKit, RoofTiles). Jeton de la Secte (boussole de jade) donne une
   fois a la premiere connexion. Pas dans les mondes plats/tests. docs/structures.
+- Mise a terre PvP (12/10/2026, local) : un coup mortel d'un joueur met K.O. au lieu de tuer
+  (combat/knockdown : KnockdownService, KnockdownEvents ; client/KnockdownClient). Ramper,
+  V porter/poser, B executer (finish generique, l'art martial aura le sien), releve apres 30 s
+  (personne ne peut relever). Execution = mort normale (inventaire au sol). Toute vraie mort
+  coute 10 % du Qi maximum pour de bon, plancher 100 (QiData.afterDeath, QiEvents.onPlayerDeath).
+  Animations originales Epic Fight generees par scripts/animation (MurimAnimations, mouvements
+  Motions ajoutes via INIT_ANIMATOR et MODIFY_PLAYER_LIVING_MOTION). Protocole reseau 8.
+  Finish vu en cinematique par ses deux joueurs (client/FinishCinematic, FinishCinematicPayload,
+  protocole 9). Tests : KnockdownGameTests, gradlew -PgameTests runKnockdownTour. docs/combat/STYLES.md.
+- Garde Murim (12/10/2026, local) : MurimGuardSkill (herite de ParryingSkill d'Epic Fight) dans l'emplacement de
+  garde ; parade parfaite (10 ticks) sur toute attaque (fleches, boules d'eau, competences), parade normale 50 %.
+- Art de l'Epee du Nuage Azur, 1re tranche (12/10/2026, local) : package martial (MartialArts, MartialData,
+  MartialService, Techniques, SectLibrary, MartialManualItem), barre de combat (CombatBarClient, touches 1-9 + 10e
+  touche Murim), onglet Techniques, Cloud Step Slash (DashAttackAnimation, MurimAnimations). Protocole reseau 10.
+  Tests : MartialGameTests, ParryGameTests, gradlew -PgameTests runMartialTour / runParryTour.
 - GeckoLib 4.9.3 et Photon 2.2.8 (Low-Drag, effets/lumieres dynamiques) sont
   des dependances requises depuis le 12/10/2026, a la demande d'Enzo, avec
   LDLib2 2.2.42 et KilaGraph 21.1.0.16. GeckoLib rend la boule d'eau du

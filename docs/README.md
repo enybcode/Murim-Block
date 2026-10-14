@@ -7,10 +7,16 @@
 - [Clear Manuscript](gui/TAB_LAYOUT.md): current GUI, not the V4 reference.
 - [Qi rewards](QI_REWARDS.md): balance and temporary anti-farm history.
 - [Armored crab](ARMORED_CRAB_DELIVERY.md): integrated assets, behavior and local verification.
+- [Bandit Chief](mobs/bandit-chief.md): the bandits' mini-boss, his great axe and attacks.
+- [Sensei Yun](mobs/azure-sensei.md): the Azure Cloud Sect's master in the Misty Bamboo Temple, his sword and his manual.
 - [Addon API](ADDON_API.md) and [addon guide](ADDON_GUIDE.md): supported contracts.
+- [Murim biomes](biomes/README.md): the seven biomes, their blocks and textures (redrawn 14 October).
+- [Murim structures](structures/README.md): the Cloud Cliff Sanctuary and the six sites with their technical sheets.
 
 ## Development And Delivery
 
+- [Point de reprise et installation sur un autre PC](../l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md): état courant, derniers échanges Claude, dépendances et suite.
+- [Local publication, 13 October](DELIVERY_2026_10_13.md): combat/techniques changes, current checks and remaining validation.
 - [Git workflow](GIT_WORKFLOW.md): `test` for pending validation, `main` stable.
 - [Codex and Claude](AI_COLLABORATION.md): shared rules, local setup and safe handoffs.
 - [Claude handoff](CLAUDE_HANDOFF.md): compact project state, decisions and next validation steps.

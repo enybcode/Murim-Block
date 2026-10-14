@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "murimblock:jade_river_stilt_village",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 24,
+    "separation": 8,
+    "salt": 71001
+  }
+}

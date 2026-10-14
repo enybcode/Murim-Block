@@ -1,8 +1,12 @@
 package com.murimblock;
 
+import com.mojang.datafixers.util.Pair;
+import com.mojang.logging.LogUtils;
 import com.murimblock.client.MurimMistClient;
+import com.murimblock.item.MurimItems;
 import com.murimblock.world.MurimBiomes;
 import com.murimblock.world.block.MurimBlocks;
+import com.murimblock.world.structure.SanctuaryPlacement;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -12,18 +16,25 @@ import java.util.Map;
 import java.util.function.Predicate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldOptions;
@@ -32,6 +43,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import org.slf4j.Logger;
 
 /**
  * Development-only tour of the Murim biomes in a real client (gradlew -PgameTests runBiomeTour): creates a fresh
@@ -40,7 +52,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class BiomeTour {
-    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final long SEED = 20261012L;
     private static boolean creating;
     private static int ticks;
@@ -49,7 +61,7 @@ public final class BiomeTour {
     private static volatile BlockPos found;
     /** First the Cloud Cliff Sanctuary (built near the spawn of the fresh world), then the biomes. */
     private static int sanctuaryStep = 0;
-    private static volatile com.murimblock.world.structure.SanctuaryPlacement sanctuaryData;
+    private static volatile SanctuaryPlacement sanctuaryData;
     private static volatile BlockPos pavilion;
     /** Set by the server thread when the biome search (or the block scan) is done. */
     private static volatile boolean searchDone, scanDone;
@@ -79,7 +91,7 @@ public final class BiomeTour {
         Minecraft mc = Minecraft.getInstance();
         // Unattended: never pause when the window loses focus.
         mc.options.pauseOnLostFocus = false;
-        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) mc.setScreen(null);
+        if (mc.screen instanceof PauseScreen) mc.setScreen(null);
         try {
             if (mc.player == null || mc.getSingleplayerServer() == null) {
                 // First launch of this game directory shows the accessibility onboarding instead of the title screen.
@@ -119,7 +131,7 @@ public final class BiomeTour {
                     ServerLevel level = mc.getSingleplayerServer().overworld();
                     // The largest stretch of the biome within 6000 blocks (its first occurrence can be a sliver).
                     BlockPos largest = largest(level, biome);
-                    var result = largest != null ? com.mojang.datafixers.util.Pair.of(largest, (Object) null)
+                    var result = largest != null ? Pair.of(largest, (Object) null)
                             : level.findClosestBiome3d(h -> h.is(biome), BlockPos.ZERO.atY(80), 9600, 32, 64);
                     if (result == null) { searchDone = true; return; }
                     // The search stops at the biome edge: look around for its heart, the spot with the most of it nearby.
@@ -171,12 +183,14 @@ public final class BiomeTour {
     }
 
     private static void sanctuary(Minecraft mc) throws Exception {
+        // The sanctuary is built over the first ticks of the world: wait for it.
+        if (sanctuaryStep == 0 && SanctuaryPlacement.building()) return;
         sanctuaryStep++;
         var server = mc.getSingleplayerServer();
         switch (sanctuaryStep) {
             case 1 -> server.execute(() -> {
                 ServerLevel level = server.overworld();
-                sanctuaryData = com.murimblock.world.structure.SanctuaryPlacement.get(level);
+                sanctuaryData = SanctuaryPlacement.get(level);
                 BlockPos c = sanctuaryData.centre();
                 String line = c == null ? "FAILED sanctuary not built" : "sanctuary at " + c.getX() + " " + c.getY() + " " + c.getZ() + ", top " + sanctuaryData.top()
                         + ", foot " + sanctuaryData.foot() + ", world spawn " + level.getSharedSpawnPos() + ", biome " + level.getBiome(c).unwrapKey().map(k -> k.location().toString()).orElse("?");
@@ -196,10 +210,10 @@ public final class BiomeTour {
                 for (int x = -30; x <= 30; x++) for (int z = -30; z <= 30; z++) for (int y = c.getY() - 10; y <= sanctuaryData.top() + 20; y++) {
                     p.set(c.getX() + x, y, c.getZ() + z);
                     var here = level.getBlockState(p);
-                    if (here.getLightBlock(level, p) >= 15 || level.getBrightness(net.minecraft.world.level.LightLayer.SKY, p) > 0) continue;
-                    for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
+                    if (here.getLightBlock(level, p) >= 15 || level.getBrightness(LightLayer.SKY, p) > 0) continue;
+                    for (Direction d : Direction.values()) {
                         BlockPos n = p.relative(d);
-                        if (level.getBlockState(n).isAir() && level.getBrightness(net.minecraft.world.level.LightLayer.SKY, n) >= 3) { dark++; break; }
+                        if (level.getBlockState(n).isAir() && level.getBrightness(LightLayer.SKY, n) >= 3) { dark++; break; }
                     }
                 }
                 report.add("sanctuary lighting: " + dark + " see-through blocks left dark next to sky-lit air");
@@ -214,7 +228,7 @@ public final class BiomeTour {
                     int clutter = 0;
                     for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) for (int h = 0; h <= 6; h++) {
                         var s = server.overworld().getBlockState(f.offset(dx, h, dz));
-                        if (s.is(net.minecraft.tags.BlockTags.LEAVES) || s.is(net.minecraft.tags.BlockTags.LOGS)) clutter++;
+                        if (s.is(BlockTags.LEAVES) || s.is(BlockTags.LOGS)) clutter++;
                     }
                     report.add("sanctuary foot: " + clutter + " leaf/log blocks within 4 blocks");
                     if (clutter > 0) failed = true;
@@ -228,7 +242,7 @@ public final class BiomeTour {
                 player.setGameMode(GameType.CREATIVE);
                 player.getAbilities().flying = true;
                 player.onUpdateAbilities();
-                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(com.murimblock.item.MurimItems.SECT_TOKEN.get()));
+                player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.SECT_TOKEN.get()));
                 BlockPos c = sanctuaryData.centre();
                 // 300 blocks away, looking east: the needle should point left-ish towards the sanctuary.
                 player.teleportTo(server.overworld(), c.getX() - 200.5, sanctuaryData.top() + 10, c.getZ() + 220.5, -90, 0);
@@ -252,7 +266,7 @@ public final class BiomeTour {
                 BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
                 for (int x = -32; x <= 32 && pavilion == null; x++) for (int z = -32; z <= 32 && pavilion == null; z++)
                     for (int y = c.getY(); y < sanctuaryData.top() - 10; y++)
-                        if (level.getBlockState(p.set(c.getX() + x, y, c.getZ() + z)).is(net.minecraft.world.level.block.Blocks.CHAIN)) { pavilion = p.immutable(); break; }
+                        if (level.getBlockState(p.set(c.getX() + x, y, c.getZ() + z)).is(Blocks.CHAIN)) { pavilion = p.immutable(); break; }
                 report.add("rest pavilion at " + pavilion);
                 if (pavilion == null) failed = true;
             });

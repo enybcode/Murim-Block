@@ -8,21 +8,10 @@
       }
     },
     "band": {
-      "type": "minecraft:weighted_state_provider",
-      "entries": [
-        {
-          "data": {
-            "Name": "minecraft:terracotta"
-          },
-          "weight": 2
-        },
-        {
-          "data": {
-            "Name": "murimblock:red_loess"
-          },
-          "weight": 1
-        }
-      ]
+      "type": "minecraft:simple_state_provider",
+      "state": {
+        "Name": "minecraft:sandstone"
+      }
     },
     "length": {
       "type": "minecraft:uniform",

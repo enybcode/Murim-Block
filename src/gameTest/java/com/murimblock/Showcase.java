@@ -1,32 +1,40 @@
 package com.murimblock;
 
+import com.mojang.logging.LogUtils;
 import com.murimblock.client.MurimMistClient;
 import com.murimblock.client.gui.MurimProfileScreen;
 import com.murimblock.integration.epicfight.CrabManEpicFight;
 import com.murimblock.integration.epicfight.CrabManPatch;
+import com.murimblock.mob.ArmoredCrabEntity;
 import com.murimblock.mob.CrabManEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.world.MurimBiomes;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
@@ -35,6 +43,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import org.slf4j.Logger;
+import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 
 /**
@@ -45,7 +55,7 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class Showcase {
-    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final long SEED = 20261012L;
 
     /** Camera at frame f of n. */
@@ -55,7 +65,7 @@ public final class Showcase {
         final String name, title, subtitle;
         final int prep, frames;
         Consumer<ServerLevel> setup = l -> { };
-        java.util.function.BiConsumer<ServerLevel, Integer> onFrame = (l, f) -> { };
+        BiConsumer<ServerLevel, Integer> onFrame = (l, f) -> { };
         Camera camera;
         boolean gui;
         Shot(String name, String title, String subtitle, int prep, int frames) {
@@ -171,9 +181,9 @@ public final class Showcase {
         // Filming runs unattended: never let the window pause the game when it loses focus.
         mc.options.pauseOnLostFocus = false;
         // No Epic Fight target outline around the mob that targets the camera player.
-        yesman.epicfight.config.ClientConfig.showTargetIndicator = false;
-        yesman.epicfight.config.ClientConfig.enableTargetEntityGuide = false;
-        if (mc.screen instanceof net.minecraft.client.gui.screens.PauseScreen) mc.setScreen(null);
+        ClientConfig.showTargetIndicator = false;
+        ClientConfig.enableTargetEntityGuide = false;
+        if (mc.screen instanceof PauseScreen) mc.setScreen(null);
         try {
             if (mc.player == null || mc.getSingleplayerServer() == null) {
                 if (mc.screen != null && mc.screen.getClass().getSimpleName().contains("Onboarding")) mc.setScreen(new TitleScreen(false));
@@ -197,7 +207,7 @@ public final class Showcase {
                 shots = plan();
                 // -Dmurimblock.showcaseOnly=crabman,night films only those shots (for quick retakes).
                 String only = System.getProperty("murimblock.showcaseOnly", "");
-                if (!only.isBlank()) shots.removeIf(s -> !java.util.Arrays.asList(only.split(",")).contains(s.name));
+                if (!only.isBlank()) shots.removeIf(s -> !Arrays.asList(only.split(",")).contains(s.name));
                 mc.getSingleplayerServer().execute(() -> {
                     ServerLevel level = mc.getSingleplayerServer().overworld();
                     level.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, level.getServer());
@@ -265,8 +275,8 @@ public final class Showcase {
                 for (int dx = -14; dx <= 14; dx++) for (int dz = -14; dz <= 14; dz++) for (int dy = 0; dy <= 16; dy++) {
                     BlockPos p = new BlockPos(place.getX() + dx, ground + dy, place.getZ() + dz);
                     var state = level.getBlockState(p);
-                    if (state.is(net.minecraft.tags.BlockTags.LOGS) || state.is(net.minecraft.tags.BlockTags.LEAVES) || state.canBeReplaced())
-                        if (!state.isAir() && state.getFluidState().isEmpty()) level.setBlock(p, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                    if (state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES) || state.canBeReplaced())
+                        if (!state.isAir() && state.getFluidState().isEmpty()) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
                 }
                 CrabManEntity man = MurimEntities.CRAB_MAN.get().create(level);
                 man.moveTo(place.getX() + 0.5, ground, place.getZ() + 0.5, -90, 0);
@@ -276,7 +286,7 @@ public final class Showcase {
                 // Persistent: the camera player hovers far above at first, which would despawn them at once.
                 man.setPersistenceRequired();
                 if (!shot.name.equals("night")) man.spawnEscort(level, level.getCurrentDifficultyAt(man.blockPosition()));
-                level.getEntitiesOfClass(com.murimblock.mob.ArmoredCrabEntity.class, man.getBoundingBox().inflate(6)).forEach(net.minecraft.world.entity.Mob::setPersistenceRequired);
+                level.getEntitiesOfClass(ArmoredCrabEntity.class, man.getBoundingBox().inflate(6)).forEach(Mob::setPersistenceRequired);
                 actor = man;
                 return;
             }

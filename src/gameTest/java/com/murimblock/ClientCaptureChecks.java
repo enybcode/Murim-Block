@@ -1,8 +1,10 @@
 package com.murimblock;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 
 /** Pixel checks on real Minecraft captures, never shipped with the mod. */
@@ -20,15 +22,15 @@ final class ClientCaptureChecks {
             for (int y = 0; y < image.getHeight(); y++) {
                 for (int x = 0; x < image.getWidth(); x++) {
                     int color = image.getRGB(x, y) & 0xFFFFFF;
-                    if (color == 0xF3EBD4 || color == 0xEAE0C4) paper++;
-                    if (color == 0x1F2420) ink++;
-                    if (color == 0xC9A74B) gold++;
+                    if (color == 0x2B2721 || color == 0x332E27 || color == 0x2F2A24) paper++;
+                    if (color == 0x1A1714) ink++;
+                    if (color == 0xC9A45C) gold++;
                 }
             }
             int pixels = image.getWidth() * image.getHeight();
             // The compact menu (max 320 x 200 GUI units) covers less of large viewports than the old one.
             require(paper > pixels / 12 && ink > pixels / 60 && gold > 100,
-                    "Clear Manuscript palette missing from real capture: " + name
+                    "Ink Night palette missing from real capture: " + name
                             + " (paper " + paper + ", ink " + ink + ", gold " + gold + " of " + pixels + ")");
         }
         BufferedImage idle = read(directory.resolve("13-mob-idle.png"));
@@ -65,12 +67,12 @@ final class ClientCaptureChecks {
                 + burst[0] + " pixels, x " + burst[1] + " vs " + charge[1] + ")");
         // At night in a closed room: the reflections glow (GeckoLib glow mask) and the burst lights the room (Photon).
         // Checked on the per-tick frames: the client draws fewer frames than ticks, so fixed ticks can miss the flash.
-        java.io.File[] frames = directory.resolve("night").toFile().listFiles((d, n) -> n.startsWith("frame-"));
+        File[] frames = directory.resolve("night").toFile().listFiles((d, n) -> n.startsWith("frame-"));
         require(frames != null && frames.length > 40, "Night frames missing");
-        java.util.Arrays.sort(frames);
+        Arrays.sort(frames);
         double[] dark = luminance(read(frames[0].toPath()));
         double brightest = 0, glowMax = 0;
-        for (java.io.File frame : frames) {
+        for (File frame : frames) {
             double[] l = luminance(read(frame.toPath()));
             brightest = Math.max(brightest, l[0]);
             glowMax = Math.max(glowMax, l[1]);

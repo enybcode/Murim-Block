@@ -12,6 +12,8 @@ public final class QiConstants {
     public static final double REGENERATION_PER_MINUTE = PASSIVE_REGENERATION_RATE_PER_MINUTE;
     public static final int TICKS_PER_MINUTE = 1_200;
     public static final int REGENERATION_INTERVAL_TICKS = 20;
+    /** Share of the maximum Qi lost for good at each death (any death, a finish included). */
+    public static final double DEATH_QI_MAX_LOSS = 0.10;
 
     private QiConstants() {
     }

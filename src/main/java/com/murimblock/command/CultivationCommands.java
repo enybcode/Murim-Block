@@ -2,6 +2,7 @@ package com.murimblock.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -14,6 +15,7 @@ import com.murimblock.cultivation.CultivationStage;
 import com.murimblock.qi.QiService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -79,19 +81,19 @@ public final class CultivationCommands {
                                 .executes(context -> reset(context, EntityArgument.getPlayer(context, "player"))))));
     }
 
-    private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> realmArgument() {
+    private static RequiredArgumentBuilder<CommandSourceStack, String> realmArgument() {
         return Commands.argument("realm", StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                        java.util.Arrays.stream(CultivationRealm.values())
+                        Arrays.stream(CultivationRealm.values())
                                 .map(CultivationRealm::serializedName),
                         builder
                 ));
     }
 
-    private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> stageArgument() {
+    private static RequiredArgumentBuilder<CommandSourceStack, String> stageArgument() {
         return Commands.argument("stage", StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                        java.util.Arrays.stream(CultivationStage.values())
+                        Arrays.stream(CultivationStage.values())
                                 .map(CultivationStage::serializedName),
                         builder
                 ));
