@@ -216,9 +216,13 @@ public final class MartialTour {
                 check(com.murimblock.client.hud.HudSize.current() == com.murimblock.client.hud.HudSize.HUGE, "two clicks on HUD size give Huge");
                 capture(mc, "04b-settings-hud-size.png");
             }
-            case 127 -> mc.setScreen(null);
+            case 127 -> {
+                mc.setScreen(null);
+                mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("The chat sits above the larger HUD."));
+            }
             case 128 -> {
                 check(com.murimblock.client.hud.HudScale.factor() > 1, "the Huge HUD is drawn larger (factor " + com.murimblock.client.hud.HudScale.factor() + ")");
+                check(com.murimblock.client.hud.HudScale.chatMargin(40) > 40, "the chat rises with the Huge HUD (margin " + com.murimblock.client.hud.HudScale.chatMargin(40) + ")");
                 capture(mc, "04c-hud-huge.png");
             }
             case 129 -> com.murimblock.client.hud.HudSize.set(com.murimblock.client.hud.HudSize.NORMAL);
