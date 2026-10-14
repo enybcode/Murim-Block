@@ -117,8 +117,13 @@ final class BanditDen extends Site {
                 h.set(x, p + 2, 0, BRICK);
                 h.set(x, p + 3, 0, lattice(Blocks.DARK_OAK_TRAPDOOR, Direction.SOUTH));
             }
-            door(h, 0, p + 1, 0, Blocks.SPRUCE_DOOR, Direction.NORTH);
-            h.set(0, p + 3, 0, lattice(Blocks.DARK_OAK_TRAPDOOR, Direction.SOUTH));
+            if (room == Room.CHIEF) {
+                // The chief's cave opens in a tall arch, without a door: the Bandit Chief stands 2.5 blocks high.
+                for (int y = p + 1; y <= p + 3; y++) h.set(0, y, 0, AIR);
+            } else {
+                door(h, 0, p + 1, 0, Blocks.SPRUCE_DOOR, Direction.NORTH);
+                h.set(0, p + 3, 0, lattice(Blocks.DARK_OAK_TRAPDOOR, Direction.SOUTH));
+            }
             h.set(0, p + 4, 0, lattice(Blocks.DARK_OAK_TRAPDOOR, Direction.SOUTH));
         }
         wallBanner(h, -2, p + 3, 1, Blocks.RED_WALL_BANNER, Direction.SOUTH);

@@ -24,7 +24,7 @@ De loin, on ne voit qu'un trou carré dans la plaine, bordé d'un muret, et une 
   - Au centre, un jujubier sur son carré d'herbe.
   - Un puits à margelle, une meule, du maïs qui sèche (foin), un abreuvoir, quatre lanternes.
 - **Sept grottes voûtées** (3 × 8, voûte en briques crues) derrière des façades de briques et de treillis, porte au milieu, bannières rouges de part et d'autre (les distiques) :
-  - **le chef** : kang de briques avec lit rouge, trône, « peau de tigre » (tapis orange rayé de noir), bannière noire, jarre et tonneau ;
+  - **le chef** : ouverte par une haute arche sans porte (3 blocs, pour le Bandit Chief et ses 2,5 blocs), kang de briques avec lit rouge, trône, « peau de tigre » (tapis orange rayé de noir), bannière noire, jarre et tonneau ;
   - **la salle des festins** : longue table, bancs, tonneaux, fumoir, bougies ;
   - **deux dortoirs** : kang à trois lits, tonneaux, établi ;
   - **l'armurerie** : table de forgeron, haut fourneau, enclume, meule, table d'archerie ;
@@ -47,7 +47,7 @@ De loin, on ne voit qu'un trou carré dans la plaine, bordé d'un muret, et une 
 ## Conseils : ce qu'on devrait y mettre
 
 - **Ennemis** : des Bandits des montagnes (`mountain_bandit`) qui apparaissent dans la cour et les grottes (par `spawn_overrides` de la structure, ou des points d'apparition fixes), un guetteur sur la vigie.
-- **Boss** : le chef des bandits dans sa grotte, avec son propre style de sabre (dao) et une première victoire qui donne du Qi, comme les boss existants.
+- **Boss** : le **Bandit Chief** (`murimblock:bandit_chief`, le mini-boss à la grande hache) dans sa grotte : c'est exactement le « camp de bandits » que sa fiche annonce. Sa grotte, la rampe, le porche et la porte du plateau lui laissent au moins 3 blocs de hauteur ; seules les autres grottes ont des portes de 2 blocs.
 - **Prisonnier** : un PNJ enfermé dans la prison, à libérer (quête) ; il peut être un disciple de la secte du joueur ou un marchand qui récompense.
 - **Butin** : coffre du chef (pièces, Bandit Dao rare, carte d'un autre repaire), armurerie (armes, flèches), cuisine (nourriture).
 - **Faction** : les « bandits justiciers » du Fleuve Jaune ou une branche de la secte des Mendiants ; selon la réputation, le repaire peut être hostile ou neutre.
