@@ -26,8 +26,9 @@ const POINTS = {
   edge: m => carried(m, 'Tool_R', [0.37, 0.5, 0.68]),
   elbowR: m => b.origin(m.Hand_R),
 };
-function measure(pose) {
-  const m = b.modelSpace(arm, locals(pose));
+/** Every joint of a pose in model space. */
+const model = pose => b.modelSpace(arm, locals(pose));
+function measure(pose, m = model(pose)) {
   const out = {};
   for (const [k, fn] of Object.entries(POINTS)) out[k] = fn(m);
   return out;
@@ -65,6 +66,33 @@ function solve(pose, vars, targets, iters = 4000, stay = 0) {
   for (const v of vars) set(v, Math.round(get(v)));
   return { pose: p, cost: cost(), at: measure(p) };
 }
+/** The body's blocks in the bind pose, each carried by its joint: what a held weapon must not pass through. */
+const BODY = [
+  ['Torso', [-0.25, -0.125, 0.75], [0.25, 0.125, 1.114]], ['Chest', [-0.25, -0.125, 1.114], [0.25, 0.125, 1.5]],
+  ['Head', [-0.25, -0.25, 1.5], [0.25, 0.25, 2]],
+  ['Thigh_R', [0, -0.125, 0.386], [0.25, 0.125, 0.761]], ['Leg_R', [0, -0.125, 0], [0.25, 0.125, 0.386]],
+  ['Thigh_L', [-0.25, -0.125, 0.386], [0, 0.125, 0.761]], ['Leg_L', [-0.25, -0.125, 0], [0, 0.125, 0.386]],
+];
+const apply = (m, p) => [0, 1, 2].map(r => m[r * 4] * p[0] + m[r * 4 + 1] * p[1] + m[r * 4 + 2] * p[2] + m[r * 4 + 3]);
+/**
+ * For a posed body `m` (model-space joints): how deep a model-space point is inside it, the blocks grown by `pad`
+ * (> 0: inside), and in which part.
+ */
+function inBody(m, pad = 0) {
+  const back = BODY.map(([j]) => b.mul(bind[j], b.invRigid(m[j])));
+  return p => {
+    let deepest = { depth: -Infinity, part: null };
+    BODY.forEach(([j, lo, hi], n) => {
+      const q = apply(back[n], p);
+      const depth = Math.min(...q.map((v, i) => Math.min(v - lo[i], hi[i] - v))) + pad;
+      if (depth > deepest.depth) deepest = { depth, part: j };
+    });
+    return deepest;
+  };
+}
+const LINE_FROM = b.origin(bind.Tool_R), LINE_DIR = b.norm([0.37, 1.01, 0.73].map((v, i) => v - LINE_FROM[i]));
+/** A point of the held weapon, `s` blocks along the sword line from the right hand (behind it when negative). */
+const onLine = (m, s) => carried(m, 'Tool_R', LINE_FROM.map((v, i) => v + LINE_DIR[i] * s));
 const fmt = v => v.map(x => x.toFixed(2)).join(', ');
 function report(name, r) {
   console.log(`--- ${name} cost ${r.cost.toFixed(4)}`);
@@ -72,4 +100,4 @@ function report(name, r) {
   const j = Object.entries(r.pose).filter(([k]) => k !== 'Root').map(([k, v]) => `${k}: ${JSON.stringify(v).replace(/"/g, "'")}`).join(', ');
   console.log('  ', `Root: ${JSON.stringify(r.pose.Root)}, ${j}`);
 }
-module.exports = { solve, measure, report, fmt };
+module.exports = { solve, measure, model, report, fmt, inBody, onLine };

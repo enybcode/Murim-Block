@@ -48,6 +48,19 @@ function localsFromRotations(rots, rootPos) {
   return out;
 }
 
+/**
+ * The angles, about x, then y, then z as locals() reads them, that give joint `name` the local matrix `L`: a pose spec
+ * back from a frame (`axes` 1 for a joint turned about x only, such as an elbow).
+ */
+function anglesOf(name, L, axes = 3) {
+  const B = rotOnly(bind[name]), J = rotOnly(arm.joints[name].local);
+  const r = b.mul(B, b.mul(b.invRigid(J), b.mul(rotOnly(L), b.invRigid(B))));
+  const deg = v => v * 180 / Math.PI;
+  const x = ['x', deg(Math.atan2(r[9], r[10]))];
+  if (axes === 1) return [x];
+  return [x, ['y', deg(Math.asin(Math.max(-1, Math.min(1, -r[8]))))], ['z', deg(Math.atan2(r[4], r[0]))]];
+}
+
 const round = m => m.map(v => Math.abs(v) < 5e-7 ? 0 : Math.round(v * 1e6) / 1e6);
 
 /** Writes an Epic Fight animation from frames already computed: times (seconds) and local matrices per frame. */
@@ -105,6 +118,13 @@ const STEP = 1 / 40;
  * different ways never spin between them. Returns nothing; logs what it wrote.
  */
 function writeSmooth(name, keys, dir = MURIM_BIPED) {
+  const { times, frames } = sample(keys);
+  writeFrames(dir, name, times, frames);
+  console.log('wrote', name, times.length, 'frames,', keys[keys.length - 1].t, 's');
+}
+
+/** The frames writeSmooth writes for keyframes [{t, pose}]: their times and every joint's local matrix at each. */
+function sample(keys) {
   const L = keys.map(k => locals(k.pose)), end = keys[keys.length - 1].t, times = [];
   for (let t = 0; t < end - 1e-9; t += STEP) times.push(Math.round(t * 1000) / 1000);
   // Every key on time, exactly.
@@ -121,8 +141,7 @@ function writeSmooth(name, keys, dir = MURIM_BIPED) {
     }
     return out;
   });
-  writeFrames(dir, name, times, frames);
-  console.log('wrote', name, times.length, 'frames,', end, 's');
+  return { times, frames };
 }
 
-module.exports = { arm, bind, locals, localsFromRotations, write, writeFrames, MURIM_BIPED, writeSmooth };
+module.exports = { arm, bind, locals, localsFromRotations, write, writeFrames, MURIM_BIPED, writeSmooth, sample, anglesOf };

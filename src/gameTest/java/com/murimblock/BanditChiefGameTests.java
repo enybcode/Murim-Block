@@ -85,6 +85,22 @@ public final class BanditChiefGameTests {
         });
     }
 
+    @GameTest(template = "foundation_arena", batch = "chief_chain", timeoutTicks = 120)
+    public static void anAttackStartsAtOnceAfterTheLastOne(GameTestHelper helper) {
+        BanditChiefEntity chief = chief(helper, new BlockPos(2, 1, 2));
+        chief.setNoAi(true);
+        BanditChiefPatch patch = EpicFightCapabilities.getEntityPatch(chief, BanditChiefPatch.class);
+        helper.runAfterDelay(2, () -> patch.playAnimationSynchronized(MurimAnimations.CHIEF_CLEAVE, 0));
+        // The cleave is over (1.15 s): the sweep must start the tick it is asked for.
+        helper.runAfterDelay(32, () -> patch.playAnimationSynchronized(MurimAnimations.CHIEF_SWEEP, 0));
+        helper.runAfterDelay(34, () -> {
+            var playing = patch.getAnimator().getPlayerFor(null).getRealAnimation();
+            helper.assertTrue(playing == MurimAnimations.CHIEF_SWEEP, "The sweep did not start after the cleave: " + playing);
+            chief.discard();
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = "foundation_arena", batch = "chief_attack", timeoutTicks = 300)
     public static void theChiefFightsWithHisOwnAttacks(GameTestHelper helper) {
         BanditChiefEntity chief = chief(helper, new BlockPos(2, 1, 1));
