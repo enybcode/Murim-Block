@@ -25,8 +25,11 @@ import java.util.Set;
  *   <li>Rising Cloud then Falling Rain, the lift and the cut that knocks down;</li>
  *   <li>Swallow Returns, his spin, and Thousand Drizzle, the flurry of thrusts;</li>
  *   <li>Wind Step and Cloud Step Slash: dashes onto someone keeping their distance (2.5 to 7.5 blocks);</li>
- *   <li>in his second phase only (below half his health): Heaven Splitting Crescent and the Cloud Step Dive.</li>
+ *   <li>in his second phase only (below half his health): Heaven Splitting Crescent and the Storm of Needles (Thousand
+ *   Drizzle evolved).</li>
  * </ul>
+ * Not the Cloud Step Dive: it is Cloud Step Slash from the air, its body plunging 2.5 blocks; played from the ground it
+ * sank him into it. Every move of his keeps his body above the ground (AzureSenseiGameTests).
  * Played by a mob, the techniques are their own strikes: the lift, the carry and the delayed cuts of a player's are not
  * there (MartialCombat acts for players only).
  */
@@ -48,7 +51,7 @@ public class AzureSenseiPatch extends HumanoidMobPatch<AzureSenseiEntity> {
                 .newBehaviorSeries(series(6.0F, 60).nextBehavior(move(MurimAnimations.WIND_STEP, 2.5D, 5.0D)))
                 .newBehaviorSeries(series(8.0F, 100).nextBehavior(move(MurimAnimations.CLOUD_STEP_SLASH, 3.5D, 7.5D)))
                 .newBehaviorSeries(series(7.0F, 160).nextBehavior(move(MurimAnimations.HEAVEN_SPLITTING_CRESCENT, 0.0D, 3.5D).custom(AzureSenseiPatch::inEarnest)))
-                .newBehaviorSeries(series(5.0F, 200).nextBehavior(move(MurimAnimations.CLOUD_STEP_DIVE, 3.0D, 7.0D).custom(AzureSenseiPatch::inEarnest)));
+                .newBehaviorSeries(series(5.0F, 200).nextBehavior(move(MurimAnimations.THOUSAND_DRIZZLE_STORM, 0.0D, 3.2D).custom(AzureSenseiPatch::inEarnest)));
     }
 
     private static CombatBehaviors.BehaviorSeries.Builder<HumanoidMobPatch<?>> series(float weight, int cooldown) {

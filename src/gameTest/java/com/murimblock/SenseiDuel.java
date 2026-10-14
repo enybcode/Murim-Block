@@ -176,6 +176,12 @@ public final class SenseiDuel {
         }
         if (r == 60 && patch != null) patch.resetHolding();
         if (t == SECOND_PHASE - START) sensei.setHealth(sensei.getMaxHealth() * 0.46F);
+        // Below the ground he stands on: which animation takes him there.
+        if (sensei.getY() < by - 0.2) {
+            var sp = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(sensei, yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch.class);
+            var main = sp == null ? null : sp.getAnimator().getPlayerFor(null);
+            LOGGER.warn("Sensei duel: the sensei is {} below the ground at t={} in {}", String.format("%.2f", by - sensei.getY()), t, main == null ? null : main.getRealAnimation());
+        }
     }
 
     /** The camera's bearing from the two (radians), eased toward the side of the line between them. */

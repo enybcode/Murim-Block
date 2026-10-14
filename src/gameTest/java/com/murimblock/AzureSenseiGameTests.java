@@ -166,7 +166,39 @@ public final class AzureSenseiGameTests {
     private static boolean senseiMove(Object a) {
         return java.util.List.of(MurimAnimations.DRIFTING_CUT, MurimAnimations.RETURNING_CUT, MurimAnimations.PIERCING_MIST,
                 MurimAnimations.RISING_CLOUD, MurimAnimations.FALLING_RAIN, MurimAnimations.SWALLOW_RETURNS, MurimAnimations.THOUSAND_DRIZZLE,
-                MurimAnimations.WIND_STEP, MurimAnimations.CLOUD_STEP_SLASH, MurimAnimations.HEAVEN_SPLITTING_CRESCENT, MurimAnimations.CLOUD_STEP_DIVE).contains(a);
+                MurimAnimations.WIND_STEP, MurimAnimations.CLOUD_STEP_SLASH, MurimAnimations.HEAVEN_SPLITTING_CRESCENT, MurimAnimations.THOUSAND_DRIZZLE_STORM).contains(a);
+    }
+
+    private static java.util.List<yesman.epicfight.api.animation.AnimationManager.AnimationAccessor<?>> senseiMoves() {
+        return java.util.List.of(MurimAnimations.DRIFTING_CUT, MurimAnimations.RETURNING_CUT, MurimAnimations.PIERCING_MIST,
+                MurimAnimations.RISING_CLOUD, MurimAnimations.FALLING_RAIN, MurimAnimations.SWALLOW_RETURNS, MurimAnimations.THOUSAND_DRIZZLE,
+                MurimAnimations.WIND_STEP, MurimAnimations.CLOUD_STEP_SLASH, MurimAnimations.HEAVEN_SPLITTING_CRESCENT, MurimAnimations.THOUSAND_DRIZZLE_STORM);
+    }
+
+    /**
+     * None of his moves takes his body under the ground he stands on: its root (the hips, 0.76 block up at rest) stays
+     * above 0.3 block in every frame. A move made for the air (the Cloud Step Dive plunges 2.5 blocks) sank him into it.
+     */
+    @GameTest(template = "foundation_arena", batch = "sensei_ground")
+    public static void noMoveOfTheSenseiSinksIntoTheGround(GameTestHelper helper) {
+        for (var move : senseiMoves()) {
+            var id = move.registryName();
+            String file = "/assets/" + id.getNamespace() + "/animmodels/animations/" + id.getPath() + ".json";
+            try (var in = AzureSenseiGameTests.class.getResourceAsStream(file)) {
+                helper.assertTrue(in != null, "No animation file for " + id);
+                var json = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in)).getAsJsonObject();
+                for (var joint : json.getAsJsonArray("animation")) {
+                    if (!joint.getAsJsonObject().get("name").getAsString().equals("Root")) continue;
+                    for (var m : joint.getAsJsonObject().getAsJsonArray("transform")) {
+                        double height = m.getAsJsonArray().get(11).getAsDouble();
+                        helper.assertTrue(height > 0.3, id + " takes the sensei's body down to " + height + " (under the ground)");
+                    }
+                }
+            } catch (java.io.IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        helper.succeed();
     }
 
     private static int count(ServerPlayer player) {

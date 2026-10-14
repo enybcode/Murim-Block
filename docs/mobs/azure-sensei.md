@@ -41,7 +41,9 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
   - Joués par lui, ce sont des coups simples : pas de soulèvement, de portage ni de coupes retardées (réservés aux
     joueurs, `MartialCombat`).
 - **Seconde phase**, sous la moitié de ses PV : « Enough courtesy. Now, see the Azure Cloud. » ; il va 50 % plus vite
-  et ajoute Heaven Splitting Crescent et la plongée Cloud Step Dive. Elle dure jusqu'à ce qu'il soit entier.
+  et ajoute Heaven Splitting Crescent et la Tempête d'aiguilles (Thousand Drizzle évolué). Pas
+  la plongée Cloud Step Dive : faite pour l'air (le corps plonge de 2,5 blocs), lancée du sol elle l'enfonçait sous terre ;
+  un GameTest vérifie qu'aucun de ses coups ne fait descendre son corps sous le sol. Elle dure jusqu'à ce qu'il soit entier.
 - **Récupération** : quand personne ne le combat, il regagne 2 PV par seconde (le harceler puis fuir ne marche pas).
 - **Barre de boss** bleue « Sensei Yun » (10 crans) pour les joueurs proches de lui, encadrée de petits nuages en pixel
   art : un nuage à chaque bout de la barre, un petit de chaque côté de son nom (`client/SenseiBossBarClouds`).
