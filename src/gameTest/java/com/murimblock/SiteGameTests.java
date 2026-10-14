@@ -1,17 +1,23 @@
 package com.murimblock;
 
 import com.mojang.logging.LogUtils;
+import com.murimblock.mob.BanditChiefEntity;
+import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.world.structure.site.Canvas;
 import com.murimblock.world.structure.site.SitePiece;
 import com.murimblock.world.structure.site.SitePlan;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.level.block.Block;
@@ -69,7 +75,7 @@ public final class SiteGameTests {
                             BoundingBox box, int y0, int y1, int[] levels) {
         long seed = 0x5EEDL + x;
         try {
-            villagers(level, box).forEach(v -> v.discard()); // left by an earlier run of this persistent test world
+            residents(level, box).forEach(m -> m.discard()); // left by an earlier run of this persistent test world
             // Whole, as the tests and checks see it.
             ground(level, box, y0, y1);
             SitePiece.Built built = SitePiece.buildWhole(level, plan, x, Z, rotation, seed, levels);
@@ -77,12 +83,25 @@ public final class SiteGameTests {
             List<String> problems = SiteChecks.verify(level, checks);
             long whole = fingerprint(level, box, y0, y1);
             int blocks = count(level, box, y0, y1);
-            // Villagers: each standing in a roofed room (a house), none twice, all really in the world.
-            List<Villager> housed = built.spawned().stream().filter(m -> m instanceof Villager && !m.isRemoved()).map(m -> (Villager) m).toList();
-            int wholeVillagers = housed.size();
-            boolean allInRooms = housed.stream().allMatch(v -> checks.stream().anyMatch(c -> c.room() && c.box().isInside(v.blockPosition())));
-            boolean allWorking = housed.stream().allMatch(v -> v.getVillagerData().getProfession() != VillagerProfession.NONE && v.isPersistenceRequired());
-            housed.forEach(v -> v.discard());
+            // Residents (villagers, bandits): the expected number of each, none twice, all really in the world, standing free
+            // on solid ground; villagers in a roofed room (a house) with their trade, the chief in a room (his cave).
+            List<Mob> spawned = built.spawned().stream().filter(m -> !m.isRemoved()).toList();
+            Map<String, Integer> wholeResidents = tally(spawned);
+            List<String> misplaced = new ArrayList<>();
+            for (Mob m : spawned) {
+                String who = BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()) + " at " + m.blockPosition().toShortString();
+                boolean inRoom = checks.stream().anyMatch(c -> c.room() && c.box().isInside(m.blockPosition()));
+                if (!level.noCollision(m, m.getBoundingBox())) {
+                    List<String> hits = new ArrayList<>();
+                    for (var shape : level.getBlockCollisions(m, m.getBoundingBox())) hits.add(shape.bounds().toString());
+                    misplaced.add(who + " (box " + m.getBoundingBox() + ") is stuck in blocks " + hits);
+                }
+                if (!level.getBlockState(BlockPos.containing(m.getX(), m.getY() - 0.1, m.getZ())).blocksMotion()) misplaced.add(who + " stands on nothing");
+                if (!m.isPersistenceRequired()) misplaced.add(who + " may despawn");
+                if (m instanceof Villager v && (!inRoom || v.getVillagerData().getProfession() == VillagerProfession.NONE)) misplaced.add(who + " is not at home with a trade");
+                if (m instanceof BanditChiefEntity && !inRoom) misplaced.add(who + " is not in his cave");
+            }
+            spawned.forEach(m -> m.discard());
             // Chunk by chunk, each part only in the chunks its box touches, in reverse order.
             ground(level, box, y0, y1);
             List<Canvas> canvases = new ArrayList<>();
@@ -97,9 +116,9 @@ public final class SiteGameTests {
             }
             canvases.forEach(Canvas::finish);
             long chunked = fingerprint(level, box, y0, y1);
-            int chunkedVillagers = (int) canvases.stream().flatMap(c -> c.spawned().stream()).filter(m -> m instanceof Villager && !m.isRemoved()).count();
+            Map<String, Integer> chunkedResidents = tally(canvases.stream().flatMap(c -> c.spawned().stream()).filter(m -> !m.isRemoved()).toList());
             canvases.forEach(c -> c.spawned().forEach(m -> m.discard()));
-            int expectedVillagers = plan == SitePlan.STILT_VILLAGE ? 3 : 0;
+            Map<String, Integer> expected = expectedResidents(plan);
             var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
             var sets = level.registryAccess().registryOrThrow(Registries.STRUCTURE_SET);
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, structure);
@@ -108,21 +127,37 @@ public final class SiteGameTests {
             helper.assertTrue(checks.size() > 5, structure + " recorded too few checks: " + checks.size());
             helper.assertTrue(blocks > 1500, structure + " looks unfinished: " + blocks + " blocks");
             helper.assertTrue(whole == chunked, structure + " differs when built chunk by chunk (a part writes outside its box, or reads outside its chunk)");
-            helper.assertTrue(wholeVillagers == expectedVillagers && chunkedVillagers == expectedVillagers,
-                    structure + ": " + wholeVillagers + " villagers built whole, " + chunkedVillagers + " chunk by chunk, expected " + expectedVillagers);
-            helper.assertTrue(allInRooms && allWorking, structure + ": a villager is outside the houses or has no trade");
+            helper.assertTrue(wholeResidents.equals(expected) && chunkedResidents.equals(expected),
+                    structure + ": residents " + wholeResidents + " built whole, " + chunkedResidents + " chunk by chunk, expected " + expected);
+            helper.assertTrue(misplaced.isEmpty(), structure + ": " + misplaced);
             helper.assertTrue(registry.containsKey(id) && sets.containsKey(id), structure + " is not registered as a structure with its structure set");
             helper.succeed();
         } finally {
-            villagers(level, box).forEach(v -> v.discard());
+            residents(level, box).forEach(m -> m.discard());
             BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
             for (int px = box.minX(); px <= box.maxX(); px++) for (int pz = box.minZ(); pz <= box.maxZ(); pz++) for (int py = y0; py <= y1; py++)
                 if (!level.getBlockState(p.set(px, py, pz)).isAir()) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16);
         }
     }
 
-    private static List<Villager> villagers(ServerLevel level, BoundingBox box) {
-        return level.getEntitiesOfClass(Villager.class, AABB.of(box).inflate(8));
+    /** Who must live in each site, by entity type. */
+    static Map<String, Integer> expectedResidents(SitePlan plan) {
+        return switch (plan) {
+            case STILT_VILLAGE -> Map.of("minecraft:villager", 3);
+            case BANDIT_DEN -> Map.of("murimblock:bandit_chief", 1, "murimblock:mountain_bandit", 4);
+            default -> Map.of();
+        };
+    }
+
+    private static Map<String, Integer> tally(List<Mob> mobs) {
+        Map<String, Integer> n = new TreeMap<>();
+        for (Mob m : mobs) n.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
+        return n;
+    }
+
+    /** Residents a site may leave in the test world: villagers and bandits. */
+    private static List<Mob> residents(ServerLevel level, BoundingBox box) {
+        return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */
