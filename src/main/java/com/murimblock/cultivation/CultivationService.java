@@ -89,6 +89,7 @@ public final class CultivationService {
         QiService.setQiMax(player, growth.qiMax());
         if (!growth.data().equals(before)) {
             player.setData(CultivationAttachments.PLAYER_CULTIVATION, growth.data());
+            RealmBonuses.apply(player);
             CultivationEffects.minorBreakthrough(player, growth.data());
         }
         if (!wasBottleneck && CultivationRules.atBottleneck(growth.data(), growth.qiMax())) CultivationEffects.bottleneck(player);

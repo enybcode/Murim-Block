@@ -191,18 +191,58 @@ public final class CultivationRules {
 
     // ---------------------------------------------------------------- what a realm gives
 
-    /** Per realm (index = realm ordinal): bonus health, damage (share of the total), speed (share), bare-hand damage. */
+    /**
+     * At the Early stage of each realm (index = realm ordinal): bonus health, damage (share of the total), speed (share),
+     * bare-hand damage, armour and armour toughness. Each stage after it brings a quarter of the way to the next realm's.
+     */
     static final double[] HEALTH = {0, 4, 8, 12, 16, 24, 32, 40, 50};
     static final double[] DAMAGE = {0, 0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.50, 0.60};
     static final double[] SPEED = {0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15};
     static final double[] FIST = {0, 1, 2, 3, 4, 6, 8, 10, 12};
+    static final double[] ARMOR = {0, 2, 4, 6, 8, 11, 14, 17, 20};
+    static final double[] TOUGHNESS = {0, 0, 1, 1, 2, 3, 4, 5, 6};
 
-    public record Bonuses(double health, double damage, double speed, double fist) {
+    public record Bonuses(double health, double damage, double speed, double fist, double armor, double toughness) {
     }
 
+    /** What a realm gives at its Early stage. */
     public static Bonuses bonuses(CultivationRealm realm) {
-        int i = realm.ordinal();
-        return new Bonuses(HEALTH[i], DAMAGE[i], SPEED[i], FIST[i]);
+        return bonuses(new CultivationData(realm, CultivationStage.EARLY));
+    }
+
+    /**
+     * What a cultivator's body has at their realm and stage: the more their Qi, the more hearts, strength and defence.
+     * Between two realms the bonuses grow by quarters (health in whole hearts); the last realm has no stage to grow by.
+     */
+    public static Bonuses bonuses(CultivationData data) {
+        int i = data.realm().ordinal(), n = Math.min(i + 1, HEALTH.length - 1);
+        double t = data.stage().ordinal() / 4.0;
+        double health = Math.floor((HEALTH[i] + (HEALTH[n] - HEALTH[i]) * t) / 2) * 2;
+        return new Bonuses(health, lerp(DAMAGE, i, n, t), lerp(SPEED, i, n, t), lerp(FIST, i, n, t), lerp(ARMOR, i, n, t), lerp(TOUGHNESS, i, n, t));
+    }
+
+    private static double lerp(double[] values, int i, int n, double t) {
+        return Math.round((values[i] + (values[n] - values[i]) * t) * 1000) / 1000.0;
+    }
+
+    // ---------------------------------------------------------------- the weak against the strong
+
+    /** Each stage the attacker stands below the one they strike takes this share off the blow, up to the most. */
+    public static final double SHIELD_PER_STAGE = 0.05, SHIELD_MAX = 0.75;
+
+    /** A cultivation as one number: four stages a realm. */
+    public static int level(CultivationData data) {
+        return data.realm().ordinal() * CultivationStage.values().length + data.stage().ordinal();
+    }
+
+    /**
+     * How much of a blow a cultivator shrugs off when it comes from someone below them (a player, or a creature with no
+     * cultivation at all, counted as the first stage): 5 % a stage, a whole realm 20 %, at most 75 %. Nothing against an
+     * equal or a stronger one.
+     */
+    public static double shield(CultivationData defender, CultivationData attacker) {
+        int gap = level(defender) - level(attacker);
+        return gap <= 0 ? 0 : Math.min(SHIELD_MAX, gap * SHIELD_PER_STAGE);
     }
 
     // ---------------------------------------------------------------- Qi Sense

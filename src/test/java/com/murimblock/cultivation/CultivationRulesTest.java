@@ -83,9 +83,41 @@ class CultivationRulesTest {
         for (CultivationRealm realm : CultivationRealm.values()) {
             if (realm == CultivationRealm.QI_SENSING) continue;
             CultivationRules.Bonuses b = CultivationRules.bonuses(realm);
-            assertTrue(b.health() > previous.health() && b.damage() > previous.damage() && b.fist() > previous.fist(), "not more at " + realm);
+            assertTrue(b.health() > previous.health() && b.damage() > previous.damage() && b.fist() > previous.fist() && b.armor() > previous.armor(),
+                    "not more at " + realm);
             previous = b;
         }
+    }
+
+    @Test
+    void everyStageGivesAtLeastAsMuchAsTheOneBefore() {
+        CultivationRules.Bonuses previous = CultivationRules.bonuses(CultivationData.initial());
+        for (CultivationRealm realm : CultivationRealm.values()) {
+            for (CultivationStage stage : CultivationStage.values()) {
+                CultivationRules.Bonuses b = CultivationRules.bonuses(new CultivationData(realm, stage));
+                assertTrue(b.health() >= previous.health() && b.damage() >= previous.damage() && b.armor() >= previous.armor()
+                        && b.toughness() >= previous.toughness() && b.fist() >= previous.fist(), "less at " + realm + " " + stage);
+                assertEquals(0, b.health() % 2, "health not in whole hearts at " + realm + " " + stage);
+                previous = b;
+            }
+        }
+        // Halfway through Qi Guiding (Late): halfway to Qi Condensation's.
+        CultivationRules.Bonuses late = CultivationRules.bonuses(new CultivationData(CultivationRealm.QI_GUIDING, CultivationStage.LATE));
+        assertEquals(6, late.health());
+        assertEquals(3, late.armor(), 1e-9);
+        assertEquals(0.075, late.damage(), 1e-9);
+    }
+
+    @Test
+    void blowsFromBelowLandLighter() {
+        CultivationData qiCondensation = new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.EARLY);
+        // A creature with no cultivation counts as the first stage: two realms below, 40 % off.
+        assertEquals(0.40, CultivationRules.shield(qiCondensation, CultivationData.initial()), 1e-9);
+        assertEquals(0.05, CultivationRules.shield(qiCondensation, new CultivationData(CultivationRealm.QI_GUIDING, CultivationStage.PEAK)), 1e-9);
+        assertEquals(0, CultivationRules.shield(qiCondensation, qiCondensation), 1e-9);
+        assertEquals(0, CultivationRules.shield(CultivationData.initial(), qiCondensation), 1e-9);
+        assertEquals(CultivationRules.SHIELD_MAX, CultivationRules.shield(new CultivationData(CultivationRealm.VOID_ENLIGHTENMENT, CultivationStage.PEAK),
+                CultivationData.initial()), 1e-9);
     }
 
     // ---------------------------------------------------------------- the pace of play

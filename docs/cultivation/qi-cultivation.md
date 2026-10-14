@@ -149,22 +149,27 @@ La Realm-Breaking Pill peut aussi tomber du Bandit Chief (1 chance sur 4).
 
 ## Ce que donne chaque royaume
 
-Des modificateurs d'attributs aux identifiants stables, recalculés à chaque changement de royaume :
+Des modificateurs d'attributs aux identifiants stables, recalculés à chaque changement de royaume **et d'étape** (`RealmBonuses`) :
 - **Dégâts** : multiplient le total, arme comprise ;
 - **Mains nues** : dégâts ajoutés quand la main principale est vide, ce qui règle aussi la question des dégâts du Poing Long ;
-- **Les étapes** n'augmentent que le Qi Max, donc la réserve.
+- **Armure et ténacité** (demande d'Enzo du 14/10), ajoutées à celles de l'équipement ;
+- **Les étapes** (demande d'Enzo du 14/10 : « plus on a de Qi ») : chaque étape apporte un quart du chemin vers les bonus du royaume suivant (santé en cœurs entiers). Exemple : Qi Guiding Late = +6 santé (3 ♥), +3 armure, +7,5 % de dégâts.
 
-| Royaume | Qi Max pour y entrer | Santé | Dégâts | Vitesse | Mains nues |
-|---|---|---|---|---|---|
-| 1. Qi Sensing | 100 (départ) | — | — | — | — |
-| 2. Qi Guiding | 250 | +4 (2 ♥) | +5 % | +2 % | +1 |
-| 3. Qi Condensation | 650 | +8 | +10 % | +4 % | +2 |
-| 4. Qi Liquefaction | 1 250 | +12 | +15 % | +6 % | +3 |
-| 5. Qi Crystallization | 2 500 | +16 | +20 % | +8 % | +4 |
-| 6. Foundation Establishment | 5 000 | +24 | +30 % | +10 % | +6 |
-| 7. Core Formation | 10 000 | +32 | +40 % | +12 % | +8 |
-| 8. Nascent Soul | 20 000 | +40 | +50 % | +14 % | +10 |
-| 9. Void Enlightenment | 45 000 | +50 | +60 % | +15 % | +12 |
+Valeurs à l'étape Early de chaque royaume :
+
+| Royaume | Qi Max pour y entrer | Santé | Dégâts | Vitesse | Mains nues | Armure | Ténacité |
+|---|---|---|---|---|---|---|---|
+| 1. Qi Sensing | 100 (départ) | — | — | — | — | — | — |
+| 2. Qi Guiding | 250 | +4 (2 ♥) | +5 % | +2 % | +1 | +2 | — |
+| 3. Qi Condensation | 650 | +8 | +10 % | +4 % | +2 | +4 | +1 |
+| 4. Qi Liquefaction | 1 250 | +12 | +15 % | +6 % | +3 | +6 | +1 |
+| 5. Qi Crystallization | 2 500 | +16 | +20 % | +8 % | +4 | +8 | +2 |
+| 6. Foundation Establishment | 5 000 | +24 | +30 % | +10 % | +6 | +11 | +3 |
+| 7. Core Formation | 10 000 | +32 | +40 % | +12 % | +8 | +14 | +4 |
+| 8. Nascent Soul | 20 000 | +40 | +50 % | +14 % | +10 | +17 | +5 |
+| 9. Void Enlightenment | 45 000 | +50 | +60 % | +15 % | +12 | +20 | +6 |
+
+**Le faible contre le fort** (demande d'Enzo du 14/10) : un coup porté à un joueur par plus faible que lui perd **5 % par étape d'écart, 20 % par royaume, au plus 75 %** (`CultivationRules.shield`, appliqué avant l'armure). L'attaquant est un joueur (son royaume et son étape), un mob Murim ou un boss (le royaume que lit la perception du Qi), ou n'importe quelle autre créature, comptée comme Qi Sensing Early. Exemple : en Qi Condensation Early, un zombie fait 40 % de dégâts en moins, le Bandit Chief (Qi Guiding Peak) 5 %. Rien contre un égal ou un plus fort, ni pour les chutes, le feu ou le vide (pas d'attaquant). Le démon du cœur et l'ombre ont le royaume de leur maître : aucun effet.
 
 Débloquages prévus plus tard, hors première tranche :
 - le **qinggong** (saut léger) au 2ᵉ royaume ;
@@ -281,9 +286,9 @@ Ce qui suit l'emporte sur la conception ci-dessus quand elles diffèrent.
 - **L'esprit et les missions** : l'âme d'un vieux maître donne la mission du jour : « rassembler le Qi dispersé » (10 orbes en une minute), puis « affronter son ombre » (un double à moitié force, sans risque). Récompense : 3 % et 5 % de l'étendue du royaume en Qi Max.
   Le vieux maître est un fantôme en 3D (GeckoLib) : chignon et épingle de jade, longs sourcils tombants, moustache et barbe en gradins, robe à col croisé et ceinture rouge, manches larges jointes devant lui ; sans jambes, la robe s'effile en une queue de brume qui ondule. Translucide, il luit dans le noir, flotte, et sa lueur respire. Modèle, texture et animation générés par `scripts/animation/remnant-soul.cjs` (source Blockbench : `art/blockbench/remnant_soul.geo.json`).
 - **Les élixirs** : Qi Gathering Pill (lotus, chrysanthème, argousier → 2 ; +10 Qi Max et réserve pleine) et Realm-Breaking Pill (cistanche, rhododendron, lotus, lingot d'or ; démon affaibli 10 min ; une chance sur quatre sur le Bandit Chief). Toxicité +30 par pilule, −1 par minute ; au-delà de 100, empoisonne.
-- **Les royaumes** donnent leurs bonus ; la mort coûte 10 % du Qi Max sans descendre sous l'étape.
+- **Les royaumes et les étapes** donnent leurs bonus (santé, dégâts, vitesse, mains nues, armure, ténacité), et les coups des plus faibles pèsent moins (voir « Ce que donne chaque royaume ») ; la mort coûte 10 % du Qi Max sans descendre sous l'étape.
 - **La perception du Qi (touche G, tenue)**, dès Qi Condensation, 1 Qi par seconde, 16 blocs en ligne de vue, décidée par le serveur pour chaque lecteur : sceau (一 à 九) et quatre points d'étape au-dessus d'un plus faible, étape floue au même royaume, sceau brouillé un royaume au-dessus, tourbillon sombre et vue qui tremble deux royaumes au-dessus. Les mobs Murim et les boss ont un royaume.
-- **L'onglet Cultivation** : Qi Max vers le seuil, lieu, condensation du jour, état de la percée, poids des coups du démon, toxicité, échecs, bonus.
+- **L'onglet Cultivation** : Qi Max vers le seuil, lieu, condensation du jour, état de la percée, poids des coups du démon, toxicité, échecs, bonus (cœurs, armure, dégâts, mains nues).
 - **Protocole réseau 17** (16 pour la cultivation, 17 pour les dialogues). L'ancienne « charge de Qi » (touche R) est retirée.
 - **Tests** : `CultivationRulesTest`, `CultivationJournalTest`, `CultivationGameTests` (le serveur de GameTests ne charge pas les dimensions des datapacks : l'End, très loin, y tient lieu de monde intérieur), et en vrai client `gradlew -PgameTests runCultivationTour` (26 vérifications, films de chaque étape, captures du dialogue). Pas encore validé par Enzo ni à deux vrais clients.
 - **Plus tard** : la tribulation céleste, le qinggong, la dissimulation de l'aura, les méthodes de cultivation, le four d'alchimie, le mini-jeu de respiration, d'autres lieux de pouvoir.

@@ -69,7 +69,8 @@ public final class CultivationEvents {
     /** In the inner world one cannot die: a lethal blow throws the cultivator out instead. */
     static void onIncomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        // The Heart Demon's blows weigh what the cultivator's preparation leaves them.
+        // Blows from weaker ones land lighter; the Heart Demon's weigh what the cultivator's preparation leaves them.
+        event.setAmount(RealmBonuses.shield(player, event.getSource(), event.getAmount()));
         event.setAmount(InnerWorldService.demonBlow(player, event.getSource(), event.getAmount()));
         if (InnerWorldService.onIncomingDamage(player, event.getSource(), event.getAmount())) {
             event.setCanceled(true);

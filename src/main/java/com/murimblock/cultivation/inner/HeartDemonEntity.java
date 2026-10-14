@@ -83,7 +83,7 @@ public class HeartDemonEntity extends Monster {
         getAttribute(Attributes.ARMOR).setBaseValue(owner.getAttributeValue(Attributes.ARMOR) * strength);
         getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(owner.getAttributeValue(Attributes.ARMOR_TOUGHNESS) * strength);
         // Its blows: its owner's own (a bare hand, harder with the realm; the sword adds its own).
-        var bonuses = com.murimblock.cultivation.CultivationRules.bonuses(ownerCultivation.realm());
+        var bonuses = com.murimblock.cultivation.CultivationRules.bonuses(ownerCultivation);
         double attack = (1 + (sword ? 0 : bonuses.fist())) * (1 + bonuses.damage()) * strength;
         getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(Math.max(0.5, attack));
         setCustomName(Component.translatable(shadow ? "entity.murimblock.heart_demon.shadow" : "entity.murimblock.heart_demon.of", owner.getDisplayName()));

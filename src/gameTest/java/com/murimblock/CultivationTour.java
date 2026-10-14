@@ -71,6 +71,7 @@ import org.slf4j.Logger;
 public final class CultivationTour {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean creating, finished, failed;
+    private static volatile boolean gateTalk;
     private static int ticks;
     private static Marker camera;
     private static Vec3 start;
@@ -181,16 +182,19 @@ public final class CultivationTour {
                 check(demons(server).isEmpty(), "no Heart Demon before the trial is accepted");
             });
             // The old master offers the trial: his words, then the answers, on the dialogue screen.
-            case 254 -> server.execute(() -> {
+            // His entity comes into view a few ticks after the arrival (once the loading screen is gone): asked until it has.
+            case 253, 255, 257 -> server.execute(() -> {
                 RemnantSoulEntity soul = soulOf(server);
-                check(soul != null, "the old master waits on the island at the gate");
-                if (soul != null) SoulDialogue.choose(self(server), soul, "myself");
+                if (soul == null || gateTalk) return;
+                gateTalk = true;
+                SoulDialogue.choose(self(server), soul, "myself");
             });
-            case 259 -> {
+            case 258 -> check(gateTalk, "the old master waits on the island at the gate");
+            case 260 -> {
                 check(DialogueScreen.current() != null, "the old master's words open the dialogue screen");
                 if (mc.screen instanceof DialogueScreen screen) screen.showAllForTests();
             }
-            case 261 -> capture(mc, "17-soul-dialogue-gate.png");
+            case 262 -> capture(mc, "17-soul-dialogue-gate.png");
             case 263 -> server.execute(() -> {
                 RemnantSoulEntity soul = soulOf(server);
                 if (soul != null) SoulDialogue.choose(self(server), soul, "ready");
@@ -360,8 +364,11 @@ public final class CultivationTour {
     /** The old master of the tour player's island. */
     private static RemnantSoulEntity soulOf(MinecraftServer server) {
         ServerPlayer self = self(server);
-        var souls = self.serverLevel().getEntitiesOfClass(RemnantSoulEntity.class, self.getBoundingBox().inflate(60));
-        return souls.isEmpty() ? null : souls.get(0);
+        // Every entity of the level, not those of an area: one just added is not found by area for a few ticks.
+        for (var e : self.serverLevel().getAllEntities()) {
+            if (e instanceof RemnantSoulEntity soul && soul.isAlive() && soul.distanceTo(self) < 80) return soul;
+        }
+        return null;
     }
 
     private static List<HeartDemonEntity> demons(MinecraftServer server) {

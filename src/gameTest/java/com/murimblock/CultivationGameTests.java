@@ -144,6 +144,12 @@ public final class CultivationGameTests {
         helper.assertTrue(player.getMaxHealth() == 20, "Qi Sensing has no bonus");
         CultivationService.setCultivation(player, CultivationRealm.QI_GUIDING, CultivationStage.EARLY);
         helper.assertTrue(player.getMaxHealth() == 24, "Qi Guiding should give 2 hearts: " + player.getMaxHealth());
+        helper.assertTrue(player.getAttributeValue(Attributes.ARMOR) == 2, "Qi Guiding should give 2 armour: " + player.getAttributeValue(Attributes.ARMOR));
+        // Each stage brings more: Late Qi Guiding, a heart more and a point of armour.
+        CultivationService.setCultivation(player, CultivationRealm.QI_GUIDING, CultivationStage.LATE);
+        helper.assertTrue(player.getMaxHealth() == 26 && player.getAttributeValue(Attributes.ARMOR) == 3,
+                "Late Qi Guiding: 26 health and 3 armour, got " + player.getMaxHealth() + " and " + player.getAttributeValue(Attributes.ARMOR));
+        CultivationService.setCultivation(player, CultivationRealm.QI_GUIDING, CultivationStage.EARLY);
         double bare = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
         helper.assertTrue(Math.abs(bare - (1 + 1) * 1.05) < 1e-6, "Bare hands at Qi Guiding: (1 + 1) x 1.05, got " + bare);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
@@ -153,6 +159,26 @@ public final class CultivationGameTests {
         helper.assertTrue(Math.abs(sword - 6 * 1.05) < 1e-6, "A sword at Qi Guiding: 6 x 1.05, got " + sword);
         CultivationService.resetCultivation(player);
         helper.assertTrue(player.getMaxHealth() == 20, "The bonuses stayed after the realm was taken away");
+        end(helper, player);
+    }
+
+    @GameTest(template = "foundation_arena", batch = "cultivation_shield")
+    public static void blowsFromWeakerOnesLandLighter(GameTestHelper helper) {
+        ServerPlayer player = cultivator(helper);
+        Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 4));
+        var fromZombie = player.damageSources().mobAttack(zombie);
+        helper.assertTrue(com.murimblock.cultivation.RealmBonuses.shield(player, fromZombie, 10) == 10, "A beginner shrugged off a zombie's blow");
+        // Two realms above a creature with no cultivation: 40 % off. Through the real event too.
+        CultivationService.setCultivation(player, CultivationRealm.QI_CONDENSATION, CultivationStage.EARLY);
+        float shielded = com.murimblock.cultivation.RealmBonuses.shield(player, fromZombie, 10);
+        helper.assertTrue(Math.abs(shielded - 6) < 1e-4, "Qi Condensation against a zombie: 6 of 10, got " + shielded);
+        var event = new net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent(player,
+                new net.neoforged.neoforge.common.damagesource.DamageContainer(fromZombie, 10));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
+        helper.assertTrue(Math.abs(event.getAmount() - 6) < 1e-4, "The incoming blow was not lightened: " + event.getAmount());
+        // Nothing off a fall, nor from an equal.
+        helper.assertTrue(com.murimblock.cultivation.RealmBonuses.shield(player, player.damageSources().fall(), 10) == 10, "A fall was lightened");
+        zombie.discard();
         end(helper, player);
     }
 
