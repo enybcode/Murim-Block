@@ -6,6 +6,24 @@ Ils sont livrés **sans structures**. Chaque fiche décrit et illustre, en maque
 
 ![Les sept biomes en jeu](images/biomes-en-jeu.jpg)
 
+![Les 72 textures du mod](images/blocs.png)
+
+## Refonte du 14 octobre : le rendu « comme Minecraft »
+
+À la demande d'Enzo, les biomes et tous les blocs ont été repris pour retirer leur aspect « goofy » (aplats criards, bandes régulières, plantes en pâtés), en gardant leur inspiration chinoise.
+
+- **Textures, à la manière vanilla, sans en copier aucune :**
+  - palettes courtes avec dérive de teinte (ombres froides, lumières chaudes) ;
+  - relief peint à partir d'un champ de hauteur éclairé en haut à gauche ;
+  - bruit tuilable et cellules de Voronoï pour les pierres, les graviers et les plaques de grès ;
+  - feuilles découpées en touffes avec des trous, aiguilles pour le pin, chaînes pour le saule ;
+  - plantes et pousses dessinées à la main, pixel par pixel, dans `NatureTextures.java`.
+- **Reliefs.** Les tours karstiques sont cannelées, avec des corniches, un pied évasé et un dôme. Les aiguilles du Huangshan sont des faisceaux de colonnes. Les piliers de grès sont droits, à peine érodés. La terre n'apparaît que sur les replats, la mousse ailleurs.
+- **Pin du Huangshan** (`TieredPineFeature`) : tronc penché, branches étagées, parasol au sommet. Il couronne les aiguilles et les piliers.
+- **Jiangnan** (`WaterlandsFeature`) : les terres juste sous le niveau de la mer deviennent des champs à fleur d'eau, des canaux sinueux et des étangs peu profonds à fond de vase, avec çà et là le lac ouvert.
+- **Végétation par taches** (`noise_threshold_count`) : bosquets et clairières au lieu d'un semis uniforme.
+- **Sols.** Lœss nu sur la plus grande partie du plateau, sable et pavages de gravier du Gobi dans le désert, mousse et terre racinaire sur les pentes de la bambouseraie.
+
 ![Maquettes des structures prévues](images/structures-prevues.jpg)
 
 | Biome (id) | Taille | Inspiration réelle | Fiche |

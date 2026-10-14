@@ -11,7 +11,9 @@
     "force_dirt": false,
     "ignore_vines": true,
     "foliage_placer": {
-      "type": "minecraft:acacia_foliage_placer",
+      "type": "minecraft:random_spread_foliage_placer",
+      "foliage_height": 2,
+      "leaf_placement_attempts": 40,
       "offset": 0,
       "radius": 2
     },

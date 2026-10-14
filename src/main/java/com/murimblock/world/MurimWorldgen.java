@@ -8,6 +8,8 @@ import com.murimblock.world.feature.HangingStrandDecorator;
 import com.murimblock.world.feature.MosoBambooFeature;
 import com.murimblock.world.feature.RockPillarFeature;
 import com.murimblock.world.feature.ShallowPondFeature;
+import com.murimblock.world.feature.TieredPineFeature;
+import com.murimblock.world.feature.WaterlandsFeature;
 import com.murimblock.world.feature.YardangFeature;
 import com.murimblock.world.structure.SanctuaryStructure;
 import net.minecraft.core.registries.Registries;
@@ -37,6 +39,8 @@ public final class MurimWorldgen {
     public static final DeferredHolder<Feature<?>, CliffPineFeature> CLIFF_PINE = FEATURES.register("cliff_pine", CliffPineFeature::new);
     public static final DeferredHolder<Feature<?>, ShallowPondFeature> SHALLOW_POND = FEATURES.register("shallow_pond", ShallowPondFeature::new);
     public static final DeferredHolder<Feature<?>, GroundBodyFeature> GROUND_BODY = FEATURES.register("ground_body", GroundBodyFeature::new);
+    public static final DeferredHolder<Feature<?>, TieredPineFeature> TIERED_PINE = FEATURES.register("tiered_pine", TieredPineFeature::new);
+    public static final DeferredHolder<Feature<?>, WaterlandsFeature> WATERLANDS = FEATURES.register("waterlands", WaterlandsFeature::new);
     public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES =
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Murimblock.MOD_ID);
     /** The Cloud Cliff Sanctuary (built by SanctuaryPlacement; registered so /locate structure knows it). */

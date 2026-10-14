@@ -9,10 +9,21 @@
       }
     },
     "accent": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "minecraft:diorite"
-      }
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:stone"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:andesite"
+          },
+          "weight": 1
+        }
+      ]
     },
     "top": {
       "type": "minecraft:weighted_state_provider",
@@ -25,7 +36,27 @@
         },
         {
           "data": {
-            "Name": "murimblock:pale_granite"
+            "Name": "minecraft:grass_block",
+            "Properties": {
+              "snowy": "false"
+            }
+          },
+          "weight": 1
+        }
+      ]
+    },
+    "plant": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "data": {
+            "Name": "minecraft:short_grass"
+          },
+          "weight": 2
+        },
+        {
+          "data": {
+            "Name": "minecraft:moss_carpet"
           },
           "weight": 1
         }
@@ -40,6 +71,7 @@
       "type": "minecraft:uniform",
       "min_inclusive": 28,
       "max_inclusive": 64
-    }
+    },
+    "summit": "murimblock:huangshan_pine"
   }
 }

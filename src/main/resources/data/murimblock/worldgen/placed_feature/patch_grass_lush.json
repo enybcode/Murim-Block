@@ -2,8 +2,10 @@
   "feature": "murimblock:patch_grass_lush",
   "placement": [
     {
-      "type": "minecraft:count",
-      "count": 4
+      "type": "minecraft:noise_threshold_count",
+      "noise_level": -0.2,
+      "below_noise": 2,
+      "above_noise": 6
     },
     {
       "type": "minecraft:in_square"

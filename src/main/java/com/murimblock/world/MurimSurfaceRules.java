@@ -44,16 +44,16 @@ public final class MurimSurfaceRules {
                         SurfaceRules.ifTrue(SurfaceRules.yBlockCheck(VerticalAnchor.absolute(96), 0),
                                 SurfaceRules.ifTrue(SurfaceRules.not(SurfaceRules.yBlockCheck(VerticalAnchor.absolute(99), 0)), block(MurimBlocks.RED_LOESS.get()))),
                         block(MurimBlocks.LOESS.get()))),
-                // Tablelands: thin grass on loess, wide bare loess where the steppe is worn.
+                // Tablelands: mostly bare yellow earth (the real plateau), grass in broad patches.
                 SurfaceRules.ifTrue(floor, SurfaceRules.ifTrue(dry, SurfaceRules.sequence(
-                        SurfaceRules.ifTrue(SurfaceRules.noiseCondition(Noises.SURFACE, -0.05, Double.MAX_VALUE), block(MurimBlocks.LOESS.get())),
+                        SurfaceRules.ifTrue(SurfaceRules.noiseCondition(Noises.SURFACE, -0.3, Double.MAX_VALUE), block(MurimBlocks.LOESS.get())),
                         block(Blocks.GRASS_BLOCK)))),
                 SurfaceRules.ifTrue(underFloor, block(MurimBlocks.LOESS.get()))));
 
         RuleSource desert = SurfaceRules.ifTrue(SurfaceRules.isBiome(MurimBiomes.HEXI_FRONTIER_DESERT), SurfaceRules.sequence(
-                // Gobi: dark varnished gravel plains with drifts of sand; sandstone below.
+                // Gobi: sand drifts over most of it, broad pavements of dark varnished gravel between; sandstone below.
                 SurfaceRules.ifTrue(floor, SurfaceRules.sequence(
-                        SurfaceRules.ifTrue(patches, block(Blocks.SAND)),
+                        SurfaceRules.ifTrue(SurfaceRules.noiseCondition(Noises.SURFACE, -0.2, Double.MAX_VALUE), block(Blocks.SAND)),
                         block(MurimBlocks.GOBI_GRAVEL.get()))),
                 SurfaceRules.ifTrue(SurfaceRules.stoneDepthCheck(0, true, 4, CaveSurface.FLOOR),
                         block(Blocks.SANDSTONE)),
@@ -66,8 +66,11 @@ public final class MurimSurfaceRules {
                 SurfaceRules.ifTrue(floor, SurfaceRules.ifTrue(fewPatches, block(Blocks.MOSS_BLOCK)))));
 
         RuleSource bamboo = SurfaceRules.ifTrue(SurfaceRules.isBiome(MurimBiomes.SHU_BAMBOO_SEA), SurfaceRules.sequence(
-                // Red beds of the Sichuan basin on cliffs; leaf litter (podzol) under the bamboo.
-                SurfaceRules.ifTrue(steep, block(Blocks.RED_TERRACOTTA)),
+                // Steep banks: bare rooty earth and coarse soil, mossy in the damp; leaf litter (podzol) under the bamboo.
+                SurfaceRules.ifTrue(steep, SurfaceRules.sequence(
+                        SurfaceRules.ifTrue(fewPatches, block(Blocks.MOSS_BLOCK)),
+                        SurfaceRules.ifTrue(patches, block(Blocks.ROOTED_DIRT)),
+                        block(Blocks.COARSE_DIRT))),
                 SurfaceRules.ifTrue(floor, SurfaceRules.ifTrue(dry, SurfaceRules.ifTrue(patches, block(Blocks.PODZOL))))));
 
         RuleSource jiangnan = SurfaceRules.ifTrue(SurfaceRules.isBiome(MurimBiomes.JIANGNAN_WATERLANDS), SurfaceRules.sequence(

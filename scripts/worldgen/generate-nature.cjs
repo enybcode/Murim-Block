@@ -217,9 +217,10 @@ function tree(name, wood, trunk, foliage, size, decorators = [], dirt = 'minecra
 }
 const strandDecorator = (block, probability, min, max) => ({ type: id('hanging_strands'), block: provider(id(block)), probability, length: uniform(min, max) });
 
-// Sweet osmanthus: short trunk, dense rounded evergreen crown dotted with golden flowers.
-tree('osmanthus', 'osmanthus', { type: 'minecraft:straight_trunk_placer', base_height: 4, height_rand_a: 2, height_rand_b: 0 },
-  { type: 'minecraft:blob_foliage_placer', height: 4, offset: 0, radius: 3 }, twoLayers(1, 0, 1));
+// Sweet osmanthus: short trunk, dense evergreen crown dotted with golden flowers, irregular (leaves spread at random
+// inside the crown, like the azalea, not a ball).
+tree('osmanthus', 'osmanthus', { type: 'minecraft:straight_trunk_placer', base_height: 3, height_rand_a: 2, height_rand_b: 0 },
+  { type: 'minecraft:random_spread_foliage_placer', foliage_height: 3, leaf_placement_attempts: 70, offset: 0, radius: 3 }, twoLayers(1, 0, 1));
 // Banyan: broad spreading crown with aerial roots; the giant one from 2x2 saplings or rarely in the wild.
 tree('banyan', 'banyan', { type: 'minecraft:fancy_trunk_placer', base_height: 6, height_rand_a: 6, height_rand_b: 0 },
   { type: 'minecraft:fancy_foliage_placer', height: 4, offset: 4, radius: 3 },
@@ -229,20 +230,18 @@ tree('banyan_giant', 'banyan', { type: 'minecraft:dark_oak_trunk_placer', base_h
   { type: 'minecraft:dark_oak_foliage_placer', offset: 0, radius: 1 },
   { type: 'minecraft:three_layers_feature_size', limit: 1, lower_size: 0, middle_size: 1, upper_limit: 1, upper_size: 2 },
   [strandDecorator('banyan_roots', 0.15, 3, 10)]);
-// Huangshan pine: bent trunk, flat layered needle clouds.
-tree('huangshan_pine', 'huangshan_pine', { type: 'minecraft:bending_trunk_placer', base_height: 5, bend_length: uniform(1, 3),
-  height_rand_a: 3, height_rand_b: 0, min_height_for_leaves: 4 },
-  { type: 'minecraft:random_spread_foliage_placer', foliage_height: 2, leaf_placement_attempts: 70, offset: 0, radius: 4 }, twoLayers(1, 0, 1));
-// Jujube: small thorny tree, forked, sparse crown with red dates.
+// Huangshan pine: a leaning trunk, branches held level, flat pads of needles, a flat parasol (TieredPineFeature).
+CF('huangshan_pine', id('tiered_pine'), {});
+// Jujube: small thorny tree, forked, a light ragged crown with red dates.
 tree('jujube', 'jujube', { type: 'minecraft:forking_trunk_placer', base_height: 3, height_rand_a: 2, height_rand_b: 1 },
-  { type: 'minecraft:acacia_foliage_placer', offset: 0, radius: 2 }, twoLayers(1, 0, 2));
-// Dove tree: tall straight trunk, round crown hung with white bracts.
+  { type: 'minecraft:random_spread_foliage_placer', foliage_height: 2, leaf_placement_attempts: 40, offset: 0, radius: 2 }, twoLayers(1, 0, 2));
+// Dove tree: tall straight trunk, a high open crown hung with white bracts.
 tree('dove_tree', 'dove_tree', { type: 'minecraft:straight_trunk_placer', base_height: 7, height_rand_a: 3, height_rand_b: 1 },
-  { type: 'minecraft:blob_foliage_placer', height: 3, offset: 0, radius: 3 }, twoLayers(1, 0, 1));
-// Weeping willow: short trunk, rounded crown, long fronds sweeping the water.
-tree('willow', 'willow', { type: 'minecraft:straight_trunk_placer', base_height: 5, height_rand_a: 2, height_rand_b: 0 },
-  { type: 'minecraft:blob_foliage_placer', height: 3, offset: 1, radius: 3 }, twoLayers(1, 0, 1),
-  [strandDecorator('willow_strands', 0.55, 2, 6)]);
+  { type: 'minecraft:random_spread_foliage_placer', foliage_height: 4, leaf_placement_attempts: 90, offset: 0, radius: 3 }, twoLayers(1, 0, 1));
+// Weeping willow: short trunk, a loose crown, long curtains of fronds sweeping the water.
+tree('willow', 'willow', { type: 'minecraft:straight_trunk_placer', base_height: 4, height_rand_a: 2, height_rand_b: 0 },
+  { type: 'minecraft:random_spread_foliage_placer', foliage_height: 3, leaf_placement_attempts: 80, offset: 0, radius: 3 }, twoLayers(1, 0, 1),
+  [strandDecorator('willow_strands', 0.8, 3, 8)]);
 // Peach: small twiggy tree with deep pink blossom (cherry trunk and foliage shapes, peach blocks).
 tree('peach', 'peach', { type: 'minecraft:cherry_trunk_placer', base_height: 4,
   branch_count: { type: 'minecraft:weighted_list', distribution: [{ data: 1, weight: 1 }, { data: 2, weight: 2 }, { data: 3, weight: 1 }] },
@@ -251,8 +250,8 @@ tree('peach', 'peach', { type: 'minecraft:cherry_trunk_placer', base_height: 4,
   { type: 'minecraft:cherry_foliage_placer', corner_hole_chance: 0.25, hanging_leaves_chance: 0.12, hanging_leaves_extension_chance: 0.2,
     height: 4, offset: 0, radius: 3, wide_bottom_layer_hole_chance: 0.25 }, twoLayers(1, 0, 2));
 // Desert poplar: bent, forked, rough-barked trunk with a golden ragged crown.
-tree('desert_poplar', 'desert_poplar', { type: 'minecraft:forking_trunk_placer', base_height: 5, height_rand_a: 2, height_rand_b: 2 },
-  { type: 'minecraft:acacia_foliage_placer', offset: 0, radius: 2 }, twoLayers(1, 0, 2), [], 'minecraft:coarse_dirt');
+tree('desert_poplar', 'desert_poplar', { type: 'minecraft:forking_trunk_placer', base_height: 4, height_rand_a: 2, height_rand_b: 2 },
+  { type: 'minecraft:random_spread_foliage_placer', foliage_height: 2, leaf_placement_attempts: 35, offset: 0, radius: 2 }, twoLayers(1, 0, 2), [], 'minecraft:coarse_dirt');
 // "Dead for a thousand years, standing": bare poplar snags in the gravel.
 CF('desert_poplar_snag', 'minecraft:block_column', { allowed_placement: { type: 'minecraft:matching_blocks', blocks: 'minecraft:air' },
   direction: 'up', prioritize_tip: false, layers: [{ height: uniform(2, 5), provider: logState('desert_poplar') }] });
@@ -303,22 +302,32 @@ CF('patch_grass_lush', 'minecraft:random_patch', { tries: 48, xz_spread: 7, y_sp
 
 // Rock peaks, yardangs, ground bodies, groves, cliff pines, ponds.
 const P = b => provider(id(b));
-CF('karst_tower', id('rock_pillar'), { style: 'tower', rock: weighted([[state(id('karst_limestone')), 6], [state('minecraft:andesite'), 1]]),
-  accent: weighted([[state(id('mossy_karst_limestone')), 3], [state('minecraft:tuff'), 2]]), top: provider('minecraft:grass_block', { snowy: 'false' }),
-  radius: uniform(4, 8), height: uniform(24, 58) });
-CF('granite_spire', id('rock_pillar'), { style: 'spire', rock: P('pale_granite'), accent: provider('minecraft:diorite'),
-  top: weighted([[state('minecraft:moss_block'), 2], [state(id('pale_granite')), 1]]), radius: uniform(3, 6), height: uniform(28, 64) });
-CF('sandstone_pillar', id('rock_pillar'), { style: 'pillar', rock: P('pillar_sandstone'), accent: provider('minecraft:smooth_sandstone'),
-  top: provider('minecraft:grass_block', { snowy: 'false' }), radius: uniform(2, 4), height: uniform(26, 58) });
-CF('yardang', id('yardang'), { body: provider('minecraft:smooth_sandstone'), band: weighted([[state('minecraft:terracotta'), 2], [state(id('red_loess')), 1]]),
+// The peaks: the rock in long vertical streaks of its accent (wet dark runs on limestone, damp joints on granite), soil
+// on every ledge with its low plants, and trees grown on the summit.
+const grassTop = provider('minecraft:grass_block', { snowy: 'false' });
+CF('karst_tower', id('rock_pillar'), { style: 'tower', rock: P('karst_limestone'),
+  accent: weighted([[state('minecraft:tuff'), 3], [state(id('mossy_karst_limestone')), 2]]), top: grassTop,
+  plant: weighted([[state(id('karst_fern')), 3], [state('minecraft:short_grass'), 2]]),
+  radius: uniform(4, 8), height: uniform(24, 58), summit: id('trees_karst') });
+CF('granite_spire', id('rock_pillar'), { style: 'spire', rock: P('pale_granite'),
+  accent: weighted([[state('minecraft:stone'), 2], [state('minecraft:andesite'), 1]]),
+  top: weighted([[state('minecraft:moss_block'), 2], [state('minecraft:grass_block', { snowy: 'false' }), 1]]),
+  plant: weighted([[state('minecraft:short_grass'), 2], [state('minecraft:moss_carpet'), 1]]),
+  radius: uniform(3, 6), height: uniform(28, 64), summit: id('huangshan_pine') });
+CF('sandstone_pillar', id('rock_pillar'), { style: 'pillar', rock: P('pillar_sandstone'), accent: P('pillar_sandstone'),
+  top: grassTop, plant: weighted([[state('minecraft:short_grass'), 3], [state('minecraft:fern'), 1]]),
+  radius: uniform(2, 4), height: uniform(26, 58), summit: id('huangshan_pine') });
+CF('yardang', id('yardang'), { body: provider('minecraft:smooth_sandstone'), band: provider('minecraft:sandstone'),
   length: uniform(14, 38), height: uniform(5, 13), width: uniform(3, 6) });
 const ground = (name, biome, body, band, depth, spacing) => CF(name, id('ground_body'),
   { biome: id(biome), body: state(body), band: state(band), depth, band_spacing: spacing });
 ground('ground_body_karst', 'jade_karst_forest', id('karst_limestone'), id('karst_limestone'), 26, 0);
-ground('ground_body_loess', 'loess_plateau', id('loess'), id('red_loess'), 64, 9);
-ground('ground_body_gobi', 'hexi_frontier_desert', 'minecraft:sandstone', 'minecraft:terracotta', 10, 5);
+ground('ground_body_loess', 'loess_plateau', id('loess'), id('red_loess'), 64, 11);
+ground('ground_body_gobi', 'hexi_frontier_desert', 'minecraft:sandstone', 'minecraft:smooth_sandstone', 10, 9);
 ground('ground_body_peaks', 'cloud_sea_peaks', id('pale_granite'), id('pale_granite'), 48, 0);
-ground('ground_body_peach', 'peach_blossom_valley', id('pillar_sandstone'), 'minecraft:smooth_sandstone', 22, 6);
+ground('ground_body_peach', 'peach_blossom_valley', id('pillar_sandstone'), id('pillar_sandstone'), 22, 0);
+// Jiangnan: fields, strips and canals out of the shallow lake.
+CF('jiangnan_waterlands', id('waterlands'), { biome: id('jiangnan_waterlands'), land: 0.3 });
 CF('moso_bamboo_grove', id('moso_bamboo_grove'), {});
 CF('cliff_pine', id('cliff_pine'), {});
 CF('jiangnan_pond', id('shallow_pond'), {});
@@ -341,6 +350,9 @@ const chance = n => ({ type: 'minecraft:rarity_filter', chance: n });
 const heightmap = h => ({ type: 'minecraft:heightmap', heightmap: h });
 const dry = { type: 'minecraft:surface_water_depth_filter', max_water_depth: 0 };
 const survives = s => ({ type: 'minecraft:block_predicate_filter', predicate: { type: 'minecraft:would_survive', state: s } });
+// Patchy like Minecraft's own vegetation: many where the 2D biome noise is high, few where it is low (groves and
+// clearings, fields of flowers) instead of an even sprinkle.
+const patchy = (level, below, above) => ({ type: 'minecraft:noise_threshold_count', noise_level: level, below_noise: below, above_noise: above });
 const weightedCount = pairs => ({ type: 'minecraft:count', count: { type: 'minecraft:weighted_list',
   distribution: pairs.map(([data, weight]) => ({ data, weight })) } });
 const treePlacement = (n, sapling) => [n, inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id(sapling), { stage: '0' }))];
@@ -352,49 +364,50 @@ function treeMix(name, entries, fallback) {
   CF(name, 'minecraft:random_selector', { default: inline(fallback), features: entries.map(([feature, c]) => ({ chance: c, feature: inline(feature) })) });
 }
 treeMix('trees_karst', [[id('banyan'), 0.25]], id('osmanthus'));
-PF('trees_karst', id('trees_karst'), treePlacement(weightedCount([[2, 6], [4, 3], [6, 1]]), 'osmanthus_sapling'));
+PF('trees_karst', id('trees_karst'), treePlacement(patchy(0, 1, 6), 'osmanthus_sapling'));
 PF('trees_karst_giant', id('banyan_giant'), [chance(18), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id('banyan_sapling'), { stage: '0' }))]);
 PF('bamboo_clumps_karst', 'minecraft:bamboo_no_podzol', [chance(3), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter]);
-PF('trees_loess', id('jujube'), treePlacement(weightedCount([[0, 8], [1, 2]]), 'jujube_sapling'));
+PF('trees_loess', id('jujube'), treePlacement(patchy(0.35, 0, 2), 'jujube_sapling'));
 PF('trees_desert_poplar', id('desert_poplar'), [chance(5), weightedCount([[2, 1], [4, 1]]), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter]);
 PF('desert_poplar_snag', id('desert_poplar_snag'), [chance(10), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter]);
-PF('trees_huangshan_pine', id('huangshan_pine'), treePlacement(weightedCount([[1, 5], [3, 3], [5, 1]]), 'huangshan_pine_sapling'));
+PF('trees_huangshan_pine', id('huangshan_pine'), treePlacement(patchy(0, 1, 4), 'huangshan_pine_sapling'));
 PF('cliff_pine', id('cliff_pine'), [count(14), inSquare, { type: 'minecraft:height_range', height: { type: 'minecraft:uniform',
   min_inclusive: { absolute: 72 }, max_inclusive: { absolute: 240 } } }, biomeFilter]);
 PF('moso_bamboo_grove', id('moso_bamboo_grove'), [count(3), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter]);
 PF('trees_dove_tree', id('dove_tree'), treePlacement(weightedCount([[0, 3], [1, 2]]), 'dove_tree_sapling'));
-PF('trees_willow', id('willow'), treePlacement(weightedCount([[1, 2], [3, 2], [5, 1]]), 'willow_sapling'));
-PF('trees_peach', id('peach'), treePlacement(weightedCount([[1, 3], [2, 3], [4, 1]]), 'peach_sapling'));
-PF('patch_karst_fern', id('patch_karst_fern'), surfacePatch(3));
-PF('patch_feather_grass', id('patch_feather_grass'), surfacePatch(5));
+PF('trees_willow', id('willow'), treePlacement(patchy(-0.2, 1, 4), 'willow_sapling'));
+PF('trees_peach', id('peach'), treePlacement(patchy(0, 1, 4), 'peach_sapling'));
+PF('patch_karst_fern', id('patch_karst_fern'), surfacePatch(patchy(0, 1, 5)));
+PF('patch_feather_grass', id('patch_feather_grass'), surfacePatch(patchy(0, 1, 6)));
 PF('patch_sea_buckthorn', id('patch_sea_buckthorn'), surfacePatch(chance(2)));
 PF('patch_tamarisk', id('patch_tamarisk'), surfacePatch(chance(2)));
 PF('patch_saxaul', id('patch_saxaul'), surfacePatch(1));
 PF('patch_cistanche', id('patch_cistanche'), surfacePatch(chance(4)));
 PF('patch_dead_bush', id('patch_dead_bush'), surfacePatch(1));
 PF('patch_rhododendron', id('patch_rhododendron'), surfacePatch(chance(2)));
-PF('patch_arrow_bamboo', id('patch_arrow_bamboo'), surfacePatch(3));
+PF('patch_arrow_bamboo', id('patch_arrow_bamboo'), surfacePatch(patchy(0, 1, 5)));
 PF('patch_tree_fern', id('patch_tree_fern'), surfacePatch(1));
 PF('patch_bamboo_shoot', id('patch_bamboo_shoot'), surfacePatch(1));
 PF('patch_wild_rice', id('patch_wild_rice'), surfacePatch(2));
-PF('patch_lotus', id('patch_lotus'), surfacePatch(4));
+PF('patch_lotus', id('patch_lotus'), surfacePatch(patchy(0, 1, 8)));
 PF('flower_chrysanthemum', id('flower_chrysanthemum'), surfacePatch(chance(2)));
-PF('flower_rapeseed', id('flower_rapeseed'), surfacePatch(1));
-PF('patch_pink_petals', id('patch_pink_petals'), surfacePatch(2));
-PF('patch_grass_lush', id('patch_grass_lush'), surfacePatch(4));
+PF('flower_rapeseed', id('flower_rapeseed'), surfacePatch(patchy(0.25, 0, 8)));
+PF('patch_pink_petals', id('patch_pink_petals'), surfacePatch(patchy(0, 0, 4)));
+PF('patch_grass_lush', id('patch_grass_lush'), surfacePatch(patchy(-0.2, 2, 6)));
 PF('karst_tower', id('karst_tower'), [weightedCount([[0, 4], [1, 4], [2, 1]]), inSquare, biomeFilter]);
 PF('granite_spire', id('granite_spire'), [weightedCount([[0, 2], [1, 3], [2, 1]]), inSquare, biomeFilter]);
 PF('sandstone_pillar', id('sandstone_pillar'), [weightedCount([[0, 5], [1, 3], [2, 1]]), inSquare, biomeFilter]);
 PF('yardang', id('yardang'), [chance(3), inSquare, biomeFilter]);
 PF('jiangnan_pond', id('jiangnan_pond'), [count(2), inSquare, heightmap('OCEAN_FLOOR_WG'), biomeFilter]);
 for (const g of ['karst', 'loess', 'gobi', 'peaks', 'peach']) PF(`ground_body_${g}`, id(`ground_body_${g}`), []);
+PF('jiangnan_waterlands', id('jiangnan_waterlands'), []);
 
 // ---------------------------------------------------------------- biomes
 const plains = JSON.parse(fs.readFileSync(path.join(__dirname, 'vanilla', 'plains_features.json'), 'utf8'));
 // One global order for every Murim feature in each step, so no two biomes ever disagree on order.
 const ORDER = {
   0: ['ground_body_karst', 'ground_body_loess', 'ground_body_gobi', 'ground_body_peaks', 'ground_body_peach'],
-  1: ['jiangnan_pond'],
+  1: ['jiangnan_waterlands', 'jiangnan_pond'],
   2: ['karst_tower', 'granite_spire', 'sandstone_pillar', 'yardang'],
   9: ['trees_karst', 'trees_karst_giant', 'bamboo_clumps_karst', 'trees_loess', 'trees_desert_poplar', 'desert_poplar_snag',
     'trees_huangshan_pine', 'cliff_pine', 'moso_bamboo_grove', 'trees_dove_tree', 'trees_willow', 'trees_peach',
@@ -463,7 +476,7 @@ biome('jiangnan_waterlands', { temperature: 0.8, downfall: 0.95, sky: '#AEC3CF',
   grass: '#7AB55A', foliage: '#5CA046', music: 'minecraft:music.overworld.swamp',
   creatures: [spawn('cow', 8, 2, 4), spawn('chicken', 10, 4, 4), spawn('pig', 6, 2, 4), spawn('frog', 10, 2, 5)],
   waterAmbient: [spawn('salmon', 8, 1, 5)], waterCreatures: [spawn('squid', 2, 1, 4)],
-  mine: ['jiangnan_pond', 'trees_willow', 'patch_wild_rice', 'patch_lotus', 'patch_grass_lush'],
+  mine: ['jiangnan_waterlands', 'jiangnan_pond', 'trees_willow', 'patch_wild_rice', 'patch_lotus', 'patch_grass_lush'],
   vanilla: ['minecraft:patch_sugar_cane'] });
 biome('peach_blossom_valley', { temperature: 0.65, downfall: 0.8, sky: '#B6CDE0', fog: '#E7D9DE', water: '#5AA8A0', waterFog: '#3B7A73',
   grass: '#86C26A', foliage: '#6DB458', music: 'minecraft:music.overworld.cherry_grove',
