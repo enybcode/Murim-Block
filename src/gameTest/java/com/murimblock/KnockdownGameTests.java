@@ -51,6 +51,8 @@ public final class KnockdownGameTests {
         ServerPlayer[] p = pair(helper);
         ServerPlayer attacker = p[0], victim = p[1];
         QiService.setQiMax(victim, 1_000);
+        // Worn down first: no single blow (or combo) takes a player from full health (BurstGuard).
+        victim.setHealth(2);
         victim.hurt(victim.damageSources().playerAttack(attacker), 1000);
         victim.doTick();
         victim.doTick(); // the pose follows one tick after the forced pose

@@ -153,6 +153,7 @@ public final class KnockdownTour {
             // 1. A real lethal hit from the local player: the opponent falls K.O. instead of dying.
             case 30 -> lookAt(server, baseX + 0.4, baseZ - 3.2, 1.3, baseX + 0.4, 0.7, baseZ);
             case 40 -> server.execute(() -> {
+                opponent.setHealth(2); // worn down first: no single blow takes a player from full health (BurstGuard)
                 opponent.hurt(opponent.damageSources().playerAttack(self(server)), 1000);
                 check(opponent.isAlive() && KnockdownService.isDowned(opponent), "lethal PvP hit knocks down (server)");
             });
@@ -253,6 +254,7 @@ public final class KnockdownTour {
                 mc.options.hideGui = false;
                 server.execute(() -> {
                     ServerPlayer self = self(server);
+                    self.setHealth(2); // worn down first (BurstGuard)
                     self.hurt(self.damageSources().playerAttack(ally), 1000);
                     check(self.isAlive() && KnockdownService.isDowned(self), "the local player is knocked down by the ally");
                 });

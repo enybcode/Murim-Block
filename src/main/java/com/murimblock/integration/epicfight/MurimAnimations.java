@@ -421,13 +421,13 @@ public final class MurimAnimations {
         for (int i = 0; i < DRIZZLE_THRUSTS.length; i++) {
             float t = DRIZZLE_THRUSTS[i];
             phases[i] = new Phase(start, t - 0.05F, t - 0.03F, t + 0.02F, t + 0.04F, t + 0.06F, root(), box)
-                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.3F))
                     .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
                     .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
             start = t + 0.06F;
         }
         phases[DRIZZLE_THRUSTS.length] = new Phase(start, DRIZZLE_FINAL, DRIZZLE_FINAL + 0.03F, DRIZZLE_FINAL + 0.12F, 1.3F, Float.MAX_VALUE, root(), box)
-                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.9F))
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
                 .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
                 .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH.get());

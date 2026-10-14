@@ -321,6 +321,7 @@ public final class CultivationGameTests {
             float blow = InnerWorldService.demonBlow(player, player.damageSources().mobAttack(demon), 4);
             helper.assertTrue(Math.abs(blow - expected) < 1e-3, "The demon's blow should weigh " + expected + ", weighs " + blow);
             helper.assertTrue(InnerWorldService.demonBlow(player, player.damageSources().generic(), 4) == 4, "Another blow was weighed");
+            demon.setHealth(1); // worn down first: no combo fells a double from full health (BurstGuard)
             demon.hurt(player.damageSources().playerAttack(player), 1000);
             helper.assertTrue(!demon.isAlive(), "The demon did not die");
         });

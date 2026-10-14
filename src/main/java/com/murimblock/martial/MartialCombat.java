@@ -207,12 +207,15 @@ public final class MartialCombat {
         // body cannot be hit: the slam would miss it); it staggers instead.
         if (isHeldUp(event.getTarget()) && event.getDamageSource().getStunType() == yesman.epicfight.world.damagesource.StunType.KNOCKDOWN)
             event.getDamageSource().setStunType(yesman.epicfight.world.damagesource.StunType.LONG);
-        if (swing(player, event.getDamageSource().getAnimation()) == null) return;
+        Swing swing = swing(player, event.getDamageSource().getAnimation());
+        if (swing == null) return;
         Combo c = COMBOS.get(event.getTarget().getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && player.level().getGameTime() - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
         float factor = comboFactor(prior);
+        // A technique (not a strike) strikes as its weapon and its Qi allow (TechniquePower).
+        if (!swing.strike) factor *= (float) TechniquePower.factor(player, swing.art);
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
-        if (factor < 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
+        if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
 
     /** Share of its damage a hit keeps after `prior` hits of the same combo. */

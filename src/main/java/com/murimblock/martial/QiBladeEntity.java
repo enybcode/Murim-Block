@@ -68,7 +68,7 @@ public final class QiBladeEntity extends Projectile {
         blade.setOwner(owner);
         blade.entityData.set(KIND, kind);
         blade.technique = technique;
-        blade.damage = (float) (owner.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * DAMAGE[kind]);
+        blade.damage = TechniquePower.damage(owner, MartialArts.AZURE_CLOUD_SWORD, DAMAGE[kind]);
         Vec3 dir = Vec3.directionFromRotation(0, owner.getYRot());
         double y = kind == CRESCENT ? owner.getY() : owner.getY() + owner.getBbHeight() * 0.55 - HEIGHT[kind] / 2;
         // The wave's position is its point, which leaves a little ahead of the blade in hand.
