@@ -37,7 +37,6 @@ import yesman.epicfight.client.renderer.patched.entity.PHumanoidRenderer;
 /** How the inner world's figures are drawn: the body left in meditation, the Heart Demon, the remnant soul, the motes. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CultivationRenderers {
-    static final ResourceLocation SOUL_SKIN = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/remnant_soul.png");
     static final ResourceLocation DEMON_EYES = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/heart_demon_eyes.png");
     static final ResourceLocation MOTE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/particle/qi_mote.png");
     private static boolean patchedHooked;
@@ -169,28 +168,48 @@ public final class CultivationRenderers {
 
     // ---------------------------------------------------------------- the remnant soul
 
-    /** The old master: a translucent figure floating a little above the ground, bobbing slowly. */
-    static final class SoulRenderer extends LivingEntityRenderer<RemnantSoulEntity, PlayerModel<RemnantSoulEntity>> {
+    /**
+     * The old master, a ghost: the GeckoLib model of scripts/animation/remnant-soul.cjs (a robe thinning into a tail of
+     * mist instead of legs), see-through and lit from within, floating above the ground, its glow breathing, a few
+     * wisps of pale Qi drifting up from it.
+     */
+    static final class SoulRenderer extends software.bernie.geckolib.renderer.GeoEntityRenderer<RemnantSoulEntity> {
+        private static final float[] WISP = {0.72F, 0.9F, 1.0F};
+
         SoulRenderer(EntityRendererProvider.Context context) {
-            super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.3F);
+            super(context, new software.bernie.geckolib.model.DefaultedEntityGeoModel<>(
+                    ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "remnant_soul"), true));
+            shadowRadius = 0.0F;
+            addRenderLayer(new software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer<>(this));
         }
 
         @Override
         public void render(RemnantSoulEntity soul, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
             pose.pushPose();
-            pose.translate(0, 0.25 + Mth.sin((soul.tickCount + partial) * 0.06F) * 0.08, 0);
+            pose.translate(0, 0.35, 0);
             super.render(soul, yaw, partial, pose, buffers, LightTexture.FULL_BRIGHT);
             pose.popPose();
+            if (soul.tickCount != soul.wispTick && soul.level() instanceof net.minecraft.client.multiplayer.ClientLevel level) {
+                soul.wispTick = soul.tickCount;
+                var random = soul.getRandom();
+                if (random.nextInt(3) == 0) {
+                    double angle = random.nextDouble() * Math.PI * 2, r = 0.2 + random.nextDouble() * 0.3;
+                    AuraClient.spark(level, soul.getX() + Math.cos(angle) * r, soul.getY() + 0.2 + random.nextDouble() * 0.9,
+                            soul.getZ() + Math.sin(angle) * r, 0, 0.02 + random.nextDouble() * 0.02, 0, WISP, random.nextBoolean());
+                }
+            }
         }
 
         @Override
-        protected RenderType getRenderType(RemnantSoulEntity soul, boolean visible, boolean translucent, boolean glowing) {
-            return RenderType.entityTranslucent(SOUL_SKIN);
+        public RenderType getRenderType(RemnantSoulEntity soul, ResourceLocation texture, MultiBufferSource buffers, float partial) {
+            return RenderType.entityTranslucent(texture);
         }
 
         @Override
-        public ResourceLocation getTextureLocation(RemnantSoulEntity soul) {
-            return SOUL_SKIN;
+        public software.bernie.geckolib.util.Color getRenderColor(RemnantSoulEntity soul, float partial, int light) {
+            // The ghost's glow breathes: more or less see-through, slowly.
+            float alpha = 0.78F + Mth.sin((soul.tickCount + partial) * 0.05F) * 0.14F;
+            return software.bernie.geckolib.util.Color.ofARGB(alpha, 1.0F, 1.0F, 1.0F);
         }
     }
 

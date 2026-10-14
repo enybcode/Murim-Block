@@ -243,9 +243,10 @@ public final class CultivationTour {
                 Vec3 at = soul.isEmpty() ? p.add(-3, 0, 2) : soul.get(0).position();
                 // From the platform's side, where he looks (at the player), a little higher than his face.
                 Vec3 toward = p.subtract(at).multiply(1, 0, 1).normalize();
-                film(mc, at.add(toward.scale(2.6)).add(0, 1.9, 0), at.add(0, 1.5, 0));
-                capture(mc, "16-remnant-soul.png");
+                film(mc, at.add(toward.scale(3.4)).add(0, 1.8, 0), at.add(0, 1.4, 0));
             }
+            // A frame later, once the camera has moved.
+            case 690 -> capture(mc, "16-remnant-soul.png");
             case 715 -> server.execute(() -> {
                 ServerPlayer self = self(server);
                 var souls = self.serverLevel().getEntitiesOfClass(RemnantSoulEntity.class, self.getBoundingBox().inflate(40));
