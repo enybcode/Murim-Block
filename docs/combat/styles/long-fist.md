@@ -16,7 +16,7 @@ Le Poing Long est la boxe qu'on apprend en premier dans les écoles chinoises : 
 
 - **« Long Fist Scroll »** (Rouleau du Poing Long), un rouleau de toile simple.
 - **Où le trouver** (proposition) : à la bibliothèque du Sanctuaire de la Falaise des Nuages, à côté du manuel de l'épée. Ce sont les deux arts que la secte enseigne à ses nouveaux disciples. Un exemplaire par joueur.
-- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le rouleau n'est pas consommé.
+- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le rouleau est consommé : un rouleau, une lecture (gardé par qui connaît déjà l'art).
 
 ## Le passif : « Steady Breath » (Souffle régulier)
 

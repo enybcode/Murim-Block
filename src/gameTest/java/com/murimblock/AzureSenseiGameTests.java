@@ -33,9 +33,9 @@ import static com.murimblock.testing.GameTestPlayers.cleanup;
 import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
- * Sensei Yun: he comes with the Azure Cloud in hand (a sword for Epic Fight, no drop), stands and walks in his own
+ * Sensei Yun: he comes with the Azure Cloud in hand (a sword for Epic Fight), a hard boss; stands and walks in his own
  * motions, stays about his home and never despawns, leaves a player alone until struck, hands each player the Azure
- * Cloud Sword Manual once, and fights with the art's own cuts.
+ * Cloud Sword Manual once, fights with the art itself, has a second phase and recovers, drops his sword and the manual.
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -60,10 +60,11 @@ public final class AzureSenseiGameTests {
         helper.assertTrue(!sensei.removeWhenFarAway(1.0E6) && sensei.isPersistenceRequired(), "The sensei could despawn");
         helper.assertTrue(sensei.hasRestriction() && sensei.getRestrictCenter().equals(helper.absolutePos(new BlockPos(2, 1, 2))),
                 "The sensei is not kept about where he was placed: " + sensei.getRestrictCenter());
-        // His own attack is nothing; the sword gives its 6 (held equipment counts from the next tick). It does not drop yet.
+        // His own 4 and the sword's 6 (held equipment counts from the next tick).
         helper.runAfterDelay(2, () -> {
-            helper.assertTrue(Math.abs(sensei.getAttributeValue(Attributes.ATTACK_DAMAGE) - 6) < 0.01,
-                    "The sensei should hit for 6 with the Azure Cloud, not " + sensei.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(Math.abs(sensei.getAttributeValue(Attributes.ATTACK_DAMAGE) - 10) < 0.01,
+                    "The sensei should hit for 10 with the Azure Cloud, not " + sensei.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(sensei.getMaxHealth() >= 300, "The sensei is no hard boss: " + sensei.getMaxHealth() + " health");
             sensei.discard();
             helper.succeed();
         });
@@ -161,8 +162,59 @@ public final class AzureSenseiGameTests {
         helper.succeed();
     }
 
+    /** Whether this is one of his moves: the art's strikes and techniques. */
+    private static boolean senseiMove(Object a) {
+        return java.util.List.of(MurimAnimations.DRIFTING_CUT, MurimAnimations.RETURNING_CUT, MurimAnimations.PIERCING_MIST,
+                MurimAnimations.RISING_CLOUD, MurimAnimations.FALLING_RAIN, MurimAnimations.SWALLOW_RETURNS, MurimAnimations.THOUSAND_DRIZZLE,
+                MurimAnimations.WIND_STEP, MurimAnimations.CLOUD_STEP_SLASH, MurimAnimations.HEAVEN_SPLITTING_CRESCENT, MurimAnimations.CLOUD_STEP_DIVE).contains(a);
+    }
+
     private static int count(ServerPlayer player) {
         return player.getInventory().countItem(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get());
+    }
+
+    /** Below half his health he fights in earnest (quicker); whole again, he is calm. Left alone, he recovers. */
+    @GameTest(template = "foundation_arena", batch = "sensei_phase", timeoutTicks = 100)
+    public static void theSenseiHasASecondPhaseAndRecovers(GameTestHelper helper) {
+        AzureSenseiEntity sensei = sensei(helper, new BlockPos(2, 1, 2));
+        double calm = sensei.getAttributeValue(Attributes.MOVEMENT_SPEED);
+        sensei.setHealth(sensei.getMaxHealth() * 0.4F);
+        helper.runAfterDelay(3, () -> {
+            helper.assertTrue(sensei.secondPhase(), "Below half his health, the sensei is not in his second phase");
+            helper.assertTrue(sensei.getAttributeValue(Attributes.MOVEMENT_SPEED) > calm * 1.4, "In his second phase he is not quicker");
+            float before = sensei.getHealth();
+            helper.runAfterDelay(41, () -> {
+                helper.assertTrue(sensei.getHealth() >= before + 3.9F, "Left alone, he does not recover: " + before + " -> " + sensei.getHealth());
+                sensei.setHealth(sensei.getMaxHealth());
+                helper.runAfterDelay(3, () -> {
+                    helper.assertTrue(!sensei.secondPhase(), "Whole again, the sensei is still in his second phase");
+                    helper.assertTrue(Math.abs(sensei.getAttributeValue(Attributes.MOVEMENT_SPEED) - calm) < 1e-6, "Whole again, he is still quicker");
+                    sensei.discard();
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    /** Killed by a player, he drops the Azure Cloud and the manual, every time; by anything else, nothing. */
+    @GameTest(template = "foundation_arena", batch = "sensei_loot")
+    public static void theSenseiDropsHisSwordAndTheManual(GameTestHelper helper) {
+        AzureSenseiEntity sensei = sensei(helper, new BlockPos(2, 1, 2));
+        ServerPlayer player = player(helper);
+        try {
+            var byPlayer = com.murimblock.testing.LootRolls.roll(helper.getLevel(), sensei, player, 50);
+            helper.assertTrue(byPlayer.rollsWith(MurimItems.AZURE_CLOUD_SWORD.get()) == 50, "The sword did not always drop: " + byPlayer.rollsWith());
+            helper.assertTrue(byPlayer.rollsWith(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 50, "The manual did not always drop: " + byPlayer.rollsWith());
+            helper.assertTrue(byPlayer.mostInOneRoll(MurimItems.AZURE_CLOUD_SWORD.get()) == 1 && byPlayer.mostInOneRoll(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 1,
+                    "More than one sword or manual at once");
+            helper.assertTrue(byPlayer.onlyContains(MurimItems.AZURE_CLOUD_SWORD.get(), MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()), "Something else dropped: " + byPlayer.rollsWith());
+            var byNothing = com.murimblock.testing.LootRolls.roll(helper.getLevel(), sensei, null, 20);
+            helper.assertTrue(byNothing.rollsWith().isEmpty(), "Something dropped without a player: " + byNothing.rollsWith());
+        } finally {
+            sensei.discard();
+            cleanup(player);
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "foundation_arena", batch = "sensei_attack", timeoutTicks = 200)
@@ -181,8 +233,7 @@ public final class AzureSenseiGameTests {
             AnimationPlayer main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
             if (main != null && main.getRealAnimation() != null && main.getRealAnimation().get() instanceof AttackAnimation) {
                 var a = main.getRealAnimation();
-                helper.assertTrue(a == MurimAnimations.DRIFTING_CUT || a == MurimAnimations.RETURNING_CUT || a == MurimAnimations.FALLING_RAIN,
-                        "The sensei swung something else than the Azure Cloud's cuts: " + a);
+                helper.assertTrue(senseiMove(a), "The sensei swung something else than the Azure Cloud Sword Art: " + a);
                 cut[0] = true;
             }
         });

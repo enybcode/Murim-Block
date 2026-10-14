@@ -6,6 +6,8 @@ import com.murimblock.martial.SectLibrary;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -21,6 +23,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -40,10 +43,14 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
  * Sensei Yun (云师父), master of the Azure Cloud Sect, who keeps the Misty Bamboo Temple (docs/mobs/azure-sensei.md): an
  * old swordsman in azure robes and a straw hat, the left hand behind his back, the Azure Cloud low in his right. Neutral:
  * he strolls about his hall and watches whoever comes, and only draws on someone who strikes him (then he fights with
- * the Azure Cloud's cuts, AzureSenseiPatch). Spoken to (right-click), he hands each player their own copy of the Azure
- * Cloud Sword Manual, once (the same copy as the sanctuary library's, SectLibrary). He stays where he was placed: he never despawns and keeps to a few blocks
- * around his home. His sword does not drop (drops are decided later). His health shows in an azure boss bar to the
- * players near him, as the Bandit Chief's.
+ * the Azure Cloud Sword Art, AzureSenseiPatch). Spoken to (right-click), he hands each player their own copy of the
+ * Azure Cloud Sword Manual, once (the same copy as the sanctuary library's, SectLibrary). He stays where he was placed: he
+ * never despawns and keeps to a few blocks around his home.
+ * <p>A hard boss: 300 health, armour 12, hardly moved or staggered, 10 a cut. Below half his health he stops holding back
+ * (his second phase: quicker, and the art's great techniques, AzureSenseiPatch); left alone he recovers, and back to full
+ * health he is calm again. His health shows in an azure boss bar to the players near him, framed in clouds
+ * (client/SenseiBossBarClouds). Killed by a player, he drops the Azure Cloud and the Azure Cloud Sword Manual
+ * (loot_table/entities/azure_sensei.json).
  */
 public class AzureSenseiEntity extends PathfinderMob {
     /** How far from his home he strolls (blocks). */
@@ -51,21 +58,28 @@ public class AzureSenseiEntity extends PathfinderMob {
     /** A stroll about once in this many ticks (12 s on average; the vanilla stroll comes every 6 s). */
     static final int STROLL_INTERVAL = 240;
 
+    /** The share of his health below which he fights in earnest (his second phase). */
+    public static final float SECOND_PHASE = 0.5F;
+    /** Health he recovers each second while nobody fights him. */
+    static final float RECOVERY = 2.0F;
+    /** His second phase's quickness: half again his speed. */
+    private static final ResourceLocation SECOND_PHASE_SPEED = ResourceLocation.fromNamespaceAndPath("murimblock", "sensei_second_phase");
+
     private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_10);
 
     public AzureSenseiEntity(EntityType<? extends AzureSenseiEntity> type, Level level) {
         super(type, level);
-        xpReward = 30;
+        xpReward = 100;
         setCanPickUpLoot(false);
     }
 
     public static AttributeSupplier.Builder createSenseiAttributes() {
-        // No attack of his own: the Azure Cloud gives its damage.
+        // His own 4 and the Azure Cloud's 6: 10 a cut, before the art's multipliers.
         return EpicFightMobSupport.humanoidAttributes(PathfinderMob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 80).add(Attributes.ARMOR, 6).add(Attributes.ATTACK_DAMAGE, 0)
-                .add(Attributes.MOVEMENT_SPEED, 0.27).add(Attributes.FOLLOW_RANGE, 24)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 0.5))
-                .add(EpicFightAttributes.STUN_ARMOR, 6.0).add(EpicFightAttributes.IMPACT, 1.5);
+                .add(Attributes.MAX_HEALTH, 300).add(Attributes.ARMOR, 12).add(Attributes.ARMOR_TOUGHNESS, 4)
+                .add(Attributes.ATTACK_DAMAGE, 4).add(Attributes.MOVEMENT_SPEED, 0.3).add(Attributes.FOLLOW_RANGE, 32)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.9).add(Attributes.STEP_HEIGHT, 1.0))
+                .add(EpicFightAttributes.STUN_ARMOR, 20.0).add(EpicFightAttributes.IMPACT, 2.5);
     }
 
     @Override protected void registerGoals() {
@@ -84,8 +98,32 @@ public class AzureSenseiEntity extends PathfinderMob {
     /** With a target, he is aggressive: the clients see it (his brows knot, MobFaces). */
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
+        // Left alone, he recovers; back to full health, he is calm again.
+        if (getTarget() == null && tickCount % 20 == 0 && getHealth() < getMaxHealth()) heal(RECOVERY);
+        if (!secondPhase() && getHealth() <= getMaxHealth() * SECOND_PHASE) enterSecondPhase();
+        else if (secondPhase() && getHealth() >= getMaxHealth()) leaveSecondPhase();
         bossBar.setProgress(getHealth() / getMaxHealth());
         setAggressive(getTarget() != null);
+    }
+
+    // ---- the second phase
+
+    /** Whether he fights in earnest now (below half his health, until he is whole again). */
+    public boolean secondPhase() {
+        var speed = getAttribute(Attributes.MOVEMENT_SPEED);
+        return speed != null && speed.hasModifier(SECOND_PHASE_SPEED);
+    }
+
+    private void enterSecondPhase() {
+        var speed = getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed != null) speed.addOrUpdateTransientModifier(new AttributeModifier(SECOND_PHASE_SPEED, 0.5, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+        Component words = Component.translatable("message.murimblock.sensei.second_phase");
+        for (ServerPlayer player : level().getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(32))) player.sendSystemMessage(words);
+    }
+
+    private void leaveSecondPhase() {
+        var speed = getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed != null) speed.removeModifier(SECOND_PHASE_SPEED);
     }
 
     // ---- the boss bar
