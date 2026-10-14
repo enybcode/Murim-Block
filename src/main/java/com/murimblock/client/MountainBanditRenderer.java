@@ -2,6 +2,7 @@ package com.murimblock.client;
 
 import com.murimblock.Murimblock;
 import com.murimblock.integration.epicfight.MountainBanditPatch;
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.mob.MurimEntities;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -78,6 +79,7 @@ public final class MountainBanditRenderer extends HumanoidMobRenderer<MountainBa
         @Override
         public void render(MountainBanditEntity bandit, MountainBanditPatch patch, MountainBanditRenderer renderer, MultiBufferSource buffers,
                            PoseStack poseStack, int light, float partialTicks) {
+            IdlePhase.desync(bandit, patch, MurimAnimations.BANDIT_IDLE);
             drawingMesh = true;
             face = MobFaces.of(bandit, patch);
             try {

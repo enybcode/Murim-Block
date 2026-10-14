@@ -3,6 +3,7 @@ package com.murimblock.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.murimblock.Murimblock;
 import com.murimblock.integration.epicfight.BanditChiefPatch;
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.mob.BanditChiefEntity;
 import com.murimblock.mob.MurimEntities;
 import net.minecraft.client.model.PlayerModel;
@@ -75,6 +76,7 @@ public final class BanditChiefRenderer extends HumanoidMobRenderer<BanditChiefEn
         @Override
         public void render(BanditChiefEntity chief, BanditChiefPatch patch, BanditChiefRenderer renderer, MultiBufferSource buffers,
                            PoseStack poseStack, int light, float partialTicks) {
+            IdlePhase.desync(chief, patch, MurimAnimations.CHIEF_IDLE);
             face = MobFaces.of(chief, patch);
             try {
                 super.render(chief, patch, renderer, buffers, poseStack, light, partialTicks);

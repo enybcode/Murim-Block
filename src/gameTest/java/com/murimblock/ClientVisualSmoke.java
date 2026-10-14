@@ -464,7 +464,32 @@ public final class ClientVisualSmoke {
                     previewScale = 80;
                     previewLift = 0.0625F;
                 }
+                // A band of three bandits standing in their idle, side by side in the world: each at its own point of
+                // the loop (IdlePhase), not moving in unison.
                 case 1226 -> {
+                    mc.setScreen(null);
+                    mc.options.hideGui = true;
+                    mc.getSingleplayerServer().execute(() -> {
+                        var level = mc.getSingleplayerServer().overworld();
+                        var old = level.getEntity(opponentId);
+                        if (old != null) old.discard();
+                        for (int i = 0; i < 3; i++) {
+                            var bandit = MurimEntities.MOUNTAIN_BANDIT.get().create(level);
+                            bandit.setNoGravity(true);
+                            bandit.moveTo(0.5 + i * 1.5, 80, 0.5, 0, 0);
+                            bandit.setYHeadRot(0);
+                            bandit.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.BANDIT_DAO.get()));
+                            bandit.setVariant(i);
+                            level.addFreshEntity(bandit);
+                            bandit.setNoAi(true);
+                        }
+                        mc.getSingleplayerServer().getPlayerList().getPlayers().get(0).connection.teleport(2.0, 79.6, 5.2, 180, 4);
+                    });
+                }
+                case 1250 -> capture("34-bandits-out-of-step.png");
+                case 1262 -> capture("35-bandits-out-of-step-later.png");
+                case 1266 -> mc.options.hideGui = false;
+                case 1270 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
                             "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
