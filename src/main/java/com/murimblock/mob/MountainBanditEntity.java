@@ -34,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
  * The Mountain Bandit (山賊), the first common human enemy: a brigand of the mountain passes with a Bandit Dao, in bands of
  * two to four, as frequent as the zombie (docs/mobs/mountain-bandit). One mob in five outfits, like the axolotl's
  * colours: the outfit ({@link #getVariant()}) only changes the skin. It fights with its dao through Epic Fight
- * (MountainBanditPatch: the engine's one-handed sword behaviours), calls the bandits near it when it is hit, and
+ * (MountainBanditPatch: Murim's own sword cuts, edge first), calls the bandits near it when it is hit, and
  * despawns far from players like any monster.
  */
 public class MountainBanditEntity extends Monster {
@@ -42,8 +42,8 @@ public class MountainBanditEntity extends Monster {
     public static final String[] OUTFITS = {"ash", "crimson", "wolf", "dune", "gilded"};
     /** How often each outfit spawns, in percent (the gilded mask is the rare one). */
     private static final int[] OUTFIT_WEIGHTS = {30, 25, 20, 24, 1};
-    /** The dao drops one time in twenty, worn (Looting raises it like any held equipment). */
-    private static final float DAO_DROP_CHANCE = 0.05F;
+    /** The dao drops one time in a hundred, worn (Looting raises it like any held equipment). */
+    private static final float DAO_DROP_CHANCE = 0.01F;
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(MountainBanditEntity.class, EntityDataSerializers.INT);
 

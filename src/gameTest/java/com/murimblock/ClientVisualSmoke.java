@@ -15,6 +15,7 @@ import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
 import com.murimblock.integration.epicfight.EpicFightContentPolicy;
 import com.murimblock.integration.epicfight.MurimSkills;
 import com.murimblock.integration.epicfight.MountainBanditPatch;
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.item.MurimItems;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.mob.MurimEntities;
@@ -368,9 +369,9 @@ public final class ClientVisualSmoke {
                 case 775 -> mc.getSingleplayerServer().execute(() -> {
                     var bandit = (MountainBanditEntity) mc.getSingleplayerServer().overworld().getEntity(opponentId);
                     bandit.setVariant(1);
-                    EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(Animations.BIPED_MOB_ONEHAND1, 0);
+                    EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(MurimAnimations.DRIFTING_CUT, 0);
                 });
-                case 779, 782, 785, 788, 791 -> capture(String.format("bandit-cut/%02d.png", (ticks - 779) / 3));
+                case 777, 779, 781, 783, 785, 787, 789, 791 -> capture(String.format("bandit-cut/%02d.png", (ticks - 777) / 2));
                 case 794 -> previewTurn = 0;
                 case 800 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));

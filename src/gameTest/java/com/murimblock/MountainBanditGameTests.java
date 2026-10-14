@@ -1,5 +1,6 @@
 package com.murimblock;
 
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.item.MurimItems;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.mob.MurimEntities;
@@ -24,7 +25,7 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
 
 /**
  * The Mountain Bandit: it spawns with its Bandit Dao in hand, a sword for Epic Fight; its outfit is kept in its save; and
- * it fights with the dao through Epic Fight's own attack animations (no vanilla punch).
+ * it fights with the dao through Murim's own cuts, played by Epic Fight (no vanilla punch, no generic mob swing).
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -87,7 +88,13 @@ public final class MountainBanditGameTests {
             bandit.setTarget(target);
             LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(bandit, LivingEntityPatch.class);
             AnimationPlayer main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
-            if (main != null && main.getRealAnimation() != null && main.getRealAnimation().get() instanceof AttackAnimation) cut[0] = true;
+            if (main != null && main.getRealAnimation() != null && main.getRealAnimation().get() instanceof AttackAnimation) {
+                var a = main.getRealAnimation();
+                // Murim's own cuts, edge first, not the engine's generic mob swings.
+                helper.assertTrue(a == MurimAnimations.DRIFTING_CUT || a == MurimAnimations.RETURNING_CUT || a == MurimAnimations.FALLING_RAIN,
+                        "The bandit swung something else than its cuts: " + a);
+                cut[0] = true;
+            }
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(cut[0], "The bandit has not swung its dao yet");
