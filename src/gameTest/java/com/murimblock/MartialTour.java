@@ -261,6 +261,18 @@ public final class MartialTour {
                 check(zombiePeakY - startY > 2.3, String.format("the crescent carries the zombie up with the player (%.2f blocks)", zombiePeakY - startY));
                 server.execute(() -> check(zombies.getFirst().getHealth() < 200, "the crescent cuts the zombie"));
             }
+            // Hanging at the top: an M1 in the air, then key 3 again, the slam that throws the zombie back down.
+            case 254 -> KeyMapping.click(mc.options.keyAttack.getKey());
+            case 260 -> {
+                server.execute(() -> slamHealth = zombies.getFirst().getHealth());
+                KeyMapping.click(mc.options.keyHotbarSlots[2].getKey());
+            }
+            case 264 -> check(clientPlaying(mc, MurimAnimations.CRESCENT_SLAM), "key 3 again at the top plays the slam (playing: " + clientAnimation(mc) + ")");
+            case 276 -> server.execute(() -> {
+                Zombie z = zombies.getFirst();
+                check(z.getY() - startY < 0.4, String.format("the slam brings the zombie back to the ground (%.2f blocks up)", z.getY() - startY));
+                check(z.getHealth() < slamHealth - 1, "the slam and its landing hurt the zombie (" + slamHealth + " then " + z.getHealth() + ")");
+            });
             // The Techniques tab: the passive and its M1 slots, then Thousand Drizzle.
             case 280 -> {
                 mc.setCameraEntity(mc.player);
@@ -339,7 +351,7 @@ public final class MartialTour {
         record(mc, "05-drifting-cut", 140, 156, 1);
         record(mc, "06-thousand-drizzle", 164, 204, 1);
         record(mc, "07-drizzle-wave", 206, 226, 1);
-        record(mc, "08-crescent", 234, 262, 1);
+        record(mc, "08-crescent", 234, 278, 1);
         record(mc, "12-m1-chain", 318, 378, 1);
         record(mc, "13-first-person", 384, 426, 1);
         if (ticks >= 234 && ticks <= 262) {
@@ -352,6 +364,7 @@ public final class MartialTour {
 
     private static double startY, peakY = Double.NEGATIVE_INFINITY, zombiePeakY = Double.NEGATIVE_INFINITY;
     private static volatile float chainHealth;
+    private static volatile float slamHealth;
 
     /** A camera right above the player, looking down at the ground in front of them: a blade lying level shows wide. */
     private static void placeTopCamera(Minecraft mc) {

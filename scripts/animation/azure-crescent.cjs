@@ -2,7 +2,8 @@
 //   heaven_splitting_crescent  crouched deep, the blade low behind on the right; one rising cut, the straight arm
 //                              sweeping the blade from behind the heel, through the front, up over the head, the edge
 //                              leading; the player leaves the ground with it (0.2 s, AzureCloudSword) and rises 3 blocks
-//                              holding the blade straight up at the sky, the body stretched, the left knee drawn up.
+//                              holding the blade straight up at the sky, the body stretched, the left knee drawn up;
+//   crescent_slam              at the top, with the body it carried: one cut straight down that throws it to the ground.
 // Usage: node scripts/animation/azure-crescent.cjs
 // Pose notation: see azure-m1.cjs. The blade stays along the arm (Tool_R x -92); turned over (y 180), its edge leads
 // a forward-and-up sweep of the arm.
@@ -62,7 +63,32 @@ const heaven_splitting_crescent = [
   { t: 0.9, pose: SKY(1) },
 ];
 
-const anims = { heaven_splitting_crescent };
+/** The blade chopped down from overhead (`pitch` as for SWING), along the arm, its edge leading down. */
+const CHOP = (pitch) => ({ Arm_R: [['x', pitch], ['z', 4]], Hand_R: [['x', 5]], Tool_R: [['y', 0], ['x', -92]] });
+const TUCK = { Thigh_R: [['x', 70]], Leg_R: [['x', -100]], Thigh_L: [['x', 80]], Leg_L: [['x', -105]] };
+
+/**
+ * At the top of the rise, with the body it carried: the blade swung back over the head, the body arched, then one cut
+ * straight down that throws the body to the ground (AzureCloudSword: it falls hard and the landing shakes the ground);
+ * the player comes down slowly, folded over the cut.
+ */
+const crescent_slam = [
+  { t: 0, pose: SKY(1) },
+  { t: 0.08, pose: { Root: { pos: [0, 0, 0.8] }, Torso: [['x', 22]], Chest: [['x', 8]], Head: [['x', -14]], ...CHOP(176),
+    Arm_L: [['x', 60], ['z', 20]], Hand_L: [['x', 20]], ...TUCK } },
+  { t: 0.14, pose: { Root: { pos: [0, 0.1, 0.8] }, Torso: [['x', -15]], Chest: [['x', -4]], Head: [['x', 10]], ...CHOP(140),
+    Arm_L: [['x', 10], ['z', 30]], Hand_L: [['x', 20]], ...TUCK } },
+  { t: 0.2, pose: { Root: { pos: [0, 0.2, 0.76] }, Torso: [['x', -45]], Chest: [['x', -8]], Head: [['x', 34]], ...CHOP(88),
+    Arm_L: [['x', -40], ['z', 30]], Hand_L: [['x', 20]],
+    Thigh_R: [['x', -20]], Leg_R: [['x', -40]], Thigh_L: [['x', 85]], Leg_L: [['x', -100]] } },
+  { t: 0.45, pose: { Root: { pos: [0, 0.2, 0.76] }, Torso: [['x', -40]], Chest: [['x', -8]], Head: [['x', 30]], ...CHOP(84),
+    Arm_L: [['x', -40], ['z', 30]], Hand_L: [['x', 20]],
+    Thigh_R: [['x', -10]], Leg_R: [['x', -50]], Thigh_L: [['x', 80]], Leg_L: [['x', -95]] } },
+  { t: 0.7, pose: { Root: { pos: [0, 0.2, 0.76] }, Torso: [['x', -20]], Chest: [['x', -4]], Head: [['x', 14]], ...CHOP(70),
+    Arm_L: [['x', -10], ['z', 25]], Hand_L: [['x', 20]], ...TUCK } },
+];
+
+const anims = { heaven_splitting_crescent, crescent_slam };
 module.exports = { anims };
 
 if (require.main === module) {

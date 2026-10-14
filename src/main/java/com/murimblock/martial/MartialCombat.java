@@ -20,6 +20,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -188,6 +191,10 @@ public final class MartialCombat {
     /** Before an art's hit: the combo it continues takes its share off the damage. */
     static void onDealDamagePre(DealDamageEvent.Pre event) {
         if (!(event.getEntityPatch().getOriginal() instanceof ServerPlayer player)) return;
+        // A body hanging at the top of the crescent is not knocked down by the attacks placed up there (a knocked-down
+        // body cannot be hit: the slam would miss it); it staggers instead.
+        if (isHeldUp(event.getTarget()) && event.getDamageSource().getStunType() == yesman.epicfight.world.damagesource.StunType.KNOCKDOWN)
+            event.getDamageSource().setStunType(yesman.epicfight.world.damagesource.StunType.LONG);
         if (swing(player, event.getDamageSource().getAnimation()) == null) return;
         Combo c = COMBOS.get(event.getTarget().getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && player.level().getGameTime() - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
@@ -315,6 +322,143 @@ public final class MartialCombat {
         list.add(new Carried(target, offset, player.level().getGameTime() + ticks, riposte));
     }
 
+    /**
+     * The top of the crescent's rise: the player and the body they carried hang there (no gravity for the player, the
+     * body held before them) for {@link #HOVER_TICKS}, time for other attacks; the crescent's key again brings the slam
+     * (the window then holds a little longer, until the slam's cut lands). Then both come down.
+     */
+    private record Hover(LivingEntity target, Vec3 offset, long until, boolean riposte, boolean slamming) { }
+
+    private static final Map<UUID, Hover> HOVERS = new HashMap<>();
+    /** How long the two hang at the top (ticks: 1.5 s), and how long the slam's cut may take to land. */
+    public static final int HOVER_TICKS = 30, SLAM_CUT_TICKS = 10;
+
+    static void hover(ServerPlayer player, LivingEntity target, Vec3 offset, boolean riposte) {
+        HOVERS.put(player.getUUID(), new Hover(target, offset, player.level().getGameTime() + HOVER_TICKS, riposte, false));
+        player.setNoGravity(true);
+        player.setDeltaMovement(0, 0, 0);
+        player.hurtMarked = true;
+        // A clear note: the slam is ready on the crescent's key.
+        player.serverLevel().playSound(null, player.getX(), player.getY(), player.getZ(),
+                net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, 1.2F, 1.4F);
+    }
+
+    /** Whether this body hangs at the top of a player's crescent. */
+    public static boolean isHeldUp(LivingEntity target) {
+        for (Hover h : HOVERS.values()) if (h.target == target) return true;
+        return false;
+    }
+
+    /** Whether this player hangs at the top of the crescent with a body, the slam ready on the crescent's key. */
+    public static boolean hovering(Player player) {
+        Hover h = HOVERS.get(player.getUUID());
+        return h != null && !h.slamming;
+    }
+
+    /** The crescent's key again at the top: the slam starts (false if not hanging there). */
+    static boolean startSlam(ServerPlayer player) {
+        Hover h = HOVERS.get(player.getUUID());
+        if (h == null || h.slamming) return false;
+        HOVERS.put(player.getUUID(), new Hover(h.target, h.offset, player.level().getGameTime() + SLAM_CUT_TICKS, h.riposte, true));
+        return true;
+    }
+
+    /** The hanging ends: the player falls again (slowly), the body is let go if it was not thrown down. */
+    private static void endHover(ServerPlayer player, boolean letGo) {
+        Hover h = HOVERS.remove(player.getUUID());
+        player.setNoGravity(false);
+        slowFall(player, 30);
+        if (h != null && letGo && h.target.isAlive()) {
+            h.target.setDeltaMovement(0, 0, 0);
+            h.target.hurtMarked = true;
+            if (h.riposte) slowFall(h.target, 30);
+        }
+    }
+
+    private static void tickHover(ServerPlayer player, long now) {
+        Hover h = HOVERS.get(player.getUUID());
+        if (h == null) return;
+        LivingEntity t = h.target;
+        if (!player.isAlive() || !t.isAlive() || t.level() != player.level() || now > h.until) {
+            endHover(player, true);
+            return;
+        }
+        Vec3 m = player.getDeltaMovement();
+        if (m.y != 0) {
+            player.setDeltaMovement(m.x, 0, m.z);
+            player.hurtMarked = true;
+        }
+        hold(t, player.position().add(h.offset));
+    }
+
+    /** Puts a body at a place (a player by a teleport), still, its fall forgiven. */
+    private static void hold(LivingEntity t, Vec3 at) {
+        if (!t.level().noCollision(t, t.getBoundingBox().move(at.subtract(t.position())))) at = t.position();
+        if (t instanceof ServerPlayer other) other.connection.teleport(at.x, at.y, at.z, other.getYRot(), other.getXRot());
+        else t.moveTo(at.x, at.y, at.z, t.getYRot(), t.getXRot());
+        t.setDeltaMovement(0, 0, 0);
+        t.resetFallDistance();
+        t.hasImpulse = true;
+        t.hurtMarked = true;
+    }
+
+    /** A body the crescent's slam threw down, and since when (game time). */
+    private record Slam(LivingEntity target, long since) { }
+
+    private static final Map<UUID, List<Slam>> SLAMS = new HashMap<>();
+    /** Downward speed the slam gives (blocks per tick), and how long a thrown body may fall before it counts as landed. */
+    static final double SLAM_SPEED = 1.6;
+    static final int SLAM_MAX_TICKS = 30;
+
+    /** The crescent's slam hit: the body goes straight down, fast, from the next tick (tickSlams), to its landing. */
+    static void slamDown(ServerPlayer player, LivingEntity target) {
+        target.removeEffect(MobEffects.SLOW_FALLING);
+        Hover h = HOVERS.get(player.getUUID());
+        if (h != null && h.target == target) endHover(player, false);
+        List<Slam> list = SLAMS.computeIfAbsent(player.getUUID(), k -> new ArrayList<>());
+        list.removeIf(s -> s.target == target);
+        list.add(new Slam(target, player.level().getGameTime()));
+    }
+
+    /** Whether this body is falling from the crescent's slam. */
+    public static boolean isSlammed(LivingEntity target) {
+        for (List<Slam> list : SLAMS.values()) for (Slam s : list) if (s.target == target) return true;
+        return false;
+    }
+
+    /** Bodies thrown down by this player's slam: on the ground (or stopped), the landing; gone or too long, forgotten. */
+    private static void tickSlams(ServerPlayer player, long now) {
+        List<Slam> list = SLAMS.get(player.getUUID());
+        if (list == null) return;
+        for (Iterator<Slam> it = list.iterator(); it.hasNext(); ) {
+            Slam s = it.next();
+            LivingEntity t = s.target;
+            long falling = now - s.since;
+            if (!t.isAlive() || t.level() != player.level() || falling > SLAM_MAX_TICKS || t.isPassenger()) {
+                it.remove();
+                continue;
+            }
+            // Driven down like the carry (every body falls the same, players and still mobs alike), to the ground.
+            Vec3 at = t.position();
+            double speed = SLAM_SPEED * Math.max(0.3, 1 - t.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+            BlockHitResult ground = t.level().clip(new ClipContext(at, at.subtract(0, speed + 0.05, 0),
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, t));
+            boolean landed = ground.getType() == HitResult.Type.BLOCK || t.onGround();
+            Vec3 to = ground.getType() == HitResult.Type.BLOCK ? new Vec3(at.x, ground.getLocation().y, at.z) : at.subtract(0, speed, 0);
+            if (t instanceof ServerPlayer other) other.connection.teleport(to.x, to.y, to.z, other.getYRot(), other.getXRot());
+            else t.moveTo(to.x, to.y, to.z, t.getYRot(), t.getXRot());
+            t.setDeltaMovement(0, landed ? 0 : -speed, 0);
+            t.resetFallDistance();
+            t.hasImpulse = true;
+            t.hurtMarked = true;
+            if (landed) {
+                it.remove();
+                AzureCloudSword.slamLanding(player, t);
+            }
+        }
+        if (list.isEmpty()) SLAMS.remove(player.getUUID());
+    }
+
     /** Whether this body is being carried up by a player's crescent. */
     public static boolean isCarriedUp(LivingEntity target) {
         for (List<Carried> list : CARRIED.values()) for (Carried c : list) if (c.target == target) return true;
@@ -331,7 +475,10 @@ public final class MartialCombat {
             LivingEntity t = c.target;
             if (!t.isAlive() || t.level() != player.level() || now > c.until || !player.isAlive()) {
                 it.remove();
-                if (t.isAlive()) {
+                // At the top, together: both hang there a while (the crescent's key again brings the slam).
+                if (now > c.until && t.isAlive() && player.isAlive() && t.level() == player.level()) {
+                    hover(player, t, c.offset, c.riposte);
+                } else if (t.isAlive()) {
                     t.setDeltaMovement(0, 0, 0);
                     t.hurtMarked = true;
                     if (c.riposte) slowFall(t, 30);
@@ -376,6 +523,8 @@ public final class MartialCombat {
             else player.resetFallDistance();
         }
         tickCarried(player, now);
+        tickHover(player, now);
+        tickSlams(player, now);
         AzureCloudSword.tickAim(player, now);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
         if (list == null) return;
@@ -404,6 +553,7 @@ public final class MartialCombat {
     /** Forgets a player leaving or dying: their riposte, swings, timed actions. */
     public static void forget(ServerPlayer player) {
         UUID id = player.getUUID();
+        if (HOVERS.remove(id) != null) player.setNoGravity(false);
         RIPOSTES.remove(id);
         PENDING.remove(id);
         SWINGS.remove(id);
@@ -413,6 +563,7 @@ public final class MartialCombat {
         GUARD_BROKEN.remove(id);
         CARRIED.remove(id);
         LEAPS.remove(id);
+        SLAMS.remove(id);
         AzureCloudSword.forgetAim(id);
     }
 
@@ -427,6 +578,8 @@ public final class MartialCombat {
         NO_FALL.clear();
         CARRIED.clear();
         LEAPS.clear();
+        SLAMS.clear();
+        HOVERS.clear();
         AzureCloudSword.forgetAim(null);
     }
 }

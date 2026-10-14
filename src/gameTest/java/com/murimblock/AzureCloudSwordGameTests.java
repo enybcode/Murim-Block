@@ -348,6 +348,63 @@ public final class AzureCloudSwordGameTests {
         });
     }
 
+    /** The crescent's rise with a stone floor and real gravity, as in the test above; returns the ground height. */
+    private static double crescent(GameTestHelper helper, ServerPlayer player) {
+        unlock(player, MartialArts.HEAVEN_SPLITTING_CRESCENT, 2);
+        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        player.setNoGravity(false);
+        double ground = player.getY();
+        helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "The crescent was refused");
+        return ground;
+    }
+
+    @GameTest(template = "foundation_arena", batch = "azure_crescent_slam", timeoutTicks = 80)
+    public static void atTheTopOfTheCrescentBothHangAndTheKeyAgainSlamsTheBodyDown(GameTestHelper helper) {
+        ServerPlayer player = adept(helper, 0.5);
+        Zombie zombie = dummy(helper, player, 1.5);
+        double ground = crescent(helper, player);
+        double[] hangY = {0}, healthBefore = {0}, qi = {0};
+        tickFor(helper, player, 1, 60);
+        helper.runAfterDelay(18, () -> {
+            helper.assertTrue(MartialCombat.hovering(player), "At the top the two should hang, the slam ready");
+            hangY[0] = player.getY();
+        });
+        // An attack placed up there (the air M1, which knocks down on the ground): the body must stay hittable.
+        helper.runAfterDelay(20, () -> patch(player).playAnimationSynchronized(MurimAnimations.FALLING_RAIN_AIR, 0.0F));
+        // A second later they are still up there, the body before the player.
+        helper.runAfterDelay(36, () -> {
+            helper.assertTrue(Math.abs(player.getY() - hangY[0]) < 0.3, String.format("The player did not hang (%.2f then %.2f)", hangY[0], player.getY()));
+            helper.assertTrue(zombie.getY() - ground > 2.2 && Math.abs(zombie.getY() - player.getY()) < 0.5, String.format("The body did not stay up before the player (%.2f blocks)", zombie.getY() - ground));
+            healthBefore[0] = zombie.getHealth();
+            qi[0] = QiService.getQi(player);
+            // The crescent's key again: the slam, free, though the crescent is cooling down.
+            helper.assertTrue(MartialService.cooldownLeft(player, MartialArts.HEAVEN_SPLITTING_CRESCENT.id()) > 0, "No cooldown on the crescent");
+            CastResult slam = MartialService.castSlot(player, 2);
+            helper.assertTrue(slam == CastResult.CAST && playing(player, MurimAnimations.CRESCENT_SLAM), "The key again did not slam: " + slam);
+            helper.assertTrue(QiService.getQi(player) == qi[0], "The slam cost Qi");
+        });
+        helper.runAfterDelay(58, () -> {
+            helper.assertTrue(zombie.getY() - ground < 0.3, String.format("The slam did not bring the body down (%.2f blocks up)", zombie.getY() - ground));
+            helper.assertTrue(zombie.getHealth() < healthBefore[0] - 1, "The slam and its landing did not hurt: " + healthBefore[0] + " then " + zombie.getHealth());
+            helper.assertTrue(!MartialCombat.hovering(player) && !player.isNoGravity(), "The player still hangs");
+            end(helper, player, zombie);
+        });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "azure_crescent_hang", timeoutTicks = 80)
+    public static void withoutTheKeyAgainTheHangEndsAndBothComeDown(GameTestHelper helper) {
+        ServerPlayer player = adept(helper, 0.5);
+        Zombie zombie = dummy(helper, player, 1.5);
+        crescent(helper, player);
+        tickFor(helper, player, 1, 60);
+        helper.runAfterDelay(18, () -> helper.assertTrue(MartialCombat.hovering(player), "At the top the two should hang"));
+        helper.runAfterDelay(62, () -> {
+            helper.assertTrue(!MartialCombat.hovering(player) && !player.isNoGravity(), "The hang did not end after 1.5 s");
+            helper.assertTrue(!MartialCombat.isSlammed(zombie), "A slam without the key");
+            end(helper, player, zombie);
+        });
+    }
+
     @GameTest(template = "foundation_arena", batch = "azure_air")
     public static void inTheAirTheArtPlungesAndSlams(GameTestHelper helper) {
         ServerPlayer player = adept(helper, 0.5);

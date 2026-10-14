@@ -86,6 +86,10 @@ public final class MartialService {
     public static CastResult castSlot(ServerPlayer player, int slot) {
         ResourceLocation id = data(player).slot(slot).orElse(null);
         MartialArts.Technique technique = id == null ? null : MartialArts.technique(id);
+        // The crescent's key again at the top of its rise, the body still held: the slam, free, whatever the cooldown
+        // or the attack under way (the time up there is for other attacks).
+        if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && MartialCombat.hovering(player) && data(player).hasTechnique(id))
+            return AzureCloudSword.slam(player) ? CastResult.CAST : CastResult.FAILED;
         CastResult check = check(player, technique);
         if (check != CastResult.CAST) return check;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);

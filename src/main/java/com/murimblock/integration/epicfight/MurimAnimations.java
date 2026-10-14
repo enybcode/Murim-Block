@@ -73,6 +73,8 @@ public final class MurimAnimations {
     public static AnimationAccessor<ActionAnimation> DRIZZLE_WAVE;
     /** Heaven-Splitting Crescent on the ground (lifts) and its air version, Cloud-Splitting Descent (slams, knocks down). */
     public static AnimationAccessor<AttackAnimation> HEAVEN_SPLITTING_CRESCENT, CLOUD_SPLITTING_DESCENT;
+    /** At the top of the crescent, with the body it carried: one cut straight down that throws it to the ground. */
+    public static AnimationAccessor<AttackAnimation> CRESCENT_SLAM;
     /** Last Rain Over the Clouds, the art's finish: the blade to the sky, a leap and one vertical cut (lands at 1.5 s). */
     public static AnimationAccessor<ActionAnimation> FINISH_AZURE;
 
@@ -95,6 +97,8 @@ public final class MurimAnimations {
     private static final OBBCollider DRIZZLE = new OBBCollider(0.7D, 0.8D, 1.4D, 0.0D, 1.1D, -1.6D);
     private static final OBBCollider STORM = new OBBCollider(1.4D, 1.0D, 1.7D, 0.0D, 1.1D, -1.8D);
     private static final OBBCollider CRESCENT = new OBBCollider(1.2D, 1.5D, 1.2D, 0.0D, 1.3D, -1.2D);
+    /** The crescent's slam: in front and below, where the carried body hangs. */
+    private static final OBBCollider SLAM = new OBBCollider(1.0D, 1.5D, 1.2D, 0.0D, 0.6D, -1.2D);
     /** The shock of the descent: three blocks all around. */
     private static final OBBCollider SHOCKWAVE = new OBBCollider(3.0D, 1.4D, 3.0D, 0.0D, 0.4D, 0.0D);
 
@@ -205,6 +209,11 @@ public final class MurimAnimations {
         CLOUD_SPLITTING_DESCENT = builder.nextAccessor("biped/murim/cloud_splitting_descent", a -> technique(new AttackAnimation(0.04F, 0.14F, 0.2F, 0.34F, 0.6F, SHOCKWAVE, root(), a, Armatures.BIPED), 1.3F)
                 .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(5))
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+
+        // transition, antic, preDelay, contact, recovery: the cut comes down from 0.14 to 0.24 s.
+        CRESCENT_SLAM = builder.nextAccessor("biped/murim/crescent_slam", a -> technique(new AttackAnimation(0.04F, 0.1F, 0.13F, 0.26F, 0.55F, SLAM, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
                 .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
 
         FINISH_AZURE = builder.nextAccessor("biped/murim/finish_azure", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));

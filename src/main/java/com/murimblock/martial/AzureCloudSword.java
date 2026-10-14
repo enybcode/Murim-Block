@@ -139,14 +139,15 @@ public final class AzureCloudSword {
         if (a == MurimAnimations.CLOUD_STEP_SLASH || a == MurimAnimations.CLOUD_STEP_DIVE || a == MurimAnimations.CLOUD_STEP_RIPOSTE
                 || a == MurimAnimations.SWALLOW_RETURNS) return MartialArts.CLOUD_STEP_SLASH.id();
         if (a == MurimAnimations.THOUSAND_DRIZZLE || a == MurimAnimations.THOUSAND_DRIZZLE_STORM) return MartialArts.THOUSAND_DRIZZLE.id();
-        if (a == MurimAnimations.HEAVEN_SPLITTING_CRESCENT || a == MurimAnimations.CLOUD_SPLITTING_DESCENT) return MartialArts.HEAVEN_SPLITTING_CRESCENT.id();
+        if (a == MurimAnimations.HEAVEN_SPLITTING_CRESCENT || a == MurimAnimations.CLOUD_SPLITTING_DESCENT || a == MurimAnimations.CRESCENT_SLAM)
+            return MartialArts.HEAVEN_SPLITTING_CRESCENT.id();
         return null;
     }
 
     /** The art's hits that knock down, ending a combo. */
     static boolean knocksDown(AnimationAccessor<? extends StaticAnimation> a) {
         return a == MurimAnimations.FALLING_RAIN || a == MurimAnimations.FALLING_RAIN_AIR || a == MurimAnimations.CLOUD_STEP_DIVE
-                || a == MurimAnimations.CLOUD_SPLITTING_DESCENT;
+                || a == MurimAnimations.CLOUD_SPLITTING_DESCENT || a == MurimAnimations.CRESCENT_SLAM;
     }
 
     // ---------------------------------------------------------------- techniques
@@ -323,6 +324,9 @@ public final class AzureCloudSword {
         } else if (animation == MurimAnimations.HEAVEN_SPLITTING_CRESCENT) {
             // Taken up with the player, held in front of them until the top of the leap.
             MartialCombat.carry(player, target, CARRY_TICKS, riposte);
+        } else if (animation == MurimAnimations.CRESCENT_SLAM) {
+            // Thrown to the ground; the landing shakes it (MartialCombat.tickSlams).
+            MartialCombat.slamDown(player, target);
         } else if (animation == MurimAnimations.THOUSAND_DRIZZLE || animation == MurimAnimations.THOUSAND_DRIZZLE_STORM) {
             PlayerPatch<?> patch = EpicFightBridge.patch(player);
             AnimationPlayer main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
@@ -358,10 +362,36 @@ public final class AzureCloudSword {
     private static final DustParticleOptions AZURE = new DustParticleOptions(new Vector3f(0.62F, 0.85F, 1.0F), 1.6F);
     private static final DustParticleOptions CLOUD = new DustParticleOptions(new Vector3f(0.86F, 0.93F, 1.0F), 2.4F);
 
-    /** The ring of the descent's slam, three blocks wide. */
+    /** The share of the attack the crescent's slam deals when the body thrown down lands. */
+    public static final double SLAM_LANDING_SHARE = 0.5;
+
+    /**
+     * The crescent's key again at the top of the rise, the body still held: the cut straight down (CRESCENT_SLAM, whose
+     * hit throws the body to the ground, MartialCombat.slamDown). False if the player does not hang there.
+     */
+    static boolean slam(ServerPlayer player) {
+        PlayerPatch<?> patch = EpicFightBridge.patch(player);
+        if (patch == null || MurimAnimations.CRESCENT_SLAM == null || !MartialCombat.startSlam(player)) return false;
+        play(player, patch, MurimAnimations.CRESCENT_SLAM, MartialArts.HEAVEN_SPLITTING_CRESCENT, false);
+        return true;
+    }
+
+    /** The landing of a body the slam threw down: it takes its share and the ground shakes around it. */
+    static void slamLanding(ServerPlayer player, LivingEntity target) {
+        target.invulnerableTime = 0;
+        target.hurt(player.damageSources().playerAttack(player),
+                (float) (player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * SLAM_LANDING_SHARE));
+        shockwave(player.serverLevel(), target.position());
+        player.serverLevel().sendParticles(ParticleTypes.POOF, target.getX(), target.getY() + 0.1, target.getZ(), 16, 0.6, 0.1, 0.6, 0.05);
+    }
+
+    /** The ring of the descent's slam, three blocks wide, around the player. */
     static void shockwave(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
-        Vec3 at = player.position();
+        shockwave(player.serverLevel(), player.position());
+    }
+
+    /** The ring of a slam, three blocks wide, around a place. */
+    static void shockwave(ServerLevel level, Vec3 at) {
         for (int i = 0; i < 24; i++) {
             double a = Math.PI * 2 * i / 24;
             level.sendParticles(AZURE, at.x + Math.cos(a) * 3.0, at.y + 0.15, at.z + Math.sin(a) * 3.0, 1, 0, 0.05, 0, 0);
