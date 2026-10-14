@@ -24,7 +24,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.core.registries.BuiltInRegistries;
+import com.murimblock.mob.BanditChiefEntity;
+import com.murimblock.mob.MountainBanditEntity;
+import com.murimblock.world.structure.site.SitePlan;
+import java.util.Map;
+import java.util.TreeMap;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -59,6 +66,7 @@ public final class SiteTour {
     private static int ticks, index = -1, step;
     private static volatile boolean done;
     private static volatile Site site;
+    private static volatile String subject = "resident";
     private static final List<String> report = new ArrayList<>();
 
     /** What the server found for the current site. */
@@ -77,7 +85,7 @@ public final class SiteTour {
                 if (mc.screen != null && mc.screen.getClass().getSimpleName().contains("Onboarding")) mc.setScreen(new TitleScreen(false));
                 if (!creating && mc.screen instanceof TitleScreen) {
                     creating = true;
-                    LevelSettings settings = new LevelSettings("murim-site-tour", GameType.SPECTATOR, false, Difficulty.PEACEFUL, true,
+                    LevelSettings settings = new LevelSettings("murim-site-tour", GameType.SPECTATOR, false, Difficulty.NORMAL, true,
                             new GameRules(), WorldDataConfiguration.DEFAULT);
                     mc.createWorldOpenFlows().createFreshLevel("murim-site-tour", settings, new WorldOptions(SEED, true, false),
                             registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.NORMAL).value().createWorldDimensions(),
@@ -112,38 +120,52 @@ public final class SiteTour {
                 // At eye height in front of the entrance, looking in.
                 case 281 -> {
                     Site s = site;
-                    // The villagers, counted once the player is near and the site's entities are loaded.
+                    // The residents (villagers, bandits), counted once the player is near and the site's entities are loaded.
+                    // The world is on Normal: on Peaceful, Minecraft removes the bandits like any monster.
                     mc.getSingleplayerServer().execute(() -> {
-                        List<Villager> villagers = villagers(mc, s);
-                        int expected = expectedVillagers(name);
-                        String line = name + ": " + villagers.size() + " villager(s), expected " + expected + " "
-                                + villagers.stream().map(v -> v.getName().getString() + " (" + v.getVillagerData().getProfession() + ") at " + v.blockPosition().toShortString()).toList();
+                        List<Mob> residents = residents(mc, s);
+                        Map<String, Integer> found = new TreeMap<>();
+                        for (Mob m : residents) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
+                        Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
+                        String line = name + ": residents " + found + ", expected " + expected + " " + residents.stream().map(m -> m.getName().getString()
+                                + (m instanceof Villager v ? " (" + v.getVillagerData().getProfession() + ")" : "") + " at " + m.blockPosition().toShortString()).toList();
                         report.add(line);
                         LOGGER.info("Site tour: {}", line);
-                        if (villagers.size() != expected) failed = true;
+                        if (!found.equals(expected)) failed = true;
                     });
                     double fx = s.front().getStepX(), fz = s.front().getStepZ();
                     lookAbs(mc, s.origin().getX() + 0.5 + fx * (s.reach() - 1), s.origin().getY() + 2.7, s.origin().getZ() + 0.5 + fz * (s.reach() - 1),
                             s.origin().getX() + 0.5, s.origin().getY() + 3.5, s.origin().getZ() + 0.5);
                 }
                 case 360 -> capture(mc, name + "-ground.png");
-                // A householder of the village, seen from a few steps in front of them.
+                // A resident at home (the chief before his throne, a householder of the village).
                 case 361 -> {
-                    if (expectedVillagers(name) == 0) { index++; step = 0; return; }
+                    if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) { index++; step = 0; return; }
                     mc.getSingleplayerServer().execute(() -> {
-                        List<Villager> villagers = villagers(mc, site);
-                        if (villagers.isEmpty()) return;
-                        // From the corner of the villager's own room farthest from them, at eye height.
-                        Villager v = villagers.get(0);
+                        List<Mob> residents = residents(mc, site);
+                        if (residents.isEmpty()) return;
+                        // From the corner of the resident's own room farthest from them, at eye height.
+                        Mob v = residents.get(0);
+                        subject = v instanceof Villager ? "villager" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
-                        double cx = Math.abs(room.minX() - eye.x) > Math.abs(room.maxX() + 1 - eye.x) ? room.minX() + 0.3 : room.maxX() + 0.7;
-                        double cz = Math.abs(room.minZ() - eye.z) > Math.abs(room.maxZ() + 1 - eye.z) ? room.minZ() + 0.3 : room.maxZ() + 0.7;
-                        lookAbs(mc, cx, room.minY(), cz, eye.x, eye.y - 1.8, eye.z); // feet on the floor: the eye stays under the ceiling
+                        // The farthest corner with nothing at the feet or the head (furniture would fill the view).
+                        ServerLevel level = mc.getSingleplayerServer().overworld();
+                        double[] best = null;
+                        double bestScore = -1;
+                        for (int ix = 0; ix < 2; ix++) for (int iz = 0; iz < 2; iz++) {
+                            int bx = ix == 0 ? room.minX() : room.maxX(), bz = iz == 0 ? room.minZ() : room.maxZ();
+                            double px = ix == 0 ? bx + 0.3 : bx + 0.7, pz = iz == 0 ? bz + 0.3 : bz + 0.7;
+                            double d = Math.hypot(px - eye.x, pz - eye.z);
+                            boolean clear = level.getBlockState(new BlockPos(bx, room.minY(), bz)).isAir() && level.getBlockState(new BlockPos(bx, room.minY() + 1, bz)).isAir();
+                            double score = d + (clear ? 100 : 0);
+                            if (score > bestScore) { bestScore = score; best = new double[]{px, pz}; }
+                        }
+                        lookAbs(mc, best[0], room.minY(), best[1], eye.x, eye.y - 1.8, eye.z); // feet on the floor: the eye stays under the ceiling
                     });
                 }
-                case 385 -> capture(mc, name + "-villager.png");
+                case 385 -> capture(mc, name + "-" + subject + ".png");
                 case 386 -> { index++; step = 0; }
                 default -> { }
             }
@@ -208,13 +230,22 @@ public final class SiteTour {
         site = new Site(o, front, box.maxY(), edge, box, checks.stream().filter(Canvas.Check::room).map(Canvas.Check::box).toList());
     }
 
-    static int expectedVillagers(String name) {
-        return name.equals("jade_river_stilt_village") ? 3 : 0;
+    static SitePlan planOf(String name) {
+        return switch (name) {
+            case "jade_river_stilt_village" -> SitePlan.STILT_VILLAGE;
+            case "yellow_river_bandit_den" -> SitePlan.BANDIT_DEN;
+            case "jade_gate_beacon_post" -> SitePlan.BEACON_POST;
+            case "misty_bamboo_temple" -> SitePlan.BAMBOO_TEMPLE;
+            case "lotus_moon_garden" -> SitePlan.LOTUS_GARDEN;
+            default -> SitePlan.PEACH_HAMLET;
+        };
     }
 
-    private static List<Villager> villagers(Minecraft mc, Site s) {
-        return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Villager.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4),
-                v -> true).stream().sorted(java.util.Comparator.comparing(v -> v.getName().getString())).toList();
+    /** Villagers and bandits on the site, the chief first, then by name. */
+    private static List<Mob> residents(Minecraft mc, Site s) {
+        return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4, 16, 4), // down into pits and caves
+                        m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity).stream()
+                .sorted(java.util.Comparator.<Mob>comparingInt(m -> m instanceof BanditChiefEntity ? 0 : 1).thenComparing(m -> m.getName().getString())).toList();
     }
 
     static String expectedBiome(String name) {

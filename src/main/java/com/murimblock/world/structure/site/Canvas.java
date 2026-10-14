@@ -158,7 +158,10 @@ public final class Canvas implements BuildKit.Sink {
         T mob = type.create(level.getLevel());
         if (mob == null) return;
         BlockPos at = new BlockPos(wx(x, z), y, wz(x, z));
-        mob.moveTo(at.getX() + 0.5, y, at.getZ() + 0.5, rotation.rotate(facing).toYRot(), 0);
+        // Standing on whatever covers the floor there (a carpet, a slab), not in it.
+        var shape = level.getBlockState(at).getCollisionShape(level, at);
+        double lift = shape.isEmpty() ? 0 : shape.max(Direction.Axis.Y);
+        mob.moveTo(at.getX() + 0.5, y + lift, at.getZ() + 0.5, rotation.rotate(facing).toYRot(), 0);
         EventHooks.finalizeMobSpawn(mob, level, level.getCurrentDifficultyAt(at), MobSpawnType.STRUCTURE, null);
         setup.accept(mob);
         mob.setPersistenceRequired();

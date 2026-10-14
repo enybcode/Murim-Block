@@ -1,5 +1,6 @@
 package com.murimblock.world.structure.site;
 
+import com.murimblock.mob.MurimEntities;
 import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.kit.RoofTiles;
 import java.util.List;
@@ -89,6 +90,9 @@ final class BanditDen extends Site {
         c.set(4, p + 1, 4, s(Blocks.HAY_BLOCK));
         c.set(4, p + 2, 4, s(Blocks.HAY_BLOCK));
         c.set(-4, p + 1, 4, s(Blocks.WATER_CAULDRON));
+        // Two bandits idling in the courtyard.
+        c.spawn(-2, p + 1, 3, Direction.NORTH, MurimEntities.MOUNTAIN_BANDIT.get(), bandit -> { });
+        c.spawn(2, p + 1, -2, Direction.WEST, MurimEntities.MOUNTAIN_BANDIT.get(), bandit -> { });
         for (int x : new int[]{-5, 5}) for (int z : new int[]{-5, 5}) if (!(x == 5 && z == -5)) lanternPost(c, x, p + 1, z, 2, s(Blocks.DARK_OAK_FENCE));
     }
 
@@ -143,6 +147,8 @@ final class BanditDen extends Site {
                 h.set(-1, y, -2, s(Blocks.BLACK_CARPET));
                 h.set(1, y, -4, s(Blocks.BLACK_CARPET));
                 wallBanner(h, 0, p + 4, -8, Blocks.BLACK_WALL_BANNER, Direction.SOUTH);
+                // The Bandit Chief, standing before his throne on the tiger skin, facing his courtyard.
+                h.spawn(0, y, -4, Direction.SOUTH, MurimEntities.BANDIT_CHIEF.get(), chief -> { });
             }
             case HALL -> {
                 for (int z = -7; z <= -2; z++) {
@@ -154,6 +160,7 @@ final class BanditDen extends Site {
                 h.set(-1, y, -8, s(Blocks.BARREL));
                 h.set(1, y, -8, s(Blocks.SMOKER));
                 h.set(0, y + 1, -8, litCandles(3));
+                h.spawn(0, y, -1, Direction.NORTH, MurimEntities.MOUNTAIN_BANDIT.get(), bandit -> { });
             }
             case DORM -> {
                 kang(h, p);
@@ -262,5 +269,7 @@ final class BanditDen extends Site {
         c.set(x, g + 1, z + 1, s(Blocks.DARK_OAK_PLANKS));
         for (int y = g + 2; y <= g + 3; y++) c.set(x, y, z + 1, s(Blocks.DARK_OAK_PLANKS));
         c.set(x - 1, g + 7, z - 1, s(Blocks.LANTERN));
+        // The lookout's guard, watching the plain.
+        c.spawn(x, g + 6, z, Direction.SOUTH, MurimEntities.MOUNTAIN_BANDIT.get(), bandit -> { });
     }
 }
