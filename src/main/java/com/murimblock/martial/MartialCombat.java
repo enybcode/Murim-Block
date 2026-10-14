@@ -368,6 +368,8 @@ public final class MartialCombat {
         Hover h = HOVERS.remove(player.getUUID());
         player.setNoGravity(false);
         slowFall(player, 30);
+        // Seven blocks up: the way down is forgiven.
+        noFallFor(player, 100);
         if (h != null && letGo && h.target.isAlive()) {
             h.target.setDeltaMovement(0, 0, 0);
             h.target.hurtMarked = true;
@@ -415,6 +417,9 @@ public final class MartialCombat {
         target.removeEffect(MobEffects.SLOW_FALLING);
         Hover h = HOVERS.get(player.getUUID());
         if (h != null && h.target == target) endHover(player, false);
+        // The player dives with it, the fall forgiven.
+        player.removeEffect(MobEffects.SLOW_FALLING);
+        noFallFor(player, 80);
         List<Slam> list = SLAMS.computeIfAbsent(player.getUUID(), k -> new ArrayList<>());
         list.removeIf(s -> s.target == target);
         list.add(new Slam(target, player.level().getGameTime()));
@@ -437,6 +442,11 @@ public final class MartialCombat {
             if (!t.isAlive() || t.level() != player.level() || falling > SLAM_MAX_TICKS || t.isPassenger()) {
                 it.remove();
                 continue;
+            }
+            // The player dives after it.
+            if (!player.onGround()) {
+                player.setDeltaMovement(0, -SLAM_SPEED, 0);
+                player.hurtMarked = true;
             }
             // Driven down like the carry (every body falls the same, players and still mobs alike), to the ground.
             Vec3 at = t.position();
@@ -543,6 +553,7 @@ public final class MartialCombat {
     // ---------------------------------------------------------------- hooks
 
     public static void registerHooks() {
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
         EpicFightEventHooks.Animation.BEGIN.registerEvent(event -> {
             if (event.getEntityPatch().getOriginal() instanceof ServerPlayer player) onAnimationBegin(player, event.getAnimation());
         }, "murimblock:martial_swing", 100);

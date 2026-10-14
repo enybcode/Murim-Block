@@ -45,6 +45,7 @@ public final class TechniquePayloads {
                 case NO_QI -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_qi", name, (int) technique.qiCost()), true);
                 case NOT_IN_COMBAT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.not_in_combat"), true);
                 case NO_WEAPON -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_weapon", name), true);
+                case NO_ROOM -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_room", name), true);
                 default -> { }
             }
         }

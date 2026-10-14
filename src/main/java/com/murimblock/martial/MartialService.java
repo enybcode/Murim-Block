@@ -41,7 +41,7 @@ public final class MartialService {
     /** Game time at which each player's techniques are ready again (not saved: a restart resets cooldowns). */
     private static final Map<UUID, Map<ResourceLocation, Long>> READY_AT = new HashMap<>();
 
-    public enum CastResult { CAST, NO_TECHNIQUE, NOT_IN_COMBAT, HINDERED, COOLDOWN, NO_QI, NO_WEAPON, FAILED }
+    public enum CastResult { CAST, NO_TECHNIQUE, NOT_IN_COMBAT, HINDERED, COOLDOWN, NO_QI, NO_WEAPON, NO_ROOM, FAILED }
 
     private MartialService() {
     }
@@ -124,6 +124,8 @@ public final class MartialService {
         double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
         if (QiService.getQi(player) < cost) return CastResult.NO_QI;
         if (!Techniques.canUse(player, technique)) return CastResult.NO_WEAPON;
+        // The crescent rises 7 blocks: not under a roof (in the air it is the descent, which needs none).
+        if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && !AzureCloudSword.airborne(player) && !AzureCloudSword.roomAbove(player)) return CastResult.NO_ROOM;
         return CastResult.CAST;
     }
 

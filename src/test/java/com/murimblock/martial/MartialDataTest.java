@@ -111,9 +111,9 @@ class MartialDataTest {
     }
 
     @Test
-    void theCrescentsLeapTakesAPlayerThreeBlocksUp() {
+    void theCrescentsLeapTakesAPlayerSevenBlocksUp() {
         double top = MartialCombat.riseAfter(AzureCloudSword.CRESCENT_LEAP, 100);
-        assertEquals(3.0, top, 0.1, "the leap's height");
+        assertEquals(AzureCloudSword.CRESCENT_RISE, top, 0.1, "the leap's height");
         assertEquals(top, MartialCombat.riseAfter(AzureCloudSword.CRESCENT_LEAP, AzureCloudSword.CARRY_TICKS), 1e-9,
                 "the carry lasts until the top of the leap");
     }

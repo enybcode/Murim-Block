@@ -314,18 +314,18 @@ public final class AzureCloudSwordGameTests {
     // ---------------------------------------------------------------- Heaven-Splitting Crescent
 
     @GameTest(template = "foundation_arena", batch = "azure_crescent", timeoutTicks = 50)
-    public static void theCrescentCarriesTheTargetThreeBlocksUpWithThePlayer(GameTestHelper helper) {
+    public static void theCrescentCarriesTheTargetSevenBlocksUpWithThePlayer(GameTestHelper helper) {
         ServerPlayer player = adept(helper, 0.5);
         Zombie zombie = dummy(helper, player, 1.5);
         unlock(player, MartialArts.HEAVEN_SPLITTING_CRESCENT, 2);
-        // A floor and real gravity: the mock player then moves under Minecraft's own physics, as a client would.
-        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        // A floor in the open air and real gravity: the mock player then moves under Minecraft's own physics, as a client would.
+        openSky(helper, player, zombie);
         player.setNoGravity(false);
         double ground = player.getY();
         helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "The crescent was refused");
         helper.assertTrue(playing(player, MurimAnimations.HEAVEN_SPLITTING_CRESCENT), "Not the ground crescent");
         double[] vy = {Double.NaN}, peak = {ground}, zombiePeak = {zombie.getY()}, gap = {0}, ahead = {0};
-        for (int t = 1; t <= 22; t++) helper.runAfterDelay(t, () -> {
+        for (int t = 1; t <= 19; t++) helper.runAfterDelay(t, () -> {
             if (Double.isNaN(vy[0]) && player.getDeltaMovement().y > 0.5) vy[0] = player.getDeltaMovement().y;
             player.doTick();
             if (player.getY() > peak[0]) {
@@ -339,8 +339,8 @@ public final class AzureCloudSwordGameTests {
             helper.assertTrue(zombie.getHealth() < 200, "The crescent missed");
             helper.assertTrue(!Double.isNaN(vy[0]), "The player was not sent up");
             double rise = peak[0] - ground;
-            helper.assertTrue(rise > 2.8 && rise < 3.2, String.format("The leap should take the player 3 blocks up, took %.2f", rise));
-            helper.assertTrue(zombiePeak[0] - ground > 2.6, String.format("The target was not carried up (%.2f blocks)", zombiePeak[0] - ground));
+            helper.assertTrue(rise > 6.7 && rise < 7.3, String.format("The leap should take the player 7 blocks up, took %.2f", rise));
+            helper.assertTrue(zombiePeak[0] - ground > 6.3, String.format("The target was not carried up (%.2f blocks)", zombiePeak[0] - ground));
             helper.assertTrue(gap[0] < 0.4 && ahead[0] > 0.8 && ahead[0] < 1.7,
                     String.format("At the top the target should be in front of the player, at their height (height gap %.2f, %.2f ahead)", gap[0], ahead[0]));
             helper.assertTrue(!MartialCombat.isCarriedUp(zombie), "The target was never let go");
@@ -348,10 +348,22 @@ public final class AzureCloudSwordGameTests {
         });
     }
 
+    /**
+     * A stone floor in the open air, 40 blocks above the arena (whose barrier ceiling leaves no room for the crescent's
+     * 7-block rise), the player on it and the zombie 1.5 in front.
+     */
+    private static void openSky(GameTestHelper helper, ServerPlayer player, Zombie zombie) {
+        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 40, z), Blocks.STONE);
+        BlockPos p = helper.absolutePos(new BlockPos(2, 41, 0));
+        player.moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
+        player.setOnGround(true);
+        zombie.moveTo(player.getX(), player.getY(), player.getZ() + 1.5, 180, 0);
+    }
+
     /** The crescent's rise with a stone floor and real gravity, as in the test above; returns the ground height. */
-    private static double crescent(GameTestHelper helper, ServerPlayer player) {
+    private static double crescent(GameTestHelper helper, ServerPlayer player, Zombie zombie) {
         unlock(player, MartialArts.HEAVEN_SPLITTING_CRESCENT, 2);
-        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        openSky(helper, player, zombie);
         player.setNoGravity(false);
         double ground = player.getY();
         helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "The crescent was refused");
@@ -362,19 +374,19 @@ public final class AzureCloudSwordGameTests {
     public static void atTheTopOfTheCrescentBothHangAndTheKeyAgainSlamsTheBodyDown(GameTestHelper helper) {
         ServerPlayer player = adept(helper, 0.5);
         Zombie zombie = dummy(helper, player, 1.5);
-        double ground = crescent(helper, player);
+        double ground = crescent(helper, player, zombie);
         double[] hangY = {0}, healthBefore = {0}, qi = {0};
         tickFor(helper, player, 1, 60);
-        helper.runAfterDelay(18, () -> {
+        helper.runAfterDelay(22, () -> {
             helper.assertTrue(MartialCombat.hovering(player), "At the top the two should hang, the slam ready");
             hangY[0] = player.getY();
         });
         // An attack placed up there (the air M1, which knocks down on the ground): the body must stay hittable.
-        helper.runAfterDelay(20, () -> patch(player).playAnimationSynchronized(MurimAnimations.FALLING_RAIN_AIR, 0.0F));
+        helper.runAfterDelay(24, () -> patch(player).playAnimationSynchronized(MurimAnimations.FALLING_RAIN_AIR, 0.0F));
         // A second later they are still up there, the body before the player.
         helper.runAfterDelay(36, () -> {
             helper.assertTrue(Math.abs(player.getY() - hangY[0]) < 0.3, String.format("The player did not hang (%.2f then %.2f)", hangY[0], player.getY()));
-            helper.assertTrue(zombie.getY() - ground > 2.2 && Math.abs(zombie.getY() - player.getY()) < 0.5, String.format("The body did not stay up before the player (%.2f blocks)", zombie.getY() - ground));
+            helper.assertTrue(zombie.getY() - ground > 5.5 && Math.abs(zombie.getY() - player.getY()) < 0.5, String.format("The body did not stay up before the player (%.2f blocks)", zombie.getY() - ground));
             healthBefore[0] = zombie.getHealth();
             qi[0] = QiService.getQi(player);
             // The crescent's key again: the slam, free, though the crescent is cooling down.
@@ -391,13 +403,69 @@ public final class AzureCloudSwordGameTests {
         });
     }
 
+    @GameTest(template = "foundation_arena", batch = "azure_slam_landing", timeoutTicks = 100)
+    public static void theSlamsLandingBlastsTheGroundAndExecutesAPlayerItWouldKnockDown(GameTestHelper helper) {
+        helper.getLevel().getServer().setPvpAllowed(true);
+        ServerPlayer player = adept(helper, 0.5);
+        ServerPlayer victim = player(helper);
+        BlockPos floor = helper.absolutePos(new BlockPos(2, 0, 3));
+        victim.moveTo(floor.getX() + 0.5, floor.getY() + 1, floor.getZ() + 0.5, 180, 0);
+        // After a player's first seconds, when they can be hurt.
+        helper.runAfterDelay(70, () -> {
+            // A tick so the sword in hand counts in the attack.
+            player.doTick();
+            float casterHealth = player.getHealth();
+            // A blow that would knock the victim down (a player's lethal blow does): the landing executes instead.
+            victim.setHealth(1.0F);
+            AzureCloudSword.slamLanding(player, victim);
+            helper.assertTrue(!victim.isAlive() && !KnockdownService.isDowned(victim), "The landing did not execute (alive " + victim.isAlive() + ", down " + KnockdownService.isDowned(victim) + ", health " + victim.getHealth() + ")");
+            helper.assertTrue(player.getHealth() == casterHealth, "The blast hurt the one who threw the body");
+            helper.assertTrue(helper.getLevel().getBlockState(floor).isAir(), "The blast did not break the ground under the body");
+            helper.getLevel().getServer().setPvpAllowed(false);
+            cleanup(victim);
+            end(helper, player);
+        });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "azure_slam_execute_downed")
+    public static void theSlamsLandingKillsADownedPlayerAtOnce(GameTestHelper helper) {
+        helper.getLevel().getServer().setPvpAllowed(true);
+        ServerPlayer player = adept(helper, 0.5);
+        ServerPlayer victim = player(helper);
+        victim.moveTo(player.getX(), player.getY(), player.getZ() + 2, 180, 0);
+        KnockdownService.knockDown(victim);
+        helper.assertTrue(KnockdownService.isDowned(victim), "The victim is not down");
+        AzureCloudSword.slamLanding(player, victim);
+        helper.assertTrue(!victim.isAlive(), "A downed player survived the landing (it should execute at once)");
+        helper.getLevel().getServer().setPvpAllowed(false);
+        cleanup(victim);
+        end(helper, player);
+    }
+
+    @GameTest(template = "foundation_arena", batch = "azure_crescent_roof")
+    public static void theCrescentDoesNotStartUnderARoof(GameTestHelper helper) {
+        ServerPlayer player = adept(helper, 0.5);
+        unlock(player, MartialArts.HEAVEN_SPLITTING_CRESCENT, 2);
+        double qi = QiService.getQi(player);
+        // A block five above the player's feet: the 7-block rise has no room.
+        BlockPos above = BlockPos.containing(player.getX(), player.getY() + 5, player.getZ());
+        helper.getLevel().setBlockAndUpdate(above, Blocks.STONE.defaultBlockState());
+        CastResult result = MartialService.castSlot(player, 2);
+        helper.assertTrue(result == CastResult.NO_ROOM, "The crescent started under a roof: " + result);
+        helper.assertTrue(QiService.getQi(player) == qi && MartialService.cooldownLeft(player, MartialArts.HEAVEN_SPLITTING_CRESCENT.id()) == 0,
+                "A refused crescent cost something");
+        helper.getLevel().setBlockAndUpdate(above, Blocks.AIR.defaultBlockState());
+        helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "With the sky open the crescent was refused");
+        end(helper, player);
+    }
+
     @GameTest(template = "foundation_arena", batch = "azure_crescent_hang", timeoutTicks = 80)
     public static void withoutTheKeyAgainTheHangEndsAndBothComeDown(GameTestHelper helper) {
         ServerPlayer player = adept(helper, 0.5);
         Zombie zombie = dummy(helper, player, 1.5);
-        crescent(helper, player);
+        crescent(helper, player, zombie);
         tickFor(helper, player, 1, 60);
-        helper.runAfterDelay(18, () -> helper.assertTrue(MartialCombat.hovering(player), "At the top the two should hang"));
+        helper.runAfterDelay(22, () -> helper.assertTrue(MartialCombat.hovering(player), "At the top the two should hang"));
         helper.runAfterDelay(62, () -> {
             helper.assertTrue(!MartialCombat.hovering(player) && !player.isNoGravity(), "The hang did not end after 1.5 s");
             helper.assertTrue(!MartialCombat.isSlammed(zombie), "A slam without the key");

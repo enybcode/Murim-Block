@@ -167,6 +167,7 @@
   "technique.murimblock.cast.no_qi": "Not enough Qi for %s (%s needed)",
   "technique.murimblock.cast.not_in_combat": "Enter combat mode to use your techniques",
   "technique.murimblock.cast.no_weapon": "%s needs a sword in hand",
+  "technique.murimblock.cast.no_room": "%s needs open sky above (7 blocks)",
   "technique.murimblock.swallow_returns": "Swallow Returns",
   "technique.murimblock.swallow_returns.discovered": "A swallow returns to its nest... You discovered the secret technique Swallow Returns",
   "technique.murimblock.riposte": "Riposte",

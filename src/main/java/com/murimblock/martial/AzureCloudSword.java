@@ -1,5 +1,6 @@
 package com.murimblock.martial;
 
+import com.murimblock.combat.knockdown.KnockdownService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.integration.epicfight.MurimGuardSkill;
@@ -67,13 +68,15 @@ public final class AzureCloudSword {
     public static final double AIR_HEIGHT = 1.2;
     /** Upward speed given by Rising Cloud, blocks per tick. */
     public static final double RISING_CLOUD_LIFT = 0.45;
+    /** How high the crescent takes the player (blocks): it needs that much room above to start. */
+    public static final double CRESCENT_RISE = 7.0;
     /**
-     * The crescent's leap: an upward speed that takes a player 3 blocks up under Minecraft's gravity (0.08 a tick,
-     * drag 0.98), the top reached about 10 ticks later.
+     * The crescent's leap: an upward speed that takes a player 7 blocks up under Minecraft's gravity (0.08 a tick,
+     * drag 0.98), the top reached 13 ticks later.
      */
-    public static final double CRESCENT_LEAP = 0.68;
-    /** How long a target hit by the crescent is carried up with the player, from the leap (to the top of it). */
-    public static final int CARRY_TICKS = 10;
+    public static final double CRESCENT_LEAP = 1.10;
+    /** How long a target hit by the crescent is carried up with the player, from the hit (to the top of the leap). */
+    public static final int CARRY_TICKS = 13;
     /** The finish's blow lands this many ticks after it starts (1.5 s). */
     public static final int FINISH_HIT_TICK = 30;
 
@@ -201,6 +204,11 @@ public final class AzureCloudSword {
         else AIMS.remove(player);
     }
 
+    /** Whether there is room above the player for the crescent's rise (no block within its height). */
+    static boolean roomAbove(ServerPlayer player) {
+        return player.level().noCollision(player, player.getBoundingBox().expandTowards(0, CRESCENT_RISE + 0.2, 0));
+    }
+
     /** Whether the player is in a guard's recoil (after a parry): a riposte may cut it short. */
     static boolean inGuardMotion(PlayerPatch<?> patch) {
         AnimationPlayer main = patch.getAnimator().getPlayerFor(null);
@@ -249,7 +257,7 @@ public final class AzureCloudSword {
                 MartialCombat.later(player, 5, () -> shockwave(player));
             } else {
                 play(player, patch, MurimAnimations.HEAVEN_SPLITTING_CRESCENT, technique, riposte);
-                // The player leaves the ground with the cut (0.2 s) and rises 3 blocks; whoever the crescent hits is
+                // The player leaves the ground with the cut (0.2 s) and rises 7 blocks; whoever the crescent hits is
                 // carried up with them (MartialCombat.carry, on the hit).
                 MartialCombat.later(player, 4, () -> MartialCombat.leap(player, CRESCENT_LEAP));
                 // As a riposte, the two hang at the top a little longer for the follow-up.
@@ -377,12 +385,42 @@ public final class AzureCloudSword {
     }
 
     /** The landing of a body the slam threw down: it takes its share and the ground shakes around it. */
-    static void slamLanding(ServerPlayer player, LivingEntity target) {
+    public static void slamLanding(ServerPlayer player, LivingEntity target) {
+        ServerLevel level = player.serverLevel();
+        // The blast: breaks the ground under the body (as TNT would), hurts and throws what stands around, but neither
+        // the one who threw it nor the body (see onDetonate).
+        blastBy = player;
+        blastOn = target;
+        try {
+            level.explode(player, target.getX(), target.getY(), target.getZ(), SLAM_BLAST, net.minecraft.world.level.Level.ExplosionInteraction.TNT);
+        } finally {
+            blastBy = null;
+            blastOn = null;
+        }
+        float damage = (float) (player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * SLAM_LANDING_SHARE);
         target.invulnerableTime = 0;
-        target.hurt(player.damageSources().playerAttack(player),
-                (float) (player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * SLAM_LANDING_SHARE));
-        shockwave(player.serverLevel(), target.position());
-        player.serverLevel().sendParticles(ParticleTypes.POOF, target.getX(), target.getY() + 0.1, target.getZ(), 16, 0.6, 0.1, 0.6, 0.05);
+        if (target instanceof ServerPlayer victim) {
+            // A player is not knocked down by this landing but executed: already down, they die at once; a blow that
+            // would knock them down kills them (an execution never knocks down).
+            if (KnockdownService.isDowned(victim)) KnockdownService.executeNow(player, victim);
+            else victim.hurt(KnockdownService.execution(player), damage);
+        } else {
+            target.hurt(player.damageSources().playerAttack(player), damage);
+        }
+        shockwave(level, target.position());
+        level.sendParticles(ParticleTypes.POOF, target.getX(), target.getY() + 0.1, target.getZ(), 16, 0.6, 0.1, 0.6, 0.05);
+    }
+
+    /** The radius of the slam's blast (TNT is 4). */
+    public static final float SLAM_BLAST = 2.5F;
+    /** The slam's blast going off now: who threw the body, and the body. */
+    @Nullable private static ServerPlayer blastBy;
+    @Nullable private static LivingEntity blastOn;
+
+    /** The slam's blast spares the two: neither hurt nor thrown by it (the body takes the landing instead). */
+    public static void onDetonate(net.neoforged.neoforge.event.level.ExplosionEvent.Detonate event) {
+        if (blastBy == null) return;
+        event.getAffectedEntities().removeIf(e -> e == blastBy || e == blastOn);
     }
 
     /** The ring of the descent's slam, three blocks wide, around the player. */

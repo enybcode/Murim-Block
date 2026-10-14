@@ -64,7 +64,7 @@ public final class CloudStepEffects {
 
     private static final List<Fast> FAST = List.of(
             new Fast(() -> MurimAnimations.CLOUD_STEP_SLASH, 0.02F, 0.22F, false),
-            new Fast(() -> MurimAnimations.HEAVEN_SPLITTING_CRESCENT, 0.2F, 0.62F, true));
+            new Fast(() -> MurimAnimations.HEAVEN_SPLITTING_CRESCENT, 0.2F, 0.82F, true));
 
     /** A player in a fast move, `t` seconds into its flying stretch (negative before it). */
     private record InMove(Fast move, float t) {

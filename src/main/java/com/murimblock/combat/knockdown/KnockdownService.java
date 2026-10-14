@@ -247,6 +247,19 @@ public final class KnockdownService {
         victim.die(source);
     }
 
+    /** A death by execution at once (the crescent's slam landing on a knocked-down player): as a finish's blow. */
+    public static void executeNow(ServerPlayer executor, ServerPlayer victim) {
+        finish(executor, victim);
+    }
+
+    /**
+     * Damage as an execution: a blow that would knock a player down kills them instead (an execution never knocks down,
+     * {@link #knocksDown}).
+     */
+    public static DamageSource execution(ServerPlayer executor) {
+        return new DamageSource(executor.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(EXECUTION), executor);
+    }
+
     /** A hit on the executor breaks the finish before the blow lands. */
     public static void interrupt(Player executor) {
         Execution e = EXECUTIONS.get(executor.getUUID());

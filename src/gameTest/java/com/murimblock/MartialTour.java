@@ -17,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
@@ -251,14 +253,15 @@ public final class MartialTour {
                 zombies.getFirst().moveTo(self(server).getX(), self(server).getY(), self(server).getZ() + 1.8, 180, 0);
                 QiService.setQi(self(server), 50);
             });
+            case 230 -> placeWideCamera(mc);
             // Key 3: Heaven-Splitting Crescent, both in the air.
             case 234 -> {
                 startY = mc.player.getY();
                 KeyMapping.click(mc.options.keyHotbarSlots[2].getKey());
             }
             case 262 -> {
-                check(peakY - startY > 2.6 && peakY - startY < 3.4, String.format("the crescent takes the player 3 blocks up (%.2f blocks)", peakY - startY));
-                check(zombiePeakY - startY > 2.3, String.format("the crescent carries the zombie up with the player (%.2f blocks)", zombiePeakY - startY));
+                check(peakY - startY > 6.5 && peakY - startY < 7.5, String.format("the crescent takes the player 7 blocks up (%.2f blocks)", peakY - startY));
+                check(zombiePeakY - startY > 6.0, String.format("the crescent carries the zombie up with the player (%.2f blocks)", zombiePeakY - startY));
                 server.execute(() -> check(zombies.getFirst().getHealth() < 200, "the crescent cuts the zombie"));
             }
             // Hanging at the top: an M1 in the air, then key 3 again, the slam that throws the zombie back down.
@@ -273,8 +276,22 @@ public final class MartialTour {
                 check(z.getY() - startY < 0.4, String.format("the slam brings the zombie back to the ground (%.2f blocks up)", z.getY() - startY));
                 check(z.getHealth() < slamHealth - 1, "the slam and its landing hurt the zombie (" + slamHealth + " then " + z.getHealth() + ")");
             });
+            case 278 -> {
+                check(mc.player.getY() - startY < 1.0, String.format("the player dives down with the slam (%.2f blocks up)", mc.player.getY() - startY));
+                server.execute(() -> check(self(server).getHealth() >= self(server).getMaxHealth() - 0.01F, "no fall or blast damage for the one who slams (" + self(server).getHealth() + ")"));
+            }
             // The Techniques tab: the passive and its M1 slots, then Thousand Drizzle.
             case 280 -> {
+                // The slam's blast left a crater: filled back in, the player on the ground again, for the M1 chain.
+                server.execute(() -> {
+                    ServerPlayer self = self(server);
+                    ServerLevel level = server.overworld();
+                    BlockPos base = BlockPos.containing(self.getX(), startY, self.getZ());
+                    for (BlockPos p : BlockPos.betweenClosed(base.offset(-5, -5, -5), base.offset(5, -1, 5)))
+                        level.setBlockAndUpdate(p, (p.getY() == base.getY() - 1 ? Blocks.GRASS_BLOCK : Blocks.DIRT).defaultBlockState());
+                    for (BlockPos p : BlockPos.betweenClosed(base.offset(-5, 0, -5), base.offset(5, 3, 5))) level.setBlockAndUpdate(p, Blocks.AIR.defaultBlockState());
+                    self.teleportTo(self.getX(), startY, self.getZ());
+                });
                 mc.setCameraEntity(mc.player);
                 mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
                 mc.setScreen(MurimProfileScreen.techniques());
@@ -371,6 +388,25 @@ public final class MartialTour {
         Vec3 at = mc.player.position();
         Vec3 wanted = at.add(0.01, 4.2, 0.9);
         Vec3 d = at.add(0, 1.0, 1.0).subtract(wanted);
+        Vec3 eye = wanted.add(d.normalize().scale(4));
+        if (camera == null) camera = new Marker(EntityType.MARKER, mc.level);
+        camera.setPos(eye);
+        camera.xo = camera.xOld = eye.x;
+        camera.yo = camera.yOld = eye.y;
+        camera.zo = camera.zOld = eye.z;
+        camera.setYRot((float) Math.toDegrees(Math.atan2(-d.x, d.z)));
+        camera.setXRot((float) -Math.toDegrees(Math.atan2(d.y, Math.hypot(d.x, d.z))));
+        camera.yRotO = camera.getYRot();
+        camera.xRotO = camera.getXRot();
+        mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+        mc.setCameraEntity(camera);
+    }
+
+    /** From farther to the side and a little up: the whole 7-block rise of the crescent in the picture. */
+    private static void placeWideCamera(Minecraft mc) {
+        Vec3 at = mc.player.position();
+        Vec3 wanted = at.add(13, 4.5, 1.5);
+        Vec3 d = at.add(0, 4.0, 1.5).subtract(wanted);
         Vec3 eye = wanted.add(d.normalize().scale(4));
         if (camera == null) camera = new Marker(EntityType.MARKER, mc.level);
         camera.setPos(eye);
