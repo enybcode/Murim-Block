@@ -49,10 +49,10 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
 - `node scripts/animation/azure-cloud-animations.cjs [--preview build/anim-preview]` : les animations de l'Art de l'Épée du Nuage Azur (pour l'instant, Cloud Step Slash). `pose.cjs` regroupe l'écriture des poses, commune aux deux scripts.
 - `java scripts/worldgen/ManualTexture.java src/main/resources/assets/murimblock/textures/item` : la texture du Manuel de l'Épée du Nuage Azur.
 - `java scripts/worldgen/TechniqueIcons.java src/main/resources/assets/murimblock/textures/gui/technique` : les icônes 32x32 des techniques (barre de combat, onglet Techniques).
-- `java scripts/worldgen/BanditDao.java src/main/resources/assets/murimblock/textures/item` : la texture 16x16 du Dao de bandit (icône d'inventaire, au sol, en cadre).
 - `node scripts/animation/bandit-dao-model.cjs` : le Dao de bandit en 3D tenu en main, tranchant en bas (`models/item/bandit_dao_body.json`,
   sa houppe seule `bandit_dao_tassel.json`, les transformations de la main `bandit_dao_held.json`, la texture `bandit_dao_3d.png`,
-  `models/item/bandit_dao.json` en transformations séparées) et sa source Blockbench `art/blockbench/bandit_dao.bbmodel`.
+  `models/item/bandit_dao.json` en transformations séparées) et sa source Blockbench `art/blockbench/bandit_dao.bbmodel`,
+  plus son icône 16x16 `textures/item/bandit_dao.png` (inventaire, au sol, en cadre) dessinée d'après le modèle vu de face.
   `client/BanditDaoRenderer` dessine la lame puis la houppe, balancée par un pendule (`TasselPendulum`).
 - `node scripts/animation/bandit-3d.cjs` : le bandit en 3D sur le squelette biped d'Epic Fight (col croisé, ceinture nouée et ses pans, jupe de robe,
   manches, bandes, sandales ; bandeau, chignon, épaulière, gourde, foulard, capuche de loup, turban, voile, masque selon la tenue) :

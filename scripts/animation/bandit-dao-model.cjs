@@ -5,14 +5,16 @@
 //   models/item/bandit_dao_held.json    the hand's transforms only: client/BanditDaoRenderer draws the body, then the
 //                                       tassel turned about the pommel where its pendulum has swung it;
 //   models/item/bandit_dao.json         NeoForge's separate transforms: in the inventory, on the ground and in frames
-//                                       the game keeps the flat icon (textures/item/bandit_dao.png, BanditDao.java).
+//                                       the game keeps the flat icon, textures/item/bandit_dao.png, drawn here from the
+//                                       model seen from the front (the tassel hanging along the grip).
 // The sword is built upright, then every cube is turned 45 degrees about the model's centre so it lies on the same
 // diagonal as the 16x16 icon (pommel at the bottom left, point at the top right): with the vanilla swords' hand
 // transforms, it sits in the hand exactly as the flat dao did. The cord hangs from the bottom of the pommel's ring,
 // (8, -3.5, 8) upright, (8 - 11.5/sqrt 2, 8 - 11.5/sqrt 2, 8) once turned: BanditDaoRenderer's PIVOT. The grip is long
 // (7.2) so the pommel and its tassel come out of the fist.
 // A bandit's sabre, worn rather than fine, in relief:
-//   blade: curving a little more toward a clipped point, in strips from the back to the edge: a thick dark spine, a
+//   blade: long and broad (1.6 blocks in the hand, 3.4 pixels across at its widest), curving a little more toward a
+//          clipped point, in strips from the back to the edge: a thick dark spine, a
 //          fuller sunk along it (thinner than the steel on either side), the hammered flat, a thin bright bevel nicked
 //          twice by use; a false edge sharpened along the back of the point; a brass collar at its root;
 //   guard: a round brass dish with a darker rim and a raised boss, an engraved ferrule;
@@ -95,44 +97,48 @@ part('ring_bottom', [7.45, POMMEL_END, 7.85], [8.55, POMMEL_END + 0.2, 8.15], 'b
 part('grip_ring_low', [7.25, POMMEL_END + 1.2, 7.25], [8.75, POMMEL_END + 1.7, 8.75], 'brass');
 part('grip_ring_high', [7.25, 4.4, 7.25], [8.75, 4.9, 8.75], 'brass');
 // The guard: a round dish, its darker rim underneath, a raised boss, then the ferrule.
-part('guard_rim_a', [6.2, 4.75, 6.6], [9.8, 4.9, 9.4], 'brassDark');
-part('guard_rim_b', [6.6, 4.75, 6.2], [9.4, 4.9, 9.8], 'brassDark');
-part('guard_a', [6.0, 4.9, 6.8], [10.0, 5.6, 9.2], 'brass');
-part('guard_b', [6.8, 4.9, 6.0], [9.2, 5.6, 10.0], 'brass');
-part('guard_c', [6.4, 4.9, 6.4], [9.6, 5.6, 9.6], 'brass');
-part('guard_boss', [7.15, 5.6, 7.15], [8.85, 5.95, 8.85], 'brass');
-part('ferrule', [7.0, 5.95, 7.45], [9.0, 6.5, 8.55], 'brassDark');
+part('guard_rim_a', [5.9, 4.75, 6.45], [10.1, 4.9, 9.55], 'brassDark');
+part('guard_rim_b', [6.45, 4.75, 5.9], [9.55, 4.9, 10.1], 'brassDark');
+part('guard_a', [5.7, 4.9, 6.7], [10.3, 5.65, 9.3], 'brass');
+part('guard_b', [6.7, 4.9, 5.7], [9.3, 5.65, 10.3], 'brass');
+part('guard_c', [6.2, 4.9, 6.2], [9.8, 5.65, 9.8], 'brass');
+part('guard_boss', [7.05, 5.65, 7.05], [8.95, 6.0, 8.95], 'brass');
+part('ferrule', [6.5, 6.0, 7.4], [9.1, 6.55, 8.6], 'brassDark');
 
-// The blade, segment by segment toward the point: its spine curving a little more near the end, the blade widening.
-const WIDTHS = [1.6, 1.8, 2.05, 2.3, 2.6, 2.85];
-const spineAt = i => 8.75 - 0.05 * i - 0.02 * i * i;
+// The blade, segment by segment toward the point, long and broad: its spine curving a little more near the end, the
+// blade widening toward the point as a brigand's sabre does.
+const WIDTHS = [2.2, 2.4, 2.65, 2.9, 3.2, 3.5, 3.8, 4.0];
+const SEG = 2.0, ROOT_Y = 6.55;
+const spineAt = i => 8.75 - 0.04 * i - 0.014 * i * i;
 // Two nicks in the bevel (segment, from y, to y): a bandit's blade is not kept up.
-const NICKS = { 2: [11.1, 11.45], 4: [15.6, 15.9] };
+const NICKS = { 2: [11.3, 11.7], 5: [17.4, 17.8] };
 WIDTHS.forEach((w, i) => {
-  const y0 = 6.5 + i * 2 - (i === 0 ? 0 : 0.2), y1 = 6.3 + (i + 1) * 2, xs = spineAt(i), xe = xs - w;
-  strip('spine_' + i, xs - 0.35, xs, y0, y1, 0.34, i === WIDTHS.length - 1 ? 'edge' : 'spine');
-  if (i < WIDTHS.length - 1) {
-    strip('fuller_' + i, xs - 0.75, xs - 0.35, y0, y1, 0.24, 'fuller');
-    strip('flat_' + i, xe + 0.45, xs - 0.75, y0, y1, 0.3, 'steel');
-  } else strip('flat_' + i, xe + 0.45, xs - 0.35, y0, y1, 0.3, 'steel');
+  const y0 = ROOT_Y + i * SEG - (i === 0 ? 0 : 0.2), y1 = ROOT_Y + (i + 1) * SEG, xs = spineAt(i), xe = xs - w;
+  const last = i === WIDTHS.length - 1;
+  // The spine, the fuller sunk beside it (it stops before the point), the hammered flat, the bevel.
+  strip('spine_' + i, xs - 0.4, xs, y0, y1, 0.36, last ? 'edge' : 'spine');
+  if (!last) {
+    strip('fuller_' + i, xs - 0.85, xs - 0.4, y0, y1, 0.26, 'fuller');
+    strip('flat_' + i, xe + 0.55, xs - 0.85, y0, y1, 0.32, 'steel');
+  } else strip('flat_' + i, xe + 0.55, xs - 0.4, y0, y1, 0.32, 'steel');
   const nick = NICKS[i];
   if (nick) {
-    strip('bevel_' + i + 'a', xe, xe + 0.45, y0, nick[0], 0.16, 'edge');
-    strip('bevel_' + i + 'n', xe + 0.2, xe + 0.45, nick[0], nick[1], 0.16, 'edge');
-    strip('bevel_' + i + 'b', xe, xe + 0.45, nick[1], y1, 0.16, 'edge');
-  } else strip('bevel_' + i, xe, xe + 0.45, y0, y1, 0.16, 'edge');
+    strip('bevel_' + i + 'a', xe, xe + 0.55, y0, nick[0], 0.17, 'edge');
+    strip('bevel_' + i + 'n', xe + 0.25, xe + 0.55, nick[0], nick[1], 0.17, 'edge');
+    strip('bevel_' + i + 'b', xe, xe + 0.55, nick[1], y1, 0.17, 'edge');
+  } else strip('bevel_' + i, xe, xe + 0.55, y0, y1, 0.17, 'edge');
 });
 // A brass collar holding the blade's root.
-part('blade_collar', [spineAt(0) - WIDTHS[0] - 0.08, 6.5, 7.58], [spineAt(0) + 0.08, 7.1, 8.42], 'brassDark');
-// The clipped point: the edge rising to the spine, a false edge along the back.
-const sx = spineAt(6);
-strip('tip_0', sx - 2.4 + 0.4, sx - 0.3, 18.3, 19.0, 0.26, 'steel');
-strip('tip_0_bevel', sx - 2.4, sx - 2.0, 18.3, 19.0, 0.15, 'edge');
-strip('tip_0_back', sx - 0.3, sx, 18.3, 19.0, 0.18, 'edge');
-strip('tip_1', sx - 1.5 + 0.35, sx - 0.25, 19.0, 19.6, 0.22, 'steel');
-strip('tip_1_bevel', sx - 1.5, sx - 1.15, 19.0, 19.6, 0.14, 'edge');
-strip('tip_1_back', sx - 0.25, sx, 19.0, 19.6, 0.15, 'edge');
-strip('tip_2', sx - 0.7, sx, 19.6, 20.1, 0.13, 'edge');
+part('blade_collar', [spineAt(0) - WIDTHS[0] - 0.08, ROOT_Y, 7.56], [spineAt(0) + 0.08, ROOT_Y + 0.65, 8.44], 'brassDark');
+// The clipped point: the edge rising to the spine in steps, a false edge along the back.
+const sx = spineAt(WIDTHS.length), TIP_Y = ROOT_Y + WIDTHS.length * SEG;
+[[3.4, 0.8], [2.4, 0.7], [1.4, 0.6]].reduce((y, [w, h], i) => {
+  strip('tip_' + i, sx - w + 0.45, sx - 0.35, y, y + h, 0.28 - i * 0.04, 'steel');
+  strip('tip_' + i + '_bevel', sx - w, sx - w + 0.45, y, y + h, 0.16 - i * 0.01, 'edge');
+  strip('tip_' + i + '_back', sx - 0.35, sx, y, y + h, 0.2 - i * 0.02, 'edge');
+  return y + h;
+}, TIP_Y);
+strip('tip_point', sx - 0.6, sx, TIP_Y + 2.1, TIP_Y + 2.6, 0.12, 'edge');
 
 const ROTATION = { angle: -45, axis: 'z', origin: [8, 8, 8] };
 
@@ -148,6 +154,55 @@ function faces(p) {
 }
 /** The same faces in the game model's 0-16 UV space. */
 const gameFaces = p => Object.fromEntries(Object.entries(faces(p)).map(([face, x]) => [face, { ...x, uv: x.uv.map(v => v * 16 / TEX_SIZE) }]));
+
+// ---------------------------------------------------------------- the icon: the model seen from the front, fitted to 16 x 16
+
+/** The colour of each material on the icon. */
+const ICON = { spine: '#5d646b', fuller: '#4c5258', steel: '#a3abb2', edge: '#eef2f5', brass: '#ba9240', brassDark: '#7c5c22',
+  wrap: '#962e24', lacquer: '#1e1512', tassel: '#c4382c', bead: '#6b4026' };
+
+function icon() {
+  const img = new Uint8Array(16 * 16 * 4);
+  const a = ROTATION.angle * Math.PI / 180;
+  const turn = ([x, y]) => [8 + (x - 8) * Math.cos(a) - (y - 8) * Math.sin(a), 8 + (x - 8) * Math.sin(a) + (y - 8) * Math.cos(a)];
+  // Drawn broader than the model, as Minecraft's sprites are, or the blade is a thread at this size: twice across the
+  // blade and the guard, three times across the grip, the pommel and the tassel.
+  const broad = p => ([x, y]) => [8 + (x - 8) * (p.from[1] < 4.75 ? 3.0 : 2.0), y];
+  // The tassel under the pommel, shortened so the blade keeps the room.
+  const hang = y => POMMEL_END - (8 - y) * 0.55;
+  const all = [...TASSEL.map(p => ({ ...p, from: [p.from[0], hang(p.from[1]), p.from[2]], to: [p.to[0], hang(p.to[1]), p.to[2]] })), ...PARTS];
+  const quads = all.map(p => ({ mat: p.mat, pts: [[p.from[0], p.from[1]], [p.to[0], p.from[1]], [p.to[0], p.to[1]], [p.from[0], p.to[1]]].map(broad(p)).map(turn) }));
+  const xs = quads.flatMap(q => q.pts.map(p => p[0])), ys = quads.flatMap(q => q.pts.map(p => p[1]));
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), span = Math.max(Math.max(...xs) - x0, Math.max(...ys) - y0);
+  const inside = (pts, x, y) => {
+    let c = false;
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      const [xi, yi] = pts[i], [xj, yj] = pts[j];
+      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  };
+  // Later materials are drawn over earlier ones.
+  const order = ['tassel', 'bead', 'lacquer', 'wrap', 'brassDark', 'brass', 'fuller', 'spine', 'steel', 'edge'];
+  // One pixel of margin all round for the outline.
+  for (let py = 1; py < 15; py++) for (let px = 1; px < 15; px++) {
+    const x = x0 + (px - 1 + 0.5) / 14 * span, y = y0 + (14 - py + 0.5) / 14 * span;
+    let hit = null;
+    for (const mat of order) for (const q of quads) if (q.mat === mat && inside(q.pts, x, y)) hit = mat;
+    if (hit) img.set([...hex(ICON[hit]), 255], (py * 16 + px) * 4);
+  }
+  // A dark outline round the shape, as Minecraft's items have.
+  const out = new Uint8Array(img);
+  for (let py = 0; py < 16; py++) for (let px = 0; px < 16; px++) {
+    if (img[(py * 16 + px) * 4 + 3]) continue;
+    const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
+      const nx = px + dx, ny = py + dy;
+      return nx >= 0 && ny >= 0 && nx < 16 && ny < 16 && img[(ny * 16 + nx) * 4 + 3];
+    });
+    if (near) out.set([28, 22, 20, 255], (py * 16 + px) * 4);
+  }
+  return out;
+}
 
 // ---------------------------------------------------------------- the game models
 
@@ -214,6 +269,7 @@ module.exports = { bbmodel };
 if (require.main === module) {
   const assets = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock');
   fs.writeFileSync(path.join(assets, 'textures', 'item', 'bandit_dao_3d.png'), png(TEX_SIZE, TEX_SIZE, TEX));
+  fs.writeFileSync(path.join(assets, 'textures', 'item', 'bandit_dao.png'), png(16, 16, icon()));
   fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao_body.json'), JSON.stringify(bodyModel, null, 2) + '\n');
   fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao_tassel.json'), JSON.stringify(tasselModel, null, 2) + '\n');
   fs.writeFileSync(path.join(assets, 'models', 'item', 'bandit_dao_held.json'), JSON.stringify(heldModel, null, 2) + '\n');
