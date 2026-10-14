@@ -103,6 +103,17 @@ public final class TechniquePayloads {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Server to the clients near a body: Thousand Drizzle's delayed cuts open on it now (the attacker gives their angle). */
+    public record DelayedCuts(int attackerId, int targetId) implements CustomPacketPayload {
+        public static final Type<DelayedCuts> TYPE = new Type<>(id("technique_delayed_cuts"));
+        public static final StreamCodec<ByteBuf, DelayedCuts> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, DelayedCuts::attackerId,
+                ByteBufCodecs.VAR_INT, DelayedCuts::targetId,
+                DelayedCuts::new);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Server tells the client a technique was used and how long until it is ready (for the bar's cooldown display). */
     public record Cooldown(ResourceLocation technique, int ticks) implements CustomPacketPayload {
         public static final Type<Cooldown> TYPE = new Type<>(id("technique_cooldown"));

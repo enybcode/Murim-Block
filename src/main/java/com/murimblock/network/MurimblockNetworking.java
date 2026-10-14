@@ -4,8 +4,8 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
-    /** 11: the Azure Cloud Sword Art complete (M1 slots, riposte, the art's finish in the cinematic, longer martial data). */
-    private static final String NETWORK_VERSION = "12";
+    /** 13: Cloud Step Slash held to aim (12), Thousand Drizzle's delayed cuts. */
+    private static final String NETWORK_VERSION = "13";
 
     private MurimblockNetworking() {
     }
@@ -27,6 +27,8 @@ public final class MurimblockNetworking {
                 (payload, context) -> com.murimblock.client.CombatBarClient.cooldown(payload.technique(), payload.ticks()));
         registrar.playToClient(TechniquePayloads.Riposte.TYPE, TechniquePayloads.Riposte.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.CombatBarClient.riposte(payload.ticks()));
+        registrar.playToClient(TechniquePayloads.DelayedCuts.TYPE, TechniquePayloads.DelayedCuts.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.DrizzleSlashEffects.delayedCuts(payload.attackerId(), payload.targetId()));
         // Client only: only ever sent to clients, so the client classes are never loaded on a dedicated server.
         registrar.playToClient(FinishCinematicPayload.TYPE, FinishCinematicPayload.STREAM_CODEC, (payload, context) -> {
             if (payload.start()) com.murimblock.client.FinishCinematic.start(payload.executorId(), payload.victimId(), payload.finish());

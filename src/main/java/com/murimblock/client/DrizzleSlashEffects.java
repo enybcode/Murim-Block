@@ -33,7 +33,7 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
  * through the middle, a thin, sharp line of light opens along the arc the blade's point draws in its plane (the same
  * table as scripts/animation/azure-drizzle.cjs), traced from where the blade comes from to where it goes in a blink, then
  * fading; the last cut leaves a longer one. Each client draws it for every player it sees cut: nothing goes through the
- * network.
+ * network. A beat after the last cut, the server has the six cuts open again on the body at once ({@link #delayedCuts}).
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class DrizzleSlashEffects {
@@ -80,6 +80,7 @@ public final class DrizzleSlashEffects {
         }
         LAST.keySet().removeIf(id -> level.getPlayerByUUID(id) == null);
         SLASHES.removeIf(s -> now - s.tick > LIFE);
+        BODY_CUTS.removeIf(c -> now - c.tick > LIFE);
     }
 
     /** How far into Thousand Drizzle's flurry this player is (seconds), or -1. */
@@ -107,9 +108,55 @@ public final class DrizzleSlashEffects {
         SLASHES.add(new Slash(arc, now, last ? 0.065F : 0.04F));
     }
 
+    /**
+     * From the server: the flurry's delayed cuts open on a body, all six at once (a few hundredths of a second apart),
+     * each a straight line across it at its cut's angle, a little off the middle so they cross.
+     */
+    public static void delayedCuts(int attackerId, int targetId) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.level.getEntity(targetId) == null) return;
+        long now = mc.level.getGameTime();
+        var random = net.minecraft.util.RandomSource.create(targetId * 31L + now);
+        for (int c = 0; c < 6; c++) {
+            // A little off the middle (across the line), so they cross.
+            BODY_CUTS.add(new BodyCut(targetId, CUTS[c].roll, (random.nextFloat() - 0.5F) * 0.5F, now + random.nextInt(3)));
+        }
+    }
+
+    /**
+     * A delayed cut on a body: which body, its line's angle (as for the flurry), how far off the middle, when it opens.
+     * Drawn facing whoever looks (so it reads from every side) and following the body as it flies.
+     */
+    private record BodyCut(int entity, float roll, float offset, long tick) { }
+
+    private static final List<BodyCut> BODY_CUTS = new ArrayList<>();
+
+    /** The line of a delayed cut now: across the body as the camera sees it, at its angle, through its middle or near. */
+    @javax.annotation.Nullable
+    private static List<Vec3> bodyLine(ClientLevel level, BodyCut cut, Vec3 camera, float partial) {
+        var target = level.getEntity(cut.entity);
+        if (target == null) return null;
+        Vec3 centre = target.getPosition(partial).add(0, target.getBbHeight() * 0.55, 0);
+        Vec3 view = centre.subtract(camera);
+        if (view.lengthSqr() < 1e-4) return null;
+        view = view.normalize();
+        Vec3 right = view.cross(new Vec3(0, 1, 0));
+        if (right.lengthSqr() < 1e-4) right = new Vec3(1, 0, 0);
+        right = right.normalize();
+        Vec3 up = right.cross(view).normalize();
+        double r = Math.toRadians(cut.roll);
+        Vec3 along = right.scale(Math.cos(r)).add(up.scale(Math.sin(r)));
+        Vec3 across = right.scale(-Math.sin(r)).add(up.scale(Math.cos(r)));
+        double size = Math.max(0.9, Math.max(target.getBbWidth(), target.getBbHeight()) * 0.7);
+        Vec3 mid = centre.add(across.scale(cut.offset * size)).subtract(view.scale(target.getBbWidth() * 0.6));
+        List<Vec3> line = new ArrayList<>();
+        for (int i = 0; i <= ARC_POINTS; i++) line.add(mid.add(along.scale(size * (2.0 * i / ARC_POINTS - 1))));
+        return line;
+    }
+
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES || SLASHES.isEmpty()) return;
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES || (SLASHES.isEmpty() && BODY_CUTS.isEmpty())) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         float now = mc.level.getGameTime() + event.getPartialTick().getGameTimeDeltaPartialTick(false);
@@ -127,6 +174,16 @@ public final class DrizzleSlashEffects {
             // A soft azure glow around a thin white edge.
             strip(pose, out, s.arc, open, camera, s.width * 2.2F, 0.25F * fade, 0.55F * fade, 1.0F * fade);
             strip(pose, out, s.arc, open, camera, s.width, fade, fade, fade);
+        }
+        for (BodyCut c : BODY_CUTS) {
+            float age = now - c.tick;
+            if (age < 0 || age > LIFE) continue;
+            List<Vec3> line = bodyLine(mc.level, c, camera, event.getPartialTick().getGameTimeDeltaPartialTick(false));
+            if (line == null) continue;
+            float open = Mth.clamp(age / OPEN, 0, 1);
+            float fade = age < 2 ? 1 : Mth.clamp(1 - (age - 2) / (LIFE - 2), 0, 1);
+            strip(pose, out, line, open, camera, 0.11F, 0.25F * fade, 0.55F * fade, 1.0F * fade);
+            strip(pose, out, line, open, camera, 0.05F, fade, fade, fade);
         }
         buffers.endBatch(glow);
     }

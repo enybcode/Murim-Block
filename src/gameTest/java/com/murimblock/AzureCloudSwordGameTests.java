@@ -246,14 +246,20 @@ public final class AzureCloudSwordGameTests {
         float[] last = {zombie.getHealth()};
         helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Thousand Drizzle was refused");
         helper.assertTrue(playing(player, MurimAnimations.THOUSAND_DRIZZLE), "Not the close-range flurry");
-        for (int t = 1; t <= 34; t++) helper.runAfterDelay(t, () -> {
+        for (int t = 1; t <= 35; t++) helper.runAfterDelay(t, () -> {
             player.doTick();
             zombie.invulnerableTime = 0;
             if (zombie.getHealth() < last[0]) hits[0]++;
             last[0] = zombie.getHealth();
         });
+        // The delayed cuts: a beat after the last cut (about 1.05 s, tick 21), the body takes one more share.
+        float[] afterLast = {0};
+        boolean[] delayed = {false};
+        helper.runAfterDelay(26, () -> afterLast[0] = zombie.getHealth());
+        helper.runAfterDelay(36, () -> delayed[0] = zombie.getHealth() < afterLast[0]);
         helper.runAfterDelay(38, () -> {
             helper.assertTrue(hits[0] >= 5, "The flurry should strike many times, struck " + hits[0]);
+            helper.assertTrue(delayed[0], "The delayed cuts did not open on the body after the last cut");
             helper.assertTrue(MartialService.data(player).mastery(MartialArts.THOUSAND_DRIZZLE.id()) == 1, "Its mastery did not go up once");
             end(helper, player, zombie);
         });

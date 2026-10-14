@@ -323,12 +323,34 @@ public final class AzureCloudSword {
         } else if (animation == MurimAnimations.HEAVEN_SPLITTING_CRESCENT) {
             // Taken up with the player, held in front of them until the top of the leap.
             MartialCombat.carry(player, target, CARRY_TICKS, riposte);
-        } else if (riposte && (animation == MurimAnimations.THOUSAND_DRIZZLE || animation == MurimAnimations.THOUSAND_DRIZZLE_STORM)) {
+        } else if (animation == MurimAnimations.THOUSAND_DRIZZLE || animation == MurimAnimations.THOUSAND_DRIZZLE_STORM) {
             PlayerPatch<?> patch = EpicFightBridge.patch(player);
             AnimationPlayer main = patch == null ? null : patch.getAnimator().getPlayerFor(null);
-            // The last thrust of a riposte breaks the guard.
-            if (main != null && main.getElapsedTime() >= MurimAnimations.DRIZZLE_FINAL - 0.06F) MartialCombat.breakGuard(target);
+            if (main == null || main.getElapsedTime() < MurimAnimations.DRIZZLE_FINAL - 0.06F) return;
+            // The last cut of a riposte breaks the guard.
+            if (riposte) MartialCombat.breakGuard(target);
+            // A beat after the last cut, all the flurry's cuts open on the body at once.
+            MartialCombat.later(player, DELAYED_CUTS_TICKS, () -> delayedCuts(player, target));
         }
+    }
+
+    /** How long after the flurry's last cut its cuts open again on the body (ticks), and their damage (share of the attack). */
+    public static final int DELAYED_CUTS_TICKS = 10;
+    public static final double DELAYED_CUTS_SHARE = 0.6;
+
+    /**
+     * The flurry's delayed cuts: every client near the body draws the six lines of light opening on it at once
+     * (DrizzleSlashEffects), and it takes a last share of damage. Not if it is gone, dead or far away by then.
+     */
+    static void delayedCuts(ServerPlayer player, LivingEntity target) {
+        if (!target.isAlive() || target.level() != player.level() || target.distanceToSqr(player) > 24 * 24) return;
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntityAndSelf(target,
+                new com.murimblock.network.TechniquePayloads.DelayedCuts(player.getId(), target.getId()));
+        player.serverLevel().playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F, 1.5F);
+        player.serverLevel().playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 0.8F, 1.3F);
+        target.invulnerableTime = 0;
+        target.hurt(player.damageSources().playerAttack(player),
+                (float) (player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * DELAYED_CUTS_SHARE));
     }
 
     // ---------------------------------------------------------------- effects

@@ -337,7 +337,7 @@ public final class MartialTour {
             default -> { }
         }
         record(mc, "05-drifting-cut", 140, 156, 1);
-        record(mc, "06-thousand-drizzle", 164, 196, 1);
+        record(mc, "06-thousand-drizzle", 164, 204, 1);
         record(mc, "07-drizzle-wave", 206, 226, 1);
         record(mc, "08-crescent", 234, 262, 1);
         record(mc, "12-m1-chain", 318, 378, 1);
