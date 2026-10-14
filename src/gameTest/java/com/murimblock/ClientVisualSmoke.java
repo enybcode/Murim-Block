@@ -115,6 +115,11 @@ public final class ClientVisualSmoke {
                 mc.options.guiScale().set(3);
                 mc.options.renderDistance().set(4);
                 mc.options.tutorialStep = TutorialSteps.NONE;
+                // Every frame drawn, even behind other windows: with vsync on, Windows slows a client in the background
+                // to a few frames a second and the night flash falls between them; a paused client stops the scene.
+                mc.options.enableVsync().set(false);
+                mc.getWindow().updateVsync(false);
+                mc.options.pauseOnLostFocus = false;
                 mc.resizeDisplay();
                 mc.getSingleplayerServer().execute(() -> {
                     var player = mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID());

@@ -54,7 +54,11 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   sa houppe seule `bandit_dao_tassel.json`, les transformations de la main `bandit_dao_held.json`, la texture `bandit_dao_3d.png`,
   `models/item/bandit_dao.json` en transformations séparées) et sa source Blockbench `art/blockbench/bandit_dao.bbmodel`.
   `client/BanditDaoRenderer` dessine la lame puis la houppe, balancée par un pendule (`TasselPendulum`).
-- `java scripts/worldgen/BanditSkins.java src/main/resources/assets/murimblock/textures/entity/mountain_bandit` : les cinq tenues du bandit, en skins 64x64 au format joueur.
+- `node scripts/animation/bandit-3d.cjs` : le bandit en 3D sur le squelette biped d'Epic Fight (col croisé, ceinture nouée et ses pans, jupe de robe,
+  manches, bandes, sandales ; bandeau, chignon, épaulière, gourde, foulard, capuche de loup, turban, voile, masque selon la tenue) :
+  le mesh `animmodels/entity/mountain_bandit.json`, ses cinq atlas `textures/entity/mountain_bandit/3d/` et le projet
+  Blockbench `art/blockbench/mountain_bandit.bbmodel`.
+- `java scripts/worldgen/BanditSkins.java src/main/resources/assets/murimblock/textures/entity/mountain_bandit` : les cinq tenues du bandit en skins 64x64 (rendu vanilla de secours, sans Epic Fight).
 - `java scripts/animation/FramesToGif.java <dossier> <sortie.gif> [délai ms] [largeur] [x,y,l,h]` assemble des images en GIF ; `--sheet` fait une planche contact.
 
 Les autres vérifications en vrai client sont des tâches Gradle :
