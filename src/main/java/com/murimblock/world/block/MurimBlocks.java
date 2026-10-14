@@ -56,6 +56,13 @@ public final class MurimBlocks {
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).instrument(NoteBlockInstrument.SNARE)
                     .strength(0.6F).sound(SoundType.GRAVEL));
 
+    /** Kunlun: dark grey schist of the roof of the world, glinting with mica. */
+    public static final DeferredBlock<Block> KUNLUN_ROCK = stone("kunlun_rock", MapColor.DEEPSLATE);
+    /** Hotan white jade (nephrite), "mutton fat": in veins of the Kunlun rock and as river stones. */
+    public static final DeferredBlock<Block> RAW_WHITE_JADE = register("raw_white_jade", Block::new, () -> BlockBehaviour.Properties.of()
+            .mapColor(MapColor.QUARTZ).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 6.0F)
+            .sound(SoundType.CALCITE));
+
     // ---------- trees ----------
     public static final Wood OSMANTHUS = wood("osmanthus", MapColor.TERRACOTTA_LIGHT_GRAY, MapColor.COLOR_GREEN, MurimTrees.OSMANTHUS, MurimPlantBlock.Soil.GRASS);
     public static final Wood BANYAN = wood("banyan", MapColor.TERRACOTTA_GRAY, MapColor.COLOR_GREEN, MurimTrees.BANYAN, MurimPlantBlock.Soil.GRASS);
@@ -65,6 +72,8 @@ public final class MurimBlocks {
     public static final Wood WILLOW = wood("willow", MapColor.TERRACOTTA_GRAY, MapColor.COLOR_LIGHT_GREEN, MurimTrees.WILLOW, MurimPlantBlock.Soil.WET);
     public static final Wood PEACH = wood("peach", MapColor.TERRACOTTA_BROWN, MapColor.COLOR_PINK, MurimTrees.PEACH, MurimPlantBlock.Soil.GRASS);
     public static final Wood DESERT_POPLAR = wood("desert_poplar", MapColor.TERRACOTTA_LIGHT_GRAY, MapColor.GOLD, MurimTrees.DESERT_POPLAR, MurimPlantBlock.Soil.SAND);
+    /** Schrenk's spruce of the Tianshan: tall, slender, dark. */
+    public static final Wood TIANSHAN_SPRUCE = wood("tianshan_spruce", MapColor.PODZOL, MapColor.COLOR_GREEN, MurimTrees.TIANSHAN_SPRUCE, MurimPlantBlock.Soil.GRASS);
 
     /** Hanging growth: banyan aerial roots and weeping willow fronds. */
     public static final DeferredBlock<HangingStrandBlock> BANYAN_ROOTS = register("banyan_roots", HangingStrandBlock::new, () -> strand(MapColor.TERRACOTTA_BROWN));
@@ -91,6 +100,10 @@ public final class MurimBlocks {
     public static final DeferredBlock<MurimTallPlantBlock> TAMARISK = tallPlant("tamarisk", MurimPlantBlock.Soil.SAND, MapColor.COLOR_PINK);
     public static final DeferredBlock<MurimPlantBlock> SAXAUL = plant("saxaul", MurimPlantBlock.Soil.SAND, 14, MapColor.TERRACOTTA_GREEN);
     public static final DeferredBlock<MurimPlantBlock> CISTANCHE = plant("cistanche", MurimPlantBlock.Soil.SAND, 10, MapColor.TERRACOTTA_YELLOW);
+    /** Tianshan snow lotus (Saussurea involucrata), the legendary herb of the snows. */
+    public static final DeferredBlock<MurimPlantBlock> SNOW_LOTUS = plant("snow_lotus", MurimPlantBlock.Soil.ALPINE, 11, MapColor.SNOW);
+    /** Alpine sedge (Carex) of the cold meadows. */
+    public static final DeferredBlock<MurimPlantBlock> KUNLUN_SEDGE = plant("kunlun_sedge", MurimPlantBlock.Soil.ALPINE, 12, MapColor.PLANT);
 
     private MurimBlocks() { }
 
@@ -98,7 +111,7 @@ public final class MurimBlocks {
     public record Wood(String name, DeferredBlock<RotatedPillarBlock> log, DeferredBlock<Block> planks,
                        DeferredBlock<LeavesBlock> leaves, DeferredBlock<MurimSaplingBlock> sapling) { }
 
-    public static final List<Wood> WOODS = List.of(OSMANTHUS, BANYAN, HUANGSHAN_PINE, JUJUBE, DOVE_TREE, WILLOW, PEACH, DESERT_POPLAR);
+    public static final List<Wood> WOODS = List.of(OSMANTHUS, BANYAN, HUANGSHAN_PINE, JUJUBE, DOVE_TREE, WILLOW, PEACH, DESERT_POPLAR, TIANSHAN_SPRUCE);
 
     public static List<DeferredBlock<? extends Block>> creativeOrder() {
         return Collections.unmodifiableList(CREATIVE_ORDER);
@@ -119,7 +132,7 @@ public final class MurimBlocks {
         fire.setFlammable(MOSO_BAMBOO.get(), 5, 5);
         fire.setFlammable(MOSO_BAMBOO_LEAVES.get(), 30, 60);
         for (var plant : List.of(KARST_FERN, SEA_BUCKTHORN, FEATHER_GRASS, BAMBOO_SHOOT, ARROW_BAMBOO, CHRYSANTHEMUM, RAPESEED, SAXAUL,
-                CISTANCHE, RHODODENDRON, TREE_FERN, WILD_RICE, TAMARISK, BANYAN_ROOTS, WILLOW_STRANDS)) {
+                CISTANCHE, RHODODENDRON, TREE_FERN, WILD_RICE, TAMARISK, BANYAN_ROOTS, WILLOW_STRANDS, SNOW_LOTUS, KUNLUN_SEDGE)) {
             fire.setFlammable(plant.get(), 60, 100);
         }
     }

@@ -7,6 +7,7 @@
 - [Clear Manuscript](gui/TAB_LAYOUT.md): current GUI, not the V4 reference.
 - [Qi rewards](QI_REWARDS.md): balance and temporary anti-farm history.
 - [Qi and cultivation](cultivation/qi-cultivation.md): meditation, aura, breakthroughs, the inner world and the Heart Demon, Qi Sense, elixirs, realm bonuses (14 October, on test).
+- [Murim map](biomes/murim-map.md): the 150 000-block Murim bubble with fixed regions, its ocean ring, the two northern biomes (14 October, on test).
 - [Technique balance](combat/technique-balance.md): technique damage by weapon and by Qi Max, and no combo that kills at once (14 October, on test).
 - [Armored crab](ARMORED_CRAB_DELIVERY.md): integrated assets, behavior and local verification.
 - [Bandit Chief](mobs/bandit-chief.md): the bandits' mini-boss, his great axe and attacks.

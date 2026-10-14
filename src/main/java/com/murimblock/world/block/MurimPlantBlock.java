@@ -42,7 +42,9 @@ public class MurimPlantBlock extends BushBlock {
         /** Desert plants: sand, red sand, gravel and the grass/dirt of oases. */
         SAND,
         /** Waterside plants: mud, clay and the #dirt tag. */
-        WET;
+        WET,
+        /** Mountain plants of the north (the snow lotus, the sedge): rock, gravel, snow and thin soil. */
+        ALPINE;
 
         public boolean accepts(BlockState state) {
             boolean dirt = state.is(BlockTags.DIRT) || state.is(Blocks.FARMLAND);
@@ -51,6 +53,8 @@ public class MurimPlantBlock extends BushBlock {
                 case SAND -> dirt || state.is(BlockTags.SAND) || state.is(Blocks.GRAVEL) || state.is(MurimBlocks.GOBI_GRAVEL.get())
                         || state.is(MurimBlocks.LOESS.get());
                 case WET -> dirt || state.is(Blocks.CLAY) || state.is(Blocks.MUD) || state.is(BlockTags.SAND);
+                case ALPINE -> dirt || state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Blocks.GRAVEL) || state.is(Blocks.SNOW_BLOCK)
+                        || state.is(Blocks.CALCITE) || state.is(MurimBlocks.KUNLUN_ROCK.get());
             };
         }
     }

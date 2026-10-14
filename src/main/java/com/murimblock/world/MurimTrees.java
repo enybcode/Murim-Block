@@ -21,6 +21,7 @@ public final class MurimTrees {
     public static final TreeGrower WILLOW = grower("willow", null, "willow");
     public static final TreeGrower PEACH = grower("peach", null, "peach");
     public static final TreeGrower DESERT_POPLAR = grower("desert_poplar", null, "desert_poplar");
+    public static final TreeGrower TIANSHAN_SPRUCE = grower("tianshan_spruce", null, "tianshan_spruce");
 
     private MurimTrees() { }
 

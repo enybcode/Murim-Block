@@ -159,6 +159,9 @@ public class NatureTextures {
     static final int[] LOESS = ramp(0x7A5F35, 0x937544, 0xAA8B54, 0xBE9F66, 0xCFB27A, 0xDCC28E);
     static final int[] RED_LOESS = ramp(0x5A2C1B, 0x713923, 0x89482D, 0x9F5838, 0xB26B47, 0xC17E59);
     static final int[] GOBI_SAND = ramp(0x8E7656, 0xA68C67, 0xB9A07A, 0xC9B28C);
+    static final int[] KUNLUN = ramp(0x272A2E, 0x34383D, 0x42474D, 0x51575D, 0x61686F, 0x737A82);
+    static final int[] JADE = ramp(0xA19D86, 0xB6B29B, 0xC9C5AF, 0xD9D5C1, 0xE6E3D1, 0xF1EFE2);
+    static final int[] JADE_SKIN = ramp(0x7C4A2A, 0x96603A, 0xAE774C, 0xC28E62);
 
     /** Rock in chunks: cells with darker joints and lit rims, a little grain inside. */
     static double[][] chunks(long seed, int g, double jitter, double joint, double sx, double sy) {
@@ -304,6 +307,48 @@ public class NatureTextures {
             gobi.set(x, y, at(pr, v));
         }
         gobi.save("gobi_gravel");
+
+        // Kunlun schist: dark blue-grey rock split into thin foliated slabs (cells stretched across), a few mica flakes
+        // catching the light, and one pale quartz stringer wandering through the folds.
+        Img kun = new Img("kunlun_rock");
+        double[][] kf = chunks(kun.seed, 4, 0.95, 1.1, 0.45, 2.0);
+        paint(kun, kf, KUNLUN, 2.5, 2.6, 3.2);
+        int mica = rgb(0xA4ADB6), micaShadow = rgb(0x6F7780);
+        for (int k = 0; k < 6; k++) {
+            int x = kun.r.nextInt(S), y = kun.r.nextInt(S);
+            kun.set(x, y, mica);
+            if (kun.r.nextBoolean()) kun.set(x + 1, y, micaShadow);
+        }
+        int y0 = 3 + kun.r.nextInt(10);
+        for (int x = 0; x < S; x++) {
+            if (noise(kun.seed + 7, x, 0, 8, 16) < 0.35) continue; // the stringer pinches out here and there
+            int y = y0 + (int) Math.round((noise(kun.seed + 8, x, 0, 4, 16) - 0.5) * 3);
+            kun.set(x, y, mix(kun.get(x, y), rgb(0xC9CCC8), 0.75));
+        }
+        kun.save("kunlun_rock");
+
+        // Raw white jade of Hotan: rounded river stones of waxy cream nephrite ("mutton fat"), each domed and softly
+        // lit, a russet skin where the river stained it, fine seams between them.
+        Img jade = new Img("raw_white_jade");
+        Cells stones = new Cells(jade.seed, 3, 0.9);
+        for (int y = 0; y < S; y++) for (int x = 0; x < S; x++) {
+            double[] c = stones.at(x + 0.5, y + 0.5, 1, 1);
+            double gap = c[1] - c[0];
+            int id = (int) c[2];
+            if (gap < 0.5) { // the seam between two stones
+                jade.set(x, y, JADE[1]);
+                continue;
+            }
+            double dx = x + 0.5 - stones.px[id], dy = y + 0.5 - stones.py[id];
+            dx -= Math.round(dx / S) * S;
+            dy -= Math.round(dy / S) * S;
+            double r = Math.hypot(dx, dy);
+            // A domed stone lit from the top left, waxy (soft falloff, a bright sheen near its top-left shoulder).
+            double v = 4.0 - r * 0.32 - (dx + dy) * 0.14 + (noise(jade.seed + 3, x, y, 2, 2) - 0.5) * 0.6;
+            boolean skin = gap < 1.1 && noise(jade.seed + 5 + id, x, y, 4, 4) > 0.76;
+            jade.set(x, y, skin ? at(JADE_SKIN, v - 1.4) : at(JADE, v));
+        }
+        jade.save("raw_white_jade");
     }
 
     // ------------------------------------------------------------------ wood
@@ -331,6 +376,8 @@ public class NatureTextures {
             new Wood("peach", ramp(0x3A1F1C, 0x522B27, 0x6B3A33, 0x844B41, 0x9C5D50), ramp(0x8F5E47, 0xA87257, 0xBC8668, 0xCD9A7C, 0xDBAF92), "lenticels", 0, 0),
             // Desert poplar (Populus euphratica): rough grey bark in deep cracks; yellow-tan wood.
             new Wood("desert_poplar", ramp(0x2F2B26, 0x45403A, 0x5C564E, 0x736C62, 0x8A8277), ramp(0x95794C, 0xAD915F, 0xC2A672, 0xD3B886, 0xE0C89A), "furrowed", 0, 0),
+            // Tianshan spruce (Picea schrenkiana): grey-brown bark in thin round scales; pale, almost white wood.
+            new Wood("tianshan_spruce", ramp(0x29231F, 0x3B332C, 0x4F463C, 0x645A4D, 0x7A6E5F), ramp(0xA68F6A, 0xBBA680, 0xCDBA96, 0xDCCCAA, 0xE8DCBD), "plated", 3.0, 1.8),
     };
 
     static void bark(Wood w) throws Exception {
@@ -537,6 +584,8 @@ public class NatureTextures {
         Img pop = leafBase("desert_poplar_leaves", ramp(0x6E4E10, 0x926E16, 0xBA921F, 0xD6B034, 0xEDCC57), 3, 0.18, "small");
         for (int k = 0; k < 4; k++) pop.set(pop.r.nextInt(S), pop.r.nextInt(S), rgb(0xD47E2A));
         pop.save("desert_poplar_leaves");
+        // Tianshan spruce: short stiff needles, very dark blue-green (the darkest crown of the mod), densely set.
+        leafBase("tianshan_spruce_leaves", ramp(0x0D241E, 0x143428, 0x1D4432, 0x28553E, 0x386A4E), 3, 0.08, "needles").save("tianshan_spruce_leaves");
         // Moso bamboo: slender lanceolate leaves at a slant.
         leafBase("moso_bamboo_leaves", ramp(0x253F1A, 0x345722, 0x46702B, 0x5B8A35, 0x76A445), 4, 0.05, "slender").save("moso_bamboo_leaves");
     }
@@ -874,6 +923,69 @@ public class NatureTextures {
                 ".....wxyyxw.....",
                 "....wwwxxwww...."},
                 'o', 0x7A5CB3, 'p', 0x9C82CE, 'q', 0xC4B4E6, 'r', 0x4E3480, 'y', 0xD8B254, 'x', 0xA47E32, 'w', 0x6A5030);
+    }
+
+    /** The north (14/10/2026): the spruce seedling, the snow lotus, the alpine sedge. */
+    static void handDrawnNorth() throws Exception {
+        // Tianshan spruce seedling: a slender spire of dark needles in tiers, a leader shoot at the top.
+        sprite("tianshan_spruce_sapling", new String[]{
+                "................",
+                ".......d........",
+                "......cdc.......",
+                ".......c........",
+                "......bcd.......",
+                ".....bccdc......",
+                "......bcc.......",
+                ".....abccd......",
+                "....abbccdc.....",
+                ".....abcc.......",
+                "....abbcccd.....",
+                "...aabbccdcc....",
+                "......att.......",
+                ".......t........",
+                "......tt........",
+                ".......t........"},
+                'a', 0x0D241E, 'b', 0x143428, 'c', 0x1D4432, 'd', 0x386A4E, 't', 0x4F463C);
+        // Snow lotus (Saussurea involucrata): a cone of overlapping pale lime and cream bracts, the purple florets just
+        // showing at its tip, on a short stem, woolly grey-green leaves fanned at its foot.
+        sprite("snow_lotus", new String[]{
+                "................",
+                ".......pp.......",
+                "......pqqp......",
+                ".....hjpqjh.....",
+                "....hijjjjih....",
+                "....hijijjih....",
+                "...ghiijjiihg...",
+                "...hijiijjjih...",
+                "...ghiijiijhg...",
+                "....ghiiiihg....",
+                ".....gghhgg.....",
+                "..ll...ff...ll..",
+                ".lmml..ff..lmml.",
+                "lmnmml.ff.lmmnml",
+                ".lmnnmlffmlnnml.",
+                "...llmmffmmll..."},
+                'h', 0xB5C878, 'i', 0xD6E3A4, 'j', 0xEEF1CF, 'p', 0x8E5A9E, 'q', 0x5E3570, 'g', 0x7E9A55,
+                'f', 0x5E7A45, 'l', 0x667F63, 'm', 0x93A98F, 'n', 0xBFCDB9);
+        // Alpine sedge: a tight tussock of fine blades, yellowing and dry at the tips.
+        sprite("kunlun_sedge", new String[]{
+                "................",
+                "..y.......y.....",
+                "...y..x..y...x..",
+                "...x..x..x..x...",
+                "..x.x.x.x..x....",
+                "....x.xwx.x..x..",
+                "..w..xwxw.x.x...",
+                "...w.wxwx..x....",
+                "....wvwxw.wx.w..",
+                "..v..wvwwxw.w...",
+                "...v.vwvwvw.v...",
+                "....vvwvvwvv....",
+                "...u.vvuvvvu....",
+                "....uuvuuvu.....",
+                ".....uuuuuu.....",
+                "......uuuu......"},
+                'y', 0xC9A86A, 'x', 0xA6AD68, 'w', 0x7F9348, 'v', 0x5E7436, 'u', 0x44562A);
     }
 
     static void handDrawnSaplings() throws Exception {
@@ -1428,6 +1540,7 @@ public class NatureTextures {
         sapling("willow", ramp(0x40612A, 0x557A33, 0x6C933F, 0x86AC4E, 0xA2C463), rgb(0x554A3E), "weeping", 0);
         sapling("peach", ramp(0x8F2F52, 0xB24C72, 0xCF6E93, 0xE596B2, 0xF5BDD0), rgb(0x6B3A33), "sparse", 0);
         sapling("desert_poplar", ramp(0x6E4E10, 0x926E16, 0xBA921F, 0xD6B034, 0xEDCC57), rgb(0x5C564E), "sparse", 0);
+        sapling("tianshan_spruce", ramp(0x0D241E, 0x143428, 0x1D4432, 0x28553E, 0x386A4E), rgb(0x4F463C), "tiers", 0);
     }
 
     static void sapling(String name, int[] leaves, int bark, String form, int accent) throws Exception {
@@ -1522,6 +1635,7 @@ public class NatureTextures {
         handDrawn();
         handDrawnPlants();
         handDrawnSaplings();
+        handDrawnNorth();
         bamboo();
     }
 }

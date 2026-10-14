@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "murimblock:block/snow_lotus"
+  },
+  "render_type": "minecraft:cutout"
+}

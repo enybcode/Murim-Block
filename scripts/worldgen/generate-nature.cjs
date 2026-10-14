@@ -25,11 +25,13 @@ const blockTex = n => `${NS}:block/${n}`;
 const WOODS = {
   osmanthus: 'Sweet Osmanthus', banyan: 'Banyan', huangshan_pine: 'Huangshan Pine', jujube: 'Jujube',
   dove_tree: 'Dove Tree', willow: 'Weeping Willow', peach: 'Peach', desert_poplar: 'Desert Poplar',
+  tianshan_spruce: 'Tianshan Spruce',
 };
 const STONES = {
   karst_limestone: ['Karst Limestone', 'pickaxe', 'all'], mossy_karst_limestone: ['Mossy Karst Limestone', 'pickaxe', 'all'],
   pale_granite: ['Pale Granite', 'pickaxe', 'all'], pillar_sandstone: ['Pillar Sandstone', 'pickaxe', 'column'],
   loess: ['Loess', 'shovel', 'all'], red_loess: ['Red Loess', 'shovel', 'all'], gobi_gravel: ['Gobi Gravel', 'shovel', 'all'],
+  kunlun_rock: ['Kunlun Rock', 'pickaxe', 'all'], raw_white_jade: ['Raw White Jade', 'pickaxe', 'all'],
 };
 // name: [english, kind]  kind: cross | tall | flower | lotus | strand
 const PLANTS = {
@@ -39,11 +41,12 @@ const PLANTS = {
   wild_rice: ['Wild Rice', 'tall'], chrysanthemum: ['Chrysanthemum', 'flower'], rapeseed: ['Rapeseed Flower', 'flower'],
   tamarisk: ['Tamarisk', 'tall'], saxaul: ['Saxaul', 'cross'], cistanche: ['Cistanche', 'cross'],
   banyan_roots: ['Banyan Aerial Roots', 'strand'], willow_strands: ['Willow Strands', 'strand'],
+  snow_lotus: ['Snow Lotus', 'cross'], kunlun_sedge: ['Kunlun Sedge', 'cross'],
 };
 const BIOME_NAMES = {
   jade_karst_forest: 'Jade Karst Forest', loess_plateau: 'Loess Plateau', hexi_frontier_desert: 'Hexi Frontier Desert',
   cloud_sea_peaks: 'Cloud Sea Peaks', shu_bamboo_sea: 'Shu Bamboo Sea', jiangnan_waterlands: 'Jiangnan Waterlands',
-  peach_blossom_valley: 'Peach Blossom Valley',
+  peach_blossom_valley: 'Peach Blossom Valley', tianshan_snowfields: 'Tianshan Snowfields', kunlun_glaciers: 'Kunlun Glaciers',
 };
 
 // ---------------------------------------------------------------- assets
@@ -252,6 +255,10 @@ tree('peach', 'peach', { type: 'minecraft:cherry_trunk_placer', base_height: 4,
 // Desert poplar: bent, forked, rough-barked trunk with a golden ragged crown.
 tree('desert_poplar', 'desert_poplar', { type: 'minecraft:forking_trunk_placer', base_height: 4, height_rand_a: 2, height_rand_b: 2 },
   { type: 'minecraft:random_spread_foliage_placer', foliage_height: 2, leaf_placement_attempts: 35, offset: 0, radius: 2 }, twoLayers(1, 0, 2), [], 'minecraft:coarse_dirt');
+// Tianshan spruce (Picea schrenkiana): a tall straight trunk and a slender spire of dark needles, the narrowest of
+// spruces (it sheds the snow), in close stands on the shaded slopes.
+tree('tianshan_spruce', 'tianshan_spruce', { type: 'minecraft:straight_trunk_placer', base_height: 11, height_rand_a: 5, height_rand_b: 3 },
+  { type: 'minecraft:spruce_foliage_placer', offset: uniform(0, 1), radius: uniform(1, 2), trunk_height: uniform(2, 4) }, twoLayers(2, 0, 2));
 // "Dead for a thousand years, standing": bare poplar snags in the gravel.
 CF('desert_poplar_snag', 'minecraft:block_column', { allowed_placement: { type: 'minecraft:matching_blocks', blocks: 'minecraft:air' },
   direction: 'up', prioritize_tip: false, layers: [{ height: uniform(2, 5), provider: logState('desert_poplar') }] });
@@ -278,6 +285,9 @@ patch('patch_bamboo_shoot', id('bamboo_shoot'), 12, 5);
 patch('flower_chrysanthemum', id('chrysanthemum'), 32, 6);
 patch('flower_rapeseed', id('rapeseed'), 64, 7);
 patch('patch_dead_bush', 'minecraft:dead_bush', 6, 6);
+// The north: tussocks of sedge over the cold meadows; the snow lotus alone or two together, among rocks and snow.
+patch('patch_kunlun_sedge', id('kunlun_sedge'), 40, 6);
+patch('patch_snow_lotus', id('snow_lotus'), 3, 3);
 for (const tall of ['rhododendron', 'tree_fern', 'wild_rice', 'tamarisk']) {
   CF(`patch_${tall}`, 'minecraft:random_patch', { tries: tall === 'wild_rice' ? 48 : 24, xz_spread: 6, y_spread: 3, feature: {
     feature: { type: 'minecraft:simple_block', config: { to_place: provider(id(tall), half) } },
@@ -326,6 +336,15 @@ ground('ground_body_loess', 'loess_plateau', id('loess'), id('red_loess'), 64, 1
 ground('ground_body_gobi', 'hexi_frontier_desert', 'minecraft:sandstone', 'minecraft:smooth_sandstone', 10, 9);
 ground('ground_body_peaks', 'cloud_sea_peaks', id('pale_granite'), id('pale_granite'), 48, 0);
 ground('ground_body_peach', 'peach_blossom_valley', id('pillar_sandstone'), id('pillar_sandstone'), 22, 0);
+// Kunlun: dark schist, banded with pale marble (calcite) every few blocks.
+ground('ground_body_kunlun', 'kunlun_glaciers', id('kunlun_rock'), 'minecraft:calcite', 56, 9);
+// White jade of Hotan: "mountain material" in small veins of the Kunlun rock, and "river material", the rounded
+// stones the floods roll down into the beds of the streams and lakes.
+CF('ore_white_jade', 'minecraft:ore', { discard_chance_on_air_exposure: 0.0, size: 5, targets: [
+  { target: { predicate_type: 'minecraft:block_match', block: id('kunlun_rock') }, state: state(id('raw_white_jade')) }] });
+CF('disk_white_jade', 'minecraft:disk', { half_height: 1, radius: uniform(1, 2),
+  state_provider: { fallback: provider(id('raw_white_jade')), rules: [] },
+  target: { type: 'minecraft:matching_blocks', blocks: ['minecraft:gravel', 'minecraft:sand', 'minecraft:dirt', 'minecraft:clay', id('kunlun_rock')] } });
 // Jiangnan: fields, strips and canals out of the shallow lake.
 CF('jiangnan_waterlands', id('waterlands'), { biome: id('jiangnan_waterlands'), land: 0.3 });
 CF('moso_bamboo_grove', id('moso_bamboo_grove'), {});
@@ -373,6 +392,18 @@ PF('trees_loess', id('jujube'), treePlacement(patchy(0.35, 0, 2), 'jujube_saplin
 PF('trees_desert_poplar', id('desert_poplar'), [chance(5), weightedCount([[2, 1], [4, 1]]), inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, away(6)]);
 PF('desert_poplar_snag', id('desert_poplar_snag'), [chance(10), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter, away(4)]);
 PF('trees_huangshan_pine', id('huangshan_pine'), treePlacement(patchy(0, 1, 4), 'huangshan_pine_sapling'));
+// The north's dark pines: the Huangshan pine, sparse in the snowfields, scarcer still on the glaciers.
+// The spruce belt: close stands where the vegetation noise is high, open snowfields between; a few on the glaciers.
+PF('trees_tianshan_spruce', id('tianshan_spruce'), treePlacement(patchy(0.1, 0, 9), 'tianshan_spruce_sapling'));
+PF('trees_glacier_spruce', id('tianshan_spruce'), treePlacement(chance(6), 'tianshan_spruce_sapling'));
+PF('patch_kunlun_sedge', id('patch_kunlun_sedge'), surfacePatch(patchy(0, 0, 4)));
+PF('patch_kunlun_sedge_sparse', id('patch_kunlun_sedge'), surfacePatch(chance(3)));
+PF('patch_snow_lotus', id('patch_snow_lotus'), surfacePatch(chance(5)));
+PF('patch_snow_lotus_glacier', id('patch_snow_lotus'), surfacePatch(chance(2)));
+PF('ore_white_jade', id('ore_white_jade'), [count(4), inSquare, { type: 'minecraft:height_range', height: { type: 'minecraft:uniform',
+  min_inclusive: { absolute: 32 }, max_inclusive: { absolute: 200 } } }, biomeFilter]);
+PF('disk_white_jade', id('disk_white_jade'), [chance(2), inSquare, heightmap('OCEAN_FLOOR_WG'),
+  { type: 'minecraft:block_predicate_filter', predicate: { type: 'minecraft:matching_fluids', fluids: 'minecraft:water' } }, biomeFilter]);
 PF('cliff_pine', id('cliff_pine'), [count(14), inSquare, { type: 'minecraft:height_range', height: { type: 'minecraft:uniform',
   min_inclusive: { absolute: 72 }, max_inclusive: { absolute: 240 } } }, biomeFilter]);
 PF('moso_bamboo_grove', id('moso_bamboo_grove'), [count(3), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter, away(6)]);
@@ -401,21 +432,24 @@ PF('granite_spire', id('granite_spire'), [weightedCount([[0, 2], [1, 3], [2, 1]]
 PF('sandstone_pillar', id('sandstone_pillar'), [weightedCount([[0, 5], [1, 3], [2, 1]]), inSquare, biomeFilter, away(16)]);
 PF('yardang', id('yardang'), [chance(3), inSquare, biomeFilter, away(30)]);
 PF('jiangnan_pond', id('jiangnan_pond'), [count(2), inSquare, heightmap('OCEAN_FLOOR_WG'), biomeFilter, away(8)]);
-for (const g of ['karst', 'loess', 'gobi', 'peaks', 'peach']) PF(`ground_body_${g}`, id(`ground_body_${g}`), []);
+for (const g of ['karst', 'loess', 'gobi', 'peaks', 'peach', 'kunlun']) PF(`ground_body_${g}`, id(`ground_body_${g}`), []);
 PF('jiangnan_waterlands', id('jiangnan_waterlands'), []);
 
 // ---------------------------------------------------------------- biomes
 const plains = JSON.parse(fs.readFileSync(path.join(__dirname, 'vanilla', 'plains_features.json'), 'utf8'));
 // One global order for every Murim feature in each step, so no two biomes ever disagree on order.
 const ORDER = {
-  0: ['ground_body_karst', 'ground_body_loess', 'ground_body_gobi', 'ground_body_peaks', 'ground_body_peach'],
+  0: ['ground_body_karst', 'ground_body_loess', 'ground_body_gobi', 'ground_body_peaks', 'ground_body_peach', 'ground_body_kunlun'],
   1: ['jiangnan_waterlands', 'jiangnan_pond'],
   2: ['karst_tower', 'granite_spire', 'sandstone_pillar', 'yardang'],
   9: ['trees_karst', 'trees_karst_giant', 'bamboo_clumps_karst', 'trees_loess', 'trees_desert_poplar', 'desert_poplar_snag',
-    'trees_huangshan_pine', 'cliff_pine', 'moso_bamboo_grove', 'trees_dove_tree', 'trees_willow', 'trees_peach',
+    'trees_huangshan_pine', 'trees_tianshan_spruce', 'trees_glacier_spruce', 'cliff_pine', 'moso_bamboo_grove', 'trees_dove_tree', 'trees_willow', 'trees_peach',
     'patch_karst_fern', 'patch_feather_grass', 'patch_sea_buckthorn', 'patch_tamarisk', 'patch_saxaul', 'patch_cistanche',
     'patch_dead_bush', 'patch_rhododendron', 'patch_arrow_bamboo', 'patch_tree_fern', 'patch_bamboo_shoot', 'patch_wild_rice',
-    'patch_lotus', 'flower_chrysanthemum', 'flower_rapeseed', 'patch_pink_petals', 'patch_grass_lush'],
+    'patch_lotus', 'flower_chrysanthemum', 'flower_rapeseed', 'patch_pink_petals', 'patch_grass_lush', 'patch_kunlun_sedge',
+    'patch_kunlun_sedge_sparse', 'patch_snow_lotus', 'patch_snow_lotus_glacier'],
+  // After vanilla's own ores and disks of the step: the jade.
+  6: ['ore_white_jade', 'disk_white_jade'],
 };
 const VANILLA_TAIL = ['minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'minecraft:patch_sugar_cane', 'minecraft:patch_pumpkin'];
 function features(mine, extra = {}) {
@@ -432,6 +466,9 @@ const MONSTERS = [spawn('spider', 100, 4, 4), spawn('zombie', 95, 4, 4), spawn('
   spawn('creeper', 100, 4, 4), spawn('slime', 100, 4, 4), spawn('enderman', 10, 1, 4), spawn('witch', 5, 1, 1)];
 const DESERT_MONSTERS = [spawn('spider', 100, 4, 4), spawn('zombie', 19, 4, 4), spawn('zombie_villager', 1, 1, 1), spawn('husk', 80, 4, 4),
   spawn('skeleton', 100, 4, 4), spawn('creeper', 100, 4, 4), spawn('slime', 100, 4, 4), spawn('enderman', 10, 1, 4), spawn('witch', 5, 1, 1)];
+// The snows: strays for skeletons, as in vanilla's snowy biomes.
+const SNOW_MONSTERS = [spawn('spider', 100, 4, 4), spawn('zombie', 95, 4, 4), spawn('zombie_villager', 5, 1, 1), spawn('skeleton', 20, 4, 4),
+  spawn('stray', 80, 4, 4), spawn('creeper', 100, 4, 4), spawn('slime', 100, 4, 4), spawn('enderman', 10, 1, 4), spawn('witch', 5, 1, 1)];
 const hex = s => parseInt(s.replace('#', ''), 16);
 function biome(name, { temperature, downfall, precipitation = true, sky, fog, water, waterFog, grass, foliage, music, creatures,
                          monsters = MONSTERS, waterCreatures = [], waterAmbient = [], mine, vanilla = [], carvers = [] }) {
@@ -485,6 +522,16 @@ biome('peach_blossom_valley', { temperature: 0.65, downfall: 0.8, sky: '#B6CDE0'
   creatures: [spawn('rabbit', 6, 2, 3), spawn('sheep', 8, 2, 4), spawn('chicken', 8, 2, 4)],
   mine: ['ground_body_peach', 'sandstone_pillar', 'trees_peach', 'flower_chrysanthemum', 'flower_rapeseed', 'patch_pink_petals', 'patch_grass_lush'] });
 
+// The north (14/10/2026): below freezing, so it snows and the water freezes over (vanilla's freeze_top_layer).
+biome('tianshan_snowfields', { temperature: -0.5, downfall: 0.4, sky: '#9FB4CC', fog: '#DDE5EC', water: '#3D6E8C', waterFog: '#244459',
+  grass: '#80A08A', foliage: '#4F7A63', music: 'minecraft:music.overworld.snowy_slopes',
+  creatures: [spawn('rabbit', 6, 2, 3), spawn('fox', 6, 2, 4), spawn('wolf', 4, 2, 4), spawn('sheep', 6, 2, 4)], monsters: SNOW_MONSTERS,
+  mine: ['trees_tianshan_spruce', 'patch_kunlun_sedge', 'patch_snow_lotus'] });
+biome('kunlun_glaciers', { temperature: -0.7, downfall: 0.5, sky: '#9CB2CC', fog: '#E3EAF0', water: '#3A6A8C', waterFog: '#223F57',
+  grass: '#7E9C8C', foliage: '#4C7462', music: 'minecraft:music.overworld.frozen_peaks',
+  creatures: [spawn('goat', 6, 1, 3), spawn('rabbit', 3, 2, 3)], monsters: SNOW_MONSTERS,
+  mine: ['ground_body_kunlun', 'ore_white_jade', 'disk_white_jade', 'trees_glacier_spruce', 'patch_kunlun_sedge_sparse', 'patch_snow_lotus_glacier'] });
+
 // Biome tags.
 const all = Object.keys(BIOME_NAMES).map(id);
 tag('worldgen/biome', 'murim_biomes', all, NS);
@@ -497,7 +544,11 @@ tag('worldgen/biome', 'misty', [id('jade_karst_forest'), id('cloud_sea_peaks'), 
   write(crabTag, { replace: false, values });
 }
 tag('worldgen/biome', 'is_desert', [id('hexi_frontier_desert')], 'c');
-tag('worldgen/biome', 'is_mountain', [id('cloud_sea_peaks')], 'c');
+tag('worldgen/biome', 'is_mountain', [id('cloud_sea_peaks'), id('kunlun_glaciers')], 'c');
+tag('worldgen/biome', 'is_snowy', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'c');
+tag('worldgen/biome', 'is_cold', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'c');
+tag('worldgen/biome', 'spawns_snow_foxes', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'minecraft');
+tag('worldgen/biome', 'spawns_white_rabbits', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'minecraft');
 tag('worldgen/biome', 'is_plateau', [id('loess_plateau')], 'c');
 tag('worldgen/biome', 'is_jungle', [id('jade_karst_forest')], 'c');
 tag('worldgen/biome', 'is_forest', [id('shu_bamboo_sea'), id('peach_blossom_valley')], 'c');

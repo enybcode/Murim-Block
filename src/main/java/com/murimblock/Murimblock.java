@@ -72,6 +72,9 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerStopped);
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerTick);
         NeoForge.EVENT_BUS.addListener(MurimblockCommands::onRegisterCommands);
+        // A new Murim world is entered at a random point of the bubble (world/map).
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.map.MurimSpawn::onCreateSpawnPosition);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.map.MurimSurface::onServerAboutToStart);
         // The Cloud Cliff Sanctuary: built once near the spawn; every player gets the sect token that finds it.
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerStarted);
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerTick);

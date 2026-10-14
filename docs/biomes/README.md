@@ -1,6 +1,10 @@
 # Biomes Murim : la Chine féodale
 
-Sept biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époque impériale (des Tang aux Ming), avant les déforestations, les barrages et les villes modernes. Trois sont grands, quatre sont moyens.
+Neuf biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époque impériale (des Tang aux Ming), avant les déforestations, les barrages et les villes modernes : sept du premier jet, et depuis le 14/10/2026 les deux neiges du nord (Tianshan et Kunlun).
+
+**Depuis le 14/10/2026, ils ne se mélangent plus au monde vanilla : ils forment la [carte Murim](murim-map.md)**, une bulle de 150 000 × 150 000 blocs aux régions fixes (centre, nord, ouest, sud, est), entourée de 10 000 blocs d'océan, puis le monde vanilla.
+
+![La carte Murim](images/murim-map-1.png)
 
 Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangshan, un site pour chacun des six autres) : voir [les structures Murim](../structures/README.md). Chaque fiche de biome décrit aussi, en maquettes voxel, d'autres structures prévues pour la suite.
 
@@ -35,10 +39,16 @@ Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangsh
 | Mer de bambous de Shu (`shu_bamboo_sea`) | Moyen | Mer de bambous de Shunan, montagnes des pandas (Sichuan) | [shu_bamboo_sea.md](shu_bamboo_sea.md) |
 | Pays des eaux du Jiangnan (`jiangnan_waterlands`) | Moyen | Lac Tai, lac de l'Ouest, villes d'eau du bas Yangtsé | [jiangnan_waterlands.md](jiangnan_waterlands.md) |
 | Vallée des fleurs de pêcher (`peach_blossom_valley`) | Moyen | La Source aux fleurs de pêcher de Tao Yuanming, piliers de grès de Wulingyuan | [peach_blossom_valley.md](peach_blossom_valley.md) |
+| Champs de neige du Tianshan (`tianshan_snowfields`) | Grand (nord) | Versant nord du Tianshan : forêts d'épicéas de Schrenk, prairies, lotus des neiges | [tianshan_snowfields.md](tianshan_snowfields.md) |
+| Glaciers du Kunlun (`kunlun_glaciers`) | Grand (nord, montagnes) | Kunlun : roche, glace, jade blanc de Hotan dans les torrents | [kunlun_glaciers.md](kunlun_glaciers.md) |
 
 ## Comment c'est construit
 
-### Placement dans le monde (TerraBlender)
+### Placement dans le monde
+
+**Depuis le 14/10/2026 : la [carte Murim](murim-map.md)** (`world/map`) place les biomes par région ; la région TerraBlender décrite ci-dessous est retirée (TerraBlender ne sert plus qu'à ajouter les règles de surface). Ce qui suit est l'historique du premier jet.
+
+#### Historique : la région TerraBlender (12/10/2026)
 
 - **Dépendance.** TerraBlender 4.1.0.8 est une dépendance obligatoire depuis le 12/10/2026, à la demande d'Enzo. C'est elle qui place les biomes dans les mondes normaux.
 - **La région Murim.** Le mod ajoute une région TerraBlender, `murimblock:overworld`, de poids 7 contre 10 pour la région vanilla.

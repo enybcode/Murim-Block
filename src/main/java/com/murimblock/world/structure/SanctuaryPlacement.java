@@ -102,7 +102,8 @@ public final class SanctuaryPlacement extends SavedData {
         ServerLevel overworld = event.getServer().overworld();
         SanctuaryPlacement data = get(overworld);
         if (data.centre != null) return;
-        if (!(overworld.getChunkSource().getGenerator().getBiomeSource() instanceof MultiNoiseBiomeSource)) return;
+        var source = overworld.getChunkSource().getGenerator().getBiomeSource();
+        if (!(source instanceof MultiNoiseBiomeSource) && !(source instanceof com.murimblock.world.map.MurimBiomeSource)) return;
         job = new Job(overworld, data);
     }
 

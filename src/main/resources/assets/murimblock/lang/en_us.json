@@ -399,5 +399,15 @@
   "knockdown.murimblock.hud.actions": "[%s] Carry   [%s] Execute",
   "death.attack.murimblock.execution": "%1$s was executed by %2$s",
   "death.attack.murimblock.execution.item": "%1$s was executed by %2$s using %3$s",
-  "death.attack.murimblock.execution.player": "%1$s was executed by %2$s"
+  "death.attack.murimblock.execution.player": "%1$s was executed by %2$s",
+  "biome.murimblock.tianshan_snowfields": "Tianshan Snowfields",
+  "biome.murimblock.kunlun_glaciers": "Kunlun Glaciers",
+  "block.murimblock.kunlun_rock": "Kunlun Rock",
+  "block.murimblock.raw_white_jade": "Raw White Jade",
+  "block.murimblock.tianshan_spruce_log": "Tianshan Spruce Log",
+  "block.murimblock.tianshan_spruce_planks": "Tianshan Spruce Planks",
+  "block.murimblock.tianshan_spruce_leaves": "Tianshan Spruce Leaves",
+  "block.murimblock.tianshan_spruce_sapling": "Tianshan Spruce Sapling",
+  "block.murimblock.snow_lotus": "Snow Lotus",
+  "block.murimblock.kunlun_sedge": "Kunlun Sedge"
 }

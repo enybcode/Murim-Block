@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "item": "murimblock:tianshan_spruce_log"
+    }
+  ],
+  "result": {
+    "id": "murimblock:tianshan_spruce_planks",
+    "count": 4
+  }
+}
