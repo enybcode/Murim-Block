@@ -8,6 +8,7 @@
 > protocole 11, voir `docs/combat/styles/azure-cloud-sword.md`. 14 octobre : Cloud Step Slash tenu pour viser puis relâché (garde de Zoro, images rémanentes), protocole 12 ; coupes retardées de Thousand Drizzle, protocole 13. Mountain Bandit en jeu (`MountainBanditEntity`, patch Epic Fight humanoïde, modèle 3D à 5 tenues (`scripts/animation/bandit-3d.cjs`, mesh `entity/mountain_bandit`), Dao de bandit 3D tenu tranchant en bas, houppe à pendule (`BanditDaoRenderer`), lâché 1 fois sur 100, coupes Murim tranchant en tête, toutes parables (`MountainBanditGameTests`), aussi fréquent que le zombie dans les biomes Murim). Bandit Chief, mini-boss sans apparition naturelle (œuf, /summon) : modèle 3D ×1,3, grande hache à deux mains, fendoir, fauchage et saut écrasant à onde de choc, tous parables, barre de boss (`docs/mobs/bandit-chief.md`). Idles propres au bandit et au chef (`mob-idles.cjs`) et visages vivants par texture, 10 expressions par atlas (`client/MobFaces`).; croissant à 7 blocs, suspension (case qui brille), plongée, explosion et exécution, protocole 14 ; validé à deux vrais clients (scripts/mp/run-mp-tour.sh). Checkout de ce PC : `C:\Users\enzob\Documents\Murimblock`.
 > 14 octobre : Poing Long (`docs/combat/styles/long-fist.md`), premier art à mains nues : rouleau, M1 d'Epic Fight, passif Steady Breath, garde à mains nues, Tiger Step Punch / Rapid Fists / Whirlwind Kick, secret Inch Force, quêtes, évolutions, finish Final Palm, bouton de style principal dans Techniques ; protocole 15. Lieu du rouleau à décider.
 > 14 octobre au soir : cultivation (`docs/cultivation/qi-cultivation.md`) : méditation refaite (C, lotus, aura, Qi Max condensé), percées animées, monde intérieur `murimblock:inner_world` (île à son image, corps laissé assis, démon du cœur à chaque grande percée, missions de l'âme du vieux maître), perception du Qi (G), élixirs, bonus de royaume ; protocole 16, ancienne charge de Qi (R) retirée. Tour client : runCultivationTour.
+> 14 octobre : Sensei Yun (`AzureSenseiEntity`, `docs/mobs/azure-sensei.md`), maître du Nuage Azur dans la salle des Trois Purs du temple de la Mer de Bambous : modèle 3D (`sensei-3d.cjs`), idle et marche (`sensei-motions.cjs`), épée Azure Cloud à houppe balancée (`TasselSwordRenderer`), neutre, coups M1 du Nuage Azur, clic droit = manuel une fois (même exemplaire que la bibliothèque). Pas encore ses techniques ; drops à décider. `runSenseiTour`.
 
 Etat prepare le 12 octobre 2026. Synthese des decisions humaines et du depot,
 pas une preuve de nouveaux tests ni une copie exhaustive des conversations.
@@ -69,7 +70,8 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   propre (21 joints), 20 PV, armure 8 / tenacite 2, recul (jab `claw_snap` a
   fort impact), Vitesse I dans l'eau, ne brule pas, arrive toujours avec 2 crabes
   cuirasses. Spawn naturel rare pres de l'eau (memes biomes que le crabe, poids 3
-  contre 20, seul + escorte) ; structures plus tard. 10 XP, 10 Qi, sans butin.
+  contre 20, seul + escorte) ; structures plus tard. 10 XP, 10 Qi ; butin (14/10) : 1-2 morues, 0-1 saumon, trident
+  1 % tué par un joueur (le crabe cuirassé : une morue une fois sur deux, trident 1 % aussi).
   Attaques jouees a la vitesse animee (`ATTACK_SPEED_FACTOR` 0, crabe inclus).
   Boule d'eau (12/10/2026, demande d'Enzo, sans particules Minecraft) : clip
   `crab_man/water_ball` (ActionAnimation, vers 4 blocs : 3 a 6, ligne de vue, recharge

@@ -208,12 +208,17 @@ public final class CultivationGameTests {
         ServerLevel inner = player.serverLevel();
         BlockPos centre = InnerWorldService.layoutOf(player).centre();
         helper.assertTrue(!inner.getBlockState(centre).isAir(), "No island under the player");
-        helper.assertTrue(!inner.getEntitiesOfClass(RemnantSoulEntity.class, new AABB(centre).inflate(40)).isEmpty(), "No remnant soul on the island");
-        helper.assertTrue(inner.getEntitiesOfClass(HeartDemonEntity.class, new AABB(centre).inflate(40)).isEmpty(), "A Heart Demon without a bottleneck");
-        MeditationService.held(player);
-        helper.assertTrue(player.serverLevel() == home && player.blockPosition().closerThan(seat, 1.5), "Not back where the body was");
-        helper.assertTrue(MeditationService.isMeditating(player), "Not back seated in meditation");
-        helper.runAfterDelay(3, () -> {
+        // The island's chunks come into view on the next ticks (the player ticked as a connected one would be).
+        tickFor(helper, player, 1, 20);
+        helper.runAfterDelay(22, () -> {
+            int souls = inner.getEntitiesOfClass(RemnantSoulEntity.class, new AABB(centre).inflate(40)).size();
+            helper.assertTrue(souls == 1, "Not one remnant soul on the island: " + souls);
+            helper.assertTrue(inner.getEntitiesOfClass(HeartDemonEntity.class, new AABB(centre).inflate(40)).isEmpty(), "A Heart Demon without a bottleneck");
+            MeditationService.held(player);
+            helper.assertTrue(player.serverLevel() == home && player.blockPosition().closerThan(seat, 1.5), "Not back where the body was");
+            helper.assertTrue(MeditationService.isMeditating(player), "Not back seated in meditation");
+        });
+        helper.runAfterDelay(26, () -> {
             helper.assertTrue(home.getEntitiesOfClass(MeditatingBodyEntity.class, new AABB(seat).inflate(2)).stream().noneMatch(b -> b.isAlive()),
                     "The body stayed after its owner came back");
             end(helper, player);
@@ -296,10 +301,13 @@ public final class CultivationGameTests {
         // A mock player never acknowledges its teleport: it would stay invulnerable, as one changing dimension.
         player.hasChangedDimension();
         ServerLevel inner = player.serverLevel();
-        RemnantSoulEntity soul = inner.getEntitiesOfClass(RemnantSoulEntity.class, player.getBoundingBox().inflate(40)).get(0);
-        InnerMissions.talk(player, soul);
         // The chunks round the island come into view on the next ticks (as for a player arriving anywhere).
-        helper.runAfterDelay(5, () -> {
+        RemnantSoulEntity[] soul = new RemnantSoulEntity[1];
+        helper.runAfterDelay(4, () -> {
+            soul[0] = inner.getEntitiesOfClass(RemnantSoulEntity.class, player.getBoundingBox().inflate(40)).get(0);
+            InnerMissions.talk(player, soul[0]);
+        });
+        helper.runAfterDelay(8, () -> {
             List<QiMoteEntity> motes = inner.getEntitiesOfClass(QiMoteEntity.class, player.getBoundingBox().inflate(40));
             helper.assertTrue(motes.size() == InnerMissions.MOTES, "Not ten motes for the storm: " + motes.size());
             double before = QiService.getQiMax(player);
@@ -310,9 +318,9 @@ public final class CultivationGameTests {
             double reward = CultivationRules.missionReward(CultivationRealm.QI_SENSING, CultivationRules.STORM_SHARE);
             helper.assertTrue(Math.abs(QiService.getQiMax(player) - before - reward) < 1e-6, "The storm's reward not given");
             helper.assertTrue(CultivationService.journal(player).missionDone("storm", inner.getGameTime()), "The storm not marked done today");
-            InnerMissions.talk(player, soul);
+            InnerMissions.talk(player, soul[0]);
         });
-        helper.runAfterDelay(10, () -> {
+        helper.runAfterDelay(13, () -> {
             List<HeartDemonEntity> shadows = inner.getEntitiesOfClass(HeartDemonEntity.class, player.getBoundingBox().inflate(40));
             helper.assertTrue(shadows.size() == 1 && shadows.get(0).shadow(), "The second mission is not the shadow sparring");
             player.invulnerableTime = 0;

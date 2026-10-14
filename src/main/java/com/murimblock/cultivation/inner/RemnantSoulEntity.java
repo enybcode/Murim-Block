@@ -32,6 +32,35 @@ public class RemnantSoulEntity extends PathfinderMob {
         return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20).add(Attributes.MOVEMENT_SPEED, 0);
     }
 
+    /** Whose island it dwells on (null for one made by hand). */
+    @javax.annotation.Nullable private java.util.UUID owner;
+
+    public void setOwner(java.util.UUID owner) {
+        this.owner = owner;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        // Only the island's own soul stays (a duplicate left by a rebuild takes itself away).
+        if (owner != null && tickCount % 40 == 0 && level() instanceof net.minecraft.server.level.ServerLevel server) {
+            java.util.UUID own = InnerWorldData.get(server.getServer().overworld()).soul(owner);
+            if (own != null && !own.equals(getUUID())) discard();
+        }
+    }
+
+    @Override
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        if (owner != null) tag.putUUID("Owner", owner);
+    }
+
+    @Override
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.hasUUID("Owner")) owner = tag.getUUID("Owner");
+    }
+
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 10, 1.0F));

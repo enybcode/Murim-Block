@@ -123,20 +123,24 @@ public final class InnerWorldService {
         BlockPos centre = centreOf(player);
         InnerIsland.Look look = lookOf(player);
         InnerIsland.Layout layout;
-        if (!look.signature().equals(data.look(player.getUUID())) || inner.getBlockState(centre).isAir()) {
+        boolean rebuilt = !look.signature().equals(data.look(player.getUUID())) || inner.getBlockState(centre).isAir();
+        if (rebuilt) {
             layout = InnerIsland.build(inner, centre, look, data.radius(player.getUUID()));
             data.built(player.getUUID(), look.signature(), layout.radius());
         } else {
             layout = InnerIsland.layout(centre, look.radius());
         }
-        AABB area = new AABB(centre).inflate(layout.radius() + 12, 40, layout.radius() + 12);
-        List<RemnantSoulEntity> souls = inner.getEntitiesOfClass(RemnantSoulEntity.class, area);
-        for (int i = 1; i < souls.size(); i++) souls.get(i).discard();
-        RemnantSoulEntity soul = souls.isEmpty() ? MurimEntities.REMNANT_SOUL.get().create(inner) : souls.get(0);
-        if (soul != null) {
-            BlockPos at = layout.soul();
-            soul.moveTo(at.getX() + 0.5, at.getY() + 0.2, at.getZ() + 0.5, -135, 0);
-            if (souls.isEmpty()) inner.addFreshEntity(soul);
+        // One remnant soul per island, remembered by id: its chunk may not be in view yet when its owner arrives, so a
+        // new one is made only for a new (or rebuilt) island; any other soul there takes itself away (RemnantSoulEntity).
+        if (rebuilt || data.soul(player.getUUID()) == null) {
+            RemnantSoulEntity soul = MurimEntities.REMNANT_SOUL.get().create(inner);
+            if (soul != null) {
+                BlockPos at = layout.soul();
+                soul.moveTo(at.getX() + 0.5, at.getY() + 0.2, at.getZ() + 0.5, -135, 0);
+                soul.setOwner(player.getUUID());
+                inner.addFreshEntity(soul);
+                data.soul(player.getUUID(), soul.getUUID());
+            }
         }
         return layout;
     }

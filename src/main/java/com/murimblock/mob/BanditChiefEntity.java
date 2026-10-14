@@ -51,8 +51,8 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
  * calls the bandits around him. His health shows in a boss bar to the players near him.
  */
 public class BanditChiefEntity extends Monster {
-    /** The great axe drops one time in ten. */
-    private static final float AXE_DROP_CHANCE = 0.1F;
+    /** The great axe drops 3 times in a hundred (Looting raises it like any held equipment). */
+    private static final float AXE_DROP_CHANCE = 0.03F;
     /** The slam's shockwave: its reach around the landing point, and its share of his attack. */
     public static final double SHOCKWAVE_RADIUS = 3.2;
     public static final float SHOCKWAVE_DAMAGE = 0.6F;

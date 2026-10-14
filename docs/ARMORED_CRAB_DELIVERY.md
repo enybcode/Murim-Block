@@ -24,7 +24,8 @@ NeoForge 21.1.248, Java 21, Epic Fight 21.17.3.1. No dependency migration.
 - Biome modifier: beach, snowy beach, stony shore, river, swamp, mangrove swamp;
   weight 20, groups 3-5. Natural placement requires water within the local search
   volume and valid ground, rejects Peaceful, and does not require darkness.
-- Death: 1-3 XP, empty loot, base Qi reward 3 under existing reward/anti-farm rules.
+- Death: 1-3 XP, base Qi reward 3 under existing reward/anti-farm rules. Loot (14 Oct): a cod one time in two (cooked if
+  it burns, Looting adds up to one), and a trident one time in a hundred when a player kills it (Looting: 2, 3, 4 %).
 
 These resources are for the original crab, not the separate infected humanoid
 Blockbench experiments. Local model/reference files are not distributed.

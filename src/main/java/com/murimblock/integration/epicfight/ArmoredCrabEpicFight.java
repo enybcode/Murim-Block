@@ -71,6 +71,9 @@ public final class ArmoredCrabEpicFight {
             // The Heart Demon: a copy of its owner, on the player's own skeleton.
             event.registerEntityPatch(MurimEntities.HEART_DEMON.get(), HeartDemonPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.HEART_DEMON.get(), Armatures.BIPED);
+            // Sensei Yun: the same skeleton, his own model.
+            event.registerEntityPatch(MurimEntities.AZURE_SENSEI.get(), AzureSenseiPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.AZURE_SENSEI.get(), Armatures.BIPED);
         });
     }
 

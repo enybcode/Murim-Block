@@ -23,6 +23,8 @@ public final class InnerWorldData extends SavedData {
     private final Map<UUID, Integer> slots = new HashMap<>();
     private final Map<UUID, String> looks = new HashMap<>();
     private final Map<UUID, Integer> radii = new HashMap<>();
+    /** The remnant soul of each island (any other soul there takes itself away). */
+    private final Map<UUID, UUID> souls = new HashMap<>();
     private int next;
 
     public static final SavedData.Factory<InnerWorldData> FACTORY = new SavedData.Factory<>(InnerWorldData::new, InnerWorldData::load);
@@ -56,6 +58,15 @@ public final class InnerWorldData extends SavedData {
         setDirty();
     }
 
+    @javax.annotation.Nullable public UUID soul(UUID player) {
+        return souls.get(player);
+    }
+
+    public void soul(UUID player, UUID soul) {
+        souls.put(player, soul);
+        setDirty();
+    }
+
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         ListTag list = new ListTag();
@@ -65,6 +76,7 @@ public final class InnerWorldData extends SavedData {
             t.putInt("Slot", e.getValue());
             t.putString("Look", looks.getOrDefault(e.getKey(), ""));
             t.putInt("Radius", radii.getOrDefault(e.getKey(), 0));
+            if (souls.containsKey(e.getKey())) t.putUUID("Soul", souls.get(e.getKey()));
             list.add(t);
         }
         tag.put("Islands", list);
@@ -80,6 +92,7 @@ public final class InnerWorldData extends SavedData {
             data.slots.put(player, c.getInt("Slot"));
             data.looks.put(player, c.getString("Look"));
             data.radii.put(player, c.getInt("Radius"));
+            if (c.hasUUID("Soul")) data.souls.put(player, c.getUUID("Soul"));
         }
         data.next = Math.max(tag.getInt("Next"), data.slots.values().stream().mapToInt(i -> i + 1).max().orElse(0));
         return data;

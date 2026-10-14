@@ -27,6 +27,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.core.registries.BuiltInRegistries;
+import com.murimblock.mob.AzureSenseiEntity;
 import com.murimblock.mob.BanditChiefEntity;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.world.structure.site.SitePlan;
@@ -79,6 +80,9 @@ public final class SiteTour {
         if (!Boolean.getBoolean("murimblock.siteTour")) return;
         Minecraft mc = Minecraft.getInstance();
         mc.options.pauseOnLostFocus = false;
+        // No Epic Fight target outline around the residents in the pictures.
+        yesman.epicfight.config.ClientConfig.showTargetIndicator = false;
+        yesman.epicfight.config.ClientConfig.enableTargetEntityGuide = false;
         if (mc.screen instanceof PauseScreen) mc.setScreen(null);
         try {
             if (mc.player == null || mc.getSingleplayerServer() == null) {
@@ -138,7 +142,7 @@ public final class SiteTour {
                             s.origin().getX() + 0.5, s.origin().getY() + 3.5, s.origin().getZ() + 0.5);
                 }
                 case 360 -> capture(mc, name + "-ground.png");
-                // A resident at home (the chief before his throne, a householder of the village).
+                // A resident at home (the chief before his throne, a householder of the village, the sensei before his altar).
                 case 361 -> {
                     if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) { index++; step = 0; return; }
                     mc.getSingleplayerServer().execute(() -> {
@@ -146,7 +150,7 @@ public final class SiteTour {
                         if (residents.isEmpty()) return;
                         // From the corner of the resident's own room farthest from them, at eye height.
                         Mob v = residents.get(0);
-                        subject = v instanceof Villager ? "villager" : "chief";
+                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
@@ -244,7 +248,7 @@ public final class SiteTour {
     /** Villagers and bandits on the site, the chief first, then by name. */
     private static List<Mob> residents(Minecraft mc, Site s) {
         return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4, 16, 4), // down into pits and caves
-                        m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity).stream()
+                        m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity).stream()
                 .sorted(java.util.Comparator.<Mob>comparingInt(m -> m instanceof BanditChiefEntity ? 0 : 1).thenComparing(m -> m.getName().getString())).toList();
     }
 

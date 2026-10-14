@@ -38,6 +38,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<BanditChiefEntity>> BANDIT_CHIEF =
             TYPES.register("bandit_chief", () -> EntityType.Builder.of(BanditChiefEntity::new, MobCategory.MONSTER)
                     .sized(0.8F, 2.5F).eyeHeight(2.1F).clientTrackingRange(10).build("murimblock:bandit_chief"));
+    /** Sensei Yun, master of the Azure Cloud Sect: a man's size, placed in the Misty Bamboo Temple, never spawned naturally. */
+    public static final DeferredHolder<EntityType<?>, EntityType<AzureSenseiEntity>> AZURE_SENSEI =
+            TYPES.register("azure_sensei", () -> EntityType.Builder.of(AzureSenseiEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:azure_sensei"));
     /** The crab man's water ball; its hitbox follows the ball's scale (big 0.6, small ones smaller). */
     public static final DeferredHolder<EntityType<?>, EntityType<WaterBallEntity>> WATER_BALL =
             TYPES.register("water_ball", () -> EntityType.Builder.<WaterBallEntity>of(WaterBallEntity::new, MobCategory.MISC)
@@ -79,6 +83,7 @@ public final class MurimEntities {
         event.put(BANDIT_CHIEF.get(), BanditChiefEntity.createChiefAttributes().build());
         event.put(HEART_DEMON.get(), com.murimblock.cultivation.inner.HeartDemonEntity.createAttributes().build());
         event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
+        event.put(AZURE_SENSEI.get(), AzureSenseiEntity.createSenseiAttributes().build());
     }
     private static void spawnPlacements(RegisterSpawnPlacementsEvent event) {
         // Biomes, weight and group size live in data/murimblock/neoforge/biome_modifier/armored_crab_spawns.json.

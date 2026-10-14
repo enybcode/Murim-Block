@@ -1,0 +1,26 @@
+{
+  "loader": "neoforge:separate_transforms",
+  "base": {
+    "parent": "murimblock:item/azure_cloud_sword_held"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/azure_cloud_sword"
+      }
+    },
+    "ground": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/azure_cloud_sword"
+      }
+    },
+    "fixed": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/azure_cloud_sword"
+      }
+    }
+  }
+}
