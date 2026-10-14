@@ -1,123 +1,127 @@
-# The mod's logo (src/main/resources/murimblock_logo.png, shown in the mod list: neoforge.mods.toml logoFile), after the
-# style of Minecraft's newer titles (not a copy): two words of heavy blocky letters, smooth, ringed in thick black.
-# MURIM in pale cracked stone, its depth falling below it; BLOCK under it in cinnabar red, its depth rising behind the
-# first word (it shows between MURIM's letters). The letters are our own (heavy, 7 cells high), the cracks drawn here.
+# The mod's logo (src/main/resources/murimblock_logo.png, shown in the mod list: neoforge.mods.toml logoFile), in pixel
+# art: a worn cinnabar seal carved with 武林 (Murim) on the left; MURIMBLOCK in pixel letters, ivory warming to gold,
+# ringed with ink and dropping a shadow; beneath, a jian (a bright ridge down its blade, a glint at its point, a bronze
+# guard set with jade, a braided grip, a jade tassel streaming from its pommel). Drawn at
+# 220 x 72 pixels, written four times larger, nearest neighbour.
 # Usage: powershell -NoProfile -File scripts/branding/murim-logo.ps1
 Add-Type -AssemblyName System.Drawing
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$WIDTH = 1200; $HEIGHT = 700
-$img = New-Object System.Drawing.Bitmap $WIDTH, $HEIGHT
-$gfx = [System.Drawing.Graphics]::FromImage($img)
-$gfx.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::None
-function Col($hex) { [System.Drawing.ColorTranslator]::FromHtml($hex) }
+$W = 220; $H = 72; $SCALE = 4
+$img = New-Object System.Drawing.Bitmap $W, $H
+function C($hex) { [System.Drawing.ColorTranslator]::FromHtml($hex) }
+$CLEAR = [System.Drawing.Color]::Transparent
+$INK = C '#1b1512'; $SHADOW = C '#0b0807'
+# The letters, row by row from the top of a letter (14 rows): a lit top, ivory, warming to gold toward the foot.
+$TONE = @('#fffbea', '#f6ecd3', '#f2e6c9', '#f2e6c9', '#efe0bd', '#ecdab1', '#e9d3a3', '#e5cb94', '#e0c283', '#dab772', '#d4ac63', '#cda157', '#c59650', '#b98a46') | ForEach-Object { C $_ }
+$CINNABAR = C '#b3261e'; $CINNABAR_LIGHT = C '#c83a2c'; $CINNABAR_DARK = C '#7e1a14'; $SEAL_INK = C '#f4e2c4'
+$STEEL_RIDGE = C '#eef2f5'; $STEEL = C '#c9d0d6'; $STEEL_DARK = C '#8b9198'; $WHITE = C '#ffffff'
+$BRONZE = C '#d4a640'; $BRONZE_DARK = C '#8a6a24'; $GRIP = C '#6e1f1c'; $GRIP_LIGHT = C '#9a3329'
+$JADE = C '#3f8f6b'; $JADE_LIGHT = C '#7cc9a2'
+function Px($x, $y, $c) { if ($x -ge 0 -and $y -ge 0 -and $x -lt $W -and $y -lt $H) { $img.SetPixel($x, $y, $c) } }
+function Rect($x0, $y0, $x1, $y1, $c) { for ($y = $y0; $y -le $y1; $y++) { for ($x = $x0; $x -le $x1; $x++) { Px $x $y $c } } }
+# A fixed scatter (the same each time).
+function Grain($x, $y) { return (($x * 73) + ($y * 151) + (($x * $y) % 13) * 37) % 29 }
 
-# Heavy letters: strokes two cells thick, 7 rows, their own widths.
-$GLYPHS = @{
-  'M' = @('1100011', '1110111', '1111111', '1101011', '1100011', '1100011', '1100011')
-  'U' = @('110011', '110011', '110011', '110011', '110011', '110011', '011110')
-  'R' = @('111110', '110011', '110011', '111110', '111100', '110110', '110011')
-  'I' = @('111111', '001100', '001100', '001100', '001100', '001100', '111111')
-  'B' = @('111110', '110011', '110011', '111110', '110011', '110011', '111110')
-  'L' = @('110000', '110000', '110000', '110000', '110000', '110000', '111111')
-  'O' = @('011110', '110011', '110011', '110011', '110011', '110011', '011110')
-  'C' = @('011111', '110000', '110000', '110000', '110000', '110000', '011111')
-  'K' = @('110011', '110110', '111100', '111000', '111100', '110110', '110011')
+# ---- the seal: cinnabar, mottled, a double carved rim, worn at its edge, 武林 carved in it
+$S0 = 6; $S1 = 49; $T0 = 12; $T1 = 55
+Rect $S0 $T0 $S1 $T1 $CINNABAR
+for ($y = $T0; $y -le $T1; $y++) { for ($x = $S0; $x -le $S1; $x++) {
+  $grain = Grain $x $y
+  if ($grain -eq 0 -or $grain -eq 7) { Px $x $y $CINNABAR_LIGHT } elseif ($grain -eq 13) { Px $x $y $CINNABAR_DARK } } }
+Rect $S0 $T1 $S1 $T1 $CINNABAR_DARK; Rect $S1 $T0 $S1 $T1 $CINNABAR_DARK
+foreach ($inset in @(2, 4)) {
+  for ($i = $S0 + $inset; $i -le $S1 - $inset; $i++) { Px $i ($T0 + $inset) $SEAL_INK; Px $i ($T1 - $inset) $SEAL_INK }
+  for ($i = $T0 + $inset; $i -le $T1 - $inset; $i++) { Px ($S0 + $inset) $i $SEAL_INK; Px ($S1 - $inset) $i $SEAL_INK }
 }
+# Worn: nicks out of the edge, the rims broken here and there.
+foreach ($n in @(@(9, 12), @(10, 12), @(24, 12), @(41, 12), @(6, 21), @(6, 38), @(6, 39), @(49, 28), @(49, 45), @(15, 55), @(34, 55), @(35, 55), @(49, 15))) { Px $n[0] $n[1] $CLEAR }
+foreach ($n in @(@(18, 14), @(37, 53), @(8, 27), @(47, 41), @(30, 16), @(16, 51), @(45, 22))) { Px $n[0] $n[1] $CINNABAR }
+# 武林, one bit a pixel from SimSun's own bitmap glyphs, side by side, centred.
+$glyphs = New-Object System.Drawing.Bitmap 40, 20
+$gg = [System.Drawing.Graphics]::FromImage($glyphs)
+$gg.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::SingleBitPerPixelGridFit
+$sealFont = New-Object System.Drawing.Font 'SimSun', 16, ([System.Drawing.FontStyle]::Bold), ([System.Drawing.GraphicsUnit]::Pixel)
+$gg.DrawString([string][char]0x6B66 + [char]0x6797, $sealFont, [System.Drawing.Brushes]::Black, 0, 1)
+$gg.Dispose()
+$minX = 99; $maxX = -1; $minY = 99; $maxY = -1
+for ($y = 0; $y -lt 20; $y++) { for ($x = 0; $x -lt 40; $x++) { if ($glyphs.GetPixel($x, $y).A -gt 128) { $minX = [Math]::Min($minX, $x); $maxX = [Math]::Max($maxX, $x); $minY = [Math]::Min($minY, $y); $maxY = [Math]::Max($maxY, $y) } } }
+$ox = [int](($S0 + $S1 + 1 - ($maxX - $minX + 1)) / 2) - $minX; $oy = [int](($T0 + $T1 + 1 - ($maxY - $minY + 1)) / 2) - $minY
+for ($y = 0; $y -lt 20; $y++) { for ($x = 0; $x -lt 40; $x++) { if ($glyphs.GetPixel($x, $y).A -gt 128) {
+  # A carved stroke: here and there the stamp did not take.
+  if ((Grain ($x + $ox) ($y + $oy)) -eq 5) { continue }
+  Px ($x + $ox) ($y + $oy) $SEAL_INK } } }
 
-<#
- One word of letters 7 cells high of $cell pixels (a cell between letters), centred at $cx, its top at $top; its depth
- $depth pixels (+ down, - up). Drawn: the thick black ring round face and depth, the depth shaded from $sideA to
- $sideB with dark edges where a stroke ends, the face shaded from $faceA to $faceB with a lit top edge and a black line
- round each letter, cracks across it.
-#>
-function DrawWord($word, $cell, $cx, $top, $depth, $faceA, $faceB, $sideA, $sideB, $crack, $light, $seed) {
-  $cols = -1; for ($n = 0; $n -lt $word.Length; $n++) { $cols += $GLYPHS[[string]$word[$n]][0].Length + 1 }
-  $left = $cx - $cols * $cell / 2
-  $filled = @{}
-  $at = 0
-  for ($n = 0; $n -lt $word.Length; $n++) {
-    $rows = $GLYPHS[[string]$word[$n]]
-    for ($r = 0; $r -lt 7; $r++) { for ($c = 0; $c -lt $rows[$r].Length; $c++) { if ($rows[$r][$c] -eq '1') { $filled["$($at + $c),$r"] = $n } } }
-    $at += $rows[0].Length + 1
-  }
-  $has = { param($c, $r) $filled.ContainsKey("$c,$r") }
-  $cells = @($filled.Keys | ForEach-Object { $p = $_.Split(','); , @([int]$p[0], [int]$p[1]) })
-  $cellX = { param($c) [single]($left + $c * $cell) }; $cellY = { param($r) [single]($top + $r * $cell) }
-  $up = [Math]::Min(0, $depth); $down = [Math]::Max(0, $depth)
-  # The black ring: every cell with its depth, grown by the ring's width (square corners, blocky like the letters).
-  $ring = 13
-  foreach ($k in $cells) { $gfx.FillRectangle([System.Drawing.Brushes]::Black, (& $cellX $k[0]) - $ring, (& $cellY $k[1]) + $up - $ring, $cell + 2 * $ring, $cell + [Math]::Abs($depth) + 2 * $ring) }
-  # The depth.
-  $sideBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.RectangleF 0, ([single]($top + $up)), 10, ([single](7 * $cell + [Math]::Abs($depth)))), $sideA, $sideB, 90
-  foreach ($k in $cells) { $gfx.FillRectangle($sideBrush, (& $cellX $k[0]), (& $cellY $k[1]) + $up, $cell, $cell + [Math]::Abs($depth)) }
-  $edgePen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 8, 6, 5)), 4
-  foreach ($k in $cells) {
-    $x0 = & $cellX $k[0]; $x1 = $x0 + $cell
-    $y0 = if ($depth -gt 0) { (& $cellY $k[1]) + $cell } else { (& $cellY $k[1]) + $depth }
-    $y1 = if ($depth -gt 0) { (& $cellY $k[1]) + $cell + $depth } else { & $cellY $k[1] }
-    if (-not (& $has ($k[0] - 1) $k[1])) { $gfx.DrawLine($edgePen, $x0, $y0, $x0, $y1) }
-    if (-not (& $has ($k[0] + 1) $k[1])) { $gfx.DrawLine($edgePen, $x1, $y0, $x1, $y1) }
-  }
-  # The face.
-  $faceBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.RectangleF 0, ([single]$top), 10, ([single](7 * $cell))), $faceA, $faceB, 90
-  foreach ($k in $cells) { $gfx.FillRectangle($faceBrush, (& $cellX $k[0]), (& $cellY $k[1]), $cell, $cell) }
-  $clip = New-Object System.Drawing.Drawing2D.GraphicsPath
-  foreach ($k in $cells) { $clip.AddRectangle((New-Object System.Drawing.RectangleF (& $cellX $k[0]), (& $cellY $k[1]), $cell, $cell)) }
-  $state = $gfx.Save(); $gfx.SetClip($clip); $gfx.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-  # Cracks: jagged lines into each letter, with a short branch.
-  $rand = New-Object System.Random $seed
-  $crackPen = New-Object System.Drawing.Pen $crack, 5
-  $crackPen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Miter
-  for ($n = 0; $n -lt $word.Length; $n++) {
-    $mine = @($cells | Where-Object { $filled["$($_[0]),$($_[1])"] -eq $n })
-    for ($t = 0; $t -lt 2 + $rand.Next(2); $t++) {
-      $k = $mine[$rand.Next($mine.Count)]
-      $x = (& $cellX $k[0]) + $rand.NextDouble() * $cell; $y = (& $cellY $k[1]) + $rand.NextDouble() * $cell
-      $pts = @((New-Object System.Drawing.PointF ([single]$x), ([single]$y)))
-      $dir = $rand.Next(4) * [Math]::PI / 2
-      for ($s = 0; $s -lt 3 + $rand.Next(3); $s++) {
-        # Mostly along the grid, a cracked block's way.
-        if ($rand.Next(3) -eq 0) { $dir += ($rand.Next(2) * 2 - 1) * [Math]::PI / 2 }
-        $len = $cell * (0.35 + $rand.NextDouble() * 0.5)
-        $x += [Math]::Cos($dir) * $len; $y += [Math]::Sin($dir) * $len
-        $pts += New-Object System.Drawing.PointF ([single]$x), ([single]$y)
-      }
-      $gfx.DrawLines($crackPen, $pts)
-    }
-  }
-  $gfx.Restore($state)
-  # The lit top edges, then the black line round each letter's face.
-  $lightPen = New-Object System.Drawing.Pen $light, 5
-  $linePen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 8, 6, 5)), 5
-  foreach ($k in $cells) {
-    $x0 = & $cellX $k[0]; $y0 = & $cellY $k[1]; $x1 = $x0 + $cell; $y1 = $y0 + $cell
-    if (-not (& $has $k[0] ($k[1] - 1))) { $gfx.DrawLine($lightPen, $x0, $y0 + 4, $x1, $y0 + 4) }
-  }
-  foreach ($k in $cells) {
-    $x0 = & $cellX $k[0]; $y0 = & $cellY $k[1]; $x1 = $x0 + $cell; $y1 = $y0 + $cell
-    if (-not (& $has $k[0] ($k[1] - 1))) { $gfx.DrawLine($linePen, $x0 - 2, $y0, $x1 + 2, $y0) }
-    if (-not (& $has $k[0] ($k[1] + 1))) { $gfx.DrawLine($linePen, $x0 - 2, $y1, $x1 + 2, $y1) }
-    if (-not (& $has ($k[0] - 1) $k[1])) { $gfx.DrawLine($linePen, $x0, $y0 - 2, $x0, $y1 + 2) }
-    if (-not (& $has ($k[0] + 1) $k[1])) { $gfx.DrawLine($linePen, $x1, $y0 - 2, $x1, $y1 + 2) }
-  }
+# ---- MURIMBLOCK: 5 x 7 letters drawn twice as large, ivory warming to gold, an ink ring, a shadow
+$FONT = @{
+  'M' = @('10001', '11011', '10101', '10101', '10001', '10001', '10001')
+  'U' = @('10001', '10001', '10001', '10001', '10001', '10001', '01110')
+  'R' = @('11110', '10001', '10001', '11110', '10100', '10010', '10001')
+  'I' = @('11111', '00100', '00100', '00100', '00100', '00100', '11111')
+  'B' = @('11110', '10001', '10001', '11110', '10001', '10001', '11110')
+  'L' = @('10000', '10000', '10000', '10000', '10000', '10000', '11111')
+  'O' = @('01110', '10001', '10001', '10001', '10001', '10001', '01110')
+  'C' = @('01111', '10000', '10000', '10000', '10000', '10000', '01111')
+  'K' = @('10001', '10010', '10100', '11000', '10100', '10010', '10001')
 }
+$TX = 60; $TY = 16; $SIZE = 2; $STEP = 12
+$fill = New-Object 'bool[,]' $W, $H
+$text = 'MURIMBLOCK'
+for ($n = 0; $n -lt $text.Length; $n++) {
+  $rows = $FONT[[string]$text[$n]]
+  for ($r = 0; $r -lt 7; $r++) { for ($c = 0; $c -lt 5; $c++) { if ($rows[$r][$c] -eq '1') {
+    for ($dy = 0; $dy -lt $SIZE; $dy++) { for ($dx = 0; $dx -lt $SIZE; $dx++) { $fill[($TX + $n * $STEP + $c * $SIZE + $dx), ($TY + $r * $SIZE + $dy)] = $true } } } } }
+}
+for ($y = 0; $y -lt $H - 2; $y++) { for ($x = 0; $x -lt $W - 2; $x++) { if ($fill[$x, $y]) { Px ($x + 2) ($y + 2) $SHADOW } } }
+for ($y = 1; $y -lt $H - 1; $y++) { for ($x = 1; $x -lt $W - 1; $x++) {
+  if (-not $fill[$x, $y] -and ($fill[($x - 1), $y] -or $fill[($x + 1), $y] -or $fill[$x, ($y - 1)] -or $fill[$x, ($y + 1)] -or $fill[($x - 1), ($y - 1)] -or $fill[($x + 1), ($y + 1)] -or $fill[($x + 1), ($y - 1)] -or $fill[($x - 1), ($y + 1)])) { Px $x $y $INK } } }
+for ($y = 0; $y -lt $H; $y++) { for ($x = 0; $x -lt $W; $x++) { if ($fill[$x, $y]) {
+  $row = $y - $TY
+  $step = if (-not $fill[$x, ($y - 1)]) { 0 } else { [Math]::Min(13, [Math]::Max(1, $row)) }
+  # The right and lower edges of each stroke a step darker: a little relief.
+  if (-not $fill[($x + 1), $y] -or -not $fill[$x, ($y + 1)]) { $step = [Math]::Min(13, $step + 3) }
+  Px $x $y $TONE[$step] } } }
 
-$CELL = 22; $CX = $WIDTH / 2
-# MURIM: top 90, face 7 cells (182), depth 44 below. BLOCK: top 90 + 182 + 44 + 26, depth rising 70 behind MURIM.
-$murimTop = 90; $murimDepth = 44
-$blockTop = $murimTop + 7 * $CELL + $murimDepth + 30
-DrawWord 'BLOCK' $CELL $CX $blockTop -74 (Col '#ff6a4f') (Col '#b01a12') (Col '#3c0805') (Col '#8f1a12') (Col '#6e1410') (Col '#ff9a86') 11
-DrawWord 'MURIM' $CELL $CX $murimTop $murimDepth (Col '#d8d3cc') (Col '#aaa49c') (Col '#6f6a64') (Col '#2c2927') (Col '#56514c') (Col '#f1ede7') 7
-$gfx.Dispose()
+# ---- the jian beneath
+$BY = 46
+# Pommel: a bronze ring.
+Rect 60 ($BY - 1) 62 ($BY + 2) $BRONZE; Px 61 $BY $INK; Px 61 ($BY + 1) $INK; Px 60 ($BY + 2) $BRONZE_DARK; Px 62 ($BY + 2) $BRONZE_DARK
+foreach ($x in 59, 63) { Px $x ($BY - 1) $INK; Px $x $BY $INK; Px $x ($BY + 1) $INK; Px $x ($BY + 2) $INK }
+foreach ($x in 60..62) { Px $x ($BY - 2) $INK; Px $x ($BY + 3) $INK }
+# Grip: red cord braided in diamonds.
+for ($x = 64; $x -le 74; $x++) {
+  Px $x ($BY - 2) $INK; Px $x ($BY + 3) $INK
+  for ($y = $BY - 1; $y -le $BY + 2; $y++) { Px $x $y $(if ((($x + $y) % 3) -eq 0) { $GRIP_LIGHT } elseif ((($x - $y + 30) % 3) -eq 0) { $CINNABAR_DARK } else { $GRIP }) }
+}
+# Guard: bronze, wider than the grip, a jade stone at its heart.
+Rect 75 ($BY - 4) 78 ($BY + 5) $BRONZE
+Rect 78 ($BY - 4) 78 ($BY + 5) $BRONZE_DARK; Px 75 ($BY - 4) $BRONZE_DARK; Px 75 ($BY + 5) $BRONZE_DARK
+Px 76 $BY $JADE; Px 77 $BY $JADE_LIGHT; Px 76 ($BY + 1) $JADE; Px 77 ($BY + 1) $JADE
+for ($y = $BY - 5; $y -le $BY + 6; $y++) { Px 74 $y $INK; Px 79 $y $INK }; foreach ($x in 75..78) { Px $x ($BY - 5) $INK; Px $x ($BY + 6) $INK }
+# Blade: a bright ridge, the steel, a darker edge, ink round it, narrowing to its point.
+$END = 204
+for ($x = 80; $x -le $END; $x++) {
+  $taper = [Math]::Max(0, $x - ($END - 7))
+  $top = $BY - 1 + [int][Math]::Floor($taper / 3); $bottom = $BY + 2 - [int][Math]::Floor($taper / 3)
+  Px $x ($top - 1) $INK; Px $x ($bottom + 1) $INK
+  for ($y = $top; $y -le $bottom; $y++) { Px $x $y $(if ($y -eq $BY) { $STEEL_RIDGE } elseif ($y -lt $BY) { $STEEL } else { $STEEL_DARK }) }
+}
+Px ($END + 1) $BY $INK; Px ($END + 1) ($BY + 1) $INK
+# A glint near the point.
+Px 194 ($BY - 4) $WHITE; Px 193 ($BY - 3) $WHITE; Px 194 ($BY - 3) $WHITE; Px 195 ($BY - 3) $WHITE; Px 194 ($BY - 2) $WHITE; Px 194 ($BY - 1) $WHITE
+# The tassel: a red bead, then three jade strands streaming back and down.
+Px 58 ($BY + 1) $INK; Px 57 ($BY + 1) $CINNABAR; Px 57 ($BY + 2) $CINNABAR; Px 56 ($BY + 2) $CINNABAR_DARK
+$strands = @(@(@(56, 3), @(55, 4), @(55, 5), @(54, 6), @(53, 7), @(53, 8), @(52, 9)), @(@(57, 3), @(57, 4), @(56, 5), @(56, 6), @(55, 7), @(55, 8), @(54, 9), @(54, 10)), @(@(58, 3), @(58, 4), @(58, 5), @(57, 6), @(57, 7), @(57, 8)))
+$k = 0
+foreach ($strand in $strands) { foreach ($p in $strand) { Px $p[0] ($BY + $p[1]) $(if ((($p[1] + $k) % 3) -eq 0) { $JADE_LIGHT } else { $JADE }) }; $k++ }
 
-# Cropped to what is drawn, with a margin.
-$minX = $WIDTH; $minY = $HEIGHT; $maxX = 0; $maxY = 0
-for ($y = 0; $y -lt $HEIGHT; $y += 2) { for ($x = 0; $x -lt $WIDTH; $x += 2) { if ($img.GetPixel($x, $y).A -gt 0) { if ($x -lt $minX) { $minX = $x }; if ($x -gt $maxX) { $maxX = $x }; if ($y -lt $minY) { $minY = $y }; if ($y -gt $maxY) { $maxY = $y } } } }
-$m = 12
-$x0 = [Math]::Max(0, $minX - $m); $y0 = [Math]::Max(0, $minY - $m)
-$crop = New-Object System.Drawing.Rectangle $x0, $y0, ([Math]::Min($WIDTH, $maxX + $m) - $x0), ([Math]::Min($HEIGHT, $maxY + $m) - $y0)
-$out = $img.Clone($crop, $img.PixelFormat)
+# ---- four times larger, every pixel a sharp square
+$out = New-Object System.Drawing.Bitmap ($W * $SCALE), ($H * $SCALE)
+$g2 = [System.Drawing.Graphics]::FromImage($out)
+$g2.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
+$g2.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::Half
+$g2.DrawImage($img, 0, 0, $W * $SCALE, $H * $SCALE)
+$g2.Dispose()
 $path = Join-Path $root 'src\main\resources\murimblock_logo.png'
 $out.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
-Write-Output ("wrote $path " + $out.Width + 'x' + $out.Height)
-$out.Dispose(); $img.Dispose()
+$out.Dispose(); $img.Dispose(); $glyphs.Dispose()
+Write-Output "wrote $path"
