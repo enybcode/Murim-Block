@@ -30,6 +30,16 @@ import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEntity> {
     /** In first person the charging crystal is drawn at the wrist: past this size it would hide the view. */
     static final float FIRST_PERSON_MAX_SCALE = 1.2F;
+    /** In first person the sword in hand is drawn at this size: the hand is close to the camera. */
+    static final float FIRST_PERSON_SWORD_SCALE = 0.55F;
+    private static float bladeX, bladeY = 1, bladeZ;
+    private static boolean bladeFirstPerson;
+    /** Where the blade of the sword about to be drawn in hand points, in the hand joint's frame. */
+    static void swordAlong(float x,float y,float z,boolean firstPerson) {
+        float length=(float)Math.sqrt(x*x+y*y+z*z);
+        if(length<1.0E-4F){bladeX=0;bladeY=1;bladeZ=0;} else {bladeX=x/length;bladeY=y/length;bladeZ=z/length;}
+        bladeFirstPerson=firstPerson;
+    }
     private boolean inHand;
     private static int firstPersonCharges;
     private static ResourceLocation asset(String path) {return ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID,path);}
@@ -45,6 +55,8 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
     }
     @Override public boolean shouldRender(BloodCrystalEntity entity,Frustum frustum,double x,double y,double z) {
         var mc=Minecraft.getInstance();
+        // A sword still in its owner's hand is drawn at the hand's joint (BloodCrystalOverlay), not where its entity is.
+        if(entity.sword()&&entity.state()==BloodCrystalEntity.CHARGING)return false;
         if(BloodCrystalView.hiddenInFirstPerson(entity.dorsal(),entity.visualOwner()==mc.player,mc.getCameraEntity()==mc.player,
                 mc.options.getCameraType().isFirstPerson()))return false;
         if(entity.state()==BloodCrystalEntity.CHARGING&&entity.visualOwner()==mc.player&&mc.getCameraEntity()==mc.player
@@ -73,11 +85,18 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
             return;
         }
         float scale=entity.crystalScale();
+        if(inHand&&entity.sword()) {
+            // In the fist: the blade (the model's +Y) carries on the forearm; smaller in first person, by the camera.
+            pose.mulPose(new org.joml.Quaternionf().rotationTo(0,1,0,bladeX,bladeY,bladeZ));
+            if(bladeFirstPerson)pose.scale(FIRST_PERSON_SWORD_SCALE,FIRST_PERSON_SWORD_SCALE,FIRST_PERSON_SWORD_SCALE);
+            return;
+        }
         if(inHand) scale=Math.min(scale,FIRST_PERSON_MAX_SCALE);
         // The model is centred on its origin: lift it to the middle of the box.
         else pose.translate(0,entity.getBbHeight()/2,0);
-        if(entity.broken()) pose.mulPose(Axis.YP.rotationDegrees(entity.breakYaw()));
-        else if(!inHand&&entity.state()==BloodCrystalEntity.FLYING) {
+        if(entity.broken()&&!entity.sword()) pose.mulPose(Axis.YP.rotationDegrees(entity.breakYaw()));
+        // A sword keeps its line when it explodes: point first into what it struck.
+        else if(!inHand&&(entity.state()==BloodCrystalEntity.FLYING||entity.sword()&&entity.broken())) {
             pose.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
             pose.mulPose(Axis.XP.rotationDegrees(90-entity.getXRot()));
         } else if(!inHand) {
@@ -89,13 +108,13 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
     }
     private static final class Model extends GeoModel<BloodCrystalEntity> {
         @Override public ResourceLocation getModelResource(BloodCrystalEntity entity) {
-            return asset(entity.dorsal()?"geo/blood_crystal_floating.geo.json":"geo/blood_crystal_shot.geo.json");
+            return asset(entity.dorsal()?"geo/blood_crystal_floating.geo.json":entity.sword()?"geo/blood_sword.geo.json":"geo/blood_crystal_shot.geo.json");
         }
         @Override public ResourceLocation getTextureResource(BloodCrystalEntity entity) {
             return asset(entity.dorsal()?"textures/entity/blood_crystal.png":"textures/entity/blood_crystal_shot.png");
         }
         @Override public ResourceLocation getAnimationResource(BloodCrystalEntity entity) {
-            return asset(entity.dorsal()?"animations/blood_crystal_floating.animation.json":"animations/blood_crystal_shot.animation.json");
+            return asset(entity.dorsal()?"animations/blood_crystal_floating.animation.json":entity.sword()?"animations/blood_sword.animation.json":"animations/blood_crystal_shot.animation.json");
         }
         @Override public void setCustomAnimations(BloodCrystalEntity entity,long id,AnimationState<BloodCrystalEntity> state) {
             // Models are cached/shared: reset every bone on every render, including when the count drops.
@@ -105,6 +124,7 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
                 }
                 return;
             }
+            if(entity.sword())return;
             // A barrage crystal flies alone, without the circling fragments of a thrown one.
             final boolean alone=entity.barrage();
             getBone("fragments").ifPresent(b -> {b.setHidden(alone);b.setChildrenHidden(alone);});

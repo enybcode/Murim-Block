@@ -60,7 +60,9 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     public static final byte CHARGING=0, ORBIT=1, PENDING=2, FLYING=3, SHATTER_GROUND=4, SHATTER_WALL=5, SHATTER_BODY=6, EXPLODE=7;
     /** From the middle to the point, in blocks at scale 1 (the model's upper tip). */
-    public static final double TIP=.55;
+    public static final double TIP=.55, SWORD_TIP=1.75;
+    /** The sword's explosion: its reach, and its share at the centre (half at the edge); its direct hit's share. */
+    public static final double SWORD_RADIUS=2.5, SWORD_EXPLOSION_SHARE=1.2, SWORD_SHARE=1.2;
     /** Barrage crystals: straight and fast. */
     public static final double SPEED=.9;
     /** A crystal still flying after this distance breaks in the air. */
@@ -75,12 +77,17 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     private static final EntityDataAccessor<Float> SCALE=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> POINTS=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> BARRAGE=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.BOOLEAN);
+    /** What it is: a blood crystal, or Scarlet Tear's blood sword. */
+    private static final EntityDataAccessor<Boolean> SWORD=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> BREAK_YAW=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.FLOAT);
     // Exact kit pivots (pixels). X is mirrored by GeckoLib; Z is behind the player's body.
     private static final double[][] SOCKETS={{12.839948427736791,20.6269184364184,13},{13.186896557987843,24.375247516916236,14},{9.192388155425117,26.353910524340094,15},{6.719059396145292,29.549517246390277,13},{2.0336480455230013,29.271958742189433,14},{-2.315230082595417,30.69422995264643,15},{-5.901876496614108,28.266467851559028,13},{-10.465180361560902,27.372144289248723,14},{-11.583084814448782,23.72150119729129,15},{-14.617787440808039,20.852184066076333,13}};
     private static final RawAnimation HOVER=RawAnimation.begin().thenLoop("animation.blood_crystal_floating.hover");
     private static final RawAnimation FORM=RawAnimation.begin().thenPlay("animation.blood_crystal_shot.form").thenLoop("animation.blood_crystal_shot.charge");
     private static final RawAnimation FLY=RawAnimation.begin().thenLoop("animation.blood_crystal_shot.fly");
+    private static final RawAnimation SWORD_FORM=RawAnimation.begin().thenPlay("animation.blood_sword.form").thenLoop("animation.blood_sword.held");
+    private static final RawAnimation SWORD_FLY=RawAnimation.begin().thenLoop("animation.blood_sword.fly");
+    private static final RawAnimation SWORD_EXPLODE=RawAnimation.begin().thenPlayAndHold("animation.blood_sword.explode");
     private static final RawAnimation[] BREAKS={
             RawAnimation.begin().thenPlayAndHold("animation.blood_crystal_shot.shatter_ground"),
             RawAnimation.begin().thenPlayAndHold("animation.blood_crystal_shot.shatter_wall"),
@@ -102,9 +109,20 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         crystal.follow(owner); owner.serverLevel().addFreshEntity(crystal);
         return crystal;
     }
+    /**
+     * Scarlet Tear's blood sword, forming in its owner's hand (drawn at the hand's joint, BloodCrystalOverlay), swung,
+     * then thrown point first (SanguineArt): it explodes where it lands.
+     */
+    public static BloodCrystalEntity sword(ServerPlayer owner) {
+        var sword=new BloodCrystalEntity(MurimEntities.BLOOD_CRYSTAL.get(),owner.level());
+        sword.setOwner(owner); sword.entityData.set(OWNER_ID,owner.getId()); sword.entityData.set(SWORD,true);
+        sword.entityData.set(STATE,CHARGING); sword.entityData.set(SCALE,1F);
+        sword.follow(owner); owner.serverLevel().addFreshEntity(sword);
+        return sword;
+    }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(STATE,CHARGING); builder.define(OWNER_ID,-1); builder.define(SLOT,0); builder.define(SCALE,.2F);
-        builder.define(POINTS,0); builder.define(BARRAGE,false); builder.define(BREAK_YAW,0F);
+        builder.define(POINTS,0); builder.define(BARRAGE,false); builder.define(BREAK_YAW,0F); builder.define(SWORD,false);
     }
     public byte state() { return entityData.get(STATE); }
     public int slot() { return entityData.get(SLOT); }
@@ -112,6 +130,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     public int points() { return entityData.get(POINTS); }
     public boolean great() { return BloodCrystalCharge.great(points()); }
     public boolean barrage() { return entityData.get(BARRAGE); }
+    public boolean sword() { return entityData.get(SWORD); }
     public float breakYaw() { return entityData.get(BREAK_YAW); }
     public boolean dorsal() { return state()==ORBIT||state()==PENDING; }
     public boolean broken() { return state()>=SHATTER_GROUND; }
@@ -135,7 +154,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     /** The crystal's point: ahead of its middle along its flight. */
     public Vec3 tip() {
         Vec3 v=getDeltaMovement();
-        return v.lengthSqr()<1.0E-6?centre():centre().add(v.normalize().scale(TIP*crystalScale()));
+        return v.lengthSqr()<1.0E-6?centre():centre().add(v.normalize().scale((sword()?SWORD_TIP:TIP)*crystalScale()));
     }
     private void placeCentre(Vec3 centre) { setPos(centre.x,centre.y-getBbHeight()/2,centre.z); }
 
@@ -161,12 +180,14 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         if (target!=null) end=target.getEntity().position().add(0,target.getEntity().getBbHeight()*.6,0);
         Vec3 from=centre();
         Vec3 velocity=barrage?direction(from,end,player).scale(SPEED)
-                :aim(from,end,BloodCrystalCharge.speed(points()),BloodCrystalCharge.gravity(points()),player);
+                :aim(from,end,sword()?1.15:BloodCrystalCharge.speed(points()),gravity(),player);
         if (barrage) entityData.set(SCALE,.5F);
         entityData.set(STATE,FLYING);
         setDeltaMovement(velocity); updateRotation(); flightTicks=0;travelled=0;
-        playSound(SoundEvents.AMETHYST_BLOCK_RESONATE,great()?1.4F:.7F,great()?.6F:1.4F);
+        if (sword()) playSound(SoundEvents.TRIDENT_THROW.value(),1.4F,.8F);
+        else playSound(SoundEvents.AMETHYST_BLOCK_RESONATE,great()?1.4F:.7F,great()?.6F:1.4F);
     }
+    private double gravity() { return sword()?.02:BloodCrystalCharge.gravity(points()); }
     private static Vec3 direction(Vec3 from,Vec3 to,Player player) {
         Vec3 d=to.subtract(from);
         return d.lengthSqr()<.001?player.getViewVector(1):d.normalize();
@@ -222,7 +243,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
             if (!(owner instanceof ServerPlayer p) || !p.isAlive() || p.level()!=level() || KnockdownService.isDowned(p)
                     || !CombatService.isInCombatMode(p) || !SanguineArt.bareHanded(p)) { discard();return; }
             if (state()==ORBIT && (!SanguineArt.state(p).active() || slot()>=SanguineArt.state(p).crystals())) { discard();return; }
-            if (state()==CHARGING && !SanguineArt.hasCharge(p)) { discard();return; }
+            if (state()==CHARGING && !(sword()?SanguineArt.holdsSword(p):SanguineArt.hasCharge(p))) { discard();return; }
             if (state()==PENDING) {
                 if (!SanguineArt.state(p).active()) {discard();return;}
                 if (pendingTicks--<=0) launch(unit,true);
@@ -236,7 +257,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         if (isRemoved()||state()!=FLYING) return;
         Vec3 velocity=getDeltaMovement();setPos(position().add(velocity));travelled+=velocity.length();
         // A thrown crystal falls like a stone; a barrage crystal flies straight.
-        if (!barrage()) setDeltaMovement(velocity.scale(.99).add(0,-BloodCrystalCharge.gravity(points()),0));
+        if (!barrage()) setDeltaMovement(velocity.scale(.99).add(0,-gravity(),0));
         updateRotation();
         if (!level().isClientSide && (++flightTicks>100 || travelled>RANGE)) breakAt(SHATTER_BODY,yawOf(velocity),null);
     }
@@ -271,14 +292,14 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         Vec3 dir=horizontal();
         if (hit instanceof LivingEntity target && getOwner() instanceof ServerPlayer player) {
             float before=target.getHealth();
-            boolean hurt=target.hurt(source(player),unit*(float)(barrage()?1:BloodCrystalCharge.share(points())));
+            boolean hurt=target.hurt(source(player),unit*(float)(barrage()?1:sword()?SWORD_SHARE:BloodCrystalCharge.share(points())));
             if (hurt && target.getHealth()<before && !MurimGuardSkill.parriedThisTick(target) && !MurimGuardSkill.guardedThisTick(target))
-                SanguineArt.projectileHit(player,target,barrage());
+                SanguineArt.projectileHit(player,target,technique());
         }
         // The crystal breaks against the front of the body, at chest height, and its pieces follow it as they fall.
         double s=.375*crystalScale();
         Vec3 centre=new Vec3(hit.getX(),hit.getY()+Math.min(1.25,hit.getBbHeight()*.7),hit.getZ()).subtract(dir.scale(hit.getBbWidth()/2+s*.5));
-        if (great()) { explode(centre,hit); return; }
+        if (great()||sword()) { explode(centre,hit); return; }
         breakAt(SHATTER_BODY,yawOf(dir),centre);
         followed=hit; followOffset=position().subtract(hit.position());
     }
@@ -289,7 +310,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         double r=.375*crystalScale();
         Vec3 normal=Vec3.atLowerCornerOf(face.getNormal());
         Vec3 centre=result.getLocation().add(normal.scale(face==Direction.UP?r*.6:r)).subtract(getDeltaMovement().normalize().scale(TIP*crystalScale()*.4));
-        if (great()) { explode(centre,null); return; }
+        if (great()||sword()) { explode(centre,null); return; }
         if (face==Direction.UP) breakAt(SHATTER_GROUND,yawOf(horizontal()),centre);
         // Walls and ceilings: the model's -Z points into the surface, its pieces burst back off it.
         else breakAt(SHATTER_WALL,face.getAxis().isHorizontal()?yawOf(normal.scale(-1)):yawOf(horizontal()),centre);
@@ -312,22 +333,24 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     private void explode(Vec3 centre,@Nullable Entity struck) {
         breakAt(EXPLODE,yawOf(horizontal()),centre);
         if (!(getOwner() instanceof ServerPlayer player)) return;
-        double radius=BloodCrystalCharge.EXPLOSION_RADIUS;
-        level().playSound(null,centre.x,centre.y,centre.z,SoundEvents.GENERIC_EXPLODE.value(),SoundSource.PLAYERS,1.6F,.85F);
+        double radius=sword()?SWORD_RADIUS:BloodCrystalCharge.EXPLOSION_RADIUS;
+        level().playSound(null,centre.x,centre.y,centre.z,SoundEvents.GENERIC_EXPLODE.value(),SoundSource.PLAYERS,sword()?1.2F:1.6F,sword()?1.05F:.85F);
         for (LivingEntity target:level().getEntitiesOfClass(LivingEntity.class,new net.minecraft.world.phys.AABB(centre,centre).inflate(radius))) {
             if (target==player||target==struck||target.isAlliedTo(player)||!target.isAlive()||target.isSpectator()) continue;
             if (!(target instanceof Enemy||target instanceof Player||target instanceof net.minecraft.world.entity.Mob)) continue;
             double distance=target.position().add(0,target.getBbHeight()/2,0).distanceTo(centre);
-            double share=BloodCrystalCharge.explosionShare(distance);
+            double share=sword()?(distance>radius?0:SWORD_EXPLOSION_SHARE*(1-.5*distance/radius)):BloodCrystalCharge.explosionShare(distance);
             if (share<=0) continue;
             float before=target.getHealth();
-            if (target.hurt(source(player),unit*(float)share) && target.getHealth()<before) SanguineArt.projectileHit(player,target,false);
+            if (target.hurt(source(player),unit*(float)share) && target.getHealth()<before) SanguineArt.projectileHit(player,target,technique());
             Vec3 away=target.position().subtract(centre).multiply(1,0,1);
             if (away.lengthSqr()<1.0E-4) away=horizontal();
             double push=.9*(1-distance/radius)*Math.max(0,1-target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
             if (push>0) { away=away.normalize(); target.push(away.x*push,.35*push,away.z*push); target.hurtMarked=true; }
         }
     }
+    /** The technique this crystal belongs to, for mastery and quests. */
+    private MartialArts.Technique technique() { return sword()?MartialArts.SCARLET_TEAR:barrage()?MartialArts.CRYSTAL_BARRAGE:MartialArts.BLOOD_CRYSTAL; }
     private Vec3 horizontal() {
         Vec3 v=getDeltaMovement().multiply(1,0,1);
         if (v.lengthSqr()<1.0E-6) v=Vec3.directionFromRotation(0,getYRot()).multiply(1,0,1);
@@ -344,6 +367,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         controllers.add(new AnimationController<>(this,"crystal",0,event -> {
             var crystal=event.getAnimatable();
             if (crystal.dorsal()) return event.setAndContinue(HOVER);
+            if (crystal.sword()) return event.setAndContinue(crystal.broken()?SWORD_EXPLODE:crystal.state()==CHARGING?SWORD_FORM:SWORD_FLY);
             if (crystal.broken()) return event.setAndContinue(BREAKS[crystal.state()-SHATTER_GROUND]);
             return event.setAndContinue(crystal.state()==CHARGING?FORM:FLY);
         }));

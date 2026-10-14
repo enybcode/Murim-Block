@@ -54,3 +54,14 @@ Sur le modèle de la boule d'eau du Crab Man :
 - **Impacts** : il éclate selon ce qu'il touche (`shatter_ground`, `shatter_wall`, `shatter_body`), comme la boule d'eau ; le grand cristal joue `explode`. Un bref éclair rouge Photon à chaque impact ; **seule l'explosion lance des particules** Photon (160 éclats aux rouges du cristal, qui retombent et rebondissent).
 - Il part seul après 3 s. Interrompue, la charge perd les points tirés.
 - Modèle, animations, texture et éclat : `node scripts/animation/blood-crystal-shot.cjs`. Tests : `holdingDrawsTheGaugeIntoTheCrystal`, `aFullGaugeMakesAGreatCrystalThatExplodesWithoutBreakingBlocks`, `BloodCrystalChargeTest`, et la séquence « crystal-great » de `runSanguineTour`.
+
+## Scarlet Tear, refait le 15/10/2026 (demande d'Enzo)
+
+L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, garde en éclats, lame de six segments, pointe ; environ 2 blocs.
+
+- **Formation (0 à 0,65 s)** : l'avant-bras droit se lève à côté du corps et l'épée se forme du manche vers la pointe, morceau par morceau (animation GeckoLib `form`), vers le ciel.
+- **L'arc (0,7 à 0,9 s)** : l'épée remonte à l'épaule, le torse vrillé, puis un grand arc horizontal de droite à gauche avec un pas en avant (×1,5, plusieurs cibles, +3 à la jauge comme avant).
+- **Le lancer (1,1 à 1,35 s)** : le bras s'arme derrière la tête, revient vers l'avant et l'épée part **pointe la première** (1,35 s), visée où regarde le lanceur. Elle **explose** à l'impact : coup direct ×1,2, explosion de 2,5 blocs (×1,2 au centre, moitié au bord), 80 éclats Photon, aucun bloc cassé. Elle explose dans l'axe de son vol.
+- Dans la main, l'épée prolonge l'avant-bras (direction coude → main calculée à chaque image) ; plus petite en première personne.
+- Une autre animation qui commence fait disparaître l'épée encore en main.
+- Fichiers : `node scripts/animation/blood-sword.cjs` (modèle et animations), `sanguine-art.cjs` (le corps). Test : `scarletTearSwingsItsBloodSwordThenThrowsItToExplode` ; séquence « scarlet-sword » de `runSanguineTour`.

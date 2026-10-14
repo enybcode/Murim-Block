@@ -171,6 +171,25 @@ public final class SanguineGameTests {
             h.assertTrue(QiService.getQi(p)>=82&&QiService.getQi(p)<83,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
         });
     }
+    @GameTest(template="foundation_arena",batch="scarlet_sword",timeoutTicks=110)
+    public static void scarletTearSwingsItsBloodSwordThenThrowsItToExplode(GameTestHelper h) {
+        var p=adept(h);var near=target(h,p,0,1.6);var far=target(h,p,0,7);far.setNoGravity(true);
+        MartialService.unlock(p,MartialArts.SCARLET_TEAR);MartialService.assign(p,1,MartialArts.SCARLET_TEAR.id());
+        h.runAfterDelay(2,()->cast(h,p,1));ticks(h,p,100);
+        h.runAfterDelay(10,()->h.assertTrue(SanguineArt.holdsSword(p),"No blood sword forming in the hand"));
+        // The arc lands 0.75 to 0.9 s in, on the body in reach only.
+        h.runAfterDelay(24,()->{
+            h.assertTrue(near.getHealth()<500,"The arc missed the body in reach: "+near.getHealth());
+            h.assertTrue(far.getHealth()==500,"The arc reached 7 blocks: "+far.getHealth());
+            h.assertTrue(SanguineArt.state(p).gauge()==3,"The arc did not build three gauge points: "+SanguineArt.state(p));
+            near.discard();
+        });
+        // Thrown at 1.35 s, the sword explodes on the body it is aimed at.
+        h.runAfterDelay(95,()->{
+            h.assertTrue(!SanguineArt.holdsSword(p),"The sword was never thrown");
+            h.assertTrue(far.getHealth()<500,"The thrown sword missed: "+far.getHealth());end(h,p,far);
+        });
+    }
     @GameTest(template="foundation_arena",batch="crystal_wall",timeoutTicks=90)
     public static void projectileStopsAtTheWall(GameTestHelper h) {
         var p=adept(h);var z=target(h,p,0,7);var wall=BlockPos.containing(p.getX(),120,p.getZ()+3);

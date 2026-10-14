@@ -90,29 +90,37 @@ const throwing=[K(0,C),
  K(.42,pose({y:.11,h:.61,turn:-28,lean:-16},{Arm_R:[['x',72],['y',-4],['z',24]],Hand_R:[['x',8]]})),
  K(.72,pose({h:.635,turn:-18})),K(1.05,G)];
 
-// Scarlet: crossed forearms, a low compression, a forceful opening, then recoil.
+// Scarlet Tear (15/10/2026, Enzo's request): the blood sword forms piece by piece in the open right hand, held low
+// before the body; the sword rises to the right shoulder, the torso coiled; a great level arc from right to left
+// with a step in; then the arm draws back behind the head and throws the sword (it leaves at 1.24 s).
 const tear = [
   K(0,G),
-  K(.16,pose({h:.598,turn:12,lean:-12},{
-    Arm_R:[['x',76],['y',-4],['z',-35]],Hand_R:[['x',72]],
-    Arm_L:[['x',78],['y',4],['z',35]],Hand_L:[['x',75]],
-    Tool_R:[['z',-20]],Tool_L:[['z',20]]})),
-  K(.30,pose({y:-.04,h:.565,turn:17,lean:-15},{
-    Arm_R:[['x',86],['y',-2],['z',-32]],Hand_R:[['x',70]],
-    Arm_L:[['x',88],['y',2],['z',32]],Hand_L:[['x',73]]})),
-  K(.43,pose({y:.06,h:.627,turn:-18,lean:-6},{
-    Arm_R:[['x',71],['y',-42],['z',-14]],Hand_R:[['x',18]],
-    Arm_L:[['x',76],['y',40],['z',14]],Hand_L:[['x',16]],
-    Shoulder_R:[['z',-7]],Shoulder_L:[['z',7]],Chest:[['x',3],['z',-6]]})),
-  K(.52,pose({y:.085,h:.646,turn:-23,lean:2},{
-    Arm_R:[['x',63],['y',-59],['z',-8]],Hand_R:[['x',12]],
-    Arm_L:[['x',67],['y',57],['z',8]],Hand_L:[['x',12]],Chest:[['x',5],['z',-6]]})),
-  K(.68,pose({y:.04,h:.625,turn:-20,lean:-2},{
-    Arm_R:[['x',56],['y',-43]],Hand_R:[['x',34]],
-    Arm_L:[['x',62],['y',40]],Hand_L:[['x',30]]})),
-  K(.93,pose({h:.635,turn:-12},{
-    Arm_R:[['x',40],['y',-20]],Hand_R:[['x',88]],
-    Arm_L:[['x',61],['y',20]],Hand_L:[['x',82]]})), K(1.35,G),
+  // Forming: the right forearm rises upright beside the body, the fist up, and the sword grows from it toward the
+  // sky, piece by piece; the eyes on it, the left hand in guard.
+  K(.10,pose({h:.63,turn:12,lean:-4},{Arm_R:[['x',62],['y',-46],['z',6]],Hand_R:[['x',96]],Tool_R:[['x',-6]],
+    Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]],Head:[['x',2],['z',-14]]})),
+  K(.50,pose({h:.628,turn:16,lean:-3},{Arm_R:[['x',70],['y',-50],['z',6]],Hand_R:[['x',100]],Tool_R:[['x',-4]],
+    Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]],Chest:[['x',-2]],Head:[['x',-4],['z',-16]]})),
+  // Coiled: the sword up by the right shoulder, the torso turned away, weight back.
+  K(.68,pose({x:-.02,y:-.035,h:.612,turn:40,lean:-5},{Arm_R:[['x',104],['y',-80],['z',22]],Hand_R:[['x',34]],Tool_R:[['x',-8]],
+    Shoulder_R:[['z',-7]],Arm_L:[['x',72],['y',32],['z',-8]],Hand_L:[['x',78]],Chest:[['x',2],['z',8]]})),
+  // The arc: level, right to left, the arm straight, a step in and down.
+  K(.77,pose({y:.04,h:.6,turn:6,lean:-12},{Arm_R:[['x',96],['y',-22],['z',14]],Hand_R:[['x',12]],Tool_R:[['x',-4]],
+    Arm_L:[['x',42],['y',22]],Hand_L:[['x',100]],Chest:[['x',3],['z',-2]]})),
+  K(.86,pose({y:.095,h:.59,turn:-36,lean:-16},{Arm_R:[['x',92],['y',36],['z',10]],Hand_R:[['x',10]],Tool_R:[['x',-4]],
+    Arm_L:[['x',30],['y',26]],Hand_L:[['x',106]],Chest:[['x',4],['z',-8]]})),
+  K(.97,pose({y:.095,h:.598,turn:-42,lean:-13},{Arm_R:[['x',78],['y',54],['z',4]],Hand_R:[['x',30]],
+    Arm_L:[['x',34],['y',26]],Hand_L:[['x',104]],Chest:[['x',3],['z',-8]]})),
+  // The throw: the arm draws back behind the head, the body leans back...
+  K(1.12,pose({y:.02,h:.632,turn:26,lean:7},{Arm_R:[['x',200],['y',-12],['z',14]],Hand_R:[['x',48]],Tool_R:[['x',-25]],
+    Shoulder_R:[['z',-8]],Arm_L:[['x',78],['y',18]],Hand_L:[['x',84]],Chest:[['x',6]]})),
+  // ...whips forward over it, and the arm stretches out at the target: the sword leaves the hand point first.
+  K(1.24,pose({y:.10,h:.612,turn:-24,lean:-15},{Arm_R:[['x',118],['y',-6],['z',18]],Hand_R:[['x',6]],Tool_R:[['x',-12]],
+    Arm_L:[['x',30],['y',20]],Hand_L:[['x',104]]})),
+  K(1.35,pose({y:.11,h:.608,turn:-28,lean:-16},{Arm_R:[['x',92],['y',-4],['z',20]],Hand_R:[['x',4]],
+    Arm_L:[['x',30],['y',20]],Hand_L:[['x',104]]})),
+  K(1.45,pose({y:.11,h:.608,turn:-30,lean:-15},{Arm_R:[['x',72],['y',-4],['z',24]],Hand_R:[['x',8]]})),
+  K(1.62,pose({h:.635,turn:-16})), K(1.85,G),
 ];
 
 // Crystallization: brace across the chest, open the shoulders, then settle in guard.
@@ -218,7 +226,7 @@ function build() {
       return {uuid:rig.uuid(),channel:'rotation',time:k.t,interpolation:'linear',color:-1,
         data_points:[{x:v[0],y:v[1],z:v[2]}]};})};
     a.markers=({sanguine_combo:[.18,.48,.92],sanguine_crystal_throw:[.30],
-      sanguine_scarlet_tear:[.30,.43,.52],sanguine_crystal_form:[.55],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
+      sanguine_scarlet_tear:[.77,.86,1.35],sanguine_crystal_form:[.55],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
       .map(time=>({time,color:5}));
   }
   p.animations[0].selected=true;

@@ -65,6 +65,23 @@ public final class BloodCrystalOverlay {
         @Override protected void renderLayer(P patch,E player,RenderLayer<E,PlayerModel<E>> original,PoseStack stack,
                 MultiBufferSource buffers,int light,OpenMatrix4f[] poses,float age,float headYaw,float headPitch,float partial) {
             if(player.isInvisible()||player.isSpectator())return;
+            // Scarlet Tear's blood sword, in both views: drawn in the fist, at the right hand's joint.
+            var level=Minecraft.getInstance().level;
+            for(var entity:level.entitiesForRendering()) {
+                if(!(entity instanceof BloodCrystalEntity sword)||!sword.sword()||sword.state()!=BloodCrystalEntity.CHARGING||sword.visualOwner()!=player)continue;
+                var joint=patch.getArmature().searchJointByName("Tool_R");stack.pushPose();
+                try {
+                    var hand=poses[joint.getId()];
+                    yesman.epicfight.api.utils.math.MathUtils.mulStack(stack,hand);
+                    // The blade carries on the forearm's line: from the elbow joint through the hand, in the hand's frame.
+                    var elbow=OpenMatrix4f.transform(poses[patch.getArmature().searchJointByName("Hand_R").getId()],net.minecraft.world.phys.Vec3.ZERO);
+                    var back=OpenMatrix4f.transform(new OpenMatrix4f(hand).invert(),elbow);
+                    BloodCrystalRenderer.swordAlong((float)-back.x,(float)-back.y,(float)-back.z,firstMesh!=null);
+                    if(Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(sword) instanceof BloodCrystalRenderer renderer)
+                        renderer.renderInHand(sword,partial,stack,buffers,light);
+                }finally {stack.popPose();}
+                break;
+            }
             if(firstMesh!=null) {
                 // First-person arms use their own pose. Bind the charge to that wrist rather than its world projection.
                 var mc=Minecraft.getInstance();

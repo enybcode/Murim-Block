@@ -42,6 +42,11 @@ public final class SanguineArt {
     private static final Map<UUID,Charge> CHARGES=new HashMap<>();
     private static final Map<UUID,List<BloodCrystalEntity>> CRYSTALS=new HashMap<>(), SALVOS=new HashMap<>();
     private static final Set<UUID> CREDITED=new HashSet<>();
+    /** Scarlet Tear's sword in hand, and the tick it is thrown: 1.35 s in, the arm stretched forward, point first. */
+    private record Sword(BloodCrystalEntity entity,long throwAt) { }
+    private static final Map<UUID,Sword> SWORDS=new HashMap<>();
+    public static final int SWORD_THROW_TICKS=27;
+    public static boolean holdsSword(Player p) { return SWORDS.containsKey(p.getUUID()); }
     private SanguineArt() { }
 
     public static BloodCrystalState state(Player p) {return p.getData(BloodCrystalAttachments.STATE);}
@@ -104,12 +109,16 @@ public final class SanguineArt {
             for(int i=0;i<crystals.size();i++)crystals.get(i).queue(6+i*2,damage);
             SALVOS.put(p.getUUID(),crystals);
         } else return false;
-        MartialCombat.expect(p,a,t.id(),false);patch.playAnimationSynchronized(a,0);return true;
+        MartialCombat.expect(p,a,t.id(),false);patch.playAnimationSynchronized(a,0);
+        // Scarlet Tear: the blood sword forms in the hand, is swung, then thrown.
+        if(t==MartialArts.SCARLET_TEAR){cancelSword(p.getUUID());SWORDS.put(p.getUUID(),new Sword(BloodCrystalEntity.sword(p),p.level().getGameTime()+SWORD_THROW_TICKS));}
+        return true;
     }
     static void animationStarted(ServerPlayer p,AnimationAccessor<? extends StaticAnimation> a) {
         CREDITED.remove(p.getUUID());
         if(a!=MurimAnimations.SANGUINE_CRYSTAL_CHARGE&&a!=MurimAnimations.SANGUINE_CRYSTAL_THROW)cancelCharge(p.getUUID(),false);
         if(a!=MurimAnimations.SANGUINE_CRYSTAL_BARRAGE)cancelSalvo(p.getUUID());
+        if(a!=MurimAnimations.SCARLET_TEAR)cancelSword(p.getUUID());
     }
     static void onHit(ServerPlayer p,LivingEntity target,AnimationAccessor<? extends StaticAnimation> a,boolean ignored) {
         if(!eligible(p)||target==p||target.isAlliedTo(p)||!(target instanceof Enemy||target instanceof Player)
@@ -130,10 +139,10 @@ public final class SanguineArt {
             MartialProgress.count(p,MartialArts.SCARLET_RELEASE_HITS,1);
         }
     }
-    static void projectileHit(ServerPlayer p,LivingEntity target,boolean barrage) {
+    static void projectileHit(ServerPlayer p,LivingEntity target,MartialArts.Technique technique) {
         if(target==p||target.isAlliedTo(p)||!(target instanceof Enemy||target instanceof Player))return;
-        MartialProgress.addMastery(p,MartialArts.art(MartialArts.SANGUINE_ART),(barrage?MartialArts.CRYSTAL_BARRAGE:MartialArts.BLOOD_CRYSTAL).id(),1);
-        if(!barrage)MartialProgress.count(p,MartialArts.CRIMSON_CONTACT_HITS,1);
+        MartialProgress.addMastery(p,MartialArts.art(MartialArts.SANGUINE_ART),technique.id(),1);
+        if(technique==MartialArts.BLOOD_CRYSTAL)MartialProgress.count(p,MartialArts.CRIMSON_CONTACT_HITS,1);
     }
     public static void defend(LivingDamageEvent.Pre event) {
         if(event.getEntity() instanceof ServerPlayer p&&eligible(p)&&state(p).active()
@@ -172,6 +181,11 @@ public final class SanguineArt {
                         new com.murimblock.network.TechniquePayloads.Cooldown(MartialArts.BLOOD_CRYSTAL.id(),MartialService.cooldownLeft(p,MartialArts.BLOOD_CRYSTAL.id())));
             }
         }
+        var sword=SWORDS.get(id);
+        if(sword!=null) {
+            if(sword.entity().isRemoved())SWORDS.remove(id);
+            else if(now>=sword.throwAt()){SWORDS.remove(id);sword.entity().launch(Math.max(.5F,TechniquePower.damage(p,MartialArts.SANGUINE_ART,1)),false);}
+        }
         var salvo=SALVOS.get(id);
         if(salvo!=null){salvo.removeIf(e->e.isRemoved()||e.state()==BloodCrystalEntity.FLYING);if(salvo.isEmpty())SALVOS.remove(id);}
         var orbit=CRYSTALS.get(id);
@@ -183,11 +197,12 @@ public final class SanguineArt {
         if(releasePose&&c.owner.isAlive()&&!KnockdownService.isHindered(c.owner)&&charging(c.owner))
             EpicFightBridge.patch(c.owner).playAnimationSynchronized(yesman.epicfight.gameasset.Animations.BIPED_IDLE,0);
     }
+    private static void cancelSword(UUID id){var s=SWORDS.remove(id);if(s!=null&&s.entity().state()==BloodCrystalEntity.CHARGING)s.entity().discard();}
     private static void cancelSalvo(UUID id){var cs=SALVOS.remove(id);if(cs!=null)cs.forEach(e->{if(e.state()!=BloodCrystalEntity.FLYING)e.discard();});}
     static void forget(@Nullable UUID id) {
         if(id==null){for(UUID user:List.copyOf(USERS.keySet()))forget(user);CREDITED.clear();return;}
         var p=USERS.remove(id);if(p!=null)p.setData(BloodCrystalAttachments.STATE,BloodCrystalState.EMPTY);
-        cancelCharge(id);cancelSalvo(id);CREDITED.remove(id);
+        cancelCharge(id);cancelSalvo(id);cancelSword(id);CREDITED.remove(id);
         var orbit=CRYSTALS.remove(id);if(orbit!=null)orbit.forEach(BloodCrystalEntity::discard);
     }
 }

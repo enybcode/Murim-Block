@@ -101,7 +101,7 @@ public final class SanguineEffects {
 
     /** The light at the move's peak, once: a throw, a tear, the crystallization (stronger) or a barrage. */
     private static void flash(Seen s, Player p, float t) {
-        float peak = s.kind == 1 ? .30F : s.kind == 2 ? .43F : s.kind == 3 ? .55F : .30F;
+        float peak = s.kind == 1 ? .30F : s.kind == 2 ? .80F : s.kind == 3 ? .55F : .30F;
         if (s.flashed || s.last >= peak || t < peak) return;
         s.flashed = true;
         if (!PhotonLights.isEnabled()) return;

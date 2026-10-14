@@ -49,7 +49,7 @@ public final class BloodCrystalEffects {
         Vec3 at = crystal.centre();
         if (PhotonLights.isEnabled()) {
             PhotonLights.flash(new DynamicLight().point().at(at.x, at.y, at.z).color(.6F, .03F, .05F)
-                    .intensity(great ? 3.2F : .9F).range(great ? 7 : 2.2F).sourceRadius(great ? .8F : .2F), great ? 10 : 5);
+                    .intensity(great ? (crystal.sword() ? 2.4F : 3.2F) : .9F).range(great ? (crystal.sword() ? 5 : 7) : 2.2F).sourceRadius(great ? .8F : .2F), great ? 10 : 5);
         }
         if (great) explode(crystal, at);
     }
@@ -84,7 +84,8 @@ public final class BloodCrystalEffects {
         emitter.emit((IEffectExecutor) () -> level);
         emitter.updatePos(new Vector3f((float) at.x, (float) at.y, (float) at.z));
         RandomSource random = RandomSource.create(crystal.getId() * 31L + crystal.tickCount);
-        for (int i = 0; i < EXPLOSION_SHARDS; i++) {
+        int count = crystal.sword() ? EXPLOSION_SHARDS / 2 : EXPLOSION_SHARDS;
+        for (int i = 0; i < count; i++) {
             // Mostly outward and up, a ring of them flat along the ground.
             boolean ring = i % 4 == 0;
             double a = random.nextDouble() * Math.PI * 2, up = ring ? .05 + random.nextDouble() * .1 : -.2 + random.nextDouble() * 1.1;

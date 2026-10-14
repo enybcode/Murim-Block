@@ -43,6 +43,7 @@ import yesman.epicfight.client.input.EpicFightKeyMappings;
 @EventBusSubscriber(modid=Murimblock.MOD_ID,value=Dist.CLIENT)
 public final class SanguineTour {
     private static boolean creating,finished,m1Seen,throwSeen,barrageSeen;
+    private static int shardsBefore;
     private static int ticks;
     private static int attackReleaseAt;
     private static Marker camera;
@@ -144,14 +145,29 @@ public final class SanguineTour {
                 case 703 -> mc.options.keyHotbarSlots[0].setDown(false);
                 case 745 -> server.execute(()->{check(zombie.getHealth()<500,"the great crystal strikes: "+zombie.getHealth());
                     check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>0,"its explosion throws Photon crystal shards");});
-                case 760 -> finish(mc);
+                // Scarlet Tear's blood sword: it forms in the hand, the arc strikes, the sword is thrown and explodes.
+                case 765 -> server.execute(()->{target(server,2.2);var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,100);
+                    p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,com.murimblock.martial.BloodCrystalState.EMPTY);});
+                case 770 -> {view(mc,3.4,1.6,1.2);shardsBefore=com.murimblock.client.BloodCrystalEffects.shardsThrown();}
+                case 774 -> press(mc,1);
+                case 776 -> mc.options.keyHotbarSlots[1].setDown(false);
+                case 786 -> server.execute(()->check(SanguineArt.holdsSword(self(server)),"Scarlet Tear forms a blood sword in the hand"));
+                case 800 -> server.execute(()->check(zombie.getHealth()<500,"the sword's arc strikes: "+zombie.getHealth()));
+                case 820 -> {check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>shardsBefore,"the thrown sword explodes");
+                    server.execute(()->{MartialService.resetCooldowns(self(server));QiService.setQi(self(server),100);});}
+                case 828 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
+                case 832 -> press(mc,1);
+                case 834 -> mc.options.keyHotbarSlots[1].setDown(false);
+                case 846 -> capture(mc,"sword-first-person.png");
+                case 852 -> capture(mc,"sword-first-person-coiled.png");
+                case 880 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;
             if(ticks>=470&&ticks<=495&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_THROW))throwSeen=true;
             if(ticks>=504&&ticks<=545&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_BARRAGE))barrageSeen=true;
             record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,304);
-            record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);
+            record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);record(mc,"scarlet-sword",772,820);record(mc,"sword-first",832,862);
             // Hold key 1 for the whole great charge: the key state is reset between ticks.
             if(ticks>640&&ticks<703)mc.options.keyHotbarSlots[0].setDown(true);record(mc,"barrage",502,548);
         }catch(Exception e){check(false,"tour exception: "+e);finish(mc);}
