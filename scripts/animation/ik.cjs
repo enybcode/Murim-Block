@@ -21,6 +21,8 @@ const POINTS = {
   kneeL: m => b.origin(m.Leg_L),
   head: m => b.origin(m.Head),
   mid: m => carried(m, 'Tool_R', [0.37, 0.5, 0.78]),
+  // On a long haft, where the second hand holds: a fist (0.25) behind the right hand, on the blade's line.
+  haft: m => carried(m, 'Tool_R', [0.375, -0.28, 0.84]),
   edge: m => carried(m, 'Tool_R', [0.37, 0.5, 0.68]),
   elbowR: m => b.origin(m.Hand_R),
 };

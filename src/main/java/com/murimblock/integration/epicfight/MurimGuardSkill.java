@@ -176,6 +176,12 @@ public class MurimGuardSkill extends ParryingSkill {
         return tick != null && tick == entity.tickCount;
     }
 
+    /** Whether this player stopped a hit with a perfect parry in the last {@code ticks} ticks. */
+    public static boolean parriedWithin(LivingEntity entity, int ticks) {
+        Integer tick = PARRIED_HIT.get(entity.getUUID());
+        return tick != null && entity.tickCount - tick <= ticks;
+    }
+
     /** Whether this player took the current hit on a normal parry (this tick). */
     public static boolean guardedThisTick(LivingEntity entity) {
         Integer tick = GUARDED_HIT.get(entity.getUUID());

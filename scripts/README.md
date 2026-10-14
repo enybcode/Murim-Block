@@ -58,6 +58,10 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   manches, bandes, sandales ; bandeau, chignon, épaulière, gourde, foulard, capuche de loup, turban, voile, masque selon la tenue) :
   le mesh `animmodels/entity/mountain_bandit.json`, ses cinq atlas `textures/entity/mountain_bandit/3d/` et le projet
   Blockbench `art/blockbench/mountain_bandit.bbmodel`.
+- `node scripts/animation/bandit-chief-3d.cjs` : le Bandit Chief en 3D (mesh `animmodels/entity/bandit_chief.json`, atlas
+  `textures/entity/bandit_chief.png`, projet Blockbench) ; `node scripts/animation/chief-axe-model.cjs` : sa grande hache ;
+  `node scripts/animation/chief-axe.cjs` : ses trois attaques (`animations/biped/murim/chief_*.json`). Voir `docs/mobs/bandit-chief.md`.
+  Les modèles 3D de mobs partagent `scripts/animation/mesh-kit.cjs`.
 - `java scripts/worldgen/BanditSkins.java src/main/resources/assets/murimblock/textures/entity/mountain_bandit` : les cinq tenues du bandit en skins 64x64 (rendu vanilla de secours, sans Epic Fight).
 - `java scripts/animation/FramesToGif.java <dossier> <sortie.gif> [délai ms] [largeur] [x,y,l,h]` assemble des images en GIF ; `--sheet` fait une planche contact.
 

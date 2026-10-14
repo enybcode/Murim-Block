@@ -7,6 +7,7 @@ import com.murimblock.mob.MurimEntities;
 import com.murimblock.world.block.MurimBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -40,6 +41,18 @@ public final class MurimItems {
     public static final DeferredItem<SwordItem> BANDIT_DAO = ITEMS.register("bandit_dao",
             () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 2, -2.4F))));
 
+    /**
+     * The Bandit Chief's great axe: a crescent blade on a haft taller than a man, two-handed (a greatsword for Epic
+     * Fight: data/murimblock/capabilities/weapons/chief_great_axe.json). Heavy and slow: 9 damage in a player's hand,
+     * the 8 of the chief's blows (his own attack is 0). He drops it one time in ten.
+     */
+    public static final DeferredItem<AxeItem> CHIEF_GREAT_AXE = ITEMS.register("chief_great_axe",
+            () -> new AxeItem(Tiers.IRON, new Item.Properties().rarity(Rarity.UNCOMMON).attributes(AxeItem.createAttributes(Tiers.IRON, 6.0F, -3.3F))));
+
+    /** Tiger orange and the dark of his vest. */
+    public static final DeferredItem<DeferredSpawnEggItem> BANDIT_CHIEF_SPAWN_EGG = ITEMS.register("bandit_chief_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_CHIEF, 0xD07A28, 0x2A1A14, new Item.Properties()));
+
     /** Ash-grey robe and the red of the bandits' headbands. */
     public static final DeferredItem<DeferredSpawnEggItem> MOUNTAIN_BANDIT_SPAWN_EGG = ITEMS.register("mountain_bandit_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.MOUNTAIN_BANDIT, 0x6F6A62, 0xA7302A, new Item.Properties()));
@@ -61,6 +74,8 @@ public final class MurimItems {
                         output.accept(CRAB_MAN_SPAWN_EGG.get());
                         output.accept(MOUNTAIN_BANDIT_SPAWN_EGG.get());
                         output.accept(BANDIT_DAO.get());
+                        output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
+                        output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                     })
