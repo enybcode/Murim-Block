@@ -140,6 +140,9 @@ public final class InnerWorldService {
                 soul.setOwner(player.getUUID());
                 inner.addFreshEntity(soul);
                 data.soul(player.getUUID(), soul.getUUID());
+                // The old soul of a rebuilt island, if already in view, goes at once (otherwise on its first tick).
+                AABB area = new AABB(centre).inflate(layout.radius() + 40, 60, layout.radius() + 40);
+                for (RemnantSoulEntity old : inner.getEntitiesOfClass(RemnantSoulEntity.class, area, s -> s != soul)) old.discard();
             }
         }
         return layout;
