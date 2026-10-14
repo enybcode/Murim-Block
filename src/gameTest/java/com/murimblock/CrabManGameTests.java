@@ -9,6 +9,7 @@ import com.murimblock.mob.CrabManEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.qi.QiRewardManager;
 import com.murimblock.qi.QiService;
+import com.murimblock.testing.LootRolls;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.biome.Biomes;
@@ -189,7 +191,7 @@ public final class CrabManGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "crab_man")
-    public static void crabManGivesTenExperienceTenQiAndNoLoot(GameTestHelper helper) {
+    public static void crabManGivesTenExperienceTenQiAndFish(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         var man = helper.spawn(MurimEntities.CRAB_MAN.get(), new BlockPos(1, 1, 1));
         man.setNoAi(true);
@@ -199,7 +201,14 @@ public final class CrabManGameTests {
             AtomicInteger deaths = new AtomicInteger();
             Consumer<LivingDropsEvent> observer = event -> {
                 if (event.getEntity() != man) return;
-                helper.assertTrue(event.getDrops().isEmpty(), "Crab man dropped loot");
+                int cod = 0;
+                for (var drop : event.getDrops()) {
+                    ItemStack stack = drop.getItem();
+                    if (stack.is(Items.COD)) cod += stack.getCount();
+                    else helper.assertTrue(stack.is(Items.SALMON) && stack.getCount() <= 1 || stack.is(Items.TRIDENT),
+                            "Crab man dropped something else than fish or a trident: " + stack);
+                }
+                helper.assertTrue(cod >= 1 && cod <= 2, "Crab man did not drop one or two cod: " + cod);
                 deaths.incrementAndGet();
             };
             NeoForge.EVENT_BUS.addListener(observer);
@@ -207,6 +216,28 @@ public final class CrabManGameTests {
                 man.hurt(player.damageSources().playerAttack(player), 1000);
                 helper.assertTrue(!man.isAlive() && deaths.get() == 1, "Crab man death pipeline did not run");
             } finally { NeoForge.EVENT_BUS.unregister(observer); }
+            helper.succeed();
+        } finally { man.discard(); cleanup(player); }
+    }
+
+    /** Its loot rolled 4000 times: one or two cod, a salmon one time in two, a trident one time in a hundred for a player. */
+    @GameTest(template = "foundation_arena", batch = "crab_man")
+    public static void crabManDropsCodSometimesASalmonAndARareTrident(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        var man = helper.spawn(MurimEntities.CRAB_MAN.get(), new BlockPos(1, 1, 1));
+        man.setNoAi(true);
+        try {
+            var byPlayer = LootRolls.roll(helper.getLevel(), man, player, 4000);
+            helper.assertTrue(byPlayer.onlyContains(Items.COD, Items.SALMON, Items.TRIDENT), "Crab man loot holds something else: " + byPlayer.rollsWith());
+            helper.assertTrue(byPlayer.rollsWith(Items.COD) == 4000 && byPlayer.mostInOneRoll(Items.COD) == 2,
+                    "Crab man cod not one or two each time: " + byPlayer.rollsWith(Items.COD) + " rolls, at most " + byPlayer.mostInOneRoll(Items.COD));
+            helper.assertTrue(byPlayer.mostInOneRoll(Items.SALMON) == 1 && byPlayer.rollsWith(Items.SALMON) > 1600 && byPlayer.rollsWith(Items.SALMON) < 2400,
+                    "Crab man salmon not one time in two: " + byPlayer.rollsWith(Items.SALMON) + " in 4000");
+            // About 40 in 4000; outside 10 to 80 would take odds of under one in a hundred thousand.
+            helper.assertTrue(byPlayer.rollsWith(Items.TRIDENT) >= 10 && byPlayer.rollsWith(Items.TRIDENT) <= 80,
+                    "Crab man trident not one time in a hundred: " + byPlayer.rollsWith(Items.TRIDENT) + " in 4000");
+            var byNothing = LootRolls.roll(helper.getLevel(), man, null, 2000);
+            helper.assertTrue(byNothing.rollsWith(Items.TRIDENT) == 0, "Crab man gave a trident to no player");
             helper.succeed();
         } finally { man.discard(); cleanup(player); }
     }

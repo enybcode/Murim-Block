@@ -405,7 +405,8 @@ public final class ClientVisualSmoke {
                 case 872 -> standAndLook(mc, new BlockPos(-3, 78, 0), -2.5, 79, 0.5, -90, -6);
                 case 880 -> playBanditCut(mc, MurimAnimations.FALLING_RAIN);
                 case 902 -> mc.options.hideGui = false;
-                // The Bandit Chief: in the preview with his great axe, then each of his attacks in the world, from his right.
+                // The Bandit Chief: in the preview with his great axe, then each of his attacks in the world: the cleave and the
+                // leaping slam from his right side, the sweep from straight above (where its edge shows), a pause before each.
                 case 906 -> mc.getSingleplayerServer().execute(() -> {
                     var level = mc.getSingleplayerServer().overworld();
                     var old = level.getEntity(opponentId);
@@ -426,14 +427,25 @@ public final class ClientVisualSmoke {
                 case 936 -> {
                     mc.setScreen(null);
                     mc.options.hideGui = true;
-                    standAndLook(mc, new BlockPos(-7, 78, 1), -6.5, 79, 1.5, -90, -4);
+                    standAndLook(mc, new BlockPos(-4, 79, 0), -3.4, 80, 1.0, -90, 4);
                 }
+                // Standing with the axe on his shoulder (his idle), from his right, then from the front after the slam.
+                case 944 -> capture("36-chief-idle-side.png");
+                // He plays his attacks at about two thirds of their speed (the great axe is slow): each is captured whole, and
+                // the camera moves a dozen ticks before (the client takes that long to show it from its new place).
                 case 946 -> playChief(mc, MurimAnimations.CHIEF_CLEAVE);
-                case 976 -> playChief(mc, MurimAnimations.CHIEF_SWEEP);
-                case 1004 -> playChief(mc, MurimAnimations.CHIEF_SLAM);
-                case 1042 -> mc.options.hideGui = false;
+                case 984 -> standAndLook(mc, new BlockPos(1, 85, 0), 1.5, 86, 0.5, 0, 90);
+                case 996 -> playChief(mc, MurimAnimations.CHIEF_SWEEP);
+                case 1032 -> standAndLook(mc, new BlockPos(-5, 79, 1), -4.6, 80, 1.8, -90, 4);
+                case 1046 -> playChief(mc, MurimAnimations.CHIEF_SLAM);
+                case 1096 -> standAndLook(mc, new BlockPos(3, 79, 5), 4.0, 80, 6.0, 146, 6);
+                case 1110 -> capture("37-chief-idle-front.png");
+                case 1111 -> {
+                    mc.options.hideGui = false;
+                    mc.getSingleplayerServer().execute(() -> mc.getSingleplayerServer().overworld().setBlockAndUpdate(new BlockPos(1, 85, 0), Blocks.AIR.defaultBlockState()));
+                }
                 // The faces up close in the preview: a bandit, then the chief, each in its own idle (blinks, glances).
-                case 1044 -> mc.getSingleplayerServer().execute(() -> {
+                case 1113 -> mc.getSingleplayerServer().execute(() -> {
                     var level = mc.getSingleplayerServer().overworld();
                     var old = level.getEntity(opponentId);
                     if (old != null) old.discard();
@@ -442,31 +454,31 @@ public final class ClientVisualSmoke {
                     bandit.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.BANDIT_DAO.get()));
                     bandit.setVariant(1);
                 });
-                case 1056 -> {
+                case 1125 -> {
                     previewTurn = -25;
                     previewScale = 300;
                     previewLift = 0.72F;
                     previewTracked(MountainBanditPatch.class);
                 }
-                case 1132 -> mc.getSingleplayerServer().execute(() -> {
+                case 1201 -> mc.getSingleplayerServer().execute(() -> {
                     var level = mc.getSingleplayerServer().overworld();
                     var old = level.getEntity(opponentId);
                     if (old != null) old.discard();
                     opponentId = spawnPreviewMob(level, MurimEntities.BANDIT_CHIEF.get());
                     ((BanditChiefEntity) level.getEntity(opponentId)).setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.CHIEF_GREAT_AXE.get()));
                 });
-                case 1144 -> {
+                case 1213 -> {
                     previewLift = 0.95F;
                     previewTracked(BanditChiefPatch.class);
                 }
-                case 1222 -> {
+                case 1291 -> {
                     previewTurn = 0;
                     previewScale = 80;
                     previewLift = 0.0625F;
                 }
                 // A band of three bandits standing in their idle, side by side in the world: each at its own point of
                 // the loop (IdlePhase), not moving in unison.
-                case 1226 -> {
+                case 1295 -> {
                     mc.setScreen(null);
                     mc.options.hideGui = true;
                     mc.getSingleplayerServer().execute(() -> {
@@ -486,10 +498,10 @@ public final class ClientVisualSmoke {
                         mc.getSingleplayerServer().getPlayerList().getPlayers().get(0).connection.teleport(2.0, 79.6, 5.2, 180, 4);
                     });
                 }
-                case 1250 -> capture("34-bandits-out-of-step.png");
-                case 1262 -> capture("35-bandits-out-of-step-later.png");
-                case 1266 -> mc.options.hideGui = false;
-                case 1270 -> {
+                case 1319 -> capture("34-bandits-out-of-step.png");
+                case 1331 -> capture("35-bandits-out-of-step-later.png");
+                case 1335 -> mc.options.hideGui = false;
+                case 1339 -> {
                     ClientCaptureChecks.verify(mc.gameDirectory.toPath().resolve("screenshots"));
                     Files.writeString(mc.gameDirectory.toPath().resolve("visual-smoke-passed.txt"),
                             "Clear Manuscript: four pages and settings; button/K/E/Escape close; all six settings toggled and restored; keybind action; compact/large screenshots. Custom mob tracking, Epic Fight patch/renderer and synchronized attack captures; crab man water ball (GeckoLib) charge, flight and burst. Techniques empty; native screens replaced; guard/roll synchronized; one key category; native items absent; stamina disabled.\n");
@@ -508,13 +520,13 @@ public final class ClientVisualSmoke {
         }
     }
 
-    /** The bandit's cuts and the chief's attacks, one capture a tick (see the cases 822 to 1042). */
+    /** The bandit's cuts and the chief's attacks, one capture a tick (see the cases 822 to 1110). */
     private static void banditCutFrames() throws Exception {
-        if (ticks >= 947 && ticks <= 972) capture(String.format("chief-cleave/%02d.png", ticks - 947));
-        if (ticks >= 977 && ticks <= 1000) capture(String.format("chief-sweep/%02d.png", ticks - 977));
-        if (ticks >= 1005 && ticks <= 1036) capture(String.format("chief-slam/%02d.png", ticks - 1005));
-        if (ticks >= 1060 && ticks < 1130) capture(String.format("bandit-face/%02d.png", ticks - 1060));
-        if (ticks >= 1148 && ticks < 1218) capture(String.format("chief-face/%02d.png", ticks - 1148));
+        if (ticks >= 947 && ticks <= 982) capture(String.format("chief-cleave/%02d.png", ticks - 947));
+        if (ticks >= 997 && ticks <= 1030) capture(String.format("chief-sweep/%02d.png", ticks - 997));
+        if (ticks >= 1047 && ticks <= 1094) capture(String.format("chief-slam/%02d.png", ticks - 1047));
+        if (ticks >= 1129 && ticks < 1199) capture(String.format("bandit-face/%02d.png", ticks - 1129));
+        if (ticks >= 1217 && ticks < 1287) capture(String.format("chief-face/%02d.png", ticks - 1217));
         if (ticks >= 829 && ticks <= 846) capture(String.format("bandit-cuts/drifting/%02d.png", ticks - 829));
         if (ticks >= 851 && ticks <= 868) capture(String.format("bandit-cuts/returning/%02d.png", ticks - 851));
         if (ticks >= 881 && ticks <= 900) capture(String.format("bandit-cuts/falling/%02d.png", ticks - 881));

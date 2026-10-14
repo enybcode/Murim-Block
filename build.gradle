@@ -132,6 +132,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the weapons in hand, the Bandit Dao and the great axe (see WeaponTour).
+        weaponTour {
+            client()
+            gameDirectory = project.file('build/weapon-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.weaponTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: the two-client check on a dedicated server (MpTourServer, MpTourClient; scripts/mp/run-mp-tour.sh).
         mpServer {
             server()
@@ -388,6 +397,22 @@ tasks.named('runSenseiTour').configure {
     doLast {
         def report = senseiTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sensei tour failed; see build/sensei-tour-run/sensei-tour-report.txt')
+    }
+}
+
+def weaponTourSave = layout.buildDirectory.dir('weapon-tour-run/saves/murim-weapon-tour')
+def weaponTourReport = layout.buildDirectory.file('weapon-tour-run/weapon-tour-report.txt')
+def weaponTourShots = layout.buildDirectory.dir('weapon-tour-run/screenshots')
+tasks.named('runWeaponTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only weapon tour.')
+        weaponTourSave.get().asFile.deleteDir()
+        weaponTourShots.get().asFile.deleteDir()
+        weaponTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = weaponTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Weapon tour failed; see build/weapon-tour-run/weapon-tour-report.txt')
     }
 }
 
