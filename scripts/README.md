@@ -83,6 +83,7 @@ Les autres vérifications en vrai client sont des tâches Gradle :
 - `gradlew -PgameTests runBiomeTour` : les 7 biomes et le sanctuaire dans un monde neuf.
 - `gradlew -PgameTests runKnockdownTour` : la mise à terre, le portage et le finish avec deux joueurs factices.
 - `gradlew -PgameTests runMartialTour` : l'Art de l'Épée du Nuage Azur (manuel, onglet Techniques, Cloud Step Slash au clavier).
+- `gradlew -PgameTests runCultivationTour` : la cultivation (méditation à la touche C, aura, percées, monde intérieur et démon du cœur, perception du Qi à la touche G), filmée pour sa fiche.
 - `gradlew -PgameTests runLongFistTour` : le Poing Long (rouleau, onglet Techniques, vrai M1 à mains nues, garde au vrai bouton, touches 1 à 3, Inch Force, plongée, Final Palm), filmé de côté.
 - `gradlew -PgameTests runSenseiTour` : Sensei Yun (idle de face et de côté, tour de caméra autour de la garde et de la houppe, marche de profil, ses coups sur un zombie d'entraînement), l'animateur du client vérifié.
 - `gradlew -PgameTests runParryTour` : la garde Murim (parade parfaite et normale, coups et vraies flèches).

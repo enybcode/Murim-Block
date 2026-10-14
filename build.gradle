@@ -115,6 +115,15 @@ neoForge {
         }
 
         // Development-only: real client check of the Long Fist (see LongFistTour).
+        // Development-only: real client tour of cultivation, filmed for its sheet (see CultivationTour).
+        cultivationTour {
+            client()
+            gameDirectory = project.file('build/cultivation-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.cultivationTour', 'true'
+            disableIdeRun()
+        }
+
         longFistTour {
             client()
             gameDirectory = project.file('build/long-fist-tour-run')
@@ -368,7 +377,23 @@ tasks.named('runMartialTour').configure {
     }
 }
 
-def longFistTourSave = layout.buildDirectory.dir('long-fist-tour-run/saves/murim-long-fist')
+def cultivationTourSave = layout.buildDirectory.dir('cultivation-tour-run/saves/murim-cultivation')
+def cultivationTourReport = layout.buildDirectory.file('cultivation-tour-run/cultivation-tour-report.txt')
+def cultivationTourShots = layout.buildDirectory.dir('cultivation-tour-run/screenshots')
+tasks.named('runCultivationTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only cultivation tour.')
+        cultivationTourSave.get().asFile.deleteDir()
+        cultivationTourShots.get().asFile.deleteDir()
+        cultivationTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = cultivationTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Cultivation tour failed; see build/cultivation-tour-run/cultivation-tour-report.txt')
+    }
+}
+
+def longFistTourSave =layout.buildDirectory.dir('long-fist-tour-run/saves/murim-long-fist')
 def longFistTourReport = layout.buildDirectory.file('long-fist-tour-run/long-fist-tour-report.txt')
 def longFistTourShots = layout.buildDirectory.dir('long-fist-tour-run/screenshots')
 tasks.named('runLongFistTour').configure {

@@ -74,6 +74,10 @@ public final class LongFist {
 
     /** Whether this player fights with Steady Breath: the Long Fist is their main style. */
     public static boolean stanceActive(Player player) {
+        // On a client, another player's martial data is unknown: their main style comes from what all clients see.
+        if (player.level().isClientSide) {
+            return com.murimblock.cultivation.MeditationService.aura(player).mainArt().filter(MartialArts.LONG_FIST::equals).isPresent();
+        }
         return MartialService.data(player).mainArt().filter(MartialArts.LONG_FIST::equals).isPresent();
     }
 

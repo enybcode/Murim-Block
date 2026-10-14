@@ -1,0 +1,287 @@
+# Le Qi et la cultivation
+
+> **État : implémenté sur `test` le 14/10/2026, en attente de validation en jeu par Enzo.** Voir « Ce qui est en jeu » à la fin : la méditation refaite (touche C), l'aura, les percées animées, le monde intérieur avec le démon du cœur et les missions, la perception du Qi (touche G) ont été ajoutés à la conception d'origine ci-dessous ; le démon du cœur remplace les pourcentages de la grande percée.
+>
+> Conception d'origine : Choix d'Enzo : environ **2 heures de jeu** pour atteindre le 2ᵉ royaume, des **bonus de stats** par royaume, une grande percée qui **peut échouer**, et **trois sources** de Qi Max (méditation, combat, élixirs). Les chiffres sont un premier jet, réglés ensuite par une simulation (voir « Équilibrage »).
+>
+> Les noms en jeu sont en anglais (règle du projet). Le nom anglais est donné en premier, la traduction entre parenthèses.
+
+## Ce qui existe aujourd'hui
+
+- **Deux nombres** (`QiData`) : le **Qi**, la réserve que les techniques dépensent, et le **Qi Max**, la capacité. Le Qi Max sert aussi de jauge de cultivation.
+- **9 royaumes de 4 étapes** (`CultivationRealm`, `CultivationStage`), avec un seuil de Qi Max pour chaque étape (`CultivationProgression`) : de 100 à 90 000.
+- **La charge de Qi** (`QiChargeService`) : touche tenue, joueur immobile, régénération plus rapide.
+- **Les récompenses de kills** (`QiRewardManager`, [QI_REWARDS.md](../QI_REWARDS.md)) avec anti-farm et premières victoires sur les boss.
+- **La mort** coûte 10 % du Qi Max pour de bon (plancher 100).
+
+**Le problème :**
+- Rien ne fait monter le Qi Max en jeu : les kills ne remplissent que la réserve, et seules les commandes changent le Qi Max.
+- Il n'y a aucune action de percée, et un royaume n'apporte rien.
+- La régénération (1 % du max par minute) est trop lente face au coût des techniques (10 à 20 Qi).
+
+La cultivation existe donc sur le papier mais n'est pas jouable.
+
+## L'idée
+
+- **Le Qi est le carburant** du combat : il se vide et revient vite.
+- **Le Qi Max est la cultivation** : il monte lentement, par trois sources, et chaque étape franchie compte.
+- **Une percée par étape** : les petites se font toutes seules, les grandes (changer de royaume) se tentent, avec un risque.
+- **Chaque royaume rend plus fort** : santé, dégâts, vitesse, poings nus.
+
+## Le Qi (la réserve)
+
+| Situation | Régénération |
+|---|---|
+| Hors mode combat | 5 % du Qi Max par minute |
+| En mode combat | 2 % du Qi Max par minute |
+| En méditation | 40 % du Qi Max par minute (plein en 2,5 min) |
+
+Le combat continue de rendre du Qi comme aujourd'hui :
+- +1 par coup du passif qui touche ;
+- +5 ou +6 par parade parfaite ;
+- la récompense des kills.
+
+## La méditation : « Meditate »
+
+C'est la charge de Qi actuelle, renommée à l'écran « Meditate » (l'identifiant de la touche ne change pas).
+
+- **Posture** : le joueur s'assoit en tailleur, avec une nouvelle animation Blockbench (la posture du lotus), immobile, les mains jointes.
+- **Ce qu'elle fait** :
+  - tant que la réserve n'est pas pleine, elle la remplit (40 % par minute) ;
+  - une fois pleine, elle **condense** le Qi en Qi Max.
+- **Interruption** : un coup reçu, un mouvement, une attaque ou une mise à terre arrêtent la méditation.
+
+### La condensation
+
+- **Le gain** : 1,2 % du Qi Max par minute, multiplié par le lieu et par l'efficacité du royaume.
+- **Exemple** : à 150 de Qi Max, dans un lieu ordinaire et au 1ᵉʳ royaume, on gagne environ 1,8 Qi Max par minute.
+
+| Lieu | Multiplicateur |
+|---|---|
+| Ordinaire | ×1,0 |
+| Un biome Murim (les 7) | ×1,25 |
+| En altitude (au-dessus de y = 140) | ×1,5 |
+| **Lieu de pouvoir** : le Sanctuaire de la Falaise des Nuages, plus tard d'autres sites | ×2,0 |
+
+On garde le plus haut multiplicateur ; ils ne s'additionnent pas. L'onglet Cultivation affiche la qualité du lieu où l'on médite.
+
+**Contre le farm en AFK** (surtout en multijoueur) :
+- chaque jour de jeu (20 minutes réelles), les **10 premières minutes** de condensation comptent en entier ;
+- au-delà, la condensation ne compte qu'au quart.
+
+L'onglet affiche ce qui reste pour la journée.
+
+## Le combat
+
+Deux règles simples, toujours après l'anti-farm existant :
+
+- **Les méridiens s'élargissent** : **5 %** du Qi dépensé en techniques va au Qi Max. Une technique à 10 Qi rapporte 0,5.
+- **L'expérience du combat** : **5 %** de la récompense de chaque kill va au Qi Max, en plus de la réserve. Exemple : un zombie (4 Qi) rapporte 0,2 Qi Max.
+
+**Première victoire sur un boss** : son bonus de première victoire va **au Qi Max**, une seule fois par joueur.
+- Bandit Chief : +30 Qi Max.
+- Gardien ancien : +100 Qi Max.
+- Warden : +250 Qi Max.
+- Wither : +400 Qi Max.
+- Ender Dragon : +600 Qi Max.
+
+Ces chiffres sont à revoir dans l'équilibrage.
+
+## Les élixirs
+
+Deux pilules au départ. On les fabrique à l'établi avec la flore des biomes Murim, ce qui oblige à voyager. Un four d'alchimie viendra plus tard.
+
+| Pilule | Recette (sans forme) | Effet |
+|---|---|---|
+| **Qi Gathering Pill** (Pilule de rassemblement du Qi), ×2 | Lotus Blossom (Jiangnan) + Chrysanthemum (vallée des pêchers) + Sea Buckthorn (plateau de loess) | +10 Qi Max, et la réserve remplie |
+| **Realm-Breaking Pill** (Pilule de rupture du royaume), ×1 | Cistanche (désert du Hexi) + Huangshan Rhododendron (pics de la mer de nuages) + Lotus Blossom + lingot d'or | +30 % de chances à la prochaine grande percée, si elle est tentée dans les 10 minutes |
+
+La Realm-Breaking Pill peut aussi tomber du Bandit Chief (1 chance sur 4).
+
+### La toxicité
+
+- **Chaque pilule ajoute 30 de toxicité.** Elle baisse de 1 par minute.
+- **L'effet est réduit d'autant** : à 60 de toxicité, une pilule ne donne plus que 40 % de son effet.
+- **Au-delà de 100**, la pilule empoisonne (Nausée et Poison pendant 10 s) et ne donne rien.
+- La toxicité s'affiche dans l'onglet Cultivation. Au-dessus de 50, elle réduit aussi les chances de grande percée.
+
+## Les percées
+
+### La petite percée (entre deux étapes)
+
+- Elle se fait **toute seule** dès que le Qi Max atteint le seuil, quelle que soit la source.
+- On voit une spirale de particules montante, on entend un son, et un message s'affiche : « You broke through to Middle Qi Sensing ».
+- La toute première arrive dès la première méditation : le seuil Early → Middle (100) est déjà atteint au départ. Elle sert de tutoriel.
+
+### La grande percée (entre deux royaumes)
+
+- **Le goulot d'étranglement** : à l'étape Peak, le Qi Max se bloque au seuil du royaume suivant. Le gain en trop est perdu tant que la percée n'a pas réussi.
+- **Pour la tenter** :
+  - Qi Max au seuil, réserve pleine ;
+  - en méditation, pas en mode combat, santé au moins à moitié ;
+  - puis bouton **« Attempt Breakthrough »** dans l'onglet Cultivation.
+- **Le déroulé** : 10 secondes de concentration, où le Qi tourbillonne autour du joueur. Un coup reçu pendant ces 10 secondes compte comme un échec.
+
+**Les chances de réussite**, affichées avant de tenter :
+
+| Facteur | Effet |
+|---|---|
+| Base | 50 % |
+| Lieu de pouvoir (sanctuaire) ; altitude ou biome Murim | +25 % ; +10 % |
+| Realm-Breaking Pill prise dans les 10 dernières minutes | +30 % |
+| Chaque échec précédent à ce royaume | +10 % (au plus +30 %) |
+| Toxicité au-dessus de 50 | −20 % |
+| Plafond | 95 % |
+
+**Réussite :**
+- royaume suivant, étape Early ;
+- les bonus du royaume s'appliquent, la réserve est remplie ;
+- grande colonne de lumière et explosion de particules, son de gong, message à tout le serveur : « [joueur] broke through to Qi Guiding ».
+
+**Échec : la déviation du Qi** (走火入魔, *zǒuhuǒ rùmó*) :
+- on perd **15 % du Qi Max**, ce qui fait repasser sous le seuil : il faut le regagner avant de retenter ;
+- la réserve est vidée ;
+- l'effet **« Qi Deviation »** dure 5 minutes : Lenteur I, Faiblesse I, aucune régénération ;
+- particules rouge sombre, le joueur tousse ;
+- on **ne perd jamais de royaume**.
+
+**Plus tard** : à partir de Foundation Establishment (6ᵉ royaume), la **tribulation céleste**. Des éclairs frappent le joueur pendant sa percée, et il doit y survivre.
+
+## Ce que donne chaque royaume
+
+Des modificateurs d'attributs aux identifiants stables, recalculés à chaque changement de royaume :
+- **Dégâts** : multiplient le total, arme comprise ;
+- **Mains nues** : dégâts ajoutés quand la main principale est vide, ce qui règle aussi la question des dégâts du Poing Long ;
+- **Les étapes** n'augmentent que le Qi Max, donc la réserve.
+
+| Royaume | Qi Max pour y entrer | Santé | Dégâts | Vitesse | Mains nues |
+|---|---|---|---|---|---|
+| 1. Qi Sensing | 100 (départ) | — | — | — | — |
+| 2. Qi Guiding | 250 | +4 (2 ♥) | +5 % | +2 % | +1 |
+| 3. Qi Condensation | 650 | +8 | +10 % | +4 % | +2 |
+| 4. Qi Liquefaction | 1 250 | +12 | +15 % | +6 % | +3 |
+| 5. Qi Crystallization | 2 500 | +16 | +20 % | +8 % | +4 |
+| 6. Foundation Establishment | 5 000 | +24 | +30 % | +10 % | +6 |
+| 7. Core Formation | 10 000 | +32 | +40 % | +12 % | +8 |
+| 8. Nascent Soul | 20 000 | +40 | +50 % | +14 % | +10 |
+| 9. Void Enlightenment | 45 000 | +50 | +60 % | +15 % | +12 |
+
+Débloquages prévus plus tard, hors première tranche :
+- le **qinggong** (saut léger) au 2ᵉ royaume ;
+- des arts martiaux qui demandent un royaume minimum ;
+- la pression d'aura d'un royaume supérieur.
+
+## La mort
+
+- Elle coûte toujours **10 % du Qi Max**, mais **jamais sous le seuil de l'étape actuelle** : on ne perd ni étape ni royaume.
+- La réserve est vidée.
+
+## Équilibrage
+
+**Objectifs de temps de jeu** pour un joueur type, avec une partie normale (combat, exploration, un peu de méditation) :
+
+| Passage | Temps visé (cumulé) |
+|---|---|
+| Royaume 1 → 2 | ~2 h |
+| 2 → 3 | ~4 h (6 h) |
+| 3 → 4 | ~7 h (13 h) |
+| 4 → 5 | ~12 h (25 h) |
+| au-delà | 20 h et plus par royaume (fin de jeu) |
+
+**Répartition prévue pour les 2 premières heures** (+150 Qi Max, de 100 à 250) :
+- méditation (~20 min de condensation) : ~45 ;
+- techniques (~600 Qi dépensés) : ~30 ;
+- kills (~120) : ~30 ;
+- élixirs (3 pilules) : ~30 ;
+- première victoire sur le Bandit Chief : +30.
+
+**Comment on tient les objectifs :**
+- le gain de méditation est un pourcentage du Qi Max ;
+- l'**efficacité du royaume** baisse à chaque royaume (×0,8 par royaume, à régler), pour que les royaumes suivants prennent plus de temps ;
+- un **test de simulation** (`CultivationBalanceTest`) joue un « joueur type » minute par minute et vérifie chaque objectif à ±20 %. On règle les chiffres dans un seul fichier (`CultivationProgression`, `QiConstants`) jusqu'à ce qu'il passe.
+
+## Interface
+
+**Onglet Cultivation :**
+- royaume et étape ;
+- barre de Qi Max vers le prochain seuil ;
+- qualité du lieu ;
+- condensation restante aujourd'hui ;
+- toxicité ;
+- bonus du royaume actuel et du suivant ;
+- à l'étape Peak, bouton « Attempt Breakthrough » avec les chances affichées.
+
+**HUD :** la petite barre bleue reste la même. En méditation, réserve pleine, un mince liseré doré montre la progression vers la prochaine étape.
+
+**Profile et Info :** pas de changement (Stage ??? reste la règle).
+
+## Données sauvegardées
+
+- **Dans `QiData`**, de nouveaux champs optionnels :
+  - toxicité ;
+  - minutes de condensation du jour, et quel jour ;
+  - échecs au royaume actuel ;
+  - moment de la dernière Realm-Breaking Pill.
+- Les anciennes sauvegardes se chargent sans eux.
+- Les identifiants des royaumes et des étapes ne changent pas.
+
+## Tests prévus
+
+- **Unitaires** :
+  - la simulation d'équilibrage ;
+  - les seuils, le goulot d'étranglement et les chances de percée ;
+  - la toxicité ;
+  - le plancher de la mort ;
+  - les anciennes sauvegardes.
+- **GameTests** :
+  - la méditation qui condense seulement une fois la réserve pleine ;
+  - le plafond du jour ;
+  - le Qi Max venu des techniques et des kills ;
+  - les petites percées automatiques ;
+  - la grande percée réussie et ratée (hasard fixé) ;
+  - les bonus de stats appliqués et retirés ;
+  - les pilules et leur toxicité ;
+  - la mort.
+- **Vrai client** : une visite (méditation assise, percée réussie, déviation, onglet Cultivation).
+
+## Découpage proposé
+
+1. **Le cœur** :
+   - régénération rééquilibrée, méditation qui condense (lieux, plafond du jour) ;
+   - Qi Max venu des techniques, des kills et des premières victoires sur les boss ;
+   - petites et grandes percées, bonus de royaume, plancher de la mort ;
+   - onglet Cultivation, simulation d'équilibrage.
+2. **Les élixirs** : les deux pilules, leurs recettes, la toxicité, la pilule lâchée par le Bandit Chief.
+3. **Plus tard** :
+   - la posture du lotus en animation (en attendant, la pose de charge actuelle) ;
+   - la tribulation céleste ;
+   - le qinggong ;
+   - les méthodes de cultivation (心法, des manuels qui multiplient la méditation) ;
+   - le four d'alchimie ;
+   - un mini-jeu de respiration.
+
+## Questions ouvertes pour Enzo
+
+1. **Message à tout le serveur** à chaque grande percée : oui, ou seulement au joueur ?
+2. **Les chiffres de stats** du tableau : trop forts ou trop faibles ? (Au 9ᵉ royaume : +25 cœurs et +60 % de dégâts.)
+3. **La posture du lotus** dès la première tranche, ou plus tard ?
+4. **D'autres lieux de pouvoir** à ajouter : le Temple de bambou dans la brume, le jardin de la lune de lotus ?
+
+## Ce qui est en jeu (14/10/2026)
+
+Ce qui suit l'emporte sur la conception ci-dessus quand elles diffèrent.
+
+- **La méditation (touche C)** : un appui s'assoit en tailleur (animations Blockbench `scripts/animation/meditation.cjs` : s'asseoir, lotus qui respire, se relever), un autre relève ; bouger relève aussi, un coup reçu arrête. La vue quitte les yeux et tourne lentement autour du corps (la souris la fait tourner). La réserve remonte à 40 % par minute ; pleine, elle se condense en Qi Max (`MeditationService`). La barre de Qi s'affiche en méditant, avec un liseré doré vers l'étape suivante.
+- **L'aura**, vue de tous (`AuraState`, synchronisé à tous les clients, sans aucun royaume) : des étincelles qui montent en tournant, plus nombreuses quand la réserve se remplit, des flammes et un anneau au sol quand elle est pleine. Couleur selon le style principal : blanche sans art, bleu pâle pour le Nuage Azur, ambre pour le Poing Long. Correction au passage : les autres joueurs voient maintenant la garde du Poing Long.
+- **Le Qi Max** monte par la méditation (biome Murim ×1,25, altitude ×1,5, sanctuaire ×2, monde intérieur ×1,5 ; 10 minutes pleines par jour de jeu), les techniques (5 % du Qi dépensé), les kills (5 % de la récompense), les premières victoires sur les boss (le bonus du Bandit Chief n'était jamais versé : corrigé), les élixirs et les missions. Simulation d'un joueur type (`CultivationRulesTest`) : 2ᵉ royaume à 120 min, 3ᵉ à 6 h, 4ᵉ à 10 h 40, 5ᵉ à 17 h.
+- **Les percées** : les petites sont automatiques (spirale de Qi, anneau, cloche, souffle du corps). À l'étape Peak, le Qi Max se bloque au seuil et un message dit de méditer réserve pleine puis de tenir C.
+- **Le monde intérieur** (`murimblock:inner_world`, `InnerWorldService`) : en méditation, réserve pleine, tenir C une seconde et demie (une barre se remplit). Le corps reste assis avec son aura ; un coup sur lui arrache le joueur avec une déviation. On ne meurt pas dans le monde intérieur ; tomber de l'île ou tenir C ramène au corps. Chaque île est construite à l'image du joueur (`InnerIsland`) : taille selon le royaume, étang, pins, pierres flottantes, noyau doré, cour et mannequins pour le Poing Long, nuages et pavillon pour l'épée, une stèle par art appris, une fissure par échec ; le vide prend la couleur du Qi (gris orageux bas, bleu profond plein, voile rouge après des échecs).
+- **Le démon du cœur** (`HeartDemonEntity`) : à la grande percée, une copie sombre du joueur (son skin, yeux rouges, aura violette) avec son art (épée et coupes du Nuage Azur, ou poings et techniques du Poing Long), 1,2 fois sa santé, ses coups. La préparation l'affaiblit au lieu d'ajouter des pourcentages : pilule de rupture −30 %, sanctuaire −20 %, altitude ou biome Murim −10 %, chaque échec −10 % (au plus −30 %), toxicité au-dessus de 50 : +20 %, plancher 40 %. Vaincu : retour au corps, élévation en tailleur, colonne de lumière, onde de choc, message à tout le serveur, nouveau royaume. Perdu ou fui : déviation (−15 % de Qi Max sans descendre sous l'étape, réserve vidée, effet « Qi Deviation » 5 min).
+- **L'esprit et les missions** : l'âme d'un vieux maître donne la mission du jour : « rassembler le Qi dispersé » (10 orbes en une minute), puis « affronter son ombre » (un double à moitié force, sans risque). Récompense : 3 % et 5 % de l'étendue du royaume en Qi Max.
+- **Les élixirs** : Qi Gathering Pill (lotus, chrysanthème, argousier → 2 ; +10 Qi Max et réserve pleine) et Realm-Breaking Pill (cistanche, rhododendron, lotus, lingot d'or ; démon affaibli 10 min ; une chance sur quatre sur le Bandit Chief). Toxicité +30 par pilule, −1 par minute ; au-delà de 100, empoisonne.
+- **Les royaumes** donnent leurs bonus ; la mort coûte 10 % du Qi Max sans descendre sous l'étape.
+- **La perception du Qi (touche G, tenue)**, dès Qi Condensation, 1 Qi par seconde, 16 blocs en ligne de vue, décidée par le serveur pour chaque lecteur : sceau (一 à 九) et quatre points d'étape au-dessus d'un plus faible, étape floue au même royaume, sceau brouillé un royaume au-dessus, tourbillon sombre et vue qui tremble deux royaumes au-dessus. Les mobs Murim et les boss ont un royaume.
+- **L'onglet Cultivation** : Qi Max vers le seuil, lieu, condensation du jour, état de la percée, force du démon, toxicité, échecs, bonus.
+- **Protocole réseau 16.** L'ancienne « charge de Qi » (touche R) est retirée.
+- **Tests** : `CultivationRulesTest`, `CultivationJournalTest`, `CultivationGameTests` (le serveur de GameTests ne charge pas les dimensions des datapacks : l'End, très loin, y tient lieu de monde intérieur), et en vrai client `gradlew -PgameTests runCultivationTour` (19 vérifications, films de chaque étape). Pas encore validé par Enzo ni à deux vrais clients.
+- **Plus tard** : la tribulation céleste, le qinggong, la dissimulation de l'aura, les méthodes de cultivation, le four d'alchimie, le mini-jeu de respiration, d'autres lieux de pouvoir.

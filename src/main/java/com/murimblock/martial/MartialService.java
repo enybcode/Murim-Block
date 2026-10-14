@@ -6,7 +6,9 @@ import com.murimblock.combat.knockdown.KnockdownService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.network.TechniquePayloads;
 import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.CultivationRules;
+import com.murimblock.cultivation.CultivationService;
+import com.murimblock.cultivation.MeditationService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -97,7 +99,11 @@ public final class MartialService {
         double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
         if (!Techniques.perform(player, technique, riposte)) return CastResult.FAILED;
         if (riposte != null) MartialCombat.consumeRiposte(player);
-        if (cost > 0) QiService.removeQi(player, cost);
+        if (cost > 0) {
+            QiService.removeQi(player, cost);
+            // The meridians widen with use: a share of the Qi spent goes to Qi Max.
+            CultivationService.gainQiMax(player, cost * CultivationRules.TECHNIQUE_SHARE, CultivationService.Source.TECHNIQUE);
+        }
         if (secondStep) {
             MartialCombat.takeSecondStep(player);
         } else {
@@ -116,7 +122,7 @@ public final class MartialService {
         if (technique == null || !data(player).hasTechnique(technique.id())) return CastResult.NO_TECHNIQUE;
         if (!CombatService.isInCombatMode(player)) return CastResult.NOT_IN_COMBAT;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
-        if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || QiChargeService.isCharging(player)) return CastResult.HINDERED;
+        if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || MeditationService.isMeditating(player)) return CastResult.HINDERED;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
         if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player)) return CastResult.HINDERED;
         ResourceLocation id = technique.id();

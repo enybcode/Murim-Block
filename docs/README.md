@@ -6,6 +6,7 @@
 - [Epic Fight](EPIC_FIGHT.md): pinned dependency and retained/disabled features.
 - [Clear Manuscript](gui/TAB_LAYOUT.md): current GUI, not the V4 reference.
 - [Qi rewards](QI_REWARDS.md): balance and temporary anti-farm history.
+- [Qi and cultivation](cultivation/qi-cultivation.md): meditation, aura, breakthroughs, the inner world and the Heart Demon, Qi Sense, elixirs, realm bonuses (14 October, on test).
 - [Armored crab](ARMORED_CRAB_DELIVERY.md): integrated assets, behavior and local verification.
 - [Bandit Chief](mobs/bandit-chief.md): the bandits' mini-boss, his great axe and attacks.
 - [Sensei Yun](mobs/azure-sensei.md): the Azure Cloud Sect's master in the Misty Bamboo Temple, his sword and his manual.

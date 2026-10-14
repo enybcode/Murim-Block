@@ -6,7 +6,7 @@ import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.martial.AzureCloudSword;
 import com.murimblock.martial.LongFist;
 import com.murimblock.network.FinishCinematicPayload;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.MeditationService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +130,7 @@ public final class KnockdownService {
     public static void knockDown(ServerPlayer player) {
         player.setHealth(1.0F);
         player.setData(KnockdownAttachments.PLAYER_KNOCKDOWN, KnockdownData.downedFor(DOWNED_TICKS));
-        QiChargeService.stopCharging(player);
+        MeditationService.stop(player, false);
         player.stopUsingItem();
         player.setSprinting(false);
         // Drops whoever they carried (allowed dismount), gets off any mount, and stops any finish they were doing.

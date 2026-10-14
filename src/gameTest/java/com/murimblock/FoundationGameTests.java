@@ -11,7 +11,7 @@ import com.murimblock.integration.epicfight.EpicFightContentPolicy;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.qi.QiRewardManager;
 import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.MeditationService;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -179,18 +179,19 @@ public final class FoundationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
-    public static void qiChargingStillLocksAndRestoresMovement(GameTestHelper helper) {
+    public static void meditationLocksAndRestoresMovement(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         try {
             double speed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
             double jump = player.getAttributeValue(Attributes.JUMP_STRENGTH);
-            helper.assertTrue(QiChargeService.startCharging(player), "Qi charging could not start with a sword equipped");
+            player.setOnGround(true);
+            helper.assertTrue(MeditationService.start(player), "Meditation could not start with a sword equipped");
             helper.assertTrue(player.getAttributeValue(Attributes.MOVEMENT_SPEED) == 0
-                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == 0, "Qi charging did not lock movement");
-            QiChargeService.stopCharging(player);
+                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == 0, "Meditation did not lock movement");
+            MeditationService.stop(player, false);
             helper.assertTrue(player.getAttributeValue(Attributes.MOVEMENT_SPEED) == speed
-                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == jump, "Charging left movement locked");
-            helper.assertTrue(QiService.getQi(player) == 100, "Starting/stopping charge spent Qi");
+                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == jump, "Meditation left movement locked");
+            helper.assertTrue(QiService.getQi(player) == 100, "Sitting down and getting up spent Qi");
             helper.succeed();
         } finally { cleanup(player); }
     }
@@ -200,16 +201,18 @@ public final class FoundationGameTests {
         ServerPlayer original = player(helper);
         ServerPlayer clone = player(helper);
         try {
-            QiChargeService.startCharging(clone);
+            clone.setOnGround(true);
+            MeditationService.start(clone);
             NeoForge.EVENT_BUS.post(new PlayerEvent.Clone(clone, original, true));
             helper.assertFalse(CombatService.getData(clone).combatMode(), "Respawn inherited a stale HUD mirror");
             CombatService.refreshMode(clone);
             helper.assertTrue(CombatService.getData(clone).combatMode() == EpicFightBridge.isCombatMode(clone), "HUD mirror disagreed with Epic Fight");
-            helper.assertFalse(QiChargeService.isCharging(clone), "Respawn inherited charging");
-            QiChargeService.startCharging(original);
+            helper.assertFalse(MeditationService.isMeditating(clone), "Respawn inherited the meditation");
+            original.setOnGround(true);
+            MeditationService.start(original);
             NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerLoggedOutEvent(original));
             helper.assertFalse(CombatService.getData(original).combatMode(), "Logout kept the HUD mirror");
-            helper.assertFalse(QiChargeService.isCharging(original), "Logout kept charging");
+            helper.assertFalse(MeditationService.isMeditating(original), "Logout kept the meditation");
             helper.succeed();
         } finally {
             cleanup(original);

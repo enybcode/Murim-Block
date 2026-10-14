@@ -52,6 +52,16 @@
         { "type": "minecraft:item", "name": "murimblock:chief_tassets" },
         { "type": "minecraft:item", "name": "murimblock:chief_fur_boots" }
       ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        { "condition": "minecraft:killed_by_player" },
+        { "condition": "minecraft:random_chance", "chance": 0.25 }
+      ],
+      "entries": [
+        { "type": "minecraft:item", "name": "murimblock:realm_breaking_pill" }
+      ]
     }
   ]
 }

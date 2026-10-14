@@ -50,6 +50,24 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<QiBladeEntity>> QI_BLADE =
             TYPES.register("qi_blade", () -> EntityType.Builder.<QiBladeEntity>of(QiBladeEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F).clientTrackingRange(6).updateInterval(1).build("murimblock:qi_blade"));
+    /** The inner world (docs/cultivation/qi-cultivation.md): a cultivator's own darkness, a dark copy of them. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.HeartDemonEntity>> HEART_DEMON =
+            TYPES.register("heart_demon", () -> EntityType.Builder.of(com.murimblock.cultivation.inner.HeartDemonEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:heart_demon"));
+    /** The body left seated in the lotus while its owner is in their inner world. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.MeditatingBodyEntity>> MEDITATING_BODY =
+            TYPES.register("meditating_body", () -> EntityType.Builder.<com.murimblock.cultivation.inner.MeditatingBodyEntity>of(
+                            com.murimblock.cultivation.inner.MeditatingBodyEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.0F).clientTrackingRange(10).build("murimblock:meditating_body"));
+    /** The remnant soul of an old master, in each inner world: it gives the day's missions. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.RemnantSoulEntity>> REMNANT_SOUL =
+            TYPES.register("remnant_soul", () -> EntityType.Builder.of(com.murimblock.cultivation.inner.RemnantSoulEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F).clientTrackingRange(10).build("murimblock:remnant_soul"));
+    /** A mote of scattered Qi (a mission of the inner world). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.QiMoteEntity>> QI_MOTE =
+            TYPES.register("qi_mote", () -> EntityType.Builder.<com.murimblock.cultivation.inner.QiMoteEntity>of(
+                            com.murimblock.cultivation.inner.QiMoteEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F).clientTrackingRange(10).build("murimblock:qi_mote"));
     private MurimEntities() { }
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -63,6 +81,8 @@ public final class MurimEntities {
                 .add(EpicFightAttributes.IMPACT, 1.5).build());
         event.put(MOUNTAIN_BANDIT.get(), MountainBanditEntity.createBanditAttributes().build());
         event.put(BANDIT_CHIEF.get(), BanditChiefEntity.createChiefAttributes().build());
+        event.put(HEART_DEMON.get(), com.murimblock.cultivation.inner.HeartDemonEntity.createAttributes().build());
+        event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
         event.put(AZURE_SENSEI.get(), AzureSenseiEntity.createSenseiAttributes().build());
     }
     private static void spawnPlacements(RegisterSpawnPlacementsEvent event) {
