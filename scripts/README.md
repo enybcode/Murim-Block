@@ -49,6 +49,8 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
 - `node scripts/animation/azure-cloud-animations.cjs [--preview build/anim-preview]` : les animations de l'Art de l'Épée du Nuage Azur (pour l'instant, Cloud Step Slash). `pose.cjs` regroupe l'écriture des poses, commune aux deux scripts.
 - `java scripts/worldgen/ManualTexture.java src/main/resources/assets/murimblock/textures/item` : la texture du Manuel de l'Épée du Nuage Azur.
 - `java scripts/worldgen/TechniqueIcons.java src/main/resources/assets/murimblock/textures/gui/technique` : les icônes 32x32 des techniques (barre de combat, onglet Techniques).
+- `java scripts/worldgen/BanditDao.java src/main/resources/assets/murimblock/textures/item` : la texture 16x16 du Dao de bandit.
+- `java scripts/worldgen/BanditSkins.java src/main/resources/assets/murimblock/textures/entity/mountain_bandit` : les cinq tenues du bandit, en skins 64x64 au format joueur.
 - `java scripts/animation/FramesToGif.java <dossier> <sortie.gif> [délai ms] [largeur] [x,y,l,h]` assemble des images en GIF ; `--sheet` fait une planche contact.
 
 Les autres vérifications en vrai client sont des tâches Gradle :

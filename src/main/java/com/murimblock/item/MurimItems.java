@@ -11,6 +11,8 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.Tiers;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -30,6 +32,18 @@ public final class MurimItems {
     public static final DeferredItem<DeferredSpawnEggItem> CRAB_MAN_SPAWN_EGG = ITEMS.register("crab_man_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.CRAB_MAN, 0x087C8B, 0xE7D1A1, new Item.Properties()));
 
+    /**
+     * The mountain bandits' sabre: a broad single-edged blade widening toward a clipped point, a brass guard, a grip
+     * wrapped in red cloth. A sword for Epic Fight (data/murimblock/capabilities/weapons/bandit_dao.json), between stone
+     * and iron: 5 damage in a player's hand, the 4 of a bandit's blows (its own attack is 0).
+     */
+    public static final DeferredItem<SwordItem> BANDIT_DAO = ITEMS.register("bandit_dao",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 2, -2.4F))));
+
+    /** Ash-grey robe and the red of the bandits' headbands. */
+    public static final DeferredItem<DeferredSpawnEggItem> MOUNTAIN_BANDIT_SPAWN_EGG = ITEMS.register("mountain_bandit_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.MOUNTAIN_BANDIT, 0x6F6A62, 0xA7302A, new Item.Properties()));
+
     /** Jade medallion of the Cloud Cliff sect: its needle points to the sanctuary. */
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
             () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
@@ -45,6 +59,8 @@ public final class MurimItems {
                     .displayItems((parameters, output) -> {
                         output.accept(ARMORED_CRAB_SPAWN_EGG.get());
                         output.accept(CRAB_MAN_SPAWN_EGG.get());
+                        output.accept(MOUNTAIN_BANDIT_SPAWN_EGG.get());
+                        output.accept(BANDIT_DAO.get());
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                     })
