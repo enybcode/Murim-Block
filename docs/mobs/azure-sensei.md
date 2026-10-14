@@ -29,8 +29,8 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
 
 - **Neutre** : il se promène dans son hall (6 blocs autour de sa place, une promenade toutes les 12 s en moyenne),
   regarde qui entre, n'attaque que qui le frappe. Ne disparaît jamais, garde sa place dans sa sauvegarde (`Home`).
-- **Clic droit** : il donne à chaque joueur son exemplaire du **Azure Cloud Sword Manual**, une fois (le même que la
-  bibliothèque du sanctuaire : un joueur en reçoit un, de l'un ou de l'autre). Pas à quelqu'un qu'il combat.
+- **Clic droit** : il ne donne rien (décision d'Enzo du 14/10) : « The Azure Cloud is not given, it is earned. Draw your
+  blade and take it from me, if you can. » Le manuel ne se gagne qu'en le battant.
 - **Boss difficile** : 300 PV, armure 12 (robustesse 4), recul résisté à 90 %, armure de stun 20 (les coups ne
   l'interrompent presque pas), monte les marches d'un bloc. 10 par coup (4 à lui, 6 de l'Azure Cloud), avant les
   multiplicateurs de l'art.
@@ -48,7 +48,7 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
 - **Barre de boss** bleue « Sensei Yun » (10 crans) pour les joueurs proches de lui, encadrée de petits nuages en pixel
   art : un nuage à chaque bout de la barre, un petit de chaque côté de son nom (`client/SenseiBossBarClouds`).
 - **Butin**, tué par un joueur : son épée **Azure Cloud** une fois sur 200 (0,5 %, Looting : 0,75 % puis +0,25 point par
-  niveau) et le **Azure Cloud Sword Manual** une fois sur quatre (25 %, Looting : 30 % puis +5 points par niveau) (`loot_table/entities/azure_sensei.json`).
+  niveau) et **toujours le Azure Cloud Sword Manual** (14/10 : il en est la seule source, et il ne revient pas) (`loot_table/entities/azure_sensei.json`).
   Rien s'il meurt autrement. 100 XP.
 - **Qi** (14/10) : la première victoire sur lui donne **+30 de Qi Max** (une fois par joueur, comme le Bandit Chief), plus les 5 % habituels du Qi du kill (30 de base, 100 de bonus de première victoire). Il est désormais la seule source du manuel : le pupitre du sanctuaire ne le donne plus.
 - Les manuels sont consommés à la lecture : un livre, une lecture (un joueur qui connaît déjà l'art garde le sien).
@@ -82,8 +82,8 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
 - Code : `AzureSenseiEntity`, `AzureSenseiPatch`, `AzureSenseiRenderer`, `SenseiBossBarClouds`,
   `MurimAnimations.buildAzureSensei`, `SectLibrary.give`, `BambooTemple` (sa place dans le hall), `MartialManualItem`
   (manuel consommé).
-- Tests : `AzureSenseiGameTests` (épée et sa catégorie, idle et marche, maison sauvegardée, neutralité, manuel donné une
-  fois, barre de boss, seconde phase et récupération, butin, ses coups), `SiteGameTests` (le temple compte 1 sensei) ; en vrai client
+- Tests : `AzureSenseiGameTests` (épée et sa catégorie, idle et marche, maison sauvegardée, neutralité, aucun manuel donné
+  en parlant, barre de boss, seconde phase et récupération, butin, ses coups), `SiteGameTests` (le temple compte 1 sensei) ; en vrai client
   `gradlew -PgameTests runSenseiTour` (idle de face et de côté, tour de caméra autour de la garde, marche de profil,
   combat contre un zombie d'entraînement puis en seconde phase avec la liste de ses coups, barre de boss et ses nuages ;
   rapport `build/sensei-tour-run/sensei-tour-report.txt`).

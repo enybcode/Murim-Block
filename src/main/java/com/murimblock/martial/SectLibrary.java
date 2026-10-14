@@ -1,22 +1,16 @@
 package com.murimblock.martial;
 
-import com.murimblock.item.MurimItems;
 import com.murimblock.world.structure.SanctuaryPlacement;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
- * The Azure Cloud Sword Manual's only source is Sensei Yun, in the Misty Bamboo Temple (decision of 14/10/2026): spoken
- * to, he hands every player their copy once; defeated, he may drop it. The Cloud Cliff Sanctuary's lectern gives nothing
- * any more. Its bell still counts for "Above the Sea of Clouds".
+ * The Cloud Cliff Sanctuary's bell, which counts for "Above the Sea of Clouds". Its library's lectern gives nothing any
+ * more: the Azure Cloud Sword Manual is only won by defeating Sensei Yun (decision of 14/10/2026).
  */
 public final class SectLibrary {
     private SectLibrary() {
@@ -39,20 +33,5 @@ public final class SectLibrary {
         if (centre == null) return false;
         double dx = pos.getX() - centre.getX(), dz = pos.getZ() - centre.getZ();
         return dx * dx + dz * dz <= BELL_REACH * BELL_REACH;
-    }
-
-    /** Gives the player their copy of the manual, if they never received one, in the giver's own words (translation keys). */
-    public static boolean give(ServerPlayer player, String given, String already) {
-        MartialData data = MartialService.data(player);
-        if (data.manualsReceived().contains(MartialArts.AZURE_CLOUD_SWORD)) {
-            player.displayClientMessage(Component.translatable(already), true);
-            return false;
-        }
-        MartialService.set(player, data.receivedManual(MartialArts.AZURE_CLOUD_SWORD));
-        ItemStack manual = new ItemStack(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get());
-        if (!player.getInventory().add(manual)) player.drop(manual, false);
-        player.level().playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
-        player.sendSystemMessage(Component.translatable(given));
-        return true;
     }
 }

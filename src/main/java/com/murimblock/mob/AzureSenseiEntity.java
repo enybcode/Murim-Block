@@ -2,7 +2,6 @@ package com.murimblock.mob;
 
 import com.murimblock.integration.epicfight.EpicFightMobSupport;
 import com.murimblock.item.MurimItems;
-import com.murimblock.martial.SectLibrary;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -44,7 +43,7 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
  * old swordsman in azure robes and a straw hat, the left hand behind his back, the Azure Cloud low in his right. Neutral:
  * he strolls about his hall and watches whoever comes, and only draws on someone who strikes him (then he fights with
  * the Azure Cloud Sword Art, AzureSenseiPatch). Spoken to (right-click), he hands each player their own copy of the
- * Azure Cloud Sword Manual, once (its only source, SectLibrary). He stays where he was placed: he
+ * Azure Cloud Sword Manual, which he gives to no one: only by defeating him does a player get it (he always leaves it). He stays where he was placed: he
  * never despawns and keeps to a few blocks around his home.
  * <p>A hard boss: 300 health, armour 12, hardly moved or staggered, 10 a cut. Below half his health he stops holding back
  * (his second phase: quicker, and the art's great techniques, AzureSenseiPatch); left alone he recovers, and back to full
@@ -148,12 +147,12 @@ public class AzureSenseiEntity extends PathfinderMob {
         return bossBar.getProgress();
     }
 
-    /** Spoken to, he gives the manual (not to someone he is fighting). */
+    /** Spoken to, he gives nothing: the Azure Cloud is taken from him, he says (defeated, he always leaves the manual). */
     @Override protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND || isAggressive()) return InteractionResult.PASS;
         if (player instanceof ServerPlayer serverPlayer) {
             getLookControl().setLookAt(player);
-            SectLibrary.give(serverPlayer, "message.murimblock.sensei.given", "message.murimblock.sensei.already");
+            serverPlayer.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.murimblock.sensei.challenge"));
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
