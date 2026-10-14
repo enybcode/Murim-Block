@@ -124,6 +124,14 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the Sanguine Art (see SanguineTour).
+        sanguineTour {
+            client()
+            gameDirectory = project.file('build/sanguine-tour-run')
+            systemProperty 'murimblock.sanguineTour', 'true'
+            disableIdeRun()
+        }
+
         longFistTour {
             client()
             gameDirectory = project.file('build/long-fist-tour-run')
@@ -407,6 +415,22 @@ tasks.named('runCultivationTour').configure {
     doLast {
         def report = cultivationTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Cultivation tour failed; see build/cultivation-tour-run/cultivation-tour-report.txt')
+    }
+}
+
+def sanguineTourSaves = layout.buildDirectory.dir('sanguine-tour-run/saves')
+def sanguineTourReport = layout.buildDirectory.file('sanguine-tour-run/sanguine-tour-report.txt')
+def sanguineTourShots = layout.buildDirectory.dir('sanguine-tour-run/screenshots')
+tasks.named('runSanguineTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Sanguine Art tour.')
+        sanguineTourSaves.get().asFile.deleteDir()
+        sanguineTourShots.get().asFile.deleteDir()
+        sanguineTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = sanguineTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sanguine tour failed; see build/sanguine-tour-run/sanguine-tour-report.txt')
     }
 }
 

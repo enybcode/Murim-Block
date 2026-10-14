@@ -191,12 +191,12 @@ public final class MurimAnimations {
         OBBCollider tear = new OBBCollider(1.5D, 0.9D, 1.4D, 0, 1.0D, -1.6D);
         SANGUINE_GUARD = builder.nextAccessor("biped/murim/sanguine_guard", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
         SANGUINE_GUARD_HIT = builder.nextAccessor("biped/murim/sanguine_guard_hit", a -> new GuardAnimation(0.05F, a, Armatures.BIPED));
-        SANGUINE_STRAIGHT = builder.nextAccessor("biped/murim/sanguine_straight", a -> fistStrike(new AttackAnimation(0.05F, 0.09F, 0.14F, 0.23F, 0.36F, fist, root(), a, Armatures.BIPED), 1.0F));
-        SANGUINE_CROSS = builder.nextAccessor("biped/murim/sanguine_cross", a -> fistStrike(new AttackAnimation(0.05F, 0.08F, 0.12F, 0.24F, 0.38F, fist, root(), a, Armatures.BIPED), 1.0F));
-        SANGUINE_RISE = builder.nextAccessor("biped/murim/sanguine_rise", a -> fistStrike(new AttackAnimation(0.05F, 0.16F, 0.21F, 0.34F, 0.8F, fist, root(), a, Armatures.BIPED), 1.2F));
+        SANGUINE_STRAIGHT = builder.nextAccessor("biped/murim/sanguine_straight", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.09F, 0.14F, 0.23F, 0.36F, fist, root(), a, Armatures.BIPED), 1.0F)));
+        SANGUINE_CROSS = builder.nextAccessor("biped/murim/sanguine_cross", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.08F, 0.12F, 0.24F, 0.38F, fist, root(), a, Armatures.BIPED), 1.0F)));
+        SANGUINE_RISE = builder.nextAccessor("biped/murim/sanguine_rise", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.16F, 0.21F, 0.34F, 0.8F, fist, root(), a, Armatures.BIPED), 1.2F)));
         SANGUINE_CRYSTAL_CHARGE = builder.nextAccessor("biped/murim/sanguine_crystal_charge", a -> new HeldStance(0.12F, a));
         SANGUINE_CRYSTAL_THROW = builder.nextAccessor("biped/murim/sanguine_crystal_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
-        SCARLET_TEAR = builder.nextAccessor("biped/murim/sanguine_scarlet_tear", a -> technique(new AttackAnimation(0.06F, 0.30F, 0.40F, 0.58F, 1.35F, tear, root(), a, Armatures.BIPED), 1.5F)
+        SCARLET_TEAR = builder.nextAccessor("biped/murim/sanguine_scarlet_tear", a -> noHitPuff(technique(new AttackAnimation(0.06F, 0.30F, 0.40F, 0.58F, 1.35F, tear, root(), a, Armatures.BIPED), 1.5F))
                 .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(4))
                 .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(2))
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG));
@@ -434,6 +434,12 @@ public final class MurimAnimations {
     private static <A extends AttackAnimation> A fistStrike(A animation, float damage) {
         animation.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(damage));
         animation.addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 4.0F);
+        return animation;
+    }
+
+    /** The Sanguine Art's blows: no hit puff where they land (the art shows no particles). */
+    private static <A extends AttackAnimation> A noHitPuff(A animation) {
+        animation.addProperty(AttackPhaseProperty.PARTICLE, com.murimblock.martial.SanguineParticles.NO_HIT);
         return animation;
     }
 

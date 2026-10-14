@@ -56,6 +56,7 @@ public final class Murimblock {
         KnockdownAttachments.register(modEventBus);
         MartialService.register(modEventBus);
         com.murimblock.martial.BloodCrystalAttachments.register(modEventBus);
+        com.murimblock.martial.SanguineParticles.register(modEventBus);
         MurimAnimations.registerMotions();
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
         EpicFightBridge.registerHooks();

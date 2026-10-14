@@ -1,7 +1,7 @@
 package com.murimblock;
 
 import net.minecraft.client.Screenshot;
-import com.murimblock.client.SanguineEffects;
+
 import com.murimblock.combat.CombatService;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.MurimAnimations;
@@ -43,7 +43,7 @@ import yesman.epicfight.client.input.EpicFightKeyMappings;
 @EventBusSubscriber(modid=Murimblock.MOD_ID,value=Dist.CLIENT)
 public final class SanguineTour {
     private static boolean creating,finished,m1Seen,throwSeen,barrageSeen;
-    private static int ticks,points;
+    private static int ticks;
     private static int attackReleaseAt;
     private static Marker camera;
     private static Zombie zombie;
@@ -93,14 +93,14 @@ public final class SanguineTour {
                     yesman.epicfight.config.ClientConfig.showTargetIndicator=false;yesman.epicfight.config.ClientConfig.enableTargetEntityGuide=false;
                     // The recording camera can point at terrain; Adaptive would treat empty-hand input as mining.
                     yesman.epicfight.config.ClientConfig.playerBehaviorStrategy=yesman.epicfight.config.ClientConfig.PlayerBehaviorStrategy.SWITCHING_MODE;
-                    start=mc.player.position();view(mc,3.2,1.8,1.1);server.execute(()->target(server,1.3));points=SanguineEffects.emittedPoints();
+                    start=mc.player.position();view(mc,3.2,1.8,1.1);server.execute(()->target(server,1.3));
                 }
                 case 46,200,225,250,323,348,373,398,423,570 -> {
                     server.execute(()->{var p=self(server);zombie.moveTo(p.getX(),p.getY(),p.getZ()+1.3,180,0);zombie.setDeltaMovement(Vec3.ZERO);});
                     EpicFightKeyMappings.ATTACK.setDown(true);mc.options.keyAttack.setDown(true);
                     KeyMapping.click(EpicFightKeyMappings.ATTACK.getKey());attackReleaseAt=ticks+2;
                 }
-                case 61 -> {check(m1Seen,"attack key uses Sanguine M1");check(SanguineEffects.emittedPoints()>points,"M1 emits actual Photon particles");}
+                case 61 -> {check(m1Seen,"attack key uses Sanguine M1");}
                 case 78 -> {check(EpicFightBridge.patch(mc.player).currentCompositeMotion==MurimAnimations.Motions.SANGUINE_GUARD,"guard key uses Sanguine guard");capture(mc,"guard.png");}
                 case 86 -> EpicFightKeyMappings.GUARD.setDown(false);
                 case 92,150 -> server.execute(()->{MartialService.resetCooldowns(self(server));QiService.setQi(self(server),100);});
@@ -108,9 +108,9 @@ public final class SanguineTour {
                 case 96,156 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 195 -> server.execute(()->check(SanguineArt.state(self(server)).gauge()==7,"one M1 and two Scarlet casts build seven gauge points"));
                 case 268 -> server.execute(()->{check(SanguineArt.state(self(server)).gauge()==10&&!SanguineArt.state(self(server)).active(),"full gauge waits for manual activation: "+SanguineArt.state(self(server)));QiService.setQi(self(server),100);});
-                case 274 -> {points=SanguineEffects.emittedPoints();press(mc,2);}
+                case 274 -> press(mc,2);
                 case 276 -> mc.options.keyHotbarSlots[2].setDown(false);
-                case 303 -> {check(SanguineArt.state(mc.player).active(),"key 3 activates synchronized form");check(SanguineEffects.emittedPoints()>points+100,"crystallization uses Photon");capture(mc,"form-front.png");}
+                case 303 -> {check(SanguineArt.state(mc.player).active(),"key 3 activates synchronized form");capture(mc,"form-front.png");}
                 case 308 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
                 case 313 -> capture(mc,"form-first-person.png");
                 case 319 -> view(mc,1.6,1.7,-3.4);
@@ -119,7 +119,9 @@ public final class SanguineTour {
                 case 454 -> press(mc,0);
                 case 466 -> {check(SanguineArt.charging(mc.player),"key 1 holds the crystal charge");capture(mc,"hand-charge.png");}
                 case 468 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
-                case 469 -> {check(com.murimblock.client.BloodCrystalRenderer.firstPersonCharges()>0,"first-person charge binds to the visible wrist pose");capture(mc,"hand-charge-first-person.png");}
+                case 469 -> {check(com.murimblock.client.BloodCrystalRenderer.firstPersonCharges()>0,"first-person charge binds to the visible wrist pose");
+                    var backs=java.util.stream.StreamSupport.stream(mc.level.entitiesForRendering().spliterator(),false).filter(e->e instanceof com.murimblock.martial.BloodCrystalEntity c&&c.dorsal()&&c.visualOwner()==mc.player).map(e->(com.murimblock.martial.BloodCrystalEntity)e).toList();
+                    check(!backs.isEmpty()&&backs.stream().noneMatch(c->((com.murimblock.client.BloodCrystalRenderer)mc.getEntityRenderDispatcher().getRenderer(c)).shouldRender(c,null,0,0,0)),"own back crystals stay out of the first-person view ("+backs.size()+")");capture(mc,"hand-charge-first-person.png");}
                 case 470 -> mc.options.keyHotbarSlots[0].setDown(false);
                 case 473 -> view(mc,3.3,1.5,0);
                 case 498 -> server.execute(()->{check(zombie.getHealth()<500&&self(server).getHealth()==10,"thrown hand crystal hits without healing");beforeSalvo=zombie.getHealth();QiService.setQi(self(server),100);});
@@ -130,7 +132,7 @@ public final class SanguineTour {
                 case 592 -> {check(SanguineArt.state(mc.player).crystals()==1,"M1 regrows a crystal after the salvo");capture(mc,"form-regrown.png");}
                 case 600 -> {com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.setDown(true);KeyMapping.click(com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.getKey());}
                 case 602 -> com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.setDown(false);
-                case 616 -> {check(!SanguineArt.state(mc.player).active(),"V exits combat and removes form");check(SanguineEffects.activeEffects()<=16,"Photon emitter budget respected");capture(mc,"combat-exit.png");}
+                case 616 -> {check(!SanguineArt.state(mc.player).active(),"V exits combat and removes form");capture(mc,"combat-exit.png");}
                 case 630 -> finish(mc);
                 default -> { }
             }

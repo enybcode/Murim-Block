@@ -28,6 +28,8 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
     public BloodCrystalRenderer(EntityRendererProvider.Context context) {super(context,new Model());shadowRadius=0;}
     @Override public boolean shouldRender(BloodCrystalEntity entity,Frustum frustum,double x,double y,double z) {
         var mc=Minecraft.getInstance();
+        if(BloodCrystalView.hiddenInFirstPerson(entity.dorsal(),entity.visualOwner()==mc.player,mc.getCameraEntity()==mc.player,
+                mc.options.getCameraType().isFirstPerson()))return false;
         if(entity.state()==BloodCrystalEntity.CHARGING&&entity.visualOwner()==mc.player&&mc.getCameraEntity()==mc.player
                 &&mc.options.getCameraType().isFirstPerson()&&yesman.epicfight.config.ClientConfig.enableAnimatedFirstPersonModel
                 &&com.murimblock.integration.epicfight.EpicFightBridge.patch(mc.player).isEpicFightMode())return false;
