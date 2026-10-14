@@ -225,6 +225,29 @@ public final class CultivationGameTests {
         });
     }
 
+    @GameTest(template = "foundation_arena", batch = "cultivation_one_soul", timeoutTicks = 200)
+    public static void aRebuiltIslandKeepsOneRemnantSoul(GameTestHelper helper) {
+        ServerPlayer player = seated(helper);
+        helper.assertTrue(InnerWorldService.enter(player), "Could not open the inner world");
+        player.hasChangedDimension();
+        tickFor(helper, player, 1, 150);
+        helper.runAfterDelay(20, () -> {
+            InnerWorldService.leave(player, InnerWorldService.Exit.WOKE);
+            // A new realm: the island is rebuilt larger, with a new soul.
+            CultivationService.setCultivation(player, CultivationRealm.QI_CONDENSATION, CultivationStage.EARLY);
+            QiService.refillQi(player);
+            if (!MeditationService.isMeditating(player)) MeditationService.resume(player);
+            helper.assertTrue(InnerWorldService.enter(player), "Could not open the inner world again");
+            player.hasChangedDimension();
+        });
+        helper.runAfterDelay(140, () -> {
+            ServerLevel inner = player.serverLevel();
+            List<RemnantSoulEntity> souls = inner.getEntitiesOfClass(RemnantSoulEntity.class, new AABB(InnerWorldService.layoutOf(player).centre()).inflate(60));
+            helper.assertTrue(souls.size() == 1, "Not one remnant soul after the rebuild: " + souls.stream().map(s -> s.getUUID() + "@" + s.blockPosition() + (s.isRemoved() ? " removed" : "")).toList());
+            end(helper, player);
+        });
+    }
+
     @GameTest(template = "foundation_arena", batch = "cultivation_demon_won", timeoutTicks = 100)
     public static void slainHeartDemonOpensTheNextRealm(GameTestHelper helper) {
         ServerPlayer player = cultivator(helper);

@@ -43,7 +43,7 @@ public class RemnantSoulEntity extends PathfinderMob {
     public void tick() {
         super.tick();
         // Only the island's own soul stays (a duplicate left by a rebuild takes itself away).
-        if (owner != null && tickCount % 40 == 0 && level() instanceof net.minecraft.server.level.ServerLevel server) {
+        if (owner != null && (tickCount == 1 || tickCount % 20 == 0) && level() instanceof net.minecraft.server.level.ServerLevel server) {
             java.util.UUID own = InnerWorldData.get(server.getServer().overworld()).soul(owner);
             if (own != null && !own.equals(getUUID())) discard();
         }

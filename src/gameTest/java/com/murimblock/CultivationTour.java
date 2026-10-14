@@ -241,7 +241,10 @@ public final class CultivationTour {
                 var soul = mc.level.getEntitiesOfClass(RemnantSoulEntity.class, mc.player.getBoundingBox().inflate(40));
                 check(!soul.isEmpty(), "the remnant soul is on the island");
                 Vec3 at = soul.isEmpty() ? p.add(-3, 0, 2) : soul.get(0).position();
-                film(mc, at.add(2.5, 1.8, -3.0), at.add(0, 1.2, 0));
+                // From the platform's side, where he looks (at the player), a little higher than his face.
+                Vec3 toward = p.subtract(at).multiply(1, 0, 1).normalize();
+                film(mc, at.add(toward.scale(2.6)).add(0, 1.9, 0), at.add(0, 1.5, 0));
+                capture(mc, "16-remnant-soul.png");
             }
             case 715 -> server.execute(() -> {
                 ServerPlayer self = self(server);
