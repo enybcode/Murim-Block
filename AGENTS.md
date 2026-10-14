@@ -1,3 +1,10 @@
+# Branch Colleuhu95 (read first)
+
+- This branch belongs to Colleuhu95, a new contributor creating his own martial technique. Read `docs/COLLEUHU95.md`.
+- On this branch, its rules replace the GitHub Workflow below: commit and push only to `origin/Colleuhu95`; never push,
+  merge or open work directly on `test` or `main`. When the technique is ready, open a pull request `Colleuhu95` → `test`
+  for Enzo (the project owner) to review.
+
 # GitHub Workflow
 
 - Work in this IntelliJ project, not the separate MCreator workspace.
