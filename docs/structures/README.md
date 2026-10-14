@@ -13,7 +13,7 @@ Six structures de plus, une par biome Murim (le Huangshan a déjà le sanctuaire
 | Relais de la Tour à Signaux de la Porte de Jade (`jade_gate_beacon_post`) | Désert du Hexi | Relais fortifié de la route de la soie, tour à signaux fumante | [fiche](jade_gate_beacon_post.md) |
 | Temple taoïste de la Mer de Bambous brumeuse (`misty_bamboo_temple`) | Mer de bambous de Shu | Trois terrasses, taiji, escalier couvert, salle des Trois Purs ; Sensei Yun, maître du Nuage Azur | [fiche](misty_bamboo_temple.md) |
 | Jardin de la Lune et des Lotus (`lotus_moon_garden`) | Pays des eaux du Jiangnan | Jardin de lettré : porte de lune, étang, pont en zigzag, galerie | [fiche](lotus_moon_garden.md) |
-| Hameau de la Source aux Fleurs de Pêcher (`peach_spring_hamlet`) | Vallée des fleurs de pêcher | Maisons de terre et de chaume, champs, temple du dieu du sol | [fiche](peach_spring_hamlet.md) |
+| Hameau de la Source aux Fleurs de Pêcher (`peach_spring_hamlet`) | Vallée des fleurs de pêcher | Maisons de terre et de chaume, champs, temple du dieu du sol ; envahi par la maladie : 3 hommes-crabes et leurs crabes | [fiche](peach_spring_hamlet.md) |
 
 ### Comment elles sont faites
 

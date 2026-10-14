@@ -3,6 +3,7 @@
 ![Vue aérienne : les maisons de terre autour du pré, les champs, les pêchers](images/sites/peach_spring_hamlet-a.jpg)
 ![Vue de l'autre côté](images/sites/peach_spring_hamlet-b.jpg)
 ![En arrivant](images/sites/peach_spring_hamlet-ground.jpg)
+![Un homme-crabe et son crabe dans une maison abandonnée](images/sites/peach_spring_hamlet-crab-man.jpg)
 
 | Fiche | |
 |---|---|
@@ -28,6 +29,19 @@
 - **Six pêchers en fleur**, des pétales roses tombés dans l'herbe autour d'eux.
 - **Un écran de bambous** à l'arrière du hameau.
 
+### Envahi par la maladie (14/10, demande d'Enzo)
+
+La maladie des hommes-crabes a gagné le hameau ; il n'y reste personne.
+
+- **Ses occupants**, apparus avec le hameau et qui ne disparaissent pas : **3 hommes-crabes** (`murimblock:crab_man`),
+  chacun avec ses **2 crabes cuirassés** (`murimblock:armored_crab`, eux aussi permanents) : un sur le pré près du
+  puits, un dans les champs, un qui attend dans la dernière maison. Ils ne reviennent pas une fois tués. En difficulté
+  Paisible, Minecraft les retire comme tous les monstres.
+- **La rouille de la maladie** : des excroissances grises (blocs de corail mort) percent les murs de terre (environ un
+  bloc sur trois), l'herbe pourrit par plaques (podzol, boue, terre grossière, environ un tiers du hameau), des coraux
+  morts poussent sur la terre ferme, la boue gagne le pré, un tiers des cultures est piétiné.
+- **L'abandon** : la porte d'une maison est arrachée, des toiles d'araignée pendent dans les coins sous les toits.
+
 **Chemins** (terre battue et gravier) : chaque porte, le temple du dieu du sol et le portillon des champs mènent au pré. Aucun chemin ne finit dans le vide.
 
 ## Vérification (14/10/2026)
@@ -36,11 +50,14 @@
 - **Visite en vrai client** (`gradlew -PgameTests runSiteTour`, monde neuf, graine 20261012) :
   - `/locate structure murimblock:peach_spring_hamlet` répond en 83 ms : `[1120, ~, 2240]`, à 2504 blocs du point de départ ;
   - le site généré est dans `peach_blossom_valley` (origine 1128 63 2248, tourné NONE, niveau du sol 63) ;
-  - 20 vérifications sur le site réellement généré : aucun toit ouvert, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide.
+  - 20 vérifications sur le site réellement généré : aucun toit ouvert, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide ;
+  - en difficulté Normale, les 3 hommes-crabes sont là (un dans une maison avec son crabe, photo ci-dessus).
+- Les GameTests vérifient aussi qu'il y a exactement 3 hommes-crabes, construit d'un coup comme chunk par chunk.
 
 ## Conseils : ce qu'on devrait y mettre
 
-- **PNJ** : des villageois « hors du temps » qui ne connaissent ni l'empereur ni les sectes ; un ancien qui raconte l'histoire du lieu.
+- **PNJ** : il n'en reste plus (le hameau est envahi) ; un survivant caché, ou un ancien qui raconte comment la maladie est venue, ferait une bonne quête.
+- **Nettoyage** : une quête « purifier le hameau » (tuer les hommes-crabes, brûler les excroissances) qui rendrait le hameau à des villageois.
 - **Secret** : ce sont les seuls à ne pas réagir au rang de cultivation du joueur. Une quête pourrait révéler pourquoi (une formation qui cache la vallée, un ancien maître retiré).
 - **Récolte** : les pêches (été) et une rare **pêche d'immortalité** pour la cultivation ; graines et outils à échanger.
 - **Animaux** : poules, cochons, un buffle, canards mandarins sur l'eau.

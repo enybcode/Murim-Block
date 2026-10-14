@@ -1,5 +1,6 @@
 package com.murimblock.world.structure.site;
 
+import com.murimblock.mob.MurimEntities;
 import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.kit.RoofTiles;
 import java.util.List;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.PinkPetalsBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Half;
 
 import static com.murimblock.world.structure.kit.BuildKit.hangingLantern;
@@ -23,7 +25,11 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * Peach Spring Hamlet (peach blossom valley), after Tao Yuanming's hidden village: rammed earth houses under thatch
  * round a green with a well, the unpainted hall of the elders, a little shrine to the god of the soil, fields fenced
  * with bamboo (crops on either side of an irrigation channel, a strip of rice), peach trees shedding petals and a
- * bamboo screen behind. Nothing marks rank: the strangeness of the place is that it is intact.
+ * bamboo screen behind. Nothing marks rank.
+ * <p>And the blight has come (Enzo's request, 14/10): the crab men's disease has reached the hamlet. Three crab men
+ * roam it, each with its two armored crabs (one on the green, one in the fields, one in a house); grey growths like
+ * dead coral spread on the earthen walls, dead corals sprout on the ground, crops lie trampled, mud spreads on the
+ * green, a door is torn off, cobwebs hang in the corners. Nobody is left.
  */
 final class PeachHamlet extends Site {
     /** Thatch: bamboo mosaic for the slopes (golden, woven), hay for the ridge. */
@@ -69,6 +75,53 @@ final class PeachHamlet extends Site {
             bamboo(c, x, z, g);
         }
         for (int[] p : new int[][]{{-5, -5}, {5, -5}, {-5, 5}, {5, 5}}) lanternPost(c, p[0], g + 1, p[1], 1, s(Blocks.OAK_FENCE));
+        blight(c, g);
+    }
+
+    /** Whether the blight has rotted the grass here: about a third of the hamlet, in blotches 3 to 6 blocks across. */
+    private static boolean blotch(Canvas c, int x, int z, int g) {
+        int bx = Math.floorDiv(x, 4), bz = Math.floorDiv(z, 4);
+        double coarse = 0;
+        for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) {
+            double wx = dx == 0 ? 1 - Math.floorMod(x, 4) / 4.0 : Math.floorMod(x, 4) / 4.0;
+            double wz = dz == 0 ? 1 - Math.floorMod(z, 4) / 4.0 : Math.floorMod(z, 4) / 4.0;
+            coarse += wx * wz * c.rand(bx + dx, g - 9, bz + dz);
+        }
+        return coarse + 0.25 * (c.rand(x, g - 8, z) - 0.5) > 0.6;
+    }
+
+    /** Dead corals that grow on dry land here: the blight's sprouts. */
+    private static final Block[] SPROUTS = {Blocks.DEAD_BRAIN_CORAL, Blocks.DEAD_TUBE_CORAL, Blocks.DEAD_FIRE_CORAL_FAN, Blocks.DEAD_HORN_CORAL_FAN, Blocks.DEAD_BUBBLE_CORAL};
+
+    /**
+     * The blight over the open ground: mud on the green, dead corals sprouting from the grass and the paths, crops
+     * trampled; and the crab men who brought it (the third waits in a house, see house).
+     */
+    private static void blight(Canvas c, int g) {
+        for (int x = -19; x <= 19; x++) for (int z = -19; z <= 19; z++) {
+            if (!c.inside(x, z)) continue;
+            BlockState ground = c.get(x, g, z), above = c.get(x, g + 1, z);
+            boolean green = Math.abs(x) <= 5 && Math.abs(z) <= 5 && Math.max(Math.abs(x), Math.abs(z)) >= 2;
+            if (green && above.isAir() && c.chance(x, g - 3, z, 0.3)) { c.set(x, g, z, s(Blocks.MUD)); continue; }
+            // The grass rotting in patches: blotches that grow together (a coarse noise, then a fine one).
+            if (ground.is(Blocks.GRASS_BLOCK) && blotch(c, x, z, g)) {
+                c.set(x, g, z, c.pick(x, g - 4, z, s(Blocks.PODZOL), s(Blocks.MUD), s(Blocks.COARSE_DIRT), s(Blocks.PODZOL)));
+                if (!above.isAir() && !above.is(Blocks.PINK_PETALS)) continue;
+                c.set(x, g + 1, z, AIR);
+                ground = c.get(x, g, z);
+                above = AIR;
+            }
+            if (above.isAir() && (ground.is(Blocks.GRASS_BLOCK) || ground.is(Blocks.DIRT_PATH) || ground.is(Blocks.COARSE_DIRT)
+                    || ground.is(Blocks.PODZOL) || ground.is(Blocks.MUD)) && c.chance(x, g + 5, z, 0.12)) {
+                Block sprout = SPROUTS[(int) (c.rand(x, g + 6, z) * SPROUTS.length)];
+                c.set(x, g + 1, z, sprout.defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, false));
+            } else if (ground.is(Blocks.FARMLAND) && !above.isAir() && c.chance(x, g + 7, z, 0.35)) {
+                c.set(x, g + 1, z, AIR);
+                c.set(x, g, z, s(Blocks.COARSE_DIRT));
+            }
+        }
+        c.spawn(3, g + 1, 3, Direction.SOUTH, MurimEntities.CRAB_MAN.get(), crabMan -> { });
+        c.spawn(4, g + 1, 16, Direction.NORTH, MurimEntities.CRAB_MAN.get(), crabMan -> { });
     }
 
     private static boolean nearPeach(int x, int z, double r) {
@@ -104,7 +157,9 @@ final class PeachHamlet extends Site {
             for (int y = g + 1; y <= g + 3; y++) {
                 if (!edge) { h.set(x, y, z, AIR); continue; }
                 boolean corner = Math.abs(x) == w && (z == z0 || z == z1);
-                h.set(x, y, z, corner ? POST : y == g + 1 ? h.pick(x, y, z, s(Blocks.COBBLESTONE), s(Blocks.MOSSY_COBBLESTONE)) : EARTH);
+                // The blight's grey growths spreading on the earth.
+                BlockState wall = h.chance(x, y + 11, z, 0.3) ? h.pick(x, y + 12, z, s(Blocks.DEAD_BRAIN_CORAL_BLOCK), s(Blocks.DEAD_TUBE_CORAL_BLOCK)) : EARTH;
+                h.set(x, y, z, corner ? POST : y == g + 1 ? h.pick(x, y, z, s(Blocks.COBBLESTONE), s(Blocks.MOSSY_COBBLESTONE)) : wall);
             }
         }
         h.carried(-w, z0, w, z1, g);
@@ -140,6 +195,14 @@ final class PeachHamlet extends Site {
             h.set(2, y, 1, s(Blocks.POTTED_OAK_SAPLING));
             h.set(-2, y, 1, s(Blocks.WHITE_CARPET));
         }
+        // Abandoned: cobwebs in the corners under the roof, one door torn off, a crab man waiting in the last house.
+        h.set(-w + 1, g + 3, z0 + 1, s(Blocks.COBWEB));
+        if (kind != 0) h.set(w - 1, g + 3, z1 - 1, s(Blocks.COBWEB));
+        if (kind == 2) {
+            h.set(0, g + 1, z1, AIR);
+            h.set(0, g + 2, z1, AIR);
+        }
+        if (kind == 3) h.spawn(1, y, 0, Direction.SOUTH, MurimEntities.CRAB_MAN.get(), crabMan -> { });
     }
 
     /** The shrine to the god of the soil (frame: front +z): a stone niche under a tiny tiled roof, with offerings. */
