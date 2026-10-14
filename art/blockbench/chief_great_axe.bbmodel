@@ -295,12 +295,12 @@
    "allow_mirror_modeling": true,
    "from": [
     7.1,
-    12.4,
+    11.85,
     7.1
    ],
    "to": [
     8.9,
-    13.2,
+    12.55,
     8.9
    ],
    "autouv": 0,
@@ -383,12 +383,12 @@
    "allow_mirror_modeling": true,
    "from": [
     6.8,
-    13.2,
+    12.55,
     6.9
    ],
    "to": [
     9.2,
-    20.6,
+    20,
     9.1
    ],
    "autouv": 0,
@@ -471,12 +471,12 @@
    "allow_mirror_modeling": true,
    "from": [
     7.6,
-    20.6,
+    20,
     7.6
    ],
    "to": [
     8.4,
-    23.2,
+    22.6,
     8.4
    ],
    "autouv": 0,
@@ -558,14 +558,14 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    5,
-    13.8,
-    7.6
+    5.1,
+    14.3,
+    7.65
    ],
    "to": [
     6.8,
-    20,
-    8.4
+    17.7,
+    8.35
    ],
    "autouv": 0,
    "color": 0,
@@ -646,14 +646,14 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    3,
-    12.8,
-    7.65
+    3.55,
+    13.25,
+    7.68
    ],
    "to": [
-    5,
-    21,
-    8.35
+    5.1,
+    18.8,
+    8.32
    ],
    "autouv": 0,
    "color": 0,
@@ -734,14 +734,14 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    1.2,
-    11.8,
-    7.7
+    2,
+    12,
+    7.72
    ],
    "to": [
-    3,
-    22,
-    8.3
+    3.55,
+    20,
+    8.28
    ],
    "autouv": 0,
    "color": 0,
@@ -822,14 +822,14 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    0,
-    11.2,
-    7.75
+    0.75,
+    10.8,
+    7.77
    ],
    "to": [
-    1.2,
-    22.6,
-    8.25
+    2,
+    21.25,
+    8.23
    ],
    "autouv": 0,
    "color": 0,
@@ -910,14 +910,14 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    0.4,
-    22.6,
-    7.75
+    0.75,
+    21.25,
+    7.77
    ],
    "to": [
-    1.8,
-    23.6,
-    8.25
+    3.25,
+    22.2,
+    8.23
    ],
    "autouv": 0,
    "color": 0,
@@ -991,6 +991,94 @@
    "uuid": "1ad270fa-6946-405b-a7b1-5c16c68f01fe"
   },
   {
+   "name": "horn_top_tip",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    2.75,
+    22.2,
+    7.8
+   ],
+   "to": [
+    3.85,
+    22.95,
+    8.2
+   ],
+   "autouv": 0,
+   "color": 0,
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "origin": [
+    8,
+    8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8,
+      0,
+      16,
+      1
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      16,
+      1,
+      8,
+      2
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "5e5fb257-6e8f-48bb-a03b-0b1031714db3"
+  },
+  {
    "name": "horn_low",
    "box_uv": false,
    "rescale": false,
@@ -998,14 +1086,14 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    0.4,
-    10.2,
-    7.75
+    0.75,
+    9.85,
+    7.77
    ],
    "to": [
-    1.8,
-    11.2,
-    8.25
+    3.25,
+    10.8,
+    8.23
    ],
    "autouv": 0,
    "color": 0,
@@ -1079,6 +1167,94 @@
    "uuid": "c8202700-8c91-4df1-a3e8-358320d1564d"
   },
   {
+   "name": "horn_low_tip",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    2.75,
+    9.1,
+    7.8
+   ],
+   "to": [
+    3.85,
+    9.85,
+    8.2
+   ],
+   "autouv": 0,
+   "color": 0,
+   "rotation": [
+    0,
+    0,
+    -45
+   ],
+   "origin": [
+    8,
+    8,
+    8
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      8,
+      0,
+      16,
+      1
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      16,
+      1,
+      8,
+      2
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      0,
+      2,
+      8,
+      3
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "e98bbd12-0f4a-42b3-a209-ff12489eb7fb"
+  },
+  {
    "name": "spike",
    "box_uv": false,
    "rescale": false,
@@ -1087,12 +1263,12 @@
    "allow_mirror_modeling": true,
    "from": [
     9.2,
-    15.8,
+    15.25,
     7.7
    ],
    "to": [
-    11.6,
-    17.6,
+    11.7,
+    17.1,
     8.3
    ],
    "autouv": 0,
@@ -1174,13 +1350,13 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    11.6,
-    16.3,
+    11.7,
+    15.7,
     7.8
    ],
    "to": [
-    12.8,
-    17.1,
+    12.9,
+    16.55,
     8.2
    ],
    "autouv": 0,
@@ -1262,13 +1438,13 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    5.6,
-    10.4,
+    6,
+    8,
     7.8
    ],
    "to": [
-    6.4,
-    13.8,
+    6.75,
+    11.85,
     8.2
    ],
    "autouv": 0,
@@ -1350,13 +1526,13 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    5.2,
-    8.6,
+    5.6,
+    6.2,
     7.6
    ],
    "to": [
-    6.8,
-    10.4,
+    7.15,
+    8,
     8.4
    ],
    "autouv": 0,
@@ -1443,7 +1619,9 @@
   "da7bb16f-9fd4-49d3-ab42-41ee89fb002f",
   "a6319d02-bbc2-4ccd-ad58-6dc273b1b665",
   "1ad270fa-6946-405b-a7b1-5c16c68f01fe",
+  "5e5fb257-6e8f-48bb-a03b-0b1031714db3",
   "c8202700-8c91-4df1-a3e8-358320d1564d",
+  "e98bbd12-0f4a-42b3-a209-ff12489eb7fb",
   "84db726a-f3df-4f18-ab19-0e678e23c710",
   "7b33ac6d-2340-4151-a21e-ef742400d977",
   "9f49c9f4-ac51-460c-ac68-84a95987ddaa",

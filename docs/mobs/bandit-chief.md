@@ -33,7 +33,8 @@ corde rouge, anneaux de bronze, houppe rouge. Tenue à deux mains (une grande é
 
 - Modèle : `scripts/animation/bandit-chief-3d.cjs` (avec `mesh-kit.cjs`) → `animmodels/entity/bandit_chief.json`,
   `textures/entity/bandit_chief.png`, `art/blockbench/bandit_chief.bbmodel`.
-- Hache : `scripts/animation/chief-axe-model.cjs` → `models/item/chief_great_axe(_3d).json`, ses textures,
+- Hache : Crescent Moon (月牙斧), choisie parmi six styles (`scripts/concepts/chief-axes.cjs`, images
+  `docs/mobs/images/chief-axe-*.png`) ; `scripts/animation/chief-axe-model.cjs` → `models/item/chief_great_axe(_3d).json`, ses textures,
   `art/blockbench/chief_great_axe.bbmodel`.
 - Attaques : `scripts/animation/chief-axe.cjs` → `animations/biped/murim/chief_*.json` (rotations interpolées par
   quaternions entre les poses clés), `art/blockbench/bandit_chief_axe.bbmodel` pour voir les poses.
