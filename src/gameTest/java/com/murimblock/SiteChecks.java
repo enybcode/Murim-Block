@@ -29,6 +29,8 @@ public final class SiteChecks {
                 if (check.room()) {
                     int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1;
                     if (top <= b.maxY()) problems.add("room open to the sky at " + x + " " + (b.maxY() + 1) + " " + z);
+                    // The ceiling sits right on the room: no gap between the walls and the roof.
+                    if (level.getBlockState(p.set(x, b.maxY() + 1, z)).isAir()) problems.add("no ceiling over a room at " + x + " " + (b.maxY() + 1) + " " + z);
                     for (int y = b.minY(); y <= b.maxY(); y++) {
                         BlockState s = level.getBlockState(p.set(x, y, z));
                         if (intruder(s)) problems.add("natural block " + s.getBlock().getDescriptionId() + " inside a room at " + x + " " + y + " " + z);

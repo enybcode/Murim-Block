@@ -3,9 +3,14 @@ package com.murimblock.world.structure.site;
 import com.murimblock.world.structure.kit.BuildKit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CrossCollisionBlock;
@@ -14,6 +19,7 @@ import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.neoforged.neoforge.event.EventHooks;
 
 /**
  * Where a site is drawn: local coordinates (x right, z towards the front, y absolute) turned by the site's rotation and
@@ -30,6 +36,8 @@ public final class Canvas implements BuildKit.Sink {
     private final List<Check> checks;
     /** Live levels only (tests): positions whose shape must be recomputed once the build is done. */
     private final List<BlockPos> shapes;
+    /** Live levels only (tests): the mobs this canvas spawned. */
+    private final List<Mob> spawned;
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
     private BuildKit kit;
 
@@ -37,10 +45,11 @@ public final class Canvas implements BuildKit.Sink {
     public record Check(boolean room, BoundingBox box) { }
 
     public Canvas(WorldGenLevel level, BoundingBox clip, int ox, int oz, Rotation rotation, long seed, List<Check> checks) {
-        this(level, clip, ox, oz, rotation, seed, checks, level instanceof ServerLevel ? new ArrayList<>() : null);
+        this(level, clip, ox, oz, rotation, seed, checks, level instanceof ServerLevel ? new ArrayList<>() : null,
+                level instanceof ServerLevel ? new ArrayList<>() : null);
     }
 
-    private Canvas(WorldGenLevel level, BoundingBox clip, int ox, int oz, Rotation rotation, long seed, List<Check> checks, List<BlockPos> shapes) {
+    private Canvas(WorldGenLevel level, BoundingBox clip, int ox, int oz, Rotation rotation, long seed, List<Check> checks, List<BlockPos> shapes, List<Mob> spawned) {
         this.level = level;
         this.clip = clip;
         this.ox = ox;
@@ -49,13 +58,14 @@ public final class Canvas implements BuildKit.Sink {
         this.seed = seed;
         this.checks = checks;
         this.shapes = shapes;
+        this.spawned = spawned;
     }
 
     private static final BoundingBox NOWHERE = new BoundingBox(Integer.MIN_VALUE, 0, Integer.MIN_VALUE, Integer.MIN_VALUE, 0, Integer.MIN_VALUE);
 
     /** A canvas that touches no block: for its coordinates, and to record a site's checks. */
     public static Canvas dry(int ox, int oz, Rotation rotation, long seed, List<Check> checks) {
-        return new Canvas(null, NOWHERE, ox, oz, rotation, seed, checks, null);
+        return new Canvas(null, NOWHERE, ox, oz, rotation, seed, checks, null, null);
     }
 
     public static Canvas dry(int ox, int oz, Rotation rotation) {
@@ -64,7 +74,7 @@ public final class Canvas implements BuildKit.Sink {
 
     /** A sub-frame: its origin at local (dx, dz), turned by {@code turn} (its front, local +z, then faces that way). */
     public Canvas frame(int dx, int dz, Rotation turn) {
-        return new Canvas(level, clip, wx(dx, dz), wz(dx, dz), rotation.getRotated(turn), mix(seed + dx * 31L + dz * 1013L), checks, shapes);
+        return new Canvas(level, clip, wx(dx, dz), wz(dx, dz), rotation.getRotated(turn), mix(seed + dx * 31L + dz * 1013L), checks, shapes, spawned);
     }
 
     public BuildKit kit() {
@@ -137,6 +147,28 @@ public final class Canvas implements BuildKit.Sink {
             if (ground(get(x, y, z))) return;
             set(x, y, z, state);
         }
+    }
+
+    /**
+     * Places a mob standing at the centre of local block (x, y, z), facing local {@code facing}: created only by the
+     * chunk that holds that block (so once per site), set up as a structure spawn, kept from despawning.
+     */
+    public <T extends Mob> void spawn(int x, int y, int z, Direction facing, EntityType<T> type, Consumer<T> setup) {
+        if (!inside(x, z)) return;
+        T mob = type.create(level.getLevel());
+        if (mob == null) return;
+        BlockPos at = new BlockPos(wx(x, z), y, wz(x, z));
+        mob.moveTo(at.getX() + 0.5, y, at.getZ() + 0.5, rotation.rotate(facing).toYRot(), 0);
+        EventHooks.finalizeMobSpawn(mob, level, level.getCurrentDifficultyAt(at), MobSpawnType.STRUCTURE, null);
+        setup.accept(mob);
+        mob.setPersistenceRequired();
+        level.addFreshEntityWithPassengers(mob);
+        if (spawned != null) spawned.add(mob);
+    }
+
+    /** Live levels (tests): the mobs spawned through this canvas and its frames. */
+    public List<Mob> spawned() {
+        return spawned == null ? List.of() : spawned;
     }
 
     /** Live levels (tests): joins fences, walls and stairs to their neighbours, as world generation does. */

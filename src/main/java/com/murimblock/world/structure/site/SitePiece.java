@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -88,14 +89,17 @@ public final class SitePiece extends StructurePiece {
         return checks;
     }
 
-    /** Builds a whole site at once in a live level (tests) and returns its checks. */
-    public static List<Canvas.Check> buildWhole(ServerLevel level, SitePlan plan, int ox, int oz, Rotation rotation, long seed, int[] levels) {
+    /** Builds a whole site at once in a live level (tests): its checks and the mobs it spawned. */
+    public static Built buildWhole(ServerLevel level, SitePlan plan, int ox, int oz, Rotation rotation, long seed, int[] levels) {
         List<Canvas.Check> checks = new ArrayList<>();
         Canvas c = new Canvas(level, null, ox, oz, rotation, seed, checks);
         for (int i = 0; i < plan.site().parts().size(); i++) plan.site().build(c, i, levels);
         c.finish();
-        return checks;
+        return new Built(checks, c.spawned());
     }
+
+    /** A site built whole (tests): what its checks must verify, and the mobs it brought. */
+    public record Built(List<Canvas.Check> checks, List<Mob> spawned) { }
 
     /** The world box of every part of a site (tests). */
     public static BoundingBox wholeBox(SitePlan plan, int ox, int oz, Rotation rotation, int[] levels) {

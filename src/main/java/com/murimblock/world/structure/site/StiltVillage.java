@@ -4,6 +4,10 @@ import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.kit.RoofTiles;
 import java.util.List;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -145,7 +149,18 @@ final class StiltVillage extends Site {
         h.set(-3, y, 2, s(Blocks.POTTED_FERN));
         h.set(3, y, 2, s(variant == 1 ? Blocks.POTTED_BAMBOO : Blocks.FLOWER_POT));
         h.set(0, f + 3, 0, hangingLantern());
+        // The household: one villager, whose trade goes with the workstation of the house (and its bed is here).
+        VillagerProfession trade = variant == 0 ? VillagerProfession.CLERIC : variant == 1 ? VillagerProfession.SHEPHERD : VillagerProfession.BUTCHER;
+        String title = variant == 0 ? "herbalist" : variant == 1 ? "weaver" : "cook";
+        h.spawn(0, y, -1, Direction.SOUTH, EntityType.VILLAGER, villager -> {
+            villager.setVillagerData(villager.getVillagerData().setType(VillagerType.JUNGLE).setProfession(trade).setLevel(1));
+            villager.setVillagerXp(1); // keeps the trade even if the workstation is moved
+            villager.setCustomName(Component.translatable("villager.murimblock.jade_river." + title));
+        });
     }
+
+    /** The households of the village: one villager per house. */
+    static final int VILLAGERS = 3;
 
     /** The granary: a closed 5 x 5 store on stilts, under a pyramid roof, reached by a ladder to its porch. */
     private static void granary(Canvas h, int g) {

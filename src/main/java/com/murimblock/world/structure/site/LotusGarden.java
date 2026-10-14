@@ -108,7 +108,6 @@ final class LotusGarden extends Site {
             if (d2 <= 7.3) c.set(x, y, 14, AIR);
             else if (d2 <= 13.5) c.set(x, y, 14, s(Blocks.POLISHED_ANDESITE));
         }
-        c.room(-1, g + 1, 14, 1, g + 1, 14);
     }
 
     /** The pond, two deep over mud, its shore lined with stones, lotus on it. */

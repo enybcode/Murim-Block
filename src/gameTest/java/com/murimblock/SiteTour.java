@@ -24,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -61,7 +62,7 @@ public final class SiteTour {
     private static final List<String> report = new ArrayList<>();
 
     /** What the server found for the current site. */
-    private record Site(BlockPos origin, Direction front, int top, int reach) { } // reach: to the edge on the front side
+    private record Site(BlockPos origin, Direction front, int top, int reach, BoundingBox box, List<BoundingBox> rooms) { } // reach: to the edge on the front side
 
     private SiteTour() { }
 
@@ -111,12 +112,39 @@ public final class SiteTour {
                 // At eye height in front of the entrance, looking in.
                 case 281 -> {
                     Site s = site;
+                    // The villagers, counted once the player is near and the site's entities are loaded.
+                    mc.getSingleplayerServer().execute(() -> {
+                        List<Villager> villagers = villagers(mc, s);
+                        int expected = expectedVillagers(name);
+                        String line = name + ": " + villagers.size() + " villager(s), expected " + expected + " "
+                                + villagers.stream().map(v -> v.getName().getString() + " (" + v.getVillagerData().getProfession() + ") at " + v.blockPosition().toShortString()).toList();
+                        report.add(line);
+                        LOGGER.info("Site tour: {}", line);
+                        if (villagers.size() != expected) failed = true;
+                    });
                     double fx = s.front().getStepX(), fz = s.front().getStepZ();
                     lookAbs(mc, s.origin().getX() + 0.5 + fx * (s.reach() - 1), s.origin().getY() + 2.7, s.origin().getZ() + 0.5 + fz * (s.reach() - 1),
                             s.origin().getX() + 0.5, s.origin().getY() + 3.5, s.origin().getZ() + 0.5);
                 }
                 case 360 -> capture(mc, name + "-ground.png");
-                case 361 -> { index++; step = 0; }
+                // A householder of the village, seen from a few steps in front of them.
+                case 361 -> {
+                    if (expectedVillagers(name) == 0) { index++; step = 0; return; }
+                    mc.getSingleplayerServer().execute(() -> {
+                        List<Villager> villagers = villagers(mc, site);
+                        if (villagers.isEmpty()) return;
+                        // From the corner of the villager's own room farthest from them, at eye height.
+                        Villager v = villagers.get(0);
+                        Vec3 eye = v.getEyePosition();
+                        BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
+                                .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
+                        double cx = Math.abs(room.minX() - eye.x) > Math.abs(room.maxX() + 1 - eye.x) ? room.minX() + 0.3 : room.maxX() + 0.7;
+                        double cz = Math.abs(room.minZ() - eye.z) > Math.abs(room.maxZ() + 1 - eye.z) ? room.minZ() + 0.3 : room.maxZ() + 0.7;
+                        lookAbs(mc, cx, room.minY(), cz, eye.x, eye.y - 1.8, eye.z); // feet on the floor: the eye stays under the ceiling
+                    });
+                }
+                case 385 -> capture(mc, name + "-villager.png");
+                case 386 -> { index++; step = 0; }
                 default -> { }
             }
         } catch (Exception e) {
@@ -177,7 +205,16 @@ public final class SiteTour {
             case EAST -> box.maxX() - o.getX();
             default -> o.getX() - box.minX();
         };
-        site = new Site(o, front, box.maxY(), edge);
+        site = new Site(o, front, box.maxY(), edge, box, checks.stream().filter(Canvas.Check::room).map(Canvas.Check::box).toList());
+    }
+
+    static int expectedVillagers(String name) {
+        return name.equals("jade_river_stilt_village") ? 3 : 0;
+    }
+
+    private static List<Villager> villagers(Minecraft mc, Site s) {
+        return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Villager.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4),
+                v -> true).stream().sorted(java.util.Comparator.comparing(v -> v.getName().getString())).toList();
     }
 
     static String expectedBiome(String name) {

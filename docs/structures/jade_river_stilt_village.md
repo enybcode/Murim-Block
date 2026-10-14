@@ -3,6 +3,7 @@
 ![Vue aérienne en jeu](images/sites/jade_river_stilt_village-a.jpg)
 ![L'autre côté du village](images/sites/jade_river_stilt_village-b.jpg)
 ![En arrivant par la porte du sud](images/sites/jade_river_stilt_village-ground.jpg)
+![Le cuisinier chez lui](images/sites/jade_river_stilt_village-villager.jpg)
 
 | Fiche | |
 |---|---|
@@ -29,6 +30,11 @@ Le village fait face au côté le plus bas du terrain (la porte du sud dans le p
   - toit à deux pentes en tuiles grises, faîtage aux extrémités relevées ;
   - un escalier de 3 de large descend du balcon jusque sur la place.
 - **Intérieurs** (un par maison) : herboristes (alambic, fougère en pot), tisserands (métier à tisser), cuisiniers (fumoir, chaudron) ; lits, tapis, table et chaises, tonneaux, lanterne.
+- **Un villageois par maison** (14/10, demande d'Enzo), apparu avec le village, qui ne disparaît pas, avec le métier de son poste de travail et son lit dans la maison :
+  - **Jade River Herbalist** : clerc (alambic) ;
+  - **Jade River Weaver** : berger (métier à tisser) ;
+  - **Jade River Cook** : boucher (fumoir).
+  - Ce sont des villageois vanilla en tenue de la jungle, nommés en anglais (`villager.murimblock.jade_river.*` dans `en_us.json`) ; ils commercent comme des villageois normaux.
 - **Le grenier** (nord-ouest) : réserve fermée 5 × 5 sur pilotis, toit pyramidal, porche et échelle ; foin et tonneaux dedans.
 - **Le banian sacré** (nord-est) : grand banian aux racines aériennes, autel de pierre avec bougies devant lui.
 - **Les rizières** (sud-ouest et sud-est) : quatre parcelles par côté entre des diguettes d'herbe, rangs de riz sauvage dans la boue entre des rangs d'eau.
@@ -42,11 +48,13 @@ Le village fait face au côté le plus bas du terrain (la porte du sud dans le p
 - **Visite en vrai client** (`gradlew -PgameTests runSiteTour`, monde neuf, graine 20261012) :
   - `/locate structure murimblock:jade_river_stilt_village` répond en 573 ms : `[-2880, ~, 5040]`, à 5804 blocs du point de départ ;
   - le site généré est dans `jade_karst_forest` (origine -2872 70 5048, tourné CLOCKWISE_180, niveau du sol 70) ;
-  - 64 vérifications sur le site réellement généré : aucun toit ouvert, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide.
+  - 64 vérifications sur le site réellement généré : aucun toit ouvert, plafond posé sur chaque pièce, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide ;
+  - exactement 3 villageois dans le monde généré, un par maison (cuisinier, herboriste, tisserand), avec leur métier.
+- Les GameTests vérifient aussi qu'il y a exactement 3 villageois, construit d'un coup comme chunk par chunk (jamais en double), chacun dans une pièce couverte et avec son métier.
 
 ## Conseils : ce qu'on devrait y mettre
 
-- **PNJ** : un vieil herboriste (vend des herbes de Qi, achète des fougères et des champignons des grottes), une tisserande, un pêcheur au cormoran sur la rivière voisine.
+- **PNJ** : les trois villageois sont là ; on pourrait les remplacer par de vrais PNJ Murim : un vieil herboriste (vend des herbes de Qi, achète des fougères et des champignons des grottes), une tisserande, et ajouter un pêcheur au cormoran sur la rivière voisine.
 - **Faction** : le clan de la rivière de Jade, herboristes et empoisonneurs du Sud. Un PNJ maître des poisons pourrait enseigner une technique secrète après une quête.
 - **Quêtes** : rapporter des herbes des tours karstiques ; chasser les crabes cuirassés qui pillent les rizières ; escorter un marchand jusqu'au prochain village.
 - **Butin** : coffres avec table de butin dans les maisons (riz, poisson séché, herbes, quelques pièces), un manuel mineur caché dans le grenier.

@@ -215,7 +215,7 @@ final class BanditDen extends Site {
                 c.set(3, y + 4, z, AIR);
                 c.set(2, y + 4, z, stair(Blocks.MUD_BRICK_STAIRS, Direction.WEST, Half.TOP));
                 c.set(4, y + 4, z, stair(Blocks.MUD_BRICK_STAIRS, Direction.EAST, Half.TOP));
-                c.room(2, y + 1, z, 4, y + 3, z);
+                c.room(2, y + 1, z, 4, y + 4, z); // up to the vault
             } else {
                 for (int x = 2; x <= 4; x++) for (int yy = y + 4; yy <= g + 1; yy++) c.set(x, yy, z, AIR);
             }
