@@ -1,4 +1,4 @@
-// The Bandit Chief's great axe: a crescent blade as long as a man's forearm on a haft taller than a man, a back
+// The Bandit Chief's great axe, the Crescent Moon (月牙斧): a crescent blade whose horns curl back, on a haft taller than a man, a back
 // spike, an iron point on top, the grip wrapped in red cord, bronze rings, a red tassel under the blade.
 //   models/item/chief_great_axe_3d.json   the axe in the hand (Epic Fight's greatsword transforms, a little smaller);
 //   models/item/chief_great_axe.json      NeoForge's separate transforms: the inventory, the ground and frames keep
@@ -49,21 +49,24 @@ const part = (name, from, to, mat) => PARTS.push({ name, from, to, mat });
 part('pommel', [7.1, -6.6, 7.1], [8.9, -5.6, 8.9], 'iron');
 part('haft', [7.4, -5.6, 7.4], [8.6, 20.0, 8.6], 'wood');
 part('grip', [7.2, -4.2, 7.2], [8.8, 3.2, 8.8], 'cord');
-part('ring_low', [7.1, 12.4, 7.1], [8.9, 13.2, 8.9], 'bronze');
-part('socket', [6.8, 13.2, 6.9], [9.2, 20.6, 9.1], 'iron');
-part('point', [7.6, 20.6, 7.6], [8.4, 23.2, 8.4], 'iron');
-// The crescent, stepping out from the socket: its two horns curl past the neck.
-part('blade_neck', [5.0, 13.8, 7.6], [6.8, 20.0, 8.4], 'blade');
-part('blade_mid', [3.0, 12.8, 7.65], [5.0, 21.0, 8.35], 'blade');
-part('blade_wide', [1.2, 11.8, 7.7], [3.0, 22.0, 8.3], 'blade');
-part('blade_edge', [0.0, 11.2, 7.75], [1.2, 22.6, 8.25], 'edge');
-part('horn_top', [0.4, 22.6, 7.75], [1.8, 23.6, 8.25], 'edge');
-part('horn_low', [0.4, 10.2, 7.75], [1.8, 11.2, 8.25], 'edge');
+part('ring_low', [7.1, 11.85, 7.1], [8.9, 12.55, 8.9], 'bronze');
+part('socket', [6.8, 12.55, 6.9], [9.2, 20.0, 9.1], 'iron');
+part('point', [7.6, 20.0, 7.6], [8.4, 22.6, 8.4], 'iron');
+// The crescent (Crescent Moon, the style chosen on the concept sheet, scripts/concepts/chief-axes.cjs): a narrow neck,
+// the blade widening out to a long curved edge, its two horns curling back toward the haft.
+part('blade_neck', [5.1, 14.3, 7.65], [6.8, 17.7, 8.35], 'blade');
+part('blade_mid', [3.55, 13.25, 7.68], [5.1, 18.8, 8.32], 'blade');
+part('blade_wide', [2.0, 12.0, 7.72], [3.55, 20.0, 8.28], 'blade');
+part('blade_edge', [0.75, 10.8, 7.77], [2.0, 21.25, 8.23], 'edge');
+part('horn_top', [0.75, 21.25, 7.77], [3.25, 22.2, 8.23], 'edge');
+part('horn_top_tip', [2.75, 22.2, 7.8], [3.85, 22.95, 8.2], 'edge');
+part('horn_low', [0.75, 9.85, 7.77], [3.25, 10.8, 8.23], 'edge');
+part('horn_low_tip', [2.75, 9.1, 7.8], [3.85, 9.85, 8.2], 'edge');
 // The back spike, and the tassel hanging under the blade's neck.
-part('spike', [9.2, 15.8, 7.7], [11.6, 17.6, 8.3], 'iron');
-part('spike_tip', [11.6, 16.3, 7.8], [12.8, 17.1, 8.2], 'edge');
-part('tassel_cord', [5.6, 10.4, 7.8], [6.4, 13.8, 8.2], 'tassel');
-part('tassel_tuft', [5.2, 8.6, 7.6], [6.8, 10.4, 8.4], 'tassel');
+part('spike', [9.2, 15.25, 7.7], [11.7, 17.1, 8.3], 'iron');
+part('spike_tip', [11.7, 15.7, 7.8], [12.9, 16.55, 8.2], 'edge');
+part('tassel_cord', [6.0, 8.0, 7.8], [6.75, 11.85, 8.2], 'tassel');
+part('tassel_tuft', [5.6, 6.2, 7.6], [7.15, 8.0, 8.4], 'tassel');
 
 const ROTATION = { angle: -45, axis: 'z', origin: [8, 8, 8] };
 

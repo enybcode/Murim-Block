@@ -38,6 +38,11 @@ public final class HudScale {
         return (float) HudSize.current().pixels(gui, mc.getWindow().getWidth()) / gui;
     }
 
+    /** The chat's margin above the bottom of the screen, scaled with the HUD (40 GUI pixels at Normal). */
+    public static int chatMargin(int margin) {
+        return Math.round(margin * factor());
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onLayerPre(RenderGuiLayerEvent.Pre event) {
         if (pushed || !BOTTOM.contains(event.getName())) return;
