@@ -460,6 +460,12 @@ public final class CultivationGameTests {
         ServerLevel inner = player.serverLevel();
         // The chunks round the island come into view on the next ticks (as for a player arriving anywhere).
         RemnantSoulEntity[] soul = new RemnantSoulEntity[1];
+        // A mock player keeps no chunk loaded (a real one's view does): the island's held for the motes the storm scatters.
+        net.minecraft.world.level.ChunkPos island = new net.minecraft.world.level.ChunkPos(InnerWorldService.layoutOf(player).centre());
+        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) inner.setChunkForced(island.x + dx, island.z + dz, true);
+        helper.runAfterDelay(38, () -> {
+            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) inner.setChunkForced(island.x + dx, island.z + dz, false);
+        });
         tickFor(helper, player, 1, 20);
         helper.runAfterDelay(22, () -> {
             soul[0] = near(player, RemnantSoulEntity.class).get(0);
