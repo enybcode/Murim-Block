@@ -29,6 +29,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.core.registries.BuiltInRegistries;
 import com.murimblock.mob.AzureSenseiEntity;
 import com.murimblock.mob.BanditChiefEntity;
+import com.murimblock.mob.CrabManEntity;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.world.structure.site.SitePlan;
 import java.util.Map;
@@ -141,6 +142,27 @@ public final class SiteTour {
                     lookAbs(mc, s.origin().getX() + 0.5 + fx * (s.reach() - 1), s.origin().getY() + 2.7, s.origin().getZ() + 0.5 + fz * (s.reach() - 1),
                             s.origin().getX() + 0.5, s.origin().getY() + 3.5, s.origin().getZ() + 0.5);
                 }
+                // As in a world older than its residents: they are taken away and the site forgotten; SiteResidents
+                // must put them back by itself, the player being there.
+                case 290 -> {
+                    if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    mc.getSingleplayerServer().execute(() -> {
+                        residents(mc, site).forEach(Mob::discard);
+                        com.murimblock.world.structure.site.SiteResidents.forgetForTests(mc.getSingleplayerServer().overworld(), site.origin());
+                    });
+                }
+                case 350 -> {
+                    if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    mc.getSingleplayerServer().execute(() -> {
+                        Map<String, Integer> found = new TreeMap<>();
+                        for (Mob m : residents(mc, site)) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
+                        Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
+                        String line = name + ": residents put back in an emptied site " + found + ", expected " + expected;
+                        report.add(line);
+                        LOGGER.info("Site tour: {}", line);
+                        if (!found.equals(expected)) failed = true;
+                    });
+                }
                 case 360 -> capture(mc, name + "-ground.png");
                 // A resident at home (the chief before his throne, a householder of the village, the sensei before his altar).
                 case 361 -> {
@@ -150,7 +172,7 @@ public final class SiteTour {
                         if (residents.isEmpty()) return;
                         // From the corner of the resident's own room farthest from them, at eye height.
                         Mob v = residents.get(0);
-                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : "chief";
+                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
@@ -248,7 +270,7 @@ public final class SiteTour {
     /** Villagers and bandits on the site, the chief first, then by name. */
     private static List<Mob> residents(Minecraft mc, Site s) {
         return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4, 16, 4), // down into pits and caves
-                        m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity).stream()
+                        m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity || m instanceof CrabManEntity).stream()
                 .sorted(java.util.Comparator.<Mob>comparingInt(m -> m instanceof BanditChiefEntity ? 0 : 1).thenComparing(m -> m.getName().getString())).toList();
     }
 

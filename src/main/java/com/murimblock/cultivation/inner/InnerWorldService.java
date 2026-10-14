@@ -39,9 +39,9 @@ import net.minecraft.world.phys.AABB;
 /**
  * The inner world (docs/cultivation/qi-cultivation.md): seated in meditation with a full reserve, a cultivator holding
  * the meditation key leaves their body in the lotus and opens their eyes on their own island, built to their image
- * ({@link InnerIsland}). At the bottleneck of a realm, their Heart Demon waits there: slain, the great breakthrough
- * happens when they wake; their own defeat (no death here), fleeing it, or a blow on their body left behind, and the Qi
- * deviates. Otherwise the remnant soul of an old master gives them the day's missions ({@link InnerMissions}). Holding
+ * ({@link InnerIsland}). At the bottleneck of a realm, the remnant soul offers them the trial (SoulDialogue): their
+ * Heart Demon, a double with all their strength, rises before them; slain, the great breakthrough happens when they
+ * wake; their own defeat (no death here), fleeing it, or a blow on their body left behind, and the Qi deviates. Otherwise the remnant soul of an old master gives them the day's missions ({@link InnerMissions}). Holding
  * the key again (or falling off the island) brings them back to their body.
  */
 public final class InnerWorldService {
@@ -55,6 +55,10 @@ public final class InnerWorldService {
 
     /** Exits to carry out on the player's next ticks (never inside a damage event). */
     private static final Map<UUID, Pending> PENDING = new HashMap<>();
+    /** Trials accepted: when the Heart Demon rises (game time). */
+    private static final Map<UUID, Long> TRIALS = new HashMap<>();
+    /** How long the Heart Demon takes to rise once the trial is accepted (ticks). */
+    public static final int TRIAL_RISE_TICKS = 60;
 
     private InnerWorldService() {
     }
@@ -140,6 +144,9 @@ public final class InnerWorldService {
                 soul.setOwner(player.getUUID());
                 inner.addFreshEntity(soul);
                 data.soul(player.getUUID(), soul.getUUID());
+                // The old soul of a rebuilt island, if already in view, goes at once (otherwise on its first tick).
+                AABB area = new AABB(centre).inflate(layout.radius() + 40, 60, layout.radius() + 40);
+                for (RemnantSoulEntity old : inner.getEntitiesOfClass(RemnantSoulEntity.class, area, s -> s != soul)) old.discard();
             }
         }
         return layout;
@@ -147,7 +154,7 @@ public final class InnerWorldService {
 
     // ---------------------------------------------------------------- going in
 
-    /** Into the inner world, from meditation with a full reserve; the Heart Demon waits there at a bottleneck. */
+    /** Into the inner world, from meditation with a full reserve; at a bottleneck, the old master waits with the trial. */
     public static boolean enter(ServerPlayer player) {
         if (isInside(player) || !MeditationService.isMeditating(player)) return false;
         ServerLevel inner = innerLevel(player.server);
@@ -174,22 +181,86 @@ public final class InnerWorldService {
         player.resetFallDistance();
         inner.playSound(null, arrival, SoundEvents.PORTAL_TRAVEL, SoundSource.PLAYERS, 0.25F, 1.6F);
         if (breakthrough) {
-            summonDemon(player, inner, layout, strength, false);
-            player.sendSystemMessage(Component.translatable("cultivation.murimblock.inner.demon", Math.round(strength * 100)));
+            player.sendSystemMessage(Component.translatable("cultivation.murimblock.inner.gate"));
         } else {
             player.sendSystemMessage(Component.translatable("cultivation.murimblock.inner.arrived"));
         }
         return true;
     }
 
-    static HeartDemonEntity summonDemon(ServerPlayer player, ServerLevel inner, InnerIsland.Layout layout, double strength, boolean shadow) {
+    /**
+     * The trial accepted (at a bottleneck, from the old master): the Heart Demon rises a few seconds later, a double with
+     * all its owner's strength. Fleeing it once it stands, or falling to it, and the Qi deviates.
+     */
+    public static boolean beginTrial(ServerPlayer player) {
+        if (!isInside(player) || !session(player).breakthrough() || trialUnderway(player)) return false;
+        ServerLevel inner = player.serverLevel();
+        BlockPos at = layoutOf(player).demon();
+        TRIALS.put(player.getUUID(), inner.getGameTime() + TRIAL_RISE_TICKS);
+        inner.playSound(null, at, SoundEvents.AMBIENT_SOUL_SAND_VALLEY_MOOD.value(), SoundSource.HOSTILE, 1.0F, 0.7F);
+        return true;
+    }
+
+    /** Whether the trial was accepted and its demon not yet slain (rising, or standing). */
+    public static boolean trialUnderway(ServerPlayer player) {
+        if (TRIALS.containsKey(player.getUUID())) return true;
+        return isInside(player) && !player.serverLevel().getEntitiesOfClass(HeartDemonEntity.class, player.getBoundingBox().inflate(80, 60, 80),
+                d -> !d.shadow() && d.isAlive() && player.getUUID().equals(d.owner())).isEmpty();
+    }
+
+    /** While it rises: dark Qi gathering where it will stand; then the demon itself. */
+    private static void tickTrial(ServerPlayer player) {
+        Long at = TRIALS.get(player.getUUID());
+        if (at == null) return;
+        ServerLevel inner = player.serverLevel();
+        BlockPos spot = layoutOf(player).demon();
+        long left = at - inner.getGameTime();
+        if (left > 0) {
+            double r = 0.4 + left / (double) TRIAL_RISE_TICKS * 1.6;
+            for (int i = 0; i < 6; i++) {
+                double a = inner.random.nextDouble() * Math.PI * 2;
+                inner.sendParticles(net.minecraft.core.particles.ParticleTypes.SQUID_INK, spot.getX() + 0.5 + Math.cos(a) * r, spot.getY() + 0.2 + inner.random.nextDouble() * 1.8,
+                        spot.getZ() + 0.5 + Math.sin(a) * r, 0, -Math.cos(a), 0.1, -Math.sin(a), 0.08);
+            }
+            return;
+        }
+        TRIALS.remove(player.getUUID());
+        HeartDemonEntity demon = summonDemon(player, inner, layoutOf(player), false);
+        if (demon == null) return;
+        inner.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, spot.getX() + 0.5, spot.getY() + 1, spot.getZ() + 0.5, 40, 0.5, 0.9, 0.5, 0.02);
+        player.sendSystemMessage(Component.translatable("cultivation.murimblock.inner.demon", Math.round(session(player).strength() * 100)));
+    }
+
+    /**
+     * A blow of the player's own Heart Demon lands as hard as their preparation leaves it (the session's weight, 40 % to
+     * 130 %): the demon has all their strength, but a cultivator who prepared well is shaken less.
+     */
+    public static float demonBlow(ServerPlayer player, DamageSource source, float amount) {
+        if (!isInside(player) || !(source.getEntity() instanceof HeartDemonEntity demon) || demon.shadow() || !player.getUUID().equals(demon.owner())) {
+            return amount;
+        }
+        return (float) (amount * session(player).strength());
+    }
+
+    /** How rich in Qi the place where the player's body sits (where they are, outside). */
+    public static CultivationRules.Place bodyPlace(ServerPlayer player) {
+        InnerSession s = session(player);
+        if (!isInside(player) || !s.active()) return CultivationService.placeOf(player);
+        ServerLevel level = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, s.dimension()));
+        if (level == null) return CultivationRules.Place.ORDINARY;
+        return CultivationService.placeAt(level, BlockPos.containing(s.x(), s.y(), s.z()), s.y());
+    }
+
+    static HeartDemonEntity summonDemon(ServerPlayer player, ServerLevel inner, InnerIsland.Layout layout, boolean shadow) {
         HeartDemonEntity demon = MurimEntities.HEART_DEMON.get().create(inner);
         if (demon == null) return null;
         BlockPos at = layout.demon();
         demon.moveTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 0, 0);
         demon.setYHeadRot(0);
-        demon.setup(player, strength, shadow);
-        inner.addFreshEntity(demon);
+        demon.setup(player, shadow);
+        // Its spot loaded (a player's view keeps it so; not always one made for a test).
+        inner.getChunkAt(at);
+        if (!inner.addFreshEntity(demon)) return null;
         inner.playSound(null, at, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.5F, 1.4F);
         return demon;
     }
@@ -209,6 +280,7 @@ public final class InnerWorldService {
         InnerSession s = session(player);
         boolean demonAlive = clearIsland(player);
         InnerMissions.end(player);
+        com.murimblock.dialogue.DialogueService.forget(player);
         if (!s.active()) {
             if (isInside(player)) sendHome(player);
             return;
@@ -256,6 +328,7 @@ public final class InnerWorldService {
 
     /** Takes the player's demons and motes off their island; true if a Heart Demon (not a shadow) was still standing. */
     static boolean clearIsland(ServerPlayer player) {
+        TRIALS.remove(player.getUUID());
         if (!isInside(player)) return false;
         boolean alive = false;
         AABB area = player.getBoundingBox().inflate(80, 60, 80);
@@ -321,6 +394,7 @@ public final class InnerWorldService {
             return;
         }
         if (player.getY() < InnerIsland.GROUND - 30) schedule(player, Exit.FELL, 0);
+        tickTrial(player);
         InnerMissions.tick(player);
     }
 
@@ -339,10 +413,14 @@ public final class InnerWorldService {
 
     public static void onLogout(ServerPlayer player) {
         PENDING.remove(player.getUUID());
+        TRIALS.remove(player.getUUID());
         InnerMissions.end(player);
+        com.murimblock.dialogue.DialogueService.forget(player);
     }
 
     public static void clearForTests() {
         PENDING.clear();
+        TRIALS.clear();
+        com.murimblock.dialogue.DialogueService.clearForTests();
     }
 }

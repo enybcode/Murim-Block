@@ -398,6 +398,13 @@ public final class WeaponTour {
         String what = t.name() + " from " + t.side().name().toLowerCase();
         Item weapon = t.actor() == Actor.BANDIT ? MurimItems.BANDIT_DAO.get() : MurimItems.CHIEF_GREAT_AXE.get();
         check(seen != null && seen.getMainHandItem().is(weapon), what + ": holds " + weapon);
+        if (t.actor() == Actor.ARMOUR) {
+            check(seen != null && seen.getItemBySlot(EquipmentSlot.HEAD).is(MurimItems.CHIEF_BROW_BAND.get())
+                    && seen.getItemBySlot(EquipmentSlot.CHEST).is(MurimItems.CHIEF_LAMELLAR_VEST.get())
+                    && seen.getItemBySlot(EquipmentSlot.LEGS).is(MurimItems.CHIEF_TASSETS.get())
+                    && seen.getItemBySlot(EquipmentSlot.FEET).is(MurimItems.CHIEF_FUR_BOOTS.get()), what + ": the client sees the chief's four pieces worn");
+            if (t.name().equals("armour-idle") && t.side() == Side.FRONT) mc.getSingleplayerServer().execute(WeaponTour::checkArmour);
+        }
         if (seen != null && t.motion() != null) {
             LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
             LivingMotion motion = patch == null ? null : patch.getCurrentLivingMotion();
@@ -406,6 +413,28 @@ public final class WeaponTour {
                 report.add(String.format("info   %s: z from %.2f, server %.2f, client %.2f", what, baseZ, wielder.getZ(), seen.getZ()));
             }
         }
+    }
+
+/**
+     * On the server, the wielder in the chief's armour (a real player, ticked: its worn equipment counts): 17 armour and
+     * 4 toughness, and a zombie's blow of 10 takes what armour leaves of it (about 4.5), not 10 (generic damage would
+     * go through any armour).
+     */
+    private static void checkArmour() {
+        double armour = wielder.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+        double toughness = wielder.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS);
+        check(Math.abs(armour - 17) < 0.01 && Math.abs(toughness - 4) < 0.01, String.format("the wielder in the chief's armour has armour %.1f, toughness %.1f", armour, toughness));
+        var zombie = net.minecraft.world.entity.EntityType.ZOMBIE.create(wielder.serverLevel());
+        var blow = wielder.damageSources().mobAttack(zombie);
+        float expected = net.minecraft.world.damagesource.CombatRules.getDamageAfterAbsorb(wielder, 10, blow, (float) armour, (float) toughness);
+        wielder.setHealth(wielder.getMaxHealth());
+        wielder.invulnerableTime = 0;
+        float before = wielder.getHealth();
+        wielder.hurt(blow, 10);
+        float taken = before - wielder.getHealth();
+        check(taken < 6 && Math.abs(taken - expected) < 0.6, String.format("a zombie's blow of 10 on the chief's armour takes %.2f (armour leaves %.2f)", taken, expected));
+        wielder.setHealth(wielder.getMaxHealth());
+        wielder.invulnerableTime = 0;
     }
 
     private static boolean playingOnFirstFrame;

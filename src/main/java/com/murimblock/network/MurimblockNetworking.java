@@ -5,10 +5,10 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
-     * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
+     * 17: conversations (the old master's dialogue, its pages and answers). 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "16";
+    private static final String NETWORK_VERSION = "17";
 
     private MurimblockNetworking() {
     }
@@ -18,6 +18,10 @@ public final class MurimblockNetworking {
         // Cultivation: meditation (and the inner world), Qi Sense, breakthroughs shown.
         registrar.playToServer(CultivationPayloads.Meditate.TYPE, CultivationPayloads.Meditate.STREAM_CODEC, CultivationPayloads.Meditate::handle);
         registrar.playToServer(CultivationPayloads.Sense.TYPE, CultivationPayloads.Sense.STREAM_CODEC, CultivationPayloads.Sense::handle);
+        // Conversations: a page shown, an answer chosen.
+        registrar.playToClient(DialoguePayloads.Page.TYPE, DialoguePayloads.Page.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.DialogueScreen.open(payload));
+        registrar.playToServer(DialoguePayloads.Choose.TYPE, DialoguePayloads.Choose.STREAM_CODEC, DialoguePayloads.Choose::handle);
         registrar.playToClient(CultivationPayloads.SenseReadings.TYPE, CultivationPayloads.SenseReadings.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.QiSenseClient.readings(payload));
         registrar.playToClient(CultivationPayloads.Breakthrough.TYPE, CultivationPayloads.Breakthrough.STREAM_CODEC,

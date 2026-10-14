@@ -713,9 +713,12 @@ public final class MurimProfileScreen extends Screen {
             text(g, new Box(pill.x(), y, pill.width(), 9), label("cultivation.failures", journal.failures()), MUTED);
             y += 10;
         }
-        var bonuses = com.murimblock.cultivation.CultivationRules.bonuses(data.realm());
-        if (bonuses.health() > 0) text(g, new Box(pill.x(), y, pill.width(), 9), label("cultivation.bonuses", Math.round(bonuses.health() / 2),
-                Math.round(bonuses.damage() * 100), Math.round(bonuses.fist())), INK_SOFT);
+        var bonuses = com.murimblock.cultivation.CultivationRules.bonuses(data);
+        if (bonuses.health() > 0 || bonuses.armor() > 0) {
+            text(g, new Box(pill.x(), y, pill.width(), 9), label("cultivation.bonuses", Math.round(bonuses.health() / 2), Math.round(bonuses.armor())), INK_SOFT);
+            text(g, new Box(pill.x(), y + 10, pill.width(), 9), label("cultivation.bonuses_strength",
+                    Math.round(bonuses.damage() * 100), Math.round(bonuses.fist())), INK_SOFT);
+        }
     }
     /** Early, Middle, Late, Peak as four marks; reached stages are red seals. */
     private void stagePips(GuiGraphics g, String stageId) {

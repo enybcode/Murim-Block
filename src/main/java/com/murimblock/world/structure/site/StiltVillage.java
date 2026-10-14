@@ -142,7 +142,8 @@ final class StiltVillage extends Site {
         table(h, 2, y, 0, Blocks.SPRUCE_FENCE, Blocks.SPRUCE_PRESSURE_PLATE);
         h.set(2, y, 1, stair(Blocks.SPRUCE_STAIRS, Direction.SOUTH, Half.BOTTOM));
         h.set(3, y, 0, stair(Blocks.SPRUCE_STAIRS, Direction.EAST, Half.BOTTOM));
-        h.set(3, y, -2, s(Blocks.BARREL));
+        if (variant == 0) h.stocked(3, y, -2, s(Blocks.BARREL), SiteLoot.CACHE);
+        else h.set(3, y, -2, s(Blocks.BARREL));
         // Herbalists, weavers, cooks.
         h.set(2, y, -2, s(variant == 0 ? Blocks.BREWING_STAND : variant == 1 ? Blocks.LOOM : Blocks.SMOKER));
         h.set(-1, y, -2, s(variant == 0 ? Blocks.POTTED_FERN : variant == 1 ? Blocks.CRAFTING_TABLE : Blocks.WATER_CAULDRON));

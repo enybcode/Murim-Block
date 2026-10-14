@@ -59,7 +59,6 @@ public class CultivationTextures {
         for (int i = 0; i < 4; i++) write(spark(i), new File(root, "particle/aura_" + i + ".png"));
         write(mote(), new File(root, "particle/qi_mote.png"));
         write(deviationIcon(), new File(root, "mob_effect/qi_deviation.png"));
-        write(elderSkin(), new File(root, "entity/remnant_soul.png"));
         write(demonEyes(), new File(root, "entity/heart_demon_eyes.png"));
         System.out.println("wrote the cultivation textures under " + root);
     }
@@ -186,43 +185,6 @@ public class CultivationTextures {
     /** Fills a rectangle of a 64x64 skin. */
     static void fill(BufferedImage img, int x0, int y0, int x1, int y1, int col) {
         for (int y = y0; y < y1; y++) for (int x = x0; x < x1; x++) img.setRGB(x, y, col);
-    }
-
-    /**
-     * The remnant soul's skin: an old master in a grey-blue robe, white hair and a long white beard, his eyes closed.
-     * Standard 64x64 player layout (head 0..32 x 0..16, body 16..40 x 16..32, arms and legs).
-     */
-    static BufferedImage elderSkin() {
-        BufferedImage img = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
-        int skin = 0xFFD8B593, hair = 0xFFEDEBE4, hairShade = 0xFFC9C6BE, robe = 0xFF6F8194, robeDark = 0xFF52606F, sash = 0xFF8E2E26, shoe = 0xFF2E2A26;
-        // Head: hair all round, the face in front.
-        fill(img, 0, 0, 32, 16, hair);
-        fill(img, 8, 0, 16, 8, hairShade);
-        fill(img, 8, 8, 16, 16, skin);
-        fill(img, 8, 8, 16, 10, hair);
-        // Closed eyes, white brows, the beard down the lower face.
-        fill(img, 9, 11, 11, 12, 0xFF6B4A33);
-        fill(img, 13, 11, 15, 12, 0xFF6B4A33);
-        fill(img, 9, 10, 11, 11, hair);
-        fill(img, 13, 10, 15, 11, hair);
-        fill(img, 9, 13, 15, 16, hair);
-        fill(img, 11, 12, 13, 13, 0xFFC09A78);
-        // Body: the robe, a red sash, the beard falling on the chest.
-        fill(img, 16, 16, 40, 32, robe);
-        fill(img, 16, 26, 40, 27, sash);
-        fill(img, 22, 20, 26, 25, hair);
-        fill(img, 20, 20, 21, 32, robeDark);
-        // Arms: wide sleeves, the hands at the cuffs.
-        fill(img, 40, 16, 56, 32, robe);
-        fill(img, 40, 30, 56, 32, skin);
-        fill(img, 32, 48, 48, 64, robe);
-        fill(img, 32, 62, 48, 64, skin);
-        // Legs: the robe's skirt, cloth shoes.
-        fill(img, 0, 16, 16, 32, robeDark);
-        fill(img, 0, 30, 16, 32, shoe);
-        fill(img, 16, 48, 32, 64, robeDark);
-        fill(img, 16, 62, 32, 64, shoe);
-        return img;
     }
 
     /** The Heart Demon's eyes: two red points where a skin's eyes are, drawn glowing over its dark copy. */

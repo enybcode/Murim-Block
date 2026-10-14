@@ -81,6 +81,8 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, KnockdownEvents::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, KnockdownEvents::onDeath);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onIncomingDamage);
+        // No combo kills at once: after every other change to a blow (docs/combat/technique-balance.md).
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOW, com.murimblock.combat.BurstGuard::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onDamageTaken);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onAttack);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onRightClickItem);

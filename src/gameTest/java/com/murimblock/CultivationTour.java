@@ -11,7 +11,8 @@ import com.murimblock.cultivation.CultivationService;
 import com.murimblock.cultivation.CultivationStage;
 import com.murimblock.cultivation.MeditationService;
 import com.murimblock.cultivation.inner.HeartDemonEntity;
-import com.murimblock.cultivation.inner.InnerMissions;
+import com.murimblock.client.DialogueScreen;
+import com.murimblock.cultivation.inner.SoulDialogue;
 import com.murimblock.cultivation.inner.InnerWorldService;
 import com.murimblock.cultivation.inner.MeditatingBodyEntity;
 import com.murimblock.cultivation.inner.QiMoteEntity;
@@ -70,6 +71,7 @@ import org.slf4j.Logger;
 public final class CultivationTour {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean creating, finished, failed;
+    private static volatile boolean gateTalk;
     private static int ticks;
     private static Marker camera;
     private static Vec3 start;
@@ -123,7 +125,7 @@ public final class CultivationTour {
         if (ticks >= 580 && ticks < 650) MurimblockKeyMappings.QI_SENSE.setDown(true);
         if (ticks == 650) MurimblockKeyMappings.QI_SENSE.setDown(false);
         // In the Heart Demon's fight the tour's player only stands: kept alive.
-        if (ticks >= 262 && ticks < 342) server.execute(() -> self(server).setHealth(self(server).getMaxHealth()));
+        if (ticks >= 262 && ticks < 362) server.execute(() -> self(server).setHealth(self(server).getMaxHealth()));
         switch (ticks) {
             case 20 -> server.execute(() -> {
                 ServerLevel level = server.overworld();
@@ -175,17 +177,51 @@ public final class CultivationTour {
                 mc.setScreen(null);
                 release(mc);
             }
-            case 246 -> server.execute(() -> check(InnerWorldService.enter(self(server)), "at the gate, the inner world opens (the Heart Demon waits)"));
+            case 246 -> server.execute(() -> {
+                check(InnerWorldService.enter(self(server)), "at the gate, the inner world opens");
+                check(demons(server).isEmpty(), "no Heart Demon before the trial is accepted");
+            });
+            // The old master offers the trial: his words, then the answers, on the dialogue screen.
+            // His entity comes into view a few ticks after the arrival (once the loading screen is gone): asked until it has.
+            case 253, 255, 257 -> server.execute(() -> {
+                RemnantSoulEntity soul = soulOf(server);
+                if (soul == null || gateTalk) return;
+                gateTalk = true;
+                SoulDialogue.choose(self(server), soul, "myself");
+            });
+            case 258 -> check(gateTalk, "the old master waits on the island at the gate");
+            case 260 -> {
+                check(DialogueScreen.current() != null, "the old master's words open the dialogue screen");
+                if (mc.screen instanceof DialogueScreen screen) screen.showAllForTests();
+            }
+            case 262 -> capture(mc, "17-soul-dialogue-gate.png");
+            case 263 -> server.execute(() -> {
+                RemnantSoulEntity soul = soulOf(server);
+                if (soul != null) SoulDialogue.choose(self(server), soul, "ready");
+            });
+            case 267 -> {
+                if (mc.screen instanceof DialogueScreen screen) screen.showAllForTests();
+            }
+            case 269 -> capture(mc, "18-soul-dialogue-warn.png");
+            case 271 -> server.execute(() -> {
+                RemnantSoulEntity soul = soulOf(server);
+                if (soul != null) SoulDialogue.choose(self(server), soul, "summon");
+                check(InnerWorldService.trialUnderway(self(server)), "the trial accepted, the Heart Demon rises");
+            });
+            case 276 -> mc.setScreen(null);
             case 264 -> {
                 check(InnerWorldService.isInside(mc.player), "the client is in the inner world");
                 Vec3 p = mc.player.position();
                 film(mc, p.add(5, 2.6, 2.5), p.add(0, 1.0, -2.5));
             }
-            case 300 -> server.execute(() -> check(!demons(server).isEmpty(), "the Heart Demon stands on the island"));
-            case 290, 304, 318 -> KeyMapping.click(mc.options.keyAttack.getKey());
-            case 342 -> server.execute(() -> demons(server).forEach(d -> d.hurt(self(server).damageSources().playerAttack(self(server)), 1000)));
-            case 378 -> release(mc);
-            case 392 -> {
+            case 340 -> server.execute(() -> {
+                check(!demons(server).isEmpty(), "the Heart Demon stands on the island");
+                demons(server).forEach(d -> check(Math.abs(d.getMaxHealth() - self(server).getMaxHealth()) < 1e-3, "the Heart Demon has its owner's health"));
+            });
+            case 336, 346, 354 -> KeyMapping.click(mc.options.keyAttack.getKey());
+            case 360 -> server.execute(() -> demons(server).forEach(d -> { d.setHealth(1); d.hurt(self(server).damageSources().playerAttack(self(server)), 1000); }));
+            case 396 -> release(mc);
+            case 412 -> {
                 check(!InnerWorldService.isInside(mc.player), "back in the body after the victory");
                 server.execute(() -> check(CultivationService.getRealm(self(server)) == CultivationRealm.QI_GUIDING, "the great breakthrough: Qi Guiding"));
             }
@@ -241,18 +277,45 @@ public final class CultivationTour {
                 var soul = mc.level.getEntitiesOfClass(RemnantSoulEntity.class, mc.player.getBoundingBox().inflate(40));
                 check(!soul.isEmpty(), "the remnant soul is on the island");
                 Vec3 at = soul.isEmpty() ? p.add(-3, 0, 2) : soul.get(0).position();
-                film(mc, at.add(2.5, 1.8, -3.0), at.add(0, 1.2, 0));
+                // From the platform's side, where he looks (at the player), a little higher than his face.
+                Vec3 toward = p.subtract(at).multiply(1, 0, 1).normalize();
+                film(mc, at.add(toward.scale(3.4)).add(0, 1.8, 0), at.add(0, 1.4, 0));
             }
-            case 715 -> server.execute(() -> {
+            // A frame later, once the camera has moved.
+            case 690 -> capture(mc, "16-remnant-soul.png");
+            // Spoken to, near him: his greeting, then "Teach me." answered on the screen (sent to the server as a click is).
+            case 694 -> server.execute(() -> {
                 ServerPlayer self = self(server);
-                var souls = self.serverLevel().getEntitiesOfClass(RemnantSoulEntity.class, self.getBoundingBox().inflate(40));
-                if (!souls.isEmpty()) InnerMissions.talk(self, souls.get(0));
+                RemnantSoulEntity soul = soulOf(server);
+                if (soul == null) return;
+                Vec3 at = soul.position();
+                self.teleportTo(self.serverLevel(), at.x + 2, at.y - 0.2, at.z, 90, 0);
+                SoulDialogue.greet(self, soul);
             });
+            case 699 -> {
+                if (mc.screen instanceof DialogueScreen screen) screen.showAllForTests();
+            }
+            case 701 -> capture(mc, "19-soul-dialogue-greeting.png");
+            case 703 -> {
+                if (mc.screen instanceof DialogueScreen screen) screen.answerForTests("where");
+            }
+            case 708 -> {
+                check(pageKey().endsWith(".where"), "an answer clicked on the screen reaches the old master (" + pageKey() + ")");
+                if (mc.screen instanceof DialogueScreen screen) screen.answerForTests("back");
+            }
+            case 712 -> {
+                if (mc.screen instanceof DialogueScreen screen) screen.answerForTests("train");
+            }
+            case 716 -> {
+                check(pageKey().endsWith("train.storm"), "he gives the day's mission (" + pageKey() + ")");
+                if (mc.screen instanceof DialogueScreen screen) screen.answerForTests("storm");
+            }
+            case 720 -> mc.setScreen(null);
             case 718 -> {
                 Vec3 p = mc.player.position();
                 film(mc, p.add(0, 10, 10), p.add(0, 0, -1));
             }
-            case 730 -> check(mc.level.getEntitiesOfClass(QiMoteEntity.class, mc.player.getBoundingBox().inflate(40)).size() >= 8, "the motes of the Qi storm drift over the island");
+            case 736 -> check(mc.level.getEntitiesOfClass(QiMoteEntity.class, mc.player.getBoundingBox().inflate(40)).size() >= 8, "the motes of the Qi storm drift over the island");
             case 760 -> release(mc);
             case 763 -> server.execute(() -> InnerWorldService.leave(self(server), InnerWorldService.Exit.WOKE));
             case 775 -> {
@@ -272,9 +335,9 @@ public final class CultivationTour {
         record(mc, "03-minor-breakthrough", 133, 173, 1);
         record(mc, "04-aura-colours", 177, 217, 1);
         record(mc, "07-enter-inner-world", 244, 262, 1);
-        record(mc, "08-heart-demon", 266, 340, 1);
-        record(mc, "09-demon-slain", 340, 376, 1);
-        record(mc, "10-great-breakthrough", 384, 470, 1);
+        record(mc, "08-heart-demon", 278, 360, 1);
+        record(mc, "09-demon-slain", 358, 396, 1);
+        record(mc, "10-great-breakthrough", 400, 470, 1);
         record(mc, "11-deviation", 475, 518, 1);
         record(mc, "12-body-left", 526, 566, 1);
         record(mc, "13-qi-sense", 585, 645, 1);
@@ -290,6 +353,22 @@ public final class CultivationTour {
 
     private static Vec3 shenSeat() {
         return start.add(-3.5, 0, 6);
+    }
+
+    /** The key of the line on the dialogue screen ("" if none). */
+    private static String pageKey() {
+        var page = DialogueScreen.current();
+        return page != null && page.line().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t ? t.getKey() : "";
+    }
+
+    /** The old master of the tour player's island. */
+    private static RemnantSoulEntity soulOf(MinecraftServer server) {
+        ServerPlayer self = self(server);
+        // Every entity of the level, not those of an area: one just added is not found by area for a few ticks.
+        for (var e : self.serverLevel().getAllEntities()) {
+            if (e instanceof RemnantSoulEntity soul && soul.isAlive() && soul.distanceTo(self) < 80) return soul;
+        }
+        return null;
     }
 
     private static List<HeartDemonEntity> demons(MinecraftServer server) {

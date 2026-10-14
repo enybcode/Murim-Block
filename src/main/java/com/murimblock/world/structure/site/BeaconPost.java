@@ -1,5 +1,6 @@
 package com.murimblock.world.structure.site;
 
+import com.murimblock.mob.MurimEntities;
 import com.murimblock.world.structure.kit.RoofTiles;
 import java.util.List;
 import net.minecraft.core.Direction;
@@ -19,6 +20,8 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * earth walls with a walkway and crenels, corner turrets, a gatehouse with a red pavilion over the gate, the
  * official's hall, a dormitory and stables under lean-to roofs, a well and stacked cargo; and in the north-east
  * corner the beacon tower, banded with reeds, its signal fire smoking on top.
+ * <p>Taken by raiders (Enzo's request, 14/10): four Mountain Bandits in the Dune Raider outfit hold the post, one in
+ * the official's hall, one in the yard, one by the caravans' cargo, one in the dormitory.
  */
 final class BeaconPost extends Site {
     static final int WALL = 7;
@@ -53,7 +56,18 @@ final class BeaconPost extends Site {
         prepare(c, -2, 18, 2, 21, g, g + 8, s(Blocks.SAND), EARTH);
         pave(c, -1, 16, 1, 21, g, BASE, BASE, s(Blocks.CUT_SANDSTONE));
         c.carried(-1, 16, 1, 21, g);
+        // The raiders who took it, in the outfit of the desert.
+        raider(c, 0, g + 1, 1, Direction.SOUTH);
+        raider(c, 1, g + 1, 5, Direction.WEST);
     }
+
+    /** A Mountain Bandit in the Dune Raider outfit, placed with the post. */
+    private static void raider(Canvas c, int x, int y, int z, Direction facing) {
+        c.spawn(x, y, z, facing, MurimEntities.MOUNTAIN_BANDIT.get(), bandit -> bandit.setVariant(DUNE_RAIDER));
+    }
+
+    /** The Dune Raider's outfit (MountainBanditEntity.OUTFITS). */
+    private static final int DUNE_RAIDER = 3;
 
     /** Rammed earth wall, two thick and seven high, a walkway on top and crenels on the outer edge. */
     private static void walls(Canvas c, int g) {
@@ -131,7 +145,7 @@ final class BeaconPost extends Site {
         door(c, 4, f + 1, 13, Blocks.DARK_OAK_DOOR, Direction.WEST);
         c.set(0, f + 1, 14, Blocks.BELL.defaultBlockState().setValue(BellBlock.ATTACHMENT, BellAttachType.FLOOR).setValue(BellBlock.FACING, Direction.EAST));
         c.set(-2, f + 1, 14, s(Blocks.NOTE_BLOCK));
-        c.set(2, f + 1, 14, s(Blocks.BARREL));
+        c.stocked(2, f + 1, 14, s(Blocks.BARREL), SiteLoot.CACHE);
         c.set(0, f + 4, 13, hangingLantern());
         c.kit().roof(-4, 12, 4, 15, f + 5, RoofTiles.GREY, false);
         c.room(-3, f + 1, 13, 3, f + 4, 14);
@@ -169,6 +183,8 @@ final class BeaconPost extends Site {
         c.set(x1 - 1, y, z1 - 1, s(Blocks.BARREL));
         c.set(x0 + 1, y, z1 - 2, s(Blocks.POTTED_DEAD_BUSH));
         for (int x : new int[]{-3, 3}) c.set(x, f + 4, -9, hangingLantern());
+        // Their leader, over the official's ledger.
+        raider(c, 2, y, -9, Direction.SOUTH);
     }
 
     /** Dormitory for travellers and couriers (frame: front +z to the yard), its lean-to roof against the wall. */
@@ -185,6 +201,7 @@ final class BeaconPost extends Site {
         for (int x : new int[]{-4, 4}) h.set(x, f + 2, 0, hangingLantern());
         h.set(x1 - 1, f, z1 - 1, s(Blocks.CRAFTING_TABLE));
         h.room(x0 + 1, f, z0 + 1, x1 - 1, f + 2, z1 - 1);
+        raider(h, 0, f, -1, Direction.SOUTH);
     }
 
     /** Stables (frame: front +z to the yard): open on the yard between posts, stalls of fences, hay and troughs. */

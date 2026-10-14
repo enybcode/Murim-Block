@@ -42,8 +42,8 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MeditationClient {
-    /** How long the key is held to open (or leave) the inner world, in ticks. */
-    public static final int HOLD_TICKS = 30;
+    /** How long the key is held to open the inner world (15 s), or to leave it, in ticks. */
+    public static final int HOLD_TICKS = MeditationService.ENTER_HOLD_TICKS, LEAVE_TICKS = MeditationService.LEAVE_HOLD_TICKS;
     private static int held;
     private static boolean wasDown, holdSent;
     private static long lastStopSent = -100;
@@ -85,7 +85,7 @@ public final class MeditationClient {
         boolean down = mc.screen == null && MurimblockKeyMappings.MEDITATE.isDown();
         if (down) {
             held++;
-            if (!holdSent && held >= HOLD_TICKS && (meditating || inner)) {
+            if (!holdSent && (inner ? held >= LEAVE_TICKS : meditating && held >= HOLD_TICKS)) {
                 send(CultivationPayloads.Meditate.HOLD);
                 holdSent = true;
             }
@@ -181,10 +181,13 @@ public final class MeditationClient {
         if (!inner && !MeditationService.isMeditating(mc.player)) return;
         GuiGraphics g = event.getGuiGraphics();
         int w = 80, x = g.guiWidth() / 2 - w / 2, y = g.guiHeight() / 2 + 18;
-        float t = Math.min(1, held / (float) HOLD_TICKS);
+        int needed = inner ? LEAVE_TICKS : HOLD_TICKS;
+        float t = Math.min(1, held / (float) needed);
         g.fill(x - 1, y - 1, x + w + 1, y + 4, 0x90000000);
         g.fill(x, y, x + Math.round(w * t), y + 3, 0xFFEAD27A);
-        Component label = Component.translatable(inner ? "gui.murimblock.meditation.leave" : "gui.murimblock.meditation.enter");
+        // Entering takes a long, still breath: the seconds left are shown.
+        Component label = inner ? Component.translatable("gui.murimblock.meditation.leave")
+                : Component.translatable("gui.murimblock.meditation.enter_in", (needed - held + 19) / 20);
         g.drawCenteredString(mc.font, label, g.guiWidth() / 2, y + 7, 0xFFF4EEDF);
     }
 

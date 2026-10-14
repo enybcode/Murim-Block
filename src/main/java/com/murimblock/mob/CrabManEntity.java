@@ -124,7 +124,8 @@ public final class CrabManEntity extends Monster {
     @Override @Nullable
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, data);
-        spawnEscort(level, difficulty);
+        // Placed by a structure, its crabs stay with it, as it does (Canvas.spawn keeps it from despawning).
+        spawnEscort(level, difficulty, reason == MobSpawnType.STRUCTURE);
         return result;
     }
 
@@ -133,21 +134,27 @@ public final class CrabManEntity extends Monster {
      * own position, where entity pushing separates them. Free means no block collision; a crab may drop a step.
      */
     public int spawnEscort(ServerLevelAccessor level, DifficultyInstance difficulty) {
+        return spawnEscort(level, difficulty, false);
+    }
+
+    /** The same; {@code persistent}: the crabs never despawn (a structure's). */
+    public int spawnEscort(ServerLevelAccessor level, DifficultyInstance difficulty, boolean persistent) {
         int spawned = 0;
         for (double[] offset : ESCORT_OFFSETS) {
             if (spawned == ESCORT_SIZE) break;
-            if (placeCrab(level, difficulty, getX() + offset[0], getZ() + offset[1], true)) spawned++;
+            if (placeCrab(level, difficulty, getX() + offset[0], getZ() + offset[1], true, persistent)) spawned++;
         }
-        while (spawned < ESCORT_SIZE && placeCrab(level, difficulty, getX(), getZ(), false)) spawned++;
+        while (spawned < ESCORT_SIZE && placeCrab(level, difficulty, getX(), getZ(), false, persistent)) spawned++;
         return spawned;
     }
 
-    private boolean placeCrab(ServerLevelAccessor level, DifficultyInstance difficulty, double x, double z, boolean needsRoom) {
+    private boolean placeCrab(ServerLevelAccessor level, DifficultyInstance difficulty, double x, double z, boolean needsRoom, boolean persistent) {
         ArmoredCrabEntity crab = MurimEntities.ARMORED_CRAB.get().create(level.getLevel());
         if (crab == null) return false;
         crab.moveTo(x, getY(), z, random.nextFloat() * 360, 0);
         if (needsRoom && !level.noBlockCollision(crab, crab.getBoundingBox())) return false;
         crab.finalizeSpawn(level, difficulty, MobSpawnType.MOB_SUMMONED, null);
+        if (persistent) crab.setPersistenceRequired();
         level.addFreshEntityWithPassengers(crab);
         return true;
     }

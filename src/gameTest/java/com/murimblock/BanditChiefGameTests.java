@@ -242,6 +242,42 @@ public final class BanditChiefGameTests {
     }
 
     /**
+     * The Long Fist, the most widespread art: the chief drops its scroll about three times in ten (killed by a player),
+     * and the sites' caches hold it four times in ten, with what a village weaponsmith's chest holds.
+     */
+    @GameTest(template = "foundation_arena", batch = "chief_long_fist_drop")
+    public static void theLongFistScrollComesFromTheChiefAndTheCaches(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        BanditChiefEntity chief = chief(helper, new BlockPos(2, 1, 2));
+        var tables = helper.getLevel().getServer().reloadableRegistries();
+        LootTable chiefTable = tables.getLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "entities/bandit_chief")));
+        LootParams byPlayer = new LootParams.Builder(helper.getLevel())
+                .withParameter(LootContextParams.THIS_ENTITY, chief)
+                .withParameter(LootContextParams.ORIGIN, chief.position())
+                .withParameter(LootContextParams.DAMAGE_SOURCE, helper.getLevel().damageSources().playerAttack(player))
+                .withParameter(LootContextParams.LAST_DAMAGE_PLAYER, player).withParameter(LootContextParams.ATTACKING_ENTITY, player)
+                .create(LootContextParamSets.ENTITY);
+        int rolls = 400, fromChief = 0, fromCache = 0, otherLoot = 0;
+        for (int i = 0; i < rolls; i++)
+            fromChief += (int) chiefTable.getRandomItems(byPlayer).stream().filter(s -> s.is(MurimItems.LONG_FIST_SCROLL.get())).count();
+        LootTable cache = tables.getLootTable(com.murimblock.world.structure.site.SiteLoot.CACHE);
+        LootParams opened = new LootParams.Builder(helper.getLevel()).withParameter(LootContextParams.ORIGIN, chief.position())
+                .create(LootContextParamSets.CHEST);
+        for (int i = 0; i < rolls; i++) {
+            var items = cache.getRandomItems(opened);
+            fromCache += (int) items.stream().filter(s -> s.is(MurimItems.LONG_FIST_SCROLL.get())).count();
+            otherLoot += (int) items.stream().filter(s -> !s.is(MurimItems.LONG_FIST_SCROLL.get())).count();
+        }
+        chief.discard();
+        cleanup(player);
+        // 120 and 160 of 400 expected.
+        helper.assertTrue(fromChief >= 85 && fromChief <= 160, "The chief dropped the scroll " + fromChief + " times in " + rolls + ", not about three in ten");
+        helper.assertTrue(fromCache >= 120 && fromCache <= 200, "The caches held the scroll " + fromCache + " times in " + rolls + ", not about four in ten");
+        helper.assertTrue(otherLoot > rolls, "The caches hold too little of a weaponsmith's loot: " + otherLoot + " items in " + rolls);
+        helper.succeed();
+    }
+
+    /**
      * Killed by a player, the chief drops one piece of his armour about one time in five (never two at once), any of
      * the four; killed by anything else, none.
      */

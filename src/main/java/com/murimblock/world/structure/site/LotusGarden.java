@@ -4,6 +4,10 @@ import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.kit.RoofTiles;
 import java.util.List;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GrindstoneBlock;
@@ -24,6 +28,8 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * waterside pavilion, a covered gallery along the west wall, Taihu rockeries, a willow, bamboo and osmanthus, and the
  * hall of the "zither and sword" at the north. The paths join the gate, the bridge, the gallery, the pavilion and both
  * doors of the hall.
+ * <p>Its household (Enzo's request, 14/10): the scholar in the hall of the zither and sword, the gardener in the
+ * covered gallery, the tea master in the waterside pavilion; villagers with their trades and names.
  */
 final class LotusGarden extends Site {
     private static final BlockState WALL = s(Blocks.CALCITE);
@@ -192,6 +198,16 @@ final class LotusGarden extends Site {
         wallBanner(c, 2, y + 2, z0 + 1, Blocks.WHITE_WALL_BANNER, Direction.SOUTH);
         wallBanner(c, 4, y + 2, z0 + 1, Blocks.LIGHT_GRAY_WALL_BANNER, Direction.SOUTH);
         for (int x : new int[]{-4, 0, 4}) c.set(x, f + 4, -10, hangingLantern());
+        resident(c, -2, y, -9, VillagerProfession.LIBRARIAN, "scholar");
+    }
+
+    /** One of the household: a villager of the waterlands with a trade and a name, kept in it. */
+    private static void resident(Canvas c, int x, int y, int z, VillagerProfession trade, String title) {
+        c.spawn(x, y, z, Direction.SOUTH, EntityType.VILLAGER, villager -> {
+            villager.setVillagerData(villager.getVillagerData().setType(VillagerType.SWAMP).setProfession(trade).setLevel(1));
+            villager.setVillagerXp(1); // keeps the trade even if the workstation is moved
+            villager.setCustomName(Component.translatable("villager.murimblock.lotus_garden." + title));
+        });
     }
 
     /** The waterside pavilion, half over the pond: four posts, benches, a pyramid roof. */
@@ -213,6 +229,7 @@ final class LotusGarden extends Site {
         c.kit().roof(x0, z0, x1, z1, g + 4, RoofTiles.GREY, true);
         c.set(11, g + 3, 0, hangingLantern());
         c.room(x0 + 1, g + 1, z0 + 1, x1 - 1, g + 3, z1 - 1);
+        resident(c, 11, g + 1, 0, VillagerProfession.CLERIC, "tea_master");
     }
 
     /** The covered gallery along the west wall (frame: front +z to the garden), its lean-to roof on the wall. */
@@ -231,6 +248,7 @@ final class LotusGarden extends Site {
         h.kit().shedRoof(x0, -1, x1, 1, g + 4, RoofTiles.GREY, s(Blocks.DARK_OAK_PLANKS), WALL);
         for (int x = -9; x <= 9; x += 6) h.set(x, g + 3, 0, hangingLantern());
         h.room(x0, g + 1, -1, x1, g + 3, 1);
+        resident(h, 1, g + 1, 0, VillagerProfession.FARMER, "gardener");
     }
 
     /** A Taihu rockery: pale, pitted stones heaped round (x, z). */
