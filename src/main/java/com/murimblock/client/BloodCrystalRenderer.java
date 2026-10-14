@@ -81,9 +81,9 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
             pose.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
             pose.mulPose(Axis.XP.rotationDegrees(90-entity.getXRot()));
         } else if(!inHand) {
-            // Held: the crystal leans its point forward, toward where it will be thrown.
-            pose.mulPose(Axis.YP.rotationDegrees(180-entity.getYRot()));
-            pose.mulPose(Axis.XP.rotationDegrees(-35));
+            // Held above the head like a spear: lying down, its point (the model's +Y) toward where it will be thrown.
+            pose.mulPose(Axis.YP.rotationDegrees(-entity.getYRot()));
+            pose.mulPose(Axis.XP.rotationDegrees(80));
         }
         pose.scale(scale,scale,scale);
     }

@@ -59,6 +59,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  */
 public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     public static final byte CHARGING=0, ORBIT=1, PENDING=2, FLYING=3, SHATTER_GROUND=4, SHATTER_WALL=5, SHATTER_BODY=6, EXPLODE=7;
+    /** From the middle to the point, in blocks at scale 1 (the model's upper tip). */
+    public static final double TIP=.55;
     /** Barrage crystals: straight and fast. */
     public static final double SPEED=.9;
     /** A crystal still flying after this distance breaks in the air. */
@@ -130,6 +132,11 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     }
     @Override public EntityDimensions getDimensions(Pose pose) { return super.getDimensions(pose).scale(dorsal()?1:crystalScale()); }
     public Vec3 centre() { return position().add(0,getBbHeight()/2,0); }
+    /** The crystal's point: ahead of its middle along its flight. */
+    public Vec3 tip() {
+        Vec3 v=getDeltaMovement();
+        return v.lengthSqr()<1.0E-6?centre():centre().add(v.normalize().scale(TIP*crystalScale()));
+    }
     private void placeCentre(Vec3 centre) { setPos(centre.x,centre.y-getBbHeight()/2,centre.z); }
 
     public void queue(int delay,float damage) {
@@ -191,12 +198,12 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
             setPos(owner.position().add(right.scale(-pivot[0]/16)).add(forward.scale(-pivot[2]/16)).add(0,pivot[1]/16,0));
             setYRot(yaw);
         } else {
-            // In the hand, the crystal's middle sits ahead of the fist by half its size, so a great one is held out.
+            // Held above the head, lying point forward like a spear: its middle rests on the raised hand, lifted by
+            // its own thickness so a great one floats over the thrower.
             Vec3 look=Vec3.directionFromRotation(0,owner.getYRot());
             Vec3 hand=owner instanceof Player player ? SanguineArt.handPosition(player,1)
-                    : owner.position().add(new Vec3(-look.z,0,look.x).scale(.35)).add(look.scale(.65)).add(0,1.22,0);
-            double half=.375*crystalScale();
-            placeCentre(hand.add(look.scale(Math.max(0,half-.15))).add(0,Math.max(0,half-.3)*.6,0));
+                    : owner.position().add(new Vec3(-look.z,0,look.x).scale(.35)).add(0,2.1,0);
+            placeCentre(hand.add(0,.28*crystalScale(),0));
             setYRot(owner.getYRot());
         }
         setDeltaMovement(Vec3.ZERO);
@@ -235,15 +242,23 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     }
 
     /**
-     * What the crystal meets this tick, traced from its middle (its box's bottom would meet the ground at once for a
-     * great one held at the hand): the first body within its own half-width of the path, else the first block.
+     * What the crystal meets this tick, traced from its point, which flies first (its box's bottom would meet the
+     * ground at once for a great one): the first body within its own half-width of the path, else the first block.
      */
     private HitResult nextHit() {
-        Vec3 from=centre(), to=from.add(getDeltaMovement());
+        // The point leads: the crystal meets what its point reaches.
+        Vec3 velocity=getDeltaMovement(), from=tip(), to=from.add(velocity);
         HitResult block=level().clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,this));
         if (block.getType()!=HitResult.Type.MISS) to=block.getLocation();
-        EntityHitResult body=ProjectileUtil.getEntityHitResult(level(),this,from,to,
-                getBoundingBox().expandTowards(getDeltaMovement()).inflate(1),this::canHitEntity,getBbWidth()/2);
+        // Bodies within the crystal's half-width of the point's path; one the point is already in counts at once
+        // (vanilla's trace ignores a start inside the box, which a big crystal's point often is).
+        double reach=getBbWidth()/2;
+        EntityHitResult body=null;double best=Double.MAX_VALUE;
+        for (Entity e:level().getEntities(this,new net.minecraft.world.phys.AABB(from,to).inflate(reach+1),this::canHitEntity)) {
+            var box=e.getBoundingBox().inflate(reach);
+            Vec3 at=box.contains(from)?from:box.clip(from,to).orElse(null);
+            if (at!=null&&from.distanceToSqr(at)<best) { best=from.distanceToSqr(at); body=new EntityHitResult(e,at); }
+        }
         return body!=null?body:block;
     }
     @Override protected boolean canHitEntity(Entity target) {
@@ -273,7 +288,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         Direction face=result.getDirection();
         double r=.375*crystalScale();
         Vec3 normal=Vec3.atLowerCornerOf(face.getNormal());
-        Vec3 centre=result.getLocation().add(normal.scale(face==Direction.UP?r*.6:r));
+        Vec3 centre=result.getLocation().add(normal.scale(face==Direction.UP?r*.6:r)).subtract(getDeltaMovement().normalize().scale(TIP*crystalScale()*.4));
         if (great()) { explode(centre,null); return; }
         if (face==Direction.UP) breakAt(SHATTER_GROUND,yawOf(horizontal()),centre);
         // Walls and ceilings: the model's -Z points into the surface, its pieces burst back off it.

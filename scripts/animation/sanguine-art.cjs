@@ -75,15 +75,20 @@ const combo = [
   K(1.32,pose({h:.642,turn:-15})), K(1.52,G),
 ];
 
-// The wrist opens upward to grow a crystal, then holds a steady aiming pose.
-const C = pose({h:.63,turn:8,lean:-6},{Arm_R:[['x',50],['y',-12],['z',18]],Hand_R:[['x',92]],Tool_R:[['x',-40],['z',-16]],
- Arm_L:[['x',44],['y',16]],Hand_L:[['x',98]]});
-const charge=[K(0,C),K(.75,{...C,Chest:[['x',-2],['z',2]],Tool_R:[['x',-38],['z',-16]]}),K(1.5,C)];
-const throwing=[K(0,C),K(.12,pose({y:-.035,h:.605,turn:25,lean:-9},{
- Arm_R:[['x',-15],['y',-18],['z',12]],Hand_R:[['x',110]],Tool_R:[['x',-20]]})),
- K(.30,pose({y:.09,h:.625,turn:-20,lean:-13},{Arm_R:[['x',94],['y',-6],['z',24]],Hand_R:[['x',6]],Tool_R:[['x',-12]],
- Arm_L:[['x',36],['y',18]],Hand_L:[['x',106]]})),
- K(.42,pose({y:.10,h:.63,turn:-27,lean:-11},{Arm_R:[['x',99],['y',-5],['z',28]],Hand_R:[['x',4]]})),K(.72,pose({h:.635,turn:-18})),K(1.05,G)];
+// The right hand rises above the head and the crystal grows there, held like a spear (15/10/2026, Enzo's request);
+// the left hand stays up in front. The body leans back a little under its weight.
+const C = pose({h:.64,turn:10,lean:3},{Arm_R:[['x',168],['y',-8],['z',10]],Hand_R:[['x',14]],Tool_R:[['x',-10]],
+ Shoulder_R:[['z',-6]],Arm_L:[['x',52],['y',16]],Hand_L:[['x',96]],Chest:[['x',4]]});
+const charge=[K(0,C),K(.75,{...C,Arm_R:[['x',172],['y',-8],['z',10]],Chest:[['x',5],['z',2]]}),K(1.5,C)];
+// The throw: the arm draws back behind the head, then whips forward over it and follows through low; the crystal
+// leaves at 0.30 s (SanguineArt launches it six ticks after the throw starts).
+const throwing=[K(0,C),
+ K(.12,pose({y:-.04,h:.63,turn:24,lean:7},{Arm_R:[['x',200],['y',-12],['z',14]],Hand_R:[['x',48]],Tool_R:[['x',-25]],
+  Shoulder_R:[['z',-8]],Arm_L:[['x',60],['y',18]],Hand_L:[['x',90]],Chest:[['x',6]]})),
+ K(.30,pose({y:.10,h:.615,turn:-22,lean:-15},{Arm_R:[['x',112],['y',-6],['z',18]],Hand_R:[['x',6]],Tool_R:[['x',-12]],
+  Arm_L:[['x',30],['y',20]],Hand_L:[['x',104]]})),
+ K(.42,pose({y:.11,h:.61,turn:-28,lean:-16},{Arm_R:[['x',72],['y',-4],['z',24]],Hand_R:[['x',8]]})),
+ K(.72,pose({h:.635,turn:-18})),K(1.05,G)];
 
 // Scarlet: crossed forearms, a low compression, a forceful opening, then recoil.
 const tear = [
