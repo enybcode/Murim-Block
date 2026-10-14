@@ -95,7 +95,7 @@ public final class CombatBarClient {
 
     /** Whether a technique is held to aim before it goes (Cloud Step Slash: its draw stance). */
     static boolean heldToAim(Optional<ResourceLocation> technique) {
-        return technique.filter(MartialArts.CLOUD_STEP_SLASH.id()::equals).isPresent();
+        return technique.filter(id -> id.equals(MartialArts.CLOUD_STEP_SLASH.id()) || id.equals(MartialArts.BLOOD_CRYSTAL.id())).isPresent();
     }
 
     /**
@@ -125,9 +125,11 @@ public final class CombatBarClient {
                     HELD[i] = 0;
                     FIRED[i] = false;
                     PacketDistributor.sendToServer(new TechniquePayloads.Aim(i));
-                } else if (++HELD[i] >= MartialArts.CLOUD_STEP_AIM_MAX_TICKS && !FIRED[i]) {
+                } else if (++HELD[i] >= (data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent() ? MartialArts.BLOOD_CRYSTAL_MAX_CHARGE : MartialArts.CLOUD_STEP_AIM_MAX_TICKS) && !FIRED[i]) {
                     FIRED[i] = true;
-                    PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
+                    // Blood Crystal reaches its maximum on the server; a second cast would only report cooldown.
+                    if (!data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent())
+                        PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
                 }
                 // A tap shorter than a tick: the stance, then at once the dash.
                 if (!key.isDown()) release(i);
@@ -173,6 +175,16 @@ public final class CombatBarClient {
             g.fill(x0 + width, y, x0 + width + 1, y + 22, gold);
             // On the right of the bar (above it are the Qi bar and the level).
             g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), x0 + width + 6, y + 7, 0xFFE8C25A, true);
+        }
+        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) {
+            var state = com.murimblock.martial.SanguineArt.state(player);
+            int gx = Math.max(4, x0 - 123), gy = y - 20;
+            Component label = Component.translatable(state.active() ? "hud.murimblock.blood_crystals" : "hud.murimblock.blood_gauge",
+                    state.active() ? state.crystals() : state.gauge(), 10);
+            g.drawString(mc.font, label, gx, gy, 0xFFD27A7E, true);
+            g.fill(gx, gy + 11, gx + 104, gy + 16, 0xDD290D13);
+            g.fill(gx + 1, gy + 12, gx + 1 + (state.active() ? state.crystals() : state.gauge()) * 10, gy + 15, 0xFF981019);
+            if (!state.active() && state.gauge() == 10) g.drawString(mc.font, Component.translatable("hud.murimblock.blood_ready"), gx, gy - 10, 0xFFE3B1B3, true);
         }
         // The weapon in hand.
         g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);

@@ -18,6 +18,7 @@ final class Techniques {
         if (EpicFightBridge.patch(player) == null) return false;
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.holdsSword(player);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.bareHanded(player);
+        if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.bareHanded(player);
         return true;
     }
 
@@ -29,9 +30,10 @@ final class Techniques {
         PlayerPatch<?> patch = EpicFightBridge.patch(player);
         if (patch == null) return false;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
-        if (patch.getEntityState().inaction() && !(counter && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player)) return false;
+        if (patch.getEntityState().inaction() && !(counter && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)) return false;
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.perform(player, patch, technique, riposte);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.perform(player, patch, technique);
         return false;
     }
 }

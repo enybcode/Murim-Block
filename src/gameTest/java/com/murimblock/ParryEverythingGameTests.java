@@ -217,6 +217,21 @@ public final class ParryEverythingGameTests {
         LivingEntityPatch<?> a = attacker.patch;
         helper.assertTrue(a != null, who + " has no Epic Fight patch");
         Vec3 facing = at.add(0, 0, attacker.reach);
+        hold(attacker.entity, at, 0);
+        hold(defender, facing, 180);
+        // A forced FULL chunk may still be waiting for its entity sections. Warm-up ticks alone do not prove
+        // that Epic Fight's collision query can see the relocated defender on a fast GameTest server.
+        helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(level.isPositionEntityTicking(defender.blockPosition())
+                    && level.getEntities(attacker.entity, defender.getBoundingBox()).contains(defender),
+                    "Parry survey's defender is not accessible in its destination chunk yet");
+        }).thenExecute(() -> {
+        for (int t = 1; t < WARM_UP - 2; t++) helper.runAfterDelay(t, () -> {
+            hold(attacker.entity, at, 0);
+            hold(defender, facing, 180);
+            if (attacker.entity instanceof ServerPlayer p) p.doTick();
+            defender.doTick();
+        });
         float[][] damage = new float[moves.size()][Guard.values().length];
         // Two whole unguarded cases first, not counted: a fresh attacker's first blows may not land (a mob's bare hands
         // take two to be ready).
@@ -289,6 +304,7 @@ public final class ParryEverythingGameTests {
             level.setChunkForced(chunk.x, chunk.z, false);
             helper.assertTrue(wrong.isEmpty(), who + ": " + String.join(" | ", wrong));
             helper.succeed();
+        });
         });
     }
 

@@ -177,6 +177,7 @@ public final class MartialCombat {
 
     /** An animation starts: one of an art's opens a swing (a technique as expected, or a strike of the passive). */
     static void onAnimationBegin(ServerPlayer player, AnimationAccessor<? extends StaticAnimation> animation) {
+        SanguineArt.animationStarted(player, animation);
         Swing pending = PENDING.remove(player.getUUID());
         if (pending != null && pending.animation == animation) {
             SWINGS.put(player.getUUID(), pending);
@@ -190,6 +191,11 @@ public final class MartialCombat {
         credit = LongFist.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.LONG_FIST, credit, LongFist.isStrike(animation), false));
+            return;
+        }
+        credit = SanguineArt.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
             return;
         }
         SWINGS.remove(player.getUUID());
@@ -232,13 +238,15 @@ public final class MartialCombat {
         LivingEntity target = event.getTarget();
         boolean enemy = isEnemy(target, player);
         boolean fist = swing.art.equals(MartialArts.LONG_FIST);
+        boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
         if (fist) LongFist.onHit(player, target, animation, enemy);
+        else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else AzureCloudSword.onHit(player, target, animation, swing.riposte);
         // The combo: a knock-down ends it, and counts as complete after enough hits.
         long now = player.level().getGameTime();
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
-        if (fist ? LongFist.knocksDown(animation) : AzureCloudSword.knocksDown(animation)) {
+        if (fist ? LongFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
@@ -589,6 +597,7 @@ public final class MartialCombat {
         tickSlams(player, now);
         keepAloft(player);
         AzureCloudSword.tickAim(player, now);
+        SanguineArt.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
         if (list == null) return;
         List<Runnable> due = new ArrayList<>();
@@ -607,6 +616,10 @@ public final class MartialCombat {
 
     public static void registerHooks() {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {
+            if (!event.enabled()) SanguineArt.forget(event.getEntity().getUUID());
+        });
         EpicFightEventHooks.Animation.BEGIN.registerEvent(event -> {
             if (event.getEntityPatch().getOriginal() instanceof ServerPlayer player) onAnimationBegin(player, event.getAnimation());
         }, "murimblock:martial_swing", 100);
@@ -630,6 +643,7 @@ public final class MartialCombat {
         SLAMS.remove(id);
         AzureCloudSword.forgetAim(id);
         LongFist.forget(id);
+        SanguineArt.forget(id);
     }
 
     public static void clearForTests() {
@@ -647,5 +661,6 @@ public final class MartialCombat {
         HOVERS.clear();
         AzureCloudSword.forgetAim(null);
         LongFist.forget(null);
+        SanguineArt.forget(null);
     }
 }
