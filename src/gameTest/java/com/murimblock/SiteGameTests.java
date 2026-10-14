@@ -145,6 +145,7 @@ public final class SiteGameTests {
         return switch (plan) {
             case STILT_VILLAGE -> Map.of("minecraft:villager", 3);
             case BANDIT_DEN -> Map.of("murimblock:bandit_chief", 1, "murimblock:mountain_bandit", 4);
+            case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1);
             default -> Map.of();
         };
     }

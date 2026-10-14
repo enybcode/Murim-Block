@@ -1,5 +1,6 @@
 package com.murimblock.world.structure.site;
 
+import com.murimblock.mob.MurimEntities;
 import com.murimblock.world.structure.kit.RoofTiles;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +23,8 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * Misty Bamboo Daoist Temple (Shu bamboo sea), after Qingcheng: three terraces climbing the slope behind stone
  * retaining walls. The mountain gate below; the middle court with its taiji pavement, censer and two side halls
  * (scriptures, elixirs); a covered stairway up to the Hall of the Three Pure Ones. Dark timber frames filled with white,
- * grey tiled roofs with lifted corners. One axis joins the gate, the court, the stairway and the hall.
+ * grey tiled roofs with lifted corners. One axis joins the gate, the court, the stairway and the hall. Sensei Yun, master
+ * of the Azure Cloud Sect, keeps the hall (docs/mobs/azure-sensei.md).
  */
 final class BambooTemple extends Site {
     private static final BlockState FRAME = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.Y);
@@ -279,6 +281,8 @@ final class BambooTemple extends Site {
         for (int x : new int[]{-2, -1, 1, 2}) c.set(x, y + 1, z0 + 1, litCandles(1 + Math.abs(x)));
         for (int x = -4; x <= 4; x += 2) for (int z = z0 + 3; z <= z1 - 2; z += 2) c.set(x, y, z, s(Blocks.YELLOW_CARPET));
         for (int x : new int[]{-4, 0, 4}) c.set(x, f + 4, -21, hangingLantern());
+        // Sensei Yun, between the altar and the cushions, facing the doors of his hall.
+        c.spawn(0, y, z0 + 2, Direction.SOUTH, MurimEntities.AZURE_SENSEI.get(), sensei -> { });
         for (int x : new int[]{-4, 4}) lanternPost(c, x, l + 1, -15, 2, s(Blocks.STONE_BRICK_WALL));
         bamboo(c, -10, -15, l);
         bamboo(c, 9, -15, l);

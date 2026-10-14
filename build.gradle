@@ -123,6 +123,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of Sensei Yun's model, idle, walk and cuts (see SenseiTour).
+        senseiTour {
+            client()
+            gameDirectory = project.file('build/sensei-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.senseiTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: the two-client check on a dedicated server (MpTourServer, MpTourClient; scripts/mp/run-mp-tour.sh).
         mpServer {
             server()
@@ -363,6 +372,22 @@ tasks.named('runLongFistTour').configure {
     doLast {
         def report = longFistTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Long Fist tour failed; see build/long-fist-tour-run/long-fist-tour-report.txt')
+    }
+}
+
+def senseiTourSave = layout.buildDirectory.dir('sensei-tour-run/saves/murim-sensei')
+def senseiTourReport = layout.buildDirectory.file('sensei-tour-run/sensei-tour-report.txt')
+def senseiTourShots = layout.buildDirectory.dir('sensei-tour-run/screenshots')
+tasks.named('runSenseiTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only sensei tour.')
+        senseiTourSave.get().asFile.deleteDir()
+        senseiTourShots.get().asFile.deleteDir()
+        senseiTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = senseiTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sensei tour failed; see build/sensei-tour-run/sensei-tour-report.txt')
     }
 }
 

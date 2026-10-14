@@ -57,6 +57,19 @@ public final class MurimItems {
     public static final DeferredItem<DeferredSpawnEggItem> MOUNTAIN_BANDIT_SPAWN_EGG = ITEMS.register("mountain_bandit_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.MOUNTAIN_BANDIT, 0x6F6A62, 0xA7302A, new Item.Properties()));
 
+    /**
+     * The Azure Cloud (蒼雲劍), Sensei Yun's jian: a straight double-edged blade with a cloud inlaid in blue, a silver
+     * cloud guard and pommel, an azure grip and a long tassel. A sword for Epic Fight
+     * (data/murimblock/capabilities/weapons/azure_cloud_sword.json), a master's blade: 7 damage and quick in a player's
+     * hand, the 6 of the sensei's blows (his own attack is 0). It does not drop from him yet.
+     */
+    public static final DeferredItem<SwordItem> AZURE_CLOUD_SWORD = ITEMS.register("azure_cloud_sword",
+            () -> new SwordItem(Tiers.DIAMOND, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.DIAMOND, 3, -2.2F))));
+
+    /** The azure of his robe and the white of his beard. */
+    public static final DeferredItem<DeferredSpawnEggItem> AZURE_SENSEI_SPAWN_EGG = ITEMS.register("azure_sensei_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.AZURE_SENSEI, 0x2F6FC0, 0xEFEBE4, new Item.Properties()));
+
     /** Jade medallion of the Cloud Cliff sect: its needle points to the sanctuary. */
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
             () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
@@ -80,6 +93,8 @@ public final class MurimItems {
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
+                        output.accept(AZURE_SENSEI_SPAWN_EGG.get());
+                        output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());

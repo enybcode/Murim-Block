@@ -68,6 +68,9 @@ public final class ArmoredCrabEpicFight {
             // Their chief: the same skeleton, drawn larger.
             event.registerEntityPatch(MurimEntities.BANDIT_CHIEF.get(), BanditChiefPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_CHIEF.get(), Armatures.BIPED);
+            // Sensei Yun: the same skeleton, his own model.
+            event.registerEntityPatch(MurimEntities.AZURE_SENSEI.get(), AzureSenseiPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.AZURE_SENSEI.get(), Armatures.BIPED);
         });
     }
 

@@ -133,6 +133,7 @@ public final class MurimAnimations {
         buildAzureCloudSword(builder);
         buildLongFist(builder);
         buildBanditChief(builder);
+        buildAzureSensei(builder);
     }
 
     // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)
@@ -277,6 +278,18 @@ public final class MurimAnimations {
     private static final OBBCollider CHIEF_SWEEP_BOX = new OBBCollider(2.4D, 1.0D, 1.7D, 0.0D, 1.2D, -1.6D);
     /** The slam's axe, where he lands (the root has carried him 1.8 blocks forward). */
     private static final OBBCollider CHIEF_SLAM_BOX = new OBBCollider(1.4D, 1.3D, 1.6D, 0.0D, 0.9D, -2.0D);
+
+    /**
+     * Sensei Yun at rest and walking (scripts/animation/sensei-motions.cjs): five seconds of idle that loop, the left hand
+     * behind his back or stroking his beard; one measured stride in 1.2 s, timed to his pace.
+     */
+    public static AnimationAccessor<StaticAnimation> SENSEI_IDLE;
+    public static AnimationAccessor<MovementAnimation> SENSEI_WALK;
+
+    private static void buildAzureSensei(AnimationBuilder builder) {
+        SENSEI_IDLE = builder.nextAccessor("biped/murim/sensei_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));
+        SENSEI_WALK = builder.nextAccessor("biped/murim/sensei_walk", a -> new MovementAnimation(true, a, Armatures.BIPED));
+    }
 
     private static void buildBanditChief(AnimationBuilder builder) {
         BANDIT_IDLE = builder.nextAccessor("biped/murim/bandit_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));

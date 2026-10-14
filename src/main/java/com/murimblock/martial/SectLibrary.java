@@ -17,7 +17,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
  * The library of the Cloud Cliff Sanctuary: its lectern hands every player their own copy of the Azure Cloud Sword
- * Manual, once (docs/combat/styles/azure-cloud-sword.md).
+ * Manual, once (docs/combat/styles/azure-cloud-sword.md). Sensei Yun, in the Misty Bamboo Temple, hands out the same
+ * copy: a player receives one, from either.
  */
 public final class SectLibrary {
     private SectLibrary() {
@@ -57,16 +58,21 @@ public final class SectLibrary {
 
     /** Gives the player their copy of the manual, if they never received one. */
     public static boolean give(ServerPlayer player) {
+        return give(player, "art.murimblock.library.given", "art.murimblock.library.already");
+    }
+
+    /** The same, in the giver's own words (translation keys): when it is given, and when it was already. */
+    public static boolean give(ServerPlayer player, String given, String already) {
         MartialData data = MartialService.data(player);
         if (data.manualsReceived().contains(MartialArts.AZURE_CLOUD_SWORD)) {
-            player.displayClientMessage(Component.translatable("art.murimblock.library.already"), true);
+            player.displayClientMessage(Component.translatable(already), true);
             return false;
         }
         MartialService.set(player, data.receivedManual(MartialArts.AZURE_CLOUD_SWORD));
         ItemStack manual = new ItemStack(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get());
         if (!player.getInventory().add(manual)) player.drop(manual, false);
         player.level().playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
-        player.sendSystemMessage(Component.translatable("art.murimblock.library.given"));
+        player.sendSystemMessage(Component.translatable(given));
         return true;
     }
 }

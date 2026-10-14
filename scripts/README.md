@@ -62,6 +62,12 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   `textures/entity/bandit_chief.png`, projet Blockbench) ; `node scripts/animation/chief-axe-model.cjs` : sa grande hache ;
   `node scripts/animation/chief-axe.cjs` : ses trois attaques (`animations/biped/murim/chief_*.json`). Voir `docs/mobs/bandit-chief.md`.
   Les modèles 3D de mobs partagent `scripts/animation/mesh-kit.cjs`.
+- `node scripts/animation/sensei-3d.cjs` : Sensei Yun en 3D (mesh `animmodels/entity/azure_sensei.json`, atlas
+  `textures/entity/azure_sensei.png` et ses visages, projet Blockbench) ; `node scripts/animation/azure-cloud-sword-model.cjs` :
+  son épée Azure Cloud (corps, houppe, transformations de la main, icône d'après le modèle ; `client/TasselSwordRenderer`
+  balance la houppe) ; `node scripts/animation/sensei-motions.cjs` : son idle et sa marche (`sensei_idle`, `sensei_walk`),
+  l'épée placée dans son poing (`checkHold()` dit où tombent pommeau, poignée et garde) ; `node scripts/concepts/sensei-preview.cjs` :
+  les images de présentation (`docs/mobs/images/sensei-*.png`, `azure-cloud-sword-*.png`). Voir `docs/mobs/azure-sensei.md`.
 - `node scripts/animation/mob-idles.cjs` : les idles du bandit et du chef (5 s en boucle : respiration, appui, regards ; le bandit
   regarde le fil de son dao, le chef roule la nuque, hache sur l'épaule), écrits avec des rotations par quaternions
   (`pose.cjs` writeSmooth). Les visages bougent par texture : 10 expressions par atlas (clignement, regards, marmonnement,
@@ -78,5 +84,6 @@ Les autres vérifications en vrai client sont des tâches Gradle :
 - `gradlew -PgameTests runKnockdownTour` : la mise à terre, le portage et le finish avec deux joueurs factices.
 - `gradlew -PgameTests runMartialTour` : l'Art de l'Épée du Nuage Azur (manuel, onglet Techniques, Cloud Step Slash au clavier).
 - `gradlew -PgameTests runLongFistTour` : le Poing Long (rouleau, onglet Techniques, vrai M1 à mains nues, garde au vrai bouton, touches 1 à 3, Inch Force, plongée, Final Palm), filmé de côté.
+- `gradlew -PgameTests runSenseiTour` : Sensei Yun (idle de face et de côté, tour de caméra autour de la garde et de la houppe, marche de profil, ses coups sur un zombie d'entraînement), l'animateur du client vérifié.
 - `gradlew -PgameTests runParryTour` : la garde Murim (parade parfaite et normale, coups et vraies flèches).
 - `bash scripts/mp/run-mp-tour.sh` : **deux vrais clients** sur un serveur dédié (hors ligne, vol interdit) : MurimA attaque, MurimB encaisse puis garde, chacun avec ses vraies touches, phases annoncées par le serveur dans le chat (`MpTourServer`, `MpTourClient`). Rapports : `build/mp-run/server/mp-tour-server.txt`, `build/mp-run/a|b/mp-tour-client.txt`.

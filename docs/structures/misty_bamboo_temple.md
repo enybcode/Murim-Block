@@ -3,6 +3,7 @@
 ![Vue aérienne : les trois terrasses](images/sites/misty_bamboo_temple-a.jpg)
 ![Vue de l'arrière](images/sites/misty_bamboo_temple-b.jpg)
 ![Devant la porte de la montagne](images/sites/misty_bamboo_temple-ground.jpg)
+![Sensei Yun dans la salle des Trois Purs](images/sites/misty_bamboo_temple-sensei.jpg)
 
 | Fiche | |
 |---|---|
@@ -28,6 +29,7 @@ Le temple tourne le dos au haut de la pente : on entre en bas, on monte vers la 
    - Bambous dans les quatre coins, lanternes.
 4. **L'escalier couvert** jusqu'à la terrasse haute : marches sur un massif de pierre, poteaux de bois sombre et garde-corps, toit de tuiles à faîtage qui monte avec les marches, lanternes.
 5. **La salle des Trois Purs** (terrasse haute) : 15 × 7 sur soubassement, triple porte, treillis en façade et sur les côtés, toit gris à quatre pentes et angles relevés. Dedans : autel de granite poli, trois tentures (bleue, jaune, rouge) pour les Trois Purs, jarres d'offrandes, bougies, coussins de méditation (tapis jaunes), lanternes.
+   - **Son occupant** (14/10, demande d'Enzo) : **Sensei Yun** (`murimblock:azure_sensei`), maître de la Secte du Nuage Azur, entre l'autel et les coussins, face aux portes. Neutre, il reste dans sa salle (6 blocs autour de sa place) et ne disparaît pas ; clic droit, il donne le manuel de l'Art de l'Épée du Nuage Azur une fois par joueur. Fiche : [docs/mobs/azure-sensei.md](../mobs/azure-sensei.md).
 
 **Chemins** : tout est sur un seul axe : porte → escalier → cour (autour du brûle-parfum) → escalier couvert → salle. Les salles latérales donnent sur la cour.
 
@@ -37,11 +39,13 @@ Le temple tourne le dos au haut de la pente : on entre en bas, on monte vers la 
 - **Visite en vrai client** (`gradlew -PgameTests runSiteTour`, monde neuf, graine 20261012) :
   - `/locate structure murimblock:misty_bamboo_temple` répond en 241 ms : `[448, ~, -192]`, à 487 blocs du point de départ ;
   - le site généré est dans `shu_bamboo_sea` (origine 456 63 -184, tourné COUNTERCLOCKWISE_90, niveaux 63, 69, 74) ;
-  - 1159 vérifications sur le site réellement généré : aucun toit ouvert, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide.
+  - 1159 vérifications sur le site réellement généré : aucun toit ouvert, rien de naturel dans les pièces, aucun sol ni fondation au-dessus du vide ;
+  - Sensei Yun est dans sa salle (434 76 -184), seul.
+- Les GameTests vérifient aussi qu'il y a exactement 1 sensei, construit d'un coup comme chunk par chunk.
 
 ## Conseils : ce qu'on devrait y mettre
 
-- **PNJ** : un maître taoïste dans la salle des Trois Purs, un disciple gardien à la porte, un alchimiste dans la salle des élixirs, un archiviste aux écritures.
+- **PNJ** : le maître est là (Sensei Yun) ; encore à venir : un disciple gardien à la porte, un alchimiste dans la salle des élixirs, un archiviste aux écritures.
 - **Faction** : une école d'épée façon Qingcheng ou un ordre façon Emei ; c'est une très bonne seconde secte à rejoindre, ou une rivale de la secte du sanctuaire.
 - **Techniques** : un manuel d'art martial taoïste (épée ou souffle) à mériter : épreuves sur le taiji, méditation sur les coussins pour regagner du Qi plus vite.
 - **Alchimie** : la salle des élixirs comme atelier de pilules de Qi (recette, ingrédients du biome : pousses de bambou, fougère arborescente, herbes de montagne).
