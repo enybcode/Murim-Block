@@ -379,10 +379,20 @@ public final class AzureCloudSword {
      */
     static boolean slam(ServerPlayer player) {
         PlayerPatch<?> patch = EpicFightBridge.patch(player);
+        LivingEntity held = MartialCombat.heldUpBy(player);
         if (patch == null || MurimAnimations.CRESCENT_SLAM == null || !MartialCombat.startSlam(player)) return false;
         play(player, patch, MurimAnimations.CRESCENT_SLAM, MartialArts.HEAVEN_SPLITTING_CRESCENT, false);
+        // A player already knocked down up there cannot be hit by the cut: thrown down all the same as the blade passes
+        // (its landing executes them).
+        if (held instanceof ServerPlayer downed && KnockdownService.isDowned(downed))
+            MartialCombat.later(player, SLAM_CUT_TICK, () -> {
+                if (downed.isAlive() && MartialCombat.heldUpBy(player) == downed) MartialCombat.slamDown(player, downed);
+            });
         return true;
     }
+
+    /** When the slam's cut passes (ticks after it starts), within its hit window (0.13 to 0.26 s). */
+    static final int SLAM_CUT_TICK = 4;
 
     /** The landing of a body the slam threw down: it takes its share and the ground shakes around it. */
     public static void slamLanding(ServerPlayer player, LivingEntity target) {

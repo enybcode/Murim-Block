@@ -115,6 +115,7 @@ public final class DrizzleSlashEffects {
     public static void delayedCuts(int attackerId, int targetId) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.level.getEntity(targetId) == null) return;
+        DELAYED_CUTS_SEEN.merge(targetId, 1, Integer::sum);
         long now = mc.level.getGameTime();
         var random = net.minecraft.util.RandomSource.create(targetId * 31L + now);
         for (int c = 0; c < 6; c++) {
@@ -130,6 +131,13 @@ public final class DrizzleSlashEffects {
     private record BodyCut(int entity, float roll, float offset, long tick) { }
 
     private static final List<BodyCut> BODY_CUTS = new ArrayList<>();
+    /** How many times this client was told of delayed cuts on each body (entity id), for the multiplayer check. */
+    private static final Map<Integer, Integer> DELAYED_CUTS_SEEN = new HashMap<>();
+
+    /** How many times this client saw the flurry's delayed cuts open on this body. */
+    public static int delayedCutsSeenOn(int entityId) {
+        return DELAYED_CUTS_SEEN.getOrDefault(entityId, 0);
+    }
 
     /** The line of a delayed cut now: across the body as the camera sees it, at its angle, through its middle or near. */
     @javax.annotation.Nullable

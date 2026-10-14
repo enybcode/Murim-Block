@@ -88,6 +88,12 @@ public final class CloudStepEffects {
     private CloudStepEffects() {
     }
 
+    /** Whether this client draws afterimages of this player now (for the multiplayer check). */
+    public static boolean hasAfterimages(UUID player) {
+        Deque<Ghost> ghosts = GHOSTS.get(player);
+        return ghosts != null && !ghosts.isEmpty();
+    }
+
     /** The fast move this player is in, if any. */
     @javax.annotation.Nullable
     static InMove inMove(Player player) {

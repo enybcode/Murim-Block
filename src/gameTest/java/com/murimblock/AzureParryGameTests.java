@@ -76,6 +76,7 @@ public final class AzureParryGameTests {
                 Move.strike("thousand_drizzle_storm", () -> MurimAnimations.THOUSAND_DRIZZLE_STORM),
                 Move.strike("heaven_splitting_crescent", () -> MurimAnimations.HEAVEN_SPLITTING_CRESCENT),
                 Move.strike("cloud_splitting_descent", () -> MurimAnimations.CLOUD_SPLITTING_DESCENT),
+                Move.strike("crescent_slam", () -> MurimAnimations.CRESCENT_SLAM),
                 Move.blade("qi_wave", QiBladeEntity.WAVE),
                 Move.blade("qi_needle", QiBladeEntity.NEEDLE),
                 Move.blade("qi_crescent", QiBladeEntity.CRESCENT));
@@ -84,7 +85,7 @@ public final class AzureParryGameTests {
     /** What a case did to the defender. */
     private static final class Result {
         float damage;
-        boolean lifted, carried, guardBroken;
+        boolean lifted, carried, guardBroken, slammed;
     }
 
     @GameTest(template = "foundation_arena", batch = "azure_parry_all", timeoutTicks = 3 * 20 * CASE_TICKS + 100)
@@ -142,6 +143,7 @@ public final class AzureParryGameTests {
                     }
                     if (MartialCombat.isCarriedUp(defender)) r.carried = true;
                     if (MartialCombat.guardBroken(defender)) r.guardBroken = true;
+                    if (MartialCombat.isSlammed(defender)) r.slammed = true;
                     hold(defender, facing, 180);
                     if (guard == Guard.PERFECT) {
                         var data = d.getSkill(SkillSlots.GUARD).getDataManager();
@@ -170,7 +172,7 @@ public final class AzureParryGameTests {
             for (int m = 0; m < moves.size(); m++) {
                 Result none = results[m][0], perfect = results[m][1], normal = results[m][2];
                 String effects = (perfect.lifted || normal.lifted ? " lifted" : "") + (perfect.carried || normal.carried ? " carried" : "")
-                        + (perfect.guardBroken || normal.guardBroken ? " guard-broken" : "");
+                        + (perfect.guardBroken || normal.guardBroken ? " guard-broken" : "") + (perfect.slammed || normal.slammed ? " slammed" : "");
                 table.add(String.format("%-26s %8.2f %8.2f %8.2f  %s", moves.get(m).name, none.damage, perfect.damage, normal.damage, effects));
                 String n = moves.get(m).name;
                 if (none.damage <= 0) wrong.add(n + ": no damage without guard (the case is not testing anything)");
@@ -183,6 +185,7 @@ public final class AzureParryGameTests {
                 // And without a guard they do happen (else the check above proves nothing).
                 if (n.equals("rising_cloud") && !none.lifted) wrong.add(n + ": did not lift an unguarded body");
                 if (n.equals("heaven_splitting_crescent") && !none.carried) wrong.add(n + ": did not carry an unguarded body");
+                if (n.equals("crescent_slam") && !none.slammed) wrong.add(n + ": did not throw an unguarded body down");
             }
             LOGGER.info("Azure parry:\n{}", String.join("\n", table));
             MartialCombat.clearForTests();

@@ -105,6 +105,29 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: the two-client check on a dedicated server (MpTourServer, MpTourClient; scripts/mp/run-mp-tour.sh).
+        mpServer {
+            server()
+            gameDirectory = project.file('build/mp-run/server')
+            programArgument '--nogui'
+            systemProperty 'murimblock.mp', 'server'
+            disableIdeRun()
+        }
+        mpClientA {
+            client()
+            gameDirectory = project.file('build/mp-run/a')
+            programArguments.addAll('--username', 'MurimA', '--quickPlayMultiplayer', '127.0.0.1:25599', '--width', '854', '--height', '480')
+            systemProperty 'murimblock.mp', 'A'
+            disableIdeRun()
+        }
+        mpClientB {
+            client()
+            gameDirectory = project.file('build/mp-run/b')
+            programArguments.addAll('--username', 'MurimB', '--quickPlayMultiplayer', '127.0.0.1:25599', '--width', '854', '--height', '480')
+            systemProperty 'murimblock.mp', 'B'
+            disableIdeRun()
+        }
+
         // Development-only: films the vertical presentation video (see Showcase, scripts/showcase/make-video.cjs).
         showcase {
             client()
@@ -310,5 +333,31 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+// The two-client check (scripts/mp/run-mp-tour.sh): a fresh flat world on a dedicated offline server, PvP on, flying
+// not allowed (the crescent's hang must not get a player kicked), then two clients that quit when done.
+def mpRun = layout.buildDirectory.dir('mp-run')
+tasks.named('runMpServer').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only multiplayer check.')
+        def dir = mpRun.get().dir('server').asFile
+        new File(dir, 'world').deleteDir()
+        new File(dir, 'mp-tour-server.txt').delete()
+        dir.mkdirs()
+        new File(dir, 'eula.txt').text = 'eula=true\n'
+        new File(dir, 'server.properties').text = [
+                'online-mode=false', 'server-port=25599', 'level-type=flat', 'pvp=true', 'spawn-protection=0',
+                'difficulty=normal', 'gamemode=survival', 'allow-flight=false', 'spawn-monsters=false', 'spawn-animals=false',
+                'generate-structures=false', 'max-players=4', 'view-distance=6', 'simulation-distance=6', 'motd=Murim MP tour'].join('\n') + '\n'
+    }
+}
+['runMpClientA', 'runMpClientB'].each { name ->
+    tasks.named(name).configure {
+        doFirst {
+            if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only multiplayer check.')
+            new File(workingDir, 'mp-tour-client.txt').delete()
+        }
     }
 }

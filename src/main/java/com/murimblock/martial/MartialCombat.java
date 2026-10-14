@@ -344,6 +344,13 @@ public final class MartialCombat {
                 net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, 1.2F, 1.4F);
     }
 
+    /** The body this player holds at the top of the crescent, if any (also while the slam is cut). */
+    @Nullable
+    public static LivingEntity heldUpBy(Player player) {
+        Hover h = HOVERS.get(player.getUUID());
+        return h == null ? null : h.target;
+    }
+
     /** Whether this body hangs at the top of a player's crescent. */
     public static boolean isHeldUp(LivingEntity target) {
         for (Hover h : HOVERS.values()) if (h.target == target) return true;
@@ -527,6 +534,26 @@ public final class MartialCombat {
         player.resetFallDistance();
     }
 
+    /**
+     * The players the art holds in the air on purpose are not "floating too long" for the server, which would kick them
+     * where flight is not allowed: this player while rising, hanging or diving with the crescent, and the bodies they
+     * carry up, hold at the top or throw down.
+     */
+    private static void keepAloft(ServerPlayer player) {
+        UUID id = player.getUUID();
+        if (LEAPS.containsKey(id) || HOVERS.containsKey(id) || SLAMS.containsKey(id)) aloft(player);
+        List<Carried> carried = CARRIED.get(id);
+        if (carried != null) for (Carried c : carried) aloft(c.target);
+        Hover h = HOVERS.get(id);
+        if (h != null) aloft(h.target);
+        List<Slam> slams = SLAMS.get(id);
+        if (slams != null) for (Slam s : slams) aloft(s.target);
+    }
+
+    private static void aloft(LivingEntity body) {
+        if (body instanceof ServerPlayer p && p.connection != null) p.connection.aboveGroundTickCount = 0;
+    }
+
     /** Server tick of a player: their timed actions, and their fall forgiven during a leap. */
     public static void onPlayerTick(ServerPlayer player) {
         long now = player.level().getGameTime();
@@ -538,6 +565,7 @@ public final class MartialCombat {
         tickCarried(player, now);
         tickHover(player, now);
         tickSlams(player, now);
+        keepAloft(player);
         AzureCloudSword.tickAim(player, now);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
         if (list == null) return;

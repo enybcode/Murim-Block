@@ -57,3 +57,4 @@ Les autres vérifications en vrai client sont des tâches Gradle :
 - `gradlew -PgameTests runKnockdownTour` : la mise à terre, le portage et le finish avec deux joueurs factices.
 - `gradlew -PgameTests runMartialTour` : l'Art de l'Épée du Nuage Azur (manuel, onglet Techniques, Cloud Step Slash au clavier).
 - `gradlew -PgameTests runParryTour` : la garde Murim (parade parfaite et normale, coups et vraies flèches).
+- `bash scripts/mp/run-mp-tour.sh` : **deux vrais clients** sur un serveur dédié (hors ligne, vol interdit) : MurimA attaque, MurimB encaisse puis garde, chacun avec ses vraies touches, phases annoncées par le serveur dans le chat (`MpTourServer`, `MpTourClient`). Rapports : `build/mp-run/server/mp-tour-server.txt`, `build/mp-run/a|b/mp-tour-client.txt`.
