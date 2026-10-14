@@ -75,7 +75,7 @@ C'est le style de départ idéal : il apprend à parer, à enchaîner, et à fin
 
 - **« Azure Cloud Sword Manual »** (Manuel de l'Épée du Nuage Azur), un livre relié de jade.
 - **Où le trouver :** sur le pupitre de la bibliothèque du Sanctuaire de la Falaise des Nuages. Le Jeton de la Secte mène donc au premier art martial, et le sanctuaire devient vraiment « le début de chaque aventure ». Plus tard, le maître de la secte pourra le remettre en personne.
-- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le livre n'est pas consommé : il peut se prêter à un autre joueur.
+- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le livre est consommé : un livre, une lecture. Un joueur qui connaît déjà l'art garde le livre (il peut le donner).
 
 ## Le passif : « Flowing Cloud Stance » (Posture du Nuage qui s'écoule)
 

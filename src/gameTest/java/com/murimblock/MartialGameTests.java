@@ -79,8 +79,13 @@ public final class MartialGameTests {
             helper.assertTrue(data.hasTechnique(MartialArts.CLOUD_STEP_SLASH.id()), "Cloud Step Slash was not unlocked");
             helper.assertTrue(!data.hasTechnique(MartialArts.THOUSAND_DRIZZLE.id()), "Thousand Drizzle came with the book");
             helper.assertTrue(data.slot(0).equals(Optional.of(MartialArts.CLOUD_STEP_SLASH.id())), "Cloud Step Slash is not in slot 1");
-            helper.assertTrue(!manual.isEmpty(), "Reading used up the manual");
-            manual.use(player.level(), player, InteractionHand.MAIN_HAND);
+            // One manual, one reading.
+            helper.assertTrue(manual.isEmpty(), "Reading did not use up the manual");
+            // Another copy, read by someone who knows the art already: kept (to give away), and nothing changes.
+            ItemStack another = new ItemStack(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get());
+            player.setItemInHand(InteractionHand.MAIN_HAND, another);
+            another.use(player.level(), player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(!another.isEmpty(), "A manual read by someone who knew the art was used up");
             helper.assertTrue(MartialService.data(player).equals(data), "Reading again changed something");
             helper.succeed();
         } finally {

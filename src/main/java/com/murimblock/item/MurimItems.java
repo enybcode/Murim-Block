@@ -90,11 +90,11 @@ public final class MurimItems {
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
             () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 
-    /** Manual of the Cloud Cliff sect's art: read once, it teaches the Azure Cloud Sword Art. */
+    /** Manual of the Cloud Cliff sect's art: read, it teaches the Azure Cloud Sword Art and is used up. */
     public static final DeferredItem<MartialManualItem> AZURE_CLOUD_SWORD_MANUAL = ITEMS.register("azure_cloud_sword_manual",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
 
-    /** Scroll of the first art of the fist: read once, it teaches the Long Fist. Where it is found is still to decide. */
+    /** Scroll of the first art of the fist: read, it teaches the Long Fist and is used up. Where it is found is still to decide. */
     public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), MartialArts.LONG_FIST));
 
