@@ -202,4 +202,4 @@ function project(name, anims) {
   };
 }
 
-module.exports = { project, toBlockbenchEuler, fromBlockbenchEuler, rotationOf, toBB, BONES, ROOT_BIND, P, PT, mul3 };
+module.exports = { project, animation, groupsByName, at, uuid, toBlockbenchEuler, fromBlockbenchEuler, rotationOf, toBB, BONES, ROOT_BIND, P, PT, mul3 };

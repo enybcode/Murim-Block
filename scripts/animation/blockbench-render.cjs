@@ -32,6 +32,8 @@ const VIEWS = {
   front: { position: [-42, 30, -58], target: [0, 15, -4] },
   // From above (the blade's flat shows wide when it lies level).
   top: { position: [0.5, 95, -12], target: [0, 15, -10] },
+  // Three-quarter from behind (the back is south, +z).
+  back: { position: [42, 30, 58], target: [0, 15, -4] },
   // Wide, for a dash (the character runs 5 blocks, 80 pixels, toward -z): from its right, and three-quarter ahead.
   wide: { position: [140, 34, -40], target: [0, 12, -40] },
   wide_front: { position: [115, 52, -150], target: [0, 12, -46] },
