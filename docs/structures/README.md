@@ -1,5 +1,11 @@
 # Structures Murim
 
+## Prévu : la capitale de l'Alliance orthodoxe (15/10/2026)
+
+Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, cité intérieure sur un plateau, Grande Salle au sommet d'une aiguille de 164 blocs), avec son plan numéroté, ses habitants et cinq secrets : [alliance-capital.md](alliance-capital.md). Rien n'est construit en jeu.
+
+![La capitale de l'Alliance, maquette](images/alliance-capital/overview.jpg)
+
 ## Les six sites du 14/10/2026
 
 Six structures de plus, une par biome Murim (le Huangshan a déjà le sanctuaire). Ce sont de vraies structures Minecraft : elles apparaissent toutes seules dans les mondes neufs et `/locate structure murimblock:<id>` les trouve. Chacune a sa fiche technique, avec des conseils sur ce qu'on devrait y mettre.
