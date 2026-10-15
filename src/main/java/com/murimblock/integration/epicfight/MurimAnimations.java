@@ -185,7 +185,7 @@ public final class MurimAnimations {
     /** Scarlet Tear: the blood sword summoned, then thrown like a javelin (its release 0.35 s in). */
     public static AnimationAccessor<ActionAnimation> SANGUINE_SWORD_SUMMON, SANGUINE_SWORD_THROW;
     public static AnimationAccessor<StaticAnimation> SANGUINE_CRYSTAL_CHARGE;
-    public static AnimationAccessor<ActionAnimation> SANGUINE_CRYSTAL_THROW, SANGUINE_CRYSTAL_FORM, SANGUINE_CRYSTAL_BARRAGE;
+    public static AnimationAccessor<ActionAnimation> SANGUINE_CRYSTAL_THROW, SANGUINE_CRYSTAL_FORM, SANGUINE_CRYSTAL_BARRAGE, SANGUINE_ICEBERG;
 
     private static void buildSanguineArt(AnimationBuilder builder) {
         OBBCollider fist = new OBBCollider(0.65D, 0.7D, 0.9D, 0, 1.0D, -0.8D);
@@ -200,6 +200,7 @@ public final class MurimAnimations {
         SANGUINE_SWORD_THROW = builder.nextAccessor("biped/murim/sanguine_sword_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
         SANGUINE_CRYSTAL_FORM = builder.nextAccessor("biped/murim/sanguine_crystal_form", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
         SANGUINE_CRYSTAL_BARRAGE = builder.nextAccessor("biped/murim/sanguine_crystal_barrage", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SANGUINE_ICEBERG = builder.nextAccessor("biped/murim/sanguine_iceberg", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
     }
 
     private static void buildLongFist(AnimationBuilder builder) {

@@ -24,13 +24,14 @@ import javax.imageio.ImageIO;
  *   scarlet_tear: the blood sword thrown point first, the great arc of its swing behind it, a burst where it strikes;
  *   devourer_of_worlds (Blood Crystal Form): a body in shadow, crystals bursting from its shoulders and back, its heart lit;
  *   crystal_barrage: a volley of crystals flying in a fan, speed lines behind them;
- *   crimson_stance: the passive, a fist in guard, drops of blood rising round it.
+ *   crimson_stance: the passive, a fist in guard, drops of blood rising round it;
+ *   blood_iceberg: a jagged mountain of blood crystal rising out of the ground, spires round its peak, a figure on top.
  */
 public class TechniqueIcons {
     static final int W = 32;
     static final String[] NAMES = {"cloud_step_slash", "thousand_drizzle", "heaven_splitting_crescent", "swallow_returns", "flowing_cloud_stance",
             "tiger_step_punch", "rapid_fists", "whirlwind_kick", "inch_force", "steady_breath",
-            "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance"};
+            "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance", "blood_iceberg"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
     static final int FIST = 5, BLOOD = 10;
 
@@ -379,6 +380,33 @@ public class TechniqueIcons {
                 for (double[] v : volley) line(g, v[0] - 3, v[1] + (v[1] - v[3]) * 0.25, v[0] + 1, v[1], 1f, BLOOD_DIM);
                 for (double[] v : volley) crystal(g, v[0], v[1], v[2], v[3], 3);
                 burst(g, 28, 14, 2.5, CRYSTAL_LIGHT);
+            }
+            case 5 -> { // Blood Iceberg: a mountain of blood crystal out of the ground, spires round the peak, a figure on top.
+                // The ground, split where it rose.
+                g.setColor(SHADOW);
+                g.fillRect(2, 27, 28, 3);
+                line(g, 3, 27, 29, 27, 1f, BLOOD_DIM);
+                // The mountain: a broad crystal mass, then spires, the tallest at the middle.
+                Path2D mass = new Path2D.Double();
+                mass.moveTo(3, 27); mass.lineTo(9, 17); mass.lineTo(13, 13); mass.lineTo(16, 9); mass.lineTo(19, 13);
+                mass.lineTo(23, 17); mass.lineTo(29, 27); mass.closePath();
+                g.setColor(CRYSTAL_DARK); g.fill(mass);
+                Path2D lit = new Path2D.Double();
+                lit.moveTo(16, 9); lit.lineTo(19, 13); lit.lineTo(23, 17); lit.lineTo(29, 27); lit.lineTo(17, 27); lit.closePath();
+                g.setColor(BLOOD_RED); g.fill(lit);
+                crystal(g, 6, 26, 4, 16, 3.2);
+                crystal(g, 10, 22, 8, 12, 3.4);
+                crystal(g, 23, 22, 25, 11, 3.4);
+                crystal(g, 27, 26, 29, 17, 3);
+                crystal(g, 13, 18, 12, 9, 2.6);
+                crystal(g, 20, 18, 21, 8, 2.6);
+                line(g, 16, 10, 12, 26, 0.8f, CRYSTAL_LIGHT);
+                // A figure on the peak, arms wide.
+                g.setColor(SHADOW);
+                g.fill(new Rectangle2D.Double(15, 5, 2, 4));
+                disc(g, 16, 3.6, 1.3, SHADOW);
+                line(g, 13, 5, 19, 5, 1f, SHADOW);
+                for (int[] q : new int[][]{{9, 20}, {22, 21}, {15, 24}, {26, 25}}) px(img, q[0], q[1], CRYSTAL_LIGHT);
             }
             default -> { // Crimson Stance: a fist in guard, drops of blood rising round it.
                 drop(g, 8, 10, 2, BLOOD_RED);

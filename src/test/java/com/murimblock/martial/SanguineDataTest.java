@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SanguineDataTest {
-    @Test void scrollAndQuestsTeachFourTechniquesInOrder() {
+    @Test void scrollAndQuestsTeachFiveTechniquesInOrder() {
         var art = MartialArts.art(MartialArts.SANGUINE_ART);
         var data = MartialData.EMPTY.learn(art);
         assertEquals(Optional.of(MartialArts.SANGUINE_ART), data.mainArt());
@@ -25,6 +25,10 @@ class SanguineDataTest {
         advanced = MartialProgress.advance(advanced.data(), art, MartialArts.CRYSTAL_MASTERY_HITS, 10);
         assertEquals(MartialArts.CRYSTAL_BARRAGE, advanced.unlocked());
         assertEquals(Optional.of(MartialArts.CRYSTAL_BARRAGE.id()), advanced.data().slot(3));
+        assertEquals(MartialArts.BLOOD_ICEBERG.id(), MartialProgress.currentQuest(advanced.data(), art).unlocks());
+        advanced = MartialProgress.advance(advanced.data(), art, MartialArts.CRIMSON_PEAK_FORMS, 3);
+        assertEquals(MartialArts.BLOOD_ICEBERG, advanced.unlocked());
+        assertEquals(Optional.of(MartialArts.BLOOD_ICEBERG.id()), advanced.data().slot(4));
         assertNull(MartialProgress.currentQuest(advanced.data(), art));
     }
     @Test void changingStyleKeepsExistingArtsAndBarAssignments() {

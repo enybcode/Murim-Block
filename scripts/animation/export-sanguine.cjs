@@ -24,7 +24,7 @@ function slice(source, name, from, to) {
 }
 const named = name => model.animations.find(a => a.name === name);
 const combo = named('sanguine_combo');
-const clips = ['sanguine_guard','sanguine_crystal_charge','sanguine_crystal_throw','sanguine_sword_summon','sanguine_sword_throw','sanguine_crystal_form','sanguine_crystal_barrage'].map(named);
+const clips = ['sanguine_guard','sanguine_crystal_charge','sanguine_crystal_throw','sanguine_sword_summon','sanguine_sword_throw','sanguine_crystal_form','sanguine_crystal_barrage','sanguine_iceberg'].map(named);
 clips.push(slice(named('sanguine_guard'),'sanguine_guard_hit',0,0.3),
   slice(combo,'sanguine_straight',0,0.36), slice(combo,'sanguine_cross',0.32,0.70),
   slice(combo,'sanguine_rise',0.66,1.52));

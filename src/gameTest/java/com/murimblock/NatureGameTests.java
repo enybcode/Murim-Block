@@ -55,8 +55,10 @@ public final class NatureGameTests {
         // No TerraBlender region any more: outside the Murim map, the world is vanilla.
         helper.assertTrue(Regions.get(RegionType.OVERWORLD).stream().noneMatch(r -> r.getName().getNamespace().equals(Murimblock.MOD_ID)),
                 "A Murim TerraBlender region still mixes Murim biomes into the vanilla world");
-        // Every Murim block has an item, a loot table and is in the nature tab order.
-        long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)).count();
+        // Every Murim nature block has an item, a loot table and is in the nature tab order (the Blood Iceberg's crystal,
+        // a technique's passing blocks, is not nature: no item, no drop).
+        long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)
+                && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
         for (var block : MurimBlocks.creativeOrder()) {
             helper.assertTrue(block.get().asItem() != Items.AIR, "No item for " + block.getId());

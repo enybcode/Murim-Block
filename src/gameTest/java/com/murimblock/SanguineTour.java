@@ -32,6 +32,7 @@ import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.BlockPos;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -84,7 +85,7 @@ public final class SanguineTour {
                     level.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false,server);
                     var p=self(server);new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()).use(level,p,InteractionHand.MAIN_HAND);
                     p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);
-                    var ts=List.of(MartialArts.SCARLET_TEAR,MartialArts.BLOOD_CRYSTAL_FORM,MartialArts.CRYSTAL_BARRAGE);
+                    var ts=List.of(MartialArts.SCARLET_TEAR,MartialArts.BLOOD_CRYSTAL_FORM,MartialArts.CRYSTAL_BARRAGE,MartialArts.BLOOD_ICEBERG);
                     for(int i=0;i<ts.size();i++){MartialService.unlock(p,ts.get(i));MartialService.assign(p,i+1,ts.get(i).id());}
                     CombatService.setCombatMode(p,true);QiService.setQiMax(p,100);QiService.setQi(p,100);
                     p.teleportTo(level,Math.floor(p.getX())+.5,p.getY(),Math.floor(p.getZ())+.5,0,0);p.getFoodData().setFoodLevel(6);
@@ -185,13 +186,21 @@ public final class SanguineTour {
                 case 1001 -> {var shed=java.util.stream.StreamSupport.stream(mc.level.entitiesForRendering().spliterator(),false)
                         .filter(e->e instanceof com.murimblock.martial.BloodCrystalEntity c&&c.shed()).count();
                     check(shed>=10&&!SanguineArt.state(mc.player).active(),"at the form's end its crystals come away and fall: "+shed);}
-                case 1040 -> finish(mc);
+                // Blood Iceberg: the mountain of blood crystal rises under the player, seen from afar.
+                case 1045 -> server.execute(()->{var p=self(server);if(zombie!=null)zombie.discard();MartialService.resetCooldowns(p);QiService.setQi(p,100);});
+                case 1047 -> view(mc,24,15,24);
+                case 1052 -> press(mc,4);
+                case 1054 -> mc.options.keyHotbarSlots[4].setDown(false);
+                case 1100 -> server.execute(()->{var p=self(server);int n=0;var c=BlockPos.containing(start);
+                    for(BlockPos at:BlockPos.betweenClosed(c.offset(-15,-12,-15),c.offset(15,18,15)))if(p.level().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
+                    check(n>500&&p.getY()>start.y+BloodIceberg.PEAK-1&&p.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST),"key 5 raises the Blood Iceberg and carries the player to its peak: "+n+" blocks, y "+p.getY());});
+                case 1125 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;
             if(ticks>=470&&ticks<=495&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_THROW))throwSeen=true;
             if(ticks>=504&&ticks<=545&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_BARRAGE))barrageSeen=true;
-            record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,307);record(mc,"form-again",945,992);record(mc,"form-shed",992,1032);
+            record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,307);record(mc,"form-again",945,992);record(mc,"form-shed",992,1032);record(mc,"iceberg",1050,1120);
             record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);record(mc,"scarlet-sword",772,866);
             // Hold key 1 for the whole great charge: the key state is reset between ticks.
             if(ticks>640&&ticks<703)mc.options.keyHotbarSlots[0].setDown(true);record(mc,"barrage",502,548);

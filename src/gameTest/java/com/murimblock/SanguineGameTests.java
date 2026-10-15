@@ -316,6 +316,29 @@ public final class SanguineGameTests {
             end(h,p,z);
         });
     }
+    @GameTest(template="foundation_arena",batch="blood_iceberg",timeoutTicks=1440)
+    public static void bloodIcebergRaisesAMountainGivesItsGiftsThenCrumbles(GameTestHelper h) {
+        var p=adept(h);MartialService.unlock(p,MartialArts.BLOOD_ICEBERG);MartialService.assign(p,4,MartialArts.BLOOD_ICEBERG.id());
+        double y0=p.getY();BlockPos centre=p.blockPosition();
+        java.util.function.IntSupplier crystals=()->{int n=0;
+            for(BlockPos at:BlockPos.betweenClosed(centre.offset(-BloodIceberg.RADIUS,-BloodIceberg.DEPTH,-BloodIceberg.RADIUS),centre.offset(BloodIceberg.RADIUS,BloodIceberg.PEAK+9,BloodIceberg.RADIUS)))
+                if(h.getLevel().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
+            return n;};
+        cast(h,p,4);ticks(h,p,1420);
+        h.assertTrue(MartialService.cooldownLeft(p,MartialArts.BLOOD_ICEBERG.id())>10700,"No 9-minute cooldown: "+MartialService.cooldownLeft(p,MartialArts.BLOOD_ICEBERG.id()));
+        h.runAfterDelay(40,()->{
+            int n=crystals.getAsInt();
+            h.assertTrue(n>500,"The mountain did not rise: "+n+" blocks");
+            h.assertTrue(p.getY()>=y0+BloodIceberg.PEAK-1,"The player was not carried up to the peak: "+y0+" -> "+p.getY());
+        });
+        // A crystal every 3 s on it (outside the form, a point of the gauge), with Strength and Regeneration.
+        h.runAfterDelay(95,()->{
+            h.assertTrue(p.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST)&&p.hasEffect(net.minecraft.world.effect.MobEffects.REGENERATION),"No Strength and Regeneration on the mountain");
+            h.assertTrue(SanguineArt.state(p).gauge()>=1,"No blood crystal grew back on the mountain: "+SanguineArt.state(p));
+        });
+        // 60 s later it crumbles, leaving nothing.
+        h.runAfterDelay(1400,()->{h.assertTrue(crystals.getAsInt()==0,"The mountain did not crumble away: "+crystals.getAsInt());end(h,p);});
+    }
     @GameTest(template="foundation_arena",batch="crystal_parry",timeoutTicks=85)
     public static void aPerfectParryStopsTheThrownCrystal(GameTestHelper h) {
         var attacker=adept(h);var defender=adept(h);h.getLevel().getServer().setPvpAllowed(true);

@@ -175,6 +175,8 @@ public final class MartialArts {
     /** The previous third ability now activates the final crystal form. */
     public static final Technique BLOOD_CRYSTAL_FORM = new Technique(id("devourer_of_worlds"), SANGUINE_ART, 20, 80);
     public static final Technique CRYSTAL_BARRAGE = new Technique(id("crystal_barrage"), SANGUINE_ART, 18, 120);
+    /** A mountain of blood crystal under the player for 60 s (BloodIceberg); 9 minutes to recover. */
+    public static final Technique BLOOD_ICEBERG = new Technique(id("blood_iceberg"), SANGUINE_ART, 40, 10800);
     /** Fixed bare-hand chain from the approved Sanguine combo, with no configurable strike slots. */
     public static final Passive CRIMSON_STANCE = new Passive(id("crimson_stance"), List.of(), List.of());
     public static final String CRIMSON_CONTACT_HITS = "crimson_contact.hits";
@@ -186,6 +188,10 @@ public final class MartialArts {
     public static final String CRYSTAL_MASTERY_HITS = "crystal_mastery.hits";
     public static final Quest CRYSTAL_MASTERY = new Quest("crystal_mastery", CRYSTAL_BARRAGE.id(),
             List.of(new QuestStep(CRYSTAL_MASTERY_HITS, 10)));
+    /** Blood Iceberg: three Blood Crystal Forms held to their end. */
+    public static final String CRIMSON_PEAK_FORMS = "crimson_peak.forms";
+    public static final Quest CRIMSON_PEAK = new Quest("crimson_peak", BLOOD_ICEBERG.id(),
+            List.of(new QuestStep(CRIMSON_PEAK_FORMS, 3)));
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
     private static final Map<ResourceLocation, Technique> TECHNIQUES = new LinkedHashMap<>();
@@ -197,8 +203,8 @@ public final class MartialArts {
         add(new Art(LONG_FIST, List.of(TIGER_STEP_PUNCH, RAPID_FISTS, WHIRLWIND_KICK, INCH_FORCE),
                 STEADY_BREATH, List.of(FIRST_STEPS, UNBROKEN_FLURRY),
                 List.of(TIGER_LEAP, HUNDRED_FISTS, TORNADO_KICK)));
-        add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE),
-                CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY), List.of()));
+        add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
+                CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }
 
     private MartialArts() {

@@ -174,6 +174,10 @@ public final class SanguineArt {
             float damage=Math.max(.5F,TechniquePower.damage(p,MartialArts.SANGUINE_ART,.45));
             for(int i=0;i<crystals.size();i++)crystals.get(i).queue(6+i*2,damage);
             SALVOS.put(p.getUUID(),crystals);
+        } else if(t==MartialArts.BLOOD_ICEBERG) {
+            // The palms strike the ground and the mountain rises under the player (BloodIceberg).
+            if(!BloodIceberg.raise(p))return false;
+            a=MurimAnimations.SANGUINE_ICEBERG;
         } else return false;
         MartialCombat.expect(p,a,t.id(),false);patch.playAnimationSynchronized(a,0);
         // Scarlet Tear: the blood sword forms in the hand and stays out, a sword to fight with, until thrown.
@@ -278,7 +282,7 @@ public final class SanguineArt {
             level.playSound(null,p.getX(),p.getY()+1,p.getZ(),net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK,net.minecraft.sounds.SoundSource.PLAYERS,1.6F,.55F);
             level.playSound(null,p.getX(),p.getY()+1,p.getZ(),net.minecraft.sounds.SoundEvents.PLAYER_HURT,net.minecraft.sounds.SoundSource.PLAYERS,1.2F,.55F);
         }
-        if(t>=FORM_TICKS)shed(p);
+        if(t>=FORM_TICKS){shed(p);MartialProgress.count(p,MartialArts.CRIMSON_PEAK_FORMS,1);}
     }
     /** The form's end: its crystals come away from the body and fall to the ground, where they break. */
     public static void shed(ServerPlayer p) {
@@ -289,6 +293,18 @@ public final class SanguineArt {
         BloodCrystalEntity.shed(p);
         p.serverLevel().playSound(null,p.getX(),p.getY()+1,p.getZ(),net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_BREAK,
                 net.minecraft.sounds.SoundSource.PLAYERS,1.2F,.7F);
+    }
+    /**
+     * On the Blood Iceberg, every 3 seconds: a blood crystal grows back (a dorsal crystal in the form, else a point of
+     * the gauge).
+     */
+    static void icebergCrystal(ServerPlayer p) {
+        if(!p.isAlive())return;
+        var before=state(p);
+        if(!before.active()){set(p,before.gain(1));return;}
+        if(before.crystals()>=BloodCrystalState.MAX_CRYSTALS)return;
+        set(p,before.gain(1));
+        CRYSTALS.computeIfAbsent(p.getUUID(),id->new ArrayList<>()).add(BloodCrystalEntity.attached(p,BloodCrystalEntity.ORBIT,before.crystals()));
     }
     /** Out of combat: everything stops but the form, which holds to its end. */
     public static void leftCombat(UUID id) {

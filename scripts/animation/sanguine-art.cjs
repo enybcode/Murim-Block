@@ -196,8 +196,23 @@ const barrage=[K(0,G),K(.16,pose({y:-.03,h:.59,turn:0,lean:-10},{Arm_R:[['x',12]
  Arm_L:[['x',88],['y',12]],Hand_L:[['x',12]],Tool_L:[['x',-20]]})),
  K(.8,pose({y:.05,h:.625,turn:0,lean:-8},{Arm_R:[['x',85],['y',-12]],Hand_R:[['x',18]],Arm_L:[['x',85],['y',12]],Hand_L:[['x',18]]})),
  K(1.22,pose({y:.055,h:.63,turn:0,lean:-10},{Arm_R:[['x',87],['y',-12]],Hand_R:[['x',14]],Arm_L:[['x',87],['y',12]],Hand_L:[['x',14]]})),K(1.65,G)];
+// Blood Iceberg (15/10/2026, Enzo's request): down on one knee, both palms struck flat on the ground (0.3 s), and the
+// mountain rises (BloodIceberg starts it 6 ticks in); the player comes up with it, arms rising, and stands on the peak
+// arms wide, then into guard.
+const iceberg=[K(0,G),
+ K(.12,pose({y:.02,h:.6,turn:0,lean:-14},{Arm_R:[['x',100],['y',-14]],Hand_R:[['x',40]],Arm_L:[['x',100],['y',14]],Hand_L:[['x',40]],Head:[['x',-4]]})),
+ K(.3,pose({y:.08,h:.42,turn:0,lean:-34},{Arm_R:[['x',58],['y',-22],['z',6]],Hand_R:[['x',6]],Tool_R:[['x',-60]],
+  Arm_L:[['x',58],['y',22],['z',-6]],Hand_L:[['x',6]],Tool_L:[['x',-60]],Chest:[['x',-6]],Head:[['x',8]]})),
+ K(.5,pose({y:.08,h:.44,turn:0,lean:-30},{Arm_R:[['x',56],['y',-24],['z',6]],Hand_R:[['x',8]],Tool_R:[['x',-60]],
+  Arm_L:[['x',56],['y',24],['z',-6]],Hand_L:[['x',8]],Tool_L:[['x',-60]],Chest:[['x',-5]],Head:[['x',10]]})),
+ K(.85,pose({y:.04,h:.62,turn:0,lean:2},{Arm_R:[['x',130],['y',-30],['z',10]],Hand_R:[['x',20]],Tool_R:[['x',-20]],
+  Arm_L:[['x',130],['y',30],['z',-10]],Hand_L:[['x',20]],Tool_L:[['x',-20]],Chest:[['x',6]],Head:[['x',14]]})),
+ K(1.15,pose({y:.02,h:.665,turn:0,lean:10},{Arm_R:[['x',96],['y',-80],['z',12]],Hand_R:[['x',10]],Tool_R:[['x',-25]],
+  Arm_L:[['x',96],['y',80],['z',-12]],Hand_L:[['x',10]],Tool_L:[['x',-25]],Chest:[['x',10]],Head:[['x',18]]})),
+ K(1.4,pose({y:.01,h:.64,turn:-6,lean:-2},{Arm_R:[['x',46],['y',-36]],Hand_R:[['x',60]],Arm_L:[['x',50],['y',34]],Hand_L:[['x',62]]})),
+ K(1.7,G)];
 const CLIPS={sanguine_guard:guard,sanguine_combo:combo,sanguine_crystal_charge:charge,
- sanguine_crystal_throw:throwing,sanguine_sword_summon:swordSummon,sanguine_sword_throw:swordThrow,sanguine_crystal_form:form,sanguine_crystal_barrage:barrage};
+ sanguine_crystal_throw:throwing,sanguine_sword_summon:swordSummon,sanguine_sword_throw:swordThrow,sanguine_crystal_form:form,sanguine_crystal_barrage:barrage,sanguine_iceberg:iceberg};
 
 const AXES = ['x','y','z'];
 const NAMES = [...rig.BONES,'Tool_L'];
@@ -277,9 +292,9 @@ function bodyOnly(p) {
 function build() {
   const baked=Object.fromEntries(Object.entries(CLIPS).map(([n,k])=>[n,bake(k)]));
   const showcase=[];
-  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.9],['sanguine_crystal_form',7.3],['sanguine_crystal_barrage',9.5]])
+  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.9],['sanguine_crystal_form',7.3],['sanguine_crystal_barrage',9.5],['sanguine_iceberg',11.3]])
     showcase.push(...baked[name].map(k=>K(Math.round((k.t+offset)*10000)/10000,k.pose)));
-  showcase.push(K(11.3,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
+  showcase.push(K(13.2,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
   const {p,g}=bodyOnly(rig.project('sanguine_art',baked));
   for(const a of p.animations) {
     const keys=baked[a.name];

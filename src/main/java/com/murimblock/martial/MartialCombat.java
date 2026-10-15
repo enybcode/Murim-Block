@@ -604,6 +604,7 @@ public final class MartialCombat {
         keepAloft(player);
         AzureCloudSword.tickAim(player, now);
         SanguineArt.tick(player);
+        BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
         if (list == null) return;
         List<Runnable> due = new ArrayList<>();
@@ -668,5 +669,6 @@ public final class MartialCombat {
         AzureCloudSword.forgetAim(null);
         LongFist.forget(null);
         SanguineArt.forget(null);
+        BloodIceberg.forget(null);
     }
 }
