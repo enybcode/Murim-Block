@@ -107,6 +107,18 @@ public final class MurimItems {
      * top, a blue cord bound round the edge. A shield (Epic Fight gives every shield its guard and parry), lighter than
      * the vanilla one. Model from scripts/animation/rattan-shield-model.cjs, held through item_skins/rattan_shield.json.
      */
+    /**
+     * The sect weapons, each with its own Epic Fight weapon type and moveset (integration/epicfight/MurimWeapons,
+     * SectWeaponAnimations): the iron fan (its ribs opened by client/FanRenderer), the chain whip (its links hung on a
+     * simulated chain, client/ChainWhipRenderer) and the flying needles, thrown in fans (mob/FlyingNeedleEntity).
+     */
+    public static final DeferredItem<SwordItem> IRON_FAN = ITEMS.register("iron_fan",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 1, -2.0F))));
+    public static final DeferredItem<SwordItem> CHAIN_WHIP = ITEMS.register("chain_whip",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 2, -2.6F))));
+    /** Each needle thrown hurts for a share of the thrower's attack (FlyingNeedleEntity.DAMAGE_SHARE). */
+    public static final DeferredItem<SwordItem> FLYING_NEEDLES = ITEMS.register("flying_needles",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 0, -2.0F))));
     public static final DeferredItem<ShieldItem> RATTAN_SHIELD = ITEMS.register("rattan_shield",
             () -> new ShieldItem(new Item.Properties().durability(280)));
 
@@ -170,6 +182,9 @@ public final class MurimItems {
                         output.accept(ALLIANCE_SPEAR.get());
                         output.accept(SNOW_PLUM_JIAN.get());
                         output.accept(RATTAN_SHIELD.get());
+                        output.accept(IRON_FAN.get());
+                        output.accept(CHAIN_WHIP.get());
+                        output.accept(FLYING_NEEDLES.get());
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());

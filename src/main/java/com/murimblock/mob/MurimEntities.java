@@ -66,6 +66,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<QiBladeEntity>> QI_BLADE =
             TYPES.register("qi_blade", () -> EntityType.Builder.<QiBladeEntity>of(QiBladeEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F).clientTrackingRange(6).updateInterval(1).build("murimblock:qi_blade"));
+    /** A needle thrown by the flying needles (FlyingNeedleEntity). */
+    public static final DeferredHolder<EntityType<?>, EntityType<FlyingNeedleEntity>> FLYING_NEEDLE =
+            TYPES.register("flying_needle", () -> EntityType.Builder.<FlyingNeedleEntity>of(FlyingNeedleEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).clientTrackingRange(6).updateInterval(1).build("murimblock:flying_needle"));
     /** The inner world (docs/cultivation/qi-cultivation.md): a cultivator's own darkness, a dark copy of them. */
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.HeartDemonEntity>> HEART_DEMON =
             TYPES.register("heart_demon", () -> EntityType.Builder.of(com.murimblock.cultivation.inner.HeartDemonEntity::new, MobCategory.MONSTER)
