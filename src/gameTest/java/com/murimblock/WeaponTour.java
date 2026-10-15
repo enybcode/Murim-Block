@@ -8,6 +8,8 @@ import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
 import com.murimblock.integration.epicfight.MountainBanditPatch;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.item.MurimItems;
+import com.murimblock.martial.MartialArts;
+import com.murimblock.martial.MartialService;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.mob.MurimEntities;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -90,7 +92,7 @@ public final class WeaponTour {
 
     /** Who is filmed. */
     /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
-    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR }
+    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -148,9 +150,18 @@ public final class WeaponTour {
         TAKES.add(new Take("spear-" + name, Actor.SPEAR, side, null, combo, motion, frames, every));
     }
 
+    private static void jian(Actor actor, String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take((actor == Actor.JIAN ? "jian-" : "jian-azure-") + name, actor, side, null, combo, motion, frames, every));
+    }
+
     /** The weapon each of the player's takes holds. */
     private static Item weaponOf(Actor actor) {
-        return actor == Actor.BANDIT ? MurimItems.BANDIT_DAO.get() : actor == Actor.SPEAR ? MurimItems.ALLIANCE_SPEAR.get() : MurimItems.CHIEF_GREAT_AXE.get();
+        return switch (actor) {
+            case BANDIT -> MurimItems.BANDIT_DAO.get();
+            case SPEAR -> MurimItems.ALLIANCE_SPEAR.get();
+            case JIAN, JIAN_AZURE -> MurimItems.SNOW_PLUM_JIAN.get();
+            default -> MurimItems.CHIEF_GREAT_AXE.get();
+        };
     }
 
     /** The takes, listed once in game: the animations' accessors are only filled in once Epic Fight has built them. */
@@ -198,8 +209,20 @@ public final class WeaponTour {
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT, Side.TOP)) {
             for (int i = 0; i < chain.length; i++) spear(chain[i], side, i, null, 24, 1);
         }
+        // The same player with the Alliance's Snow Plum Jian: its stance, walk and run, Epic Fight's sword M1s; then, as a
+        // student of the Azure Cloud Sword Art, Murim's own M1s (Flowing Cloud Stance). From above, where the edge shows.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) jian(Actor.JIAN, "idle", side, -1, LivingMotions.IDLE, 1, 1);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) jian(Actor.JIAN, "walk", side, -1, LivingMotions.WALK, 16, 2);
+        jian(Actor.JIAN, "run", Side.RIGHT, -1, LivingMotions.RUN, 12, 2);
+        String[] swordChain = {"m1-1", "m1-2", "m1-3", "dash", "air"};
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.TOP)) {
+            for (int i = 0; i < swordChain.length; i++) jian(Actor.JIAN, swordChain[i], side, i, null, 20, 1);
+        }
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.TOP)) {
+            for (int i = 0; i < 4; i++) jian(Actor.JIAN_AZURE, "m1-" + (i + 1), side, i, null, 20, 1);
+        }
         String only = System.getenv("MURIM_TOUR_ONLY");
-        if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().equalsIgnoreCase(only.trim()));
+        if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().toLowerCase().startsWith(only.trim().toLowerCase()));
         check(TAKES.stream().filter(t -> t.actor() == Actor.BANDIT).allMatch(t -> t.motion() != null || t.played() != null), "every bandit take has its animation");
     }
 
@@ -352,6 +375,11 @@ public final class WeaponTour {
                 wielder.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(weaponOf(t.actor())));
                 EpicFightCombatDefaults.enforce(wielder);
             }
+            if (fresh && t.actor() == Actor.JIAN_AZURE) {
+                // A student of the Azure Cloud Sword Art, with it as main style: its passive replaces a sword's M1s.
+                MartialService.learn(wielder, MartialArts.art(MartialArts.AZURE_CLOUD_SWORD));
+                MartialService.setMainArt(wielder, MartialArts.AZURE_CLOUD_SWORD);
+            }
             if (fresh) report.add("info   " + weaponOf(t.actor()) + " in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
             // The air attack from a little above the ground (a player on a mock connection stays where it is put).
             double lift = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? 1.4 : 0;
@@ -381,6 +409,12 @@ public final class WeaponTour {
         } else {
             PlayerPatch<?> patch = EpicFightBridge.patch(wielder);
             var chain = patch.getHoldingItemCapability(InteractionHand.MAIN_HAND).getAutoAttackMotion(patch);
+            // A chain shorter than the takes asked for: nothing to film for the missing M1.
+            if (t.combo() >= chain.size()) {
+                asked = null;
+                report.add("info   " + t.name() + ": the chain has only " + chain.size() + " M1s");
+                return;
+            }
             asked = chain.get(t.combo());
             patch.playAnimationSynchronized(asked, 0);
         }
@@ -464,6 +498,7 @@ public final class WeaponTour {
         LivingEntity seen = seen(mc, t.actor());
         LivingEntityPatch<?> patch = seen == null ? null : EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
         var animation = asked;
+        if (animation == null && t.actor() != Actor.BANDIT) return;
         boolean playing = patch != null && animation != null && patch.getAnimator().isPlaying(animation);
         if (!second) playingOnFirstFrame = playing;
         else check(playingOnFirstFrame || playing, t.name() + " from " + t.side().name().toLowerCase() + ": the client plays "
