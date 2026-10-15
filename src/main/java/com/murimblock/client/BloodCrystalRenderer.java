@@ -40,6 +40,18 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
         if(length<1.0E-4F){bladeX=0;bladeY=1;bladeZ=0;} else {bladeX=x/length;bladeY=y/length;bladeZ=z/length;}
         bladeFirstPerson=firstPerson;
     }
+    /**
+     * The held sword's orientation in the hand joint's frame: its blade (the model's +Y) along (x, y, z), and its edges
+     * (the model's ±X; its flats face ±Z) in the plane of the forearm (the hand's Y) and the blade, as a sword is
+     * gripped, so the cuts land on the edge, not the flat. Falls back to the hand's Z when the blade runs along the arm.
+     */
+    static org.joml.Quaternionf inHandOrientation(float x,float y,float z) {
+        var blade=new org.joml.Vector3f(x,y,z).normalize();
+        var reference=Math.abs(blade.y)<.95F?new org.joml.Vector3f(0,1,0):new org.joml.Vector3f(0,0,1);
+        var edge=reference.sub(new org.joml.Vector3f(blade).mul(reference.dot(blade))).normalize();
+        var flat=new org.joml.Vector3f(edge).cross(blade);
+        return new org.joml.Quaternionf().setFromNormalized(new org.joml.Matrix3f(edge,blade,flat));
+    }
     private boolean inHand;
     private static int firstPersonCharges;
     private static ResourceLocation asset(String path) {return ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID,path);}
@@ -86,8 +98,8 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
         }
         float scale=entity.crystalScale();
         if(inHand&&entity.sword()) {
-            // In the fist: the blade (the model's +Y) carries on the forearm; smaller in first person, by the camera.
-            pose.mulPose(new org.joml.Quaternionf().rotationTo(0,1,0,bladeX,bladeY,bladeZ));
+            // In the fist: the blade (the model's +Y) along the given line; smaller in first person, by the camera.
+            pose.mulPose(inHandOrientation(bladeX,bladeY,bladeZ));
             if(bladeFirstPerson)pose.scale(FIRST_PERSON_SWORD_SCALE,FIRST_PERSON_SWORD_SCALE,FIRST_PERSON_SWORD_SCALE);
             return;
         }

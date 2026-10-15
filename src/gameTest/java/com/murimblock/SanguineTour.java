@@ -170,11 +170,11 @@ public final class SanguineTour {
                 case 882 -> press(mc,1);
                 case 884 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 892 -> capture(mc,"sword-first-person-forming.png");
-                case 906 -> capture(mc,"sword-first-person.png");
-                case 908 -> press(mc,1);
-                case 910 -> mc.options.keyHotbarSlots[1].setDown(false);
-                case 913 -> capture(mc,"sword-first-person-throw.png");
-                case 940 -> finish(mc);
+                case 912 -> capture(mc,"sword-first-person.png");
+                case 914 -> press(mc,1);
+                case 916 -> mc.options.keyHotbarSlots[1].setDown(false);
+                case 919 -> capture(mc,"sword-first-person-throw.png");
+                case 946 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;
