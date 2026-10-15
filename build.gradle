@@ -96,6 +96,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the Captain of the Peak Guard and his swinging cloth (see PeakCaptainTour).
+        peakCaptainTour {
+            client()
+            gameDirectory = project.file('build/peak-captain-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.peakCaptainTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client film of Scarlet Bloom, the Sanguine Art's finish (see ScarletBloomTour).
         scarletBloomTour {
             client()
@@ -380,6 +389,22 @@ tasks.named('runSiteTour').configure {
     doLast {
         def report = siteTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Site tour failed; see build/site-tour-run/site-tour-report.txt')
+    }
+}
+
+def peakCaptainTourSave = layout.buildDirectory.dir('peak-captain-tour-run/saves/murim-peak-captain')
+def peakCaptainTourReport = layout.buildDirectory.file('peak-captain-tour-run/peak-captain-tour-report.txt')
+def peakCaptainTourShots = layout.buildDirectory.dir('peak-captain-tour-run/screenshots')
+tasks.named('runPeakCaptainTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Peak Captain tour.')
+        peakCaptainTourSave.get().asFile.deleteDir()
+        peakCaptainTourShots.get().asFile.deleteDir()
+        peakCaptainTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = peakCaptainTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Peak Captain tour failed; see build/peak-captain-tour-run/peak-captain-tour-report.txt')
     }
 }
 

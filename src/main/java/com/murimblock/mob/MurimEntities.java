@@ -53,6 +53,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<AllianceMerchantEntity>> ALLIANCE_MERCHANT =
             TYPES.register("alliance_merchant", () -> EntityType.Builder.of(AllianceMerchantEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:alliance_merchant"));
+    /** The Captain of the Peak Guard, the Alliance's spear boss: a man's size, never spawned naturally (an egg, /summon, his arena). */
+    public static final DeferredHolder<EntityType<?>, EntityType<PeakCaptainEntity>> PEAK_CAPTAIN =
+            TYPES.register("peak_captain", () -> EntityType.Builder.of(PeakCaptainEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:peak_captain"));
     /** The Orthodox Alliance's soldiers, one type for each kind (AllianceSoldierEntity.Kind): a man's size. */
     public static final DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> ALLIANCE_SPEAR_GUARD = soldier(AllianceSoldierEntity.Kind.SPEAR_GUARD);
     public static final DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> ALLIANCE_SWORD_DISCIPLE = soldier(AllianceSoldierEntity.Kind.SWORD_DISCIPLE);
@@ -114,6 +118,7 @@ public final class MurimEntities {
         event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
         event.put(AZURE_SENSEI.get(), AzureSenseiEntity.createSenseiAttributes().build());
         event.put(ALLIANCE_MERCHANT.get(), AllianceMerchantEntity.createMerchantAttributes().build());
+        event.put(PEAK_CAPTAIN.get(), PeakCaptainEntity.createCaptainAttributes().build());
         for (AllianceSoldierEntity.Kind kind : AllianceSoldierEntity.Kind.values())
             event.put(ALLIANCE_SOLDIERS.get(kind.ordinal()).get(), kind.attributes().build());
     }

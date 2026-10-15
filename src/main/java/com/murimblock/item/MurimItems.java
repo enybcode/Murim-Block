@@ -141,6 +141,34 @@ public final class MurimItems {
         return ITEMS.register(type.getId().getPath() + "_spawn_egg", () -> new DeferredSpawnEggItem(type, 0x2B5FA8, spots, new Item.Properties()));
     }
 
+    /**
+     * The Captain of the Peak Guard's spear, the Crimson Dragon Spear: a gold-edged leaf blade, a gold dragon's head for
+     * its socket, a cross bar set with two cyan gems, a great red mane, a red lacquered shaft banded in gold. A spear for
+     * Epic Fight (data/murimblock/capabilities/weapons/crimson_dragon_spear.json), stronger than the soldiers': 7 damage.
+     * He leaves it now and then (loot_table/entities/peak_captain.json). Model from scripts/animation/crimson-dragon-spear-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> CRIMSON_DRAGON_SPEAR = ITEMS.register("crimson_dragon_spear",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.8F))));
+
+    /**
+     * The Peak Guard's armour, the captain's, on a man's build: a plumed iron helm with cheek guards and a neck curtain,
+     * a cuirass of gold-laced lamellae with a mirror plate and lion pauldrons, lamellar tassets with knee guards, greaves
+     * (MurimArmorMaterials.PEAK_GUARD). He wears it all and drops one piece every time (loot_table/entities/peak_captain.json).
+     */
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_HELM = peakGuardArmour("peak_guard_helm", ArmorItem.Type.HELMET);
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_LAMELLAR = peakGuardArmour("peak_guard_lamellar", ArmorItem.Type.CHESTPLATE);
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_TASSETS = peakGuardArmour("peak_guard_tassets", ArmorItem.Type.LEGGINGS);
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_GREAVES = peakGuardArmour("peak_guard_greaves", ArmorItem.Type.BOOTS);
+
+    private static DeferredItem<ArmorItem> peakGuardArmour(String id, ArmorItem.Type type) {
+        return ITEMS.register(id, () -> new ArmorItem(MurimArmorMaterials.PEAK_GUARD, type, new Item.Properties()
+                .rarity(Rarity.RARE).durability(type.getDurability(MurimArmorMaterials.PEAK_GUARD_DURABILITY))));
+    }
+
+    /** The azure of his coat and the gold of his armour. */
+    public static final DeferredItem<DeferredSpawnEggItem> PEAK_CAPTAIN_SPAWN_EGG = ITEMS.register("peak_captain_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.PEAK_CAPTAIN, 0x2B5FA8, 0xE9C46A, new Item.Properties()));
+
     /** The azure of his robe and the white of his beard. */
     public static final DeferredItem<DeferredSpawnEggItem> AZURE_SENSEI_SPAWN_EGG = ITEMS.register("azure_sensei_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.AZURE_SENSEI, 0x2F6FC0, 0xEFEBE4, new Item.Properties()));
@@ -198,6 +226,12 @@ public final class MurimItems {
                         output.accept(CHIEF_LAMELLAR_VEST.get());
                         output.accept(CHIEF_TASSETS.get());
                         output.accept(CHIEF_FUR_BOOTS.get());
+                        output.accept(PEAK_CAPTAIN_SPAWN_EGG.get());
+                        output.accept(CRIMSON_DRAGON_SPEAR.get());
+                        output.accept(PEAK_GUARD_HELM.get());
+                        output.accept(PEAK_GUARD_LAMELLAR.get());
+                        output.accept(PEAK_GUARD_TASSETS.get());
+                        output.accept(PEAK_GUARD_GREAVES.get());
                         MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());

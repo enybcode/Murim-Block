@@ -77,6 +77,9 @@ public final class ArmoredCrabEpicFight {
             // The Alliance Merchant: the same skeleton, his own model, no fighting.
             event.registerEntityPatch(MurimEntities.ALLIANCE_MERCHANT.get(), AllianceMerchantPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.ALLIANCE_MERCHANT.get(), Armatures.BIPED);
+            // The Captain of the Peak Guard: the same skeleton, his own model, his armour and spear.
+            event.registerEntityPatch(MurimEntities.PEAK_CAPTAIN.get(), PeakCaptainPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.PEAK_CAPTAIN.get(), Armatures.BIPED);
             // The Alliance's soldiers: the same skeleton, their own model, each with his weapon.
             for (var soldier : MurimEntities.ALLIANCE_SOLDIERS) {
                 event.registerEntityPatch(soldier.get(), AllianceSoldierPatch::new);

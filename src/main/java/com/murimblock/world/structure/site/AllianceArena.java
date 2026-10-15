@@ -303,11 +303,11 @@ final class AllianceArena extends Site {
     // ---------------------------------------------------------------- its people
 
     /**
-     * The captain, on the leitai just north of its centre, facing the gate: the only place he appears. Until the captain
-     * boss exists, an Alliance sergeant holds his place.
+     * The captain, on the leitai just north of its centre, facing the gate: the only place he appears
+     * (mob/PeakCaptainEntity, docs/mobs/peak-captain.md). He keeps that spot as his post.
      */
     private static void captain(Canvas c, int g) {
-        c.spawn(0, g + TOP + 1, -2, Direction.SOUTH, MurimEntities.ALLIANCE_SERGEANT.get(), captain -> { });
+        c.spawn(0, g + TOP + 1, -2, Direction.SOUTH, MurimEntities.PEAK_CAPTAIN.get(), captain -> { });
     }
 
     /** Two spear guards inside the gate, two sword disciples watching from the stands' galleries. */
