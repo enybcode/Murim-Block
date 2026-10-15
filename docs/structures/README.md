@@ -8,7 +8,7 @@ Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, 
 
 ## Prévu : l'arène de l'Alliance (15/10/2026)
 
-Maquettes voxel d'une arène de style Murim : un leitai de 17 × 17 (l'estrade de combat où le capitaine attend), deux tribunes couvertes, le pavillon des juges, la porte et une arche, avec son plan numéroté : [alliance-arena.md](alliance-arena.md). Rien n'est construit en jeu, en attente de validation.
+Maquettes voxel d'une grande arène de style Murim (cour de 73 × 73) : un leitai de 27 × 27 (l'estrade de combat où le capitaine attend et invoque ses unités sur quatre sceaux), deux tribunes couvertes, deux salles des troupes, le pavillon des juges, la porte et une arche, avec son plan numéroté : [alliance-arena.md](alliance-arena.md). Rien n'est construit en jeu, en attente de validation.
 
 ![L'arène de l'Alliance, maquette](images/alliance-arena/overview.jpg)
 
