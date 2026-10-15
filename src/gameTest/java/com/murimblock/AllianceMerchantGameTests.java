@@ -49,7 +49,7 @@ public final class AllianceMerchantGameTests {
             helper.assertTrue(!merchant.removeWhenFarAway(1.0E6) && merchant.isPersistenceRequired(), "The merchant could despawn");
             var offers = merchant.getOffers();
             helper.assertTrue(offers.size() >= 10, "Too few wares: " + offers.size());
-            boolean spear = false, dao = false;
+            boolean spear = false, dao = false, bishou = false, flyingKnife = false;
             for (MerchantOffer offer : offers) {
                 // Either he takes taels for a ware, or he gives taels for a spoil; never anything for nothing.
                 helper.assertTrue(tael(offer.getBaseCostA()) != tael(offer.getResult()), "A trade not in taels: " + offer.getBaseCostA() + " -> " + offer.getResult());
@@ -57,8 +57,11 @@ public final class AllianceMerchantGameTests {
                 helper.assertTrue((offer.getCostB().isEmpty() || tael(offer.getCostB())) && offer.getBaseCostA().getCount() > 0 && offer.getMaxUses() > 0, "A strange trade: " + offer.getBaseCostA());
                 if (offer.getResult().is(MurimItems.ALLIANCE_SPEAR.get())) spear = offer.getBaseCostA().getCount() == 24;
                 if (offer.getBaseCostA().is(MurimItems.BANDIT_DAO.get())) dao = offer.getResult().getCount() == 3;
+                if (offer.getResult().is(MurimItems.BISHOU.get())) bishou = offer.getBaseCostA().getCount() == 16;
+                if (offer.getResult().is(MurimItems.FLYING_KNIFE.get())) flyingKnife = offer.getBaseCostA().getCount() == 12;
             }
             helper.assertTrue(spear, "No Azure Peak Spear for 24 taels");
+            helper.assertTrue(bishou && flyingKnife, "No Bishou for 16 taels or Flying Knife for 12");
             for (var pendant : MurimItems.pendants()) {
                 var sold = offers.stream().filter(o -> o.getResult().is(pendant.get())).findFirst();
                 helper.assertTrue(sold.isPresent(), "He does not sell the " + pendant.getId());

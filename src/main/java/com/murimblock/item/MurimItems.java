@@ -104,7 +104,8 @@ public final class MurimItems {
 
     /**
      * Two Murim knives, daggers for Epic Fight (data/murimblock/capabilities/weapons: its own dagger moveset, quick
-     * stabs and slashes, two of them dual-wielded): the Bishou (匕首), a straight double-edged dagger, black cord and a
+     * stabs and slashes, two of them dual-wielded), not thrown; sold by the Alliance merchant, rarely found (3 %) in a
+     * site's barrel (chests/murim_cache): the Bishou (匕首), a straight double-edged dagger, black cord and a
      * jade pommel, 4 damage; the Flying Knife (飞刀), a thin leaf blade, a steel ring and a red cloth, lighter and quicker,
      * 3 damage. Models from scripts/animation/murim-knives-model.cjs (Enzo's choice, 15/10/2026).
      */

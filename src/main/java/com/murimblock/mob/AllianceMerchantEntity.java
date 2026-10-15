@@ -148,6 +148,9 @@ public class AllianceMerchantEntity extends PathfinderMob implements Merchant {
         list.add(sells(new ItemStack(MurimItems.ALLIANCE_SPEAR.get()), 24, 2));
         list.add(sells(new ItemStack(MurimItems.SNOW_PLUM_JIAN.get()), 24, 2));
         list.add(sells(new ItemStack(MurimItems.RATTAN_SHIELD.get()), 12, 2));
+        // The two knives (Enzo, 15/10/2026: bought here, or found by great luck in a site's barrel).
+        list.add(sells(new ItemStack(MurimItems.BISHOU.get()), 16, 2));
+        list.add(sells(new ItemStack(MurimItems.FLYING_KNIFE.get()), 12, 2));
         // Pills and healing, food for the road.
         list.add(sells(new ItemStack(MurimItems.QI_GATHERING_PILL.get()), 6, 8));
         list.add(sells(new ItemStack(MurimItems.REALM_BREAKING_PILL.get()), 32, 2));

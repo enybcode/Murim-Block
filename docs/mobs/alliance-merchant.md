@@ -36,6 +36,8 @@ Il vend (prix en taëls) :
 |---|---|---|
 | Azure Peak Spear | 24 | 2 |
 | Snow Plum Jian | 24 | 2 |
+| Bishou | 16 | 2 |
+| Flying Knife | 12 | 2 |
 | Rattan Shield | 12 | 2 |
 | Qi Gathering Pill | 6 | 8 |
 | Realm Breaking Pill | 32 | 2 |
