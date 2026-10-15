@@ -13,6 +13,7 @@
 - [Bandit Chief](mobs/bandit-chief.md): the bandits' mini-boss, his great axe and attacks.
 - [Sensei Yun](mobs/azure-sensei.md): the Azure Cloud Sect's master in the Misty Bamboo Temple, his sword and his manual.
 - [Alliance Merchant](mobs/alliance-merchant.md): the Orthodox Alliance's merchant, his trades and the silver taels.
+- [Alliance soldiers](mobs/alliance-soldiers.md): the five kinds of Alliance soldier, their weapons and the outpost garrison.
 - [Addon API](ADDON_API.md) and [addon guide](ADDON_GUIDE.md): supported contracts.
 - [Murim biomes](biomes/README.md): the seven biomes, their blocks and textures (redrawn 14 October).
 - [Murim structures](structures/README.md): the Cloud Cliff Sanctuary and the six sites with their technical sheets.

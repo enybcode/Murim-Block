@@ -56,6 +56,11 @@ public final class MugshotTour {
 
     private static final List<Sitter> SITTERS = List.of(
             new Sitter("alliance-merchant", MurimEntities.ALLIANCE_MERCHANT::get),
+            new Sitter("alliance-spear-guard", MurimEntities.ALLIANCE_SPEAR_GUARD::get),
+            new Sitter("alliance-sword-disciple", MurimEntities.ALLIANCE_SWORD_DISCIPLE::get),
+            new Sitter("alliance-archer", MurimEntities.ALLIANCE_ARCHER::get),
+            new Sitter("alliance-warrior-monk", MurimEntities.ALLIANCE_WARRIOR_MONK::get),
+            new Sitter("alliance-sergeant", MurimEntities.ALLIANCE_SERGEANT::get),
             new Sitter("azure-sensei", MurimEntities.AZURE_SENSEI::get),
             new Sitter("mountain-bandit", MurimEntities.MOUNTAIN_BANDIT::get),
             new Sitter("bandit-chief", MurimEntities.BANDIT_CHIEF::get),

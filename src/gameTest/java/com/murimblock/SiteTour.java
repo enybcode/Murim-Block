@@ -172,7 +172,7 @@ public final class SiteTour {
                         if (residents.isEmpty()) return;
                         // From the corner of the resident's own room farthest from them, at eye height.
                         Mob v = residents.get(0);
-                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : "chief";
+                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : v instanceof com.murimblock.mob.AllianceSoldierEntity ? "soldier" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
@@ -276,7 +276,7 @@ public final class SiteTour {
     private static List<Mob> residents(Minecraft mc, Site s) {
         return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4, 16, 4), // down into pits and caves
                         m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity || m instanceof CrabManEntity
-                                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse).stream()
+                                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity).stream()
                 .sorted(java.util.Comparator.<Mob>comparingInt(m -> m instanceof BanditChiefEntity ? 0 : 1).thenComparing(m -> m.getName().getString())).toList();
     }
 

@@ -183,7 +183,8 @@ public final class SiteGameTests {
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
-            case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2);
+            case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2, "murimblock:alliance_spear_guard", 2,
+                    "murimblock:alliance_sword_disciple", 2, "murimblock:alliance_archer", 1, "murimblock:alliance_sergeant", 1, "murimblock:alliance_warrior_monk", 1);
             default -> Map.of();
         };
     }
@@ -198,7 +199,7 @@ public final class SiteGameTests {
     private static List<Mob> residents(ServerLevel level, BoundingBox box) {
         return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8, 48, 8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity
                 || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity
-                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse);
+                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */
