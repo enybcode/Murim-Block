@@ -11,10 +11,11 @@ public enum SitePlan implements StringRepresentable {
     BEACON_POST("beacon_post", BeaconPost::new),
     BAMBOO_TEMPLE("bamboo_temple", BambooTemple::new),
     LOTUS_GARDEN("lotus_garden", LotusGarden::new),
-    PEACH_HAMLET("peach_hamlet", PeachHamlet::new);
+    PEACH_HAMLET("peach_hamlet", PeachHamlet::new),
+    ALLIANCE_OUTPOST("alliance_outpost", AllianceOutpost::new);
 
     /** The largest reach of any site, in blocks. */
-    public static final int MAX_REACH = 28;
+    public static final int MAX_REACH = 46;
 
     public static final Codec<SitePlan> CODEC = StringRepresentable.fromEnum(SitePlan::values);
 

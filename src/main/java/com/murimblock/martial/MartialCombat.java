@@ -177,12 +177,19 @@ public final class MartialCombat {
 
     /** An animation starts: one of an art's opens a swing (a technique as expected, or a strike of the passive). */
     static void onAnimationBegin(ServerPlayer player, AnimationAccessor<? extends StaticAnimation> animation) {
+        SanguineArt.animationStarted(player, animation);
         Swing pending = PENDING.remove(player.getUUID());
         if (pending != null && pending.animation == animation) {
             SWINGS.put(player.getUUID(), pending);
             return;
         }
-        ResourceLocation credit = AzureCloudSword.creditOf(animation);
+        // With Scarlet Tear's blood sword out, its cuts (the sword strikes) belong to the Sanguine Art.
+        ResourceLocation credit = SanguineArt.holdsSword(player) ? SanguineArt.creditOf(player, animation) : null;
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
+            return;
+        }
+        credit = AzureCloudSword.creditOf(animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.AZURE_CLOUD_SWORD, credit, AzureCloudSword.isStrike(animation), false));
             return;
@@ -190,6 +197,11 @@ public final class MartialCombat {
         credit = LongFist.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.LONG_FIST, credit, LongFist.isStrike(animation), false));
+            return;
+        }
+        credit = SanguineArt.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
             return;
         }
         SWINGS.remove(player.getUUID());
@@ -207,12 +219,15 @@ public final class MartialCombat {
         // body cannot be hit: the slam would miss it); it staggers instead.
         if (isHeldUp(event.getTarget()) && event.getDamageSource().getStunType() == yesman.epicfight.world.damagesource.StunType.KNOCKDOWN)
             event.getDamageSource().setStunType(yesman.epicfight.world.damagesource.StunType.LONG);
-        if (swing(player, event.getDamageSource().getAnimation()) == null) return;
+        Swing swing = swing(player, event.getDamageSource().getAnimation());
+        if (swing == null) return;
         Combo c = COMBOS.get(event.getTarget().getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && player.level().getGameTime() - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
         float factor = comboFactor(prior);
+        // A technique (not a strike) strikes as its weapon and its Qi allow (TechniquePower).
+        if (!swing.strike) factor *= (float) TechniquePower.factor(player, swing.art);
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
-        if (factor < 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
+        if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
 
     /** Share of its damage a hit keeps after `prior` hits of the same combo. */
@@ -229,13 +244,15 @@ public final class MartialCombat {
         LivingEntity target = event.getTarget();
         boolean enemy = isEnemy(target, player);
         boolean fist = swing.art.equals(MartialArts.LONG_FIST);
+        boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
         if (fist) LongFist.onHit(player, target, animation, enemy);
+        else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else AzureCloudSword.onHit(player, target, animation, swing.riposte);
         // The combo: a knock-down ends it, and counts as complete after enough hits.
         long now = player.level().getGameTime();
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
-        if (fist ? LongFist.knocksDown(animation) : AzureCloudSword.knocksDown(animation)) {
+        if (fist ? LongFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
@@ -586,6 +603,8 @@ public final class MartialCombat {
         tickSlams(player, now);
         keepAloft(player);
         AzureCloudSword.tickAim(player, now);
+        SanguineArt.tick(player);
+        BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
         if (list == null) return;
         List<Runnable> due = new ArrayList<>();
@@ -603,7 +622,24 @@ public final class MartialCombat {
     // ---------------------------------------------------------------- hooks
 
     public static void registerHooks() {
+        // The Blood Iceberg's rules: its caster's death brings it down; nothing is built or poured in it.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) -> {
+            if (event.getEntity() instanceof ServerPlayer player) BloodIceberg.collapse(player);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) ->
+                BloodIceberg.collapseTick(event.getServer()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent event) -> {
+            if (event.getLevel() instanceof net.minecraft.world.level.Level level && BloodIceberg.inArena(level, event.getPos())) event.setCanceled(true);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock event) -> {
+            if (event.getItemStack().getItem() instanceof net.minecraft.world.item.BucketItem
+                    && BloodIceberg.inArena(event.getLevel(), event.getPos().relative(event.getFace() == null ? net.minecraft.core.Direction.UP : event.getFace()))) event.setCanceled(true);
+        });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {
+            if (!event.enabled()) SanguineArt.leftCombat(event.getEntity().getUUID());
+        });
         EpicFightEventHooks.Animation.BEGIN.registerEvent(event -> {
             if (event.getEntityPatch().getOriginal() instanceof ServerPlayer player) onAnimationBegin(player, event.getAnimation());
         }, "murimblock:martial_swing", 100);
@@ -627,6 +663,7 @@ public final class MartialCombat {
         SLAMS.remove(id);
         AzureCloudSword.forgetAim(id);
         LongFist.forget(id);
+        SanguineArt.forget(id);
     }
 
     public static void clearForTests() {
@@ -644,5 +681,7 @@ public final class MartialCombat {
         HOVERS.clear();
         AzureCloudSword.forgetAim(null);
         LongFist.forget(null);
+        SanguineArt.forget(null);
+        BloodIceberg.forget(null);
     }
 }

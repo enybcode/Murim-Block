@@ -28,6 +28,8 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
 
 - `node scripts/concepts/render-concepts.cjs` : les maquettes des structures de chaque biome, dans `docs/biomes/images/structures-*`.
 - `node scripts/concepts/render-proposals.cjs` : les quatre propositions de structures, dans `docs/structures/images`.
+- `node scripts/concepts/render-capital.cjs` : les maquettes de la capitale de l'Alliance (vues, plan numéroté, coupe des secrets), en PNG dans `docs/structures/images/alliance-capital` (le document utilise des JPEG de 1600 px).
+- `node scripts/concepts/render-outpost.cjs [--port=9232]` : les maquettes de l'avant-poste de l'Alliance (vue d'ensemble, route, cour, plan numéroté), en PNG dans `docs/structures/images/alliance-outpost` ; voir `docs/structures/alliance-outpost.md`.
 - `st-runtime.js` est le kit voxel commun : matériaux, toits chinois, salles, pavillons, arbres, personnages.
 
 ## showcase
@@ -62,6 +64,24 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   `textures/entity/bandit_chief.png`, projet Blockbench) ; `node scripts/animation/chief-axe-model.cjs` : sa grande hache ;
   `node scripts/animation/chief-axe.cjs` : ses trois attaques (`animations/biped/murim/chief_*.json`). Voir `docs/mobs/bandit-chief.md`.
   Les modèles 3D de mobs partagent `scripts/animation/mesh-kit.cjs`.
+- `node scripts/animation/alliance-spear-model.cjs` : l'Azure Peak Spear des soldats de l'Alliance orthodoxe (style 1 de
+  `scripts/concepts/alliance-spears.cjs`) : modèle en main `models/item/alliance_spear_3d.json` (tenu au milieu, incliné
+  de 35° comme la lance d'Epic Fight), icône `textures/item/alliance_spear.png`, source `art/blockbench/alliance_spear.bbmodel`.
+  Une lance pour Epic Fight (`capabilities/weapons/alliance_spear.json`). Vérification en vrai client :
+  `MURIM_TOUR_ONLY=spear gradlew -PgameTests runWeaponTour`.
+- `node scripts/animation/snow-plum-jian-model.cjs` : le Snow Plum Jian des disciples de l'Alliance (style 6 de
+  `scripts/concepts/alliance-swords.cjs`) : corps `models/item/snow_plum_jian_body.json`, houppe seule `snow_plum_jian_tassel.json`
+  (balancée par `client/TasselSwordRenderer`), transformations de la main `snow_plum_jian_held.json`, icône, source Blockbench.
+  Une épée pour Epic Fight. Vérification : `MURIM_TOUR_ONLY=jian gradlew -PgameTests runWeaponTour` (M1 d'Epic Fight, puis
+  ceux de l'Épée du Nuage Azur).
+- Armes de secte, chacune avec son propre type d'arme Epic Fight comme le font les addons (Dawn Day) :
+  `node scripts/animation/sect-weapon-models.cjs` écrit leurs pièces et icônes (éventail de fer ouvert par
+  `client/FanRenderer`, fouet-chaîne dont les maillons pendent sur une chaîne simulée, `client/ChainWhipRenderer` et
+  `RopeChain`, aiguilles volantes) ; `node scripts/animation/sect-weapons.cjs` leurs 21 animations (idle, 4 M1, course,
+  saut ; `art/blockbench/sect_weapons.bbmodel`), puis `blockbench-to-epicfight.cjs` sur ce projet. Types
+  `integration/epicfight/MurimWeaponCategories`, movesets et presets `MurimWeapons`, coups `SectWeaponAnimations`,
+  aiguilles lancées `mob/FlyingNeedleEntity`. Vérification : `SectWeaponGameTests`, puis
+  `MURIM_TOUR_ONLY=gallery MURIM_TOUR_ITEMS=murimblock:iron_fan,murimblock:chain_whip,murimblock:flying_needles gradlew -PgameTests runWeaponTour`.
 - `node scripts/animation/sensei-3d.cjs` : Sensei Yun en 3D (mesh `animmodels/entity/azure_sensei.json`, atlas
   `textures/entity/azure_sensei.png` et ses visages, projet Blockbench) ; `node scripts/animation/azure-cloud-sword-model.cjs` :
   son épée Azure Cloud (corps, houppe, transformations de la main, icône d'après le modèle ; `client/TasselSwordRenderer`
@@ -83,7 +103,11 @@ Les autres vérifications en vrai client sont des tâches Gradle :
 - `gradlew -PgameTests runBiomeTour` : les 7 biomes et le sanctuaire dans un monde neuf.
 - `gradlew -PgameTests runKnockdownTour` : la mise à terre, le portage et le finish avec deux joueurs factices.
 - `gradlew -PgameTests runMartialTour` : l'Art de l'Épée du Nuage Azur (manuel, onglet Techniques, Cloud Step Slash au clavier).
+- `gradlew -PgameTests runCultivationTour` : la cultivation (méditation à la touche C, aura, percées, monde intérieur et démon du cœur, perception du Qi à la touche G), filmée pour sa fiche.
 - `gradlew -PgameTests runLongFistTour` : le Poing Long (rouleau, onglet Techniques, vrai M1 à mains nues, garde au vrai bouton, touches 1 à 3, Inch Force, plongée, Final Palm), filmé de côté.
+- `gradlew -PgameTests runSanguineTour` : le Sanguine Art (rouleau, M1 et garde de sang, jauge, forme de cristal, cristaux du dos, charge et lancer du cristal, salve, sortie avec V, puis le grand cristal chargé avec toute la jauge et son explosion), en vrai client, sans particules ; vérifie aussi que vos propres cristaux du dos restent hors de la vue à la première personne.
+- `node scripts/animation/blood-crystal-shot.cjs` : le cristal lancé du Sanguine Art (GeckoLib) : gemme, six pointes et six fragments, ses animations (formation, charge, vol, éclats au sol, au mur, sur un corps, explosion du grand cristal), sa texture et son masque lumineux, et l'éclat des particules Photon de l'explosion.
+- `node scripts/animation/blood-sword.cjs` : l'épée de sang de Scarlet Tear (GeckoLib, style « cristal fendu », sa texture et son glowmask) : pommeau à gemme, garde en couronne de cristaux, lame de six segments fendus de fissures lumineuses avec un éclat flottant chacun, pointe ; animations de formation morceau par morceau, en main, en vol et d'explosion. Ses coupes en main : le combo d'épée de base d'Epic Fight (sans ses étincelles, `SanguineHitSparkMixin`).
 - `gradlew -PgameTests runSenseiTour` : Sensei Yun (idle de face et de côté, tour de caméra autour de la garde et de la houppe, marche de profil, ses coups sur un zombie d'entraînement), l'animateur du client vérifié.
 - `gradlew -PgameTests runParryTour` : la garde Murim (parade parfaite et normale, coups et vraies flèches).
 - `bash scripts/mp/run-mp-tour.sh` : **deux vrais clients** sur un serveur dédié (hors ligne, vol interdit) : MurimA attaque, MurimB encaisse puis garde, chacun avec ses vraies touches, phases annoncées par le serveur dans le chat (`MpTourServer`, `MpTourClient`). Rapports : `build/mp-run/server/mp-tour-server.txt`, `build/mp-run/a|b/mp-tour-client.txt`.

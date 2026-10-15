@@ -2,7 +2,7 @@ package com.murimblock;
 
 import com.murimblock.combat.knockdown.KnockdownService;
 import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.MeditationService;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -51,6 +51,8 @@ public final class KnockdownGameTests {
         ServerPlayer[] p = pair(helper);
         ServerPlayer attacker = p[0], victim = p[1];
         QiService.setQiMax(victim, 1_000);
+        // Worn down first: no single blow (or combo) takes a player from full health (BurstGuard).
+        victim.setHealth(2);
         victim.hurt(victim.damageSources().playerAttack(attacker), 1000);
         victim.doTick();
         victim.doTick(); // the pose follows one tick after the forced pose
@@ -87,7 +89,7 @@ public final class KnockdownGameTests {
         float before = attacker.getHealth();
         victim.attack(attacker);
         helper.assertTrue(attacker.getHealth() == before, "A downed player hit someone");
-        helper.assertTrue(!QiChargeService.canCharge(victim), "A downed player can charge Qi");
+        helper.assertTrue(!MeditationService.canStart(victim), "A downed player can meditate");
         victim.hurt(victim.damageSources().fellOutOfWorld(), 1000);
         helper.assertTrue(victim.isDeadOrDying(), "The void must still kill a downed player");
         end(helper, attacker, victim);

@@ -11,7 +11,7 @@ import com.murimblock.integration.epicfight.EpicFightContentPolicy;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.qi.QiRewardManager;
 import com.murimblock.qi.QiService;
-import com.murimblock.qi.charge.QiChargeService;
+import com.murimblock.cultivation.MeditationService;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,6 +97,13 @@ public final class FoundationGameTests {
         nbt.put("entities", new ListTag());
         level.getStructureManager().getOrCreate(ResourceLocation.parse("murimblock:foundation_arena"))
                 .load(level.registryAccess().lookupOrThrow(Registries.BLOCK), nbt);
+        // The Blood Iceberg's arena is 45 blocks across: its own empty template, so no other test stands next to it.
+        CompoundTag wide = nbt.copy();
+        ListTag wideSize = new ListTag();
+        for (int v : new int[]{48, 32, 48}) wideSize.add(IntTag.valueOf(v));
+        wide.put("size", wideSize);
+        level.getStructureManager().getOrCreate(ResourceLocation.parse("murimblock:iceberg_arena"))
+                .load(level.registryAccess().lookupOrThrow(Registries.BLOCK), wide);
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation", timeoutTicks = 40)
@@ -179,18 +186,19 @@ public final class FoundationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
-    public static void qiChargingStillLocksAndRestoresMovement(GameTestHelper helper) {
+    public static void meditationLocksAndRestoresMovement(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         try {
             double speed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
             double jump = player.getAttributeValue(Attributes.JUMP_STRENGTH);
-            helper.assertTrue(QiChargeService.startCharging(player), "Qi charging could not start with a sword equipped");
+            player.setOnGround(true);
+            helper.assertTrue(MeditationService.start(player), "Meditation could not start with a sword equipped");
             helper.assertTrue(player.getAttributeValue(Attributes.MOVEMENT_SPEED) == 0
-                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == 0, "Qi charging did not lock movement");
-            QiChargeService.stopCharging(player);
+                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == 0, "Meditation did not lock movement");
+            MeditationService.stop(player, false);
             helper.assertTrue(player.getAttributeValue(Attributes.MOVEMENT_SPEED) == speed
-                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == jump, "Charging left movement locked");
-            helper.assertTrue(QiService.getQi(player) == 100, "Starting/stopping charge spent Qi");
+                    && player.getAttributeValue(Attributes.JUMP_STRENGTH) == jump, "Meditation left movement locked");
+            helper.assertTrue(QiService.getQi(player) == 100, "Sitting down and getting up spent Qi");
             helper.succeed();
         } finally { cleanup(player); }
     }
@@ -200,16 +208,18 @@ public final class FoundationGameTests {
         ServerPlayer original = player(helper);
         ServerPlayer clone = player(helper);
         try {
-            QiChargeService.startCharging(clone);
+            clone.setOnGround(true);
+            MeditationService.start(clone);
             NeoForge.EVENT_BUS.post(new PlayerEvent.Clone(clone, original, true));
             helper.assertFalse(CombatService.getData(clone).combatMode(), "Respawn inherited a stale HUD mirror");
             CombatService.refreshMode(clone);
             helper.assertTrue(CombatService.getData(clone).combatMode() == EpicFightBridge.isCombatMode(clone), "HUD mirror disagreed with Epic Fight");
-            helper.assertFalse(QiChargeService.isCharging(clone), "Respawn inherited charging");
-            QiChargeService.startCharging(original);
+            helper.assertFalse(MeditationService.isMeditating(clone), "Respawn inherited the meditation");
+            original.setOnGround(true);
+            MeditationService.start(original);
             NeoForge.EVENT_BUS.post(new PlayerEvent.PlayerLoggedOutEvent(original));
             helper.assertFalse(CombatService.getData(original).combatMode(), "Logout kept the HUD mirror");
-            helper.assertFalse(QiChargeService.isCharging(original), "Logout kept charging");
+            helper.assertFalse(MeditationService.isMeditating(original), "Logout kept the meditation");
             helper.succeed();
         } finally {
             cleanup(original);
@@ -284,13 +294,55 @@ public final class FoundationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void dawnDayContentIsRetiredButLoaded(GameTestHelper helper) {
+        // Dawn Day is loaded for its animations; its weapons are kept (the Weapons tab), every other item and potion retired.
+        helper.assertTrue(net.neoforged.fml.ModList.get().isLoaded(EpicFightContentPolicy.DAWN_DAY), "Dawn Day not loaded");
+        int items = 0, weapons = 0, potions = 0;
+        for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (!net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(EpicFightContentPolicy.DAWN_DAY)) continue;
+            items++;
+            boolean weapon = com.murimblock.item.WeaponsTab.isWeapon(item);
+            if (weapon) weapons++;
+            helper.assertTrue(EpicFightContentPolicy.blocked(new ItemStack(item)) != weapon, (weapon ? "Dawn Day weapon retired: " : "Dawn Day item kept: ") + item);
+        }
+        helper.assertTrue(weapons > 0 && weapons < items, "Dawn Day weapons " + weapons + " of " + items);
+        for (var entry : net.minecraft.core.registries.BuiltInRegistries.POTION.holders().toList()) {
+            if (!entry.key().location().getNamespace().equals(EpicFightContentPolicy.DAWN_DAY)) continue;
+            potions++;
+            helper.assertTrue(EpicFightContentPolicy.blocked(net.minecraft.world.item.alchemy.PotionContents.createItemStack(Items.POTION, entry)),
+                    "Dawn Day potion kept: " + entry.key().location());
+        }
+        helper.assertTrue(items > 0, "Dawn Day registered no item");
+        helper.assertFalse(EpicFightContentPolicy.blocked(net.minecraft.world.item.alchemy.PotionContents.createItemStack(Items.POTION,
+                net.minecraft.world.item.alchemy.Potions.HEALING)), "A vanilla potion was retired");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
     public static void nativeRecipesAreFilteredAndVanillaRecipesRemain(GameTestHelper helper) {
         var manager = helper.getLevel().getRecipeManager();
         for (var recipe : manager.getRecipes()) {
-            helper.assertFalse(EpicFightContentPolicy.isNative(recipe.id()), "Native recipe remained: " + recipe.id());
-            helper.assertFalse(EpicFightContentPolicy.blocked(recipe.value().getResultItem(helper.getLevel().registryAccess())), "Native recipe output remained");
+            // Only the recipes of their weapons remain.
+            ItemStack made = recipe.value().getResultItem(helper.getLevel().registryAccess());
+            helper.assertFalse(EpicFightContentPolicy.isNative(recipe.id()) && !com.murimblock.item.WeaponsTab.isWeapon(made.getItem()), "Native recipe remained: " + recipe.id());
+            helper.assertFalse(EpicFightContentPolicy.blocked(made), "Native recipe output remained");
         }
         helper.assertTrue(manager.byKey(ResourceLocation.parse("minecraft:iron_sword")).isPresent(), "Vanilla sword recipe missing");
+        helper.succeed();
+    }
+
+    /** The Weapons tab: Murimblock's weapons first, then Epic Fight's, Dawn Day's and Minecraft's; no skill book, gem or pickaxe. */
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void theWeaponsTabHoldsEveryWeapon(GameTestHelper helper) {
+        var tab = com.murimblock.item.MurimItems.WEAPONS_TAB.get();
+        tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
+        var shown = tab.getDisplayItems().stream().map(s -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(s.getItem()).toString()).toList();
+        for (String id : new String[] { "murimblock:alliance_spear", "murimblock:snow_plum_jian", "murimblock:iron_fan", "murimblock:rattan_shield", "murimblock:bandit_dao",
+                "epicfight:iron_spear", "epicfight:iron_greatsword", "epicfight:uchigatana", "epicfight_dd:iron_halberd", "minecraft:diamond_sword", "minecraft:bow", "minecraft:trident", "minecraft:shield" })
+            helper.assertTrue(shown.contains(id), "Not in the Weapons tab: " + id);
+        for (String id : new String[] { "epicfight:skillbook", "epicfight_dd:amber", "minecraft:iron_pickaxe", "murimblock:silver_tael" })
+            helper.assertFalse(shown.contains(id), "In the Weapons tab: " + id);
+        helper.assertTrue(shown.get(0).startsWith("murimblock:") && shown.indexOf("epicfight:iron_spear") < shown.indexOf("minecraft:diamond_sword"), "The tab's order is off: " + shown.subList(0, 5));
         helper.succeed();
     }
 

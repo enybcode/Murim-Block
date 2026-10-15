@@ -2,6 +2,7 @@ package com.murimblock.client;
 
 import com.murimblock.Murimblock;
 import com.murimblock.api.MurimblockApi;
+import com.murimblock.martial.BloodCrystalState;
 import com.murimblock.martial.MartialArts;
 import com.murimblock.martial.MartialData;
 import com.murimblock.martial.MartialService;
@@ -95,7 +96,7 @@ public final class CombatBarClient {
 
     /** Whether a technique is held to aim before it goes (Cloud Step Slash: its draw stance). */
     static boolean heldToAim(Optional<ResourceLocation> technique) {
-        return technique.filter(MartialArts.CLOUD_STEP_SLASH.id()::equals).isPresent();
+        return technique.filter(id -> id.equals(MartialArts.CLOUD_STEP_SLASH.id()) || id.equals(MartialArts.BLOOD_CRYSTAL.id())).isPresent();
     }
 
     /**
@@ -125,9 +126,11 @@ public final class CombatBarClient {
                     HELD[i] = 0;
                     FIRED[i] = false;
                     PacketDistributor.sendToServer(new TechniquePayloads.Aim(i));
-                } else if (++HELD[i] >= MartialArts.CLOUD_STEP_AIM_MAX_TICKS && !FIRED[i]) {
+                } else if (++HELD[i] >= (data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent() ? MartialArts.BLOOD_CRYSTAL_MAX_CHARGE : MartialArts.CLOUD_STEP_AIM_MAX_TICKS) && !FIRED[i]) {
                     FIRED[i] = true;
-                    PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
+                    // Blood Crystal reaches its maximum on the server; a second cast would only report cooldown.
+                    if (!data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent())
+                        PacketDistributor.sendToServer(new TechniquePayloads.Cast(i));
                 }
                 // A tap shorter than a tick: the stance, then at once the dash.
                 if (!key.isDown()) release(i);
@@ -174,6 +177,7 @@ public final class CombatBarClient {
             // On the right of the bar (above it are the Qi bar and the level).
             g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), x0 + width + 6, y + 7, 0xFFE8C25A, true);
         }
+        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) bloodDrops(g, mc, player, x0 - 52, y - 2);
         // The weapon in hand.
         g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);
         g.renderItem(player.getMainHandItem(), x0 - 26, y + 3);
@@ -213,6 +217,37 @@ public final class CombatBarClient {
             g.pose().scale(0.5F, 0.5F, 1);
             g.drawString(mc.font, label, 0, 0, 0xFFE8DCB8, true);
             g.pose().popPose();
+        }
+    }
+
+    /**
+     * The Sanguine Art's blood gauge, no text: twenty small drops in two rows of ten over and beside the weapon slot, (x,
+     * y) the bottom left: low enough to stay under the chat. They fill one by one, red; full, they all turn bright with a glint, pulsing (Blood Crystal Form is ready). In
+     * the form, they become a row of ten small crystals, one lit for each dorsal crystal earned.
+     */
+    static void bloodDrops(GuiGraphics g, Minecraft mc, LocalPlayer player, int x, int y) {
+        var state = com.murimblock.martial.SanguineArt.state(player);
+        boolean form = state.active(), full = !form && state.gauge() >= BloodCrystalState.MAX_GAUGE;
+        int lit = form ? state.crystals() : state.gauge(), count = form ? BloodCrystalState.MAX_CRYSTALS : BloodCrystalState.MAX_GAUGE;
+        int top = y - (count / 10) * 5;
+        boolean bright = full && mc.level != null && (mc.level.getGameTime() / 6) % 2 == 0;
+        for (int i = 0; i < count; i++) {
+            int dx = x + (i % 10) * 5, dy = top + (i / 10) * 5;
+            boolean on = i < lit;
+            if (form) {
+                // A small crystal: a dark rim, a light heart.
+                int rim = on ? 0xFFB0263F : 0xC83A0C12, heart = on ? 0xFFFF8FA3 : 0xC83A0C12;
+                g.fill(dx + 1, dy, dx + 2, dy + 4, rim);
+                g.fill(dx, dy + 1, dx + 3, dy + 3, rim);
+                g.fill(dx + 1, dy + 1, dx + 2, dy + 3, heart);
+            } else {
+                // A drop: its point up, round below.
+                int col = !on ? 0xC83A0C12 : full ? (bright ? 0xFFFF8A96 : 0xFFFF6A7C) : 0xFFC0182C;
+                g.fill(dx + 1, dy, dx + 2, dy + 1, col);
+                g.fill(dx, dy + 1, dx + 3, dy + 3, col);
+                g.fill(dx + 1, dy + 3, dx + 2, dy + 4, col);
+                if (on) g.fill(dx, dy + 1, dx + 1, dy + 2, full ? 0xFFFFFFFF : 0xFFFF6A7C);
+            }
         }
     }
 

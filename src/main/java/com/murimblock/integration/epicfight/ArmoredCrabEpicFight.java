@@ -68,9 +68,20 @@ public final class ArmoredCrabEpicFight {
             // Their chief: the same skeleton, drawn larger.
             event.registerEntityPatch(MurimEntities.BANDIT_CHIEF.get(), BanditChiefPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_CHIEF.get(), Armatures.BIPED);
+            // The Heart Demon: a copy of its owner, on the player's own skeleton.
+            event.registerEntityPatch(MurimEntities.HEART_DEMON.get(), HeartDemonPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.HEART_DEMON.get(), Armatures.BIPED);
             // Sensei Yun: the same skeleton, his own model.
             event.registerEntityPatch(MurimEntities.AZURE_SENSEI.get(), AzureSenseiPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.AZURE_SENSEI.get(), Armatures.BIPED);
+            // The Alliance Merchant: the same skeleton, his own model, no fighting.
+            event.registerEntityPatch(MurimEntities.ALLIANCE_MERCHANT.get(), AllianceMerchantPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.ALLIANCE_MERCHANT.get(), Armatures.BIPED);
+            // The Alliance's soldiers: the same skeleton, their own model, each with his weapon.
+            for (var soldier : MurimEntities.ALLIANCE_SOLDIERS) {
+                event.registerEntityPatch(soldier.get(), AllianceSoldierPatch::new);
+                Armatures.registerEntityTypeArmature(soldier.get(), Armatures.BIPED);
+            }
         });
     }
 

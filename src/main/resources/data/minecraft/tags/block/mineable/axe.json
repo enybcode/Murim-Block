@@ -9,6 +9,8 @@
     "murimblock:willow_log",
     "murimblock:peach_log",
     "murimblock:desert_poplar_log",
+    "murimblock:tianshan_spruce_log",
+    "murimblock:camphor_log",
     "murimblock:osmanthus_planks",
     "murimblock:banyan_planks",
     "murimblock:huangshan_pine_planks",
@@ -17,6 +19,8 @@
     "murimblock:willow_planks",
     "murimblock:peach_planks",
     "murimblock:desert_poplar_planks",
+    "murimblock:tianshan_spruce_planks",
+    "murimblock:camphor_planks",
     "murimblock:moso_bamboo"
   ]
 }

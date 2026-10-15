@@ -1,0 +1,14 @@
+{
+  "type": "murimblock:ground_body",
+  "config": {
+    "biome": "murimblock:kunlun_glaciers",
+    "body": {
+      "Name": "murimblock:kunlun_rock"
+    },
+    "band": {
+      "Name": "minecraft:calcite"
+    },
+    "depth": 56,
+    "band_spacing": 9
+  }
+}

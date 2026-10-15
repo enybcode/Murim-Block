@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "murimblock:block/tianshan_spruce_sapling"
+  }
+}

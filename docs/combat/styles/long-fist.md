@@ -1,6 +1,6 @@
 # Le Poing Long (长拳, *Chángquán*)
 
-> **État : implémenté sur `test` le 14/10/2026, en attente de validation en jeu par Enzo** (voir « Ce qui est en jeu » à la fin). Le rouleau n'apparaît pas encore dans le monde : onglet créatif et `/martial learn long_fist` seulement. Le premier art martial du poing : un art de débutant, simple et lisible. **Décision d'Enzo : les M1 restent ceux d'Epic Fight à mains nues ; les compétences, le mouvement secret et le finish ont leurs propres animations.** Les chiffres sont un premier jet. Les règles communes à tous les styles sont dans [../STYLES.md](../STYLES.md), et le premier art, à l'épée, dans [azure-cloud-sword.md](azure-cloud-sword.md).
+> **État : implémenté sur `test` le 14/10/2026, en attente de validation en jeu par Enzo** (voir « Ce qui est en jeu » à la fin). Où le trouver (décision d'Enzo du 14/10, l'art le plus répandu) : le **Bandit Chief** le lâche 3 fois sur 10 (tué par un joueur, plus avec Looting), et un **tonneau déjà présent** dans chaque site en garde une réserve (le butin d'un coffre de forge de village, et le rouleau 4 fois sur 10) : la baie de la cloche du temple de la Mer de Bambous, le kang du chef dans le repaire des bandits, la baie de la cloche du poste de signaux, la salle commune du hameau des pêchers, un type de maison du village sur pilotis. Aucun bloc ajouté ni déplacé ; le Jardin de la Lune de Lotus n'a pas de tonneau, donc pas de réserve (`SiteLoot`, `loot_table/chests/murim_cache.json`). Le premier art martial du poing : un art de débutant, simple et lisible. **Décision d'Enzo : les M1 restent ceux d'Epic Fight à mains nues ; les compétences, le mouvement secret et le finish ont leurs propres animations.** Les chiffres sont un premier jet. Les règles communes à tous les styles sont dans [../STYLES.md](../STYLES.md), et le premier art, à l'épée, dans [azure-cloud-sword.md](azure-cloud-sword.md).
 >
 > Les noms en jeu sont en anglais (règle du projet). Le nom anglais est donné en premier, la traduction entre parenthèses.
 
@@ -16,7 +16,7 @@ Le Poing Long est la boxe qu'on apprend en premier dans les écoles chinoises : 
 
 - **« Long Fist Scroll »** (Rouleau du Poing Long), un rouleau de toile simple.
 - **Où le trouver** (proposition) : à la bibliothèque du Sanctuaire de la Falaise des Nuages, à côté du manuel de l'épée. Ce sont les deux arts que la secte enseigne à ses nouveaux disciples. Un exemplaire par joueur.
-- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le rouleau n'est pas consommé.
+- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le rouleau est consommé : un rouleau, une lecture (gardé par qui connaît déjà l'art).
 
 ## Le passif : « Steady Breath » (Souffle régulier)
 
@@ -150,7 +150,7 @@ Les évolutions restent simples : la même technique, un peu plus forte.
 
 ## Ce qui est en jeu (14/10/2026)
 
-- **Le rouleau** `murimblock:long_fist_scroll` (texture `scripts/worldgen/ScrollTexture.java`), dans l'onglet créatif Murimblock. Le lire apprend l'art, Tiger Step Punch (placé dans la barre) et, si c'est le premier art, en fait le style principal. Pas encore de lieu dans le monde.
+- **Le rouleau** `murimblock:long_fist_scroll` (texture `scripts/worldgen/ScrollTexture.java`), dans l'onglet créatif Murimblock. Le lire apprend l'art, Tiger Step Punch (placé dans la barre) et, si c'est le premier art, en fait le style principal. On le trouve sur le Bandit Chief et dans les réserves des sites (voir en tête).
 - **L'onglet Techniques** : le rouleau sur l'étagère, le passif (sans M1 à choisir : « les coups à mains nues »), les techniques, le secret caché, la quête en cours. Sur le passif d'un art qui n'est pas le style principal, un bouton **« Make it my main style »** change de style principal (avant, seule la commande le permettait). Icônes : `scripts/worldgen/TechniqueIcons.java`, teintes ambre.
 - **Code** : `martial/LongFist.java` (variantes, Inch Force, effets, finish), `MartialArts` (techniques, quêtes, évolutions), `MartialCombat` (Qi des coups, quêtes, combos), `MurimGuardSkill` (garde à mains nues seulement si le Poing Long est le style principal), `client/LongFistClient.java` (pose de garde), `KnockdownService` / `FinishCinematic` (Final Palm). Animations : `scripts/animation/long-fist.cjs` → `art/blockbench/long_fist.bbmodel` → `animmodels/animations/biped/murim/`. Protocole réseau 15.
 - **Écarts avec la fiche** :

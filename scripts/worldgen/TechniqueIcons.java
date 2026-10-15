@@ -19,13 +19,21 @@ import javax.imageio.ImageIO;
  *   whirlwind_kick: a sweeping ring of motion round a foot at its end, dust at the ground;
  *   inch_force: a fist pressed to a line, a ring of white at the contact, waves going out beyond it (the secret; red);
  *   steady_breath: the passive, a closed fist under three rising lines of breath.
+ * And the Sanguine Art's, "blood night": the same frame, crimson black, the moves in glowing blood crystal:
+ *   bloodbane_drain (Blood Crystal): an open hand, blood rising from it into a great crystal, fragments circling it;
+ *   scarlet_tear: the blood sword thrown point first, the great arc of its swing behind it, a burst where it strikes;
+ *   devourer_of_worlds (Blood Crystal Form): a body in shadow, crystals bursting from its shoulders and back, its heart lit;
+ *   crystal_barrage: a volley of crystals flying in a fan, speed lines behind them;
+ *   crimson_stance: the passive, a fist in guard, drops of blood rising round it;
+ *   blood_iceberg: the blood temple's arena, a wall of red bricks, gold spires lit at their tips, blood falling down it.
  */
 public class TechniqueIcons {
     static final int W = 32;
     static final String[] NAMES = {"cloud_step_slash", "thousand_drizzle", "heaven_splitting_crescent", "swallow_returns", "flowing_cloud_stance",
-            "tiger_step_punch", "rapid_fists", "whirlwind_kick", "inch_force", "steady_breath"};
-    /** Where the Long Fist's icons start in NAMES. */
-    static final int FIST = 5;
+            "tiger_step_punch", "rapid_fists", "whirlwind_kick", "inch_force", "steady_breath",
+            "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance", "blood_iceberg"};
+    /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
+    static final int FIST = 5, BLOOD = 10;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -35,7 +43,8 @@ public class TechniqueIcons {
             Graphics2D g = img.createGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
             if (i < FIST) jade(g, img, i);
-            else ember(g, img, i - FIST);
+            else if (i < BLOOD) ember(g, img, i - FIST);
+            else blood(g, img, i - BLOOD);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -267,6 +276,157 @@ public class TechniqueIcons {
             }
         }
     }
+
+    // ------------------------------------------------------------ C: blood night, the Sanguine Art
+
+    static void bloodBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 15.5) / 22.0;
+            int r = (int) (26 + 34 * (1 - d)), gg = (int) (6 + 6 * (1 - d)), b = (int) (12 + 10 * (1 - d));
+            img.setRGB(x, y, c(r, gg, b).getRGB());
+        }
+        g.setColor(c(232, 86, 98));
+        g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(96, 18, 30));
+        g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    static final Color BLOOD_RED = c(204, 28, 48), BLOOD_DIM = c(120, 18, 34), CRYSTAL = c(238, 72, 96), CRYSTAL_DARK = c(150, 18, 40),
+            CRYSTAL_LIGHT = c(255, 176, 190), PINK_WHITE = c(255, 232, 236), SHADOW = c(16, 4, 8);
+
+    /**
+     * A cut crystal from (x0, y0) to its point (x1, y1), w wide at its widest (a third of the way along): a dark side, a
+     * lit side, a glint along the ridge.
+     */
+    static void crystal(Graphics2D g, double x0, double y0, double x1, double y1, double w) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), nx = -dy / len * w / 2, ny = dx / len * w / 2;
+        double mx = x0 + dx * 0.33, my = y0 + dy * 0.33;
+        Path2D lit = new Path2D.Double(), dark = new Path2D.Double();
+        lit.moveTo(x0, y0); lit.lineTo(mx + nx, my + ny); lit.lineTo(x1, y1); lit.closePath();
+        dark.moveTo(x0, y0); dark.lineTo(mx - nx, my - ny); dark.lineTo(x1, y1); dark.closePath();
+        g.setColor(CRYSTAL_DARK); g.fill(dark);
+        g.setColor(CRYSTAL); g.fill(lit);
+        line(g, mx + nx * 0.3, my + ny * 0.3, x1 - dx * 0.12, y1 - dy * 0.12, 0.8f, CRYSTAL_LIGHT);
+    }
+
+    /** A crystal of gold from (x0, y0) to its point (x1, y1), w wide: a dark side, a lit side, a glint. */
+    static void crystalGold(Graphics2D g, double x0, double y0, double x1, double y1, double w, Color dark, Color light) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), nx = -dy / len * w / 2, ny = dx / len * w / 2;
+        double mx = x0 + dx * 0.33, my = y0 + dy * 0.33;
+        Path2D lit = new Path2D.Double(), shade = new Path2D.Double();
+        lit.moveTo(x0, y0); lit.lineTo(mx + nx, my + ny); lit.lineTo(x1, y1); lit.closePath();
+        shade.moveTo(x0, y0); shade.lineTo(mx - nx, my - ny); shade.lineTo(x1, y1); shade.closePath();
+        g.setColor(dark.darker()); g.fill(shade);
+        g.setColor(dark); g.fill(lit);
+        line(g, mx + nx * 0.3, my + ny * 0.3, x1 - dx * 0.12, y1 - dy * 0.12, 0.8f, light);
+    }
+
+    /** A drop of blood, its round foot at (x, y), r wide. */
+    static void drop(Graphics2D g, double x, double y, double r, Color col) {
+        g.setColor(col);
+        Path2D p = new Path2D.Double();
+        p.moveTo(x, y - r * 2.4);
+        p.quadTo(x + r * 1.1, y - r * 0.6, x + r, y);
+        p.quadTo(x, y + r * 1.3, x - r, y);
+        p.quadTo(x - r * 1.1, y - r * 0.6, x, y - r * 2.4);
+        g.fill(p);
+    }
+
+    static void blood(Graphics2D g, BufferedImage img, int i) {
+        bloodBack(img, g);
+        switch (i) {
+            case 0 -> { // Blood Crystal: an open hand, blood rising into a great crystal, fragments circling it.
+                g.setColor(BLOOD_DIM);
+                g.setStroke(new BasicStroke(1f));
+                g.draw(new Ellipse2D.Double(5, 6, 22, 10));
+                // The great crystal, its foot over the palm.
+                crystal(g, 16, 19, 16, 1.5, 10);
+                crystal(g, 6, 12, 3, 9, 2.6);
+                crystal(g, 26, 10, 29, 7, 2.6);
+                crystal(g, 21, 15, 24, 16.5, 2);
+                // Blood rising from the palm.
+                disc(g, 15.5, 20.5, 0.9, BLOOD_RED);
+                disc(g, 16.5, 22.5, 0.9, CRYSTAL);
+                // The open hand from below, palm up: the palm, four fingers and the thumb, outlined.
+                g.setColor(SKIN_DARK);
+                g.fill(new RoundRectangle2D.Double(9, 24, 14, 7, 4, 4));
+                for (int k = 0; k < 4; k++) g.fill(new RoundRectangle2D.Double(9.5 + k * 3.2, 20.5, 3, 6, 2, 2));
+                g.fill(new RoundRectangle2D.Double(22, 23, 5, 3, 2, 2));
+                g.setColor(SKIN);
+                g.fill(new RoundRectangle2D.Double(10, 25, 12, 5, 3, 3));
+                for (int k = 0; k < 4; k++) g.fill(new RoundRectangle2D.Double(10 + k * 3.2, 21, 2, 5, 2, 2));
+                g.fill(new RoundRectangle2D.Double(22.5, 23.5, 4, 2, 2, 2));
+                px(img, 16, 27, CRYSTAL);
+            }
+            case 1 -> { // Scarlet Tear: the great arc of the swing behind, the blood sword thrown point first, a burst where it strikes.
+                g.setColor(BLOOD_DIM);
+                g.setStroke(new BasicStroke(3f));
+                g.draw(new Arc2D.Double(3, 6, 24, 24, 100, 140, Arc2D.OPEN));
+                g.setColor(BLOOD_RED);
+                g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Arc2D.Double(3, 6, 24, 24, 110, 120, Arc2D.OPEN));
+                // The sword: a long crystal blade, a dark red guard across it, a wrapped grip, flying up and right.
+                crystal(g, 10, 23, 26, 7, 4.6);
+                line(g, 7.5, 20.5, 12.5, 25.5, 2f, c(150, 30, 40));
+                line(g, 10, 23, 5.5, 27.5, 2f, c(70, 14, 20));
+                px(img, 7, 26, CRYSTAL); px(img, 5, 28, CRYSTAL_DARK);
+                burst(g, 27, 6, 4.5, CRYSTAL_LIGHT);
+                burst(g, 27, 6, 2.2, PINK_WHITE);
+                for (int[] p : new int[][]{{29, 11}, {22, 3}, {30, 3}}) px(img, p[0], p[1], CRYSTAL);
+            }
+            case 2 -> { // Blood Crystal Form: a body in shadow, crystals bursting from it, its heart lit.
+                for (double[] k : new double[][]{{10, 15, 3, 4}, {13, 12, 9, 2}, {16, 12, 16, 1}, {19, 12, 23, 2}, {22, 15, 29, 4}, {9, 19, 3, 15}, {23, 19, 29, 15}})
+                    crystal(g, k[0], k[1], k[2], k[3], 3.2);
+                g.setColor(SHADOW);
+                g.fill(new Ellipse2D.Double(12, 9, 8, 8));
+                g.fill(new RoundRectangle2D.Double(7, 17, 18, 14, 7, 7));
+                g.setColor(c(80, 12, 24));
+                g.setStroke(new BasicStroke(1f));
+                g.draw(new RoundRectangle2D.Double(7, 17, 18, 14, 7, 7));
+                disc(g, 16, 23, 2.6, BLOOD_RED);
+                disc(g, 16, 23, 1.4, CRYSTAL_LIGHT);
+                for (int[] p : new int[][]{{12, 21}, {20, 21}, {13, 27}, {19, 27}}) px(img, p[0], p[1], BLOOD_RED);
+            }
+            case 3 -> { // Crystal Barrage: a volley of crystals in a fan, speed lines behind.
+                double[][] volley = {{4, 7, 15, 10}, {8, 14, 22, 14}, {5, 20, 17, 18}, {12, 25, 25, 21}, {14, 4, 27, 8}};
+                for (double[] v : volley) line(g, v[0] - 3, v[1] + (v[1] - v[3]) * 0.25, v[0] + 1, v[1], 1f, BLOOD_DIM);
+                for (double[] v : volley) crystal(g, v[0], v[1], v[2], v[3], 3);
+                burst(g, 28, 14, 2.5, CRYSTAL_LIGHT);
+            }
+            case 5 -> { // Blood Iceberg: the blood temple's arena, its wall of red bricks, gold spires lit at their tips, blood falling.
+                Color brick = c(118, 30, 24), brickDark = c(70, 14, 12), gold = c(208, 170, 58), goldLight = c(255, 236, 160), lantern = c(255, 200, 110);
+                // The ground and the arena's floor seen over the near wall, a gold seal on it.
+                g.setColor(SHADOW); g.fillRect(2, 27, 28, 3);
+                g.setColor(c(92, 22, 18)); g.fill(new Ellipse2D.Double(5, 12, 22, 8));
+                g.setColor(gold); g.setStroke(new BasicStroke(1f)); g.draw(new Ellipse2D.Double(10, 14, 12, 4));
+                px(img, 16, 16, goldLight);
+                // The near wall: courses of bricks, joints dark, crenels along its top.
+                g.setColor(brick); g.fillRect(4, 18, 24, 10);
+                g.setColor(brickDark);
+                for (int y = 20; y < 28; y += 3) g.drawLine(4, y, 27, y);
+                for (int y = 18, k = 0; y < 28; y += 3, k++) for (int x = 6 + (k % 2) * 2; x < 28; x += 5) g.drawLine(x, y, x, y + 2);
+                g.setColor(brick); for (int x = 4; x < 28; x += 4) g.fillRect(x, 16, 2, 2);
+                // Gold spires, each crowned with a lantern.
+                for (int[] sp : new int[][]{{6, 6}, {16, 2}, {26, 6}}) {
+                    crystalGold(g, sp[0], 18, sp[0], sp[1] + 3, 3.4, gold, goldLight);
+                    g.setColor(lantern); g.fillRect(sp[0] - 1, sp[1], 3, 3);
+                    px(img, sp[0], sp[1] + 1, c(255, 250, 230));
+                }
+                // Blood falling down the wall into the channel.
+                for (int x : new int[]{11, 21}) { line(g, x, 18, x, 26, 1.6f, BLOOD_RED); px(img, x, 27, CRYSTAL); }
+            }
+            default -> { // Crimson Stance: a fist in guard, drops of blood rising round it.
+                drop(g, 8, 10, 2, BLOOD_RED);
+                drop(g, 24, 8, 1.6, CRYSTAL);
+                drop(g, 16, 6, 1.3, BLOOD_DIM);
+                fist(g, img, 16, 20, 10, 1);
+                // A crystal over the knuckles.
+                crystal(g, 20, 17, 26, 14, 2.4);
+                for (int k = 0; k < 3; k++) px(img, 6 + k * 9, 28, BLOOD_DIM);
+            }
+        }
+    }
+
 
     /** The flurry's six cuts as lines across the square (x0, y0, x1, y1): diagonals, a level one, an upright one. */
     static final double[][] CUTS = {

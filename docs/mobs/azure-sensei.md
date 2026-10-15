@@ -29,13 +29,29 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
 
 - **Neutre** : il se promène dans son hall (6 blocs autour de sa place, une promenade toutes les 12 s en moyenne),
   regarde qui entre, n'attaque que qui le frappe. Ne disparaît jamais, garde sa place dans sa sauvegarde (`Home`).
-- **Clic droit** : il donne à chaque joueur son exemplaire du **Azure Cloud Sword Manual**, une fois (le même que la
-  bibliothèque du sanctuaire : un joueur en reçoit un, de l'un ou de l'autre). Pas à quelqu'un qu'il combat.
-- **Combat** : 80 PV, armure 6, recul résisté à 50 %, armure de stun 6. Pas d'attaque propre : l'Azure Cloud donne 6.
-  Il frappe avec les coups M1 de l'Art de l'Épée du Nuage Azur (`AzureSenseiPatch`) : Drifting Cut puis Returning Cut
-  (≤ 2,5 blocs), Falling Rain plus rare (recharge 5 s). Tous parables (garde Murim). Les techniques de l'art (Cloud Step
-  Slash, Thousand Drizzle…) ne sont pas encore branchées sur lui.
-- Butin : rien pour l'instant (l'épée ne tombe pas) ; les drops seront décidés plus tard. 30 XP.
+- **Clic droit** : il ne donne rien (décision d'Enzo du 14/10) : « The Azure Cloud is not given, it is earned. Draw your
+  blade and take it from me, if you can. » Le manuel ne se gagne qu'en le battant.
+- **Boss difficile** : 300 PV, armure 12 (robustesse 4), recul résisté à 90 %, armure de stun 20 (les coups ne
+  l'interrompent presque pas), monte les marches d'un bloc. 10 par coup (4 à lui, 6 de l'Azure Cloud), avant les
+  multiplicateurs de l'art.
+- **Il se bat avec l'Art de l'Épée du Nuage Azur lui-même** (`AzureSenseiPatch`), tout parable (garde Murim) :
+  - les M1 enchaînés : Drifting Cut, Returning Cut, Piercing Mist (perce l'armure) ;
+  - Rising Cloud puis Falling Rain (met à terre) ; Swallow Returns (tournoiement) ; Thousand Drizzle (rafale d'estocs) ;
+  - Wind Step (2,5 à 5 blocs) et Cloud Step Slash (3,5 à 7,5 blocs) : il fond sur qui garde ses distances.
+  - Joués par lui, ce sont des coups simples : pas de soulèvement, de portage ni de coupes retardées (réservés aux
+    joueurs, `MartialCombat`).
+- **Seconde phase**, sous la moitié de ses PV : « Enough courtesy. Now, see the Azure Cloud. » ; il va 50 % plus vite
+  et ajoute Heaven Splitting Crescent et la Tempête d'aiguilles (Thousand Drizzle évolué). Pas
+  la plongée Cloud Step Dive : faite pour l'air (le corps plonge de 2,5 blocs), lancée du sol elle l'enfonçait sous terre ;
+  un GameTest vérifie qu'aucun de ses coups ne fait descendre son corps sous le sol. Elle dure jusqu'à ce qu'il soit entier.
+- **Récupération** : quand personne ne le combat, il regagne 2 PV par seconde (le harceler puis fuir ne marche pas).
+- **Barre de boss** bleue « Sensei Yun » (10 crans) pour les joueurs proches de lui, encadrée de petits nuages en pixel
+  art : un nuage à chaque bout de la barre, un petit de chaque côté de son nom (`client/SenseiBossBarClouds`).
+- **Butin**, tué par un joueur : son épée **Azure Cloud** une fois sur 200 (0,5 %, Looting : 0,75 % puis +0,25 point par
+  niveau) et **toujours le Azure Cloud Sword Manual** (14/10 : il en est la seule source, et il ne revient pas) (`loot_table/entities/azure_sensei.json`).
+  Rien s'il meurt autrement. 100 XP.
+- **Qi** (14/10) : la première victoire sur lui donne **+30 de Qi Max** (une fois par joueur, comme le Bandit Chief), plus les 5 % habituels du Qi du kill (30 de base, 100 de bonus de première victoire). Il est désormais la seule source du manuel : le pupitre du sanctuaire ne le donne plus.
+- Les manuels sont consommés à la lecture : un livre, une lecture (un joueur qui connaît déjà l'art garde le sien).
 
 ## Mouvements
 
@@ -63,16 +79,19 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
   `textures/item/azure_cloud_sword(_3d).png`, `art/blockbench/azure_cloud_sword.bbmodel` ; icône dessinée d'après le
   modèle. En main, `client/TasselSwordRenderer` dessine la lame puis la houppe balancée par `TasselPendulum` (comme le
   Dao de bandit). Images de présentation : `scripts/concepts/sensei-preview.cjs`.
-- Code : `AzureSenseiEntity`, `AzureSenseiPatch`, `AzureSenseiRenderer`, `MurimAnimations.buildAzureSensei`,
-  `SectLibrary.give`, `BambooTemple` (sa place dans le hall).
-- Tests : `AzureSenseiGameTests` (épée et sa catégorie, idle et marche, maison sauvegardée, neutralité, manuel donné une
-  fois, coups du Nuage Azur), `SiteGameTests` (le temple compte 1 sensei) ; en vrai client
+- Code : `AzureSenseiEntity`, `AzureSenseiPatch`, `AzureSenseiRenderer`, `SenseiBossBarClouds`,
+  `MurimAnimations.buildAzureSensei`, `SectLibrary.give`, `BambooTemple` (sa place dans le hall), `MartialManualItem`
+  (manuel consommé).
+- Tests : `AzureSenseiGameTests` (épée et sa catégorie, idle et marche, maison sauvegardée, neutralité, aucun manuel donné
+  en parlant, barre de boss, seconde phase et récupération, butin, ses coups), `SiteGameTests` (le temple compte 1 sensei) ; en vrai client
   `gradlew -PgameTests runSenseiTour` (idle de face et de côté, tour de caméra autour de la garde, marche de profil,
-  combat contre un zombie d'entraînement ; rapport `build/sensei-tour-run/sensei-tour-report.txt`).
+  combat contre un zombie d'entraînement puis en seconde phase avec la liste de ses coups, barre de boss et ses nuages ;
+  rapport `build/sensei-tour-run/sensei-tour-report.txt`).
 
 ## Limites connues
 
-- Il n'utilise encore que les coups M1 de l'art, pas ses techniques (Cloud Step Slash, Thousand Drizzle, etc.).
+- Ses techniques n'ont pas les effets qu'elles ont pour un joueur (soulèvement, portage, coupes retardées, lames de Qi).
+- Sa difficulté est réglée en solo contre un zombie d'entraînement : à ajuster après un vrai combat.
 - Les projets Blockbench d'aperçu placent l'épée approximativement dans sa main ; la vraie place est celle du jeu
   (`checkHold()`, `runSenseiTour`).
 - Vérifié en solo (GameTests serveur, vrai client) ; à valider à deux clients.

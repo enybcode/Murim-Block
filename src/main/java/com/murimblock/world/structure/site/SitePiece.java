@@ -89,6 +89,13 @@ public final class SitePiece extends StructurePiece {
         return checks;
     }
 
+    /** The residents this part places (none placed: only where and what). */
+    public List<Canvas.Planned> residents() {
+        List<Canvas.Planned> planned = new ArrayList<>();
+        plan.site().build(Canvas.planning(ox, oz, rotation, seed, planned), part, levels);
+        return planned;
+    }
+
     /** Builds a whole site at once in a live level (tests): its checks and the mobs it spawned. */
     public static Built buildWhole(ServerLevel level, SitePlan plan, int ox, int oz, Rotation rotation, long seed, int[] levels) {
         List<Canvas.Check> checks = new ArrayList<>();

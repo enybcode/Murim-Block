@@ -7,7 +7,8 @@
 // (looked up in the outfit's palette; lower case a shade darker), a hex colour, or null for clear, u and v as the face is
 // seen from outside, v down. Optional: wear(outfit) (clear in the outfits that do not wear it), a tilt about x (degrees,
 // around `pivot`, Blockbench's convention: +y toward +z for a positive angle), a hinge (its vertices on the plane
-// y = hinge.y follow `hinge.bone` half way, so elbows, knees and the waist bend smoothly).
+// y = hinge.y follow `hinge.bone` half way, so elbows, knees and the waist bend smoothly), a density (texels per pixel,
+// 1 by default: 2 gives a 16 x 16 face on an 8-pixel head, see hd-face.cjs).
 const crypto = require('crypto');
 const zlib = require('zlib');
 const { at } = require('./blockbench-rig.cjs');
@@ -51,7 +52,7 @@ const rim = (paintIt) => (f, u, v, w, h, o) => ((f === 'up' || f === 'down') && 
 
 const FACES = ['north', 'south', 'east', 'west', 'up', 'down'];
 const size = (p, f) => {
-  const [x0, y0, z0] = p.from, [x1, y1, z1] = p.to, r = d => Math.max(1, Math.round(d));
+  const [x0, y0, z0] = p.from, [x1, y1, z1] = p.to, r = d => Math.max(1, Math.round(d * (p.density || 1)));
   if (f === 'north' || f === 'south') return [r(x1 - x0), r(y1 - y0)];
   if (f === 'east' || f === 'west') return [r(z1 - z0), r(y1 - y0)];
   return [r(x1 - x0), r(z1 - z0)];
@@ -121,7 +122,9 @@ function corners(p, f) {
   }
 }
 
+/** A corner of a piece as it stands: turned by its own turnCorner (any axes) if it has one, else tilted about x. */
 function tilt(p, [x, y, z]) {
+  if (p.turnCorner) return p.turnCorner([x, y, z]);
   if (!p.tilt) return [x, y, z];
   const a = p.tilt * Math.PI / 180, [, py, pz] = p.pivot, dy = y - py, dz = z - pz;
   return [x, py + dy * Math.cos(a) - dz * Math.sin(a), pz + dy * Math.sin(a) + dz * Math.cos(a)];
@@ -215,4 +218,4 @@ function bbmodel(name, pieces, outfits, atlases, atlas, folder) {
   };
 }
 
-module.exports = { colour, isSide, all, folds, fringe, wraps, rim, FACES, pack, paintAtlas, png, JOINTS, PARTS, mesh, bbmodel };
+module.exports = { colour, isSide, all, folds, fringe, wraps, rim, FACES, pack, paintAtlas, png, JOINTS, PARTS, mesh, bbmodel, stableId };

@@ -39,7 +39,8 @@ import java.util.function.Supplier;
  * (<sword>_body) and the tassel alone hanging from the model's centre (<sword>_tassel), all three on the 45-degree
  * diagonal of the vanilla swords. It draws the body, then the tassel turned about the pommel toward where a
  * {@link TasselPendulum} has swung it. The icon in the inventory, on the ground and in frames stays the flat sprite.
- * Now the Azure Cloud's (scripts/animation/azure-cloud-sword-model.cjs, which gives the pommel's end and the tassel).
+ * The Azure Cloud (scripts/animation/azure-cloud-sword-model.cjs) and the Alliance's Snow Plum Jian
+ * (snow-plum-jian-model.cjs); each generator gives its pommel's end and its tassel.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class TasselSwordRenderer extends BlockEntityWithoutLevelRenderer {
@@ -50,6 +51,8 @@ public final class TasselSwordRenderer extends BlockEntityWithoutLevelRenderer {
 
     /** The Azure Cloud: the pommel's ring ends at -3.6 pixels; a long tassel, its tuft about 4.8 pixels below. */
     private static final Supplier<TasselSwordRenderer> AZURE_CLOUD = Suppliers.memoize(() -> new TasselSwordRenderer("azure_cloud_sword", -3.6F, 4.8F));
+    /** The Snow Plum Jian: the pommel ends at -3.8 pixels; a long two-strand tassel, its tuft about 5 pixels below. */
+    private static final Supplier<TasselSwordRenderer> SNOW_PLUM = Suppliers.memoize(() -> new TasselSwordRenderer("snow_plum_jian", -3.8F, 5.0F));
 
     private final ModelResourceLocation body;
     private final ModelResourceLocation tassel;
@@ -76,8 +79,10 @@ public final class TasselSwordRenderer extends BlockEntityWithoutLevelRenderer {
 
     @SubscribeEvent
     public static void registerModels(ModelEvent.RegisterAdditional event) {
-        event.register(model("azure_cloud_sword_body"));
-        event.register(model("azure_cloud_sword_tassel"));
+        for (String sword : new String[] {"azure_cloud_sword", "snow_plum_jian"}) {
+            event.register(model(sword + "_body"));
+            event.register(model(sword + "_tassel"));
+        }
     }
 
     @SubscribeEvent
@@ -87,6 +92,11 @@ public final class TasselSwordRenderer extends BlockEntityWithoutLevelRenderer {
                 return AZURE_CLOUD.get();
             }
         }, MurimItems.AZURE_CLOUD_SWORD.get());
+        event.registerItem(new IClientItemExtensions() {
+            @Override public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return SNOW_PLUM.get();
+            }
+        }, MurimItems.SNOW_PLUM_JIAN.get());
     }
 
     @Override

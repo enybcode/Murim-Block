@@ -24,6 +24,10 @@ window.ST = (() => {
     cloud: ['#F4F6F8', 'plaster', 0.8], smoke: ['#8E8C88', 'noise', 0.55], skin: ['#D9A882', 'noise'], hair: ['#2A2320', 'noise'],
     robe_white: ['#E9E4D6', 'plaster'], robe_blue: ['#3B5E8C', 'noise'], robe_black: ['#2B2B2E', 'noise'], robe_red: ['#9E2E2A', 'noise'],
     armor: ['#6E6A62', 'brick'], teal: ['#1D7A84', 'noise'], camel: ['#C8A06A', 'noise'], rice: ['#9CBF5A', 'field'],
+    // The Orthodox Alliance's colours (art/factions: azure field, gold trim) and the capital's own materials.
+    tile_azure: ['#3A68A8', 'tile'], banner_azure: ['#2B5FA8', 'noise'], bronze: ['#8A6A3A', 'noise'], chain: ['#3A3C40', 'brick'],
+    qi: ['#9FE3FF', 'glow', 0.85], paper: ['#EFE6CC', 'plaster'], awning_red: ['#B84A3A', 'plank'], awning_blue: ['#4A78A8', 'plank'],
+    awning_gold: ['#C9A45C', 'plank'], marble: ['#E4E2DC', 'speck'],
   };
   const textures = {};
   function tex(name) {
@@ -202,7 +206,7 @@ window.ST = (() => {
   function seeded(seed) { let s = seed; return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff); }
 
   // ---------------------------------------------------------------- rendering
-  function render(view, w, h, sky = '#BFD3E0', fogNear = 140, fogFar = 420) {
+  function render(view, w, h, sky = '#BFD3E0', fogNear = 140, fogFar = 420, marks = null) {
     const group = new THREE.Group();
     const byMat = {};
     for (const [k, m] of vox) (byMat[m] = byMat[m] || []).push(k);
@@ -237,18 +241,26 @@ window.ST = (() => {
     Canvas.scene.background = new THREE.Color(sky);
     const p = new Preview({ id: 'st_' + Math.random().toString(36).slice(2), offscreen: true, antialias: true });
     p.resize(w, h);
+    // The preview's orbit controls would pull a distant camera back in: let it stand where the view says.
+    if (view.unclamped && p.controls) { p.controls.maxDistance = Infinity; p.controls.minDistance = 0; }
     const spec = { position: view.position.map(v => v * U), target: view.target.map(v => v * U), projection: 'perspective', fov: view.fov || 45 };
     p.loadAnglePreset(spec);
     p.camera.far = 100000;
     p.camera.updateProjectionMatrix();
     p.camera.lookAt(...spec.target);
+    p.camera.updateMatrixWorld();
+    // Marks [label, x, y, z] in blocks, projected to fractions of the picture through the camera that takes it.
+    const projected = marks && marks.map(([label, x, y, z]) => {
+      const v = new THREE.Vector3(x * U + U / 2, y * U + U / 2, z * U + U / 2).project(p.camera);
+      return [label, (v.x + 1) / 2, (1 - v.y) / 2];
+    });
     return new Promise(res => p.screenshot({ crop: false }, data => {
       Canvas.scene.remove(group);
       Canvas.scene.fog = oldFog; Canvas.scene.background = oldBg;
       group.traverse(o => { if (o.material) o.material.dispose(); });
       geo.dispose();
       p.delete();
-      res(data);
+      res(marks ? { data, marks: projected } : data);
     }));
   }
 

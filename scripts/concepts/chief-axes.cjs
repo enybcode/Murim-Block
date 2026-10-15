@@ -337,5 +337,5 @@ async function main() {
   bb.close();
 }
 
-module.exports = { STYLES };
+module.exports = { STYLES, palette, builder, textureOf, connect, render, id };
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });

@@ -81,7 +81,27 @@ public final class BiomeTour {
         SIGNATURE.put(MurimBiomes.SHU_BAMBOO_SEA, s -> s.is(MurimBlocks.MOSO_BAMBOO.get()));
         SIGNATURE.put(MurimBiomes.JIANGNAN_WATERLANDS, s -> s.is(MurimBlocks.WILLOW.log().get()) || s.is(MurimBlocks.LOTUS_PAD.get()) || s.is(MurimBlocks.WILD_RICE.get()));
         SIGNATURE.put(MurimBiomes.PEACH_BLOSSOM_VALLEY, s -> s.is(MurimBlocks.PEACH.log().get()) || s.is(MurimBlocks.PILLAR_SANDSTONE.get()));
+        SIGNATURE.put(MurimBiomes.TIANSHAN_SNOWFIELDS, s -> s.is(MurimBlocks.TIANSHAN_SPRUCE.log().get()) || s.is(MurimBlocks.KUNLUN_SEDGE.get())
+                || s.is(MurimBlocks.SNOW_LOTUS.get()) || s.is(net.minecraft.world.level.block.Blocks.SNOW_BLOCK));
+        SIGNATURE.put(MurimBiomes.CAMPHOR_HILLS, s -> s.is(MurimBlocks.CAMPHOR.log().get()) || s.is(MurimBlocks.CAMPHOR.leaves().get())
+                || s.is(MurimBlocks.MILK_VETCH.get()));
+        SIGNATURE.put(MurimBiomes.KUNLUN_GLACIERS, s -> s.is(MurimBlocks.KUNLUN_ROCK.get()) || s.is(MurimBlocks.RAW_WHITE_JADE.get())
+                || s.is(net.minecraft.world.level.block.Blocks.PACKED_ICE));
     }
+
+    /** Where to look for a biome on the Murim map: the heart of its region (the centre's own at the origin). */
+    static BlockPos regionHeart(ResourceKey<Biome> biome) {
+        int far = 45_000;
+        if (biome == MurimBiomes.TIANSHAN_SNOWFIELDS || biome == MurimBiomes.KUNLUN_GLACIERS) return new BlockPos(0, 80, -far);
+        if (biome == MurimBiomes.HEXI_FRONTIER_DESERT || biome == MurimBiomes.LOESS_PLATEAU) return new BlockPos(-far, 80, 0);
+        if (biome == MurimBiomes.JADE_KARST_FOREST || biome == MurimBiomes.SHU_BAMBOO_SEA) return new BlockPos(0, 80, far);
+        if (biome == MurimBiomes.JIANGNAN_WATERLANDS) return new BlockPos(far, 80, 0);
+        if (biome == MurimBiomes.CAMPHOR_HILLS) return new BlockPos(far, 80, 0);
+        return new BlockPos(0, 80, 0);
+    }
+
+    /** After the biomes: the bubble's coast and its ocean ring, seen from the shore looking out. */
+    private static int coastTicks;
 
     private BiomeTour() { }
 
@@ -121,7 +141,7 @@ public final class BiomeTour {
             if (ticks < 60) return;
             if (sanctuaryStep >= 0) { sanctuary(mc); return; }
             List<ResourceKey<Biome>> biomes = new ArrayList<>(SIGNATURE.keySet());
-            if (index >= biomes.size()) return;
+            if (index >= biomes.size()) { coast(mc); return; }
             if (index < 0) { index = 0; stepTicks = 0; }
             ResourceKey<Biome> biome = biomes.get(index);
             String name = biome.location().getPath();
@@ -129,10 +149,12 @@ public final class BiomeTour {
             switch (stepTicks) {
                 case 1 -> { searchDone = false; scanDone = false; found = null; mc.getSingleplayerServer().execute(() -> {
                     ServerLevel level = mc.getSingleplayerServer().overworld();
-                    // The largest stretch of the biome within 6000 blocks (its first occurrence can be a sliver).
-                    BlockPos largest = largest(level, biome);
+                    // The largest stretch of the biome within 6000 blocks of its region's heart (the Murim map puts each
+                    // biome in its region; its first occurrence can be a sliver).
+                    BlockPos heart = regionHeart(biome);
+                    BlockPos largest = largest(level, biome, heart);
                     var result = largest != null ? Pair.of(largest, (Object) null)
-                            : level.findClosestBiome3d(h -> h.is(biome), BlockPos.ZERO.atY(80), 9600, 32, 64);
+                            : level.findClosestBiome3d(h -> h.is(biome), heart, 9600, 32, 64);
                     if (result == null) { searchDone = true; return; }
                     // The search stops at the biome edge: look around for its heart, the spot with the most of it nearby.
                     found = heart(level, biome, result.getFirst());
@@ -171,10 +193,16 @@ public final class BiomeTour {
                 case 240 -> capture(mc, name + "-b.png");
                 case 241 -> mc.getSingleplayerServer().execute(() -> camera(mc, found, surfaceY, 0, -1, 14));
                 case 280 -> capture(mc, name + "-ground.png");
-                case 281 -> { index++; stepTicks = 0; }
+                // View far: from 170 blocks away and high above, the biome's landscape at its scale (the Kunlun's ranges).
+                // (The Kunlun's ranges rise over the clouds: seen from below instead, from the snows at their foot.)
+                case 281 -> mc.getSingleplayerServer().execute(() -> { if (biome == MurimBiomes.KUNLUN_GLACIERS) fromBelow(mc, found, surfaceY); else farView(mc, found, surfaceY); });
+                case 360 -> capture(mc, name + "-far.png");
+                // The camphor country: also the edge of one of its woods, seen from the meadow.
+                case 361 -> { if (biome == MurimBiomes.CAMPHOR_HILLS) mc.getSingleplayerServer().execute(() -> edgeView(mc, found)); else { index++; stepTicks = 0; } }
+                case 440 -> capture(mc, name + "-edge.png");
+                case 441 -> { index++; stepTicks = 0; }
                 default -> { }
             }
-            if (index >= biomes.size()) finish(mc);
         } catch (Exception e) {
             LOGGER.error("Biome tour failed", e);
             failed = true;
@@ -196,6 +224,14 @@ public final class BiomeTour {
                         + ", foot " + sanctuaryData.foot() + ", world spawn " + level.getSharedSpawnPos() + ", biome " + level.getBiome(c).unwrapKey().map(k -> k.location().toString()).orElse("?");
                 report.add(line);
                 LOGGER.info("Biome tour: {}", line);
+                // The spawn: on the bubble's Murim land, drawn at random (world/map/MurimSpawn).
+                BlockPos spawn = level.getSharedSpawnPos();
+                boolean murimSpawn = level.getBiome(spawn).is(MurimBiomes.MURIM_TAG);
+                String spawnLine = "spawn at " + spawn.toShortString() + " in " + level.getBiome(spawn).unwrapKey().map(k -> k.location().toString()).orElse("?")
+                        + (murimSpawn ? "" : " (FAILED: not a Murim biome)");
+                report.add(spawnLine);
+                LOGGER.info("Biome tour: {}", spawnLine);
+                if (!murimSpawn || (Math.abs(spawn.getX()) < 64 && Math.abs(spawn.getZ()) < 64)) failed = true;
                 // Near the spawn, but the spawn stays in the wild: never on the sanctuary.
                 if (c == null || Math.hypot(c.getX() - level.getSharedSpawnPos().getX(), c.getZ() - level.getSharedSpawnPos().getZ()) < 48) failed = true;
             });
@@ -295,13 +331,40 @@ public final class BiomeTour {
     }
 
     /** Centre of the cell (64-block grid, 6000-block radius) with the most of the biome in its 7x7 neighbourhood. */
-    static BlockPos largest(ServerLevel level, ResourceKey<Biome> biome) {
+    /**
+     * The bubble's eastern shore, then out over the ocean ring: the shore is Murim land, the ring deep ocean, the world
+     * beyond it vanilla again.
+     */
+    private static void coast(Minecraft mc) throws Exception {
+        coastTicks++;
+        var server = mc.getSingleplayerServer();
+        int shore = com.murimblock.world.map.MurimMap.RADIUS - 1_500;
+        switch (coastTicks) {
+            case 1 -> server.execute(() -> {
+                ServerLevel level = server.overworld();
+                var source = level.getChunkSource().getGenerator().getBiomeSource();
+                var sampler = level.getChunkSource().randomState().sampler();
+                java.util.function.IntFunction<String> at = x -> source.getNoiseBiome(x >> 2, 200 >> 2, 0, sampler).unwrapKey().map(k -> k.location().toString()).orElse("?");
+                String ring = at.apply(com.murimblock.world.map.MurimMap.RADIUS + 5_000), beyond = at.apply(com.murimblock.world.map.MurimMap.RADIUS + 20_000);
+                String line = "coast: " + at.apply(shore - 3_000) + " inland, " + ring + " in the ring, " + beyond + " beyond it";
+                report.add(line);
+                LOGGER.info("Biome tour: {}", line);
+                if (!ring.contains("ocean")) failed = true;
+                teleport(mc, shore + 0.5, 150, 0.5, -90, 12);
+            });
+            case 200 -> capture(mc, "bubble-coast.png");
+            case 201 -> finish(mc);
+            default -> { }
+        }
+    }
+
+    static BlockPos largest(ServerLevel level, ResourceKey<Biome> biome, BlockPos centre) {
         var source = level.getChunkSource().getGenerator().getBiomeSource();
         var sampler = level.getChunkSource().randomState().sampler();
         int n = 94, step = 64;
         boolean[][] in = new boolean[2 * n + 1][2 * n + 1];
         for (int i = -n; i <= n; i++) for (int j = -n; j <= n; j++) {
-            in[i + n][j + n] = source.getNoiseBiome((i * step) >> 2, 80 >> 2, (j * step) >> 2, sampler).is(biome);
+            in[i + n][j + n] = source.getNoiseBiome((centre.getX() + i * step) >> 2, 80 >> 2, (centre.getZ() + j * step) >> 2, sampler).is(biome);
         }
         BlockPos best = null;
         int bestScore = 0;
@@ -309,7 +372,7 @@ public final class BiomeTour {
             if (!in[i + n][j + n]) continue;
             int score = 0;
             for (int a = -3; a <= 3; a++) for (int b = -3; b <= 3; b++) if (in[i + a + n][j + b + n]) score++;
-            if (score > bestScore) { bestScore = score; best = new BlockPos(i * step, 80, j * step); }
+            if (score > bestScore) { bestScore = score; best = new BlockPos(centre.getX() + i * step, 80, centre.getZ() + j * step); }
         }
         return best;
     }
@@ -350,6 +413,73 @@ public final class BiomeTour {
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
         float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.hypot(dx, dz)));
         teleport(mc, x, y, z, yaw, pitch);
+    }
+
+    /** From the lowest ground within 180 blocks south of the target, at eye height, looking up at it. */
+    private static void fromBelow(Minecraft mc, BlockPos target, int top) {
+        ServerLevel level = mc.getSingleplayerServer().overworld();
+        int bestX = target.getX(), bestZ = target.getZ() + 180, bestY = Integer.MAX_VALUE;
+        for (int dx = -120; dx <= 120; dx += 20) for (int dz = 120; dz <= 180; dz += 20) {
+            level.getChunk((target.getX() + dx) >> 4, (target.getZ() + dz) >> 4); // generated, so its height is real
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, target.getX() + dx, target.getZ() + dz);
+            if (y < bestY) { bestY = y; bestX = target.getX() + dx; bestZ = target.getZ() + dz; }
+        }
+        double dx = target.getX() - bestX, dz = target.getZ() - bestZ;
+        float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        float pitch = (float) -Math.toDegrees(Math.atan2(top - bestY - 4, Math.hypot(dx, dz)));
+        teleport(mc, bestX + 0.5, bestY + 4, bestZ + 0.5, yaw, pitch);
+    }
+
+    /**
+     * A wood's edge: near the target, a column under camphor leaves whose neighbour 12 blocks away (in one of eight
+     * directions) is open meadow; the camera stands further out in the meadow, low, looking at the edge.
+     */
+    private static void edgeView(Minecraft mc, BlockPos target) {
+        ServerLevel level = mc.getSingleplayerServer().overworld();
+        var leaves = MurimBlocks.CAMPHOR.leaves().get();
+        java.util.function.BiPredicate<Integer, Integer> canopy = (x, z) -> {
+            level.getChunk(x >> 4, z >> 4);
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+            return level.getBlockState(new BlockPos(x, y - 1, z)).is(leaves);
+        };
+        // How much of a 15 x 15 square round a point is under camphor leaves (25 samples).
+        java.util.function.BiFunction<Integer, Integer, Integer> cover = (x, z) -> {
+            int n = 0;
+            for (int i = -6; i <= 6; i += 3) for (int j = -6; j <= 6; j += 3) if (canopy.test(x + i, z + j)) n++;
+            return n;
+        };
+        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int r = 0; r <= 320; r += 16) for (int dx = -r; dx <= r; dx += 16) for (int dz = -r; dz <= r; dz += 16) {
+            if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+            int px = target.getX() + dx, pz = target.getZ() + dz;
+            if (cover.apply(px, pz) < 18) continue; // a real wood
+            for (int[] d : dirs) {
+                if (cover.apply(px + d[0] * 24, pz + d[1] * 24) > 1 || cover.apply(px + d[0] * 36, pz + d[1] * 36) > 1) continue; // open meadow out there
+                // The edge itself: walking out of the wood, the last column under leaves.
+                int k = 0;
+                while (k < 24 && canopy.test(px + d[0] * (k + 1), pz + d[1] * (k + 1))) k++;
+                int edgeX = px + d[0] * k, edgeZ = pz + d[1] * k;
+                int ex = edgeX + d[0] * 30, ez = edgeZ + d[1] * 30;
+                int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, ex, ez);
+                int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, edgeX, edgeZ);
+                double ddx = edgeX - ex, ddz = edgeZ - ez;
+                float yaw = (float) Math.toDegrees(Math.atan2(-ddx, ddz));
+                float pitch = (float) -Math.toDegrees(Math.atan2(top - 3 - (ground + 9), Math.hypot(ddx, ddz)));
+                LOGGER.info("Biome tour: a camphor wood's edge at {} {}, seen from {} {}", edgeX, edgeZ, ex, ez);
+                teleport(mc, ex + 0.5, ground + 9, ez + 0.5, yaw, pitch);
+                return;
+            }
+        }
+        LOGGER.info("Biome tour: no camphor wood edge found near {}", target);
+    }
+
+    /** From 170 blocks south of the target and 70 above the ground there, looking at it. */
+    private static void farView(Minecraft mc, BlockPos target, int ground) {
+        ServerLevel level = mc.getSingleplayerServer().overworld();
+        double x = target.getX() + 0.5, z = target.getZ() + 170.5;
+        double y = Math.max(ground, level.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) x, (int) z)) + 70;
+        float pitch = (float) Math.toDegrees(Math.atan2(y - ground - 10, 170));
+        teleport(mc, x, y, z, 180, pitch);
     }
 
     private static void teleport(Minecraft mc, double x, double y, double z, float yaw, float pitch) {

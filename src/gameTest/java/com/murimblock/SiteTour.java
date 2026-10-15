@@ -29,6 +29,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.core.registries.BuiltInRegistries;
 import com.murimblock.mob.AzureSenseiEntity;
 import com.murimblock.mob.BanditChiefEntity;
+import com.murimblock.mob.CrabManEntity;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.world.structure.site.SitePlan;
 import java.util.Map;
@@ -51,7 +52,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.slf4j.Logger;
 
 /**
- * Development-only tour of the six Murim sites in a real client (gradlew -PgameTests runSiteTour): a fresh normal
+ * Development-only tour of the seven Murim sites in a real client (gradlew -PgameTests runSiteTour): a fresh normal
  * world; for each site, the real /locate structure command, then a visit to what it found: the generated site must
  * pass its checks (roofs closed, nothing grown inside, floors carried), and three photos are taken
  * (build/site-tour-run/screenshots). Writes site-tour-report.txt and quits.
@@ -61,7 +62,7 @@ public final class SiteTour {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final long SEED = 20261012L;
     static final String[] SITES = {"jade_river_stilt_village", "yellow_river_bandit_den", "jade_gate_beacon_post",
-            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet"};
+            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet", "alliance_outpost"};
     private static final Pattern AT = Pattern.compile("\\[(-?\\d+), ~, (-?\\d+)\\]");
     private static boolean creating, finished, failed;
     private static int ticks, index = -1, step;
@@ -141,6 +142,27 @@ public final class SiteTour {
                     lookAbs(mc, s.origin().getX() + 0.5 + fx * (s.reach() - 1), s.origin().getY() + 2.7, s.origin().getZ() + 0.5 + fz * (s.reach() - 1),
                             s.origin().getX() + 0.5, s.origin().getY() + 3.5, s.origin().getZ() + 0.5);
                 }
+                // As in a world older than its residents: they are taken away and the site forgotten; SiteResidents
+                // must put them back by itself, the player being there.
+                case 290 -> {
+                    if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    mc.getSingleplayerServer().execute(() -> {
+                        residents(mc, site).forEach(Mob::discard);
+                        com.murimblock.world.structure.site.SiteResidents.forgetForTests(mc.getSingleplayerServer().overworld(), site.origin());
+                    });
+                }
+                case 350 -> {
+                    if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    mc.getSingleplayerServer().execute(() -> {
+                        Map<String, Integer> found = new TreeMap<>();
+                        for (Mob m : residents(mc, site)) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
+                        Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
+                        String line = name + ": residents put back in an emptied site " + found + ", expected " + expected;
+                        report.add(line);
+                        LOGGER.info("Site tour: {}", line);
+                        if (!found.equals(expected)) failed = true;
+                    });
+                }
                 case 360 -> capture(mc, name + "-ground.png");
                 // A resident at home (the chief before his throne, a householder of the village, the sensei before his altar).
                 case 361 -> {
@@ -150,7 +172,7 @@ public final class SiteTour {
                         if (residents.isEmpty()) return;
                         // From the corner of the resident's own room farthest from them, at eye height.
                         Mob v = residents.get(0);
-                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : "chief";
+                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : v instanceof com.murimblock.mob.AllianceSoldierEntity ? "soldier" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
@@ -221,7 +243,11 @@ public final class SiteTour {
                 + "; " + checks.size() + " checks: " + SiteChecks.summary(problems);
         report.add(line);
         LOGGER.info("Site tour: {}", line);
-        if (!problems.isEmpty() || !biome.equals(expectedBiome(name))) failed = true;
+        boolean rightBiome = expectedBiome(name).equals("*")
+                ? level.getBiome(first.origin()).is(net.minecraft.tags.TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes")))
+                        && com.murimblock.world.map.MurimMap.centreOrFrontier(first.origin().getX(), first.origin().getZ(), 1500)
+                : biome.equals(expectedBiome(name));
+        if (!problems.isEmpty() || !rightBiome) failed = true;
         Direction front = first.rotation().rotate(Direction.SOUTH);
         // How far the site reaches on its front side: the ground photo is taken just inside, on the approach.
         BlockPos o = first.origin();
@@ -241,6 +267,7 @@ public final class SiteTour {
             case "jade_gate_beacon_post" -> SitePlan.BEACON_POST;
             case "misty_bamboo_temple" -> SitePlan.BAMBOO_TEMPLE;
             case "lotus_moon_garden" -> SitePlan.LOTUS_GARDEN;
+            case "alliance_outpost" -> SitePlan.ALLIANCE_OUTPOST;
             default -> SitePlan.PEACH_HAMLET;
         };
     }
@@ -248,7 +275,8 @@ public final class SiteTour {
     /** Villagers and bandits on the site, the chief first, then by name. */
     private static List<Mob> residents(Minecraft mc, Site s) {
         return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4, 16, 4), // down into pits and caves
-                        m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity).stream()
+                        m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity || m instanceof CrabManEntity
+                                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity).stream()
                 .sorted(java.util.Comparator.<Mob>comparingInt(m -> m instanceof BanditChiefEntity ? 0 : 1).thenComparing(m -> m.getName().getString())).toList();
     }
 
@@ -259,6 +287,7 @@ public final class SiteTour {
             case "jade_gate_beacon_post" -> "hexi_frontier_desert";
             case "misty_bamboo_temple" -> "shu_bamboo_sea";
             case "lotus_moon_garden" -> "jiangnan_waterlands";
+            case "alliance_outpost" -> "*"; // any Murim biome, in the centre or on a frontier
             default -> "peach_blossom_valley";
         };
     }

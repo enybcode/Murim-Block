@@ -11,10 +11,11 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MurimblockKeyMappings {
     public static final String CATEGORY = "key.categories." + Murimblock.MOD_ID;
-    public static final KeyMapping CHARGE_QI = new KeyMapping(
+    /** Meditate: a tap sits down in the lotus (or gets up); held while seated, it opens the inner world (or leaves it). */
+    public static final KeyMapping MEDITATE = new KeyMapping(
             "key." + Murimblock.MOD_ID + ".charge_qi",
             InputConstants.Type.KEYSYM,
-            InputConstants.KEY_R,
+            InputConstants.KEY_C,
             CATEGORY
     );
     public static final KeyMapping COMBAT_MODE = new KeyMapping(
@@ -38,6 +39,14 @@ public final class MurimblockKeyMappings {
             CATEGORY
     );
 
+    /** Qi Sense, held: read the auras around (from Qi Condensation). */
+    public static final KeyMapping QI_SENSE = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".qi_sense",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_G,
+            CATEGORY
+    );
+
     /** Tenth slot of the combat bar (Minecraft has nine hotbar keys; the first nine slots use them). */
     public static final KeyMapping COMBAT_SLOT_10 = new KeyMapping(
             "key." + Murimblock.MOD_ID + ".combat_slot_10",
@@ -51,7 +60,8 @@ public final class MurimblockKeyMappings {
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(CHARGE_QI);
+        event.register(MEDITATE);
+        event.register(QI_SENSE);
         event.register(COMBAT_MODE);
         event.register(OPEN_PROFILE);
         event.register(EXECUTE);

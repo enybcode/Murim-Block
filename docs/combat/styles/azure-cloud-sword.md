@@ -7,7 +7,7 @@
 ## Où on en est
 
 **Première tranche implémentée le 12/10/2026, en local :**
-- **Le manuel :** `MartialManualItem`. Le pupitre de la bibliothèque du sanctuaire en donne un exemplaire par joueur (`SectLibrary`).
+- **Le manuel :** `MartialManualItem`. **Il faut battre Sensei Yun** (décisions d'Enzo du 14/10) : il ne le donne à personne, mais le laisse toujours quand un joueur le tue. Le pupitre du sanctuaire ne donne plus rien.
 - **L'apprentissage :** lire le manuel apprend le style et Cloud Step Slash, qui se place dans le premier emplacement libre de la barre.
 - **Les données du joueur** (`MartialData`, sauvegardées) : styles connus, techniques débloquées, barre de 10 emplacements, maîtrise, manuels reçus.
 - **L'onglet Techniques :**
@@ -74,8 +74,8 @@ C'est le style de départ idéal : il apprend à parer, à enchaîner, et à fin
 ## Le livre
 
 - **« Azure Cloud Sword Manual »** (Manuel de l'Épée du Nuage Azur), un livre relié de jade.
-- **Où le trouver :** sur le pupitre de la bibliothèque du Sanctuaire de la Falaise des Nuages. Le Jeton de la Secte mène donc au premier art martial, et le sanctuaire devient vraiment « le début de chaque aventure ». Plus tard, le maître de la secte pourra le remettre en personne.
-- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le livre n'est pas consommé : il peut se prêter à un autre joueur.
+- **Où le trouver :** auprès de **Sensei Yun**, dans la salle des Trois Purs du temple de la Mer de Bambous, qu'il faut battre : il le laisse toujours en tombant (14/10). Le pupitre du sanctuaire (12/10) ne le donne plus.
+- **En l'utilisant**, le style apparaît dans l'onglet Techniques, avec son passif et sa première compétence. Le livre est consommé : un livre, une lecture. Un joueur qui connaît déjà l'art garde le livre (il peut le donner).
 
 ## Le passif : « Flowing Cloud Stance » (Posture du Nuage qui s'écoule)
 

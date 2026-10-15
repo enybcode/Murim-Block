@@ -139,7 +139,7 @@ final class BanditDen extends Site {
                 kang(h, p);
                 bed(h, 0, p + 2, -7, Direction.NORTH, Blocks.RED_BED);
                 h.set(-1, p + 2, -7, s(Blocks.DECORATED_POT));
-                h.set(1, p + 2, -7, s(Blocks.BARREL));
+                h.stocked(1, p + 2, -7, s(Blocks.BARREL), SiteLoot.CACHE);
                 h.set(0, y, -5, stair(Blocks.DARK_OAK_STAIRS, Direction.NORTH, Half.BOTTOM));
                 h.set(-1, y, -5, slab(Blocks.DARK_OAK_SLAB, SlabType.BOTTOM));
                 h.set(1, y, -5, slab(Blocks.DARK_OAK_SLAB, SlabType.BOTTOM));

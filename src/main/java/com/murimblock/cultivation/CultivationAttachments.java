@@ -20,6 +20,31 @@ public final class CultivationAttachments {
                     .build()
     );
 
+    static final Supplier<AttachmentType<CultivationJournal>> PLAYER_JOURNAL = ATTACHMENT_TYPES.register(
+            "player_cultivation_journal",
+            () -> AttachmentType.builder(() -> CultivationJournal.EMPTY)
+                    .serialize(CultivationJournal.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, recipient) -> holder == recipient, CultivationJournal.STREAM_CODEC)
+                    .build()
+    );
+
+    /** Seen by every client tracking the player (meditation, aura, main style); not saved, rebuilt at login. */
+    static final Supplier<AttachmentType<AuraState>> PLAYER_AURA = ATTACHMENT_TYPES.register(
+            "player_aura",
+            () -> AttachmentType.builder(() -> AuraState.NONE)
+                    .sync((holder, recipient) -> true, AuraState.STREAM_CODEC)
+                    .build()
+    );
+
+    /** A journey into the inner world (where the body was left): saved, never sent. */
+    public static final Supplier<AttachmentType<com.murimblock.cultivation.inner.InnerSession>> PLAYER_INNER_SESSION = ATTACHMENT_TYPES.register(
+            "player_inner_session",
+            () -> AttachmentType.builder(() -> com.murimblock.cultivation.inner.InnerSession.NONE)
+                    .serialize(com.murimblock.cultivation.inner.InnerSession.CODEC)
+                    .build()
+    );
+
     private CultivationAttachments() {
     }
 

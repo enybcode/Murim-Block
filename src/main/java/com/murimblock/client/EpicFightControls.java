@@ -11,6 +11,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.dawn_day.client.input.DawnDayKeyMappings;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -21,7 +22,9 @@ public final class EpicFightControls {
         return Set.of(EpicFightKeyMappings.SWITCH_MODE, EpicFightKeyMappings.SKILL_EDIT,
                 EpicFightKeyMappings.OPEN_CONFIG_SCREEN, EpicFightKeyMappings.OPEN_EMOTE_WHEEL,
                 EpicFightKeyMappings.SWITCH_VANILLA_MODEL_DEBUGGING, EpicFightKeyMappings.WEAPON_INNATE_SKILL,
-                EpicFightKeyMappings.MOVER_SKILL);
+                EpicFightKeyMappings.MOVER_SKILL,
+                // Dawn Day's stance switch: its weapons are retired, so the key has nothing to do.
+                DawnDayKeyMappings.SWITCH_STANCE);
     }
 
     public static boolean hidden(KeyMapping mapping) {

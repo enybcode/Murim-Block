@@ -132,8 +132,11 @@ public final class MurimAnimations {
                         .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
         buildAzureCloudSword(builder);
         buildLongFist(builder);
+        buildSanguineArt(builder);
         buildBanditChief(builder);
+        buildMeditation(builder);
         buildAzureSensei(builder);
+        SectWeaponAnimations.build(builder);
     }
 
     // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)
@@ -177,6 +180,30 @@ public final class MurimAnimations {
      * The Long Fist's techniques, played at their own pace (bare hands have no weapon speed to follow). Its M1 are Epic
      * Fight's own bare-hand strikes, untouched.
      */
+    public static AnimationAccessor<StaticAnimation> SANGUINE_GUARD;
+    public static AnimationAccessor<GuardAnimation> SANGUINE_GUARD_HIT;
+    public static AnimationAccessor<AttackAnimation> SANGUINE_STRAIGHT, SANGUINE_CROSS, SANGUINE_RISE;
+    /** Scarlet Tear: the blood sword summoned, then thrown like a javelin (its release 0.35 s in). */
+    public static AnimationAccessor<ActionAnimation> SANGUINE_SWORD_SUMMON, SANGUINE_SWORD_THROW;
+    public static AnimationAccessor<StaticAnimation> SANGUINE_CRYSTAL_CHARGE;
+    public static AnimationAccessor<ActionAnimation> SANGUINE_CRYSTAL_THROW, SANGUINE_CRYSTAL_FORM, SANGUINE_CRYSTAL_BARRAGE, SANGUINE_ICEBERG;
+
+    private static void buildSanguineArt(AnimationBuilder builder) {
+        OBBCollider fist = new OBBCollider(0.65D, 0.7D, 0.9D, 0, 1.0D, -0.8D);
+        SANGUINE_GUARD = builder.nextAccessor("biped/murim/sanguine_guard", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
+        SANGUINE_GUARD_HIT = builder.nextAccessor("biped/murim/sanguine_guard_hit", a -> new GuardAnimation(0.05F, a, Armatures.BIPED));
+        SANGUINE_STRAIGHT = builder.nextAccessor("biped/murim/sanguine_straight", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.09F, 0.14F, 0.23F, 0.36F, fist, root(), a, Armatures.BIPED), 1.0F)));
+        SANGUINE_CROSS = builder.nextAccessor("biped/murim/sanguine_cross", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.08F, 0.12F, 0.24F, 0.38F, fist, root(), a, Armatures.BIPED), 1.0F)));
+        SANGUINE_RISE = builder.nextAccessor("biped/murim/sanguine_rise", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.16F, 0.21F, 0.34F, 0.8F, fist, root(), a, Armatures.BIPED), 1.2F)));
+        SANGUINE_CRYSTAL_CHARGE = builder.nextAccessor("biped/murim/sanguine_crystal_charge", a -> new HeldStance(0.12F, a));
+        SANGUINE_CRYSTAL_THROW = builder.nextAccessor("biped/murim/sanguine_crystal_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        SANGUINE_SWORD_SUMMON = builder.nextAccessor("biped/murim/sanguine_sword_summon", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        SANGUINE_SWORD_THROW = builder.nextAccessor("biped/murim/sanguine_sword_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        SANGUINE_CRYSTAL_FORM = builder.nextAccessor("biped/murim/sanguine_crystal_form", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        SANGUINE_CRYSTAL_BARRAGE = builder.nextAccessor("biped/murim/sanguine_crystal_barrage", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SANGUINE_ICEBERG = builder.nextAccessor("biped/murim/sanguine_iceberg", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+    }
+
     private static void buildLongFist(AnimationBuilder builder) {
         LONG_FIST_GUARD = builder.nextAccessor("biped/murim/long_fist_guard", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
         LONG_FIST_GUARD_HIT = builder.nextAccessor("biped/murim/long_fist_guard_hit", a -> new GuardAnimation(0.05F, a, Armatures.BIPED));
@@ -403,6 +430,19 @@ public final class MurimAnimations {
         return animation;
     }
 
+    /** These clips are authored for unarmed speed (4), rather than a sword's 1.6. */
+    private static <A extends AttackAnimation> A fistStrike(A animation, float damage) {
+        animation.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(damage));
+        animation.addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 4.0F);
+        return animation;
+    }
+
+    /** The Sanguine Art's blows: no hit puff where they land (the art shows no particles). */
+    private static <A extends AttackAnimation> A noHitPuff(A animation) {
+        animation.addProperty(AttackPhaseProperty.PARTICLE, com.murimblock.martial.SanguineParticles.NO_HIT);
+        return animation;
+    }
+
     /** A technique: its damage, at its own pace whatever the weapon's speed. */
     private static <A extends AttackAnimation> A technique(A animation, float damage) {
         animation.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(damage));
@@ -420,13 +460,13 @@ public final class MurimAnimations {
         for (int i = 0; i < DRIZZLE_THRUSTS.length; i++) {
             float t = DRIZZLE_THRUSTS[i];
             phases[i] = new Phase(start, t - 0.05F, t - 0.03F, t + 0.02F, t + 0.04F, t + 0.06F, root(), box)
-                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.3F))
                     .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
                     .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
             start = t + 0.06F;
         }
         phases[DRIZZLE_THRUSTS.length] = new Phase(start, DRIZZLE_FINAL, DRIZZLE_FINAL + 0.03F, DRIZZLE_FINAL + 0.12F, 1.3F, Float.MAX_VALUE, root(), box)
-                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.9F))
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
                 .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
                 .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH.get());
@@ -434,11 +474,30 @@ public final class MurimAnimations {
                 .addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
     }
 
+    // ---------------------------------------------------------------- meditation (scripts/animation/meditation.cjs)
+
+    /** The lotus held (a slow breath, looping): the living motion of a meditating player. */
+    public static AnimationAccessor<StaticAnimation> MEDITATE;
+    /** Sitting down into the lotus, getting up from it; a small breakthrough's breath; a great one's rise; a deviation. */
+    public static AnimationAccessor<ActionAnimation> MEDITATE_SIT, MEDITATE_RISE, MEDITATE_PULSE, MEDITATE_ASCEND, MEDITATE_DEVIATION;
+
+    private static void buildMeditation(AnimationBuilder builder) {
+        MEDITATE = builder.nextAccessor("biped/murim/meditate", a -> new StaticAnimation(0.25F, true, a, Armatures.BIPED));
+        MEDITATE_SIT = builder.nextAccessor("biped/murim/meditate_sit", a -> new ActionAnimation(0.12F, a, Armatures.BIPED));
+        MEDITATE_RISE = builder.nextAccessor("biped/murim/meditate_rise", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MEDITATE_PULSE = builder.nextAccessor("biped/murim/meditate_pulse", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MEDITATE_ASCEND = builder.nextAccessor("biped/murim/meditate_ascend", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MEDITATE_DEVIATION = builder.nextAccessor("biped/murim/meditate_deviation", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+    }
+
     /** Murim's living motions: what a knocked-down, carrying or carried player is doing. */
     public enum Motions implements LivingMotion {
         DOWNED, CRAWL, CARRY, CARRY_WALK, CARRIED,
         /** The Long Fist's bare-hand guard held. */
-        FIST_GUARD;
+        FIST_GUARD,
+        /** Seated in the lotus, meditating. */
+        MEDITATE,
+        SANGUINE_GUARD;
 
         final int id;
 

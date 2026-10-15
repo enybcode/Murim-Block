@@ -8,6 +8,8 @@ import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
 import com.murimblock.integration.epicfight.MountainBanditPatch;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.item.MurimItems;
+import com.murimblock.martial.MartialArts;
+import com.murimblock.martial.MartialService;
 import com.murimblock.mob.MountainBanditEntity;
 import com.murimblock.mob.MurimEntities;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -59,7 +61,7 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 
-/**
+    /**
  * Development-only real-client check of the weapons in hand (gradlew -PgameTests runWeaponTour), in a fresh flat world
  * filmed from several sides by the local spectator:
  * <ul>
@@ -90,7 +92,7 @@ public final class WeaponTour {
 
     /** Who is filmed. */
     /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
-    private enum Actor { BANDIT, AXE, ARMOUR }
+    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD, STAFF, GALLERY }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -144,6 +146,103 @@ public final class WeaponTour {
         TAKES.add(new Take("armour-" + name, Actor.ARMOUR, side, null, combo, motion, frames, every));
     }
 
+    private static void spear(String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("spear-" + name, Actor.SPEAR, side, null, combo, motion, frames, every));
+    }
+
+    private static void jian(Actor actor, String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take((actor == Actor.JIAN ? "jian-" : "jian-azure-") + name, actor, side, null, combo, motion, frames, every));
+    }
+
+    /**
+     * An addon's staff, to see its moves (never shipped with Murimblock): its registry name from MURIM_TOUR_STAFF, by
+     * default Dawn Day's iron battlestaff; air when that addon is not installed (the tour's build/weapon-tour-run/mods).
+     * Skipped while Murimblock retires it (docs/DAWN_DAY.md).
+     */
+    private static Item addonStaff() {
+        String id = System.getenv().getOrDefault("MURIM_TOUR_STAFF", "epicfight_dd:iron_battlestaff");
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse(id));
+    }
+
+    private static void staff(String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("staff-" + name, Actor.STAFF, side, null, combo, motion, frames, every));
+    }
+
+    /**
+     * A datapack for the tour only (MURIM_TOUR_PACK, a folder with its pack.mcmeta), copied into the tour's world and
+     * enabled: for instance one giving vanilla swords the Epic Fight weapon types whose own items Murimblock keeps out of
+     * players' hands, to film those types' moves.
+     */
+    private static void loadPack(MinecraftServer server) throws java.io.IOException {
+        String dir = System.getenv("MURIM_TOUR_PACK");
+        if (dir == null || dir.isBlank()) return;
+        Path from = Path.of(dir), to = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.DATAPACK_DIR).resolve("murim-tour");
+        try (var files = Files.walk(from)) {
+            for (Path p : (Iterable<Path>) files::iterator) {
+                Path target = to.resolve(from.relativize(p).toString());
+                if (Files.isDirectory(p)) Files.createDirectories(target);
+                else Files.copy(p, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+        server.execute(() -> {
+            var packs = server.getPackRepository();
+            packs.reload();
+            var selected = new ArrayList<>(packs.getSelectedIds());
+            selected.add("file/murim-tour");
+            server.reloadResources(selected).thenRun(() -> report.add("info   tour datapack enabled: " + dir));
+        });
+    }
+
+    /** The gallery's items, by take; the one the current take holds. */
+    private static final java.util.Map<Take, Item> GALLERY_ITEMS = new java.util.HashMap<>();
+    private static volatile Item galleryItem = net.minecraft.world.item.Items.AIR;
+
+    /**
+     * A gallery of weapons by registry name (MURIM_TOUR_ITEMS, comma-separated): each one's stance, then every M1 of its
+     * chain, from the front right. Names that are not registered (an addon not installed) are left out.
+     */
+    private static void listGallery() {
+        String ids = System.getenv("MURIM_TOUR_ITEMS");
+        if (ids == null || ids.isBlank()) return;
+        String[] chain = {"m1-1", "m1-2", "m1-3", "m1-4", "m1-5", "m1-6", "m1-7"};
+        for (String id : ids.split(",")) {
+            var key = net.minecraft.resources.ResourceLocation.tryParse(id.trim());
+            Item item = key == null ? net.minecraft.world.item.Items.AIR : net.minecraft.core.registries.BuiltInRegistries.ITEM.get(key);
+            if (item == net.minecraft.world.item.Items.AIR && !id.trim().equals("minecraft:air")) {
+                report.add("info   gallery: no item " + id.trim());
+                continue;
+            }
+            String prefix = "gallery-" + key.getNamespace() + "-" + key.getPath() + "-";
+            Take idle = new Take(prefix + "idle", Actor.GALLERY, Side.FRONT_RIGHT, null, -1, LivingMotions.IDLE, 1, 1);
+            TAKES.add(idle);
+            GALLERY_ITEMS.put(idle, item);
+            for (int i = 0; i < chain.length; i++) {
+                Take m1 = new Take(prefix + chain[i], Actor.GALLERY, Side.FRONT_RIGHT, null, i, null, 24, 1);
+                TAKES.add(m1);
+                GALLERY_ITEMS.put(m1, item);
+            }
+        }
+    }
+
+    /** A take's combo for raising the guard instead of an M1. */
+    private static final int GUARD = 99;
+
+    private static void shield(String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("shield-" + name, Actor.SHIELD, side, null, combo, motion, frames, every));
+    }
+
+    /** The weapon each of the player's takes holds. */
+    private static Item weaponOf(Actor actor) {
+        return switch (actor) {
+            case BANDIT -> MurimItems.BANDIT_DAO.get();
+            case SPEAR -> MurimItems.ALLIANCE_SPEAR.get();
+            case JIAN, JIAN_AZURE, SHIELD -> MurimItems.SNOW_PLUM_JIAN.get();
+            case STAFF -> addonStaff();
+            case GALLERY -> galleryItem;
+            default -> MurimItems.CHIEF_GREAT_AXE.get();
+        };
+    }
+
     /** The takes, listed once in game: the animations' accessors are only filled in once Epic Fight has built them. */
     private static void listTakes() {
         // The bandit standing: one picture from each side, then its 5 s loop.
@@ -182,8 +281,49 @@ public final class WeaponTour {
             armour("m1-1", side, 0, null, 24, 1);
             armour("m1-2", side, 1, null, 24, 1);
         }
+        // The same player with the Alliance's Azure Peak Spear: its stance, walk and run, then each M1 of its chain.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) spear("idle", side, -1, LivingMotions.IDLE, 1, 1);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) spear("walk", side, -1, LivingMotions.WALK, 16, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) spear("run", side, -1, LivingMotions.RUN, 12, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT, Side.TOP)) {
+            for (int i = 0; i < chain.length; i++) spear(chain[i], side, i, null, 24, 1);
+        }
+        // The same player with the Alliance's Snow Plum Jian: its stance, walk and run, Epic Fight's sword M1s; then, as a
+        // student of the Azure Cloud Sword Art, Murim's own M1s (Flowing Cloud Stance). From above, where the edge shows.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) jian(Actor.JIAN, "idle", side, -1, LivingMotions.IDLE, 1, 1);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) jian(Actor.JIAN, "walk", side, -1, LivingMotions.WALK, 16, 2);
+        jian(Actor.JIAN, "run", Side.RIGHT, -1, LivingMotions.RUN, 12, 2);
+        String[] swordChain = {"m1-1", "m1-2", "m1-3", "dash", "air"};
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.TOP)) {
+            for (int i = 0; i < swordChain.length; i++) jian(Actor.JIAN, swordChain[i], side, i, null, 20, 1);
+        }
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.TOP)) {
+            for (int i = 0; i < 4; i++) jian(Actor.JIAN_AZURE, "m1-" + (i + 1), side, i, null, 20, 1);
+        }
+        // The jian with the Alliance's Rattan Shield on the other arm: standing, walking, two M1s, and the guard raised.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.LEFT, Side.BACK, Side.TOP)) shield("idle", side, -1, LivingMotions.IDLE, 1, 1);
+        for (Side side : List.of(Side.FRONT, Side.LEFT)) shield("walk", side, -1, LivingMotions.WALK, 16, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.LEFT)) {
+            shield("m1-1", side, 0, null, 18, 1);
+            shield("m1-2", side, 1, null, 18, 1);
+        }
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.LEFT, Side.TOP)) shield("guard", side, GUARD, null, 12, 2);
+        // An addon's staff (only with the addon installed): its stance, walk, run, its whole M1 chain.
+        // Not when Murimblock retires that item (Dawn Day's, since it became a dependency for its animations only): it
+        // would be taken from the player's hand. MURIM_TOUR_STAFF can still name another addon's staff.
+        if (addonStaff() != net.minecraft.world.item.Items.AIR
+                && !com.murimblock.integration.epicfight.EpicFightContentPolicy.blocked(new net.minecraft.world.item.ItemStack(addonStaff()))) {
+            for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK)) staff("idle", side, -1, LivingMotions.IDLE, 1, 1);
+            for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) staff("walk", side, -1, LivingMotions.WALK, 16, 2);
+            staff("run", Side.FRONT_RIGHT, -1, LivingMotions.RUN, 12, 2);
+            String[] staffChain = {"m1-1", "m1-2", "m1-3", "m1-4", "m1-5", "dash", "air"};
+            for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.TOP)) {
+                for (int i = 0; i < staffChain.length; i++) staff(staffChain[i], side, i, null, 26, 1);
+            }
+        }
+        listGallery();
         String only = System.getenv("MURIM_TOUR_ONLY");
-        if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().equalsIgnoreCase(only.trim()));
+        if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().toLowerCase().startsWith(only.trim().toLowerCase()));
         check(TAKES.stream().filter(t -> t.actor() == Actor.BANDIT).allMatch(t -> t.motion() != null || t.played() != null), "every bandit take has its animation");
     }
 
@@ -224,6 +364,7 @@ public final class WeaponTour {
     }
 
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
+        if (ticks == 8) loadPack(server);
         if (ticks == 20) {
             listTakes();
             mc.options.hideGui = true;
@@ -256,6 +397,7 @@ public final class WeaponTour {
                 return;
             }
             Take t = TAKES.get(take);
+            if (t.actor() == Actor.GALLERY) galleryItem = GALLERY_ITEMS.get(t);
             Take before = take == 0 ? null : TAKES.get(take - 1);
             // A new actor when it changes and after each death; otherwise the same one, back on its spot.
             boolean fresh = before == null || before.actor() != t.actor() || before.name().equals("bandit-death");
@@ -331,10 +473,27 @@ public final class WeaponTour {
                     bandit = null;
                 }
                 if (wielder == null) wielder = spawnWielder(server, level);
-                report.add("info   great axe in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
             }
+            // The shield on the off hand for its takes only, the guard lowered between takes.
+            ItemStack offhand = t.actor() == Actor.SHIELD ? new ItemStack(MurimItems.RATTAN_SHIELD.get()) : ItemStack.EMPTY;
+            if (!ItemStack.isSameItem(wielder.getOffhandItem(), offhand)) {
+                wielder.setItemInHand(InteractionHand.OFF_HAND, offhand);
+                EpicFightCombatDefaults.enforce(wielder);
+            }
+            EpicFightBridge.patch(wielder).resetHolding();
+            wielder.stopUsingItem();
+            if (!wielder.getMainHandItem().is(weaponOf(t.actor()))) {
+                wielder.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(weaponOf(t.actor())));
+                EpicFightCombatDefaults.enforce(wielder);
+            }
+            if (fresh && t.actor() == Actor.JIAN_AZURE) {
+                // A student of the Azure Cloud Sword Art, with it as main style: its passive replaces a sword's M1s.
+                MartialService.learn(wielder, MartialArts.art(MartialArts.AZURE_CLOUD_SWORD));
+                MartialService.setMainArt(wielder, MartialArts.AZURE_CLOUD_SWORD);
+            }
+            if (fresh || t.actor() == Actor.GALLERY && t.name().endsWith("-idle")) report.add("info   " + weaponOf(t.actor()) + " in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
             // The air attack from a little above the ground (a player on a mock connection stays where it is put).
-            double lift = t.name().equals("axe-air") ? 1.4 : 0;
+            double lift = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? 1.4 : 0;
             wielder.moveTo(baseX, baseY + lift, baseZ, 0, 0);
             wielder.setYHeadRot(0);
             wielder.setYBodyRot(0);
@@ -348,7 +507,7 @@ public final class WeaponTour {
             wielder.setItemSlot(EquipmentSlot.FEET, armoured ? new ItemStack(MurimItems.CHIEF_FUR_BOOTS.get()) : ItemStack.EMPTY);
         }
         Side s = t.side();
-        double y = t.name().equals("axe-air") ? baseY + 1.4 : baseY;
+        double y = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? baseY + 1.4 : baseY;
         if (s == Side.TOP) self(server).teleportTo(level, baseX, y + 4.6 - 1.62, baseZ + 0.01, s.yaw, 90);
         else self(server).teleportTo(level, baseX + s.dx * DISTANCE, y + EYE - 1.62, baseZ + s.dz * DISTANCE, s.yaw, 6);
     }
@@ -360,7 +519,21 @@ public final class WeaponTour {
             EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(t.played(), 0);
         } else {
             PlayerPatch<?> patch = EpicFightBridge.patch(wielder);
+            if (t.combo() == GUARD) {
+                // The shield raised as a player raises it (using it, the right mouse button): Epic Fight's shield block.
+                wielder.startUsingItem(InteractionHand.OFF_HAND);
+                asked = null;
+                report.add("info   " + t.name() + " from " + t.side().name().toLowerCase() + ": shield raised (using " + wielder.isUsingItem() + "), off hand " + wielder.getOffhandItem()
+                        + ", style " + patch.getHoldingItemCapability(InteractionHand.MAIN_HAND).getStyle(patch));
+                return;
+            }
             var chain = patch.getHoldingItemCapability(InteractionHand.MAIN_HAND).getAutoAttackMotion(patch);
+            // A chain shorter than the takes asked for: nothing to film for the missing M1.
+            if (t.combo() >= chain.size()) {
+                asked = null;
+                report.add("info   " + t.name() + ": the chain has only " + chain.size() + " M1s");
+                return;
+            }
             asked = chain.get(t.combo());
             patch.playAnimationSynchronized(asked, 0);
         }
@@ -396,8 +569,15 @@ public final class WeaponTour {
     private static void checkTake(Minecraft mc, Take t) {
         LivingEntity seen = seen(mc, t.actor());
         String what = t.name() + " from " + t.side().name().toLowerCase();
-        Item weapon = t.actor() == Actor.BANDIT ? MurimItems.BANDIT_DAO.get() : MurimItems.CHIEF_GREAT_AXE.get();
+        Item weapon = weaponOf(t.actor());
         check(seen != null && seen.getMainHandItem().is(weapon), what + ": holds " + weapon);
+        if (t.actor() == Actor.ARMOUR) {
+            check(seen != null && seen.getItemBySlot(EquipmentSlot.HEAD).is(MurimItems.CHIEF_BROW_BAND.get())
+                    && seen.getItemBySlot(EquipmentSlot.CHEST).is(MurimItems.CHIEF_LAMELLAR_VEST.get())
+                    && seen.getItemBySlot(EquipmentSlot.LEGS).is(MurimItems.CHIEF_TASSETS.get())
+                    && seen.getItemBySlot(EquipmentSlot.FEET).is(MurimItems.CHIEF_FUR_BOOTS.get()), what + ": the client sees the chief's four pieces worn");
+            if (t.name().equals("armour-idle") && t.side() == Side.FRONT) mc.getSingleplayerServer().execute(WeaponTour::checkArmour);
+        }
         if (seen != null && t.motion() != null) {
             LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
             LivingMotion motion = patch == null ? null : patch.getCurrentLivingMotion();
@@ -408,6 +588,28 @@ public final class WeaponTour {
         }
     }
 
+    /**
+     * On the server, the wielder in the chief's armour (a real player, ticked: its worn equipment counts): 17 armour and
+     * 4 toughness, and a zombie's blow of 10 takes what armour leaves of it (about 4.5), not 10 (generic damage would
+     * go through any armour).
+     */
+    private static void checkArmour() {
+        double armour = wielder.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+        double toughness = wielder.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS);
+        check(Math.abs(armour - 17) < 0.01 && Math.abs(toughness - 4) < 0.01, String.format("the wielder in the chief's armour has armour %.1f, toughness %.1f", armour, toughness));
+        var zombie = net.minecraft.world.entity.EntityType.ZOMBIE.create(wielder.serverLevel());
+        var blow = wielder.damageSources().mobAttack(zombie);
+        float expected = net.minecraft.world.damagesource.CombatRules.getDamageAfterAbsorb(wielder, 10, blow, (float) armour, (float) toughness);
+        wielder.setHealth(wielder.getMaxHealth());
+        wielder.invulnerableTime = 0;
+        float before = wielder.getHealth();
+        wielder.hurt(blow, 10);
+        float taken = before - wielder.getHealth();
+        check(taken < 6 && Math.abs(taken - expected) < 0.6, String.format("a zombie's blow of 10 on the chief's armour takes %.2f (armour leaves %.2f)", taken, expected));
+        wielder.setHealth(wielder.getMaxHealth());
+        wielder.invulnerableTime = 0;
+    }
+
     private static boolean playingOnFirstFrame;
 
     /** On the take's first or second frame, the client plays its animation (the short hit is over within two ticks). */
@@ -415,6 +617,7 @@ public final class WeaponTour {
         LivingEntity seen = seen(mc, t.actor());
         LivingEntityPatch<?> patch = seen == null ? null : EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
         var animation = asked;
+        if (animation == null && t.actor() != Actor.BANDIT) return;
         boolean playing = patch != null && animation != null && patch.getAnimator().isPlaying(animation);
         if (!second) playingOnFirstFrame = playing;
         else check(playingOnFirstFrame || playing, t.name() + " from " + t.side().name().toLowerCase() + ": the client plays "

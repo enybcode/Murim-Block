@@ -1,5 +1,17 @@
 # Structures Murim
 
+## Prévu : la capitale de l'Alliance orthodoxe (15/10/2026)
+
+Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, cité intérieure sur un plateau, Grande Salle au sommet d'une aiguille de 164 blocs), avec son plan numéroté, ses habitants et cinq secrets : [alliance-capital.md](alliance-capital.md). Rien n'est construit en jeu.
+
+![La capitale de l'Alliance, maquette](images/alliance-capital/overview.jpg)
+
+## Construit : l'avant-poste de l'Alliance (`alliance_outpost`, 15/10/2026)
+
+Un fort de garnison de 53 × 47 blocs au bord d'une route : porte, tour de guet et son feu de signal, salle du commandement, cour d'entraînement, caserne, écuries, infirmerie, tableau des avis, salon de thé pour les voyageurs. **Septième site**, construit comme les six autres, mais dans n'importe quel biome Murim et **seulement au centre de la carte ou à moins de 1 500 blocs d'une frontière entre régions**. Décomposition bloc par bloc, maquettes et habitants : [alliance-outpost.md](alliance-outpost.md). Nouveaux blocs : les tuiles azur de l'Alliance.
+
+![L'avant-poste de l'Alliance en jeu](images/alliance-outpost/game-gate.jpg)
+
 ## Les six sites du 14/10/2026
 
 Six structures de plus, une par biome Murim (le Huangshan a déjà le sanctuaire). Ce sont de vraies structures Minecraft : elles apparaissent toutes seules dans les mondes neufs et `/locate structure murimblock:<id>` les trouve. Chacune a sa fiche technique, avec des conseils sur ce qu'on devrait y mettre.
@@ -10,26 +22,27 @@ Six structures de plus, une par biome Murim (le Huangshan a déjà le sanctuaire
 |---|---|---|---|
 | Village sur pilotis de la rivière de Jade (`jade_river_stilt_village`) | Forêt des pics de jade | Hameau zhuang : 3 maisons ganlan avec un villageois chacune, grenier, banian sacré, rizières, porte | [fiche](jade_river_stilt_village.md) |
 | Repaire des Bandits du Fleuve Jaune (`yellow_river_bandit_den`) | Plateau de lœss | Cour enfoncée et 7 grottes voûtées, rampe, vigie ; le Bandit Chief et 4 bandits | [fiche](yellow_river_bandit_den.md) |
-| Relais de la Tour à Signaux de la Porte de Jade (`jade_gate_beacon_post`) | Désert du Hexi | Relais fortifié de la route de la soie, tour à signaux fumante | [fiche](jade_gate_beacon_post.md) |
+| Relais de la Tour à Signaux de la Porte de Jade (`jade_gate_beacon_post`) | Désert du Hexi | Relais fortifié de la route de la soie, tour à signaux fumante ; pris par 4 pillards du désert | [fiche](jade_gate_beacon_post.md) |
 | Temple taoïste de la Mer de Bambous brumeuse (`misty_bamboo_temple`) | Mer de bambous de Shu | Trois terrasses, taiji, escalier couvert, salle des Trois Purs ; Sensei Yun, maître du Nuage Azur | [fiche](misty_bamboo_temple.md) |
-| Jardin de la Lune et des Lotus (`lotus_moon_garden`) | Pays des eaux du Jiangnan | Jardin de lettré : porte de lune, étang, pont en zigzag, galerie | [fiche](lotus_moon_garden.md) |
-| Hameau de la Source aux Fleurs de Pêcher (`peach_spring_hamlet`) | Vallée des fleurs de pêcher | Maisons de terre et de chaume, champs, temple du dieu du sol | [fiche](peach_spring_hamlet.md) |
+| Jardin de la Lune et des Lotus (`lotus_moon_garden`) | Pays des eaux du Jiangnan | Jardin de lettré : porte de lune, étang, pont en zigzag, galerie ; 3 habitants (lettré, jardinier, maître de thé) | [fiche](lotus_moon_garden.md) |
+| Hameau de la Source aux Fleurs de Pêcher (`peach_spring_hamlet`) | Vallée des fleurs de pêcher | Maisons de terre et de chaume, champs, temple du dieu du sol ; envahi par la maladie : 3 hommes-crabes et leurs crabes | [fiche](peach_spring_hamlet.md) |
 
 ### Comment elles sont faites
 
-- **Une structure par site** (`SiteStructure`, type `murimblock:site`), avec sa propre structure set (`random_spread`) et son tag de biome `has_structure/<id>`. Le JSON est écrit par `scripts/worldgen/generate-nature.cjs`.
+- **Une structure par site** (`SiteStructure`, type `murimblock:site`), avec sa propre structure set (`random_spread`) et son tag de biome `has_structure/<id>`. Le JSON est écrit par `scripts/worldgen/generate-nature.cjs`. Un site peut aussi limiter les endroits de la carte où il se pose (`Site.allowedAt`, l'avant-poste : centre et frontières).
 - **Où elle se pose** : au centre de son chunk, l'entrée tournée vers le côté le plus bas du terrain, et seulement si la place convient (dénivelé limité, pas d'eau sauf pour le jardin, toute l'emprise dans le biome). Sinon Minecraft essaie la case suivante de la grille.
 - **Le terrain** est modelé par Minecraft lui-même autour de chaque partie (`terrain_adaptation: beard_thin`, comme les villages vanilla) : le sol monte ou descend en pente douce jusqu'au site, sans falaise ni trou.
 - **Jamais de vide en dessous** : chaque sol, chaque mur et chaque poteau est fondé jusqu'au terrain naturel, à travers l'air ou l'eau (`Canvas.footing`).
 - **Jamais d'entrée sur le vide** : devant chaque porte, un abord sur sol plein (route, chemin, débarcadère), même si un ravin du lœss ou une rivière passe juste à côté.
 - **Jamais de trou dans un toit** : les toits du kit (`BuildKit.roof`, `gableRoof`, `shedRoof`) posent un plafond plein sous les tuiles.
-- **Rien ne pousse dedans** : un filtre de placement (`murimblock:away_from_sites`) écarte des sites les arbres, les bambous géants, les tours karstiques, les aiguilles, les piliers, les yardangs et les étangs.
+- **Rien ne pousse dedans** : un filtre de placement (`murimblock:away_from_sites`) écarte des sites les arbres, les bambous géants, les tours karstiques, les aiguilles, les piliers, les yardangs et les étangs, et depuis le 15/10 les fleurs et les herbes Murim (colza, chrysanthèmes, fougères...), à 8 blocs.
 - **Construites en code**, morceau par morceau (`SitePiece`), chunk par chunk comme toute structure ; le hasard est tiré de la position (jamais d'une suite), donc chaque chunk voit les mêmes choix. Le cadre `Canvas` tourne le plan, le découpe au chunk et note ce qu'il faut vérifier.
 - **Code** : [world/structure/site](../../src/main/java/com/murimblock/world/structure/site/), un fichier par site.
 
 ### Vérification
 
-- **GameTests** (`SiteGameTests`, un par site, dans `gradlew -PgameTests runGameTestServer`) : le site construit sur un sol de pierre passe toutes ses vérifications (chaque pièce couverte sur chaque colonne, plafond posé sur chaque pièce, rien de naturel dedans, chaque sol et chaque fondation portés, le bon nombre d'habitants : villageois, bandits, sensei) ; construit chunk par chunk comme en génération, il est identique bloc pour bloc au site construit d'un coup ; la structure et sa structure set sont enregistrées.
+- **Habitants des mondes anciens** (`SiteResidents`) : un site placé avant que ses habitants existent (un monde plus vieux que le sensei, les bandits ou les hommes-crabes) reçoit ses habitants la première fois qu'un joueur y entre, une fois tous ses chunks chargés, s'il n'y en a aucun ; chaque site n'est regardé qu'une fois par monde (sauvegarde `murimblock_site_residents`), donc des habitants tués ne reviennent pas. Vérifié par les GameTests et en vrai client (la visite vide chaque site habité et les voit revenir).
+- **GameTests** (`SiteGameTests`, un par site, dans `gradlew -PgameTests runGameTestServer`) : le site construit sur un sol de pierre passe toutes ses vérifications (chaque pièce couverte sur chaque colonne, plafond posé sur chaque pièce, rien de naturel dedans, chaque sol et chaque fondation portés, le bon nombre d'habitants : villageois, bandits, sensei, hommes-crabes ; et, le site vidé, `SiteResidents` les remet une fois, pas deux) ; construit chunk par chunk comme en génération, il est identique bloc pour bloc au site construit d'un coup ; la structure et sa structure set sont enregistrées.
 - **Visite en vrai client** (`gradlew -PgameTests runSiteTour`) : un monde neuf (graine 20261012, génération des structures activée) ; pour chaque site, la vraie commande `/locate structure`, puis le site trouvé est généré et vérifié de la même façon, dans le bon biome, et photographié. Rapport : `build/site-tour-run/site-tour-report.txt`.
 - **Résultat du 14/10/2026** : les six `/locate` répondent en moins d'une seconde, de 487 blocs (le temple) à 7 058 blocs (le relais, le Hexi étant loin du départ sur cette graine) ; les six sites générés sont dans leur biome et passent toutes leurs vérifications.
 - **Fréquence** : une tentative par carré de 22 à 26 chunks de côté, refusée si la place ne convient pas ; sur la graine de test, d'une place sur cinq à une sur deux est acceptée là où le biome est le bon, selon le relief du biome. Pour en voir plus souvent, il suffit de baisser `spacing` dans `generate-nature.cjs`.

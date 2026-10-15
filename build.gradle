@@ -115,11 +115,45 @@ neoForge {
         }
 
         // Development-only: real client check of the Long Fist (see LongFistTour).
+        // Development-only: real client tour of cultivation, filmed for its sheet (see CultivationTour).
+        cultivationTour {
+            client()
+            gameDirectory = project.file('build/cultivation-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.cultivationTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the Sanguine Art (see SanguineTour).
+        sanguineTour {
+            client()
+            gameDirectory = project.file('build/sanguine-tour-run')
+            systemProperty 'murimblock.sanguineTour', 'true'
+            disableIdeRun()
+        }
+
         longFistTour {
             client()
             gameDirectory = project.file('build/long-fist-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.longFistTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: filming of a duel with Sensei Yun (see SenseiDuel; clip by scripts/showcase/make-clip.cjs).
+        senseiDuel {
+            client()
+            gameDirectory = project.file('build/sensei-duel-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.senseiDuel', 'true'
+            disableIdeRun()
+        }
+
+        sanguineTour {
+            client()
+            gameDirectory = project.file('build/sanguine-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.sanguineTour', 'true'
             disableIdeRun()
         }
 
@@ -138,6 +172,15 @@ neoForge {
             gameDirectory = project.file('build/weapon-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.weaponTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a mugshot of every Murim mob for the wiki (see MugshotTour).
+        mugshotTour {
+            client()
+            gameDirectory = project.file('build/mugshot-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.mugshotTour', 'true'
             disableIdeRun()
         }
 
@@ -216,6 +259,7 @@ repositories {
 
 dependencies {
     implementation("maven.modrinth:epic-fight:${epic_fight_artifact}") { transitive = false }
+    implementation("maven.modrinth:epic-fight-dawn-day:${dawn_day_artifact}") { transitive = false }
     implementation("maven.modrinth:geckolib:${geckolib_artifact}") { transitive = false }
     implementation("maven.modrinth:photon-editor:${photon_artifact}") { transitive = false }
     implementation("maven.modrinth:kilagraph:${kilagraph_artifact}") { transitive = false }
@@ -233,6 +277,7 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             neo_version            : neo_version,
             loader_version_range   : loader_version_range,
             epic_fight_version     : epic_fight_version,
+            dawn_day_version       : dawn_day_version,
             geckolib_version       : geckolib_version,
             photon_version         : photon_version,
             terrablender_version   : terrablender_version,
@@ -368,7 +413,39 @@ tasks.named('runMartialTour').configure {
     }
 }
 
-def longFistTourSave = layout.buildDirectory.dir('long-fist-tour-run/saves/murim-long-fist')
+def cultivationTourSave = layout.buildDirectory.dir('cultivation-tour-run/saves/murim-cultivation')
+def cultivationTourReport = layout.buildDirectory.file('cultivation-tour-run/cultivation-tour-report.txt')
+def cultivationTourShots = layout.buildDirectory.dir('cultivation-tour-run/screenshots')
+tasks.named('runCultivationTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only cultivation tour.')
+        cultivationTourSave.get().asFile.deleteDir()
+        cultivationTourShots.get().asFile.deleteDir()
+        cultivationTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = cultivationTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Cultivation tour failed; see build/cultivation-tour-run/cultivation-tour-report.txt')
+    }
+}
+
+def sanguineTourSaves = layout.buildDirectory.dir('sanguine-tour-run/saves')
+def sanguineTourReport = layout.buildDirectory.file('sanguine-tour-run/sanguine-tour-report.txt')
+def sanguineTourShots = layout.buildDirectory.dir('sanguine-tour-run/screenshots')
+tasks.named('runSanguineTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Sanguine Art tour.')
+        sanguineTourSaves.get().asFile.deleteDir()
+        sanguineTourShots.get().asFile.deleteDir()
+        sanguineTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = sanguineTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sanguine tour failed; see build/sanguine-tour-run/sanguine-tour-report.txt')
+    }
+}
+
+def longFistTourSave =layout.buildDirectory.dir('long-fist-tour-run/saves/murim-long-fist')
 def longFistTourReport = layout.buildDirectory.file('long-fist-tour-run/long-fist-tour-report.txt')
 def longFistTourShots = layout.buildDirectory.dir('long-fist-tour-run/screenshots')
 tasks.named('runLongFistTour').configure {
@@ -381,6 +458,16 @@ tasks.named('runLongFistTour').configure {
     doLast {
         def report = longFistTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Long Fist tour failed; see build/long-fist-tour-run/long-fist-tour-report.txt')
+    }
+}
+
+def senseiDuelSave = layout.buildDirectory.dir('sensei-duel-run/saves/murim-sensei-duel')
+def senseiDuelFrames = layout.buildDirectory.dir('sensei-duel-run/frames')
+tasks.named('runSenseiDuel').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only sensei duel.')
+        senseiDuelSave.get().asFile.deleteDir()
+        senseiDuelFrames.get().asFile.deleteDir()
     }
 }
 

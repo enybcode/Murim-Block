@@ -83,6 +83,23 @@ public final class MurimSurfaceRules {
         RuleSource peach = SurfaceRules.ifTrue(SurfaceRules.isBiome(MurimBiomes.PEACH_BLOSSOM_VALLEY), SurfaceRules.sequence(
                 SurfaceRules.ifTrue(steep, block(MurimBlocks.PILLAR_SANDSTONE.get()))));
 
-        return SurfaceRules.sequence(karst, loess, desert, peaks, bamboo, jiangnan, peach);
+        // The north (14/10/2026): the cold lays its snow layers and ice on top by itself (freeze_top_layer).
+        RuleSource glaciers = SurfaceRules.ifTrue(SurfaceRules.isBiome(MurimBiomes.KUNLUN_GLACIERS), SurfaceRules.sequence(
+                // Bare rock on the cliffs, blue ice where the surface noise is high; on the ledges, tongues of glacier ice in
+                // the snow.
+                SurfaceRules.ifTrue(steep, SurfaceRules.sequence(
+                        SurfaceRules.ifTrue(fewPatches, block(Blocks.PACKED_ICE)),
+                        block(Blocks.STONE))),
+                SurfaceRules.ifTrue(floor, SurfaceRules.ifTrue(dry, SurfaceRules.sequence(
+                        SurfaceRules.ifTrue(fewPatches, block(Blocks.PACKED_ICE)),
+                        block(Blocks.SNOW_BLOCK)))),
+                SurfaceRules.ifTrue(underFloor, block(Blocks.STONE))));
+
+        RuleSource snowfields = SurfaceRules.ifTrue(SurfaceRules.isBiome(MurimBiomes.TIANSHAN_SNOWFIELDS), SurfaceRules.sequence(
+                // Stony slopes; broad drifts of packed snow over the frozen meadows.
+                SurfaceRules.ifTrue(steep, block(Blocks.STONE)),
+                SurfaceRules.ifTrue(floor, SurfaceRules.ifTrue(dry, SurfaceRules.ifTrue(patches, block(Blocks.SNOW_BLOCK))))));
+
+        return SurfaceRules.sequence(karst, loess, desert, peaks, bamboo, jiangnan, peach, glaciers, snowfields);
     }
 }

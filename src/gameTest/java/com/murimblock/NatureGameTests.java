@@ -41,21 +41,28 @@ public final class NatureGameTests {
     private NatureGameTests() { }
 
     @GameTest(template = "foundation_arena", batch = "nature")
-    public static void sevenBiomesLoadWithTheirRegionAndTags(GameTestHelper helper) {
+    public static void theMurimBiomesLoadWithTheirTags(GameTestHelper helper) {
         var biomes = helper.getLevel().registryAccess().registryOrThrow(Registries.BIOME);
         TagKey<Biome> murim = TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes"));
-        helper.assertTrue(MurimBiomes.ALL.size() == 7, "Expected seven Murim biomes");
+        // Seven of the first slice, the two snows of the north and the camphor hills (14/10/2026); where they grow is the
+        // Murim map's.
+        helper.assertTrue(MurimBiomes.ALL.size() == 10, "Expected ten Murim biomes");
         for (ResourceKey<Biome> key : MurimBiomes.ALL) {
             var holder = biomes.getHolder(key);
             helper.assertTrue(holder.isPresent(), "Biome not loaded: " + key.location());
             helper.assertTrue(holder.get().is(murim), "Biome missing from #murimblock:murim_biomes: " + key.location());
         }
-        helper.assertTrue(Regions.get(RegionType.OVERWORLD).stream().anyMatch(r -> r.getName().getNamespace().equals(Murimblock.MOD_ID)),
-                "Murim TerraBlender region not registered");
-        // Every Murim block has an item, a loot table and is in the nature tab order.
-        long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)).count();
+        // No TerraBlender region any more: outside the Murim map, the world is vanilla.
+        helper.assertTrue(Regions.get(RegionType.OVERWORLD).stream().noneMatch(r -> r.getName().getNamespace().equals(Murimblock.MOD_ID)),
+                "A Murim TerraBlender region still mixes Murim biomes into the vanilla world");
+        // Every Murim nature block has an item, a loot table and is in the nature tab order (the Blood Iceberg's crystal,
+        // a technique's passing blocks, is not nature: no item, no drop).
+        long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)
+                && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
+                && MurimBlocks.buildingOrder().stream().noneMatch(b -> b.getId().equals(k))).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
-        for (var block : MurimBlocks.creativeOrder()) {
+        // The building blocks (the main tab's) are checked the same way.
+        for (var block : java.util.stream.Stream.concat(MurimBlocks.creativeOrder().stream(), MurimBlocks.buildingOrder().stream()).toList()) {
             helper.assertTrue(block.get().asItem() != Items.AIR, "No item for " + block.getId());
             var loot = helper.getLevel().getServer().reloadableRegistries().getLootTable(block.get().getLootTable());
             helper.assertTrue(loot != LootTable.EMPTY, "No loot table for " + block.getId());

@@ -114,7 +114,7 @@ public final class Showcase {
         Shot shot = new Shot(name, title, subtitle, 160, frames);
         shot.setup = level -> {
             level.setDayTime(name.equals("end") ? 12600 : 4500);
-            BlockPos edge = BiomeTour.largest(level, biome);
+            BlockPos edge = BiomeTour.largest(level, biome, BiomeTour.regionHeart(biome));
             if (edge == null) { var r = level.findClosestBiome3d(hb -> hb.is(biome), BlockPos.ZERO.atY(80), 9600, 32, 64); edge = r == null ? BlockPos.ZERO : r.getFirst(); }
             place = BiomeTour.heart(level, biome, edge);
             teleport(level, place.getX() + 0.5, 220, place.getZ() + 0.5, 0, 60);
@@ -140,7 +140,7 @@ public final class Showcase {
         shot.setup = level -> {
             level.setDayTime(night ? 18000 : 5000);
             if (actor != null) actor.discard();
-            BlockPos edge = BiomeTour.largest(level, MurimBiomes.LOESS_PLATEAU);
+            BlockPos edge = BiomeTour.largest(level, MurimBiomes.LOESS_PLATEAU, BiomeTour.regionHeart(MurimBiomes.LOESS_PLATEAU));
             place = BiomeTour.heart(level, MurimBiomes.LOESS_PLATEAU, edge);
             teleport(level, place.getX() + 0.5, 200, place.getZ() + 0.5, 0, 60);
         };

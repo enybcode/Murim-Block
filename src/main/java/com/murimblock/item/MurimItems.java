@@ -13,6 +13,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
 import net.neoforged.bus.api.IEventBus;
@@ -51,6 +52,15 @@ public final class MurimItems {
             () -> new AxeItem(Tiers.IRON, new Item.Properties().rarity(Rarity.UNCOMMON).attributes(AxeItem.createAttributes(Tiers.IRON, 6.0F, -3.3F))));
 
     /**
+     * The Orthodox Alliance soldiers' spear, the Azure Peak Spear: a willow-leaf head on an azure socket where the three
+     * peaks of the Alliance flag are cast, blue horsehair, a navy shaft banded in gold, 2.6 blocks long. A spear for Epic
+     * Fight (data/murimblock/capabilities/weapons/alliance_spear.json: its stance, walk, run and thrusts): 6 damage,
+     * a little slower than a sword. Model from scripts/animation/alliance-spear-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> ALLIANCE_SPEAR = ITEMS.register("alliance_spear",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 2, -2.8F))));
+
+    /**
      * The Bandit Chief's armour, his look on a man's build: an iron brow band with a tiger plaque, a lamellar vest with
      * his tiger skin and spiked pauldron, crimson trousers under lamellar tassets, fur-cuffed boots
      * (MurimArmorMaterials.CHIEF_LAMELLAR). He drops one piece now and then (loot_table/entities/bandit_chief.json).
@@ -82,6 +92,55 @@ public final class MurimItems {
     public static final DeferredItem<SwordItem> AZURE_CLOUD_SWORD = ITEMS.register("azure_cloud_sword",
             () -> new SwordItem(Tiers.DIAMOND, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.DIAMOND, 3, -2.2F))));
 
+    /**
+     * The Snow Plum Jian (雪梅剑), the Orthodox Alliance disciples' sword: a long slender jian, the three peaks of the
+     * Alliance flag inlaid at its root and three plum blossoms above them, a small gold guard with upturned wings, an
+     * azure grip and a long blue tassel that swings (client/TasselSwordRenderer). A sword for Epic Fight
+     * (data/murimblock/capabilities/weapons/snow_plum_jian.json): an iron sword's 6 damage and speed. Model from
+     * scripts/animation/snow-plum-jian-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> SNOW_PLUM_JIAN = ITEMS.register("snow_plum_jian",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.4F))));
+
+    /**
+     * The Orthodox Alliance's Rattan Shield (藤牌): rattan coiled into a deep dome, a medallion with the Alliance flag on
+     * top, a blue cord bound round the edge. A shield (Epic Fight gives every shield its guard and parry), lighter than
+     * the vanilla one. Model from scripts/animation/rattan-shield-model.cjs, held through item_skins/rattan_shield.json.
+     */
+    /**
+     * The sect weapons, each with its own Epic Fight weapon type and moveset (integration/epicfight/MurimWeapons,
+     * SectWeaponAnimations): the iron fan (its ribs opened by client/FanRenderer), the chain whip (its links hung on a
+     * simulated chain, client/ChainWhipRenderer) and the flying needles, thrown in fans (mob/FlyingNeedleEntity).
+     */
+    public static final DeferredItem<SwordItem> IRON_FAN = ITEMS.register("iron_fan",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 1, -2.0F))));
+    public static final DeferredItem<SwordItem> CHAIN_WHIP = ITEMS.register("chain_whip",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 2, -2.6F))));
+    /** Each needle thrown hurts for a share of the thrower's attack (FlyingNeedleEntity.DAMAGE_SHARE). */
+    public static final DeferredItem<SwordItem> FLYING_NEEDLES = ITEMS.register("flying_needles",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 0, -2.0F))));
+    public static final DeferredItem<ShieldItem> RATTAN_SHIELD = ITEMS.register("rattan_shield",
+            () -> new ShieldItem(new Item.Properties().durability(280)));
+
+    /**
+     * A silver tael (银两), a small boat-shaped ingot: the Murim's money. Bandits, their chief, crab men and Sensei Yun
+     * leave some (their loot tables), and the Alliance Merchant trades in them (mob/AllianceMerchantEntity).
+     */
+    public static final DeferredItem<Item> SILVER_TAEL = ITEMS.register("silver_tael", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
+    /** The Alliance's soldiers' eggs, in azure, each with its own second colour. */
+    public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_SPEAR_GUARD_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_SPEAR_GUARD, 0xB4BAC0);
+    public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_SWORD_DISCIPLE, 0xEBE6D8);
+    public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_ARCHER_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_ARCHER, 0xC8A96A);
+    public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_WARRIOR_MONK_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_WARRIOR_MONK, 0xB8862E);
+    public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_SERGEANT_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_SERGEANT, 0xE9D9A6);
+
+    private static DeferredItem<DeferredSpawnEggItem> soldierEgg(
+            net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.murimblock.mob.AllianceSoldierEntity>> type, int spots) {
+        return ITEMS.register(type.getId().getPath() + "_spawn_egg", () -> new DeferredSpawnEggItem(type, 0x2B5FA8, spots, new Item.Properties()));
+    }
+
     /** The azure of his robe and the white of his beard. */
     public static final DeferredItem<DeferredSpawnEggItem> AZURE_SENSEI_SPAWN_EGG = ITEMS.register("azure_sensei_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.AZURE_SENSEI, 0x2F6FC0, 0xEFEBE4, new Item.Properties()));
@@ -90,13 +149,24 @@ public final class MurimItems {
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
             () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 
-    /** Manual of the Cloud Cliff sect's art: read once, it teaches the Azure Cloud Sword Art. */
+    /** Manual of the Cloud Cliff sect's art: read, it teaches the Azure Cloud Sword Art and is used up. */
     public static final DeferredItem<MartialManualItem> AZURE_CLOUD_SWORD_MANUAL = ITEMS.register("azure_cloud_sword_manual",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
 
-    /** Scroll of the first art of the fist: read once, it teaches the Long Fist. Where it is found is still to decide. */
+    /** Scroll of the first art of the fist: read, it teaches the Long Fist and is used up. Where it is found is still to decide. */
     public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), MartialArts.LONG_FIST));
+
+    public static final DeferredItem<MartialManualItem> SANGUINE_ART_SCROLL = ITEMS.register("sanguine_art_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.SANGUINE_ART));
+
+    /** Elixirs of cultivation (docs/cultivation/qi-cultivation.md), made from the flora of the Murim lands. */
+    public static final DeferredItem<com.murimblock.cultivation.PillItem> QI_GATHERING_PILL = ITEMS.register("qi_gathering_pill",
+            () -> new com.murimblock.cultivation.PillItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON),
+                    com.murimblock.cultivation.PillItem.Kind.QI_GATHERING));
+    public static final DeferredItem<com.murimblock.cultivation.PillItem> REALM_BREAKING_PILL = ITEMS.register("realm_breaking_pill",
+            () -> new com.murimblock.cultivation.PillItem(new Item.Properties().stacksTo(8).rarity(Rarity.RARE),
+                    com.murimblock.cultivation.PillItem.Kind.REALM_BREAKING));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MURIMBLOCK_TAB = TABS.register("murimblock",
             () -> CreativeModeTab.builder()
@@ -109,15 +179,32 @@ public final class MurimItems {
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
+                        output.accept(ALLIANCE_SPEAR.get());
+                        output.accept(SNOW_PLUM_JIAN.get());
+                        output.accept(RATTAN_SHIELD.get());
+                        output.accept(IRON_FAN.get());
+                        output.accept(CHAIN_WHIP.get());
+                        output.accept(FLYING_NEEDLES.get());
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
+                        output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
+                        output.accept(ALLIANCE_SPEAR_GUARD_SPAWN_EGG.get());
+                        output.accept(ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG.get());
+                        output.accept(ALLIANCE_ARCHER_SPAWN_EGG.get());
+                        output.accept(ALLIANCE_WARRIOR_MONK_SPAWN_EGG.get());
+                        output.accept(ALLIANCE_SERGEANT_SPAWN_EGG.get());
+                        output.accept(SILVER_TAEL.get());
                         output.accept(CHIEF_BROW_BAND.get());
                         output.accept(CHIEF_LAMELLAR_VEST.get());
                         output.accept(CHIEF_TASSETS.get());
                         output.accept(CHIEF_FUR_BOOTS.get());
+                        MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
+                        output.accept(SANGUINE_ART_SCROLL.get());
+                        output.accept(QI_GATHERING_PILL.get());
+                        output.accept(REALM_BREAKING_PILL.get());
                     })
                     .build());
 
@@ -129,6 +216,14 @@ public final class MurimItems {
                     .withTabsBefore(MURIMBLOCK_TAB.getKey())
                     .displayItems((parameters, output) -> MurimBlocks.creativeOrder()
                             .forEach(block -> output.accept(block.get())))
+                    .build());
+    /** Every weapon of every mod installed, Murimblock's first (WeaponsTab). */
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> WEAPONS_TAB = TABS.register("murimblock_weapons",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.murimblock_weapons"))
+                    .icon(() -> new ItemStack(ALLIANCE_SPEAR.get()))
+                    .withTabsBefore(NATURE_TAB.getKey())
+                    .displayItems(WeaponsTab::fill)
                     .build());
 
     private MurimItems() { }

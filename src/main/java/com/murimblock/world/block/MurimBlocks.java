@@ -20,7 +20,9 @@ import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -56,6 +58,13 @@ public final class MurimBlocks {
             () -> BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).instrument(NoteBlockInstrument.SNARE)
                     .strength(0.6F).sound(SoundType.GRAVEL));
 
+    /** Kunlun: dark grey schist of the roof of the world, glinting with mica. */
+    public static final DeferredBlock<Block> KUNLUN_ROCK = stone("kunlun_rock", MapColor.DEEPSLATE);
+    /** Hotan white jade (nephrite), "mutton fat": in veins of the Kunlun rock and as river stones. */
+    public static final DeferredBlock<Block> RAW_WHITE_JADE = register("raw_white_jade", Block::new, () -> BlockBehaviour.Properties.of()
+            .mapColor(MapColor.QUARTZ).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 6.0F)
+            .sound(SoundType.CALCITE));
+
     // ---------- trees ----------
     public static final Wood OSMANTHUS = wood("osmanthus", MapColor.TERRACOTTA_LIGHT_GRAY, MapColor.COLOR_GREEN, MurimTrees.OSMANTHUS, MurimPlantBlock.Soil.GRASS);
     public static final Wood BANYAN = wood("banyan", MapColor.TERRACOTTA_GRAY, MapColor.COLOR_GREEN, MurimTrees.BANYAN, MurimPlantBlock.Soil.GRASS);
@@ -65,6 +74,10 @@ public final class MurimBlocks {
     public static final Wood WILLOW = wood("willow", MapColor.TERRACOTTA_GRAY, MapColor.COLOR_LIGHT_GREEN, MurimTrees.WILLOW, MurimPlantBlock.Soil.WET);
     public static final Wood PEACH = wood("peach", MapColor.TERRACOTTA_BROWN, MapColor.COLOR_PINK, MurimTrees.PEACH, MurimPlantBlock.Soil.GRASS);
     public static final Wood DESERT_POPLAR = wood("desert_poplar", MapColor.TERRACOTTA_LIGHT_GRAY, MapColor.GOLD, MurimTrees.DESERT_POPLAR, MurimPlantBlock.Soil.SAND);
+    /** Schrenk's spruce of the Tianshan: tall, slender, dark. */
+    public static final Wood TIANSHAN_SPRUCE = wood("tianshan_spruce", MapColor.PODZOL, MapColor.COLOR_GREEN, MurimTrees.TIANSHAN_SPRUCE, MurimPlantBlock.Soil.GRASS);
+    /** Camphor laurel, the village tree of the south: grey-brown fissured bark, fragrant reddish wood. */
+    public static final Wood CAMPHOR = wood("camphor", MapColor.TERRACOTTA_GRAY, MapColor.COLOR_GREEN, MurimTrees.CAMPHOR, MurimPlantBlock.Soil.GRASS);
 
     /** Hanging growth: banyan aerial roots and weeping willow fronds. */
     public static final DeferredBlock<HangingStrandBlock> BANYAN_ROOTS = register("banyan_roots", HangingStrandBlock::new, () -> strand(MapColor.TERRACOTTA_BROWN));
@@ -91,14 +104,38 @@ public final class MurimBlocks {
     public static final DeferredBlock<MurimTallPlantBlock> TAMARISK = tallPlant("tamarisk", MurimPlantBlock.Soil.SAND, MapColor.COLOR_PINK);
     public static final DeferredBlock<MurimPlantBlock> SAXAUL = plant("saxaul", MurimPlantBlock.Soil.SAND, 14, MapColor.TERRACOTTA_GREEN);
     public static final DeferredBlock<MurimPlantBlock> CISTANCHE = plant("cistanche", MurimPlantBlock.Soil.SAND, 10, MapColor.TERRACOTTA_YELLOW);
+    /** Tianshan snow lotus (Saussurea involucrata), the legendary herb of the snows. */
+    public static final DeferredBlock<MurimPlantBlock> SNOW_LOTUS = plant("snow_lotus", MurimPlantBlock.Soil.ALPINE, 11, MapColor.SNOW);
+    /** Alpine sedge (Carex) of the cold meadows. */
+    public static final DeferredBlock<MurimPlantBlock> KUNLUN_SEDGE = plant("kunlun_sedge", MurimPlantBlock.Soil.ALPINE, 12, MapColor.PLANT);
+    /** Chinese milk vetch (Astragalus sinicus): the purple spring carpet of the southern rice country. */
+    public static final DeferredBlock<FlowerBlock> MILK_VETCH = flower("milk_vetch", MapColor.COLOR_PURPLE);
+
+    // ---------- building (not nature: in the main Murimblock tab, BUILDING) ----------
+
+    /** Building blocks, in the order of the main creative tab. */
+    private static final List<DeferredBlock<? extends Block>> BUILDING_ORDER = new ArrayList<>();
+    /**
+     * The Orthodox Alliance's glazed roof tiles, azure as its flag (scripts/worldgen/generate-building.cjs): the roofs of
+     * its outposts and capital. A block, stairs and a slab, mined with a pickaxe like deepslate tiles.
+     */
+    public static final DeferredBlock<Block> AZURE_ROOF_TILES = building("azure_roof_tiles", Block::new, MurimBlocks::glazedTiles);
+    public static final DeferredBlock<StairBlock> AZURE_ROOF_TILE_STAIRS = building("azure_roof_tile_stairs",
+            p -> new StairBlock(AZURE_ROOF_TILES.get().defaultBlockState(), p), MurimBlocks::glazedTiles);
+    public static final DeferredBlock<SlabBlock> AZURE_ROOF_TILE_SLAB = building("azure_roof_tile_slab", SlabBlock::new, MurimBlocks::glazedTiles);
 
     private MurimBlocks() { }
+
+    /** The building blocks, for the main Murimblock creative tab. */
+    public static List<DeferredBlock<? extends Block>> buildingOrder() {
+        return Collections.unmodifiableList(BUILDING_ORDER);
+    }
 
     /** Log, planks, leaves and sapling of one tree. */
     public record Wood(String name, DeferredBlock<RotatedPillarBlock> log, DeferredBlock<Block> planks,
                        DeferredBlock<LeavesBlock> leaves, DeferredBlock<MurimSaplingBlock> sapling) { }
 
-    public static final List<Wood> WOODS = List.of(OSMANTHUS, BANYAN, HUANGSHAN_PINE, JUJUBE, DOVE_TREE, WILLOW, PEACH, DESERT_POPLAR);
+    public static final List<Wood> WOODS = List.of(OSMANTHUS, BANYAN, HUANGSHAN_PINE, JUJUBE, DOVE_TREE, WILLOW, PEACH, DESERT_POPLAR, TIANSHAN_SPRUCE, CAMPHOR);
 
     public static List<DeferredBlock<? extends Block>> creativeOrder() {
         return Collections.unmodifiableList(CREATIVE_ORDER);
@@ -119,7 +156,7 @@ public final class MurimBlocks {
         fire.setFlammable(MOSO_BAMBOO.get(), 5, 5);
         fire.setFlammable(MOSO_BAMBOO_LEAVES.get(), 30, 60);
         for (var plant : List.of(KARST_FERN, SEA_BUCKTHORN, FEATHER_GRASS, BAMBOO_SHOOT, ARROW_BAMBOO, CHRYSANTHEMUM, RAPESEED, SAXAUL,
-                CISTANCHE, RHODODENDRON, TREE_FERN, WILD_RICE, TAMARISK, BANYAN_ROOTS, WILLOW_STRANDS)) {
+                CISTANCHE, RHODODENDRON, TREE_FERN, WILD_RICE, TAMARISK, BANYAN_ROOTS, WILLOW_STRANDS, SNOW_LOTUS, KUNLUN_SEDGE, MILK_VETCH)) {
             fire.setFlammable(plant.get(), 60, 100);
         }
     }
@@ -138,6 +175,20 @@ public final class MurimBlocks {
         MurimItems.ITEMS.register(name, () -> item.apply(block.get()));
         CREATIVE_ORDER.add(block);
         return block;
+    }
+
+    /** A building block: registered with its item, listed in the main tab rather than the nature tab. */
+    private static <B extends Block> DeferredBlock<B> building(String name, Function<BlockBehaviour.Properties, B> factory,
+                                                               Supplier<BlockBehaviour.Properties> properties) {
+        DeferredBlock<B> block = BLOCKS.register(name, () -> factory.apply(properties.get()));
+        MurimItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+        BUILDING_ORDER.add(block);
+        return block;
+    }
+
+    private static BlockBehaviour.Properties glazedTiles() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).instrument(NoteBlockInstrument.BASEDRUM)
+                .requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.DEEPSLATE_TILES);
     }
 
     private static DeferredBlock<Block> stone(String name, MapColor color) {

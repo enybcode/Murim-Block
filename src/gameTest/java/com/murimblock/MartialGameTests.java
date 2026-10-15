@@ -32,7 +32,7 @@ import static com.murimblock.testing.GameTestPlayers.cleanup;
 import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
- * The Azure Cloud Sword Art's first slice: the sanctuary library hands each player one manual, reading it teaches the
+ * The Azure Cloud Sword Art's first slice: Sensei Yun hands each player one manual (the sanctuary's lectern no longer does), reading it teaches the
  * art and puts Cloud Step Slash on the combat bar, the cast checks (combat mode, Qi, sword, cooldown), and a real Cloud
  * Step Slash cutting a zombie through Epic Fight.
  */
@@ -42,7 +42,7 @@ public final class MartialGameTests {
     private MartialGameTests() { }
 
     @GameTest(template = "foundation_arena", batch = "martial_library")
-    public static void theLibraryLecternGivesEachPlayerOneManual(GameTestHelper helper) {
+    public static void theLibraryLecternNoLongerGivesTheManual(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         SanctuaryPlacement data = SanctuaryPlacement.get(player.server.overworld());
         // A sanctuary recorded around the arena, so its library lectern falls on a block of the arena.
@@ -54,12 +54,11 @@ public final class MartialGameTests {
             helper.getLevel().setBlockAndUpdate(lectern, Blocks.LECTERN.defaultBlockState());
             player.getInventory().clearContent();
             var hit = new BlockHitResult(Vec3.atCenterOf(lectern), Direction.UP, lectern, false);
-            var first = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, lectern, hit);
-            SectLibrary.onRightClickBlock(first);
-            helper.assertTrue(first.isCanceled(), "The library lectern did not answer");
-            helper.assertTrue(player.getInventory().countItem(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 1, "No manual from the library");
-            SectLibrary.onRightClickBlock(new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, lectern, hit));
-            helper.assertTrue(player.getInventory().countItem(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 1, "The library gave a second copy");
+            // Sensei Yun is the manual's only source: the sanctuary's lectern is an ordinary lectern.
+            var click = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, lectern, hit);
+            SectLibrary.onRightClickBlock(click);
+            helper.assertTrue(!click.isCanceled(), "The library lectern still answers");
+            helper.assertTrue(player.getInventory().countItem(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 0, "The library still gives the manual");
             helper.succeed();
         } finally {
             data.clear();
@@ -79,8 +78,13 @@ public final class MartialGameTests {
             helper.assertTrue(data.hasTechnique(MartialArts.CLOUD_STEP_SLASH.id()), "Cloud Step Slash was not unlocked");
             helper.assertTrue(!data.hasTechnique(MartialArts.THOUSAND_DRIZZLE.id()), "Thousand Drizzle came with the book");
             helper.assertTrue(data.slot(0).equals(Optional.of(MartialArts.CLOUD_STEP_SLASH.id())), "Cloud Step Slash is not in slot 1");
-            helper.assertTrue(!manual.isEmpty(), "Reading used up the manual");
-            manual.use(player.level(), player, InteractionHand.MAIN_HAND);
+            // One manual, one reading.
+            helper.assertTrue(manual.isEmpty(), "Reading did not use up the manual");
+            // Another copy, read by someone who knows the art already: kept (to give away), and nothing changes.
+            ItemStack another = new ItemStack(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get());
+            player.setItemInHand(InteractionHand.MAIN_HAND, another);
+            another.use(player.level(), player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(!another.isEmpty(), "A manual read by someone who knew the art was used up");
             helper.assertTrue(MartialService.data(player).equals(data), "Reading again changed something");
             helper.succeed();
         } finally {
@@ -112,6 +116,7 @@ public final class MartialGameTests {
             run.accept("martial forget azure_cloud_sword");
             helper.assertTrue(!MartialService.data(player).knowsArt(MartialArts.AZURE_CLOUD_SWORD), "forget an art");
             run.accept("martial forget long_fist");
+            run.accept("martial forget sanguine_art");
             helper.assertTrue(MartialService.data(player).equals(MartialData.EMPTY), "forgetting the art left something: " + MartialService.data(player));
             run.accept("martial learn azure_cloud_sword");
             data = MartialService.data(player);
@@ -154,6 +159,56 @@ public final class MartialGameTests {
         } finally {
             cleanup(player);
         }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "martial_power")
+    public static void aTechniqueStrikesAsItsWeaponAndItsQiAllow(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        try {
+            // An iron sword (6), 100 Qi Max: the technique as authored; 400 Qi Max: +24 %. (A tick puts the sword's attack on.)
+            player.doTick();
+            helper.assertTrue(Math.abs(com.murimblock.martial.TechniquePower.factor(player, MartialArts.AZURE_CLOUD_SWORD) - 1.0) < 1e-6, "A beginner's sword technique was scaled");
+            QiService.setQiMax(player, 400);
+            helper.assertTrue(Math.abs(com.murimblock.martial.TechniquePower.damage(player, MartialArts.AZURE_CLOUD_SWORD, 1.0) - 6 * 1.24) < 1e-4,
+                    "400 Qi Max with an iron sword: 6 x 1.24, got " + com.murimblock.martial.TechniquePower.damage(player, MartialArts.AZURE_CLOUD_SWORD, 1.0));
+            // Bare hands for the Long Fist: the hand (1) and its training (3).
+            QiService.setQiMax(player, 100);
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.doTick();
+            helper.assertTrue(Math.abs(com.murimblock.martial.TechniquePower.damage(player, MartialArts.LONG_FIST, 1.0) - 4) < 1e-4,
+                    "A beginner's trained fist should strike as 4, got " + com.murimblock.martial.TechniquePower.damage(player, MartialArts.LONG_FIST, 1.0));
+            helper.succeed();
+        } finally {
+            cleanup(player);
+        }
+    }
+
+    @GameTest(template = "foundation_arena", batch = "martial_burst", timeoutTicks = 100)
+    public static void noComboFellsAPlayerFromFullHealth(GameTestHelper helper) {
+        helper.getLevel().getServer().setPvpAllowed(true);
+        ServerPlayer attacker = player(helper), victim = player(helper);
+        com.murimblock.combat.BurstGuard.clearForTests();
+        // Three blows of 8 in a row on 20 health: 8, 4, then nothing (60 % at most in three seconds).
+        for (int i = 0; i < 3; i++) {
+            victim.invulnerableTime = 0;
+            victim.hurt(victim.damageSources().playerAttack(attacker), 8);
+        }
+        helper.assertTrue(Math.abs(victim.getHealth() - 8) < 1e-3, "A combo took more than 60 %: health " + victim.getHealth());
+        helper.assertTrue(!com.murimblock.combat.knockdown.KnockdownService.isDowned(victim), "A combo knocked a full-health player down");
+        // Three seconds later, a new combo may go on.
+        helper.runAfterDelay(com.murimblock.combat.BurstGuard.WINDOW_TICKS + 2, () -> {
+            try {
+                victim.invulnerableTime = 0;
+                victim.hurt(victim.damageSources().playerAttack(attacker), 4);
+                helper.assertTrue(Math.abs(victim.getHealth() - 4) < 1e-3, "The next combo dealt nothing: health " + victim.getHealth());
+                helper.succeed();
+            } finally {
+                com.murimblock.combat.knockdown.KnockdownService.clearForTests();
+                helper.getLevel().getServer().setPvpAllowed(false);
+                cleanup(attacker);
+                cleanup(victim);
+            }
+        });
     }
 
     @GameTest(template = "foundation_arena", batch = "martial_cast", timeoutTicks = 80)

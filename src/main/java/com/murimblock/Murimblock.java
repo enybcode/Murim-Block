@@ -22,7 +22,6 @@ import com.murimblock.mob.MurimEntities;
 import com.murimblock.network.MurimblockNetworking;
 import com.murimblock.qi.QiAttachments;
 import com.murimblock.qi.QiEvents;
-import com.murimblock.qi.charge.QiChargeEvents;
 import com.murimblock.world.MurimWorldgen;
 import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.SanctuaryPlacement;
@@ -45,16 +44,23 @@ public final class Murimblock {
         MurimEntities.register(modEventBus);
         // Blocks first: they add their block items to MurimItems before its registry is attached.
         MurimBlocks.register(modEventBus);
+        com.murimblock.martial.SanguineBlocks.register(modEventBus);
+        com.murimblock.martial.SanguineItems.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);
         ArmoredCrabEpicFight.register(modEventBus);
         EpicFightContentRegistries.register(modEventBus);
         MurimSkills.register(modEventBus);
+        com.murimblock.integration.epicfight.MurimWeaponCategories.register(MOD_ID);
+        com.murimblock.integration.epicfight.MurimWeapons.register(modEventBus);
         CombatAttachments.register(modEventBus);
         CultivationAttachments.register(modEventBus);
+        com.murimblock.cultivation.CultivationRegistries.register(modEventBus);
         QiAttachments.register(modEventBus);
         KnockdownAttachments.register(modEventBus);
         MartialService.register(modEventBus);
+        com.murimblock.martial.BloodCrystalAttachments.register(modEventBus);
+        com.murimblock.martial.SanguineParticles.register(modEventBus);
         MurimAnimations.registerMotions();
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
         EpicFightBridge.registerHooks();
@@ -63,7 +69,7 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerLoggedOut);
         NeoForge.EVENT_BUS.addListener(CombatEvents::onPlayerClone);
-        NeoForge.EVENT_BUS.addListener(CultivationEvents::onPlayerLoggedIn);
+        CultivationEvents.register();
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(QiEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(QiEvents::onLivingDeath);
@@ -71,11 +77,10 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerStarted);
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerStopped);
         NeoForge.EVENT_BUS.addListener(QiEvents::onServerTick);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerTick);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerLoggedOut);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerChangedDimension);
-        NeoForge.EVENT_BUS.addListener(QiChargeEvents::onPlayerClone);
         NeoForge.EVENT_BUS.addListener(MurimblockCommands::onRegisterCommands);
+        // A new Murim world is entered at a random point of the bubble (world/map).
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.map.MurimSpawn::onCreateSpawnPosition);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.map.MurimSurface::onServerAboutToStart);
         // The Cloud Cliff Sanctuary: built once near the spawn; every player gets the sect token that finds it.
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerStarted);
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerTick);
@@ -85,6 +90,8 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, KnockdownEvents::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, KnockdownEvents::onDeath);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onIncomingDamage);
+        // No combo kills at once: after every other change to a blow (docs/combat/technique-balance.md).
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOW, com.murimblock.combat.BurstGuard::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onDamageTaken);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onAttack);
         NeoForge.EVENT_BUS.addListener(KnockdownEvents::onRightClickItem);
@@ -105,6 +112,9 @@ public final class Murimblock {
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialService.forget(player);
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent event) -> {
+            if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialCombat.forget(player);
         });
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) -> {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) MartialCombat.forget(player);

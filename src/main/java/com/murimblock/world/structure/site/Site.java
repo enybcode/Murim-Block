@@ -50,6 +50,9 @@ public abstract class Site {
 
     public abstract void build(Canvas c, int part, int[] levels);
 
+    /** Whether the site may stand at this block of the world (its centre), before anything else is asked. */
+    public boolean allowedAt(int x, int z) { return true; }
+
     // ---------------------------------------------------------------- choosing a place
 
     /** Diagnostics (site tour): places refused for water, and for too steep ground. */

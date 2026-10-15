@@ -19,6 +19,9 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
 /** Murim entities have stable IDs; the training fixture has no natural spawn, the crabs, the crab man and the bandit do. */
 public final class MurimEntities {
     public static final DeferredRegister<EntityType<?>> TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, Murimblock.MOD_ID);
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.BloodCrystalEntity>> BLOOD_CRYSTAL =
+            TYPES.register("blood_crystal", () -> EntityType.Builder.<com.murimblock.martial.BloodCrystalEntity>of(com.murimblock.martial.BloodCrystalEntity::new,MobCategory.MISC)
+                    .sized(.75F,.75F).clientTrackingRange(8).updateInterval(1).build("murimblock:blood_crystal"));
     public static final DeferredHolder<EntityType<?>, EntityType<TrainingOpponentEntity>> TRAINING_OPPONENT =
             TYPES.register("training_opponent", () -> EntityType.Builder.of(TrainingOpponentEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("murimblock:training_opponent"));
@@ -42,6 +45,19 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<AzureSenseiEntity>> AZURE_SENSEI =
             TYPES.register("azure_sensei", () -> EntityType.Builder.of(AzureSenseiEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:azure_sensei"));
+    /** The Alliance Merchant, who trades in silver taels: a man's size, never spawned naturally (an egg, /summon). */
+    public static final DeferredHolder<EntityType<?>, EntityType<AllianceMerchantEntity>> ALLIANCE_MERCHANT =
+            TYPES.register("alliance_merchant", () -> EntityType.Builder.of(AllianceMerchantEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:alliance_merchant"));
+    /** The Orthodox Alliance's soldiers, one type for each kind (AllianceSoldierEntity.Kind): a man's size. */
+    public static final DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> ALLIANCE_SPEAR_GUARD = soldier(AllianceSoldierEntity.Kind.SPEAR_GUARD);
+    public static final DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> ALLIANCE_SWORD_DISCIPLE = soldier(AllianceSoldierEntity.Kind.SWORD_DISCIPLE);
+    public static final DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> ALLIANCE_ARCHER = soldier(AllianceSoldierEntity.Kind.ARCHER);
+    public static final DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> ALLIANCE_WARRIOR_MONK = soldier(AllianceSoldierEntity.Kind.WARRIOR_MONK);
+    public static final DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> ALLIANCE_SERGEANT = soldier(AllianceSoldierEntity.Kind.SERGEANT);
+    /** The soldiers in the order of their kinds. */
+    public static final java.util.List<DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>>> ALLIANCE_SOLDIERS =
+            java.util.List.of(ALLIANCE_SPEAR_GUARD, ALLIANCE_SWORD_DISCIPLE, ALLIANCE_ARCHER, ALLIANCE_WARRIOR_MONK, ALLIANCE_SERGEANT);
     /** The crab man's water ball; its hitbox follows the ball's scale (big 0.6, small ones smaller). */
     public static final DeferredHolder<EntityType<?>, EntityType<WaterBallEntity>> WATER_BALL =
             TYPES.register("water_ball", () -> EntityType.Builder.<WaterBallEntity>of(WaterBallEntity::new, MobCategory.MISC)
@@ -50,6 +66,33 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<QiBladeEntity>> QI_BLADE =
             TYPES.register("qi_blade", () -> EntityType.Builder.<QiBladeEntity>of(QiBladeEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F).clientTrackingRange(6).updateInterval(1).build("murimblock:qi_blade"));
+    /** A needle thrown by the flying needles (FlyingNeedleEntity). */
+    public static final DeferredHolder<EntityType<?>, EntityType<FlyingNeedleEntity>> FLYING_NEEDLE =
+            TYPES.register("flying_needle", () -> EntityType.Builder.<FlyingNeedleEntity>of(FlyingNeedleEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).clientTrackingRange(6).updateInterval(1).build("murimblock:flying_needle"));
+    /** The inner world (docs/cultivation/qi-cultivation.md): a cultivator's own darkness, a dark copy of them. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.HeartDemonEntity>> HEART_DEMON =
+            TYPES.register("heart_demon", () -> EntityType.Builder.of(com.murimblock.cultivation.inner.HeartDemonEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:heart_demon"));
+    /** The body left seated in the lotus while its owner is in their inner world. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.MeditatingBodyEntity>> MEDITATING_BODY =
+            TYPES.register("meditating_body", () -> EntityType.Builder.<com.murimblock.cultivation.inner.MeditatingBodyEntity>of(
+                            com.murimblock.cultivation.inner.MeditatingBodyEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.0F).clientTrackingRange(10).build("murimblock:meditating_body"));
+    /** The remnant soul of an old master, in each inner world: it gives the day's missions. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.RemnantSoulEntity>> REMNANT_SOUL =
+            TYPES.register("remnant_soul", () -> EntityType.Builder.of(com.murimblock.cultivation.inner.RemnantSoulEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F).clientTrackingRange(10).build("murimblock:remnant_soul"));
+    /** A mote of scattered Qi (a mission of the inner world). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.cultivation.inner.QiMoteEntity>> QI_MOTE =
+            TYPES.register("qi_mote", () -> EntityType.Builder.<com.murimblock.cultivation.inner.QiMoteEntity>of(
+                            com.murimblock.cultivation.inner.QiMoteEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F).clientTrackingRange(10).build("murimblock:qi_mote"));
+    private static DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>> soldier(AllianceSoldierEntity.Kind kind) {
+        return TYPES.register(kind.id, () -> EntityType.Builder.<AllianceSoldierEntity>of((type, level) -> new AllianceSoldierEntity(type, level, kind), MobCategory.CREATURE)
+                .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:" + kind.id));
+    }
+
     private MurimEntities() { }
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -63,7 +106,12 @@ public final class MurimEntities {
                 .add(EpicFightAttributes.IMPACT, 1.5).build());
         event.put(MOUNTAIN_BANDIT.get(), MountainBanditEntity.createBanditAttributes().build());
         event.put(BANDIT_CHIEF.get(), BanditChiefEntity.createChiefAttributes().build());
+        event.put(HEART_DEMON.get(), com.murimblock.cultivation.inner.HeartDemonEntity.createAttributes().build());
+        event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
         event.put(AZURE_SENSEI.get(), AzureSenseiEntity.createSenseiAttributes().build());
+        event.put(ALLIANCE_MERCHANT.get(), AllianceMerchantEntity.createMerchantAttributes().build());
+        for (AllianceSoldierEntity.Kind kind : AllianceSoldierEntity.Kind.values())
+            event.put(ALLIANCE_SOLDIERS.get(kind.ordinal()).get(), kind.attributes().build());
     }
     private static void spawnPlacements(RegisterSpawnPlacementsEvent event) {
         // Biomes, weight and group size live in data/murimblock/neoforge/biome_modifier/armored_crab_spawns.json.
