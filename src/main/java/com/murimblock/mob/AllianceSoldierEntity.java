@@ -107,6 +107,10 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
 
     private final Kind kind;
     private int angerTime, ticksUntilNextAlert;
+    /** On patrol (AllianceWanderers): the leader picks far points to walk to, the others follow him. */
+    private boolean patrolLeader;
+    @Nullable private UUID patrolLeaderId;
+    @Nullable private BlockPos patrolTarget;
     @Nullable private UUID angerTarget;
 
     public AllianceSoldierEntity(EntityType<? extends AllianceSoldierEntity> type, Level level, Kind kind) {
@@ -124,6 +128,7 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         goalSelector.addGoal(0, new FloatGoal(this));
         // The archer shoots (Epic Fight leaves a bow to the mob's own goals); the others fight with Epic Fight's moves.
         goalSelector.addGoal(2, new ShootGoal(this));
+        goalSelector.addGoal(4, new PatrolGoal(this));
         goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 0.9));
         WaterAvoidingRandomStrollGoal stroll = new WaterAvoidingRandomStrollGoal(this, 0.6);
         stroll.setInterval(200);
@@ -233,6 +238,81 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         }
     }
 
+    // ---- on patrol
+
+    /** How far a patrol's leader walks before choosing again (blocks), and how close the others keep to him. */
+    public static final int PATROL_STEP_MIN = 48, PATROL_STEP_MAX = 96, PATROL_KEEP = 5;
+
+    /** Makes him the leader of a patrol. */
+    public void leadPatrol() {
+        patrolLeader = true;
+        patrolLeaderId = null;
+    }
+
+    /** Puts him in the patrol of this leader. */
+    public void followPatrol(AllianceSoldierEntity leader) {
+        patrolLeader = false;
+        patrolLeaderId = leader.getUUID();
+    }
+
+    public boolean isPatrolLeader() { return patrolLeader; }
+    @Nullable public UUID patrolLeaderId() { return patrolLeaderId; }
+    @Nullable public BlockPos patrolTarget() { return patrolTarget; }
+    public boolean onPatrol() { return patrolLeader || patrolLeaderId != null; }
+
+    /**
+     * A patrol on the move, when nobody is fought: the leader walks at a steady pace to a point 48 to 96 blocks off, then
+     * chooses another (and another if the way is blocked); the others keep within 5 blocks of him. A patrol whose leader
+     * is gone takes the first of them for its new leader.
+     */
+    static final class PatrolGoal extends Goal {
+        private final AllianceSoldierEntity soldier;
+        private int stuck;
+
+        PatrolGoal(AllianceSoldierEntity soldier) {
+            this.soldier = soldier;
+            setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override public boolean canUse() {
+            return soldier.onPatrol() && soldier.getTarget() == null && !soldier.isVehicle();
+        }
+
+        @Override public void tick() {
+            if (!(soldier.level() instanceof ServerLevel level)) return;
+            if (soldier.patrolLeader) lead(level);
+            else follow(level);
+        }
+
+        private void lead(ServerLevel level) {
+            BlockPos target = soldier.patrolTarget;
+            boolean arrived = target != null && soldier.blockPosition().closerThan(target, 4);
+            if (target == null || arrived || ++stuck > 400) {
+                stuck = 0;
+                double angle = soldier.getRandom().nextDouble() * Math.PI * 2;
+                int step = PATROL_STEP_MIN + soldier.getRandom().nextInt(PATROL_STEP_MAX - PATROL_STEP_MIN + 1);
+                int x = soldier.getBlockX() + (int) Math.round(Math.cos(angle) * step), z = soldier.getBlockZ() + (int) Math.round(Math.sin(angle) * step);
+                soldier.patrolTarget = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
+                target = soldier.patrolTarget;
+            }
+            if (soldier.getNavigation().isDone()) soldier.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, 0.6);
+        }
+
+        private void follow(ServerLevel level) {
+            if (!(level.getEntity(soldier.patrolLeaderId) instanceof AllianceSoldierEntity leader) || !leader.isAlive()) {
+                // The leader is gone: the patrol goes on under the first who notices.
+                UUID lost = soldier.patrolLeaderId;
+                soldier.leadPatrol();
+                for (AllianceSoldierEntity other : level.getEntitiesOfClass(AllianceSoldierEntity.class, soldier.getBoundingBox().inflate(16),
+                        o -> o != soldier && lost.equals(o.patrolLeaderId)))
+                    other.followPatrol(soldier);
+                return;
+            }
+            if (soldier.distanceToSqr(leader) > PATROL_KEEP * PATROL_KEEP) soldier.getNavigation().moveTo(leader, 0.75);
+            else soldier.getNavigation().stop();
+        }
+    }
+
     // ---- his post
 
     /** Keeps him about his post, around this block. */
@@ -251,25 +331,37 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType type, @Nullable SpawnGroupData data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, type, data);
         populateDefaultEquipmentSlots(level.getRandom(), difficulty);
-        if (!hasRestriction()) setHome(blockPosition());
-        setPersistenceRequired();
+        // Placed (an egg, a command, a structure), he keeps his post for good; out walking (a patrol, a monk on the
+        // road, AllianceWanderers), he goes where he likes and is gone once no one is near.
+        boolean wandering = type == MobSpawnType.NATURAL || type == MobSpawnType.PATROL;
+        if (!wandering) {
+            if (!hasRestriction()) setHome(blockPosition());
+            setPersistenceRequired();
+        }
         return result;
     }
 
+    /** Only those out walking can go (Mob.checkDespawn leaves alone those whose persistence is required). */
     @Override public boolean removeWhenFarAway(double distance) {
-        return false;
+        return true;
     }
 
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (hasRestriction()) tag.put("Home", NbtUtils.writeBlockPos(getRestrictCenter()));
         addPersistentAngerSaveData(tag);
+        if (patrolLeader) tag.putBoolean("PatrolLeader", true);
+        if (patrolLeaderId != null) tag.putUUID("PatrolLeaderId", patrolLeaderId);
+        if (patrolTarget != null) tag.put("PatrolTarget", NbtUtils.writeBlockPos(patrolTarget));
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         NbtUtils.readBlockPos(tag, "Home").ifPresent(this::setHome);
         readPersistentAngerSaveData(level(), tag);
+        patrolLeader = tag.getBoolean("PatrolLeader");
+        patrolLeaderId = tag.hasUUID("PatrolLeaderId") ? tag.getUUID("PatrolLeaderId") : null;
+        patrolTarget = NbtUtils.readBlockPos(tag, "PatrolTarget").orElse(null);
     }
 
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.PLAYER_HURT; }

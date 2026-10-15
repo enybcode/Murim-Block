@@ -31,7 +31,8 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
   monstre. Frappé, un soldat se retourne contre celui qui l'a frappé et appelle tous les soldats autour de lui (puis de
   nouveau toutes les 4 à 6 s tant qu'il le voit). Ils restent en colère 20 à 39 s après le dernier coup, puis oublient.
   Un monstre qui frappe l'un d'eux est combattu de la même façon.
-- Ils restent autour de leur poste (10 blocs) et ne disparaissent jamais.
+- Placés (avant-poste, œuf, commande), ils restent autour de leur poste (10 blocs) et ne disparaissent jamais ;
+  les patrouilles et les moines errants vont où ils veulent.
 - **Combat (Epic Fight, tout est parable)** :
   - jian (disciple, sergent avec ou sans bouclier) : les coupes de base du Nuage Azur, Drifting Cut, Returning Cut,
     Piercing Mist, et de temps en temps Rising Cloud puis Falling Rain ;
@@ -46,6 +47,15 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
 - **Avant-poste de l'Alliance** (`AllianceOutpost`, `docs/structures`) : deux gardes à la lance juste derrière la
   porte, deux disciples entre les mannequins d'entraînement, l'archer sur la vigie de la tour de guet, le sergent dans
   la grande salle près du commandant, le moine à l'infirmerie.
+- **Patrouilles** (`AllianceWanderers`, demande d'Enzo du 15/10/2026) : un sergent mène deux gardes à la lance, un
+  disciple d'épée et un archer. Le sergent marche vers un point à 48-96 blocs, puis en choisit un autre ; les autres le
+  suivent à moins de 5 blocs ; s'il tombe, l'un d'eux prend la tête. Dans les terres de l'Alliance (tag de biome
+  `alliance_patrols` : tous les biomes Murim sauf le désert du Culte et le monde intérieur), environ une toutes les dix
+  minutes près d'un joueur qui n'en a aucune à 128 blocs.
+- **Moines guerriers errants** sur les routes de montagne (tag `warrior_monks` : pics de la mer de nuages, karst de jade,
+  Tianshan, Kunlun), seuls ou à deux, environ un toutes les cinq minutes près d'un joueur qui en a moins de deux autour.
+- Patrouilles et moines errants apparaissent à 24-48 blocs du joueur, en surface, au sec, et repartent (disparaissent)
+  quand plus personne n'est près ; ceux de l'avant-poste, des œufs et des commandes restent pour de bon.
 - Œufs (onglet Murimblock) et `/summon murimblock:alliance_spear_guard` (`_sword_disciple`, `_archer`,
   `_warrior_monk`, `_sergeant`).
 
@@ -53,5 +63,6 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
 
 `AllianceSoldierGameTests` : l'arme de chacun (Epic Fight y voit une lance, une épée), aucun ne disparaît ; un disciple
 n'attaque ni le bandit ni le joueur à côté de lui ; l'archer frappé par un zombie lui tire dessus ; un garde frappé et le sergent à côté se retournent contre le
-joueur et restent en colère comme des piglins ; butin en taëls. `SiteGameTests.allianceOutpostIsWholeAndCarried` compte la garnison. Portraits en vrai client :
+joueur et restent en colère comme des piglins ; une patrouille de cinq suit son sergent et se trouve un nouveau chef s'il tombe ;
+les moines vont dans les montagnes, les patrouilles pas dans le désert du Culte ; butin en taëls. `SiteGameTests.allianceOutpostIsWholeAndCarried` compte la garnison. Portraits en vrai client :
 `gradlew -PgameTests runMugshotTour`.
