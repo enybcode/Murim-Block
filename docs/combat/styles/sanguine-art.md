@@ -10,10 +10,10 @@ La jauge est plafonnée à 20 (15/10/2026, demande d'Enzo ; 10 avant). Un M1 qui
 
 | Case initiale | Technique | Qi | Recharge | Action |
 |---|---|---:|---:|---|
-| 1 | Blood Crystal | 18 | 160 ticks | Maintenir pour charger un cristal à la main droite, relâcher pour lancer. Charge minimum 12 ticks, maximum 30 ticks. Lancement 6 ticks après le geste ; portée 24 blocs, vitesse 0,9 bloc/tick, dégâts ×1,2 de l'attaque. Aucun soin. |
-| 2 | Scarlet Tear | 24 | 200 ticks | Arc frontal Epic Fight, dégâts ×1,5, stun long. Ajoute 3 points à la jauge sur un contact valide. |
-| 3 | Blood Crystal Form | 200 | 80 ticks | Jauge pleine requise. Consomme la jauge et active la surcouche finale avec **30 % de réduction des dégâts reçus** (15 % avant le 15/10/2026, demande d'Enzo), fixe et globale. |
-| 4 | Crystal Barrage | 18 | 120 ticks | Lance tous les cristaux gagnés aux M1, un tous les 2 ticks après un geste de 6 ticks. Chaque projectile inflige ×0,45 de l'attaque : davantage de cristaux donne davantage de dégâts cumulés. |
+| 1 | Blood Crystal | 150 | 160 ticks | Maintenir pour charger un cristal à la main droite, relâcher pour lancer. Charge minimum 12 ticks, maximum 30 ticks. Lancement 6 ticks après le geste ; portée 24 blocs, vitesse 0,9 bloc/tick, dégâts ×1,2 de l'attaque. Aucun soin. |
+| 2 | Scarlet Tear | 225 | 200 ticks | Arc frontal Epic Fight, dégâts ×1,5, stun long. Ajoute 3 points à la jauge sur un contact valide. |
+| 3 | Blood Crystal Form | 300 | 80 ticks | Jauge pleine requise. Consomme la jauge et active la surcouche finale avec **30 % de réduction des dégâts reçus** (15 % avant le 15/10/2026, demande d'Enzo), fixe et globale. |
+| 4 | Crystal Barrage | 180 | 120 ticks | Lance tous les cristaux gagnés aux M1, un tous les 2 ticks après un geste de 6 ticks. Chaque projectile inflige ×0,45 de l'attaque : davantage de cristaux donne davantage de dégâts cumulés. |
 
 Dans la forme, les M1 réussis ajoutent un cristal dorsal, jusqu'à 10. Scarlet Tear ne génère pas de cristaux dorsaux. La salve consomme immédiatement les cristaux gagnés ; **la forme et la protection restent actives**. Les M1 suivants peuvent regagner des cristaux. Les pointes fixes de la surcouche restent visibles à zéro cristal gagné.
 
@@ -138,7 +138,7 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 
 ## Art de haut niveau (15/10/2026)
 
-Le parchemin n'enseigne qu'à partir de **Qi Crystallization** ; coûts en Qi (100, 150, 200, 120, 500), main durcie par le sang (+4) et parts retouchées : voir `docs/combat/technique-balance.md`. Icône de Blood Iceberg redessinée en temple (mur de briques, flèches d'or et lanternes, sang qui coule).
+Le parchemin n'enseigne qu'à partir de **Qi Crystallization** ; coûts en Qi (150, 225, 300, 180, 750 : une fois et demie ceux du premier ajustement, 15/10/2026), main durcie par le sang (+4) et parts retouchées : voir `docs/combat/technique-balance.md`. Icône de Blood Iceberg redessinée en temple (mur de briques, flèches d'or et lanternes, sang qui coule).
 
 ### Les règles du temple (15/10/2026, demande d'Enzo)
 

@@ -191,14 +191,14 @@ public final class MartialArts {
      * cost Qi for a reserve of 3 000 to 5 000, and strike accordingly (TechniquePower.BLOOD_TRAINING).
      */
     public static final com.murimblock.cultivation.CultivationRealm SANGUINE_REALM = com.murimblock.cultivation.CultivationRealm.QI_CRYSTALLIZATION;
-    public static final Technique BLOOD_CRYSTAL = new Technique(id("bloodbane_drain"), SANGUINE_ART, 100, 160);
+    public static final Technique BLOOD_CRYSTAL = new Technique(id("bloodbane_drain"), SANGUINE_ART, 150, 160);
     public static final int BLOOD_CRYSTAL_MIN_CHARGE = BloodCrystalCharge.MIN_TICKS, BLOOD_CRYSTAL_MAX_CHARGE = BloodCrystalCharge.AUTO_RELEASE_TICKS;
-    public static final Technique SCARLET_TEAR = new Technique(id("scarlet_tear"), SANGUINE_ART, 150, 200);
+    public static final Technique SCARLET_TEAR = new Technique(id("scarlet_tear"), SANGUINE_ART, 225, 200);
     /** The previous third ability now activates the final crystal form. */
-    public static final Technique BLOOD_CRYSTAL_FORM = new Technique(id("devourer_of_worlds"), SANGUINE_ART, 200, 80);
-    public static final Technique CRYSTAL_BARRAGE = new Technique(id("crystal_barrage"), SANGUINE_ART, 120, 120);
+    public static final Technique BLOOD_CRYSTAL_FORM = new Technique(id("devourer_of_worlds"), SANGUINE_ART, 300, 80);
+    public static final Technique CRYSTAL_BARRAGE = new Technique(id("crystal_barrage"), SANGUINE_ART, 180, 120);
     /** A mountain of blood crystal under the player for 60 s (BloodIceberg); 9 minutes to recover. */
-    public static final Technique BLOOD_ICEBERG = new Technique(id("blood_iceberg"), SANGUINE_ART, 500, 10800);
+    public static final Technique BLOOD_ICEBERG = new Technique(id("blood_iceberg"), SANGUINE_ART, 750, 10800);
     /** Fixed bare-hand chain from the approved Sanguine combo, with no configurable strike slots. */
     public static final Passive CRIMSON_STANCE = new Passive(id("crimson_stance"), List.of(), List.of());
     public static final String CRIMSON_CONTACT_HITS = "crimson_contact.hits";

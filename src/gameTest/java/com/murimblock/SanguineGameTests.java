@@ -130,7 +130,7 @@ public final class SanguineGameTests {
         });
         h.runAfterDelay(65,()->{
             h.assertTrue(z.getHealth()<500,"Thrown crystal missed: "+z.getHealth());
-            h.assertTrue(p.getHealth()==10,"Crystal healed its caster");h.assertTrue(QiService.getQi(p)>=900&&QiService.getQi(p)<903,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z);
+            h.assertTrue(p.getHealth()==10,"Crystal healed its caster");h.assertTrue(QiService.getQi(p)>=850&&QiService.getQi(p)<853,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z);
         });
     }
     private static BloodCrystalEntity held(GameTestHelper h,ServerPlayer p) {
@@ -172,7 +172,7 @@ public final class SanguineGameTests {
             h.assertTrue(z.getHealth()<near.getHealth(),"The body struck took less than the one beside: "+z.getHealth()+" / "+near.getHealth());
             for(int dx=-2;dx<=2;dx++)for(int dz=0;dz<=10;dz++)
                 h.assertTrue(h.getLevel().getBlockState(BlockPos.containing(p.getX()+dx,119,8.5+dz)).is(Blocks.STONE),"The explosion broke a block");
-            h.assertTrue(QiService.getQi(p)>=900&&QiService.getQi(p)<903,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
+            h.assertTrue(QiService.getQi(p)>=850&&QiService.getQi(p)<853,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
         });
     }
     @GameTest(template="foundation_arena",batch="scarlet_sword",timeoutTicks=150)
