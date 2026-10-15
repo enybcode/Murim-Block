@@ -84,7 +84,7 @@ public final class SanguineEffects {
 
     private static Motion motion(PlayerPatch<?> patch) {
         if (patch == null) return null;
-        var animations = java.util.List.of(MurimAnimations.SANGUINE_CRYSTAL_THROW, MurimAnimations.SCARLET_TEAR,
+        var animations = java.util.List.of(MurimAnimations.SANGUINE_CRYSTAL_THROW, MurimAnimations.SANGUINE_SWORD_THROW,
                 MurimAnimations.SANGUINE_CRYSTAL_FORM, MurimAnimations.SANGUINE_CRYSTAL_BARRAGE);
         int[] kinds = {1, 2, 3, 6};
         for (int i = 0; i < animations.size(); i++) {
@@ -101,7 +101,7 @@ public final class SanguineEffects {
 
     /** The light at the move's peak, once: a throw, a tear, the crystallization (stronger) or a barrage. */
     private static void flash(Seen s, Player p, float t) {
-        float peak = s.kind == 1 ? .30F : s.kind == 2 ? .80F : s.kind == 3 ? .55F : .30F;
+        float peak = s.kind == 1 ? .30F : s.kind == 2 ? .35F : s.kind == 3 ? .55F : .30F;
         if (s.flashed || s.last >= peak || t < peak) return;
         s.flashed = true;
         if (!PhotonLights.isEnabled()) return;

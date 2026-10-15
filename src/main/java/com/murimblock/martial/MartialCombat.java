@@ -183,7 +183,13 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), pending);
             return;
         }
-        ResourceLocation credit = AzureCloudSword.creditOf(animation);
+        // With Scarlet Tear's blood sword out, its cuts (the sword strikes) belong to the Sanguine Art.
+        ResourceLocation credit = SanguineArt.holdsSword(player) ? SanguineArt.creditOf(player, animation) : null;
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
+            return;
+        }
+        credit = AzureCloudSword.creditOf(animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.AZURE_CLOUD_SWORD, credit, AzureCloudSword.isStrike(animation), false));
             return;

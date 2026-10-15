@@ -43,7 +43,7 @@ public final class MartialService {
     /** Game time at which each player's techniques are ready again (not saved: a restart resets cooldowns). */
     private static final Map<UUID, Map<ResourceLocation, Long>> READY_AT = new HashMap<>();
 
-    public enum CastResult { CAST, NO_TECHNIQUE, NOT_IN_COMBAT, HINDERED, COOLDOWN, NO_QI, NO_WEAPON, NO_ROOM, FAILED }
+    public enum CastResult { CAST, NO_TECHNIQUE, NOT_IN_COMBAT, HINDERED, COOLDOWN, NO_QI, NO_WEAPON, NO_ROOM, SWORD_OUT, FAILED }
 
     private MartialService() {
     }
@@ -92,6 +92,9 @@ public final class MartialService {
         // or the attack under way (the time up there is for other attacks).
         if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && MartialCombat.hovering(player) && data(player).hasTechnique(id))
             return AzureCloudSword.slam(player) ? CastResult.CAST : CastResult.FAILED;
+        // Scarlet Tear's key again while its blood sword is out: the throw, free, whatever the cooldown.
+        if (technique == MartialArts.SCARLET_TEAR && SanguineArt.holdsSword(player) && data(player).hasTechnique(id))
+            return SanguineArt.throwSword(player) ? CastResult.CAST : CastResult.FAILED;
         CastResult check = check(player, technique);
         if (check != CastResult.CAST) return check;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
@@ -121,6 +124,8 @@ public final class MartialService {
     private static CastResult check(ServerPlayer player, @Nullable MartialArts.Technique technique) {
         if (technique == null || !data(player).hasTechnique(technique.id())) return CastResult.NO_TECHNIQUE;
         if (!CombatService.isInCombatMode(player)) return CastResult.NOT_IN_COMBAT;
+        // A blood sword in hand takes the hands and the mind: nothing else until it is thrown.
+        if (SanguineArt.holdsSword(player)) return CastResult.SWORD_OUT;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || MeditationService.isMeditating(player)) return CastResult.HINDERED;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);

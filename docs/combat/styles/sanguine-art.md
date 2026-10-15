@@ -65,3 +65,11 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 - Dans la main, l'épée prolonge l'avant-bras (direction coude → main calculée à chaque image) ; plus petite en première personne.
 - Une autre animation qui commence fait disparaître l'épée encore en main.
 - Fichiers : `node scripts/animation/blood-sword.cjs` (modèle et animations), `sanguine-art.cjs` (le corps). Test : `scarletTearSwingsItsBloodSwordThenThrowsItToExplode` ; séquence « scarlet-sword » de `runSanguineTour`.
+
+## Scarlet Tear en double activation (15/10/2026, demande d'Enzo)
+
+- **1re activation** (24 Qi, recharge 10 s) : l'épée de sang se forme dans la main (animation `sanguine_sword_summon`, 1 s : l'avant-bras levé, l'épée pousse vers le ciel, puis un moulinet et la garde). Elle reste en main : **on se bat avec comme avec une épée**. Le clic gauche enchaîne les quatre coupes d'épée (copies des frappes Azure, `sanguine_blade_*`, sans bouffée d'Epic Fight), +5 d'attaque tant qu'elle est sortie ; chaque coupe qui touche donne +1 à la jauge, comme un coup de poing.
+- **Tant qu'elle est sortie, aucune autre technique** (refus « throw your blood sword first »).
+- **2e activation** (gratuite, malgré la recharge, comme le plongeon du croissant) : le **lancer de javelot** (`sanguine_sword_throw`, 0,95 s, l'épée part pointe la première à 0,35 s) ; elle explose à l'impact. Un lancer qui touche donne +3 à la jauge (hors forme) et compte pour la quête Scarlet Release.
+- Elle disparaît si le joueur quitte le mode combat, prend un objet en main, est mis K.O. ou meurt.
+- L'ancien arc de cercle est retiré : les coupes à l'épée le remplacent.

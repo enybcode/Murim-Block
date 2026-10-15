@@ -107,7 +107,9 @@ public final class SanguineTour {
                 case 92,150 -> server.execute(()->{MartialService.resetCooldowns(self(server));QiService.setQi(self(server),100);});
                 case 94,154 -> press(mc,1);
                 case 96,156 -> mc.options.keyHotbarSlots[1].setDown(false);
-                case 195 -> server.execute(()->check(SanguineArt.state(self(server)).gauge()==7,"one M1 and two Scarlet casts build seven gauge points"));
+                case 195 -> server.execute(()->check(SanguineArt.state(self(server)).gauge()==4,"one M1 and a landed sword throw build four gauge points: "+SanguineArt.state(self(server))));
+                // Three more M1 make seven; the rest of the gauge is topped up for the form.
+                case 262 -> server.execute(()->{var p=self(server);p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(10,false,0));});
                 case 268 -> server.execute(()->{check(SanguineArt.state(self(server)).gauge()==10&&!SanguineArt.state(self(server)).active(),"full gauge waits for manual activation: "+SanguineArt.state(self(server)));QiService.setQi(self(server),100);});
                 case 274 -> press(mc,2);
                 case 276 -> mc.options.keyHotbarSlots[2].setDown(false);
@@ -145,29 +147,37 @@ public final class SanguineTour {
                 case 703 -> mc.options.keyHotbarSlots[0].setDown(false);
                 case 745 -> server.execute(()->{check(zombie.getHealth()<500,"the great crystal strikes: "+zombie.getHealth());
                     check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>0,"its explosion throws Photon crystal shards");});
-                // Scarlet Tear's blood sword: it forms in the hand, the arc strikes, the sword is thrown and explodes.
-                case 765 -> server.execute(()->{target(server,2.2);var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,100);
+                // Scarlet Tear's blood sword: summoned, fought with (two cuts), then thrown like a javelin on the second press.
+                case 765 -> server.execute(()->{target(server,2.0);var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,100);
                     p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,com.murimblock.martial.BloodCrystalState.EMPTY);});
                 case 770 -> {view(mc,4.6,1.3,1.0);shardsBefore=com.murimblock.client.BloodCrystalEffects.shardsThrown();}
                 case 774 -> press(mc,1);
                 case 776 -> mc.options.keyHotbarSlots[1].setDown(false);
-                case 786 -> server.execute(()->check(SanguineArt.holdsSword(self(server)),"Scarlet Tear forms a blood sword in the hand"));
-                case 800 -> server.execute(()->check(zombie.getHealth()<500,"the sword's arc strikes: "+zombie.getHealth()));
-                case 820 -> {check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>shardsBefore,"the thrown sword explodes");
-                    server.execute(()->{MartialService.resetCooldowns(self(server));QiService.setQi(self(server),100);});}
-                case 828 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
-                case 832 -> press(mc,1);
-                case 834 -> mc.options.keyHotbarSlots[1].setDown(false);
-                case 846 -> capture(mc,"sword-first-person.png");
-                case 852 -> capture(mc,"sword-first-person-coiled.png");
-                case 880 -> finish(mc);
+                case 796 -> {check(SanguineArt.holdsSword(mc.player),"Scarlet Tear summons a blood sword in the hand");
+                    server.execute(()->check(MartialService.castSlot(self(server),2)==MartialService.CastResult.SWORD_OUT,"no other technique while the sword is out"));}
+                case 798,812 -> {EpicFightKeyMappings.ATTACK.setDown(true);mc.options.keyAttack.setDown(true);KeyMapping.click(EpicFightKeyMappings.ATTACK.getKey());attackReleaseAt=ticks+2;}
+                case 826 -> server.execute(()->check(zombie.getHealth()<500,"the sword cuts as a sword (M1): "+zombie.getHealth()));
+                case 832 -> {server.execute(()->{target(server,7);QiService.setQi(self(server),100);});}
+                case 836 -> press(mc,1);
+                case 838 -> mc.options.keyHotbarSlots[1].setDown(false);
+                case 870 -> {check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>shardsBefore,"the second press throws the sword, which explodes");
+                    server.execute(()->{check(zombie.getHealth()<500,"the thrown sword strikes: "+zombie.getHealth());MartialService.resetCooldowns(self(server));QiService.setQi(self(server),100);});}
+                case 878 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
+                case 882 -> press(mc,1);
+                case 884 -> mc.options.keyHotbarSlots[1].setDown(false);
+                case 892 -> capture(mc,"sword-first-person-forming.png");
+                case 906 -> capture(mc,"sword-first-person.png");
+                case 908 -> press(mc,1);
+                case 910 -> mc.options.keyHotbarSlots[1].setDown(false);
+                case 913 -> capture(mc,"sword-first-person-throw.png");
+                case 940 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;
             if(ticks>=470&&ticks<=495&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_THROW))throwSeen=true;
             if(ticks>=504&&ticks<=545&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_BARRAGE))barrageSeen=true;
             record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,304);
-            record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);record(mc,"scarlet-sword",772,820);record(mc,"sword-first",832,862);
+            record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);record(mc,"scarlet-sword",772,866);
             // Hold key 1 for the whole great charge: the key state is reset between ticks.
             if(ticks>640&&ticks<703)mc.options.keyHotbarSlots[0].setDown(true);record(mc,"barrage",502,548);
         }catch(Exception e){check(false,"tour exception: "+e);finish(mc);}

@@ -171,23 +171,35 @@ public final class SanguineGameTests {
             h.assertTrue(QiService.getQi(p)>=82&&QiService.getQi(p)<83,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
         });
     }
-    @GameTest(template="foundation_arena",batch="scarlet_sword",timeoutTicks=110)
-    public static void scarletTearSwingsItsBloodSwordThenThrowsItToExplode(GameTestHelper h) {
-        var p=adept(h);var near=target(h,p,0,1.6);var far=target(h,p,0,7);far.setNoGravity(true);
+    @GameTest(template="foundation_arena",batch="scarlet_sword",timeoutTicks=150)
+    public static void theBloodSwordIsFoughtWithThenThrownOnTheSecondPress(GameTestHelper h) {
+        var p=adept(h);var near=target(h,p,0,1.6);var far=target(h,p,0,7);
         MartialService.unlock(p,MartialArts.SCARLET_TEAR);MartialService.assign(p,1,MartialArts.SCARLET_TEAR.id());
-        h.runAfterDelay(2,()->cast(h,p,1));ticks(h,p,100);
-        h.runAfterDelay(10,()->h.assertTrue(SanguineArt.holdsSword(p),"No blood sword forming in the hand"));
-        // The arc lands 0.75 to 0.9 s in, on the body in reach only.
-        h.runAfterDelay(24,()->{
-            h.assertTrue(near.getHealth()<500,"The arc missed the body in reach: "+near.getHealth());
-            h.assertTrue(far.getHealth()==500,"The arc reached 7 blocks: "+far.getHealth());
-            h.assertTrue(SanguineArt.state(p).gauge()==3,"The arc did not build three gauge points: "+SanguineArt.state(p));
-            near.discard();
+        float bare=(float)p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        h.runAfterDelay(2,()->cast(h,p,1));ticks(h,p,140);
+        // Out: a sword in hand, struck with as a sword; nothing else may be cast.
+        h.runAfterDelay(30,()->{
+            h.assertTrue(SanguineArt.holdsSword(p),"No blood sword out");
+            var patch=EpicFightBridge.patch(p);
+            var chain=patch.getHoldingItemCapability(InteractionHand.MAIN_HAND).getAutoAttackMotion(patch);
+            h.assertTrue(chain.getFirst()==MurimAnimations.SANGUINE_BLADE_DRIFT,"The sword does not cut as a sword: "+chain.getFirst());
+            h.assertTrue(p.getAttributeValue(Attributes.ATTACK_DAMAGE)>=bare+SanguineArt.SWORD_DAMAGE-.01,"The sword adds no attack: "+p.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            h.assertTrue(MartialService.castSlot(p,0)==MartialService.CastResult.SWORD_OUT,"Another technique was cast with the sword out");
+            QiService.setQi(p,100);face(p,0);patch.playAnimationSynchronized(MurimAnimations.SANGUINE_BLADE_DRIFT,0);
         });
-        // Thrown at 1.35 s, the sword explodes on the body it is aimed at.
-        h.runAfterDelay(95,()->{
+        h.runAfterDelay(55,()->{
+            h.assertTrue(near.getHealth()<500,"The sword's cut missed: "+near.getHealth());
+            h.assertTrue(SanguineArt.state(p).gauge()==1,"A sword cut did not build the gauge: "+SanguineArt.state(p));
+            near.discard();idle(p);
+            float qi=(float)QiService.getQi(p);cast(h,p,1);
+            h.assertTrue(QiService.getQi(p)>=qi,"The throw cost Qi: "+qi+" -> "+QiService.getQi(p));
+        });
+        // The second press throws it like a javelin: it leaves at 0.35 s and explodes on the body aimed at.
+        h.runAfterDelay(130,()->{
             h.assertTrue(!SanguineArt.holdsSword(p),"The sword was never thrown");
-            h.assertTrue(far.getHealth()<500,"The thrown sword missed: "+far.getHealth());end(h,p,far);
+            h.assertTrue(p.getAttribute(Attributes.ATTACK_DAMAGE).getModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("murimblock","blood_sword"))==null,"The thrown sword left its attack bonus");
+            h.assertTrue(far.getHealth()<500,"The thrown sword missed: "+far.getHealth());
+            h.assertTrue(SanguineArt.state(p).gauge()==4,"The landed throw did not add three: "+SanguineArt.state(p));end(h,p,far);
         });
     }
     @GameTest(template="foundation_arena",batch="crystal_wall",timeoutTicks=90)
@@ -214,13 +226,14 @@ public final class SanguineGameTests {
             h.assertTrue(!EpicFightBridge.patch(p).getEntityState().inaction(),"Failed release kept actions locked");end(h,p);
         });
     }
-    @GameTest(template="foundation_arena",batch="crystal_gauge",timeoutTicks=90)
-    public static void oneM1AndOneScarletBuildOneAndThreePointsAcrossSeveralTargets(GameTestHelper h) {
+    @GameTest(template="foundation_arena",batch="crystal_gauge",timeoutTicks=110)
+    public static void oneM1AndOneLandedSwordThrowBuildOneAndThreePoints(GameTestHelper h) {
         var p=adept(h);var z=target(h,p,0,1.3);var second=target(h,p,.25,1.3);
         MartialService.unlock(p,MartialArts.SCARLET_TEAR);MartialService.assign(p,1,MartialArts.SCARLET_TEAR.id());
-        h.runAfterDelay(5,()->strike(p));ticks(h,p,75);
-        h.runAfterDelay(22,()->{h.assertTrue(SanguineArt.state(p).gauge()==1,"Multi-target M1 multiplied gauge: "+SanguineArt.state(p)+", targetHealth="+z.getHealth()+", pos="+p.position()+", target="+z.position()+", second="+second.position());idle(p);cast(h,p,1);});
-        h.runAfterDelay(70,()->{h.assertTrue(SanguineArt.state(p).gauge()==4,"Scarlet did not add exactly three: "+SanguineArt.state(p));end(h,p,z,second);});
+        h.runAfterDelay(5,()->strike(p));ticks(h,p,100);
+        h.runAfterDelay(22,()->{h.assertTrue(SanguineArt.state(p).gauge()==1,"Multi-target M1 multiplied gauge: "+SanguineArt.state(p));idle(p);cast(h,p,1);});
+        h.runAfterDelay(50,()->{h.assertTrue(SanguineArt.state(p).gauge()==1,"Summoning the sword built gauge: "+SanguineArt.state(p));cast(h,p,1);});
+        h.runAfterDelay(95,()->{h.assertTrue(SanguineArt.state(p).gauge()==4,"The landed throw did not add exactly three: "+SanguineArt.state(p));end(h,p,z,second);});
     }
     @GameTest(template="foundation_arena",batch="crystal_manual",timeoutTicks=680)
     public static void fullGaugeNeedsTheKeyAndFormLastsBeyondThirtySeconds(GameTestHelper h) {

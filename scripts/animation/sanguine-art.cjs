@@ -90,44 +90,38 @@ const throwing=[K(0,C),
  K(.42,pose({y:.11,h:.61,turn:-28,lean:-16},{Arm_R:[['x',72],['y',-4],['z',24]],Hand_R:[['x',8]]})),
  K(.72,pose({h:.635,turn:-18})),K(1.05,G)];
 
-// Scarlet Tear (15/10/2026, Enzo's request): the blood sword forms piece by piece in the open right hand, held low
-// before the body; the sword rises to the right shoulder, the torso coiled; a great level arc from right to left
-// with a step in; then the arm draws back behind the head and throws the sword (it leaves at 1.24 s).
-const tear = [
+// Scarlet Tear, a weapon summoned (15/10/2026, Enzo's request). The summoning: the right forearm rises upright beside
+// the body, the fist up, and the blood sword grows from it toward the sky, piece by piece; then the sword comes down
+// into a guard, held before the body, and the fight goes on with it.
+const swordSummon = [
   K(0,G),
-  // Forming: the right forearm rises upright beside the body, the fist up, and the sword grows from it toward the
-  // sky, piece by piece; the eyes on it, the left hand in guard.
   K(.10,pose({h:.63,turn:12,lean:-4},{Arm_R:[['x',62],['y',-46],['z',6]],Hand_R:[['x',96]],Tool_R:[['x',-6]],
     Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]],Head:[['x',2],['z',-14]]})),
   K(.50,pose({h:.628,turn:16,lean:-3},{Arm_R:[['x',70],['y',-50],['z',6]],Hand_R:[['x',100]],Tool_R:[['x',-4]],
     Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]],Chest:[['x',-2]],Head:[['x',-4],['z',-16]]})),
-  // Coiled: the sword up by the right shoulder, the torso turned away, weight back.
-  K(.68,pose({x:-.02,y:-.035,h:.612,turn:40,lean:-5},{Arm_R:[['x',104],['y',-80],['z',22]],Hand_R:[['x',34]],Tool_R:[['x',-8]],
-    Shoulder_R:[['z',-7]],Arm_L:[['x',72],['y',32],['z',-8]],Hand_L:[['x',78]],Chest:[['x',2],['z',8]]})),
-  // The arc: level, right to left, the arm straight, a step in and down.
-  K(.77,pose({y:.04,h:.6,turn:6,lean:-12},{Arm_R:[['x',96],['y',-22],['z',14]],Hand_R:[['x',12]],Tool_R:[['x',-4]],
-    Arm_L:[['x',42],['y',22]],Hand_L:[['x',100]],Chest:[['x',3],['z',-2]]})),
-  K(.86,pose({y:.095,h:.59,turn:-36,lean:-16},{Arm_R:[['x',92],['y',36],['z',10]],Hand_R:[['x',10]],Tool_R:[['x',-4]],
-    Arm_L:[['x',30],['y',26]],Hand_L:[['x',106]],Chest:[['x',4],['z',-8]]})),
-  K(.97,pose({y:.095,h:.598,turn:-42,lean:-13},{Arm_R:[['x',78],['y',54],['z',4]],Hand_R:[['x',30]],
-    Arm_L:[['x',34],['y',26]],Hand_L:[['x',104]],Chest:[['x',3],['z',-8]]})),
-  // The javelin throw. Withdrawal: the body turns side-on, the right arm reaches straight back at shoulder height
-  // carrying the sword over the shoulder point forward, the left arm points at the target, the weight goes back.
-  K(1.06,pose({y:-.05,h:.615,turn:48,lean:10},{Arm_R:[['x',-72],['y',-14],['z',8]],Hand_R:[['x',6]],Tool_R:[['x',-10]],
+  // A flourish: the sword swept down and out to the side, then brought into guard.
+  K(.66,pose({h:.62,turn:-6,lean:-6},{Arm_R:[['x',40],['y',-62],['z',14]],Hand_R:[['x',30]],Tool_R:[['x',-6]],
+    Arm_L:[['x',58],['y',18],['z',-10]],Hand_L:[['x',92]],Head:[['x',2],['z',-4]]})),
+  K(.85,pose({h:.635,turn:-10,lean:-5},{Arm_R:[['x',46],['y',-14],['z',8]],Hand_R:[['x',78]],
+    Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]]})),
+  K(1.0,G),
+];
+// The second press: the javelin throw. Withdrawal: side-on, the right arm reaching straight back at shoulder height,
+// the sword over the shoulder point forward, the left arm pointing at the target, the weight back; the block; the whip
+// (hips, torso, the elbow high over the shoulder); the release point first at 0.35 s; the body falls forward after it.
+const swordThrow = [
+  K(0,G),
+  K(.08,pose({y:-.05,h:.615,turn:48,lean:10},{Arm_R:[['x',-72],['y',-14],['z',8]],Hand_R:[['x',6]],Tool_R:[['x',-10]],
     Shoulder_R:[['z',-4]],Arm_L:[['x',92],['y',8],['z',-4]],Hand_L:[['x',12]],Chest:[['x',-4],['z',10]],Head:[['x',-6],['z',-30]]})),
-  // The block: still further back, the front foot plants.
-  K(1.18,pose({y:-.02,h:.6,turn:52,lean:15},{Arm_R:[['x',-80],['y',-12],['z',6]],Hand_R:[['x',4]],Tool_R:[['x',-10]],
+  K(.18,pose({y:-.02,h:.6,turn:52,lean:15},{Arm_R:[['x',-80],['y',-12],['z',6]],Hand_R:[['x',4]],Tool_R:[['x',-10]],
     Shoulder_R:[['z',-6]],Arm_L:[['x',96],['y',6],['z',-4]],Hand_L:[['x',8]],Chest:[['x',-6],['z',12]],Head:[['x',-8],['z',-34]]})),
-  // The whip: hips and torso turn first, the elbow comes up high over the shoulder, the hand still behind.
-  K(1.28,pose({y:.05,h:.62,turn:8,lean:2},{Arm_R:[['x',152],['y',-10],['z',20]],Hand_R:[['x',72]],Tool_R:[['x',-14]],
+  K(.28,pose({y:.05,h:.62,turn:8,lean:2},{Arm_R:[['x',152],['y',-10],['z',20]],Hand_R:[['x',72]],Tool_R:[['x',-14]],
     Shoulder_R:[['z',-8]],Arm_L:[['x',58],['y',22],['z',-6]],Hand_L:[['x',70]],Chest:[['x',4],['z',-4]],Head:[['x',-2],['z',-6]]})),
-  // The release: the arm unfolds high and forward, the left arm pulls down to the hip; the sword leaves point first.
-  K(1.35,pose({y:.12,h:.612,turn:-30,lean:-14},{Arm_R:[['x',124],['y',-4],['z',16]],Hand_R:[['x',4]],Tool_R:[['x',-8]],
+  K(.35,pose({y:.12,h:.612,turn:-30,lean:-14},{Arm_R:[['x',124],['y',-4],['z',16]],Hand_R:[['x',4]],Tool_R:[['x',-8]],
     Arm_L:[['x',18],['y',30]],Hand_L:[['x',96]],Chest:[['x',6],['z',-10]]})),
-  // The follow-through: the body falls forward over the front leg, the arm sweeps down across it.
-  K(1.50,pose({y:.16,h:.575,turn:-42,lean:-24},{Arm_R:[['x',62],['y',34],['z',8]],Hand_R:[['x',18]],
+  K(.50,pose({y:.16,h:.575,turn:-42,lean:-24},{Arm_R:[['x',62],['y',34],['z',8]],Hand_R:[['x',18]],
     Arm_L:[['x',22],['y',32]],Hand_L:[['x',100]],Chest:[['x',8],['z',-12]]})),
-  K(1.72,pose({y:.08,h:.615,turn:-24,lean:-10},{Arm_R:[['x',44],['y',-4]],Hand_R:[['x',70]]})), K(1.95,G),
+  K(.72,pose({y:.08,h:.615,turn:-24,lean:-10},{Arm_R:[['x',44],['y',-4]],Hand_R:[['x',70]]})), K(.95,G),
 ];
 
 // Crystallization: brace across the chest, open the shoulders, then settle in guard.
@@ -143,7 +137,7 @@ const barrage=[K(0,G),K(.16,pose({y:-.03,h:.59,turn:0,lean:-10},{Arm_R:[['x',12]
  K(.8,pose({y:.05,h:.625,turn:0,lean:-8},{Arm_R:[['x',85],['y',-12]],Hand_R:[['x',18]],Arm_L:[['x',85],['y',12]],Hand_L:[['x',18]]})),
  K(1.22,pose({y:.055,h:.63,turn:0,lean:-10},{Arm_R:[['x',87],['y',-12]],Hand_R:[['x',14]],Arm_L:[['x',87],['y',12]],Hand_L:[['x',14]]})),K(1.65,G)];
 const CLIPS={sanguine_guard:guard,sanguine_combo:combo,sanguine_crystal_charge:charge,
- sanguine_crystal_throw:throwing,sanguine_scarlet_tear:tear,sanguine_crystal_form:form,sanguine_crystal_barrage:barrage};
+ sanguine_crystal_throw:throwing,sanguine_sword_summon:swordSummon,sanguine_sword_throw:swordThrow,sanguine_crystal_form:form,sanguine_crystal_barrage:barrage};
 
 const AXES = ['x','y','z'];
 const NAMES = [...rig.BONES,'Tool_L'];
@@ -221,7 +215,7 @@ function bodyOnly(p) {
 function build() {
   const baked=Object.fromEntries(Object.entries(CLIPS).map(([n,k])=>[n,bake(k)]));
   const showcase=[];
-  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_scarlet_tear',4.7],['sanguine_crystal_form',6.3],['sanguine_crystal_barrage',7.9]])
+  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.75],['sanguine_crystal_form',6.3],['sanguine_crystal_barrage',7.9]])
     showcase.push(...baked[name].map(k=>K(Math.round((k.t+offset)*10000)/10000,k.pose)));
   showcase.push(K(10.0,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
   const {p,g}=bodyOnly(rig.project('sanguine_art',baked));
@@ -233,7 +227,7 @@ function build() {
       return {uuid:rig.uuid(),channel:'rotation',time:k.t,interpolation:'linear',color:-1,
         data_points:[{x:v[0],y:v[1],z:v[2]}]};})};
     a.markers=({sanguine_combo:[.18,.48,.92],sanguine_crystal_throw:[.30],
-      sanguine_scarlet_tear:[.77,.86,1.35],sanguine_crystal_form:[.55],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
+      sanguine_sword_throw:[.35],sanguine_crystal_form:[.55],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
       .map(time=>({time,color:5}));
   }
   p.animations[0].selected=true;

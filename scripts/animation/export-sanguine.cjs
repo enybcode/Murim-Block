@@ -24,7 +24,7 @@ function slice(source, name, from, to) {
 }
 const named = name => model.animations.find(a => a.name === name);
 const combo = named('sanguine_combo');
-const clips = ['sanguine_guard','sanguine_crystal_charge','sanguine_crystal_throw','sanguine_scarlet_tear','sanguine_crystal_form','sanguine_crystal_barrage'].map(named);
+const clips = ['sanguine_guard','sanguine_crystal_charge','sanguine_crystal_throw','sanguine_sword_summon','sanguine_sword_throw','sanguine_crystal_form','sanguine_crystal_barrage'].map(named);
 clips.push(slice(named('sanguine_guard'),'sanguine_guard_hit',0,0.3),
   slice(combo,'sanguine_straight',0,0.36), slice(combo,'sanguine_cross',0.32,0.70),
   slice(combo,'sanguine_rise',0.66,1.52));
@@ -32,4 +32,13 @@ for (const clip of clips) {
   const { times, frames } = convert(model, clip);
   writeFrames(MURIM_BIPED, clip.name, times, frames);
   console.log(clip.name, times.length, 'frames', clip.length.toFixed(2), 'seconds');
+}
+
+// Scarlet Tear's blood sword cuts as a sword: the Azure art's four strikes, copied under the Sanguine Art's own names so
+// they can carry its rules (no hit puff) without touching the Azure art's.
+const dir = path.join(__dirname, '../../src/main/resources/assets/murimblock/animmodels/animations/biped/murim');
+for (const [from, to] of [['drifting_cut','sanguine_blade_drift'],['returning_cut','sanguine_blade_return'],
+    ['piercing_mist','sanguine_blade_pierce'],['falling_rain','sanguine_blade_fall']]) {
+  fs.copyFileSync(path.join(dir, from + '.json'), path.join(dir, to + '.json'));
+  console.log(to, 'copied from', from);
 }

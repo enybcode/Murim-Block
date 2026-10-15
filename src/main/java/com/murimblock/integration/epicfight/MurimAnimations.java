@@ -182,13 +182,15 @@ public final class MurimAnimations {
     public static AnimationAccessor<StaticAnimation> SANGUINE_GUARD;
     public static AnimationAccessor<GuardAnimation> SANGUINE_GUARD_HIT;
     public static AnimationAccessor<AttackAnimation> SANGUINE_STRAIGHT, SANGUINE_CROSS, SANGUINE_RISE;
-    public static AnimationAccessor<AttackAnimation> SCARLET_TEAR;
+    /** Scarlet Tear: the blood sword summoned, then thrown like a javelin (its release 0.35 s in). */
+    public static AnimationAccessor<ActionAnimation> SANGUINE_SWORD_SUMMON, SANGUINE_SWORD_THROW;
+    /** The blood sword's cuts: the Azure art's sword strikes, without Epic Fight's hit puff (the art shows no particles). */
+    public static AnimationAccessor<ComboAttackAnimation> SANGUINE_BLADE_DRIFT, SANGUINE_BLADE_RETURN, SANGUINE_BLADE_PIERCE, SANGUINE_BLADE_FALL;
     public static AnimationAccessor<StaticAnimation> SANGUINE_CRYSTAL_CHARGE;
     public static AnimationAccessor<ActionAnimation> SANGUINE_CRYSTAL_THROW, SANGUINE_CRYSTAL_FORM, SANGUINE_CRYSTAL_BARRAGE;
 
     private static void buildSanguineArt(AnimationBuilder builder) {
         OBBCollider fist = new OBBCollider(0.65D, 0.7D, 0.9D, 0, 1.0D, -0.8D);
-        OBBCollider tear = new OBBCollider(1.5D, 0.9D, 1.4D, 0, 1.0D, -1.6D);
         SANGUINE_GUARD = builder.nextAccessor("biped/murim/sanguine_guard", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
         SANGUINE_GUARD_HIT = builder.nextAccessor("biped/murim/sanguine_guard_hit", a -> new GuardAnimation(0.05F, a, Armatures.BIPED));
         SANGUINE_STRAIGHT = builder.nextAccessor("biped/murim/sanguine_straight", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.09F, 0.14F, 0.23F, 0.36F, fist, root(), a, Armatures.BIPED), 1.0F)));
@@ -196,10 +198,8 @@ public final class MurimAnimations {
         SANGUINE_RISE = builder.nextAccessor("biped/murim/sanguine_rise", a -> noHitPuff(fistStrike(new AttackAnimation(0.05F, 0.16F, 0.21F, 0.34F, 0.8F, fist, root(), a, Armatures.BIPED), 1.2F)));
         SANGUINE_CRYSTAL_CHARGE = builder.nextAccessor("biped/murim/sanguine_crystal_charge", a -> new HeldStance(0.12F, a));
         SANGUINE_CRYSTAL_THROW = builder.nextAccessor("biped/murim/sanguine_crystal_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
-        SCARLET_TEAR = builder.nextAccessor("biped/murim/sanguine_scarlet_tear", a -> noHitPuff(technique(new AttackAnimation(0.06F, 0.70F, 0.75F, 0.90F, 1.85F, tear, root(), a, Armatures.BIPED), 1.5F))
-                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(4))
-                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(2))
-                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG));
+        SANGUINE_SWORD_SUMMON = builder.nextAccessor("biped/murim/sanguine_sword_summon", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        SANGUINE_SWORD_THROW = builder.nextAccessor("biped/murim/sanguine_sword_throw", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
         SANGUINE_CRYSTAL_FORM = builder.nextAccessor("biped/murim/sanguine_crystal_form", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
         SANGUINE_CRYSTAL_BARRAGE = builder.nextAccessor("biped/murim/sanguine_crystal_barrage", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
     }
@@ -373,6 +373,13 @@ public final class MurimAnimations {
         RISING_CLOUD = builder.nextAccessor("biped/murim/rising_cloud", a -> strike(new ComboAttackAnimation(0.08F, 0.1F, 0.16F, 0.28F, 0.45F, RISE, root(), a, Armatures.BIPED), 1.0F)
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG));
         FALLING_RAIN = builder.nextAccessor("biped/murim/falling_rain", a -> strike(new ComboAttackAnimation(0.08F, 0.15F, 0.2F, 0.31F, 0.52F, FALL, root(), a, Armatures.BIPED), 1.25F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN));
+        SANGUINE_BLADE_DRIFT = builder.nextAccessor("biped/murim/sanguine_blade_drift", a -> noHitPuff(strike(new ComboAttackAnimation(0.08F, 0.08F, 0.13F, 0.28F, 0.42F, ARC, root(), a, Armatures.BIPED), 1.0F)));
+        SANGUINE_BLADE_RETURN = builder.nextAccessor("biped/murim/sanguine_blade_return", a -> noHitPuff(strike(new ComboAttackAnimation(0.08F, 0.07F, 0.12F, 0.27F, 0.4F, ARC, root(), a, Armatures.BIPED), 1.0F)));
+        SANGUINE_BLADE_PIERCE = builder.nextAccessor("biped/murim/sanguine_blade_pierce", a -> noHitPuff(strike(new ComboAttackAnimation(0.08F, 0.12F, 0.17F, 0.32F, 0.45F, PIERCE, root(), a, Armatures.BIPED), 1.1F))
+                .addProperty(AttackPhaseProperty.ARMOR_NEGATION_MODIFIER, ValueModifier.adder(20.0F))
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get()));
+        SANGUINE_BLADE_FALL = builder.nextAccessor("biped/murim/sanguine_blade_fall", a -> noHitPuff(strike(new ComboAttackAnimation(0.08F, 0.15F, 0.2F, 0.31F, 0.52F, FALL, root(), a, Armatures.BIPED), 1.25F))
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN));
         // Epic Fight's air attack: plays when the player attacks while rising or at the top of a jump.
         FALLING_RAIN_AIR = builder.nextAccessor("biped/murim/falling_rain_air", a -> new AirSlashAnimation(0.08F, 0.1F, 0.3F, 0.55F, FALL, root(), a, Armatures.BIPED)

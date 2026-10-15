@@ -58,12 +58,15 @@ public final class BloodCrystalOverlay {
         @Override public void render(PoseStack stack,MultiBufferSource buffers,int light,AbstractClientPlayer player,
                 float limb,float amount,float partial,float age,float headYaw,float headPitch) { }
     }
-    /** From this time into Scarlet Tear (s), the sword turns into a javelin grip: the arc is over, the throw begins. */
-    static final float JAVELIN_FROM=.98F;
-    /** How far into Scarlet Tear the player is (s), or -1. */
-    static float scarletTime(yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch<?> patch) {
-        var clock=patch.getAnimator().getPlayerFor(com.murimblock.integration.epicfight.MurimAnimations.SCARLET_TEAR);
-        return clock!=null&&!clock.isEmpty()&&clock.getRealAnimation()==com.murimblock.integration.epicfight.MurimAnimations.SCARLET_TEAR?clock.getElapsedTime():-1;
+    /** The blood sword's grip in the hand's frame: the forearm runs along -Y; the blade leaves the fist forward. */
+    static final net.minecraft.world.phys.Vec3 GRIP=new net.minecraft.world.phys.Vec3(0,.25,-1).normalize();
+    /** From this time into the summoning (s) the grown sword turns from the forearm's line into the grip. */
+    static final float GRIP_FROM=.55F;
+    /** How far into an animation the player is (s), or -1. */
+    static float clockOf(yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch<?> patch,
+                         yesman.epicfight.api.animation.AnimationManager.AnimationAccessor<?> animation) {
+        var clock=patch.getAnimator().getPlayerFor(animation);
+        return clock!=null&&!clock.isEmpty()&&clock.getRealAnimation()==animation?clock.getElapsedTime():-1;
     }
     private static final class Layer<E extends AbstractClientPlayer,P extends AbstractClientPlayerPatch<E>>
             extends PatchedLayer<E,P,PlayerModel<E>,RenderLayer<E,PlayerModel<E>>> {
@@ -84,11 +87,19 @@ public final class BloodCrystalOverlay {
                     var armature=patch.getArmature();var inverse=new OpenMatrix4f(hand).invert();
                     var zero=net.minecraft.world.phys.Vec3.ZERO;
                     var elbow=OpenMatrix4f.transform(poses[armature.searchJointByName("Hand_R").getId()],zero);
-                    var blade=OpenMatrix4f.transform(inverse,elbow).scale(-1).normalize();
-                    // After the arc the sword is carried like a javelin: its point toward the front of the body, a
-                    // little up, whatever the arm does, until it leaves the hand.
-                    float t=scarletTime(patch);
-                    if(t>=JAVELIN_FROM) {
+                    var forearm=OpenMatrix4f.transform(inverse,elbow).scale(-1).normalize();
+                    // Held as a sword: out of the fist, forward of it (the hand's -Z), a little up.
+                    var blade=GRIP;
+                    // Summoned: the sword grows along the raised forearm, toward the sky, then turns into the grip.
+                    float summon=clockOf(patch,com.murimblock.integration.epicfight.MurimAnimations.SANGUINE_SWORD_SUMMON);
+                    if(summon>=0&&summon<GRIP_FROM+.12F) {
+                        double f=Math.clamp((summon-GRIP_FROM)/.12,0,1);
+                        blade=forearm.scale(1-f).add(GRIP.scale(f)).normalize();
+                    }
+                    // Thrown: carried like a javelin, its point toward the front of the body, a little up, whatever
+                    // the arm does, until it leaves the hand.
+                    float t=clockOf(patch,com.murimblock.integration.epicfight.MurimAnimations.SANGUINE_SWORD_THROW);
+                    if(t>=0) {
                         var right=OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_R").getId()],zero)
                                 .subtract(OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_L").getId()],zero));
                         // Armature space: Y up, the right arm root at +X; the body faces up × right.
@@ -96,7 +107,7 @@ public final class BloodCrystalOverlay {
                         var forward=up.cross(right).normalize().scale(Math.cos(Math.toRadians(10))).add(up.scale(Math.sin(Math.toRadians(10))));
                         var origin=OpenMatrix4f.transform(hand,zero);
                         var javelin=OpenMatrix4f.transform(inverse,origin.add(forward)).subtract(OpenMatrix4f.transform(inverse,origin)).normalize();
-                        double f=Math.min(1,(t-JAVELIN_FROM)/.1);
+                        double f=Math.min(1,t/.06);
                         blade=blade.scale(1-f).add(javelin.scale(f)).normalize();
                     }
                     BloodCrystalRenderer.swordAlong((float)blade.x,(float)blade.y,(float)blade.z,firstMesh!=null);

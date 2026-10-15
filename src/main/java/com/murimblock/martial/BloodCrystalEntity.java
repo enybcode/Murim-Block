@@ -95,6 +95,8 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
             RawAnimation.begin().thenPlayAndHold("animation.blood_crystal_shot.explode")};
     private final AnimatableInstanceCache cache=GeckoLibUtil.createInstanceCache(this);
     private int pendingTicks, flightTicks, stateTicks;
+    /** Whether this crystal or sword hurt someone (a sword's landing builds Scarlet Tear's gauge). */
+    private boolean landed;
     private double travelled;
     /** The thrower's attack for a share of 1 (TechniquePower), fixed at the launch; damage is a share of it. */
     private float unit;
@@ -293,8 +295,9 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         if (hit instanceof LivingEntity target && getOwner() instanceof ServerPlayer player) {
             float before=target.getHealth();
             boolean hurt=target.hurt(source(player),unit*(float)(barrage()?1:sword()?SWORD_SHARE:BloodCrystalCharge.share(points())));
-            if (hurt && target.getHealth()<before && !MurimGuardSkill.parriedThisTick(target) && !MurimGuardSkill.guardedThisTick(target))
-                SanguineArt.projectileHit(player,target,technique());
+            if (hurt && target.getHealth()<before && !MurimGuardSkill.parriedThisTick(target) && !MurimGuardSkill.guardedThisTick(target)) {
+                SanguineArt.projectileHit(player,target,technique());landed=true;
+            }
         }
         // The crystal breaks against the front of the body, at chest height, and its pieces follow it as they fall.
         double s=.375*crystalScale();
@@ -333,6 +336,10 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     private void explode(Vec3 centre,@Nullable Entity struck) {
         breakAt(EXPLODE,yawOf(horizontal()),centre);
         if (!(getOwner() instanceof ServerPlayer player)) return;
+        try { explodeOn(player,centre,struck); }
+        finally { if (sword()&&landed) SanguineArt.swordLanded(player); }
+    }
+    private void explodeOn(ServerPlayer player,Vec3 centre,@Nullable Entity struck) {
         double radius=sword()?SWORD_RADIUS:BloodCrystalCharge.EXPLOSION_RADIUS;
         level().playSound(null,centre.x,centre.y,centre.z,SoundEvents.GENERIC_EXPLODE.value(),SoundSource.PLAYERS,sword()?1.2F:1.6F,sword()?1.05F:.85F);
         for (LivingEntity target:level().getEntitiesOfClass(LivingEntity.class,new net.minecraft.world.phys.AABB(centre,centre).inflate(radius))) {
@@ -342,7 +349,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
             double share=sword()?(distance>radius?0:SWORD_EXPLOSION_SHARE*(1-.5*distance/radius)):BloodCrystalCharge.explosionShare(distance);
             if (share<=0) continue;
             float before=target.getHealth();
-            if (target.hurt(source(player),unit*(float)share) && target.getHealth()<before) SanguineArt.projectileHit(player,target,technique());
+            if (target.hurt(source(player),unit*(float)share) && target.getHealth()<before) {SanguineArt.projectileHit(player,target,technique());landed=true;}
             Vec3 away=target.position().subtract(centre).multiply(1,0,1);
             if (away.lengthSqr()<1.0E-4) away=horizontal();
             double push=.9*(1-distance/radius)*Math.max(0,1-target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
