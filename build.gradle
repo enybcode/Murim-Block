@@ -167,6 +167,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the Murim knives (see KnifeTour).
+        knifeTour {
+            client()
+            gameDirectory = project.file('build/knife-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.knifeTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: filming of a duel with Sensei Yun (see SenseiDuel; clip by scripts/showcase/make-clip.cjs).
         senseiDuel {
             client()
@@ -520,6 +529,21 @@ tasks.named('runLongFistTour').configure {
     }
 }
 
+def knifeTourSave = layout.buildDirectory.dir('knife-tour-run/saves/murim-knife')
+def knifeTourReport = layout.buildDirectory.file('knife-tour-run/knife-tour-report.txt')
+def knifeTourShots = layout.buildDirectory.dir('knife-tour-run/screenshots')
+tasks.named('runKnifeTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only knife tour.')
+        knifeTourSave.get().asFile.deleteDir()
+        knifeTourShots.get().asFile.deleteDir()
+        knifeTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = knifeTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Knife tour failed; see build/knife-tour-run/knife-tour-report.txt')
+    }
+}
 def spearTourSave = layout.buildDirectory.dir('spear-tour-run/saves/murim-spear')
 def spearTourReport = layout.buildDirectory.file('spear-tour-run/spear-tour-report.txt')
 def spearTourShots = layout.buildDirectory.dir('spear-tour-run/screenshots')
