@@ -3,8 +3,7 @@
 //   idle   (4 s, loop): it breathes, the head sweeps slowly round, the tail ripples, a snarl twitches the jaw.
 //   walk   (1.4 s, loop): a heavy prowl, diagonal legs together, the elbows and knees folding as each paw swings
 //          forward, the shoulders rolling, the head steady and low, the tail swaying.
-//   attack (1.8 s): it sinks on its haunches, rears up roaring, the right paw raised high, and smashes it down and
-//          across; then settles back.
+//   swipe (0.8 s), bite (0.9 s), pounce (1.6 s), double_swipe (1.2 s), maul (1.8 s): its attacks (docs/mobs/tiger.md).
 // Each animation is sampled from smooth curves every 0.05 s into linear keyframes.
 //
 //   (isolated Blockbench: Blockbench.exe --remote-debugging-port=9232 --user-data-dir=<empty profile>)
@@ -23,6 +22,11 @@ const TAU = Math.PI * 2;
 const TAILS = 3;
 
 const smooth = t => t * t * (3 - 2 * t);
+/** The tail lashing with an attack: keys [[time, degrees]] for its first bones, the tip following a little behind. */
+function tailLash(t, keys) {
+  const a = keyed(keys.map(([k, v]) => [k, [v]]), t)[0], b = keyed(keys.map(([k, v]) => [k + 0.08, [v]]), t)[0];
+  return { tail0: { rot: [a, 6 * Math.sin(t * 9), 0] }, tail1: { rot: [b * 0.8, 9 * Math.sin(t * 9 - 0.6), 0] }, tail2: { rot: [b * 0.6, 12 * Math.sin(t * 9 - 1.2), 0] } };
+}
 /** Between keys [[time, value]]: eased, held before the first and after the last. */
 function keyed(keys, t) {
   if (t <= keys[0][0]) return keys[0][1];
@@ -67,7 +71,79 @@ const ANIMS = {
     for (let i = 0; i < TAILS; i++) out['tail' + i] = { rot: [4 * Math.cos(2 * p - i * 0.4), 13 * Math.sin(p - i * 0.6), 0] };
     return out;
   } },
-  attack: { length: 1.8, loop: 'once', pose(t) {
+  // ---------------------------------------------------------------- attacks
+  // swipe (0.8 s): the right paw cocked up and out, then raked across and down.
+  swipe: { length: 0.8, loop: 'once', pose(t) {
+    const K = keys => keyed(keys, t);
+    return {
+      body: { pos: K([[0, [0, 0, 0]], [0.18, [0, 0.5, 1]], [0.32, [0, -1, -2]], [0.45, [0, -1, -2]], [0.8, [0, 0, 0]]]),
+        rot: K([[0, [0, 0, 0]], [0.18, [-3, -8, -3]], [0.32, [4, 10, 3]], [0.45, [4, 9, 3]], [0.8, [0, 0, 0]]]) },
+      head: { rot: K([[0, [0, 0, 0]], [0.18, [-6, -10, 0]], [0.32, [6, 10, 0]], [0.8, [0, 0, 0]]]) },
+      jaw: { rot: K([[0, [0, 0, 0]], [0.18, [10, 0, 0]], [0.32, [22, 0, 0]], [0.55, [12, 0, 0]], [0.8, [0, 0, 0]]]) },
+      front_leg_r: { rot: K([[0, [0, 0, 0]], [0.18, [-78, 22, -28]], [0.32, [38, -30, 14]], [0.45, [26, -22, 8]], [0.8, [0, 0, 0]]]) },
+      front_foot_r: { rot: K([[0, [0, 0, 0]], [0.18, [50, 0, 0]], [0.32, [-10, 0, 0]], [0.8, [0, 0, 0]]]) },
+      front_leg_l: { rot: K([[0, [0, 0, 0]], [0.18, [-4, 0, 0]], [0.32, [8, 0, 0]], [0.8, [0, 0, 0]]]) },
+      hind_leg_l: { rot: K([[0, [0, 0, 0]], [0.32, [-8, 0, 0]], [0.8, [0, 0, 0]]]) }, hind_leg_r: { rot: K([[0, [0, 0, 0]], [0.32, [-8, 0, 0]], [0.8, [0, 0, 0]]]) },
+      ...tailLash(t, [[0, 0], [0.18, -10], [0.32, 12], [0.8, 0]]),
+    };
+  } },
+  // bite (0.9 s): it draws back with the jaws wide, lunges, snaps them shut, and wrenches its head side to side.
+  bite: { length: 0.9, loop: 'once', pose(t) {
+    const K = keys => keyed(keys, t);
+    const shake = t > 0.45 && t < 0.8 ? Math.sin((t - 0.45) / 0.35 * Math.PI * 3) * (1 - (t - 0.45) / 0.35) : 0;
+    return {
+      body: { pos: K([[0, [0, 0, 0]], [0.25, [0, -1.5, 2.5]], [0.42, [0, 0, -5]], [0.6, [0, -0.5, -4]], [0.9, [0, 0, 0]]]),
+        rot: K([[0, [0, 0, 0]], [0.25, [-4, 0, 0]], [0.42, [7, 0, 0]], [0.6, [5, 0, 0]], [0.9, [0, 0, 0]]]) },
+      head: { rot: K([[0, [0, 0, 0]], [0.25, [-14, 0, 0]], [0.42, [12, 0, 0]], [0.6, [8, 0, 0]], [0.9, [0, 0, 0]]]).map((v, i) => i === 1 ? v + 16 * shake : i === 2 ? v + 8 * shake : v) },
+      jaw: { rot: K([[0, [0, 0, 0]], [0.25, [32, 0, 0]], [0.38, [34, 0, 0]], [0.44, [0, 0, 0]], [0.9, [0, 0, 0]]]) },
+      front_leg_l: { rot: K([[0, [0, 0, 0]], [0.25, [6, 0, 0]], [0.42, [-26, 0, 0]], [0.6, [-18, 0, 0]], [0.9, [0, 0, 0]]]) },
+      front_leg_r: { rot: K([[0, [0, 0, 0]], [0.25, [6, 0, 0]], [0.42, [-22, 0, 0]], [0.6, [-16, 0, 0]], [0.9, [0, 0, 0]]]) },
+      front_foot_l: { rot: K([[0, [0, 0, 0]], [0.42, [12, 0, 0]], [0.9, [0, 0, 0]]]) }, front_foot_r: { rot: K([[0, [0, 0, 0]], [0.42, [12, 0, 0]], [0.9, [0, 0, 0]]]) },
+      hind_leg_l: { rot: K([[0, [0, 0, 0]], [0.25, [-12, 0, 0]], [0.42, [22, 0, 0]], [0.6, [16, 0, 0]], [0.9, [0, 0, 0]]]) },
+      hind_leg_r: { rot: K([[0, [0, 0, 0]], [0.25, [-12, 0, 0]], [0.42, [22, 0, 0]], [0.6, [16, 0, 0]], [0.9, [0, 0, 0]]]) },
+      hind_foot_l: { rot: K([[0, [0, 0, 0]], [0.25, [18, 0, 0]], [0.42, [-4, 0, 0]], [0.9, [0, 0, 0]]]) },
+      hind_foot_r: { rot: K([[0, [0, 0, 0]], [0.25, [18, 0, 0]], [0.42, [-4, 0, 0]], [0.9, [0, 0, 0]]]) },
+      ...tailLash(t, [[0, 0], [0.25, -12], [0.42, 10], [0.9, 0]]),
+    };
+  } },
+  // pounce (1.6 s): it sinks low, springs forward through the air forelegs out and jaws open, lands on its forepaws,
+  // and gathers itself (the game moves the tiger itself; here it slides back to its place at the end).
+  pounce: { length: 1.6, loop: 'once', pose(t) {
+    const K = keys => keyed(keys, t);
+    return {
+      body: { pos: K([[0, [0, 0, 0]], [0.35, [0, -4, 2]], [0.62, [0, 9, -14]], [0.86, [0, 0, -22]], [1.05, [0, -2, -22]], [1.35, [0, 0, -22]], [1.6, [0, 0, 0]]]),
+        rot: K([[0, [0, 0, 0]], [0.35, [3, 0, 0]], [0.62, [-12, 0, 0]], [0.86, [10, 0, 0]], [1.05, [5, 0, 0]], [1.35, [0, 0, 0]]]) },
+      head: { rot: K([[0, [0, 0, 0]], [0.35, [8, 0, 0]], [0.62, [-8, 0, 0]], [0.86, [8, 0, 0]], [1.35, [0, 0, 0]]]) },
+      jaw: { rot: K([[0, [0, 0, 0]], [0.35, [6, 0, 0]], [0.55, [30, 0, 0]], [0.9, [26, 0, 0]], [1.1, [0, 0, 0]]]) },
+      front_leg_l: { rot: K([[0, [0, 0, 0]], [0.35, [-18, 0, 0]], [0.62, [-72, 0, -6]], [0.86, [-22, 0, 0]], [1.05, [-4, 0, 0]], [1.35, [0, 0, 0]]]) },
+      front_leg_r: { rot: K([[0, [0, 0, 0]], [0.35, [-18, 0, 0]], [0.62, [-68, 0, 6]], [0.86, [-18, 0, 0]], [1.05, [-4, 0, 0]], [1.35, [0, 0, 0]]]) },
+      front_foot_l: { rot: K([[0, [0, 0, 0]], [0.35, [40, 0, 0]], [0.62, [18, 0, 0]], [0.86, [0, 0, 0]], [1.05, [26, 0, 0]], [1.35, [0, 0, 0]]]) },
+      front_foot_r: { rot: K([[0, [0, 0, 0]], [0.35, [40, 0, 0]], [0.62, [18, 0, 0]], [0.86, [0, 0, 0]], [1.05, [26, 0, 0]], [1.35, [0, 0, 0]]]) },
+      hind_leg_l: { rot: K([[0, [0, 0, 0]], [0.35, [-30, 0, 0]], [0.62, [52, 0, 0]], [0.86, [22, 0, 0]], [1.05, [-10, 0, 0]], [1.35, [0, 0, 0]]]) },
+      hind_leg_r: { rot: K([[0, [0, 0, 0]], [0.35, [-30, 0, 0]], [0.62, [56, 0, 0]], [0.86, [24, 0, 0]], [1.05, [-10, 0, 0]], [1.35, [0, 0, 0]]]) },
+      hind_foot_l: { rot: K([[0, [0, 0, 0]], [0.35, [46, 0, 0]], [0.62, [-12, 0, 0]], [0.86, [10, 0, 0]], [1.05, [24, 0, 0]], [1.35, [0, 0, 0]]]) },
+      hind_foot_r: { rot: K([[0, [0, 0, 0]], [0.35, [46, 0, 0]], [0.62, [-12, 0, 0]], [0.86, [10, 0, 0]], [1.05, [24, 0, 0]], [1.35, [0, 0, 0]]]) },
+      ...tailLash(t, [[0, 0], [0.35, -18], [0.62, 16], [0.86, -10], [1.35, 0]]),
+    };
+  } },
+  // double_swipe (1.2 s): a rake with the right paw, then a heavier one back with the left.
+  double_swipe: { length: 1.2, loop: 'once', pose(t) {
+    const K = keys => keyed(keys, t);
+    return {
+      body: { pos: K([[0, [0, 0, 0]], [0.3, [0, -1, -2]], [0.62, [0, -1.5, -3]], [1.2, [0, 0, 0]]]),
+        rot: K([[0, [0, 0, 0]], [0.15, [-3, -8, -3]], [0.3, [4, 10, 3]], [0.45, [-4, 10, 4]], [0.62, [6, -14, -4]], [0.8, [5, -12, -3]], [1.2, [0, 0, 0]]]) },
+      head: { rot: K([[0, [0, 0, 0]], [0.15, [-6, -10, 0]], [0.3, [6, 10, 0]], [0.45, [-4, 10, 0]], [0.62, [8, -14, 0]], [1.2, [0, 0, 0]]]) },
+      jaw: { rot: K([[0, [0, 0, 0]], [0.15, [12, 0, 0]], [0.62, [28, 0, 0]], [0.9, [10, 0, 0]], [1.2, [0, 0, 0]]]) },
+      front_leg_r: { rot: K([[0, [0, 0, 0]], [0.15, [-78, 22, -28]], [0.3, [38, -30, 14]], [0.45, [10, -10, 4]], [0.7, [4, 0, 0]], [1.2, [0, 0, 0]]]) },
+      front_foot_r: { rot: K([[0, [0, 0, 0]], [0.15, [50, 0, 0]], [0.3, [-10, 0, 0]], [0.6, [0, 0, 0]]]) },
+      front_leg_l: { rot: K([[0, [0, 0, 0]], [0.3, [6, 0, 0]], [0.45, [-80, -24, 30]], [0.62, [40, 32, -16]], [0.8, [28, 24, -10]], [1.2, [0, 0, 0]]]) },
+      front_foot_l: { rot: K([[0, [0, 0, 0]], [0.45, [52, 0, 0]], [0.62, [-12, 0, 0]], [1.2, [0, 0, 0]]]) },
+      hind_leg_l: { rot: K([[0, [0, 0, 0]], [0.62, [-10, 0, 0]], [1.2, [0, 0, 0]]]) }, hind_leg_r: { rot: K([[0, [0, 0, 0]], [0.62, [-10, 0, 0]], [1.2, [0, 0, 0]]]) },
+      ...tailLash(t, [[0, 0], [0.15, -10], [0.3, 12], [0.45, -10], [0.62, 14], [1.2, 0]]),
+    };
+  } },
+  // maul (1.8 s): the heavy blow: it sinks on its haunches, rears up roaring, the right paw high, and smashes it down.
+  maul: { length: 1.8, loop: 'once', pose(t) {
     const K = (keys) => keyed(keys, t);
     const out = {
       body: { pos: K([[0, [0, 0, 0]], [0.45, [0, -3.5, 2]], [0.72, [0, 3, -2]], [0.92, [0, -1.5, -4]], [1.15, [0, -1, -4]], [1.8, [0, 0, 0]]]),
@@ -131,7 +207,7 @@ async function connect(port) {
 }
 /** Views: three-quarter from the front left, and the left side (walk). */
 const VIEWS = { three: { position: [-92, 58, -108], target: [0, 18, -4] }, side: { position: [-150, 24, 0], target: [0, 18, 0] } };
-const FILMS = { idle: ['three'], walk: ['three', 'side'], attack: ['three', 'side'] };
+const FILMS = { idle: ['three'], walk: ['three', 'side'], swipe: ['three'], bite: ['three', 'side'], pounce: ['side', 'three'], double_swipe: ['three'], maul: ['three', 'side'] };
 
 async function film() {
   const bb = await connect(PORT);
