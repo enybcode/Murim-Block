@@ -92,7 +92,7 @@ public final class WeaponTour {
 
     /** Who is filmed. */
     /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
-    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE }
+    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -154,12 +154,19 @@ public final class WeaponTour {
         TAKES.add(new Take((actor == Actor.JIAN ? "jian-" : "jian-azure-") + name, actor, side, null, combo, motion, frames, every));
     }
 
+    /** A take's combo for raising the guard instead of an M1. */
+    private static final int GUARD = 99;
+
+    private static void shield(String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("shield-" + name, Actor.SHIELD, side, null, combo, motion, frames, every));
+    }
+
     /** The weapon each of the player's takes holds. */
     private static Item weaponOf(Actor actor) {
         return switch (actor) {
             case BANDIT -> MurimItems.BANDIT_DAO.get();
             case SPEAR -> MurimItems.ALLIANCE_SPEAR.get();
-            case JIAN, JIAN_AZURE -> MurimItems.SNOW_PLUM_JIAN.get();
+            case JIAN, JIAN_AZURE, SHIELD -> MurimItems.SNOW_PLUM_JIAN.get();
             default -> MurimItems.CHIEF_GREAT_AXE.get();
         };
     }
@@ -221,6 +228,14 @@ public final class WeaponTour {
         for (Side side : List.of(Side.FRONT_RIGHT, Side.TOP)) {
             for (int i = 0; i < 4; i++) jian(Actor.JIAN_AZURE, "m1-" + (i + 1), side, i, null, 20, 1);
         }
+        // The jian with the Alliance's Rattan Shield on the other arm: standing, walking, two M1s, and the guard raised.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.LEFT, Side.BACK, Side.TOP)) shield("idle", side, -1, LivingMotions.IDLE, 1, 1);
+        for (Side side : List.of(Side.FRONT, Side.LEFT)) shield("walk", side, -1, LivingMotions.WALK, 16, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.LEFT)) {
+            shield("m1-1", side, 0, null, 18, 1);
+            shield("m1-2", side, 1, null, 18, 1);
+        }
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.LEFT, Side.TOP)) shield("guard", side, GUARD, null, 12, 2);
         String only = System.getenv("MURIM_TOUR_ONLY");
         if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().toLowerCase().startsWith(only.trim().toLowerCase()));
         check(TAKES.stream().filter(t -> t.actor() == Actor.BANDIT).allMatch(t -> t.motion() != null || t.played() != null), "every bandit take has its animation");
@@ -371,6 +386,14 @@ public final class WeaponTour {
                 }
                 if (wielder == null) wielder = spawnWielder(server, level);
             }
+            // The shield on the off hand for its takes only, the guard lowered between takes.
+            ItemStack offhand = t.actor() == Actor.SHIELD ? new ItemStack(MurimItems.RATTAN_SHIELD.get()) : ItemStack.EMPTY;
+            if (!ItemStack.isSameItem(wielder.getOffhandItem(), offhand)) {
+                wielder.setItemInHand(InteractionHand.OFF_HAND, offhand);
+                EpicFightCombatDefaults.enforce(wielder);
+            }
+            EpicFightBridge.patch(wielder).resetHolding();
+            wielder.stopUsingItem();
             if (!wielder.getMainHandItem().is(weaponOf(t.actor()))) {
                 wielder.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(weaponOf(t.actor())));
                 EpicFightCombatDefaults.enforce(wielder);
@@ -408,6 +431,14 @@ public final class WeaponTour {
             EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(t.played(), 0);
         } else {
             PlayerPatch<?> patch = EpicFightBridge.patch(wielder);
+            if (t.combo() == GUARD) {
+                // The shield raised as a player raises it (using it, the right mouse button): Epic Fight's shield block.
+                wielder.startUsingItem(InteractionHand.OFF_HAND);
+                asked = null;
+                report.add("info   " + t.name() + " from " + t.side().name().toLowerCase() + ": shield raised (using " + wielder.isUsingItem() + "), off hand " + wielder.getOffhandItem()
+                        + ", style " + patch.getHoldingItemCapability(InteractionHand.MAIN_HAND).getStyle(patch));
+                return;
+            }
             var chain = patch.getHoldingItemCapability(InteractionHand.MAIN_HAND).getAutoAttackMotion(patch);
             // A chain shorter than the takes asked for: nothing to film for the missing M1.
             if (t.combo() >= chain.size()) {
