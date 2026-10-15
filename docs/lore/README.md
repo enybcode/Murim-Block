@@ -100,12 +100,40 @@ C'est dans ce monde-là que le joueur arrive.
 | Région | Biomes | Ce qu'elle est dans le monde |
 |---|---|---|
 | **Centre** | Pics de la mer de nuages, Vallée des pêchers | Les **montagnes sacrées**, siège de l'Alliance (Citadelle du Pic céleste). Le sanctuaire de la Falaise des Nuages est un ancien ermitage de secte. La Vallée des pêchers est le champ de bataille de la grande guerre ; ses pêchers sont roses de sang. |
-| **Nord** | Champs de neige du Tianshan, Glaciers du Kunlun | Les **terres interdites**. Dans le Tianshan vivent des clans de chasseurs et d'éleveurs qui ne reconnaissent ni l'Alliance ni le Culte. Dans le Kunlun dorment les **palais scellés des Immortels**. On y trouve le jade blanc, et personne n'en revient. |
+| **Nord** | Champs de neige du Tianshan, Glaciers du Kunlun | Les **terres interdites**. Dans le Tianshan, les ruines du **Palais du Nord Obscur**, brûlé par l'Alliance il y a vingt ans, et des clans de chasseurs qui ne reconnaissent ni l'Alliance ni le Culte. Dans le Kunlun dorment les **palais scellés des Immortels**. On y trouve le jade blanc, et personne n'en revient. |
 | **Ouest** | Plateau de lœss, Désert du Hexi | Les **terres sèches de la route de la soie**. Le lœss est le royaume des bandits du Fleuve Jaune. Au-delà de la **Passe de Jade** (le poste de signaux), le désert appartient au Culte. |
-| **Sud** | Forêt des pics de jade, Mer de bambous de Shu, Collines aux camphriers | Les **terres vertes et anciennes**. Villages sous les camphriers sacrés, ermitages taoïstes, sectes isolées comme celle du Nuage Azur dans la mer de bambous. Les sectes d'ici sont les plus vieilles et les moins politiques. |
-| **Est** | Pays des eaux du Jiangnan, Collines aux camphriers | Les **terres riches** : rizières, canaux, villes d'eau et marchands. C'est là que la maladie des crabes a commencé, au bord des eaux. |
+| **Sud** | Forêt des pics de jade, Mer de bambous de Shu, Collines aux camphriers | Les **terres vertes et anciennes**. Villages sous les camphriers sacrés, ermitages taoïstes, sectes isolées comme celle du Nuage Azur dans la mer de bambous. Le pays des **Quatre Grandes Familles**, piliers de l'Alliance. |
+| **Est** | Pays des eaux du Jiangnan, Collines aux camphriers | Les **terres riches** : rizières, canaux, villes d'eau et marchands. Le domaine du **Pavillon des Mille Canaux**. C'est là que la maladie des crabes a commencé, au bord des eaux. |
 
 ## 5. Les puissances
+
+### Les cinq factions — le passage
+
+> *Récit du monde, inspiré de l'ambiance de* The Legend of the Northern Blade *(une secte qui sauve le Murim puis
+> se fait trahir par ceux qu'elle a sauvés), sans en reprendre les noms ni l'intrigue.*
+
+Cinq puissances se partagent le Murim, une par terre.
+
+**Au centre**, sur les montagnes sacrées, siège l'**Alliance orthodoxe**. Elle se dit la gardienne du Murim. **À l'ouest**, derrière la Passe de Jade, le **Culte du Démon céleste** n'a jamais oublié sa défaite. Entre les deux, la trêve est morte : le sang coule de nouveau sur les routes du lœss.
+
+**Au nord**, dans les neiges du Tianshan, vivait le **Palais du Nord Obscur** (北冥宫). Il y a trois cents ans, c'est son maître qui a porté le coup décisif au premier Démon céleste. Il y a vingt ans, l'Alliance, qui craignait cette force qu'elle ne contrôlait pas, l'a accusé de pratiquer les arts du sang. Elle est montée au nord avec ses sectes, et le Palais a brûlé en une nuit. Ses survivants se cachent dans les glaces du Kunlun. Ils haïssent l'Alliance qui les a trahis autant que le Culte qu'ils ont combattu.
+
+**Au sud**, les **Quatre Grandes Familles** gardent leurs terres anciennes sous les camphriers. Ce sont les plus vieux sangs du Murim. Elles sont les piliers de l'Alliance et lui donnent ses meilleurs guerriers… et chacune rêve d'en prendre la tête.
+
+**À l'est**, le **Pavillon des Mille Canaux** (千渠阁) règne sur les eaux du Jiangnan. Il ne tire jamais l'épée : il vend du riz, des remèdes et des secrets à quiconque paie. On murmure que l'or du Culte passe par ses canaux.
+
+Le Murim a donc **deux armées en guerre**, **une alliance fissurée de l'intérieur**, **un marchand qui sert tout le monde** et **des fantômes du nord qui attendent leur heure**.
+
+| | Alliance | Culte | Palais du Nord | Quatre Familles | Mille Canaux |
+|---|---|---|---|---|---|
+| **Alliance orthodoxe** | — | guerre | l'a détruit | alliées (rivales) | client |
+| **Culte du Démon céleste** | guerre | — | ennemi ancien | ennemi | client secret |
+| **Palais du Nord Obscur** | vengeance | ennemi ancien | — | méfiance | inconnu |
+| **Quatre Grandes Familles** | alliées (rivales) | ennemi | complices du massacre | — | partenaire |
+| **Pavillon des Mille Canaux** | vend | vend en secret | ? | partenaire | — |
+
+> Pour la bêta, seules l'Alliance et le Culte ont leur capitale jouable ; les trois autres existent dans le récit, les
+> PNJ et les ruines (le Palais brûlé du nord, par exemple), et prendront forme plus tard.
 
 ### Alliance orthodoxe (正派武林盟)
 
@@ -135,8 +163,7 @@ C'est dans ce monde-là que le joueur arrive.
 
 - **Les bandits du Fleuve Jaune.** Ce ne sont pas des démons : ce sont des paysans ruinés, d'anciens soldats de l'Empire et des déserteurs de sectes. Le **Chef Bandit** était capitaine de la garde impériale. Leur repaire est le Repaire du Fleuve Jaune.
 - **Les cultivateurs errants** (散修) : sans secte ni faction. C'est ce qu'est le joueur au départ, comme la plupart des gens qui tiennent une arme. Le Poing Long, l'art le plus répandu du Murim, est leur art.
-- **Les clans du Tianshan** : chasseurs, archers, éleveurs, neutres. C'est la source future des Flèches qui chassent le vent.
-- **Les marchands du Jiangnan** : ils commercent avec tout le monde, y compris le Culte, en silence.
+- **Les clans du Tianshan** : chasseurs, archers, éleveurs. Ils ont abrité des survivants du Palais du Nord Obscur et ne pardonnent pas à l'Alliance. C'est la source future des Flèches qui chassent le vent.
 
 ## 6. Les mystères (amorcés dans la bêta, résolus plus tard)
 
@@ -144,7 +171,8 @@ C'est dans ce monde-là que le joueur arrive.
 2. **Le premier Démon céleste** : mort, scellé, ou monté au Kunlun ?
 3. **La maladie des crabes** : un fléau naturel, ou une expérience des Cent Venins menée sur les villages de pêcheurs ?
 4. **Le Ciel fermé** : pourquoi personne n'atteint plus Nascent Soul ?
-5. **Les âmes invitées** : qui était le vieux maître de chaque joueur ? Peut-être un jour une quête pour retrouver son nom.
+5. **La nuit du Palais du Nord** : le Palais pratiquait-il vraiment les arts du sang, ou l'Alliance a-t-elle menti ?
+6. **Les âmes invitées** : qui était le vieux maître de chaque joueur ? Peut-être un jour une quête pour retrouver son nom.
 
 ## 7. Comment le lore apparaît dans la bêta
 
