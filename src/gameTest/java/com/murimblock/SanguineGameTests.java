@@ -296,11 +296,11 @@ public final class SanguineGameTests {
         var p=adept(h);form(h,p);ticks(h,p,65);
         h.runAfterDelay(35,()->{
             p.setHealth(20);p.invulnerableTime=0;p.hurt(p.damageSources().generic(),8);
-            h.assertTrue(Math.abs(p.getHealth()-13.2)<.001,"Zero crystal defense differs from 15%: "+p.getHealth());
+            h.assertTrue(Math.abs(p.getHealth()-14.4)<.001,"Zero crystal defense differs from 30%: "+p.getHealth());
             p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(0,true,10));p.setHealth(20);p.invulnerableTime=0;p.hurt(p.damageSources().generic(),8);
-            h.assertTrue(Math.abs(p.getHealth()-13.2)<.001,"Defense stacked per crystal: "+p.getHealth());
+            h.assertTrue(Math.abs(p.getHealth()-14.4)<.001,"Defense stacked per crystal: "+p.getHealth());
             CombatService.setCombatMode(p,false);p.setHealth(20);p.invulnerableTime=0;p.hurt(p.damageSources().generic(),8);
-            h.assertTrue(Math.abs(p.getHealth()-13.2)<.001,"The form's defense did not hold out of combat: "+p.getHealth());end(h,p);
+            h.assertTrue(Math.abs(p.getHealth()-14.4)<.001,"The form's defense did not hold out of combat: "+p.getHealth());end(h,p);
         });
     }
     @GameTest(template="foundation_arena",batch="crystal_exit",timeoutTicks=90)

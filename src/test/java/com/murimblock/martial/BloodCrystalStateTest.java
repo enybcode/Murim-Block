@@ -31,8 +31,8 @@ class BloodCrystalStateTest {
     @Test void defenseIsOneFixedFifteenPercentBonusDuringTheForm() {
         assertEquals(1.0F,BloodCrystalState.EMPTY.damageFactor());
         var form=BloodCrystalState.EMPTY.gain(BloodCrystalState.MAX_GAUGE).activate();
-        assertEquals(.85F,form.damageFactor());
-        assertEquals(.85F,form.gain(10).damageFactor());
-        assertEquals(.85F,form.gain(10).consume().damageFactor());
+        assertEquals(.7F,form.damageFactor());
+        assertEquals(.7F,form.gain(10).damageFactor());
+        assertEquals(.7F,form.gain(10).consume().damageFactor());
     }
 }

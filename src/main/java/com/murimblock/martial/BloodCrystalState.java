@@ -30,5 +30,5 @@ public record BloodCrystalState(int gauge, boolean active, int crystals) {
         return active || amount <= 0 ? this : new BloodCrystalState(Math.max(0, gauge - amount), false, 0);
     }
     public BloodCrystalState consume() { return active ? new BloodCrystalState(0,true,0) : this; }
-    public float damageFactor() { return active ? .85F : 1.0F; }
+    public float damageFactor() { return active ? .7F : 1.0F; }
 }
