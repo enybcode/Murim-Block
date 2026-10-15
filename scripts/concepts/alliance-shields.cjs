@@ -285,5 +285,5 @@ async function main() {
   bb.close();
 }
 
-module.exports = { STYLES };
+module.exports = { STYLES, CENTRE: [CX, CY] };
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
