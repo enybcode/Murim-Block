@@ -13,6 +13,7 @@ import com.murimblock.martial.MartialCombat;
 import com.murimblock.martial.MartialService;
 import com.murimblock.mob.MurimEntities;
 import java.util.ArrayList;
+import net.dawn_day.gameasset.animation.DawnDayAnimations;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -192,6 +193,30 @@ public final class ParryEverythingGameTests {
         survey(helper, 6, "Armoured crab", ParryEverythingGameTests::armoredCrab, List.of(
                 Move.one("attack_right", () -> ArmoredCrabEpicFight.ATTACK_RIGHT),
                 Move.one("attack_left", () -> ArmoredCrabEpicFight.ATTACK_LEFT)));
+    }
+
+    /** A zombie with a sword (Epic Fight's humanoid patch), to play Dawn Day's animations: we take them, not its weapons. */
+    private static Attacker swordZombie(ServerLevel level, ServerPlayer defender) {
+        Mob zombie = EntityType.ZOMBIE.create(level);
+        zombie.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
+        return mob(level, zombie, 1.6);
+    }
+
+    /**
+     * A diagnostic, not a gate (required = false): Dawn Day's movesets played with an iron sword, logged as a table. Its
+     * long-weapon and fist moves are made for their own weapons' reach and often miss with a sword at 1.6 blocks; when a
+     * Murim weapon takes one of them, give that weapon the right collider and add the move to a required survey.
+     */
+    @GameTest(template = "foundation_arena", batch = "parry_survey_dawn_day", required = false, timeoutTicks = (3 * 7 + 2) * CASE_TICKS + 200)
+    public static void dawnDaysAttacksHitAndCanBeParried(GameTestHelper helper) {
+        survey(helper, 7, "Dawn Day", ParryEverythingGameTests::swordZombie, List.of(
+                Move.one("halberd_auto1", () -> DawnDayAnimations.HALBERD_AUTO1),
+                Move.one("halberd_auto2", () -> DawnDayAnimations.HALBERD_AUTO2),
+                Move.one("battlestaff_auto1", () -> DawnDayAnimations.BATTLESTAFF_AUTO1),
+                Move.one("saber_auto1", () -> DawnDayAnimations.SABER_AUTO1),
+                Move.one("florett_auto1", () -> DawnDayAnimations.FLORETT_AUTO1),
+                Move.one("iron_fist_auto1", () -> DawnDayAnimations.IRON_FIST_AUTO1),
+                Move.one("knife_onehand_auto1", () -> DawnDayAnimations.KNIFE_ONEHAND_AUTO1)));
     }
 
     // ---------------------------------------------------------------- the harness

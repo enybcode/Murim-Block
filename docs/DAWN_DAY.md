@@ -47,8 +47,33 @@ None of this blocks loading or our tests. It comes from Dawn Day itself:
 ## Checks (15/10/2026)
 
 - `./gradlew build compileGameTestJava`: passing.
-- `runGameTestServer`: 207 tests passing, including `dawnDayContentIsRetiredButLoaded`.
+- `runGameTestServer`: 218 required tests passing, including `dawnDayContentIsRetiredButLoaded` and the five `DawnDayGameTests`.
 - `runVisualSmoke` in a real client: passing. It checks that the controls have one Murim category with 13 useful keys and no Dawn Day key, and that no native item is present.
+
+## What the tests learned
+
+- `DawnDayGameTests` checks:
+  - its animations are built and play on an Epic Fight mob;
+  - its items never lie in the world, are taken from mobs, and are emptied from an opened chest (the chest's own loot stays);
+  - its items leave the inventory and ender chest;
+  - no player carries its skills.
+- Its item ids carry the material: `iron_halberd`, `iron_battlestaff`, `iron_knife`, etc.
+- **Some of its accessors are declared but never built.** `HALBERD_DASH` is one: it stays `null` and crashes whoever plays it. Use only the accessors assigned in `DawnDayAnimations.build`.
+- **Its movesets are made for their own weapons.** `ParryEverythingGameTests.dawnDaysAttacksHitAndCanBeParried` is a diagnostic, not a gate. It plays them with an iron sword at 1.6 blocks:
+
+  | Move | No guard | Perfect parry | Held guard |
+  |---|---|---|---|
+  | halberd_auto1 | 0 | 0 | 0 |
+  | halberd_auto2 | 7.7 | 0 | 4.0 |
+  | battlestaff_auto1 | 0 | 0 | 4.0 |
+  | saber_auto1 | 8.8 | 0 | 0 |
+  | florett_auto1 | 0 | 0 | 0 |
+  | iron_fist_auto1 | 0 | 0 | 0 |
+  | knife_onehand_auto1 | 0 | 0 | 0 |
+
+  - When a move hits, a perfect parry stops it.
+  - Long-weapon and fist moves often miss with a sword's collider at that distance.
+  - When a Murim weapon takes one of these movesets, give it the right collider and reach, then add its moves to a required survey.
 
 ## Using its animations
 
