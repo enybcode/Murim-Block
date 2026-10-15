@@ -1,5 +1,6 @@
 package com.murimblock.world.structure.site;
 
+import com.murimblock.mob.MurimEntities;
 import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.map.MurimMap;
 import com.murimblock.world.structure.kit.RoofTiles;
@@ -28,8 +29,8 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * watchtower whose signal fire relays word to the capital, the command hall, the barracks, the stables, the training
  * yard, the infirmary tent, the notice board, the well and the supplies; outside, a tea stall for travellers.
  * <p>It stands only in the centre of the Murim map and on the frontiers between its regions ({@link #allowedAt}).
- * Its people for now: a commander, a quartermaster, a medic and a tea-house keeper (villagers with trades and names),
- * and two horses in the stables; the Alliance's soldiers join them once they exist.
+ * Its people: a commander, a quartermaster, a medic and a tea-house keeper (villagers with trades and names), two
+ * horses in the stables, and its garrison of the Alliance's soldiers ({@link #garrison}).
  */
 final class AllianceOutpost extends Site {
     /** The walls (outer faces), local. */
@@ -88,6 +89,7 @@ final class AllianceOutpost extends Site {
         well(c, -8, 14, g);
         supplies(c, g);
         teaStall(c, g);
+        garrison(c, g);
     }
 
     // ---------------------------------------------------------------- the yard and the walls
@@ -365,6 +367,21 @@ final class AllianceOutpost extends Site {
         c.set(11, g + 1, 33, s(Blocks.FLOWER_POT));
         c.set(13, g + 3, 31, hangingLantern());
         resident(c, 14, g + 1, 30, VillagerProfession.FARMER, "tea_keeper");
+    }
+
+    /**
+     * The garrison (mob/AllianceSoldierEntity): two spear guards just inside the gate, two sword disciples between the
+     * training dummies, an archer on the watchtower's lookout, the sergeant in the hall by the commander, a warrior monk
+     * in the infirmary. Each keeps to his post.
+     */
+    private static void garrison(Canvas c, int g) {
+        c.spawn(-2, g + 1, 21, Direction.SOUTH, MurimEntities.ALLIANCE_SPEAR_GUARD.get(), guard -> { });
+        c.spawn(2, g + 1, 21, Direction.SOUTH, MurimEntities.ALLIANCE_SPEAR_GUARD.get(), guard -> { });
+        c.spawn(-5, g + 1, -4, Direction.EAST, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), disciple -> { });
+        c.spawn(5, g + 1, -4, Direction.WEST, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), disciple -> { });
+        c.spawn(24, g + 20, -14, Direction.SOUTH, MurimEntities.ALLIANCE_ARCHER.get(), archer -> { });
+        c.spawn(4, g + 2, -14, Direction.SOUTH, MurimEntities.ALLIANCE_SERGEANT.get(), sergeant -> { });
+        c.spawn(-14, g + 1, 16, Direction.EAST, MurimEntities.ALLIANCE_WARRIOR_MONK.get(), monk -> { });
     }
 
     /** One of the outpost's people: a villager of the plains with a trade and a name, kept here. */

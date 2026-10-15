@@ -92,7 +92,7 @@ public final class WeaponTour {
 
     /** Who is filmed. */
     /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
-    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD, STAFF }
+    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD, STAFF, GALLERY }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -167,6 +167,62 @@ public final class WeaponTour {
         TAKES.add(new Take("staff-" + name, Actor.STAFF, side, null, combo, motion, frames, every));
     }
 
+    /**
+     * A datapack for the tour only (MURIM_TOUR_PACK, a folder with its pack.mcmeta), copied into the tour's world and
+     * enabled: for instance one giving vanilla swords the Epic Fight weapon types whose own items Murimblock keeps out of
+     * players' hands, to film those types' moves.
+     */
+    private static void loadPack(MinecraftServer server) throws java.io.IOException {
+        String dir = System.getenv("MURIM_TOUR_PACK");
+        if (dir == null || dir.isBlank()) return;
+        Path from = Path.of(dir), to = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.DATAPACK_DIR).resolve("murim-tour");
+        try (var files = Files.walk(from)) {
+            for (Path p : (Iterable<Path>) files::iterator) {
+                Path target = to.resolve(from.relativize(p).toString());
+                if (Files.isDirectory(p)) Files.createDirectories(target);
+                else Files.copy(p, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+        server.execute(() -> {
+            var packs = server.getPackRepository();
+            packs.reload();
+            var selected = new ArrayList<>(packs.getSelectedIds());
+            selected.add("file/murim-tour");
+            server.reloadResources(selected).thenRun(() -> report.add("info   tour datapack enabled: " + dir));
+        });
+    }
+
+    /** The gallery's items, by take; the one the current take holds. */
+    private static final java.util.Map<Take, Item> GALLERY_ITEMS = new java.util.HashMap<>();
+    private static volatile Item galleryItem = net.minecraft.world.item.Items.AIR;
+
+    /**
+     * A gallery of weapons by registry name (MURIM_TOUR_ITEMS, comma-separated): each one's stance, then every M1 of its
+     * chain, from the front right. Names that are not registered (an addon not installed) are left out.
+     */
+    private static void listGallery() {
+        String ids = System.getenv("MURIM_TOUR_ITEMS");
+        if (ids == null || ids.isBlank()) return;
+        String[] chain = {"m1-1", "m1-2", "m1-3", "m1-4", "m1-5", "m1-6", "m1-7"};
+        for (String id : ids.split(",")) {
+            var key = net.minecraft.resources.ResourceLocation.tryParse(id.trim());
+            Item item = key == null ? net.minecraft.world.item.Items.AIR : net.minecraft.core.registries.BuiltInRegistries.ITEM.get(key);
+            if (item == net.minecraft.world.item.Items.AIR && !id.trim().equals("minecraft:air")) {
+                report.add("info   gallery: no item " + id.trim());
+                continue;
+            }
+            String prefix = "gallery-" + key.getNamespace() + "-" + key.getPath() + "-";
+            Take idle = new Take(prefix + "idle", Actor.GALLERY, Side.FRONT_RIGHT, null, -1, LivingMotions.IDLE, 1, 1);
+            TAKES.add(idle);
+            GALLERY_ITEMS.put(idle, item);
+            for (int i = 0; i < chain.length; i++) {
+                Take m1 = new Take(prefix + chain[i], Actor.GALLERY, Side.FRONT_RIGHT, null, i, null, 24, 1);
+                TAKES.add(m1);
+                GALLERY_ITEMS.put(m1, item);
+            }
+        }
+    }
+
     /** A take's combo for raising the guard instead of an M1. */
     private static final int GUARD = 99;
 
@@ -181,6 +237,7 @@ public final class WeaponTour {
             case SPEAR -> MurimItems.ALLIANCE_SPEAR.get();
             case JIAN, JIAN_AZURE, SHIELD -> MurimItems.SNOW_PLUM_JIAN.get();
             case STAFF -> addonStaff();
+            case GALLERY -> galleryItem;
             default -> MurimItems.CHIEF_GREAT_AXE.get();
         };
     }
@@ -260,6 +317,7 @@ public final class WeaponTour {
                 for (int i = 0; i < staffChain.length; i++) staff(staffChain[i], side, i, null, 26, 1);
             }
         }
+        listGallery();
         String only = System.getenv("MURIM_TOUR_ONLY");
         if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().toLowerCase().startsWith(only.trim().toLowerCase()));
         check(TAKES.stream().filter(t -> t.actor() == Actor.BANDIT).allMatch(t -> t.motion() != null || t.played() != null), "every bandit take has its animation");
@@ -302,6 +360,7 @@ public final class WeaponTour {
     }
 
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
+        if (ticks == 8) loadPack(server);
         if (ticks == 20) {
             listTakes();
             mc.options.hideGui = true;
@@ -334,6 +393,7 @@ public final class WeaponTour {
                 return;
             }
             Take t = TAKES.get(take);
+            if (t.actor() == Actor.GALLERY) galleryItem = GALLERY_ITEMS.get(t);
             Take before = take == 0 ? null : TAKES.get(take - 1);
             // A new actor when it changes and after each death; otherwise the same one, back on its spot.
             boolean fresh = before == null || before.actor() != t.actor() || before.name().equals("bandit-death");
@@ -427,7 +487,7 @@ public final class WeaponTour {
                 MartialService.learn(wielder, MartialArts.art(MartialArts.AZURE_CLOUD_SWORD));
                 MartialService.setMainArt(wielder, MartialArts.AZURE_CLOUD_SWORD);
             }
-            if (fresh) report.add("info   " + weaponOf(t.actor()) + " in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
+            if (fresh || t.actor() == Actor.GALLERY && t.name().endsWith("-idle")) report.add("info   " + weaponOf(t.actor()) + " in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
             // The air attack from a little above the ground (a player on a mock connection stays where it is put).
             double lift = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? 1.4 : 0;
             wielder.moveTo(baseX, baseY + lift, baseZ, 0, 0);
