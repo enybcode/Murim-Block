@@ -346,7 +346,7 @@
   "technique.murimblock.scarlet_tear": "Scarlet Tear",
   "technique.murimblock.scarlet_tear.desc": "A blood sword forms in your hand, piece by piece, and you fight with it as with any sword; no other technique while it is out. Press again to throw it like a javelin, point first: it explodes where it strikes. A landed throw builds 3 points toward Blood Crystal Form.",
   "technique.murimblock.devourer_of_worlds": "Blood Crystal Form",
-  "technique.murimblock.devourer_of_worlds.desc": "Activate at a full blood gauge. Reduces incoming damage by 15% until you leave combat. Land M1 strikes to earn up to 10 dorsal crystals.",
+  "technique.murimblock.devourer_of_worlds.desc": "Activate at a full blood gauge. Lasts 30 seconds, in or out of combat, and reduces incoming damage by 15%. Land M1 strikes to earn up to 10 dorsal crystals.",
   "quest.murimblock.crimson_contact": "Crimson Contact",
   "quest.murimblock.scarlet_release": "Scarlet Release",
   "quest.murimblock.step.crimson_contact.hits": "Enemies hit by Blood Crystal %s/%s",

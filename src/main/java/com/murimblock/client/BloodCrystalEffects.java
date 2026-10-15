@@ -45,6 +45,8 @@ public final class BloodCrystalEffects {
 
     /** A crystal has broken (its state just changed): light, and for the great one its shards. */
     public static void broke(BloodCrystalEntity crystal) {
+        // A crystal come away from a body at the form's end just breaks on the ground: no light.
+        if (crystal.shed()) return;
         boolean great = crystal.state() == BloodCrystalEntity.EXPLODE;
         Vec3 at = crystal.centre();
         if (PhotonLights.isEnabled()) {

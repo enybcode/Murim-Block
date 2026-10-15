@@ -138,9 +138,10 @@ public final class SanguineTour {
                 case 592 -> {check(SanguineArt.state(mc.player).crystals()==1,"M1 regrows a crystal after the salvo");capture(mc,"form-regrown.png");}
                 case 600 -> {com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.setDown(true);KeyMapping.click(com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.getKey());}
                 case 602 -> com.murimblock.client.MurimblockKeyMappings.COMBAT_MODE.setDown(false);
-                case 616 -> {check(!SanguineArt.state(mc.player).active(),"V exits combat and removes form");capture(mc,"combat-exit.png");}
+                case 616 -> {check(SanguineArt.state(mc.player).active(),"V exits combat but the form holds");capture(mc,"combat-exit.png");}
                 // The great crystal: a full gauge drawn into it while key 1 is held, then its explosion, filmed from the side.
-                case 632 -> server.execute(()->{var p=self(server);CombatService.setCombatMode(p,true);target(server,9);
+                case 632 -> server.execute(()->{var p=self(server);MartialCombat.forget(p);CombatService.setCombatMode(p,true);target(server,9);});
+                case 635 -> server.execute(()->{var p=self(server);
                     p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(com.murimblock.martial.BloodCrystalState.MAX_GAUGE,false,0));});
                 case 636 -> viewAlong(mc,7.5,3.2,4.5);
                 case 640 -> press(mc,0);
@@ -174,13 +175,23 @@ public final class SanguineTour {
                 case 914 -> press(mc,1);
                 case 916 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 919 -> capture(mc,"sword-first-person-throw.png");
-                case 946 -> finish(mc);
+                // The form again, then its end: the crystals come away from the body and fall.
+                case 922 -> view(mc,3.4,1.5,2.2);
+                case 940 -> server.execute(()->{var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,100);
+                    p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(com.murimblock.martial.BloodCrystalState.MAX_GAUGE,false,0));});
+                case 945 -> press(mc,2);
+                case 947 -> mc.options.keyHotbarSlots[2].setDown(false);
+                case 992 -> {check(SanguineArt.state(mc.player).active(),"the form again, for its end");server.execute(()->SanguineArt.shed(self(server)));}
+                case 1001 -> {var shed=java.util.stream.StreamSupport.stream(mc.level.entitiesForRendering().spliterator(),false)
+                        .filter(e->e instanceof com.murimblock.martial.BloodCrystalEntity c&&c.shed()).count();
+                    check(shed>=10&&!SanguineArt.state(mc.player).active(),"at the form's end its crystals come away and fall: "+shed);}
+                case 1040 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;
             if(ticks>=470&&ticks<=495&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_THROW))throwSeen=true;
             if(ticks>=504&&ticks<=545&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_BARRAGE))barrageSeen=true;
-            record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,304);
+            record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,307);record(mc,"form-again",945,992);record(mc,"form-shed",992,1032);
             record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);record(mc,"scarlet-sword",772,866);
             // Hold key 1 for the whole great charge: the key state is reset between ticks.
             if(ticks>640&&ticks<703)mc.options.keyHotbarSlots[0].setDown(true);record(mc,"barrage",502,548);

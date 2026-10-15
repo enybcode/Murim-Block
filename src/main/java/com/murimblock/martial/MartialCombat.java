@@ -624,7 +624,7 @@ public final class MartialCombat {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {
-            if (!event.enabled()) SanguineArt.forget(event.getEntity().getUUID());
+            if (!event.enabled()) SanguineArt.leftCombat(event.getEntity().getUUID());
         });
         EpicFightEventHooks.Animation.BEGIN.registerEvent(event -> {
             if (event.getEntityPatch().getOriginal() instanceof ServerPlayer player) onAnimationBegin(player, event.getAnimation());

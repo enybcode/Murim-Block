@@ -239,13 +239,24 @@ public final class SanguineGameTests {
         h.runAfterDelay(95,()->{h.assertTrue(SanguineArt.state(p).gauge()==4,"The landed throw did not add exactly three: "+SanguineArt.state(p));end(h,p,z,second);});
     }
     @GameTest(template="foundation_arena",batch="crystal_manual",timeoutTicks=680)
-    public static void fullGaugeNeedsTheKeyAndFormLastsBeyondThirtySeconds(GameTestHelper h) {
+    public static void fullGaugeNeedsTheKeyAndFormLastsThirtySecondsThenSheds(GameTestHelper h) {
         var p=adept(h);MartialService.unlock(p,MartialArts.BLOOD_CRYSTAL_FORM);MartialService.assign(p,2,MartialArts.BLOOD_CRYSTAL_FORM.id());
         p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(9,false,0));
         h.assertTrue(MartialService.castSlot(p,2)==MartialService.CastResult.FAILED&&QiService.getQi(p)==100,"Partial gauge transformed");
         p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(BloodCrystalState.MAX_GAUGE,false,0));
         h.assertTrue(!SanguineArt.state(p).active(),"Gauge transformed automatically");cast(h,p,2);ticks(h,p,650);
-        h.runAfterDelay(640,()->{h.assertTrue(SanguineArt.state(p).active()&&SanguineArt.state(p).crystals()==0,"Form expired on a timer");end(h,p);});
+        // Out of combat the form holds; at 30 s it ends and its crystals come away and fall.
+        h.runAfterDelay(100,()->CombatService.setCombatMode(p,false));
+        h.runAfterDelay(590,()->h.assertTrue(SanguineArt.state(p).active(),"Form ended before 30 s (or on leaving combat)"));
+        h.runAfterDelay(603,()->{
+            h.assertTrue(SanguineArt.state(p).equals(BloodCrystalState.EMPTY),"Form outlived 30 s: "+SanguineArt.state(p));
+            var shed=h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.getBoundingBox().inflate(4),BloodCrystalEntity::shed);
+            h.assertTrue(shed.size()>=10,"The body's crystals did not come away: "+shed.size());
+        });
+        h.runAfterDelay(640,()->{
+            h.assertTrue(h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.getBoundingBox().inflate(6),BloodCrystalEntity::shed).isEmpty(),"Shed crystals never broke on the ground");
+            end(h,p);
+        });
     }
     @GameTest(template="foundation_arena",batch="crystal_stacks",timeoutTicks=555)
     public static void landedM1EarnTenCrystalsAndBarrageConsumesThemButKeepsForm(GameTestHelper h) {
@@ -289,16 +300,20 @@ public final class SanguineGameTests {
             p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(0,true,10));p.setHealth(20);p.invulnerableTime=0;p.hurt(p.damageSources().generic(),8);
             h.assertTrue(Math.abs(p.getHealth()-13.2)<.001,"Defense stacked per crystal: "+p.getHealth());
             CombatService.setCombatMode(p,false);p.setHealth(20);p.invulnerableTime=0;p.hurt(p.damageSources().generic(),8);
-            h.assertTrue(p.getHealth()==12,"Defense survived combat exit");end(h,p);
+            h.assertTrue(Math.abs(p.getHealth()-13.2)<.001,"The form's defense did not hold out of combat: "+p.getHealth());end(h,p);
         });
     }
     @GameTest(template="foundation_arena",batch="crystal_exit",timeoutTicks=90)
-    public static void exitingCombatClearsFormGaugeAndAttachedCrystals(GameTestHelper h) {
-        var p=adept(h);var z=target(h,p,0,1.3);form(h,p);ticks(h,p,65);
+    public static void exitingCombatKeepsTheFormAndItsCrystals(GameTestHelper h) {
+        var p=adept(h);var z=target(h,p,0,1.3);form(h,p);ticks(h,p,85);
         h.runAfterDelay(35,()->strike(p));h.runAfterDelay(52,()->{
-            h.assertTrue(SanguineArt.state(p).crystals()==1,"No dorsal crystal to clean up");CombatService.setCombatMode(p,false);
-            h.assertTrue(SanguineArt.state(p).equals(BloodCrystalState.EMPTY),"Combat exit left state active");
-            h.assertTrue(h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.getBoundingBox().inflate(4)).isEmpty(),"Combat exit leaked crystals");end(h,p,z);
+            h.assertTrue(SanguineArt.state(p).crystals()==1,"No dorsal crystal");CombatService.setCombatMode(p,false);
+            h.assertTrue(SanguineArt.state(p).active()&&SanguineArt.state(p).crystals()==1,"Combat exit ended the form: "+SanguineArt.state(p));
+        });
+        h.runAfterDelay(70,()->{
+            h.assertTrue(SanguineArt.state(p).active(),"The form did not hold out of combat");
+            h.assertTrue(h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.getBoundingBox().inflate(4),BloodCrystalEntity::dorsal).size()==1,"The back crystal fell out of combat");
+            end(h,p,z);
         });
     }
     @GameTest(template="foundation_arena",batch="crystal_parry",timeoutTicks=85)

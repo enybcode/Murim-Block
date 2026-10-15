@@ -51,6 +51,19 @@ public final class SanguineArt {
         Sword(BloodCrystalEntity entity){this.entity=entity;}
     }
     private static final Map<UUID,Sword> SWORDS=new HashMap<>();
+    /**
+     * The blood form lasts 30 s (Enzo, 15/10/2026), leaving combat or not; the tick it began, per player. At its end
+     * the crystals come away from the body and fall (BloodCrystalEntity.shed).
+     */
+    public static final int FORM_TICKS=600;
+    /** The transformation (sanguine_crystal_form, 2.1 s): the pain, the crystals creeping out, then bursting at 1.2 s. */
+    public static final int FORM_BURST_TICK=24;
+    private static final Map<UUID,Long> FORMS=new HashMap<>();
+    /** Ticks left in the player's form (0 out of it), server side. */
+    public static int formTicksLeft(Player p) {
+        Long start=FORMS.get(p.getUUID());
+        return start==null||!state(p).active()?0:(int)Math.max(0,FORM_TICKS-(p.level().getGameTime()-start));
+    }
     /** The javelin throw lets the sword go 0.35 s in. */
     public static final int SWORD_RELEASE_TICKS=17;
     /** The blood sword in hand strikes like a sword: attack added while it is out. */
@@ -152,7 +165,7 @@ public final class SanguineArt {
         if(t==MartialArts.SCARLET_TEAR)a=MurimAnimations.SANGUINE_SWORD_SUMMON;
         else if(t==MartialArts.BLOOD_CRYSTAL_FORM) {
             var before=state(p);var after=before.activate();if(before.equals(after))return false;
-            set(p,after);a=MurimAnimations.SANGUINE_CRYSTAL_FORM;
+            set(p,after);a=MurimAnimations.SANGUINE_CRYSTAL_FORM;FORMS.put(p.getUUID(),p.level().getGameTime());
         } else if(t==MartialArts.CRYSTAL_BARRAGE) {
             var before=state(p);if(!before.active()||before.crystals()==0)return false;
             var crystals=CRYSTALS.get(p.getUUID());
@@ -196,7 +209,7 @@ public final class SanguineArt {
         if(technique==MartialArts.SCARLET_TEAR)MartialProgress.count(p,MartialArts.SCARLET_RELEASE_HITS,1);
     }
     public static void defend(LivingDamageEvent.Pre event) {
-        if(event.getEntity() instanceof ServerPlayer p&&eligible(p)&&state(p).active()
+        if(event.getEntity() instanceof ServerPlayer p&&p.isAlive()&&state(p).active()
                 &&!event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY))
             event.setNewDamage(event.getNewDamage()*state(p).damageFactor());
     }
@@ -210,7 +223,10 @@ public final class SanguineArt {
     }
     static void tick(ServerPlayer p) {
         UUID id=p.getUUID();ServerPlayer tracked=USERS.get(id);
-        if(!eligible(p)||tracked!=null&&tracked!=p){forget(id);return;}
+        if(tracked!=null&&tracked!=p){forget(id);return;}
+        tickForm(p);
+        // Out of combat (or hands full), the form holds to its end; the rest stops.
+        if(!eligible(p)){if(formHolds(p))stand(id);else forget(id);return;}
         Charge c=CHARGES.get(id);long now=p.level().getGameTime();
         if(c!=null) {
             if(c.owner.level()!=c.crystal.level()||c.crystal.isRemoved()){cancelCharge(id);return;}
@@ -245,6 +261,41 @@ public final class SanguineArt {
         var orbit=CRYSTALS.get(id);
         if(orbit!=null&&orbit.stream().anyMatch(e->e.isRemoved()||e.level()!=p.level()))forget(id);
     }
+    private static boolean formHolds(ServerPlayer p) {
+        return p.isAlive()&&state(p).active()&&FORMS.containsKey(p.getUUID());
+    }
+    /** The transformation's sounds (the pain, the crystals cracking out, the burst), then the form's end at 30 s. */
+    private static void tickForm(ServerPlayer p) {
+        Long start=FORMS.get(p.getUUID());if(start==null)return;
+        if(!state(p).active()){FORMS.remove(p.getUUID());return;}
+        long t=p.level().getGameTime()-start;
+        var level=p.serverLevel();
+        if(t==3)level.playSound(null,p.getX(),p.getY(),p.getZ(),net.minecraft.sounds.SoundEvents.PLAYER_HURT,net.minecraft.sounds.SoundSource.PLAYERS,1F,.75F);
+        if(t==6||t==11||t==15||t==19)level.playSound(null,p.getX(),p.getY()+1,p.getZ(),net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_PLACE,
+                net.minecraft.sounds.SoundSource.PLAYERS,.8F+t*.02F,.55F+t*.015F);
+        if(t==13)level.playSound(null,p.getX(),p.getY(),p.getZ(),net.minecraft.sounds.SoundEvents.PLAYER_HURT,net.minecraft.sounds.SoundSource.PLAYERS,.9F,.65F);
+        if(t==FORM_BURST_TICK) {
+            level.playSound(null,p.getX(),p.getY()+1,p.getZ(),net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK,net.minecraft.sounds.SoundSource.PLAYERS,1.6F,.55F);
+            level.playSound(null,p.getX(),p.getY()+1,p.getZ(),net.minecraft.sounds.SoundEvents.PLAYER_HURT,net.minecraft.sounds.SoundSource.PLAYERS,1.2F,.55F);
+        }
+        if(t>=FORM_TICKS)shed(p);
+    }
+    /** The form's end: its crystals come away from the body and fall to the ground, where they break. */
+    public static void shed(ServerPlayer p) {
+        UUID id=p.getUUID();FORMS.remove(id);cancelSalvo(id);
+        var orbit=CRYSTALS.remove(id);
+        if(orbit!=null)orbit.forEach(c->{if(!c.isRemoved())c.drop();});
+        set(p,BloodCrystalState.EMPTY);
+        BloodCrystalEntity.shed(p);
+        p.serverLevel().playSound(null,p.getX(),p.getY()+1,p.getZ(),net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_BREAK,
+                net.minecraft.sounds.SoundSource.PLAYERS,1.2F,.7F);
+    }
+    /** Out of combat: everything stops but the form, which holds to its end. */
+    public static void leftCombat(UUID id) {
+        var p=USERS.get(id);
+        if(p!=null&&formHolds(p))stand(id);else forget(id);
+    }
+    private static void stand(UUID id){cancelSword(id);cancelCharge(id);cancelSalvo(id);CREDITED.remove(id);}
     private static void cancelCharge(UUID id){cancelCharge(id,true);}
     private static void cancelCharge(UUID id,boolean releasePose) {
         var c=CHARGES.remove(id);if(c==null)return;c.crystal.discard();
@@ -258,8 +309,8 @@ public final class SanguineArt {
     }
     private static void cancelSalvo(UUID id){var cs=SALVOS.remove(id);if(cs!=null)cs.forEach(e->{if(e.state()!=BloodCrystalEntity.FLYING)e.discard();});}
     static void forget(@Nullable UUID id) {
-        if(id==null){for(UUID user:List.copyOf(USERS.keySet()))forget(user);CREDITED.clear();return;}
-        cancelSword(id);
+        if(id==null){for(UUID user:List.copyOf(USERS.keySet()))forget(user);CREDITED.clear();FORMS.clear();return;}
+        cancelSword(id);FORMS.remove(id);
         var p=USERS.remove(id);if(p!=null)p.setData(BloodCrystalAttachments.STATE,BloodCrystalState.EMPTY);
         cancelCharge(id);cancelSalvo(id);CREDITED.remove(id);
         var orbit=CRYSTALS.remove(id);if(orbit!=null)orbit.forEach(BloodCrystalEntity::discard);

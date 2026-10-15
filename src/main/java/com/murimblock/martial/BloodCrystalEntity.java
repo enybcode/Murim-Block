@@ -59,6 +59,14 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  */
 public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     public static final byte CHARGING=0, ORBIT=1, PENDING=2, FLYING=3, SHATTER_GROUND=4, SHATTER_WALL=5, SHATTER_BODY=6, EXPLODE=7;
+    /** A crystal come away from a body at the form's end: it falls, harmless, and breaks on the ground. */
+    public static final byte FALLING=8;
+    /**
+     * Where the body's crystals come away at the form's end, round the player (x right, y up, z forward; blocks): the
+     * chest, the shoulders, the forearms, the back's blades, the thighs and the knees.
+     */
+    private static final double[][] BODY_SHEDS={{0,1.32,.17},{-.12,1.12,.16},{.38,1.45,0},{-.38,1.45,0},{.42,1.0,.08},{-.42,1.0,.08},
+            {.15,1.5,-.2},{-.15,1.45,-.22},{0,1.2,-.2},{.13,.62,.1},{-.13,.62,.1},{.13,.35,.12},{-.13,.35,.12}};
     /** From the middle to the point, in blocks at scale 1 (the model's upper tip). */
     public static final double TIP=.55, SWORD_TIP=1.75;
     /** The sword's explosion: its reach, and its share at the centre (half at the edge); its direct hit's share. */
@@ -80,6 +88,8 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     /** What it is: a blood crystal, or Scarlet Tear's blood sword. */
     private static final EntityDataAccessor<Boolean> SWORD=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> BREAK_YAW=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.FLOAT);
+    /** Come away from a body (FALLING, then its break): no light, no damage. */
+    private static final EntityDataAccessor<Boolean> SHED=SynchedEntityData.defineId(BloodCrystalEntity.class,EntityDataSerializers.BOOLEAN);
     // Exact kit pivots (pixels). X is mirrored by GeckoLib; Z is behind the player's body.
     private static final double[][] SOCKETS={{12.839948427736791,20.6269184364184,13},{13.186896557987843,24.375247516916236,14},{9.192388155425117,26.353910524340094,15},{6.719059396145292,29.549517246390277,13},{2.0336480455230013,29.271958742189433,14},{-2.315230082595417,30.69422995264643,15},{-5.901876496614108,28.266467851559028,13},{-10.465180361560902,27.372144289248723,14},{-11.583084814448782,23.72150119729129,15},{-14.617787440808039,20.852184066076333,13}};
     private static final RawAnimation HOVER=RawAnimation.begin().thenLoop("animation.blood_crystal_floating.hover");
@@ -124,7 +134,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(STATE,CHARGING); builder.define(OWNER_ID,-1); builder.define(SLOT,0); builder.define(SCALE,.2F);
-        builder.define(POINTS,0); builder.define(BARRAGE,false); builder.define(BREAK_YAW,0F); builder.define(SWORD,false);
+        builder.define(POINTS,0); builder.define(BARRAGE,false); builder.define(BREAK_YAW,0F); builder.define(SWORD,false); builder.define(SHED,false);
     }
     public byte state() { return entityData.get(STATE); }
     public int slot() { return entityData.get(SLOT); }
@@ -135,9 +145,36 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     public boolean sword() { return entityData.get(SWORD); }
     public float breakYaw() { return entityData.get(BREAK_YAW); }
     public boolean dorsal() { return state()==ORBIT||state()==PENDING; }
-    public boolean broken() { return state()>=SHATTER_GROUND; }
+    public boolean broken() { return state()>=SHATTER_GROUND&&state()<=EXPLODE; }
+    public boolean shed() { return entityData.get(SHED); }
     public Entity visualOwner() { Entity owner=getOwner(); return owner==null?level().getEntity(entityData.get(OWNER_ID)):owner; }
     public static double[] socket(int index) { return SOCKETS[Math.clamp(index,0,9)].clone(); }
+
+    /** The form's end: this floating crystal comes away from the back and falls. */
+    public void drop() {
+        if (state()!=ORBIT&&state()!=PENDING) return;
+        double[] pivot=SOCKETS[slot()];
+        Vec3 back=Vec3.directionFromRotation(0,getYRot()).scale(-.06);
+        fall(new Vec3(back.x-pivot[0]/16*.05,.06,back.z),.45F);
+    }
+    private void fall(Vec3 velocity,float scale) {
+        entityData.set(SHED,true); entityData.set(SCALE,scale); entityData.set(STATE,FALLING);
+        setDeltaMovement(velocity); updateRotation(); flightTicks=0;
+    }
+    /** The form's end: crystals come away from the body (chest, shoulders, forearms, back, legs) and fall. */
+    public static void shed(ServerPlayer owner) {
+        float yaw=owner.yBodyRot; Vec3 forward=Vec3.directionFromRotation(0,yaw), right=new Vec3(-forward.z,0,forward.x);
+        var random=owner.getRandom();
+        for (double[] at:BODY_SHEDS) {
+            var crystal=new BloodCrystalEntity(MurimEntities.BLOOD_CRYSTAL.get(),owner.level());
+            crystal.setOwner(owner); crystal.entityData.set(OWNER_ID,owner.getId());
+            Vec3 out=right.scale(at[0]).add(forward.scale(at[2]));
+            crystal.setPos(owner.position().add(out).add(0,at[1],0));
+            Vec3 push=out.lengthSqr()<1.0E-4?forward:out.normalize();
+            crystal.fall(push.scale(.03+random.nextDouble()*.05).add(0,.02+random.nextDouble()*.06,0),.3F+random.nextFloat()*.25F);
+            owner.serverLevel().addFreshEntity(crystal);
+        }
+    }
 
     /** While charging: the crystal's size and the points of the gauge it holds. */
     public void charge(float scale,int points) { entityData.set(SCALE,scale); entityData.set(POINTS,Math.clamp(points,0,BloodCrystalCharge.MAX_POINTS)); }
@@ -239,11 +276,13 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
             if (!level().isClientSide && stateTicks>=(state()==EXPLODE?EXPLODE_TICKS:SHATTER_TICKS)) discard();
             return;
         }
+        if (state()==FALLING) { tickFall(); return; }
         if (state()!=FLYING) {
             if (owner!=null) follow(owner);
             if (level().isClientSide) return;
-            if (!(owner instanceof ServerPlayer p) || !p.isAlive() || p.level()!=level() || KnockdownService.isDowned(p)
-                    || !CombatService.isInCombatMode(p) || !SanguineArt.bareHanded(p)) { discard();return; }
+            if (!(owner instanceof ServerPlayer p) || !p.isAlive() || p.level()!=level()) { discard();return; }
+            // The form's crystals stay out of combat until it ends; the rest needs the fight.
+            if (state()!=ORBIT && (KnockdownService.isDowned(p) || !CombatService.isInCombatMode(p) || !SanguineArt.bareHanded(p))) { discard();return; }
             if (state()==ORBIT && (!SanguineArt.state(p).active() || slot()>=SanguineArt.state(p).crystals())) { discard();return; }
             if (state()==CHARGING && !(sword()?SanguineArt.holdsSword(p):SanguineArt.hasCharge(p))) { discard();return; }
             if (state()==PENDING) {
@@ -262,6 +301,24 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         if (!barrage()) setDeltaMovement(velocity.scale(.99).add(0,-gravity(),0));
         updateRotation();
         if (!level().isClientSide && (++flightTicks>100 || travelled>RANGE)) breakAt(SHATTER_BODY,yawOf(velocity),null);
+    }
+
+    /** Falling from the body: it drops point first, harmless, and breaks where it meets the ground (or anything solid). */
+    private void tickFall() {
+        Vec3 velocity=getDeltaMovement();
+        if (!level().isClientSide) {
+            Vec3 from=centre(), to=from.add(velocity);
+            BlockHitResult block=level().clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,this));
+            if (block.getType()!=HitResult.Type.MISS) {
+                double r=.375*crystalScale();
+                breakAt(SHATTER_GROUND,yawOf(horizontal()),block.getLocation().add(Vec3.atLowerCornerOf(block.getDirection().getNormal()).scale(r*.6)));
+                return;
+            }
+            if (++flightTicks>100) { discard();return; }
+        }
+        setPos(position().add(velocity));
+        setDeltaMovement(velocity.scale(.98).add(0,-.045,0));
+        updateRotation();
     }
 
     /**

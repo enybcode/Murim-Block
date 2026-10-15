@@ -86,6 +86,45 @@ public final class BloodCrystalOverlay {
         var origin=OpenMatrix4f.transform(hand,zero);
         return OpenMatrix4f.transform(inverse,origin.add(direction)).subtract(OpenMatrix4f.transform(inverse,origin)).normalize();
     }
+    /** When each player's form was last seen ending (client game time), and who was in it, for the crystals' shedding. */
+    private static final java.util.Map<java.util.UUID,Long> SHED_AT=new java.util.HashMap<>();
+    private static final java.util.Set<java.util.UUID> FORMED=new java.util.HashSet<>();
+    /** The form's end: the body's crystals shrink away over these ticks as they come off and fall. */
+    static final float SHED_TICKS=5;
+    /** 1 in the form, falling to 0 as its crystals come away at its end; 0 out of it. */
+    private static float shedding(AbstractClientPlayer player,float partial) {
+        var id=player.getUUID();long now=player.level().getGameTime();
+        if(SanguineArt.state(player).active()){FORMED.add(id);SHED_AT.remove(id);return 1;}
+        if(FORMED.remove(id))SHED_AT.put(id,now);
+        Long at=SHED_AT.get(id);if(at==null)return 0;
+        float left=1-(now-at+partial)/SHED_TICKS;
+        if(left<=0){SHED_AT.remove(id);return 0;}
+        return left;
+    }
+    /** How long after the chest the crystals reach each part of the body (s), as the blood spreads. */
+    static float delayOf(String joint) {
+        return switch(joint) {
+            case "Chest" -> 0; case "Torso" -> .06F; case "Shoulder_R","Shoulder_L","Head" -> .1F;
+            case "Arm_R","Arm_L" -> .14F; case "Hand_R","Hand_L","Tool_R","Tool_L" -> .22F;
+            case "Thigh_R","Thigh_L","Root" -> .26F; default -> .34F;
+        };
+    }
+    /**
+     * How far grown the crystals of a part of the body are (0 to 1, a little over at the burst), t seconds into the
+     * transformation (sanguine_crystal_form, 2.1 s): nothing for 0.15 s, then they creep out with the pain, trembling,
+     * to 0.42; at 1.05 s they burst out (1.08 at the peak) and settle by 1.45 s. Smooth, never by steps.
+     */
+    static float growth(float t,float delay) {
+        float c=t-delay;
+        float creep=c<=.15F?0:.42F*smooth(Math.min(1,(c-.15F)/.9F));
+        if(creep>0&&creep<.42F)creep=Math.max(0,creep+.03F*(float)Math.sin(c*40));
+        float b=t-1.05F-delay*.25F;
+        if(b<=0)return creep;
+        if(b<.18F){float f=b/.18F;f=1-(1-f)*(1-f);return creep+(1.08F-creep)*f;}
+        if(b<.4F)return 1.08F-.08F*smooth((b-.18F)/.22F);
+        return 1;
+    }
+    private static float smooth(float f){f=Math.clamp(f,0,1);return f*f*(3-2*f);}
     /** How far the first-person sword is raised into view (0 in the grip, 1 raised), eased frame to frame. */
     private static float firstPersonRaise;
     /** Whether one of the blood sword's cuts (Epic Fight's sword combo) is playing. */
@@ -169,7 +208,9 @@ public final class BloodCrystalOverlay {
                 }
             }
             // The armour is for others and the third-person view: seen from the eyes, its shards filled the screen.
-            if(!SanguineArt.state(player).active()||firstMesh!=null)return;
+            if(firstMesh!=null)return;
+            float shedding=shedding(player,partial);
+            if(shedding<=0)return;
             SkinnedMesh mesh=BODY.get();
             OpenMatrix4f[] adjusted=poses;
             if(player.getSkin().model()==PlayerSkin.Model.SLIM) {
@@ -179,6 +220,20 @@ public final class BloodCrystalOverlay {
                     var narrow=OpenMatrix4f.createTranslation(inner,0,0).scale(.75F,1,1).translate(-inner,0,0);
                     var inverseBind=joint.getToOrigin();var bind=new OpenMatrix4f(inverseBind).invert();
                     adjusted[joint.getId()]=OpenMatrix4f.mulMatrices(poses[joint.getId()],inverseBind,narrow,bind);
+                }
+            }
+            // The transformation: the crystals push out of the body joint by joint (the chest first, the legs last), creeping
+            // with the pain, then bursting; at the form's end they shrink back as they come away and fall.
+            float formClock=clockOf(patch,com.murimblock.integration.epicfight.MurimAnimations.SANGUINE_CRYSTAL_FORM);
+            if(formClock>=0||shedding<1) {
+                if(adjusted==poses)adjusted=poses.clone();
+                for(int index=0;index<adjusted.length;index++) {
+                    var joint=patch.getArmature().searchJointById(index);if(joint==null)continue;
+                    float g=(formClock>=0?growth(formClock,delayOf(joint.getName())):1)*shedding;
+                    if(g>=.999F&&g<=1.001F)continue;
+                    g=Math.max(.001F,g);
+                    var inverseBind=joint.getToOrigin();var bind=new OpenMatrix4f(inverseBind).invert();
+                    adjusted[joint.getId()]=OpenMatrix4f.mulMatrices(adjusted[joint.getId()],inverseBind,OpenMatrix4f.createScale(g,g,g),bind);
                 }
             }
             mesh.draw(stack,buffers,RenderType.entityCutoutNoCull(TEXTURE),light,1,1,1,1,OverlayTexture.NO_OVERLAY,patch.getArmature(),adjusted);

@@ -160,11 +160,35 @@ const swordThrow = [
   K(1.3,pose({y:1.66}),F([.24,1.5,0],[-.24,1.9,0])),
 ];
 
-// Crystallization: brace across the chest, open the shoulders, then settle in guard.
-const form=[K(0,G),K(.25,pose({h:.58,turn:0,lean:-12},{Arm_R:[['x',78],['z',-35]],Hand_R:[['x',83]],
- Arm_L:[['x',78],['z',35]],Hand_L:[['x',83]]})),
- K(.55,pose({h:.64,turn:0,lean:5},{Arm_R:[['x',38],['y',-55]],Hand_R:[['x',24]],Arm_L:[['x',38],['y',55]],Hand_L:[['x',24]],Chest:[['x',8]]})),
- K(.9,pose({h:.65,turn:-5,lean:0},{Arm_R:[['x',42],['y',-35]],Hand_R:[['x',56]],Arm_L:[['x',46],['y',35]],Hand_L:[['x',55]]})),K(1.4,G)];
+// The transformation (15/10/2026, Enzo's request): it hurts. The blood turns to crystal inside the body: the player
+// doubles over, both hands clawing at the chest, the knees giving way, and shakes as the crystals creep out of the skin
+// (BloodCrystalOverlay.growth); gathered tight, then at 1.2 s they burst out: the back arches, the arms are flung wide,
+// the head thrown back in a scream (SanguineArt plays the pain and the cracking); the body comes up into guard.
+const clutch=(o,limbs={})=>pose(o,{Arm_R:[['x',44],['y',42],['z',4]],Hand_R:[['x',122]],Tool_R:[['x',-20]],
+  Arm_L:[['x',44],['y',-42],['z',-4]],Hand_L:[['x',122]],Tool_L:[['x',-20]],Shoulder_R:[['z',6]],Shoulder_L:[['z',-6]],...limbs});
+const form=[K(0,G),
+ // The first stab of pain.
+ K(.15,clutch({y:-.02,h:.6,turn:6,lean:-24},{Chest:[['x',-8]],Head:[['x',-6],['z',-8]]})),
+ // Doubled over, shaking; the knees give way.
+ K(.32,clutch({y:-.03,h:.56,turn:-7,lean:-32},{Chest:[['x',-10],['z',-3]],Head:[['x',-14],['z',8]]})),
+ K(.44,clutch({y:-.03,h:.555,turn:6,lean:-29},{Chest:[['x',-9],['z',3]],Head:[['x',-10],['z',-6]],Arm_R:[['x',48],['y',38],['z',4]]})),
+ K(.56,clutch({y:-.04,h:.54,turn:-5,lean:-35},{Chest:[['x',-12],['z',-2]],Head:[['x',-16],['z',5]],Arm_L:[['x',50],['y',-38],['z',-4]]})),
+ K(.68,clutch({y:-.04,h:.545,turn:7,lean:-31},{Chest:[['x',-10],['z',4]],Head:[['x',-12],['z',-7]]})),
+ K(.80,clutch({y:-.04,h:.535,turn:-6,lean:-36},{Chest:[['x',-12],['z',-3]],Head:[['x',-17],['z',6]]})),
+ K(.92,clutch({y:-.04,h:.54,turn:5,lean:-33},{Chest:[['x',-11],['z',2]],Head:[['x',-13],['z',-5]]})),
+ // Gathered tight, the last of it held in.
+ K(1.05,clutch({y:-.05,h:.525,turn:0,lean:-40},{Arm_R:[['x',34],['y',50],['z',4]],Arm_L:[['x',34],['y',-50],['z',-4]],
+  Chest:[['x',-14]],Head:[['x',-20],['z',0]]})),
+ // The burst: arched back, arms flung wide, the head thrown back.
+ K(1.2,pose({y:.02,h:.66,turn:0,lean:20},{Arm_R:[['x',40],['y',-84],['z',12]],Hand_R:[['x',12]],Tool_R:[['x',-25]],
+  Arm_L:[['x',40],['y',84],['z',-12]],Hand_L:[['x',12]],Tool_L:[['x',-25]],Shoulder_R:[['z',-8]],Shoulder_L:[['z',8]],
+  Chest:[['x',14]],Head:[['x',34],['z',0]]})),
+ K(1.45,pose({y:.02,h:.665,turn:2,lean:18},{Arm_R:[['x',58],['y',-88],['z',12]],Hand_R:[['x',16]],Tool_R:[['x',-25]],
+  Arm_L:[['x',58],['y',88],['z',-12]],Hand_L:[['x',16]],Tool_L:[['x',-25]],Chest:[['x',12]],Head:[['x',30],['z',-3]]})),
+ // Coming down into guard, the new body's weight on it.
+ K(1.75,pose({y:.01,h:.63,turn:-6,lean:-4},{Arm_R:[['x',38],['y',-40]],Hand_R:[['x',58]],Arm_L:[['x',42],['y',38]],Hand_L:[['x',60]],
+  Chest:[['x',2]],Head:[['x',4]]})),
+ K(2.1,G)];
 // Command the dorsal fan with both palms. The final shot leaves at 1.2 seconds.
 const barrage=[K(0,G),K(.16,pose({y:-.03,h:.59,turn:0,lean:-10},{Arm_R:[['x',12],['y',-26]],Hand_R:[['x',112]],
  Arm_L:[['x',12],['y',26]],Hand_L:[['x',112]]})),
@@ -253,9 +277,9 @@ function bodyOnly(p) {
 function build() {
   const baked=Object.fromEntries(Object.entries(CLIPS).map(([n,k])=>[n,bake(k)]));
   const showcase=[];
-  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.9],['sanguine_crystal_form',7.3],['sanguine_crystal_barrage',8.8]])
+  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.9],['sanguine_crystal_form',7.3],['sanguine_crystal_barrage',9.5]])
     showcase.push(...baked[name].map(k=>K(Math.round((k.t+offset)*10000)/10000,k.pose)));
-  showcase.push(K(10.6,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
+  showcase.push(K(11.3,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
   const {p,g}=bodyOnly(rig.project('sanguine_art',baked));
   for(const a of p.animations) {
     const keys=baked[a.name];
@@ -265,7 +289,7 @@ function build() {
       return {uuid:rig.uuid(),channel:'rotation',time:k.t,interpolation:'linear',color:-1,
         data_points:[{x:v[0],y:v[1],z:v[2]}]};})};
     a.markers=({sanguine_combo:[.18,.48,.92],sanguine_crystal_throw:[.30],
-      sanguine_sword_throw:[.85],sanguine_crystal_form:[.55],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
+      sanguine_sword_throw:[.85],sanguine_crystal_form:[1.2],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
       .map(time=>({time,color:5}));
   }
   p.animations[0].selected=true;

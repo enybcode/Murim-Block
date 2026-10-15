@@ -108,7 +108,7 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
         else pose.translate(0,entity.getBbHeight()/2,0);
         if(entity.broken()&&!entity.sword()) pose.mulPose(Axis.YP.rotationDegrees(entity.breakYaw()));
         // A sword keeps its line when it explodes: point first into what it struck.
-        else if(!inHand&&(entity.state()==BloodCrystalEntity.FLYING||entity.sword()&&entity.broken())) {
+        else if(!inHand&&(entity.state()==BloodCrystalEntity.FLYING||entity.state()==BloodCrystalEntity.FALLING||entity.sword()&&entity.broken())) {
             pose.mulPose(Axis.YP.rotationDegrees(entity.getYRot()));
             pose.mulPose(Axis.XP.rotationDegrees(90-entity.getXRot()));
         } else if(!inHand) {
