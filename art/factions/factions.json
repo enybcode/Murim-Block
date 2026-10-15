@@ -19,7 +19,7 @@
   },
   {
     "id": "northern_abyss_palace",
-    "name": "Palace of the Northern Abyss",
+    "name": "Northern Dark Palace",
     "han": "北冥宫",
     "field": "#1B2230",
     "trim": "#C9D6E3",
@@ -37,7 +37,7 @@
   },
   {
     "id": "thousand_canals_pavilion",
-    "name": "Pavilion of a Thousand Canals",
+    "name": "Thousand Canals Pavilion",
     "han": "千渠阁",
     "field": "#4B2F7A",
     "trim": "#C9A45C",

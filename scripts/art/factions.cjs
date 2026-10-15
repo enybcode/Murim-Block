@@ -83,7 +83,7 @@ const FACTIONS = [
     },
   },
   {
-    id: "northern_abyss_palace", name: "Palace of the Northern Abyss", han: "北冥宫",
+    id: "northern_abyss_palace", name: "Northern Dark Palace", han: "北冥宫",
     field: "#1B2230", trim: "#C9D6E3", ink: "#0B0F16",
     meaning: "Night and frost. The seven stars of the Northern Dipper over a snow peak: the north that burned and still watches.",
     emblem(c) {
@@ -112,7 +112,7 @@ const FACTIONS = [
     },
   },
   {
-    id: "thousand_canals_pavilion", name: "Pavilion of a Thousand Canals", han: "千渠阁",
+    id: "thousand_canals_pavilion", name: "Thousand Canals Pavilion", han: "千渠阁",
     field: "#4B2F7A", trim: "#C9A45C", ink: "#22143A",
     meaning: "Violet and gold. A square-holed coin over the canal waters: everything has a price on the eastern waters.",
     emblem(c) {
@@ -188,6 +188,9 @@ FACTIONS.forEach((f, i) => {
   const l = logo(f), fl = flag(f);
   fs.writeFileSync(path.join(OUT, f.id + "-logo.png"), png(l));
   fs.writeFileSync(path.join(OUT, f.id + "-flag.png"), png(fl));
+  fs.mkdirSync(path.join(OUT, "large"), { recursive: true });
+  fs.writeFileSync(path.join(OUT, "large", f.id + "-logo.png"), png(l, SCALE));
+  fs.writeFileSync(path.join(OUT, "large", f.id + "-flag.png"), png(fl, SCALE));
   paste(sheet, l, 4 + i * 40, 2); paste(sheet, fl, 4 + i * 40, 40);
 });
 fs.writeFileSync(path.join(OUT, "factions-sheet.png"), png(sheet, SCALE));
