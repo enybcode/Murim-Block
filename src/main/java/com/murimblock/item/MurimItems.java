@@ -177,6 +177,26 @@ public final class MurimItems {
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
             () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 
+    /**
+     * Locator pendants, sold dear by the Alliance Merchant: like the sect token, a needle that points to the nearest
+     * structure of one kind. Only the structures that matter have one (Enzo, 15/10): those with a boss, or with people
+     * who give quests (none yet). Each looks like where it leads
+     * (scripts/worldgen/PendantTextures.java).
+     */
+    public static final DeferredItem<LocatorPendantItem> BAMBOO_TEMPLE_PENDANT = pendant("misty_bamboo_temple");
+    public static final DeferredItem<LocatorPendantItem> BANDIT_DEN_PENDANT = pendant("yellow_river_bandit_den");
+    public static final DeferredItem<LocatorPendantItem> ALLIANCE_ARENA_PENDANT = pendant("alliance_arena");
+
+    private static DeferredItem<LocatorPendantItem> pendant(String structure) {
+        return ITEMS.register(structure + "_pendant",
+                () -> new LocatorPendantItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), structure));
+    }
+
+    /** Every locator pendant, in the merchant's order. */
+    public static java.util.List<DeferredItem<LocatorPendantItem>> pendants() {
+        return java.util.List.of(BAMBOO_TEMPLE_PENDANT, BANDIT_DEN_PENDANT, ALLIANCE_ARENA_PENDANT);
+    }
+
     /** Manual of the Cloud Cliff sect's art: read, it teaches the Azure Cloud Sword Art and is used up. */
     public static final DeferredItem<MartialManualItem> AZURE_CLOUD_SWORD_MANUAL = ITEMS.register("azure_cloud_sword_manual",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
@@ -234,6 +254,7 @@ public final class MurimItems {
                         output.accept(PEAK_GUARD_GREAVES.get());
                         MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
+                        pendants().forEach(pendant -> output.accept(pendant.get()));
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());

@@ -227,6 +227,14 @@ public final class SiteTour {
         if (!m.find()) { fail(name + ": /locate failed: " + answer + " (places tried: " + stats + ")"); return; }
         int x = Integer.parseInt(m.group(1)), z = Integer.parseInt(m.group(2));
         String line = name + ": /locate -> " + answer + " (" + (System.currentTimeMillis() - start) + " ms; places tried: " + stats + ")";
+        // Its locator pendant, sold by the Alliance Merchant, must point to the same place as /locate.
+        var pendant = com.murimblock.item.MurimItems.pendants().stream().map(p -> p.get())
+                .filter(p -> p.structure().location().getPath().equals(name)).findFirst().orElse(null);
+        if (pendant != null) {
+            var aimed = com.murimblock.item.LocatorPendantItem.locate(level, pendant.structure(), BlockPos.containing(0.5, 100, 0.5));
+            if (aimed == null || aimed.getX() != x || aimed.getZ() != z) { fail(name + ": its pendant points to " + aimed + ", /locate to " + x + ", " + z); return; }
+            line += "; pendant agrees";
+        }
         // Generate the site and its surroundings, then find the start the command pointed at.
         for (int cx = (x >> 4) - 3; cx <= (x >> 4) + 3; cx++) for (int cz = (z >> 4) - 3; cz <= (z >> 4) + 3; cz++) level.getChunk(cx, cz);
         var structure = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, name));

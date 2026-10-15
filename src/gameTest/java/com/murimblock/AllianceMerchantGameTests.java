@@ -53,11 +53,18 @@ public final class AllianceMerchantGameTests {
             for (MerchantOffer offer : offers) {
                 // Either he takes taels for a ware, or he gives taels for a spoil; never anything for nothing.
                 helper.assertTrue(tael(offer.getBaseCostA()) != tael(offer.getResult()), "A trade not in taels: " + offer.getBaseCostA() + " -> " + offer.getResult());
-                helper.assertTrue(offer.getCostB().isEmpty() && offer.getBaseCostA().getCount() > 0 && offer.getMaxUses() > 0, "A strange trade: " + offer.getBaseCostA());
+                // A second price, if any, is taels too (the locator pendants cost two stacks).
+                helper.assertTrue((offer.getCostB().isEmpty() || tael(offer.getCostB())) && offer.getBaseCostA().getCount() > 0 && offer.getMaxUses() > 0, "A strange trade: " + offer.getBaseCostA());
                 if (offer.getResult().is(MurimItems.ALLIANCE_SPEAR.get())) spear = offer.getBaseCostA().getCount() == 24;
                 if (offer.getBaseCostA().is(MurimItems.BANDIT_DAO.get())) dao = offer.getResult().getCount() == 3;
             }
             helper.assertTrue(spear, "No Azure Peak Spear for 24 taels");
+            for (var pendant : MurimItems.pendants()) {
+                var sold = offers.stream().filter(o -> o.getResult().is(pendant.get())).findFirst();
+                helper.assertTrue(sold.isPresent(), "He does not sell the " + pendant.getId());
+                int price = sold.get().getBaseCostA().getCount() + sold.get().getCostB().getCount();
+                helper.assertTrue(price == AllianceMerchantEntity.PENDANT_PRICE && sold.get().getMaxUses() == 1, "The " + pendant.getId() + " costs " + price);
+            }
             helper.assertTrue(dao, "He does not buy a bandit dao for 3 taels");
         } finally {
             merchant.discard();
@@ -131,6 +138,54 @@ public final class AllianceMerchantGameTests {
             helper.assertTrue(byNothing.rollsWith(MurimItems.SILVER_TAEL.get()) == 0, "Bandit taels to no player");
         } finally {
             bandit.discard();
+            cleanup(player);
+        }
+        helper.succeed();
+    }
+
+    /** With 128 taels in the bag, a player buys a locator pendant from the trading screen, paying both stacks. */
+    @GameTest(template = "foundation_arena", batch = "merchant_pendant")
+    public static void aPendantCostsTwoStacksOfTaels(GameTestHelper helper) {
+        AllianceMerchantEntity merchant = merchant(helper, new BlockPos(2, 1, 4));
+        ServerPlayer player = player(helper);
+        try {
+            player.getInventory().clearContent();
+            player.getInventory().setItem(20, new ItemStack(MurimItems.SILVER_TAEL.get(), 64));
+            player.getInventory().setItem(21, new ItemStack(MurimItems.SILVER_TAEL.get(), 64));
+            merchant.interact(player, InteractionHand.MAIN_HAND);
+            MerchantMenu menu = (MerchantMenu) player.containerMenu;
+            int index = -1;
+            for (int i = 0; i < menu.getOffers().size(); i++) if (menu.getOffers().get(i).getResult().is(MurimItems.BANDIT_DEN_PENDANT.get())) index = i;
+            helper.assertTrue(index >= 0, "No bandit den pendant on the trading screen");
+            menu.setSelectionHint(index);
+            menu.tryMoveItems(index);
+            menu.quickMoveStack(player, 2);
+            helper.assertTrue(player.getInventory().countItem(MurimItems.BANDIT_DEN_PENDANT.get()) == 1, "The pendant was not bought");
+            helper.assertTrue(player.getInventory().countItem(MurimItems.SILVER_TAEL.get()) == 0, "Not all 128 taels were paid");
+        } finally {
+            merchant.discard();
+            cleanup(player);
+        }
+        helper.succeed();
+    }
+
+    /** Where none of its structure stands within reach, a pendant says so and its needle points nowhere. */
+    @GameTest(template = "foundation_arena", batch = "merchant_pendant", timeoutTicks = 400)
+    public static void aPendantWithNothingToFindSaysSo(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        try {
+            for (var pendant : MurimItems.pendants()) {
+                helper.assertTrue(helper.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE)
+                        .containsKey(pendant.get().structure()), "No structure " + pendant.get().structure().location());
+            }
+            ItemStack stack = new ItemStack(MurimItems.ALLIANCE_ARENA_PENDANT.get());
+            player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+            // The test world is flat and builds no structure: nothing to find, nothing thrown.
+            stack.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+            var tracker = stack.get(net.minecraft.core.component.DataComponents.LODESTONE_TRACKER);
+            helper.assertTrue(tracker != null && tracker.target().isEmpty(), "The needle points somewhere: " + tracker);
+            helper.assertTrue(player.getCooldowns().isOnCooldown(MurimItems.ALLIANCE_ARENA_PENDANT.get()), "No cooldown after a search");
+        } finally {
             cleanup(player);
         }
         helper.succeed();
