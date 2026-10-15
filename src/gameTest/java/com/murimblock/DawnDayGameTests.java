@@ -33,9 +33,10 @@ import static com.murimblock.testing.GameTestPlayers.cleanup;
 import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
- * Dawn Day is loaded for its animations only (docs/DAWN_DAY.md): its animations play through Epic Fight, and none of
- * its items reaches a player, whether dropped, worn by a mob, rolled into a chest by its loot modifiers or put there,
- * and no player carries one of its skills.
+ * Dawn Day is loaded for its animations and, since 15/10/2026 (Enzo), its weapons (docs/DAWN_DAY.md): its animations
+ * play through Epic Fight, its weapons are kept, and none of its other items (gems, plates, drinks) reaches a player,
+ * whether dropped, worn by a mob, rolled into a chest by its loot modifiers or put there; no player carries one of its
+ * skills.
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -74,13 +75,17 @@ public final class DawnDayGameTests {
     public static void itsDroppedItemsNeverAppear(GameTestHelper helper) {
         Vec3 at = helper.absoluteVec(new Vec3(2.5, 2, 2.5));
         var drops = new java.util.ArrayList<ItemEntity>();
-        for (String path : new String[]{"iron_halberd", "iron_battlestaff", "milady", "iron_knife"}) {
+        // Its gems, plates and drinks are retired; its weapons are kept since 15/10/2026 (Enzo, the Weapons tab).
+        for (String path : new String[]{"amber", "ruby", "metal_plate", "nail"}) {
             helper.assertTrue(EpicFightContentPolicy.blocked(new ItemStack(item(path))), "Not retired: " + path);
             ItemEntity drop = new ItemEntity(helper.getLevel(), at.x, at.y, at.z, new ItemStack(item(path)));
             helper.getLevel().addFreshEntity(drop);
             drops.add(drop);
         }
         ItemEntity sword = new ItemEntity(helper.getLevel(), at.x, at.y, at.z, new ItemStack(Items.IRON_SWORD));
+        ItemEntity halberd = new ItemEntity(helper.getLevel(), at.x, at.y, at.z, new ItemStack(item("iron_halberd")));
+        helper.assertFalse(EpicFightContentPolicy.blocked(halberd.getItem()), "Dawn Day's halberd is retired");
+        helper.getLevel().addFreshEntity(halberd);
         helper.getLevel().addFreshEntity(sword);
         helper.runAfterDelay(2, () -> {
             // What counts is what is in the world: none of its drops, the vanilla one still there.
@@ -88,24 +93,26 @@ public final class DawnDayGameTests {
                 helper.assertTrue(helper.getLevel().getEntity(drop.getId()) == null, "Dawn Day's " + drop.getItem() + " lies in the world");
             }
             helper.assertTrue(helper.getLevel().getEntity(sword.getId()) == sword, "A vanilla drop was refused");
+            helper.assertTrue(helper.getLevel().getEntity(halberd.getId()) == halberd, "Dawn Day's halberd was refused");
             sword.discard();
+            halberd.discard();
             helper.succeed();
         });
     }
 
     @GameTest(template = "foundation_arena", batch = "dawn_day")
-    public static void mobsLoseItsWeapons(GameTestHelper helper) {
+    public static void mobsKeepItsWeaponsButNotItsOtherItems(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
         Zombie born = EntityType.ZOMBIE.create(helper.getLevel());
         born.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         born.setNoAi(true);
         born.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(item("iron_halberd")));
         helper.getLevel().addFreshEntity(born);
-        helper.assertTrue(born.getMainHandItem().isEmpty(), "A mob joined holding Dawn Day's halberd");
-        // Given one later: taken away when its equipment changes.
-        born.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(item("iron_knife")));
+        helper.assertTrue(born.getMainHandItem().is(item("iron_halberd")), "A mob lost Dawn Day's halberd, a weapon");
+        // Given one of its gems later: taken away when its equipment changes.
+        born.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(item("amber")));
         helper.runAfterDelay(3, () -> {
-            helper.assertTrue(born.getOffhandItem().isEmpty(), "A mob kept Dawn Day's knife");
+            helper.assertTrue(born.getOffhandItem().isEmpty(), "A mob kept Dawn Day's amber");
             born.discard();
             helper.succeed();
         });
@@ -127,8 +134,8 @@ public final class DawnDayGameTests {
             for (ItemStack stack : table.getRandomItems(params)) if (EpicFightContentPolicy.blocked(stack)) rolled++;
         }
         // Whether or not a roll brought one, put two in the chest as its modifiers would.
-        chest.setItem(0, new ItemStack(item("iron_halberd")));
-        chest.setItem(5, new ItemStack(item("iron_battlestaff")));
+        chest.setItem(0, new ItemStack(item("amber")));
+        chest.setItem(5, new ItemStack(item("metal_plate")));
         chest.setItem(9, new ItemStack(Items.DIAMOND));
         ServerPlayer player = player(helper);
         player.openMenu(chest);
@@ -146,8 +153,8 @@ public final class DawnDayGameTests {
     @GameTest(template = "foundation_arena", batch = "dawn_day", timeoutTicks = 120)
     public static void playersCarryNoneOfItsItemsOrSkills(GameTestHelper helper) {
         ServerPlayer player = player(helper);
-        player.getInventory().setItem(10, new ItemStack(item("milady")));
-        player.getEnderChestInventory().setItem(3, new ItemStack(item("iron_knife")));
+        player.getInventory().setItem(10, new ItemStack(item("ruby")));
+        player.getEnderChestInventory().setItem(3, new ItemStack(item("nail")));
         // A mock player gets no network ticks: run one full player tick on a sweep tick (once a second).
         player.tickCount = 40;
         player.doTick();

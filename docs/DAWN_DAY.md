@@ -21,7 +21,9 @@ Decision by Enzo on 15/10/2026: use Dawn Day for its animations, "as with Epic F
   - Modrinth artifact `kCZCK2dK` (`gradle.properties`, `build.gradle`, `neoforge.mods.toml`).
   - It loads alongside Epic Fight 21.17.3.1.
 - **Items retired.** `EpicFightContentPolicy` treats the `epicfight_dd` namespace like `epicfight`. This retires:
-  - its about 20 weapons, skill books, gems, materials and potions (vanilla potion items holding its potion types);
+  - its skill books, gems, materials and potions (vanilla potion items holding its potion types);
+  - **not its weapons** since 15/10/2026 (Enzo): they are kept, with their recipes, and shown in the creative tab
+    "Murimblock: Weapons" (`item/WeaponsTab`);
   - them from the creative menu (its tab, once empty, disappears), from inventories, chests, loot, mob equipment and recipes.
   - Its skills (Redemption, Iron Will, weapon innates and the Wing stance) are only reachable through those items.
 - **Key.** Its only key, *Switch Stance* (J), is unbound and hidden in `EpicFightControls`, like the native Epic Fight keys. Nothing of Dawn Day remains in the Controls screen.
@@ -54,7 +56,7 @@ None of this blocks loading or our tests. It comes from Dawn Day itself:
 
 - `DawnDayGameTests` checks:
   - its animations are built and play on an Epic Fight mob;
-  - its items never lie in the world, are taken from mobs, and are emptied from an opened chest (the chest's own loot stays);
+  - its non-weapon items never lie in the world, are taken from mobs, and are emptied from an opened chest (the chest's own loot stays); its weapons stay;
   - its items leave the inventory and ender chest;
   - no player carries its skills.
 - Its item ids carry the material: `iron_halberd`, `iron_battlestaff`, `iron_knife`, etc.
