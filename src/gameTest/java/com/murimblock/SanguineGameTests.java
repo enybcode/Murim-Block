@@ -393,9 +393,23 @@ public final class SanguineGameTests {
         com.murimblock.cultivation.CultivationService.setCultivation(p,com.murimblock.cultivation.CultivationRealm.QI_LIQUIDATION,com.murimblock.cultivation.CultivationStage.PEAK);
         scroll.use(p.level(),p,InteractionHand.MAIN_HAND);
         h.assertTrue(!MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Learnt the Sanguine Art below Qi Crystallization");
+        h.assertTrue(scroll.getCount()==1,"The scroll was used up by a player too weak for it");
+        // They are told they are too weak: the art, the realm it needs, the realm they are at.
+        var told=com.murimblock.martial.MartialManualItem.tooWeak(MartialArts.art(MartialArts.SANGUINE_ART),MartialArts.SANGUINE_REALM,com.murimblock.cultivation.CultivationRealm.QI_LIQUIDATION);
+        h.assertTrue(told.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents c&&c.getKey().equals("art.murimblock.too_weak")
+                &&c.getArgs().length==3&&String.valueOf(c.getArgs()[2]).contains("Qi Liquidation"),"The refusal does not say they are too weak: "+told);
         com.murimblock.cultivation.CultivationService.setCultivation(p,MartialArts.SANGUINE_REALM,com.murimblock.cultivation.CultivationStage.EARLY);
         scroll.use(p.level(),p,InteractionHand.MAIN_HAND);
         h.assertTrue(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Could not learn the Sanguine Art at Qi Crystallization");
+        com.murimblock.cultivation.CultivationService.resetCultivation(p);cleanup(p);h.succeed();
+    }
+    /** Any realm above Qi Crystallization learns it too. */
+    @GameTest(template="foundation_arena",batch="sanguine_realm_above",timeoutTicks=20)
+    public static void aHigherRealmLearnsTheSanguineArtToo(GameTestHelper h) {
+        var p=player(h);
+        com.murimblock.cultivation.CultivationService.setCultivation(p,com.murimblock.cultivation.CultivationRealm.CORE_FORMATION,com.murimblock.cultivation.CultivationStage.EARLY);
+        new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()).use(p.level(),p,InteractionHand.MAIN_HAND);
+        h.assertTrue(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Core Formation could not learn the Sanguine Art");
         com.murimblock.cultivation.CultivationService.resetCultivation(p);cleanup(p);h.succeed();
     }
     @GameTest(template="iceberg_arena",batch="blood_iceberg_rules",timeoutTicks=200)
