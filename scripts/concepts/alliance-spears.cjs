@@ -275,5 +275,5 @@ async function main() {
   bb.close();
 }
 
-module.exports = { STYLES };
+module.exports = { STYLES, ALLIANCE, tassel, peaks, spearProject, sizeProject };
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
