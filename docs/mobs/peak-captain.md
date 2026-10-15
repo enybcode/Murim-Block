@@ -68,7 +68,7 @@ His worn gear never drops the usual way (drop chance 0). Instead:
 
 - one piece of the Peak Guard armour, every time;
 - killed by a player:
-  - the Celestial Peak Spear Manual, every time (the art's only source so far);
+  - the Celestial Peak Spear Manual, every time (the art's only source: no chest or barracks, Enzo, 15/10);
   - the spear, 15 % of the time (Looting raises it);
   - a Realm Breaking Pill, 30 %;
   - 10 to 16 silver taels.

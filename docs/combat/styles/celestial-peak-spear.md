@@ -98,7 +98,7 @@ Le capitaine est le premier boss qui se bat avec un art : ses attaques sont les 
 
 ## Ce qui est en jeu (15/10/2026)
 
-- **Le manuel** `celestial_peak_spear_manual` (`CelestialPeakItems`, onglet Murimblock ; sprite `scripts/animation/celestial-manual.cjs`) apprend l'art à tout royaume. Le Capitaine de la Garde du Pic le lâche à chaque victoire (`docs/mobs/peak-captain.md`) ; il se bat avec l'art en phase 3.
+- **Le manuel** `celestial_peak_spear_manual` (`CelestialPeakItems`, onglet Murimblock ; sprite `scripts/animation/celestial-manual.cjs`) apprend l'art à tout royaume. Le Capitaine de la Garde du Pic le lâche à chaque victoire (`docs/mobs/peak-captain.md`) : c'est sa seule source, ni coffre ni caserne (décision d'Enzo, 15/10) ; il se bat avec l'art en phase 3.
 - **La lance en main** : toute arme qu'Epic Fight tient comme une lance (`CelestialPeakSpear.holdsSpear`) ; sans elle, « needs a spear in hand ».
 - **Long Reach** : un coup (M1 d'Epic Fight ou technique) qui touche à 3 blocs ou plus du corps de la cible fait ×1,2 et repousse d'un demi-bloc (`MartialCombat.onDealDamagePre`, `CelestialPeakSpear.onHit`) ; il compte pour « Hold the Distance ».
 - **Les techniques** (`CelestialPeakSpear.perform`, animations `MurimAnimations.CELESTIAL_*`, générées par `scripts/animation/celestial-spear.cjs` : la lance tenue à deux mains, la main gauche devant sur la hampe, la droite qui pousse) :
