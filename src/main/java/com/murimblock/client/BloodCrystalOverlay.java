@@ -73,13 +73,28 @@ public final class BloodCrystalOverlay {
      *  body facing up × right), in the hand's frame. */
     static net.minecraft.world.phys.Vec3 bodyDirection(OpenMatrix4f[] poses,yesman.epicfight.api.model.Armature armature,
             OpenMatrix4f hand,OpenMatrix4f inverse,double along,double rise) {
+        return bodyDirection(poses,armature,hand,inverse,along,rise,0);
+    }
+    /** As above, plus side * the body's right. */
+    static net.minecraft.world.phys.Vec3 bodyDirection(OpenMatrix4f[] poses,yesman.epicfight.api.model.Armature armature,
+            OpenMatrix4f hand,OpenMatrix4f inverse,double along,double rise,double side) {
         var zero=net.minecraft.world.phys.Vec3.ZERO;
         var right=OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_R").getId()],zero)
                 .subtract(OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_L").getId()],zero));
         var up=new net.minecraft.world.phys.Vec3(0,1,0);
-        var direction=up.cross(right).normalize().scale(along).add(up.scale(rise));
+        var direction=up.cross(right).normalize().scale(along).add(up.scale(rise)).add(right.normalize().scale(side));
         var origin=OpenMatrix4f.transform(hand,zero);
         return OpenMatrix4f.transform(inverse,origin.add(direction)).subtract(OpenMatrix4f.transform(inverse,origin)).normalize();
+    }
+    /** How far the first-person sword is raised into view (0 in the grip, 1 raised), eased frame to frame. */
+    private static float firstPersonRaise;
+    /** Whether one of the blood sword's cuts (Epic Fight's sword combo) is playing. */
+    private static boolean cutting(yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch<?> patch) {
+        for(var cut:java.util.List.of(yesman.epicfight.gameasset.Animations.SWORD_AUTO1,yesman.epicfight.gameasset.Animations.SWORD_AUTO2,
+                yesman.epicfight.gameasset.Animations.SWORD_AUTO3,yesman.epicfight.gameasset.Animations.SWORD_DASH,
+                yesman.epicfight.gameasset.Animations.SWORD_AIR_SLASH))
+            if(clockOf(patch,cut)>=0)return true;
+        return false;
     }
     private static final class Layer<E extends AbstractClientPlayer,P extends AbstractClientPlayerPatch<E>>
             extends PatchedLayer<E,P,PlayerModel<E>,RenderLayer<E,PlayerModel<E>>> {
@@ -120,6 +135,17 @@ public final class BloodCrystalOverlay {
                         var javelin=bodyDirection(poses,armature,hand,inverse,1,Math.sin(Math.toRadians(10)));
                         double f=Math.min(1,t/.06);
                         blade=blade.scale(1-f).add(javelin.scale(f)).normalize();
+                    }
+                    // Seen from the eyes, in guard, Epic Fight holds the empty hand low, off the screen: the sword is
+                    // raised before the eyes, up and a little inward, so it can be seen. It eases back into the grip
+                    // for the cuts, the draw and the throw.
+                    if(firstMesh!=null) {
+                        boolean busy=summon>=0||t>=0||cutting(patch);
+                        firstPersonRaise+=((busy?0:1)-firstPersonRaise)*(busy?.5F:.15F);
+                        if(firstPersonRaise>.01F) {
+                            var raised=bodyDirection(poses,armature,hand,inverse,.55,.95,-.3);
+                            blade=blade.scale(1-firstPersonRaise).add(raised.scale(firstPersonRaise)).normalize();
+                        }
                     }
                     BloodCrystalRenderer.swordAlong((float)blade.x,(float)blade.y,(float)blade.z,firstMesh!=null);
                     if(Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(sword) instanceof BloodCrystalRenderer renderer)
