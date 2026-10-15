@@ -24,8 +24,8 @@ import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
  * The Alliance's soldiers: each kind with the Alliance's weapon of his kind (Epic Fight takes the spear for a spear, the
- * jian for a sword), none despawns; they hunt bandits and leave players alone; the archer shoots; a soldier struck by a
- * player calls the others; they leave a few taels.
+ * jian for a sword), none despawns; neutral as the piglins, they attack no one first, a soldier struck by a player calls
+ * the others and they stay angry for a while; the archer shoots back; they leave a few taels.
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -69,23 +69,23 @@ public final class AllianceSoldierGameTests {
         helper.succeed();
     }
 
-    /** A disciple beside a player and a bandit: he goes for the bandit, never the player. */
+    /** A disciple beside a player and a bandit: he attacks neither (he only answers blows). */
     @GameTest(template = "foundation_arena", batch = "soldier_targets", timeoutTicks = 100)
-    public static void soldiersHuntBanditsAndLeavePlayersAlone(GameTestHelper helper) {
+    public static void soldiersAttackNoOneFirst(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         var disciple = soldier(helper, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), new BlockPos(2, 1, 1));
         var bandit = helper.spawn(MurimEntities.MOUNTAIN_BANDIT.get(), new BlockPos(2, 1, 4));
         bandit.setNoAi(true);
-        helper.succeedWhen(() -> {
-            helper.assertTrue(disciple.getTarget() != player, "The disciple turned on the player");
-            helper.assertTrue(disciple.getTarget() == bandit, "The disciple does not go for the bandit: " + disciple.getTarget() + " ai " + disciple.isEffectiveAi() + " ticks " + disciple.tickCount + " targets " + disciple.targetSelector.getAvailableGoals().stream().map(g -> g.getGoal().getClass().getSimpleName() + (g.isRunning() ? "*" : "")).toList() + " goals " + disciple.goalSelector.getAvailableGoals().stream().map(g -> g.getGoal().getClass().getSimpleName() + (g.isRunning() ? "*" : "")).toList() + " sees " + disciple.getSensing().hasLineOfSight(bandit));
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(disciple.getTarget() == null && !disciple.isAngry(), "The disciple attacked first: " + disciple.getTarget());
             disciple.discard();
             bandit.discard();
             cleanup(player);
+            helper.succeed();
         });
     }
 
-    /** The archer, a zombie 4 blocks off: he draws and looses an arrow. */
+    /** The archer, struck by a zombie 4 blocks off: he draws and looses an arrow at it. */
     @GameTest(template = "foundation_arena", batch = "soldier_archer", timeoutTicks = 140)
     public static void theArcherShoots(GameTestHelper helper) {
         var archer = soldier(helper, MurimEntities.ALLIANCE_ARCHER.get(), new BlockPos(2, 1, 0));
@@ -94,6 +94,7 @@ public final class AllianceSoldierGameTests {
         // Not invulnerable: an invulnerable mob is no one's enemy. Health enough to take a few arrows.
         zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(200);
         zombie.setHealth(200);
+        helper.runAfterDelay(10, () -> archer.hurt(helper.getLevel().damageSources().mobAttack(zombie), 0.5F));
         AABB around = new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(16);
         helper.succeedWhen(() -> {
             var arrows = helper.getLevel().getEntitiesOfClass(Arrow.class, around, a -> a.getOwner() == archer);
@@ -116,6 +117,8 @@ public final class AllianceSoldierGameTests {
             helper.assertTrue(guard.getLastHurtByMob() == player, "Not struck yet");
             helper.assertTrue(guard.getTarget() == player, "The struck guard does not fight back");
             helper.assertTrue(sergeant.getTarget() == player, "The sergeant did not come to his help");
+            helper.assertTrue(guard.isAngryAt(player) && guard.getRemainingPersistentAngerTime() > 0 && guard.getRemainingPersistentAngerTime() <= 39 * 20,
+                    "The guard's anger is not the piglins': " + guard.getRemainingPersistentAngerTime());
             guard.discard();
             sergeant.discard();
             cleanup(player);

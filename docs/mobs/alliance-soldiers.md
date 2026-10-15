@@ -27,15 +27,17 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
 
 ## Comportement
 
-- **Gardiens des routes** : ils chassent les bandits et tous les monstres sauf le creeper. Ils laissent les joueurs en
-  paix tant qu'on ne les frappe pas ; frappé, un soldat riposte et appelle ceux qui sont près de lui.
+- **Neutres, comme les piglins** (demande d'Enzo, 15/10/2026) : ils n'attaquent personne en premier, ni joueur ni
+  monstre. Frappé, un soldat se retourne contre celui qui l'a frappé et appelle tous les soldats autour de lui (puis de
+  nouveau toutes les 4 à 6 s tant qu'il le voit). Ils restent en colère 20 à 39 s après le dernier coup, puis oublient.
+  Un monstre qui frappe l'un d'eux est combattu de la même façon.
 - Ils restent autour de leur poste (10 blocs) et ne disparaissent jamais.
 - **Combat (Epic Fight, tout est parable)** :
   - jian (disciple, sergent avec ou sans bouclier) : les coupes de base du Nuage Azur, Drifting Cut, Returning Cut,
     Piercing Mist, et de temps en temps Rising Cloud puis Falling Rain ;
   - lance (garde) : les coups de lance d'Epic Fight ;
   - poings (moine) : Rapid Fists, Whirlwind Kick, et Tiger Step Punch sur qui se tient à 2,5 à 5 blocs ;
-  - arc (archer) : il s'approche jusqu'à voir sa cible à 15 blocs, bande l'arc 1 s, tire, attend 1 s. Ses flèches ne
+  - arc (archer) : il s'approche jusqu'à voir son adversaire à 15 blocs, bande l'arc 1 s, tire, attend 1 s. Ses flèches ne
     se ramassent pas.
 - **Butin** (tué par un joueur) : 1 à 3 taëls (+ Butin) ; son arme ou son bouclier une fois sur cent.
 
@@ -50,6 +52,6 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
 ## Vérifications
 
 `AllianceSoldierGameTests` : l'arme de chacun (Epic Fight y voit une lance, une épée), aucun ne disparaît ; un disciple
-va sur un bandit et jamais sur le joueur ; l'archer tire ; un garde frappé et le sergent à côté se retournent contre le
-joueur ; butin en taëls. `SiteGameTests.allianceOutpostIsWholeAndCarried` compte la garnison. Portraits en vrai client :
+n'attaque ni le bandit ni le joueur à côté de lui ; l'archer frappé par un zombie lui tire dessus ; un garde frappé et le sergent à côté se retournent contre le
+joueur et restent en colère comme des piglins ; butin en taëls. `SiteGameTests.allianceOutpostIsWholeAndCarried` compte la garnison. Portraits en vrai client :
 `gradlew -PgameTests runMugshotTour`.

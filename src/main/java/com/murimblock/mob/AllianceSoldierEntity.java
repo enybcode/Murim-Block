@@ -7,14 +7,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.TimeUtil;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -28,8 +32,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -39,9 +42,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -54,10 +59,12 @@ import java.util.function.Supplier;
  *   <li>Warrior Monk: his fists (the Long Fist's punches and kicks);</li>
  *   <li>Sergeant: the Snow Plum Jian and the Rattan Shield.</li>
  * </ul>
- * They keep the roads: they hunt bandits and every monster but the creeper, and leave players alone unless struck; a
- * soldier struck calls the others near him. They stay about where they were placed and never despawn.
+ * Neutral, as the zombified piglins: they attack no one first. Struck, a soldier turns on whoever struck him and calls
+ * every soldier near him (and again every few seconds while he sees his foe); they stay angry for 20 to 39 seconds
+ * after the last blow, then forget. A monster that strikes one of them is fought the same way. They stay about where
+ * they were placed and never despawn.
  */
-public class AllianceSoldierEntity extends PathfinderMob implements RangedAttackMob {
+public class AllianceSoldierEntity extends PathfinderMob implements RangedAttackMob, NeutralMob {
     /** The five kinds: the path of their entity type, their weapons, health, armour and own strength. */
     public enum Kind {
         SPEAR_GUARD("alliance_spear_guard", "spear", () -> new ItemStack(MurimItems.ALLIANCE_SPEAR.get()), () -> ItemStack.EMPTY, 30, 4, 2),
@@ -95,7 +102,12 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
     /** The chance he leaves his weapon (or shield), like the bandit's dao. */
     static final float WEAPON_DROP = 0.01F;
 
+    /** How long they stay angry after the last blow, and how often an angry soldier calls the others (as the piglins). */
+    private static final UniformInt ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39), ALERT_INTERVAL = TimeUtil.rangeOfSeconds(4, 6);
+
     private final Kind kind;
+    private int angerTime, ticksUntilNextAlert;
+    @Nullable private UUID angerTarget;
 
     public AllianceSoldierEntity(EntityType<? extends AllianceSoldierEntity> type, Level level, Kind kind) {
         super(type, level);
@@ -118,16 +130,49 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         goalSelector.addGoal(6, stroll);
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        // Only whoever strikes them (and whoever they are still angry at), as the piglins.
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false,
-                target -> target instanceof Enemy && !(target instanceof Creeper)));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        targetSelector.addGoal(3, new ResetUniversalAngerTargetGoal<>(this, false));
     }
 
     /** With a target, he is aggressive: the clients see it (his brows knot, MobFaces; the archer aims). */
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
+        updatePersistentAnger((ServerLevel) level(), true);
+        if (getTarget() != null) maybeAlertOthers();
         setAggressive(getTarget() != null);
     }
+
+    // ---- anger, as the piglins
+
+    /** Every few seconds while he sees his foe, the soldiers about him who are not fighting join in. */
+    private void maybeAlertOthers() {
+        if (ticksUntilNextAlert > 0) {
+            ticksUntilNextAlert--;
+            return;
+        }
+        LivingEntity foe = getTarget();
+        if (foe != null && getSensing().hasLineOfSight(foe)) {
+            double range = getAttributeValue(Attributes.FOLLOW_RANGE);
+            level().getEntitiesOfClass(AllianceSoldierEntity.class, AABB.unitCubeFromLowerCorner(position()).inflate(range, 10.0, range), EntitySelector.NO_SPECTATORS)
+                    .stream().filter(other -> other != this && other.getTarget() == null && !other.isAlliedTo(foe))
+                    .forEach(other -> other.setTarget(foe));
+        }
+        ticksUntilNextAlert = ALERT_INTERVAL.sample(getRandom());
+    }
+
+    @Override public void setTarget(@Nullable LivingEntity target) {
+        if (getTarget() == null && target != null) ticksUntilNextAlert = ALERT_INTERVAL.sample(getRandom());
+        if (target instanceof Player player) setLastHurtByPlayer(player);
+        super.setTarget(target);
+    }
+
+    @Override public int getRemainingPersistentAngerTime() { return angerTime; }
+    @Override public void setRemainingPersistentAngerTime(int time) { angerTime = time; }
+    @Override @Nullable public UUID getPersistentAngerTarget() { return angerTarget; }
+    @Override public void setPersistentAngerTarget(@Nullable UUID target) { angerTarget = target; }
+    @Override public void startPersistentAngerTimer() { setRemainingPersistentAngerTime(ANGER_TIME.sample(getRandom())); }
 
     // ---- the archer's bow
 
@@ -218,11 +263,13 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (hasRestriction()) tag.put("Home", NbtUtils.writeBlockPos(getRestrictCenter()));
+        addPersistentAngerSaveData(tag);
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         NbtUtils.readBlockPos(tag, "Home").ifPresent(this::setHome);
+        readPersistentAngerSaveData(level(), tag);
     }
 
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.PLAYER_HURT; }
