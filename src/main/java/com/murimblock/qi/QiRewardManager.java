@@ -126,6 +126,10 @@ public final class QiRewardManager {
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) {
             return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null, originMultiplier);
         }
+        // The Crab King, the crab art's boss: the first victory over him counts too.
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_king"))) {
+            return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null, originMultiplier);
+        }
         if (entity.getType() == EntityType.WARDEN) {
             return new RewardTarget(entityTypeId, baseReward, 600, entityTypeId, null, originMultiplier);
         }
@@ -143,6 +147,9 @@ public final class QiRewardManager {
             return new RewardTarget(entityTypeId, baseReward, 80, entityTypeId, null);
         }
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) {
+            return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null);
+        }
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_king"))) {
             return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null);
         }
         if (entityType == EntityType.WARDEN) {
@@ -167,6 +174,7 @@ public final class QiRewardManager {
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "mountain_bandit"))) return 4;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) return 20;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) return 30;
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_king"))) return 30;
         return FIXED_REWARDS.getOrDefault(type, 1);
     }
 

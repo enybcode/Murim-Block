@@ -45,6 +45,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<BanditChiefEntity>> BANDIT_CHIEF =
             TYPES.register("bandit_chief", () -> EntityType.Builder.of(BanditChiefEntity::new, MobCategory.MONSTER)
                     .sized(0.8F, 2.5F).eyeHeight(2.1F).clientTrackingRange(10).build("murimblock:bandit_chief"));
+    /** The Crab King, the crab art's boss: drawn 1.5 times a man's size (his box too). Never spawned naturally. */
+    public static final DeferredHolder<EntityType<?>, EntityType<CrabKingEntity>> CRAB_KING =
+            TYPES.register("crab_king", () -> EntityType.Builder.of(CrabKingEntity::new, MobCategory.MONSTER)
+                    .sized(0.9F, 2.9F).eyeHeight(2.45F).clientTrackingRange(10).build("murimblock:crab_king"));
     /** Sensei Yun, master of the Azure Cloud Sect: a man's size, placed in the Misty Bamboo Temple, never spawned naturally. */
     public static final DeferredHolder<EntityType<?>, EntityType<AzureSenseiEntity>> AZURE_SENSEI =
             TYPES.register("azure_sensei", () -> EntityType.Builder.of(AzureSenseiEntity::new, MobCategory.CREATURE)
@@ -114,6 +118,7 @@ public final class MurimEntities {
                 .add(EpicFightAttributes.IMPACT, 1.5).build());
         event.put(MOUNTAIN_BANDIT.get(), MountainBanditEntity.createBanditAttributes().build());
         event.put(BANDIT_CHIEF.get(), BanditChiefEntity.createChiefAttributes().build());
+        event.put(CRAB_KING.get(), CrabKingEntity.createCrabKingAttributes().build());
         event.put(HEART_DEMON.get(), com.murimblock.cultivation.inner.HeartDemonEntity.createAttributes().build());
         event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
         event.put(AZURE_SENSEI.get(), AzureSenseiEntity.createSenseiAttributes().build());

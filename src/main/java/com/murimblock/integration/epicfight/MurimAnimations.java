@@ -139,6 +139,7 @@ public final class MurimAnimations {
         buildAzureSensei(builder);
         buildSkyDrop(builder);
         SectWeaponAnimations.build(builder);
+        CrabKingAnimations.build(builder);
     }
 
     // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)

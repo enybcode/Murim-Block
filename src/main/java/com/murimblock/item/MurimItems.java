@@ -76,6 +76,8 @@ public final class MurimItems {
     }
 
     /** Tiger orange and the dark of his vest. */
+    public static final DeferredItem<DeferredSpawnEggItem> CRAB_KING_SPAWN_EGG = ITEMS.register("crab_king_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.CRAB_KING, 0x6E1A20, 0x55361F, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> BANDIT_CHIEF_SPAWN_EGG = ITEMS.register("bandit_chief_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_CHIEF, 0xD07A28, 0x2A1A14, new Item.Properties()));
 
@@ -238,6 +240,7 @@ public final class MurimItems {
                         output.accept(MOUNTAIN_BANDIT_SPAWN_EGG.get());
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
+                        output.accept(CRAB_KING_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(ALLIANCE_SPEAR.get());
                         output.accept(SNOW_PLUM_JIAN.get());
