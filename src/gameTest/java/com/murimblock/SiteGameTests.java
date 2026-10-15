@@ -31,7 +31,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * The six Murim sites (docs/structures), each built far out on a stone floor: every room roofed, nothing natural
+ * The seven Murim sites (docs/structures), each built far out on a stone floor: every room roofed, nothing natural
  * inside, every floor and footing carried; built chunk by chunk (as world generation does, only in the chunks its
  * pieces touch) it must come out block for block the same as built whole; and each is a registered structure with its
  * structure set and biome tag, so /locate can look for it.
@@ -62,6 +62,9 @@ public final class SiteGameTests {
 
     @GameTest(template = "foundation_arena", batch = "site_peach_hamlet", timeoutTicks = 600)
     public static void peachHamletIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.PEACH_HAMLET, "peach_spring_hamlet", 6000, Rotation.CLOCKWISE_90, GROUND); }
+
+    @GameTest(template = "foundation_arena", batch = "site_alliance_outpost", timeoutTicks = 900)
+    public static void allianceOutpostIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.ALLIANCE_OUTPOST, "alliance_outpost", 6400, Rotation.CLOCKWISE_180, GROUND); }
 
     private static void check(GameTestHelper helper, SitePlan plan, String structure, int x, Rotation rotation, int... levels) {
         ServerLevel level = helper.getLevel();
@@ -180,6 +183,7 @@ public final class SiteGameTests {
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
+            case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2);
             default -> Map.of();
         };
     }
@@ -193,7 +197,8 @@ public final class SiteGameTests {
     /** Residents a site may leave in the test world: villagers and bandits. */
     private static List<Mob> residents(ServerLevel level, BoundingBox box) {
         return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8, 48, 8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity
-                || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity);
+                || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity
+                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */

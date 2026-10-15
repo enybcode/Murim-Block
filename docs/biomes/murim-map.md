@@ -46,6 +46,7 @@ Demande d'Enzo : « de vrais biomes avec d'immenses montagnes de glace cachant d
 - **TerraBlender** ne place plus les biomes Murim (sa région Murim est retirée) ; il applique encore leurs règles de surface (choisies selon l'espace de noms du biome), qu'il n'allume que pour ses propres sources de biomes : `MurimSurface` les allume pour la carte Murim au démarrage du serveur.
 - **Le point d'apparition** (`MurimSpawn`) : tiré au hasard à la création du monde, à moins de 60 000 blocs du centre, sur la terre d'un biome Murim, ni dans l'eau ni au-dessus de y = 140. Plus tard, il dépendra de la famille du joueur.
 - **Les structures** (les sites Murim, le sanctuaire) gardent leurs règles : chacune dans son biome, à un endroit tiré au hasard.
+- **L'avant-poste de l'Alliance** (15/10) suit la carte : n'importe quel biome Murim, mais seulement au centre ou à moins de 1 500 blocs d'une frontière entre régions (`MurimMap.centreOrFrontier`, [fiche](../structures/alliance-outpost.md)).
 
 ## Vérifications
 

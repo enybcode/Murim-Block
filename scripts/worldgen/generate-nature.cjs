@@ -198,7 +198,9 @@ for (const registry of ['block', 'item']) {
   tag(registry, 'small_flowers', [id('chrysanthemum'), id('rapeseed')]);
   tag(registry, 'tall_flowers', [id('rhododendron')]);
 }
-tag('block', 'mineable/pickaxe', Object.entries(STONES).filter(([, v]) => v[1] === 'pickaxe').map(([k]) => id(k)));
+// The building blocks (generate-building.cjs) are mined with a pickaxe too.
+tag('block', 'mineable/pickaxe', [...Object.entries(STONES).filter(([, v]) => v[1] === 'pickaxe').map(([k]) => id(k)),
+  ...require('./building-blocks.cjs').AZURE_TILES.map(id)]);
 tag('block', 'mineable/shovel', Object.entries(STONES).filter(([, v]) => v[1] === 'shovel').map(([k]) => id(k)));
 tag('block', 'mineable/axe', [...logs, ...planks, id('moso_bamboo')]);
 tag('block', 'mineable/hoe', leaves);
@@ -385,7 +387,8 @@ const patchy = (level, below, above) => ({ type: 'minecraft:noise_threshold_coun
 const weightedCount = pairs => ({ type: 'minecraft:count', count: { type: 'minecraft:weighted_list',
   distribution: pairs.map(([data, weight]) => ({ data, weight })) } });
 const treePlacement = (n, sapling) => [n, inSquare, dry, heightmap('OCEAN_FLOOR'), biomeFilter, survives(state(id(sapling), { stage: '0' })), away(6)];
-const surfacePatch = n => [...(typeof n === 'number' ? [count(n)] : [n]), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter];
+// Patches spread up to 8 blocks from where they are placed: kept that far off the sites, so no flower grows in a yard.
+const surfacePatch = n => [...(typeof n === 'number' ? [count(n)] : [n]), inSquare, heightmap('WORLD_SURFACE_WG'), biomeFilter, away(8)];
 // A tree list feature: pick one tree per attempt.
 function treeMix(name, entries, fallback) {
   // Entries are placed features: inline ones with no extra placement.
@@ -590,9 +593,11 @@ const SITES = [
   ['misty_bamboo_temple', 'bamboo_temple', 'shu_bamboo_sea', 22, 7, 71004],
   ['lotus_moon_garden', 'lotus_garden', 'jiangnan_waterlands', 22, 7, 71005],
   ['peach_spring_hamlet', 'peach_hamlet', 'peach_blossom_valley', 22, 7, 71006],
+  // Any Murim biome, but only in the centre of the map or on a frontier between regions (AllianceOutpost.allowedAt).
+  ['alliance_outpost', 'alliance_outpost', '#' + id('murim_biomes'), 64, 24, 71007],
 ];
 for (const [name, plan, biome, spacing, separation, salt] of SITES) {
-  tag('worldgen/biome', `has_structure/${name}`, [id(biome)], NS);
+  tag('worldgen/biome', `has_structure/${name}`, [biome.startsWith('#') ? biome : id(biome)], NS);
   write(D(NS, 'worldgen', 'structure', `${name}.json`), { type: id('site'), plan, biomes: `#${NS}:has_structure/${name}`,
     spawn_overrides: {}, step: 'surface_structures', terrain_adaptation: 'beard_thin' });
   write(D(NS, 'worldgen', 'structure_set', `${name}.json`), { structures: [{ structure: id(name), weight: 1 }],

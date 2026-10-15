@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "murimblock:alliance_outpost",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 64,
+    "separation": 24,
+    "salt": 71007
+  }
+}

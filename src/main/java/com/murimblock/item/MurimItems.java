@@ -167,6 +167,7 @@ public final class MurimItems {
                         output.accept(CHIEF_LAMELLAR_VEST.get());
                         output.accept(CHIEF_TASSETS.get());
                         output.accept(CHIEF_FUR_BOOTS.get());
+                        MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());

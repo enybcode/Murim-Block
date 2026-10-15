@@ -20,7 +20,9 @@ import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -109,7 +111,25 @@ public final class MurimBlocks {
     /** Chinese milk vetch (Astragalus sinicus): the purple spring carpet of the southern rice country. */
     public static final DeferredBlock<FlowerBlock> MILK_VETCH = flower("milk_vetch", MapColor.COLOR_PURPLE);
 
+    // ---------- building (not nature: in the main Murimblock tab, BUILDING) ----------
+
+    /** Building blocks, in the order of the main creative tab. */
+    private static final List<DeferredBlock<? extends Block>> BUILDING_ORDER = new ArrayList<>();
+    /**
+     * The Orthodox Alliance's glazed roof tiles, azure as its flag (scripts/worldgen/generate-building.cjs): the roofs of
+     * its outposts and capital. A block, stairs and a slab, mined with a pickaxe like deepslate tiles.
+     */
+    public static final DeferredBlock<Block> AZURE_ROOF_TILES = building("azure_roof_tiles", Block::new, MurimBlocks::glazedTiles);
+    public static final DeferredBlock<StairBlock> AZURE_ROOF_TILE_STAIRS = building("azure_roof_tile_stairs",
+            p -> new StairBlock(AZURE_ROOF_TILES.get().defaultBlockState(), p), MurimBlocks::glazedTiles);
+    public static final DeferredBlock<SlabBlock> AZURE_ROOF_TILE_SLAB = building("azure_roof_tile_slab", SlabBlock::new, MurimBlocks::glazedTiles);
+
     private MurimBlocks() { }
+
+    /** The building blocks, for the main Murimblock creative tab. */
+    public static List<DeferredBlock<? extends Block>> buildingOrder() {
+        return Collections.unmodifiableList(BUILDING_ORDER);
+    }
 
     /** Log, planks, leaves and sapling of one tree. */
     public record Wood(String name, DeferredBlock<RotatedPillarBlock> log, DeferredBlock<Block> planks,
@@ -155,6 +175,20 @@ public final class MurimBlocks {
         MurimItems.ITEMS.register(name, () -> item.apply(block.get()));
         CREATIVE_ORDER.add(block);
         return block;
+    }
+
+    /** A building block: registered with its item, listed in the main tab rather than the nature tab. */
+    private static <B extends Block> DeferredBlock<B> building(String name, Function<BlockBehaviour.Properties, B> factory,
+                                                               Supplier<BlockBehaviour.Properties> properties) {
+        DeferredBlock<B> block = BLOCKS.register(name, () -> factory.apply(properties.get()));
+        MurimItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+        BUILDING_ORDER.add(block);
+        return block;
+    }
+
+    private static BlockBehaviour.Properties glazedTiles() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLUE).instrument(NoteBlockInstrument.BASEDRUM)
+                .requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.DEEPSLATE_TILES);
     }
 
     private static DeferredBlock<Block> stone(String name, MapColor color) {
