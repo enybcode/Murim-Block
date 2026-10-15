@@ -188,19 +188,23 @@ public final class SanguineTour {
                     check(shed>=10&&!SanguineArt.state(mc.player).active(),"at the form's end its crystals come away and fall: "+shed);}
                 // Blood Iceberg: the mountain of blood crystal rises under the player, seen from afar.
                 case 1045 -> server.execute(()->{var p=self(server);if(zombie!=null)zombie.discard();MartialService.resetCooldowns(p);QiService.setQi(p,100);});
-                case 1047 -> view(mc,24,15,24);
+                case 1047 -> view(mc,26,16,26);
                 case 1052 -> press(mc,4);
                 case 1054 -> mc.options.keyHotbarSlots[4].setDown(false);
                 case 1100 -> server.execute(()->{var p=self(server);int n=0;var c=BlockPos.containing(start);
-                    for(BlockPos at:BlockPos.betweenClosed(c.offset(-15,-12,-15),c.offset(15,18,15)))if(p.level().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
-                    check(n>500&&p.getY()>start.y+BloodIceberg.PEAK-1&&p.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST),"key 5 raises the Blood Iceberg and carries the player to its peak: "+n+" blocks, y "+p.getY());});
-                case 1125 -> finish(mc);
+                    for(BlockPos at:BlockPos.betweenClosed(c.offset(-BloodIceberg.RADIUS,-BloodIceberg.DEPTH,-BloodIceberg.RADIUS),c.offset(BloodIceberg.RADIUS,BloodIceberg.TOP+2,BloodIceberg.RADIUS)))if(p.level().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
+                    check(n>3000&&p.getY()>=start.y+BloodIceberg.FLOOR&&p.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST),"key 5 raises the Blood Iceberg arena and carries the player onto it: "+n+" blocks, y "+p.getY());});
+                case 1122 -> view(mc,-9,8,-9);
+                case 1175 -> capture(mc,"iceberg-blood.png");
+                case 1176 -> view(mc,10,5,-6);
+                case 1185 -> capture(mc,"iceberg-blood-falls.png");
+                case 1190 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;
             if(ticks>=470&&ticks<=495&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_THROW))throwSeen=true;
             if(ticks>=504&&ticks<=545&&playing(mc,MurimAnimations.SANGUINE_CRYSTAL_BARRAGE))barrageSeen=true;
-            record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,307);record(mc,"form-again",945,992);record(mc,"form-shed",992,1032);record(mc,"iceberg",1050,1120);
+            record(mc,"m1",44,60);record(mc,"scarlet",94,123);record(mc,"form",272,307);record(mc,"form-again",945,992);record(mc,"form-shed",992,1032);record(mc,"iceberg",1050,1120);if(ticks==1119)capture(mc,"iceberg-temple.png");
             record(mc,"crystal-charge",452,495);record(mc,"crystal-great",640,742);record(mc,"scarlet-sword",772,866);
             // Hold key 1 for the whole great charge: the key state is reset between ticks.
             if(ticks>640&&ticks<703)mc.options.keyHotbarSlots[0].setDown(true);record(mc,"barrage",502,548);

@@ -7,16 +7,27 @@ import org.junit.jupiter.api.Test;
 
 class BloodIcebergTest {
     @Test
-    void theMountainFillsMostOfThirtyByThirtyWithItsPeakInTheMiddle() {
+    void theArenaIsAFloorRingedByAChannelTiersAWallSpiresAndFalls() {
         for (long seed : new long[]{1, 42, 977}) {
-            int[][] h = BloodIceberg.heights(seed);
-            assertEquals(30, h.length);
-            int filled = 0, highest = 0;
-            for (int[] row : h) for (int v : row) { if (v >= 1) filled++; highest = Math.max(highest, v); }
-            assertTrue(filled > 30 * 30 * 3 / 4, "too little of the 30 x 30 covered: " + filled);
-            for (int i = 14; i <= 15; i++) for (int j = 14; j <= 15; j++) assertEquals(BloodIceberg.PEAK, h[i][j], "the peak to stand on");
-            assertTrue(highest > BloodIceberg.PEAK, "no spire stands out: " + highest);
-            assertTrue(h[0][0] < 0 && h[2][15] >= 1, "corners rounded, sides filled");
+            var shape = BloodIceberg.shape(seed);
+            int[][] h = shape.heights();
+            int size = BloodIceberg.RADIUS * 2, r = BloodIceberg.RADIUS;
+            assertEquals(size, h.length);
+            // The floor: flat at FLOOR across the arena, glowing in the middle.
+            for (int i = r - 10; i < r + 10; i++) assertEquals(BloodIceberg.FLOOR, h[i][r]);
+            assertTrue(shape.seal()[r][r], "the seal's middle");
+            // Out from the middle: the floor, then the tiers, then the wall (at least WALL over the floor), then the slope.
+            int prev = 0, highest = 0;
+            for (int i = r; i < r + BloodIceberg.RADIUS - 1; i++) {
+                if (shape.parts()[i][r] == BloodIceberg.Part.CHANNEL) { assertEquals(BloodIceberg.FLOOR - 1, h[i][r], "the channel, one lower"); continue; }
+                assertTrue(h[i][r] >= prev || h[i][r] >= BloodIceberg.FLOOR + BloodIceberg.WALL - 1, "tiers step up"); prev = h[i][r];
+            }
+            long falls = java.util.Arrays.stream(shape.parts()).flatMap(java.util.Arrays::stream).filter(q -> q == BloodIceberg.Part.FALL).count();
+            assertTrue(falls >= 8, "eight falls of blood: " + falls);
+            for (int[] row : h) for (int v : row) highest = Math.max(highest, v);
+            assertTrue(h[r + 20][r] >= BloodIceberg.FLOOR + BloodIceberg.WALL, "the wall: " + h[r + 20][r]);
+            assertTrue(highest > BloodIceberg.FLOOR + BloodIceberg.WALL + 3 && highest <= BloodIceberg.TOP, "spires: " + highest);
+            assertTrue(h[0][0] < 0, "round, not square");
         }
     }
 }

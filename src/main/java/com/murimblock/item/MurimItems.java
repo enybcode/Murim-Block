@@ -13,6 +13,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tiers;
 import net.neoforged.bus.api.IEventBus;
@@ -91,6 +92,24 @@ public final class MurimItems {
     public static final DeferredItem<SwordItem> AZURE_CLOUD_SWORD = ITEMS.register("azure_cloud_sword",
             () -> new SwordItem(Tiers.DIAMOND, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.DIAMOND, 3, -2.2F))));
 
+    /**
+     * The Snow Plum Jian (雪梅剑), the Orthodox Alliance disciples' sword: a long slender jian, the three peaks of the
+     * Alliance flag inlaid at its root and three plum blossoms above them, a small gold guard with upturned wings, an
+     * azure grip and a long blue tassel that swings (client/TasselSwordRenderer). A sword for Epic Fight
+     * (data/murimblock/capabilities/weapons/snow_plum_jian.json): an iron sword's 6 damage and speed. Model from
+     * scripts/animation/snow-plum-jian-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> SNOW_PLUM_JIAN = ITEMS.register("snow_plum_jian",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.4F))));
+
+    /**
+     * The Orthodox Alliance's Rattan Shield (藤牌): rattan coiled into a deep dome, a medallion with the Alliance flag on
+     * top, a blue cord bound round the edge. A shield (Epic Fight gives every shield its guard and parry), lighter than
+     * the vanilla one. Model from scripts/animation/rattan-shield-model.cjs, held through item_skins/rattan_shield.json.
+     */
+    public static final DeferredItem<ShieldItem> RATTAN_SHIELD = ITEMS.register("rattan_shield",
+            () -> new ShieldItem(new Item.Properties().durability(280)));
+
     /** The azure of his robe and the white of his beard. */
     public static final DeferredItem<DeferredSpawnEggItem> AZURE_SENSEI_SPAWN_EGG = ITEMS.register("azure_sensei_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.AZURE_SENSEI, 0x2F6FC0, 0xEFEBE4, new Item.Properties()));
@@ -130,6 +149,8 @@ public final class MurimItems {
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(ALLIANCE_SPEAR.get());
+                        output.accept(SNOW_PLUM_JIAN.get());
+                        output.accept(RATTAN_SHIELD.get());
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(CHIEF_BROW_BAND.get());

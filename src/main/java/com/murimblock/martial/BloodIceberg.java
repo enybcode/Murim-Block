@@ -18,39 +18,57 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Blood Iceberg (15/10/2026, Enzo's request), the Sanguine Art's last technique: a mountain of blood crystal, 30 blocks
- * across, rises out of the ground under the player and lifts them to its peak, an iceberg bristling with spires. On it
- * the player has Strength and Regeneration, and a blood crystal grows back every 3 seconds (a dorsal crystal in the
- * form, a point of the gauge outside it). After 60 seconds it crumbles away from the top down.
+ * Blood Iceberg (15/10/2026, Enzo's request), the Sanguine Art's last technique: a temple arena of blood, 45 blocks
+ * across, rises out of the ground under the player. In the "blood temple" style Enzo chose (red lacquered stone and
+ * gold): a round floor of polished stone 3 blocks up with a gold seal inlaid in it, a channel of blood running round it,
+ * two tiers of bricks, a crenellated wall with lanterns set in it, eight spires of gold crystal crowned with lanterns,
+ * and between the spires eight falls of blood pouring from the wall's top down the tiers into the channel; an outer slope
+ * of rough stone down to the ground. Whoever stands where it rises is carried up onto it. In it the player has Strength
+ * and Regeneration, and a blood crystal grows back every 3 seconds (a dorsal crystal in the form, a point of the gauge
+ * outside it). After 60 seconds the blood runs dry and the arena crumbles away from the top down.
  * <p>
- * It only fills air (and grass, flowers, snow: what a block may replace), never breaks a block. Each of its blocks
- * removes itself by a scheduled tick (saved with the chunk), so nothing is left behind even if the server stops.
+ * It only fills air (and grass, flowers, snow: what a block may replace), never breaks a block. Each of its blocks, and
+ * each of its springs of blood, removes itself by a scheduled tick (saved with the chunk), so nothing is left behind even
+ * if the server stops; the flowing blood dries up once its springs are gone.
  */
 public final class BloodIceberg {
-    /** Half its width (30 blocks across), its peak's height over the player's feet, how deep it fills down a slope. */
-    public static final int RADIUS = 15, PEAK = 9, DEPTH = 12;
-    /** It rises after the palms strike the ground, in a second; it stands 60 s; it crumbles over a few seconds. */
-    public static final int RISE_DELAY = 6, RISE_TICKS = 20, LIFE_TICKS = 1200;
+    /**
+     * Half its width (45 blocks across); the floor's height over the player's feet and its radius; the wall's height over
+     * the floor; the spires' over the wall; the highest it reaches; how deep it fills down a slope.
+     */
+    public static final int RADIUS = 22, FLOOR = 3, ARENA = 16, WALL = 6, SPIRE = 6, TOP = FLOOR + WALL + SPIRE, DEPTH = 12;
+    /** It rises after the palms strike the ground, in a second and a half; it stands 60 s; it crumbles over a few seconds. */
+    public static final int RISE_DELAY = 6, RISE_TICKS = 30, LIFE_TICKS = 1200;
     /** On it: the effects refreshed every second; a blood crystal every 3 seconds. */
     public static final int EFFECT_EVERY = 20, CRYSTAL_EVERY = 60;
+    /** The blood's springs run dry 10 s before the arena starts to crumble, so the thick blood has drained away by then. */
+    static final int DRY_BEFORE = 200;
 
-    record Spot(BlockPos pos, boolean vein) {
+    /** What a column is: the floor, the channel of blood, a tier, the wall, a spire, a fall of blood, the outer slope. */
+    public enum Part { FLOOR, CHANNEL, TIER, WALL, SPIRE, FALL, SLOPE }
+
+    /** What a block of the arena is made of: the blood temple's six stones, or a spring of blood. */
+    enum Kind { ROCK, BRICKS, POLISHED, SEAL, GOLD, LANTERN, BLOOD }
+
+    record Spot(BlockPos pos, Kind kind) {
     }
 
     static final class Peak {
         final ResourceKey<Level> level;
         final BlockPos centre;
-        final List<Spot> spots;
+        final List<Spot> spots, springs;
         final long start, ends;
         final int maxY;
         int placed;
+        boolean flowing;
 
-        Peak(ResourceKey<Level> level, BlockPos centre, List<Spot> spots, long start) {
-            this.level = level; this.centre = centre; this.spots = spots; this.start = start;
+        Peak(ResourceKey<Level> level, BlockPos centre, List<Spot> spots, List<Spot> springs, long start) {
+            this.level = level; this.centre = centre; this.spots = spots; this.springs = springs; this.start = start;
             ends = start + RISE_TICKS + LIFE_TICKS;
             maxY = spots.isEmpty() ? centre.getY() : spots.getLast().pos().getY();
         }
@@ -62,56 +80,95 @@ public final class BloodIceberg {
     }
 
     /**
-     * The mountain's heights over the player's feet, column by column (30 x 30, -1 outside it): a broad cone to the peak
-     * (PEAK) over the middle, rough at its flanks, and spires of crystal standing out of it, none on the peak itself.
+     * The arena, column by column (RADIUS * 2 square): heights over the player's feet (-1 outside), what each column is,
+     * which floor tops are the seal, which wall columns hold a lantern.
      */
-    public static int[][] heights(long seed) {
-        Random random = new Random(seed);
-        int size = RADIUS * 2;
-        double[][] h = new double[size][size];
-        for (int i = 0; i < size; i++) for (int j = 0; j < size; j++) {
-            double x = i - RADIUS + .5, z = j - RADIUS + .5;
-            // A rounded square, so it fills most of the 30 x 30.
-            double d = Math.cbrt(Math.pow(Math.abs(x), 3) + Math.pow(Math.abs(z), 3)) / RADIUS;
-            h[i][j] = d > 1 ? -1 : Math.max(1, PEAK * Math.pow(1 - d, 1.15) + random.nextDouble() * 1.6);
-        }
-        // The middle stays the peak, flat enough to stand on.
-        for (int i = RADIUS - 1; i <= RADIUS; i++) for (int j = RADIUS - 1; j <= RADIUS; j++) h[i][j] = PEAK;
-        for (int s = 0; s < 12; s++) {
-            double angle = random.nextDouble() * Math.PI * 2, reach = 4 + random.nextDouble() * 8.5;
-            double cx = RADIUS + Math.cos(angle) * reach, cz = RADIUS + Math.sin(angle) * reach;
-            double rise = 3 + random.nextDouble() * 4.5;
-            for (int i = (int) cx - 2; i <= (int) cx + 2; i++) for (int j = (int) cz - 2; j <= (int) cz + 2; j++) {
-                if (i < 0 || j < 0 || i >= size || j >= size || h[i][j] < 0) continue;
-                double dist = Math.hypot(i + .5 - cx, j + .5 - cz);
-                if (dist < 1.8) h[i][j] = Math.max(h[i][j], h[(int) cx][(int) cz] + rise * (1 - dist / 1.8));
-            }
-        }
-        int[][] out = new int[size][size];
-        for (int i = 0; i < size; i++) for (int j = 0; j < size; j++) out[i][j] = h[i][j] < 0 ? -1 : (int) Math.round(h[i][j]);
-        return out;
+    public record Shape(int[][] heights, Part[][] parts, boolean[][] seal, boolean[][] lantern) {
     }
 
-    /** The technique: the mountain is laid out under the player; it starts to rise once the palms strike the ground. */
+    /**
+     * The arena: the floor (FLOOR high) out to the channel, one lower, at its rim; two tiers (+2, +4); the wall (+WALL),
+     * crenellated, with eight spires (+SPIRE at their tip) turned by the seed, a notch for a fall of blood midway between
+     * each two; the outer slope down to the ground. On the floor, the seal: two rings and eight spokes between them
+     * toward the spires, and the middle.
+     */
+    public static Shape shape(long seed) {
+        int size = RADIUS * 2;
+        int[][] h = new int[size][size];
+        Part[][] parts = new Part[size][size];
+        boolean[][] seal = new boolean[size][size], lantern = new boolean[size][size];
+        double turn = new Random(seed).nextDouble() * Math.PI / 4, step = Math.PI / 4;
+        for (int i = 0; i < size; i++) for (int j = 0; j < size; j++) {
+            double x = i - RADIUS + .5, z = j - RADIUS + .5, d = Math.hypot(x, z), a = Math.atan2(z, x);
+            // How far round from the nearest spire's line, and from the midway line between two (arcs, in blocks here).
+            double off = ((a - turn) % step + step) % step, arc = Math.min(off, step - off) * d, mid = Math.abs(off - step / 2) * d;
+            int v; Part part;
+            if (d > RADIUS + .5) { v = -1; part = null; }
+            else if (d <= ARENA - 1.2) {
+                v = FLOOR; part = Part.FLOOR;
+                seal[i][j] = Math.abs(d - 6) < .55 || Math.abs(d - 12) < .55 || d > 6 && d < 12 && arc < .5 || d < 1.5;
+            } else if (d <= ARENA) { v = FLOOR - 1; part = Part.CHANNEL; }
+            else if (d <= ARENA + 1.5) { v = FLOOR + 2; part = Part.TIER; }
+            else if (d <= ARENA + 3) { v = FLOOR + 4; part = Part.TIER; }
+            else if (d <= RADIUS - 1) {
+                v = FLOOR + WALL + ((int) Math.floor((a + Math.PI) / (Math.PI / 20)) % 2 == 0 ? 1 : 0); part = Part.WALL;
+                if (arc < 1.8) { v = Math.max(v, FLOOR + WALL + (int) Math.round(SPIRE * (1 - arc / 1.8))); part = Part.SPIRE; }
+                else if (mid < .6 && d <= ARENA + 4.2) { v = FLOOR + WALL - 1; part = Part.FALL; }
+                else if (d <= ARENA + 4 && (int) Math.floor((a + Math.PI) / (Math.PI / 24)) % 3 == 0) lantern[i][j] = true;
+            } else { v = Math.max(1, (int) Math.round(FLOOR + WALL - (d - (RADIUS - 1)) * 4)); part = Part.SLOPE; }
+            h[i][j] = v; parts[i][j] = part;
+        }
+        return new Shape(h, parts, seal, lantern);
+    }
+
+    /** What the block of a column is, `up` blocks over the player's feet (its top is `top`). */
+    static Kind kind(Shape shape, int i, int j, int up, int top) {
+        if (up < 0) return Kind.ROCK;
+        return switch (shape.parts()[i][j]) {
+            case FLOOR -> up == top ? (shape.seal()[i][j] ? Kind.SEAL : Kind.POLISHED) : Kind.ROCK;
+            case CHANNEL, TIER -> Kind.BRICKS;
+            case WALL -> up == top ? Kind.POLISHED : shape.lantern()[i][j] && up == FLOOR + 4 ? Kind.LANTERN : Kind.BRICKS;
+            case FALL -> up == top ? Kind.POLISHED : Kind.BRICKS;
+            case SPIRE -> up == top ? Kind.LANTERN : up >= FLOOR + WALL - 1 ? Kind.GOLD : Kind.BRICKS;
+            case SLOPE -> Kind.ROCK;
+        };
+    }
+
+    static Block block(Kind kind) {
+        return switch (kind) {
+            case ROCK -> SanguineBlocks.TEMPLE_ROCK.get();
+            case BRICKS -> SanguineBlocks.TEMPLE_BRICKS.get();
+            case POLISHED -> SanguineBlocks.TEMPLE_POLISHED.get();
+            case SEAL -> SanguineBlocks.TEMPLE_SEAL.get();
+            case GOLD -> SanguineBlocks.TEMPLE_GOLD.get();
+            case LANTERN -> SanguineBlocks.TEMPLE_LANTERN.get();
+            case BLOOD -> SanguineBlocks.BLOOD.get();
+        };
+    }
+
+    /** The technique: the arena is laid out under the player; it starts to rise once the palms strike the ground. */
     public static boolean raise(ServerPlayer p) {
         ServerLevel level = p.serverLevel();
         BlockPos feet = p.blockPosition();
         long now = level.getGameTime(), seed = now * 31 + p.getUUID().getLeastSignificantBits();
-        int[][] h = heights(seed);
-        Random random = new Random(seed ^ 0x5EED);
-        List<Spot> spots = new ArrayList<>();
+        Shape shape = shape(seed);
+        int[][] h = shape.heights();
+        List<Spot> spots = new ArrayList<>(), springs = new ArrayList<>();
         for (int i = 0; i < h.length; i++) for (int j = 0; j < h.length; j++) {
             if (h[i][j] < 0) continue;
-            int x = feet.getX() + i - RADIUS, z = feet.getZ() + j - RADIUS, top = feet.getY() + h[i][j] - 1;
+            int x = feet.getX() + i - RADIUS, z = feet.getZ() + j - RADIUS, top = h[i][j] - 1;
             // From its top down to the ground (or DEPTH under the feet, down a cliff).
-            for (int y = top; y >= feet.getY() - DEPTH; y--) {
-                BlockPos pos = new BlockPos(x, y, z);
+            for (int up = top; up >= -DEPTH; up--) {
+                BlockPos pos = new BlockPos(x, feet.getY() + up, z);
                 if (!fillable(level.getBlockState(pos))) break;
-                spots.add(new Spot(pos, random.nextFloat() < .12F || y == top && h[i][j] > PEAK));
+                spots.add(new Spot(pos, kind(shape, i, j, up, top)));
             }
+            // Blood: the channel full of it, a spring in each notch of the wall to pour down the tiers.
+            Part part = shape.parts()[i][j];
+            if (part == Part.CHANNEL || part == Part.FALL) springs.add(new Spot(new BlockPos(x, feet.getY() + top + 1, z), Kind.BLOOD));
         }
         spots.sort(Comparator.comparingInt(s -> s.pos().getY()));
-        PEAKS.put(p.getUUID(), new Peak(level.dimension(), feet, spots, now + RISE_DELAY));
+        PEAKS.put(p.getUUID(), new Peak(level.dimension(), feet, spots, springs, now + RISE_DELAY));
         level.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.6F, .5F);
         return true;
     }
@@ -122,7 +179,7 @@ public final class BloodIceberg {
 
     @Nullable static Peak peak(ServerPlayer p) { return PEAKS.get(p.getUUID()); }
 
-    /** Every tick, for each player: their mountain rising, then its gifts while they stand on it. */
+    /** Every tick, for each player: their arena rising, then its gifts while they are in it. */
     static void tick(ServerPlayer p) {
         Peak k = PEAKS.get(p.getUUID());
         if (k == null) return;
@@ -131,6 +188,7 @@ public final class BloodIceberg {
         if (!p.level().dimension().equals(k.level)) return;
         ServerLevel level = p.serverLevel();
         if (now >= k.start && k.placed < k.spots.size()) rise(level, k, now, p);
+        if (!k.flowing && k.placed >= k.spots.size()) flow(level, k, now);
         if (now >= k.start + RISE_TICKS && now < k.ends && on(p, k)) {
             long t = now - k.start - RISE_TICKS;
             if (t % EFFECT_EVERY == 0) {
@@ -142,34 +200,46 @@ public final class BloodIceberg {
         }
     }
 
-    /** This tick's layers, from the ground up; whoever stands where the crystal grows is carried up on it. */
+    /** This tick's layers, from the ground up; whoever stands where the stone grows is carried up on it. */
     private static void rise(ServerLevel level, Peak k, long now, ServerPlayer owner) {
         int lowest = k.spots.getFirst().pos().getY();
         double f = Math.min(1, (now - k.start + 1) / (double) RISE_TICKS);
         int upTo = (int) Math.floor(lowest + (k.maxY - lowest + 1) * f);
-        var block = SanguineBlocks.BLOOD_CRYSTAL.get();
-        var vein = SanguineBlocks.BLOOD_CRYSTAL_VEIN.get();
         Random random = new Random(now);
         while (k.placed < k.spots.size() && k.spots.get(k.placed).pos().getY() <= upTo) {
             Spot s = k.spots.get(k.placed++);
             if (!fillable(level.getBlockState(s.pos()))) continue;
-            var b = s.vein() ? vein : block;
-            level.setBlock(s.pos(), b.defaultBlockState(), 3);
+            Block b = block(s.kind());
+            // Shown to clients without updating the neighbours: thousands of blocks in a second and a half.
+            level.setBlock(s.pos(), b.defaultBlockState(), Block.UPDATE_CLIENTS);
             // It crumbles away from the top down once its 60 s are up.
             level.scheduleTick(s.pos(), b, (int) (k.ends - now) + (k.maxY - s.pos().getY()) * 3 + random.nextInt(8));
         }
-        AABB area = new AABB(k.centre).inflate(RADIUS + 1, DEPTH + PEAK + 12, RADIUS + 1);
+        AABB area = new AABB(k.centre).inflate(RADIUS + 1, DEPTH + TOP + 4, RADIUS + 1);
         lift(level, owner);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, area, e -> e != owner)) lift(level, e);
         if ((now - k.start) % 4 == 0) {
-            level.playSound(null, k.centre.getX() + .5, k.centre.getY(), k.centre.getZ() + .5, SoundEvents.AMETHYST_CLUSTER_PLACE, SoundSource.PLAYERS, 1.8F, (float) (.45 + f * .4));
-            level.playSound(null, k.centre.getX() + .5, k.centre.getY(), k.centre.getZ() + .5, SoundEvents.DEEPSLATE_PLACE, SoundSource.PLAYERS, 1.4F, .5F);
+            level.playSound(null, k.centre.getX() + .5, k.centre.getY(), k.centre.getZ() + .5, SoundEvents.DEEPSLATE_PLACE, SoundSource.PLAYERS, 1.8F, (float) (.45 + f * .4));
+            level.playSound(null, k.centre.getX() + .5, k.centre.getY(), k.centre.getZ() + .5, SoundEvents.STONE_PLACE, SoundSource.PLAYERS, 1.4F, .5F);
         }
         if (k.placed >= k.spots.size())
-            level.playSound(null, k.centre.getX() + .5, k.maxY, k.centre.getZ() + .5, SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, 2F, .5F);
+            level.playSound(null, k.centre.getX() + .5, k.maxY, k.centre.getZ() + .5, SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.2F, .5F);
     }
 
-    /** Carried up: someone the crystal grew into stands on its top. */
+    /** Once it stands, the blood: the channel fills and the falls start to pour; the springs run dry before it crumbles. */
+    private static void flow(ServerLevel level, Peak k, long now) {
+        k.flowing = true;
+        Block blood = block(Kind.BLOOD);
+        int dry = (int) Math.max(20, k.ends - DRY_BEFORE - now);
+        for (Spot s : k.springs) {
+            if (!level.getBlockState(s.pos()).isAir()) continue;
+            level.setBlock(s.pos(), blood.defaultBlockState(), Block.UPDATE_ALL);
+            level.scheduleTick(s.pos(), blood, dry);
+        }
+        level.playSound(null, k.centre.getX() + .5, k.centre.getY() + FLOOR, k.centre.getZ() + .5, SoundEvents.BUCKET_EMPTY, SoundSource.PLAYERS, 1.6F, .6F);
+    }
+
+    /** Carried up: someone the stone grew into stands on its top. */
     private static void lift(ServerLevel level, LivingEntity e) {
         BlockPos at = e.blockPosition(), up = at;
         while (level.getBlockState(up).getBlock() instanceof BloodIcebergBlock) up = up.above();
@@ -179,7 +249,7 @@ public final class BloodIceberg {
         e.setDeltaMovement(e.getDeltaMovement().multiply(1, 0, 1));
     }
 
-    /** Whether the player is on (or in the air over, or at the foot of) their mountain. */
+    /** Whether the player is in (or on, or at the foot of) their arena. */
     static boolean on(ServerPlayer p, Peak k) {
         double dx = Math.abs(p.getX() - (k.centre.getX() + .5)), dz = Math.abs(p.getZ() - (k.centre.getZ() + .5));
         return dx <= RADIUS + .5 && dz <= RADIUS + .5 && p.getY() >= k.centre.getY() - DEPTH - 2 && p.getY() <= k.maxY + 8;

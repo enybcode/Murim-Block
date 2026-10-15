@@ -69,6 +69,11 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   de 35° comme la lance d'Epic Fight), icône `textures/item/alliance_spear.png`, source `art/blockbench/alliance_spear.bbmodel`.
   Une lance pour Epic Fight (`capabilities/weapons/alliance_spear.json`). Vérification en vrai client :
   `MURIM_TOUR_ONLY=spear gradlew -PgameTests runWeaponTour`.
+- `node scripts/animation/snow-plum-jian-model.cjs` : le Snow Plum Jian des disciples de l'Alliance (style 6 de
+  `scripts/concepts/alliance-swords.cjs`) : corps `models/item/snow_plum_jian_body.json`, houppe seule `snow_plum_jian_tassel.json`
+  (balancée par `client/TasselSwordRenderer`), transformations de la main `snow_plum_jian_held.json`, icône, source Blockbench.
+  Une épée pour Epic Fight. Vérification : `MURIM_TOUR_ONLY=jian gradlew -PgameTests runWeaponTour` (M1 d'Epic Fight, puis
+  ceux de l'Épée du Nuage Azur).
 - `node scripts/animation/sensei-3d.cjs` : Sensei Yun en 3D (mesh `animmodels/entity/azure_sensei.json`, atlas
   `textures/entity/azure_sensei.png` et ses visages, projet Blockbench) ; `node scripts/animation/azure-cloud-sword-model.cjs` :
   son épée Azure Cloud (corps, houppe, transformations de la main, icône d'après le modèle ; `client/TasselSwordRenderer`
