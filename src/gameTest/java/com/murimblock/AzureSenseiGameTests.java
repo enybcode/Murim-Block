@@ -220,7 +220,7 @@ public final class AzureSenseiGameTests {
         });
     }
 
-    /** Killed by a player, he drops the Azure Cloud one time in 200 and always the manual; otherwise, nothing. */
+    /** Killed by a player, he drops the Azure Cloud one time in 200, always the manual, and 15 to 20 silver taels; otherwise, nothing. */
     @GameTest(template = "foundation_arena", batch = "sensei_loot")
     public static void theSenseiDropsHisSwordAndTheManual(GameTestHelper helper) {
         AzureSenseiEntity sensei = sensei(helper, new BlockPos(2, 1, 2));
@@ -233,7 +233,7 @@ public final class AzureSenseiGameTests {
             helper.assertTrue(manual == 1.0, "The manual should always drop, not " + manual);
             helper.assertTrue(byPlayer.mostInOneRoll(MurimItems.AZURE_CLOUD_SWORD.get()) == 1 && byPlayer.mostInOneRoll(MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()) == 1,
                     "More than one sword or manual at once");
-            helper.assertTrue(byPlayer.onlyContains(MurimItems.AZURE_CLOUD_SWORD.get(), MurimItems.AZURE_CLOUD_SWORD_MANUAL.get()), "Something else dropped: " + byPlayer.rollsWith());
+            helper.assertTrue(byPlayer.onlyContains(MurimItems.AZURE_CLOUD_SWORD.get(), MurimItems.AZURE_CLOUD_SWORD_MANUAL.get(), MurimItems.SILVER_TAEL.get()), "Something else dropped: " + byPlayer.rollsWith());
             var byNothing = com.murimblock.testing.LootRolls.roll(helper.getLevel(), sensei, null, 20);
             helper.assertTrue(byNothing.rollsWith().isEmpty(), "Something dropped without a player: " + byNothing.rollsWith());
         } finally {

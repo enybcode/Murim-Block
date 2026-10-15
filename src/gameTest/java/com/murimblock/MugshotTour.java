@@ -55,6 +55,7 @@ public final class MugshotTour {
     private record Sitter(String name, Supplier<EntityType<? extends Mob>> type) { }
 
     private static final List<Sitter> SITTERS = List.of(
+            new Sitter("alliance-merchant", MurimEntities.ALLIANCE_MERCHANT::get),
             new Sitter("azure-sensei", MurimEntities.AZURE_SENSEI::get),
             new Sitter("mountain-bandit", MurimEntities.MOUNTAIN_BANDIT::get),
             new Sitter("bandit-chief", MurimEntities.BANDIT_CHIEF::get),

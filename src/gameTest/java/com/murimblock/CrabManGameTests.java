@@ -205,6 +205,7 @@ public final class CrabManGameTests {
                 for (var drop : event.getDrops()) {
                     ItemStack stack = drop.getItem();
                     if (stack.is(Items.COD)) cod += stack.getCount();
+                    else if (stack.is(com.murimblock.item.MurimItems.SILVER_TAEL.get())) continue; // a tael or two for the merchant
                     else helper.assertTrue(stack.is(Items.SALMON) && stack.getCount() <= 1 || stack.is(Items.TRIDENT),
                             "Crab man dropped something else than fish or a trident: " + stack);
                 }
@@ -228,7 +229,7 @@ public final class CrabManGameTests {
         man.setNoAi(true);
         try {
             var byPlayer = LootRolls.roll(helper.getLevel(), man, player, 4000);
-            helper.assertTrue(byPlayer.onlyContains(Items.COD, Items.SALMON, Items.TRIDENT), "Crab man loot holds something else: " + byPlayer.rollsWith());
+            helper.assertTrue(byPlayer.onlyContains(Items.COD, Items.SALMON, Items.TRIDENT, com.murimblock.item.MurimItems.SILVER_TAEL.get()), "Crab man loot holds something else: " + byPlayer.rollsWith());
             helper.assertTrue(byPlayer.rollsWith(Items.COD) == 4000 && byPlayer.mostInOneRoll(Items.COD) == 2,
                     "Crab man cod not one or two each time: " + byPlayer.rollsWith(Items.COD) + " rolls, at most " + byPlayer.mostInOneRoll(Items.COD));
             helper.assertTrue(byPlayer.mostInOneRoll(Items.SALMON) == 1 && byPlayer.rollsWith(Items.SALMON) > 1600 && byPlayer.rollsWith(Items.SALMON) < 2400,
@@ -238,6 +239,7 @@ public final class CrabManGameTests {
                     "Crab man trident not one time in a hundred: " + byPlayer.rollsWith(Items.TRIDENT) + " in 4000");
             var byNothing = LootRolls.roll(helper.getLevel(), man, null, 2000);
             helper.assertTrue(byNothing.rollsWith(Items.TRIDENT) == 0, "Crab man gave a trident to no player");
+            helper.assertTrue(byNothing.rollsWith(com.murimblock.item.MurimItems.SILVER_TAEL.get()) == 0, "Crab man gave taels to no player");
             helper.succeed();
         } finally { man.discard(); cleanup(player); }
     }

@@ -74,6 +74,9 @@ public final class ArmoredCrabEpicFight {
             // Sensei Yun: the same skeleton, his own model.
             event.registerEntityPatch(MurimEntities.AZURE_SENSEI.get(), AzureSenseiPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.AZURE_SENSEI.get(), Armatures.BIPED);
+            // The Alliance Merchant: the same skeleton, his own model, no fighting.
+            event.registerEntityPatch(MurimEntities.ALLIANCE_MERCHANT.get(), AllianceMerchantPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.ALLIANCE_MERCHANT.get(), Armatures.BIPED);
         });
     }
 

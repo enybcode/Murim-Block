@@ -110,6 +110,14 @@ public final class MurimItems {
     public static final DeferredItem<ShieldItem> RATTAN_SHIELD = ITEMS.register("rattan_shield",
             () -> new ShieldItem(new Item.Properties().durability(280)));
 
+    /**
+     * A silver tael (银两), a small boat-shaped ingot: the Murim's money. Bandits, their chief, crab men and Sensei Yun
+     * leave some (their loot tables), and the Alliance Merchant trades in them (mob/AllianceMerchantEntity).
+     */
+    public static final DeferredItem<Item> SILVER_TAEL = ITEMS.register("silver_tael", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
+
     /** The azure of his robe and the white of his beard. */
     public static final DeferredItem<DeferredSpawnEggItem> AZURE_SENSEI_SPAWN_EGG = ITEMS.register("azure_sensei_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.AZURE_SENSEI, 0x2F6FC0, 0xEFEBE4, new Item.Properties()));
@@ -153,6 +161,8 @@ public final class MurimItems {
                         output.accept(RATTAN_SHIELD.get());
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
+                        output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
+                        output.accept(SILVER_TAEL.get());
                         output.accept(CHIEF_BROW_BAND.get());
                         output.accept(CHIEF_LAMELLAR_VEST.get());
                         output.accept(CHIEF_TASSETS.get());
