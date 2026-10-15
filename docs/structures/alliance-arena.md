@@ -26,8 +26,8 @@ colonne de Qi sur les quatre sceaux dorés du leitai, et d'autres sortent en ren
 - **Dimensions** : une cour fermée de **73 × 73 blocs** (murs de 10 de haut) ; le leitai fait **27 × 27**, son plateau
   3 blocs au-dessus de la cour, assez large pour se battre contre le capitaine et quatre unités à la fois. Avec la
   route et l'arche, le site tient dans environ 80 × 100 blocs.
-- **Où** : comme l'avant-poste, dans n'importe quel biome Murim mais **seulement au centre de la carte ou près
-  d'une frontière entre régions** (les terres de l'Alliance). Plus rare que l'avant-poste.
+- **Où** : dans n'importe quel biome Murim mais **seulement au centre de la carte ou près
+  d'une frontière entre régions** (les terres de l'Alliance). Plus rare que l'avant-poste, qui depuis le 15/10/2026 apparaît partout dans la bulle (un tous les 1 000 blocs environ).
 
 ## Le plan
 
@@ -88,7 +88,7 @@ sur les sceaux, les tribunes pleines, le pavillon des juges au fond.
   rayon de miel pour l'or des sceaux et des bandeaux, chêne noir pour les poutres et les mâts, cloches, feux de camp,
   tonneaux.
 - **Habitants** : le capitaine au centre du leitai ; deux gardes à la lance à la porte ; deux disciples à l'épée dans
-  les galeries des tribunes.
+  les galeries des tribunes ; le marchand de l'Alliance à l'intérieur de la porte, à l'est de l'allée (il est dans chaque site de l'Alliance).
 - **L'invocation** fait partie du combat du capitaine (session « design ») ; l'arène fournit les points d'apparition :
   les quatre sceaux et les portes des deux salles des troupes.
 

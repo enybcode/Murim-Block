@@ -69,6 +69,16 @@ public final class CelestialPeakSpearGameTests {
         return zombie;
     }
 
+    /**
+     * Runs {@code then} once the player's level finds every zombie where it was moved: a mob moved after its spawn may
+     * not be in the entity lookup yet on a busy GameTest server, and a blow aimed then misses for nothing.
+     */
+    private static void whenReachable(GameTestHelper helper, ServerPlayer player, Runnable then, Zombie... zombies) {
+        helper.startSequence().thenWaitUntil(() -> {
+            for (Zombie z : zombies) helper.assertTrue(player.level().getEntities(player, z.getBoundingBox()).contains(z), "A zombie is not reachable yet");
+        }).thenExecute(then);
+    }
+
     private static void tickFor(GameTestHelper helper, ServerPlayer player, int ticks) {
         for (int t = 1; t <= ticks; t++) helper.runAfterDelay(t, player::doTick);
     }
@@ -97,74 +107,83 @@ public final class CelestialPeakSpearGameTests {
         end(helper, player);
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_dragon", timeoutTicks = 60)
+    @GameTest(template = "foundation_arena", batch = "spear_dragon", timeoutTicks = 100)
     public static void piercingDragonLungesThroughEveryoneInItsLine(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie near = dummy(helper, player, 0, 2.0), far = dummy(helper, player, 0, 3.6);
-        helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "Piercing Dragon was not cast");
-        tickFor(helper, player, 30);
-        helper.runAfterDelay(32, () -> {
-            helper.assertTrue(near.getHealth() < 200 && far.getHealth() < 200, "The lunge did not go through both: " + near.getHealth() + ", " + far.getHealth());
-            // How far it carries is the client's (a player moves himself): the spear tour measures it, about 4 blocks.
-            helper.assertTrue(QiService.getQi(player) <= 100 - MartialArts.PIERCING_DRAGON.qiCost() + 1, "No Qi spent");
-            end(helper, player, near, far);
-        });
+        whenReachable(helper, player, () -> {
+            helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "Piercing Dragon was not cast");
+            tickFor(helper, player, 30);
+            helper.runAfterDelay(32, () -> {
+                helper.assertTrue(near.getHealth() < 200 && far.getHealth() < 200, "The lunge did not go through both: " + near.getHealth() + ", " + far.getHealth());
+                // How far it carries is the client's (a player moves himself): the spear tour measures it, about 4 blocks.
+                helper.assertTrue(QiService.getQi(player) <= 100 - MartialArts.PIERCING_DRAGON.qiCost() + 1, "No Qi spent");
+                end(helper, player, near, far);
+            });
+        }, near, far);
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_plum", timeoutTicks = 60)
+    @GameTest(template = "foundation_arena", batch = "spear_plum", timeoutTicks = 100)
     public static void plumBlossomThrustsStrikeAgainAndAgain(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         MartialService.unlock(player, MartialArts.PLUM_BLOSSOM_THRUSTS);
         MartialService.assign(player, 1, MartialArts.PLUM_BLOSSOM_THRUSTS.id());
         Zombie zombie = dummy(helper, player, 0, 2.6);
-        helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Plum Blossom Thrusts was not cast");
-        float[] after = new float[2];
-        tickFor(helper, player, 40);
-        helper.runAfterDelay(6, () -> after[0] = zombie.getHealth());
-        helper.runAfterDelay(30, () -> {
-            helper.assertTrue(zombie.getHealth() < after[0] && after[0] < 200, "The thrusts did not strike more than once: " + after[0] + " then " + zombie.getHealth());
-            end(helper, player, zombie);
-        });
+        whenReachable(helper, player, () -> {
+            helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Plum Blossom Thrusts was not cast");
+            float[] after = new float[2];
+            tickFor(helper, player, 40);
+            helper.runAfterDelay(6, () -> after[0] = zombie.getHealth());
+            helper.runAfterDelay(30, () -> {
+                helper.assertTrue(zombie.getHealth() < after[0] && after[0] < 200, "The thrusts did not strike more than once: " + after[0] + " then " + zombie.getHealth());
+                end(helper, player, zombie);
+            });
+        }, zombie);
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_sweep", timeoutTicks = 60)
+    @GameTest(template = "foundation_arena", batch = "spear_sweep", timeoutTicks = 100)
     public static void theSweepKnocksDownEveryoneAllRound(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         MartialService.unlock(player, MartialArts.THOUSAND_SOLDIER_SWEEP);
         MartialService.assign(player, 2, MartialArts.THOUSAND_SOLDIER_SWEEP.id());
         Zombie front = dummy(helper, player, 0, 2.5), back = dummy(helper, player, 0, -2.5), side = dummy(helper, player, 2.5, 0);
-        helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "The sweep was not cast");
-        tickFor(helper, player, 30);
-        helper.runAfterDelay(30, () -> {
-            helper.assertTrue(front.getHealth() < 200 && back.getHealth() < 200 && side.getHealth() < 200,
-                    "The sweep missed someone: " + front.getHealth() + ", " + back.getHealth() + ", " + side.getHealth());
-            end(helper, player, front, back, side);
-        });
+        whenReachable(helper, player, () -> {
+            helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "The sweep was not cast");
+            tickFor(helper, player, 30);
+            helper.runAfterDelay(30, () -> {
+                helper.assertTrue(front.getHealth() < 200 && back.getHealth() < 200 && side.getHealth() < 200,
+                        "The sweep missed someone: " + front.getHealth() + ", " + back.getHealth() + ", " + side.getHealth());
+                end(helper, player, front, back, side);
+            });
+        }, front, back, side);
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_reach", timeoutTicks = 140)
+    @GameTest(template = "foundation_arena", batch = "spear_reach", timeoutTicks = 260)
     public static void aThrustAtThePointStrikesHarderThanUpClose(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie atPoint = dummy(helper, player, 0, 3.6);
         helper.assertTrue(CelestialPeakSpear.atReach(player, atPoint), "3.6 blocks out is not at the point");
         float[] dealt = new float[2];
-        Zombie[] upClose = new Zombie[1];
         // Each thrust with the swing fully charged (a blow too soon after the last is weaker in Minecraft).
-        tickFor(helper, player, 120);
-        helper.runAfterDelay(30, () -> EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F));
-        helper.runAfterDelay(60, () -> {
-            dealt[0] = 200 - atPoint.getHealth();
-            atPoint.discard();
-            upClose[0] = dummy(helper, player, 0, 1.4);
-            helper.assertTrue(!CelestialPeakSpear.atReach(player, upClose[0]), "1.4 blocks out is at the point");
-            EpicFightBridge.patch(player).playAnimationSynchronized(yesman.epicfight.gameasset.Animations.BIPED_IDLE, 0.0F);
-        });
-        helper.runAfterDelay(90, () -> EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F));
-        helper.runAfterDelay(120, () -> {
-            dealt[1] = 200 - upClose[0].getHealth();
-            helper.assertTrue(dealt[0] > 0 && dealt[1] > 0, "A thrust missed: at the point " + dealt[0] + ", up close " + dealt[1]);
-            helper.assertTrue(dealt[0] > dealt[1] * 1.1, "Long Reach did not strike harder at the point: " + dealt[0] + " against " + dealt[1]);
-            end(helper, player, upClose[0]);
-        });
+        tickFor(helper, player, 240);
+        whenReachable(helper, player, () -> {
+            helper.runAfterDelay(30, () -> EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F));
+            helper.runAfterDelay(60, () -> {
+                dealt[0] = 200 - atPoint.getHealth();
+                atPoint.discard();
+                EpicFightBridge.patch(player).playAnimationSynchronized(yesman.epicfight.gameasset.Animations.BIPED_IDLE, 0.0F);
+                Zombie upClose = dummy(helper, player, 0, 1.4);
+                helper.assertTrue(!CelestialPeakSpear.atReach(player, upClose), "1.4 blocks out is at the point");
+                whenReachable(helper, player, () -> {
+                    helper.runAfterDelay(30, () -> EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F));
+                    helper.runAfterDelay(60, () -> {
+                        dealt[1] = 200 - upClose.getHealth();
+                        helper.assertTrue(dealt[0] > 0 && dealt[1] > 0, "A thrust missed: at the point " + dealt[0] + ", up close " + dealt[1]);
+                        helper.assertTrue(dealt[0] > dealt[1] * 1.1, "Long Reach did not strike harder at the point: " + dealt[0] + " against " + dealt[1]);
+                        end(helper, player, upClose);
+                    });
+                }, upClose);
+            });
+        }, atPoint);
     }
 }

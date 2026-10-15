@@ -28,16 +28,17 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * walled yard: the gate and its gatehouse to the south, a paifang where the road starts, three corner towers and the
  * watchtower whose signal fire relays word to the capital, the command hall, the barracks, the stables, the training
  * yard, the infirmary tent, the notice board, the well and the supplies; outside, a tea stall for travellers.
- * <p>It stands only in the centre of the Murim map and on the frontiers between its regions ({@link #allowedAt}).
+ * <p>A common sight: anywhere in the Murim map, about one every 1 000 blocks (structure_set/alliance_outpost; Enzo,
+ * 15/10/2026: the outpost, which has no boss, spawns often; only the arena keeps to the centre and the frontiers).
  * Its people: a commander, a quartermaster, a medic and a tea-house keeper (villagers with trades and names), two
- * horses in the stables, and its garrison of the Alliance's soldiers ({@link #garrison}).
+ * horses in the stables, the Alliance merchant by the road, and its garrison of the Alliance's soldiers ({@link #garrison}).
  */
 final class AllianceOutpost extends Site {
     /** The walls (outer faces), local. */
     static final int X0 = -26, X1 = 26, Z0 = -22, Z1 = 24;
     /** The watchtower's centre, in the north-east corner. */
     static final int TX = 21, TZ = -17;
-    /** How far from a frontier between regions an outpost may stand (blocks). */
+    /** How far from a frontier between regions the Alliance's arena may stand (blocks). */
     static final int FRONTIER = 1500;
 
     private static final BlockState BASE = s(Blocks.STONE_BRICKS);
@@ -62,10 +63,13 @@ final class AllianceOutpost extends Site {
 
     @Override public int[] levels(Probe p) { return flat(p, probe(), 8, false); }
 
-    /** Only in the centre of the Murim map, or within {@link #FRONTIER} blocks of a frontier between two regions. */
+    /** Anywhere in the Murim map (never in its ocean ring nor beyond). */
     @Override public boolean allowedAt(int x, int z) {
-        return MurimMap.inBubble(x, z) && MurimMap.centreOrFrontier(x, z, FRONTIER);
+        return MurimMap.inBubble(x, z);
     }
+
+    /** Frequent, so it steps aside for the other sites (a peach hamlet, the arena...) rather than fall on them. */
+    @Override public boolean keepsClearOfOtherSites() { return true; }
 
     @Override public void build(Canvas c, int part, int[] levels) {
         int g = levels[0];
@@ -382,6 +386,8 @@ final class AllianceOutpost extends Site {
         c.spawn(24, g + 20, -14, Direction.SOUTH, MurimEntities.ALLIANCE_ARCHER.get(), archer -> { });
         c.spawn(4, g + 2, -14, Direction.SOUTH, MurimEntities.ALLIANCE_SERGEANT.get(), sergeant -> { });
         c.spawn(-14, g + 1, 16, Direction.EAST, MurimEntities.ALLIANCE_WARRIOR_MONK.get(), monk -> { });
+        // The Alliance merchant, by the road outside the gate, across from the tea stall: in every Alliance site.
+        c.spawn(-5, g + 1, 31, Direction.EAST, MurimEntities.ALLIANCE_MERCHANT.get(), merchant -> { });
     }
 
     /** One of the outpost's people: a villager of the plains with a trade and a name, kept here. */

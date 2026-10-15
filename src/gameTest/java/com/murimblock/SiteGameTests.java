@@ -186,8 +186,8 @@ public final class SiteGameTests {
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
-            case ALLIANCE_ARENA -> Map.of("murimblock:peak_captain", 1, "murimblock:alliance_spear_guard", 2, "murimblock:alliance_sword_disciple", 2);
-            case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2, "murimblock:alliance_spear_guard", 2,
+            case ALLIANCE_ARENA -> Map.of("murimblock:peak_captain", 1, "murimblock:alliance_merchant", 1, "murimblock:alliance_spear_guard", 2, "murimblock:alliance_sword_disciple", 2);
+            case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2, "murimblock:alliance_merchant", 1, "murimblock:alliance_spear_guard", 2,
                     "murimblock:alliance_sword_disciple", 2, "murimblock:alliance_archer", 1, "murimblock:alliance_sergeant", 1, "murimblock:alliance_warrior_monk", 1);
             default -> Map.of();
         };

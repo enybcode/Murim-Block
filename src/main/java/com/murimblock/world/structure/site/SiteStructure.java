@@ -43,6 +43,7 @@ public final class SiteStructure extends Structure {
         int x = chunk.getMiddleBlockX(), z = chunk.getMiddleBlockZ();
         Site site = plan.site();
         if (!site.allowedAt(x, z)) { count("place"); return Optional.empty(); }
+        if (site.keepsClearOfOtherSites() && nearOtherSite(context, site)) { count("crowded"); return Optional.empty(); }
         // The biome first: it is cheap, and /locate asks every cell of the grid.
         int sea = context.chunkGenerator().getSeaLevel(), r0 = site.reach();
         for (int dx = -r0; dx <= r0; dx += r0) for (int dz = -r0; dz <= r0; dz += r0) {
@@ -69,6 +70,40 @@ public final class SiteStructure extends Structure {
         return Optional.of(new GenerationStub(new BlockPos(x, levels[0], z), builder -> {
             for (int i = 0; i < site.parts().size(); i++) builder.addPiece(new SitePiece(plan, i, x, z, rotation, seed, levels));
         }));
+    }
+
+    /** How far apart two sites' edges are kept (blocks), for a site that keeps clear of the others. */
+    static final int CLEARANCE = 24;
+
+    /**
+     * Whether another Murim site may stand too near this chunk: for every other structure set of the mod (a random
+     * spread), the chunk its grid offers in each cell around, if the biome there suits that site. It does not ask the
+     * other site's terrain, so it errs on the side of stepping aside.
+     */
+    private boolean nearOtherSite(GenerationContext context, Site site) {
+        ChunkPos chunk = context.chunkPos();
+        var sets = context.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.STRUCTURE_SET);
+        for (var entry : sets.entrySet()) {
+            if (!entry.getKey().location().getNamespace().equals(com.murimblock.Murimblock.MOD_ID)) continue;
+            var set = entry.getValue();
+            if (!(set.placement() instanceof net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement spread)) continue;
+            for (var choice : set.structures()) {
+                Structure other = choice.structure().value();
+                if (other == this) continue;
+                int otherReach = other instanceof SiteStructure s ? s.plan().site().reach() : 32;
+                int reach = (site.reach() + otherReach + CLEARANCE + 15) / 16;
+                int spacing = spread.spacing();
+                for (int rx = Math.floorDiv(chunk.x - reach, spacing); rx <= Math.floorDiv(chunk.x + reach, spacing); rx++)
+                    for (int rz = Math.floorDiv(chunk.z - reach, spacing); rz <= Math.floorDiv(chunk.z + reach, spacing); rz++) {
+                        ChunkPos there = spread.getPotentialStructureChunk(context.seed(), rx * spacing, rz * spacing);
+                        if (Math.abs(there.x - chunk.x) > reach || Math.abs(there.z - chunk.z) > reach) continue;
+                        var biome = context.biomeSource().getNoiseBiome(QuartPos.fromBlock(there.getMiddleBlockX()),
+                                QuartPos.fromBlock(context.chunkGenerator().getSeaLevel()), QuartPos.fromBlock(there.getMiddleBlockZ()), context.randomState().sampler());
+                        if (other.biomes().contains(biome)) return true;
+                    }
+            }
+        }
+        return false;
     }
 
     /** Diagnostics (site tour): how many places were refused for their biome, terrain or edge, and accepted. */
