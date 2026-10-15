@@ -14,26 +14,31 @@ import yesman.epicfight.registry.entries.EpicFightSounds;
 import yesman.epicfight.world.damagesource.StunType;
 
 /**
- * The Crab King's moves (scripts/animation/crab-king-moves.cjs, docs/mobs/crab-king.md): his idle, his three attacks with
- * the pincers and his roar. He is drawn 1.5 times a man's size, so his hit boxes reach as far (they sit before his root,
- * forward along -z). Every attack is slow to come and can be parried.
+ * The Crab King's moves (scripts/animation/crab-king-moves.cjs, docs/mobs/crab-king.md): his idle and heavy walk, his
+ * three attacks with the pincers, his grab and his roar. He is drawn twice a man's size, so his hit boxes reach as far
+ * (they sit before his root, forward along -z). Every attack is slow to come and can be parried.
  * <ul>
  *   <li>the sweep: the great right pincer swept level across the front, the widest;</li>
  *   <li>the snap: a lunge, both pincers driven forward and snapped shut, the farthest;</li>
- *   <li>the slam: both pincers slammed to the ground ahead; its landing sends a shockwave (CrabKingEntity).</li>
+ *   <li>the slam: both pincers slammed to the ground ahead; its landing sends a shockwave (CrabKingEntity);</li>
+ *   <li>the grab: the great right pincer snapped shut at {@link #GRAB_CATCH}; what it catches (CrabKingEntity) is held up
+ *   high, squeezed, and slammed to the ground at {@link #GRAB_RELEASE} of the hold. No hit box of Epic Fight's: the catch
+ *   is the entity's, through a guard, but a perfect parry at the catch makes it miss.</li>
  * </ul>
  */
 public final class CrabKingAnimations {
-    public static AnimationAccessor<StaticAnimation> IDLE;
+    public static AnimationAccessor<StaticAnimation> IDLE, WALK;
     public static AnimationAccessor<AttackAnimation> SWEEP, SNAP, SLAM;
-    public static AnimationAccessor<ActionAnimation> ROAR;
+    public static AnimationAccessor<ActionAnimation> ROAR, GRAB, GRAB_HOLD;
 
     /** When the slam's pincers meet the ground (seconds into it): the shockwave then. */
     public static final float SLAM_IMPACT = 0.74F;
+    /** When the grab's pincer snaps shut (seconds into it), and when the hold's slam lets go (seconds into the hold). */
+    public static final float GRAB_CATCH = 0.55F, GRAB_RELEASE = 1.62F;
 
-    private static final OBBCollider SWEEP_BOX = new OBBCollider(2.8D, 1.0D, 1.8D, 0.0D, 1.3D, -2.2D);
-    private static final OBBCollider SNAP_BOX = new OBBCollider(1.4D, 1.0D, 1.9D, 0.0D, 1.4D, -2.7D);
-    private static final OBBCollider SLAM_BOX = new OBBCollider(1.7D, 1.2D, 1.8D, 0.0D, 0.9D, -2.4D);
+    private static final OBBCollider SWEEP_BOX = new OBBCollider(3.7D, 1.3D, 2.4D, 0.0D, 1.7D, -2.9D);
+    private static final OBBCollider SNAP_BOX = new OBBCollider(1.9D, 1.3D, 2.5D, 0.0D, 1.9D, -3.6D);
+    private static final OBBCollider SLAM_BOX = new OBBCollider(2.3D, 1.6D, 2.4D, 0.0D, 1.2D, -3.2D);
 
     private CrabKingAnimations() { }
 
@@ -62,5 +67,8 @@ public final class CrabKingAnimations {
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
                 .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(3)));
         ROAR = builder.nextAccessor("biped/murim/crab_king_roar", a -> new ActionAnimation(0.15F, a, Armatures.BIPED));
+        WALK = builder.nextAccessor("biped/murim/crab_king_walk", a -> new StaticAnimation(0.2F, true, a, Armatures.BIPED));
+        GRAB = builder.nextAccessor("biped/murim/crab_king_grab", a -> new ActionAnimation(0.12F, a, Armatures.BIPED));
+        GRAB_HOLD = builder.nextAccessor("biped/murim/crab_king_grab_hold", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
     }
 }

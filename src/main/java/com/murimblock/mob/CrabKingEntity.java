@@ -42,29 +42,43 @@ import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+import yesman.epicfight.world.damagesource.StunType;
 
 /**
  * The Crab King (蟹王), the boss of the crab art (docs/mobs/crab-king.md): a martial artist the crab men's sickness took
- * whole, drawn 1.5 times a man's size (client/CrabKingRenderer). Not spawned in the world: he waits in a structure (a
- * spawn egg, /summon, until it is built), and never despawns. Tough (260 health, armour 14, his shell barely moved by
- * blows) and slow, his pincers his weapons: a sweep, a lunging snap and a slam whose landing sends a shockwave
- * (CrabKingPatch), every one parryable. Under half his health he roars and calls two armoured crabs out of the ground,
+ * whole, drawn twice a man's size, four blocks tall (client/CrabKingRenderer). Not spawned in the world: he waits in a
+ * structure (a spawn egg, /summon, until it is built), and never despawns. Tough (260 health, armour 14, his shell barely
+ * moved by blows) and slow, walking heavily (his steps are heard), his pincers his weapons: a sweep, a lunging snap and a
+ * slam whose landing sends a shockwave (CrabKingPatch), every one parryable; and the grab: what the great pincer catches
+ * is lifted up high, squeezed three times and slammed to the ground, knocked down. A guard does not stop the grab; a
+ * perfect parry as the pincer shuts makes it miss. Under half his health he roars and calls two armoured crabs out of the ground,
  * once. He breathes under water and moves faster in it. His health shows in a boss bar to the players near him. The crab
  * art's manual will be his drop when the art is made.
  */
 public class CrabKingEntity extends Monster {
     /** The slam's shockwave: its reach around the landing point, and its share of his attack. */
-    public static final double SHOCKWAVE_RADIUS = 3.6;
+    public static final double SHOCKWAVE_RADIUS = 4.6;
     public static final float SHOCKWAVE_DAMAGE = 0.6F;
     /** Ticks before the shockwave in which the slam's pincers may have struck or been parried. */
     private static final int SLAM_WINDOW = 12;
     /** How many armoured crabs he calls, under half his health. */
     public static final int CRABS_CALLED = 2;
+    /** The grab: its catch, each squeeze and the slam to the ground, as shares of his attack; the squeezes' ticks into the hold. */
+    public static final float GRAB_CATCH_DAMAGE = 0.3F, GRAB_SQUEEZE_DAMAGE = 0.25F, GRAB_SLAM_DAMAGE = 0.8F;
+    private static final int[] SQUEEZES = {10, 16, 22};
+    /** Where the pincer catches, before him: how far ahead, to his right and how high (blocks, at his size). */
+    private static final double CATCH_AHEAD = 2.6, CATCH_RIGHT = 0.75, CATCH_HIGH = 2.6, CATCH_REACH = 1.5;
 
     private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
     private boolean shockwaveSent;
     /** Whether he has roared and called his crabs (saved: once in his life). */
     private boolean enraged;
+    /** Whether the grab now playing has shut its pincer yet; who the pincer holds (null: no one), for how long, slammed yet. */
+    private boolean grabShut, slammedDown;
+    @Nullable private LivingEntity held;
+    private int holdTicks;
+    /** Ticks to his next heavy step while he walks. */
+    private int stepIn;
 
     public CrabKingEntity(EntityType<? extends CrabKingEntity> type, Level level) {
         super(type, level);
@@ -105,8 +119,17 @@ public class CrabKingEntity extends Monster {
 
     @Override public void tick() {
         super.tick();
-        if (!level().isClientSide && isInWater() && tickCount % 20 == 0)
-            addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
+        if (!(level() instanceof ServerLevel server)) return;
+        if (isInWater() && tickCount % 20 == 0) addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
+        // His heavy steps: two in his walk's 1.6 s, heard and felt.
+        boolean walking = onGround() && getDeltaMovement().horizontalDistanceSqr() > 4.0E-4;
+        if (!walking) stepIn = 4;
+        else if (--stepIn <= 0) {
+            stepIn = 16;
+            server.playSound(null, getX(), getY(), getZ(), SoundEvents.RAVAGER_STEP, SoundSource.HOSTILE, 1.3F, 0.55F);
+            BlockState ground = server.getBlockState(BlockPos.containing(getX(), getY() - 0.5, getZ()));
+            if (!ground.isAir()) server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), getX(), getY() + 0.05, getZ(), 12, 0.6, 0.02, 0.6, 0.05);
+        }
     }
 
     // ---- the boss bar
@@ -161,7 +184,123 @@ public class CrabKingEntity extends Monster {
 
     @Override public void aiStep() {
         super.aiStep();
-        if (level() instanceof ServerLevel server) shockwaveTick(server);
+        if (level() instanceof ServerLevel server) {
+            shockwaveTick(server);
+            grabTick(server);
+        }
+    }
+
+    // ---- the grab
+
+    private AnimationPlayer mainPlayer() {
+        LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(this, LivingEntityPatch.class);
+        return patch == null ? null : patch.getAnimator().getPlayerFor(null);
+    }
+
+    /** Who the great pincer holds now (null: no one). */
+    @Nullable public LivingEntity held() {
+        return held;
+    }
+
+    private void grabTick(ServerLevel server) {
+        AnimationPlayer main = mainPlayer();
+        var playing = main == null ? null : main.getRealAnimation();
+        if (playing == CrabKingAnimations.GRAB && !main.isEnd()) {
+            if (!grabShut && main.getElapsedTime() >= CrabKingAnimations.GRAB_CATCH) {
+                grabShut = true;
+                // Caught: the hold starts playing from the next tick on.
+                if (catchBefore(server)) return;
+            }
+        } else grabShut = false;
+        if (held == null) return;
+        // Let go when the hold is over or broken off (the hold may take a tick to replace the grab).
+        boolean holding = playing == CrabKingAnimations.GRAB_HOLD && !main.isEnd() || holdTicks < 2 && playing == CrabKingAnimations.GRAB;
+        if (!holding || !held.isAlive() || !isAlive() || held.level() != level()) {
+            held = null;
+            return;
+        }
+        holdTicks++;
+        float t = main.getElapsedTime();
+        if (t >= CrabKingAnimations.GRAB_RELEASE) {
+            if (!slammedDown) slamDown(server);
+            return;
+        }
+        holdAt(t);
+        for (int squeeze : SQUEEZES) if (holdTicks == squeeze) {
+            held.invulnerableTime = 0;
+            held.hurt(damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * GRAB_SQUEEZE_DAMAGE);
+            server.playSound(null, held.getX(), held.getY(), held.getZ(), SoundEvents.TURTLE_EGG_CRACK, SoundSource.HOSTILE, 1.0F, 0.6F);
+        }
+    }
+
+    private Vec3 ahead() {
+        return Vec3.directionFromRotation(0, yBodyRot);
+    }
+
+    /** His right, square to where he faces. */
+    private Vec3 right() {
+        Vec3 f = ahead();
+        return new Vec3(-f.z, 0, f.x);
+    }
+
+    /**
+     * The pincer shuts: the nearest body before him (not his crabs) is caught, hurt a little, and held. A guard does not
+     * stop it; a perfect parry just then does.
+     */
+    public boolean catchBefore(ServerLevel server) {
+        Vec3 at = position().add(ahead().scale(CATCH_AHEAD)).add(right().scale(CATCH_RIGHT)).add(0, CATCH_HIGH, 0);
+        LivingEntity caught = null;
+        double nearest = Double.MAX_VALUE;
+        for (LivingEntity e : server.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(CATCH_REACH, CATCH_HIGH, CATCH_REACH),
+                e -> e != this && e.isAlive() && !e.isSpectator() && !(e instanceof ArmoredCrabEntity) && !(e instanceof CrabManEntity)
+                        && !(e instanceof Player p && p.getAbilities().invulnerable))) {
+            double d = e.distanceToSqr(at);
+            if (d < nearest) { nearest = d; caught = e; }
+        }
+        server.playSound(null, at.x, at.y, at.z, SoundEvents.ARMOR_EQUIP_IRON.value(), SoundSource.HOSTILE, 1.4F, 0.5F);
+        if (caught == null) return false;
+        caught.hurt(damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * GRAB_CATCH_DAMAGE);
+        if (MurimGuardSkill.parriedThisTick(caught) || !caught.isAlive()) return false;
+        held = caught;
+        holdTicks = 0;
+        slammedDown = false;
+        LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(this, LivingEntityPatch.class);
+        if (patch != null) patch.playAnimationSynchronized(CrabKingAnimations.GRAB_HOLD, 0.0F);
+        return true;
+    }
+
+    /**
+     * Where the pincer holds its catch at t seconds into the hold (crab-king-moves.cjs): caught before him, lifted up
+     * high, then raised over his head before the slam.
+     */
+    private void holdAt(float t) {
+        double lift = Math.min(1, t / 0.35), over = Math.max(0, Math.min(1, (t - 1.2) / 0.22));
+        double forward = 2.6 - 0.3 * lift - 0.9 * over, high = 2.7 + 1.0 * lift + 0.8 * over;
+        Vec3 at = position().add(ahead().scale(forward)).add(right().scale(CATCH_RIGHT)).add(0, high - held.getBbHeight() / 2, 0);
+        if (held instanceof ServerPlayer player) player.connection.teleport(at.x, at.y, at.z, player.getYRot(), player.getXRot());
+        else held.teleportTo(at.x, at.y, at.z);
+        held.setDeltaMovement(Vec3.ZERO);
+        held.fallDistance = 0;
+    }
+
+    /** The slam: the catch thrown to the ground before him, hurt and knocked down; the pincer lets go. */
+    private void slamDown(ServerLevel server) {
+        slammedDown = true;
+        LivingEntity victim = held;
+        held = null;
+        Vec3 at = position().add(ahead().scale(3.0)).add(right().scale(CATCH_RIGHT * 0.5));
+        if (victim instanceof ServerPlayer player) player.connection.teleport(at.x, getY(), at.z, player.getYRot(), player.getXRot());
+        else victim.teleportTo(at.x, getY(), at.z);
+        victim.setDeltaMovement(Vec3.ZERO);
+        victim.fallDistance = 0;
+        victim.invulnerableTime = 0;
+        victim.hurt(damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * GRAB_SLAM_DAMAGE);
+        LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(victim, LivingEntityPatch.class);
+        if (patch != null && victim.isAlive()) patch.applyStun(StunType.KNOCKDOWN, 1.5F);
+        BlockState ground = server.getBlockState(BlockPos.containing(at.x, getY() - 0.5, at.z));
+        if (!ground.isAir()) server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), at.x, getY() + 0.1, at.z, 50, 1.0, 0.1, 1.0, 0.15);
+        server.playSound(null, at.x, getY(), at.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.5F, 1.4F);
+        server.playSound(null, at.x, getY(), at.z, SoundEvents.ANVIL_LAND, SoundSource.HOSTILE, 0.6F, 0.6F);
     }
 
     private void shockwaveTick(ServerLevel server) {
@@ -184,7 +323,7 @@ public class CrabKingEntity extends Monster {
      */
     public void shockwave(ServerLevel server) {
         Vec3 look = Vec3.directionFromRotation(0, getYRot());
-        Vec3 at = position().add(look.scale(2.2));
+        Vec3 at = position().add(look.scale(2.9));
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * SHOCKWAVE_DAMAGE;
         AABB area = new AABB(at, at).inflate(SHOCKWAVE_RADIUS, 1.5, SHOCKWAVE_RADIUS);
         for (LivingEntity victim : server.getEntitiesOfClass(LivingEntity.class, area, e -> e != this && e.isAlive()

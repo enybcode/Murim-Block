@@ -20,10 +20,13 @@ import java.util.Set;
  * Epic Fight side of the Crab King: a humanoid on the biped skeleton, his hands empty (his pincers are his own: a fist
  * for Epic Fight), with his own idle and attacks (CrabKingAnimations):
  * <ul>
- *   <li>the sweep within 3.8 blocks, the most frequent;</li>
- *   <li>the snap within 4.4 blocks: he lunges;</li>
- *   <li>the slam within 3.6 blocks, rarer, with an 8 s cooldown: its landing sends a shockwave.</li>
+ *   <li>the sweep within 5 blocks, the most frequent;</li>
+ *   <li>the snap from 2 to 5.8 blocks: he lunges;</li>
+ *   <li>the slam within 4.8 blocks, rarer, with an 8 s cooldown: its landing sends a shockwave;</li>
+ *   <li>the grab from 1.5 to 5 blocks, rarer still, with an 11 s cooldown: what the great pincer catches is lifted,
+ *   squeezed and slammed down (CrabKingEntity).</li>
  * </ul>
+ * He walks and chases with his own heavy walk.
  * The crab art's techniques will join them when the art is made (docs/mobs/crab-king.md).
  */
 public class CrabKingPatch extends HumanoidMobPatch<CrabKingEntity> {
@@ -41,9 +44,10 @@ public class CrabKingPatch extends HumanoidMobPatch<CrabKingEntity> {
 
     private static CombatBehaviors.Builder<HumanoidMobPatch<?>> pincers() {
         return CombatBehaviors.<HumanoidMobPatch<?>>builder()
-                .newBehaviorSeries(series(10.0F, 30).nextBehavior(move(CrabKingAnimations.SWEEP, 0.0D, 3.8D)))
-                .newBehaviorSeries(series(7.0F, 50).nextBehavior(move(CrabKingAnimations.SNAP, 1.5D, 4.4D)))
-                .newBehaviorSeries(series(6.0F, 160).nextBehavior(move(CrabKingAnimations.SLAM, 0.0D, 3.6D)));
+                .newBehaviorSeries(series(10.0F, 30).nextBehavior(move(CrabKingAnimations.SWEEP, 0.0D, 5.0D)))
+                .newBehaviorSeries(series(7.0F, 50).nextBehavior(move(CrabKingAnimations.SNAP, 2.0D, 5.8D)))
+                .newBehaviorSeries(series(6.0F, 160).nextBehavior(move(CrabKingAnimations.SLAM, 0.0D, 4.8D)))
+                .newBehaviorSeries(series(6.0F, 220).nextBehavior(move(CrabKingAnimations.GRAB, 1.5D, 5.0D)));
     }
 
     @Override
@@ -52,16 +56,16 @@ public class CrabKingPatch extends HumanoidMobPatch<CrabKingEntity> {
         weaponAttackMotions.put(CapabilityItem.WeaponCategories.FIST, ImmutableMap.of(CapabilityItem.Styles.COMMON, pincers()));
         weaponLivingMotions.put(CapabilityItem.WeaponCategories.FIST, ImmutableMap.of(CapabilityItem.Styles.COMMON, Set.of(
                 Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.IDLE, CrabKingAnimations.IDLE),
-                Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.WALK, Animations.BIPED_WALK),
-                Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.CHASE, Animations.BIPED_WALK))));
+                Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.WALK, CrabKingAnimations.WALK),
+                Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.CHASE, CrabKingAnimations.WALK))));
     }
 
     @Override
     public void initAnimator(Animator animator) {
         super.initAnimator(animator);
         animator.addLivingAnimation(LivingMotions.IDLE, CrabKingAnimations.IDLE);
-        animator.addLivingAnimation(LivingMotions.WALK, Animations.BIPED_WALK);
-        animator.addLivingAnimation(LivingMotions.CHASE, Animations.BIPED_WALK);
+        animator.addLivingAnimation(LivingMotions.WALK, CrabKingAnimations.WALK);
+        animator.addLivingAnimation(LivingMotions.CHASE, CrabKingAnimations.WALK);
         animator.addLivingAnimation(LivingMotions.FALL, Animations.BIPED_FALL);
         animator.addLivingAnimation(LivingMotions.DEATH, Animations.BIPED_DEATH);
     }
