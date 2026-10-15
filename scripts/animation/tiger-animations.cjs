@@ -4,6 +4,7 @@
 //   walk   (1.4 s, loop): a heavy prowl, diagonal legs together, the elbows and knees folding as each paw swings
 //          forward, the shoulders rolling, the head steady and low, the tail swaying.
 //   swipe (0.8 s), bite (0.9 s), pounce (1.6 s), double_swipe (1.2 s), maul (1.8 s): its attacks (docs/mobs/tiger.md).
+//   hurt (0.4 s) and death (1.4 s): it flinches; it falls on its side.
 // Each animation is sampled from smooth curves every 0.05 s into linear keyframes.
 //
 //   (isolated Blockbench: Blockbench.exe --remote-debugging-port=9232 --user-data-dir=<empty profile>)
@@ -142,6 +143,29 @@ const ANIMS = {
       ...tailLash(t, [[0, 0], [0.15, -10], [0.3, 12], [0.45, -10], [0.62, 14], [1.2, 0]]),
     };
   } },
+  // hurt (0.4 s): a flinch, the head thrown back and aside, the body jolted.
+  hurt: { length: 0.4, loop: 'once', pose(t) {
+    const K = keys => keyed(keys, t);
+    return {
+      body: { pos: K([[0, [0, 0, 0]], [0.08, [0, -0.6, 1.2]], [0.4, [0, 0, 0]]]), rot: K([[0, [0, 0, 0]], [0.08, [-4, 5, 3]], [0.4, [0, 0, 0]]]) },
+      head: { rot: K([[0, [0, 0, 0]], [0.08, [-16, 14, 6]], [0.4, [0, 0, 0]]]) },
+      jaw: { rot: K([[0, [0, 0, 0]], [0.08, [24, 0, 0]], [0.4, [0, 0, 0]]]) },
+      ...tailLash(t, [[0, 0], [0.08, -16], [0.4, 0]]),
+    };
+  } },
+  // death (1.4 s): it staggers, falls on its right side, the legs stiffen out, the head and tail go limp.
+  death: { length: 1.4, loop: 'once', pose(t) {
+    const K = keys => keyed(keys, t);
+    return {
+      body: { pos: K([[0, [0, 0, 0]], [0.3, [0, -1, 0]], [0.8, [0, -14.5, 0]], [1.4, [0, -14.5, 0]]]),
+        rot: K([[0, [0, 0, 0]], [0.3, [-6, 0, -8]], [0.8, [0, 0, 88]], [0.95, [0, 0, 84]], [1.4, [0, 0, 88]]]) },
+      head: { rot: K([[0, [0, 0, 0]], [0.3, [-18, 0, 0]], [0.8, [10, 0, -20]], [1.4, [14, 0, -24]]]) },
+      jaw: { rot: K([[0, [0, 0, 0]], [0.3, [26, 0, 0]], [0.8, [12, 0, 0]], [1.4, [10, 0, 0]]]) },
+      front_leg_l: { rot: K([[0, [0, 0, 0]], [0.8, [-20, 0, 0]], [1.4, [-24, 0, 0]]]) }, front_leg_r: { rot: K([[0, [0, 0, 0]], [0.8, [-10, 0, 0]], [1.4, [-12, 0, 0]]]) },
+      hind_leg_l: { rot: K([[0, [0, 0, 0]], [0.8, [18, 0, 0]], [1.4, [22, 0, 0]]]) }, hind_leg_r: { rot: K([[0, [0, 0, 0]], [0.8, [10, 0, 0]], [1.4, [12, 0, 0]]]) },
+      tail0: { rot: K([[0, [0, 0, 0]], [0.8, [-20, 0, 0]], [1.4, [-24, 0, 0]]]) }, tail1: { rot: K([[0, [0, 0, 0]], [1.4, [10, 0, 0]]]) }, tail2: { rot: K([[0, [0, 0, 0]], [1.4, [20, 0, 0]]]) },
+    };
+  } },
   // maul (1.8 s): the heavy blow: it sinks on its haunches, rears up roaring, the right paw high, and smashes it down.
   maul: { length: 1.8, loop: 'once', pose(t) {
     const K = (keys) => keyed(keys, t);
@@ -207,7 +231,7 @@ async function connect(port) {
 }
 /** Views: three-quarter from the front left, and the left side (walk). */
 const VIEWS = { three: { position: [-92, 58, -108], target: [0, 18, -4] }, side: { position: [-150, 24, 0], target: [0, 18, 0] } };
-const FILMS = { idle: ['three'], walk: ['three', 'side'], swipe: ['three'], bite: ['three', 'side'], pounce: ['side', 'three'], double_swipe: ['three'], maul: ['three', 'side'] };
+const FILMS = { idle: ['three'], walk: ['three', 'side'], swipe: ['three'], bite: ['three', 'side'], pounce: ['side', 'three'], double_swipe: ['three'], maul: ['three', 'side'], hurt: ['three'], death: ['three'] };
 
 async function film() {
   const bb = await connect(PORT);
@@ -217,7 +241,7 @@ async function film() {
     await new Promise(r => setTimeout(r, 400)); return Outliner.elements.length + ' cubes, ' + Animation.all.length + ' animations'; })()`);
   console.log('loaded', loaded);
   const out = path.join(ROOT, 'build', 'tiger-animations');
-  for (const [name, views] of Object.entries(FILMS)) for (const view of views) {
+  for (const [name, views] of Object.entries(FILMS).filter(([n]) => !arg('only') || arg('only').split(',').includes(n))) for (const view of views) {
     const dir = path.join(out, name, view);
     fs.rmSync(dir, { recursive: true, force: true });
     fs.mkdirSync(dir, { recursive: true });

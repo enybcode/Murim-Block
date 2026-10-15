@@ -35,6 +35,16 @@ public final class MurimItems {
     public static final DeferredItem<DeferredSpawnEggItem> CRAB_MAN_SPAWN_EGG = ITEMS.register("crab_man_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.CRAB_MAN, 0x087C8B, 0xE7D1A1, new Item.Properties()));
 
+    /** Orange and the near-black of its stripes. */
+    public static final DeferredItem<DeferredSpawnEggItem> TIGER_SPAWN_EGG = ITEMS.register("tiger_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.TIGER, 0xE39A35, 0x22273A, new Item.Properties()));
+    /**
+     * What the tiger leaves, one time in five each (loot_table/entities/tiger.json): its striped pelt and its claws.
+     * Icons from scripts/animation/tiger-item-icons.cjs.
+     */
+    public static final DeferredItem<Item> TIGER_PELT = ITEMS.register("tiger_pelt", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<Item> TIGER_CLAW = ITEMS.register("tiger_claw", () -> new Item(new Item.Properties()));
+
     /**
      * The mountain bandits' sabre: a broad single-edged blade widening toward a clipped point, a brass guard, a grip
      * wrapped in red cloth. A sword for Epic Fight (data/murimblock/capabilities/weapons/bandit_dao.json), between stone
@@ -203,6 +213,9 @@ public final class MurimItems {
                     .displayItems((parameters, output) -> {
                         output.accept(ARMORED_CRAB_SPAWN_EGG.get());
                         output.accept(CRAB_MAN_SPAWN_EGG.get());
+                        output.accept(TIGER_SPAWN_EGG.get());
+                        output.accept(TIGER_PELT.get());
+                        output.accept(TIGER_CLAW.get());
                         output.accept(MOUNTAIN_BANDIT_SPAWN_EGG.get());
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());

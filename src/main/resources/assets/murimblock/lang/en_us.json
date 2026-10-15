@@ -507,5 +507,9 @@
   "villager.murimblock.alliance_outpost.commander": "Alliance Commander",
   "villager.murimblock.alliance_outpost.quartermaster": "Alliance Quartermaster",
   "villager.murimblock.alliance_outpost.medic": "Alliance Medic",
-  "villager.murimblock.alliance_outpost.tea_keeper": "Roadside Tea Keeper"
+  "villager.murimblock.alliance_outpost.tea_keeper": "Roadside Tea Keeper",
+  "entity.murimblock.tiger": "Tiger",
+  "item.murimblock.tiger_spawn_egg": "Tiger Spawn Egg",
+  "item.murimblock.tiger_pelt": "Tiger Pelt",
+  "item.murimblock.tiger_claw": "Tiger Claw"
 }

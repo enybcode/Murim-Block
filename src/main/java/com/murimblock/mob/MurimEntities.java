@@ -66,6 +66,10 @@ public final class MurimEntities {
     /** The soldiers in the order of their kinds. */
     public static final java.util.List<DeferredHolder<EntityType<?>, EntityType<AllianceSoldierEntity>>> ALLIANCE_SOLDIERS =
             java.util.List.of(ALLIANCE_SPEAR_GUARD, ALLIANCE_SWORD_DISCIPLE, ALLIANCE_ARCHER, ALLIANCE_WARRIOR_MONK, ALLIANCE_SERGEANT);
+    /** The tiger (docs/mobs/tiger.md): about 4.4 blocks from nose to tail tip, its back 2 blocks high; the centre of the map only. */
+    public static final DeferredHolder<EntityType<?>, EntityType<TigerEntity>> TIGER =
+            TYPES.register("tiger", () -> EntityType.Builder.of(TigerEntity::new, MobCategory.MONSTER)
+                    .sized(1.5F, 2.0F).eyeHeight(1.75F).clientTrackingRange(10).build("murimblock:tiger"));
     /** The crab man's water ball; its hitbox follows the ball's scale (big 0.6, small ones smaller). */
     public static final DeferredHolder<EntityType<?>, EntityType<WaterBallEntity>> WATER_BALL =
             TYPES.register("water_ball", () -> EntityType.Builder.<WaterBallEntity>of(WaterBallEntity::new, MobCategory.MISC)
@@ -113,6 +117,7 @@ public final class MurimEntities {
         event.put(CRAB_MAN.get(), EpicFightMobSupport.creatureAttributes(CrabManEntity.createCrabManAttributes())
                 .add(EpicFightAttributes.IMPACT, 1.5).build());
         event.put(MOUNTAIN_BANDIT.get(), MountainBanditEntity.createBanditAttributes().build());
+        event.put(TIGER.get(), EpicFightMobSupport.creatureAttributes(TigerEntity.createTigerAttributes()).build());
         event.put(BANDIT_CHIEF.get(), BanditChiefEntity.createChiefAttributes().build());
         event.put(HEART_DEMON.get(), com.murimblock.cultivation.inner.HeartDemonEntity.createAttributes().build());
         event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
@@ -132,5 +137,8 @@ public final class MurimEntities {
         // As the zombie: on the ground, in the dark (data/murimblock/neoforge/biome_modifier/mountain_bandit_spawns.json).
         event.register(MOUNTAIN_BANDIT.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        // On open ground in the centre of the map, day and night (data/murimblock/neoforge/biome_modifier/tiger_spawns.json).
+        event.register(TIGER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                TigerEntity::checkTigerSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

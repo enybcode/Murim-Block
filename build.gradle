@@ -202,6 +202,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a film of the tiger standing, walking, attacking and dying in a real client (see TigerTour).
+        tigerTour {
+            client()
+            gameDirectory = project.file('build/tiger-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.tigerTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a mugshot of every Murim mob for the wiki (see MugshotTour).
         mugshotTour {
             client()

@@ -55,6 +55,7 @@ public final class ArmoredCrabEpicFight {
         modBus.addListener(AnimationRegistryEvent.class, event -> event.newBuilder(Murimblock.MOD_ID, builder -> {
             buildAnimations(builder);
             CrabManEpicFight.buildAnimations(builder);
+            TigerEpicFight.buildAnimations(builder);
             MurimAnimations.buildAnimations(builder);
         }));
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
@@ -62,6 +63,7 @@ public final class ArmoredCrabEpicFight {
             // Runs once on the main thread during common setup; the mapping is not cleared on reload.
             Armatures.registerEntityTypeArmature(MurimEntities.ARMORED_CRAB.get(), ARMATURE);
             CrabManEpicFight.registerPatch(event);
+            TigerEpicFight.registerPatch(event);
             // The bandit: a humanoid on the engine's own biped skeleton.
             event.registerEntityPatch(MurimEntities.MOUNTAIN_BANDIT.get(), MountainBanditPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.MOUNTAIN_BANDIT.get(), Armatures.BIPED);
