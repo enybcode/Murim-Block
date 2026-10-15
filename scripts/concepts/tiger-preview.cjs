@@ -48,9 +48,9 @@ async function render(bb, project, views, file, size = [480, 560]) {
 
 /** The tiger: about 100 pixels from nose to tail tip, 54 tall, facing north (-z). */
 const VIEWS = {
-  three: [[-120, 72, -140], [0, 30, -6], [1100, 720]], side: [[-190, 36, -6], [0, 30, -6], [1100, 620]],
+  three: [[-125, 82, -150], [0, 33, -6], [1100, 720]], side: [[-200, 38, -6], [0, 33, -6], [1100, 620]],
   front: [[0, 38, -170], [0, 30, 0], [720, 720]], back: [[110, 76, 150], [0, 30, 4], [1100, 720]],
-  face: [[-26, 40, -100], [0, 32, -48], [720, 620]],
+  face: [[-32, 46, -112], [0, 34, -50], [720, 620]],
 };
 
 async function main() {
