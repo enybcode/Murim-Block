@@ -24,7 +24,7 @@ La lance est « le roi des armes » des arts martiaux chinois, l'arme des soldat
 
 - **Les M1 ne changent pas** : ce sont ceux de la lance d'Epic Fight (estocs, attaque en courant, attaque en l'air), avec ses animations, comme pour les autres arts (décision d'Enzo pour le Poing Long).
 - **Le passif ajoute un effet** : un coup qui touche **à l'allonge**, c'est-à-dire avec la pointe, à 3 blocs ou plus, fait **+20 % de dégâts** et repousse d'un demi-bloc. De près, rien de plus. Le joueur apprend à garder la pointe entre lui et l'ennemi.
-- **La garde** : la garde Murim habituelle, la lance tenue en travers. **Parade parfaite** (dans les 0,5 s avant le coup) : le coup est annulé, l'attaquant est déséquilibré, et cela ouvre le mouvement secret.
+- **La garde** : la garde Murim habituelle, la lance tenue en travers. **Parade parfaite** (dans les 0,5 s avant le coup) : le coup est annulé, l'attaquant est déséquilibré.
 
 ## Les compétences actives
 
@@ -33,9 +33,8 @@ La lance est « le roi des armes » des arts martiaux chinois, l'arme des soldat
 | 1. **Piercing Dragon** (Dragon perçant) | Le manuel | 12 | 6 s | ×1,5, traverse |
 | 2. **Plum Blossom Thrusts** (Estocs des fleurs de prunier) | Quête 1 | 18 | 9 s | 5 × 0,35 + 0,8 |
 | 3. **Sweep of a Thousand Soldiers** (Balayage des mille soldats) | Quête 2 | 22 | 12 s | ×1,2 autour, renverse |
-| Secret : **Returning Horse Spear** (La lance du cheval qui se retourne) | Découvert | 0 | — | ×2,0, étourdit |
 
-Exemple pour un débutant (Qi Sensing, 100 de Qi Max) avec la lance de l'Alliance (6 d'attaque) : Piercing Dragon ≈ 9, Plum Blossom ≈ 15 si tout touche, le balayage ≈ 7 par cible, Returning Horse ≈ 12. C'est le même ordre que l'épée (Cloud Step Slash ≈ 8,4), avec plus de portée et des recharges un peu plus longues.
+Exemple pour un débutant (Qi Sensing, 100 de Qi Max) avec la lance de l'Alliance (6 d'attaque) : Piercing Dragon ≈ 9, Plum Blossom ≈ 15 si tout touche, le balayage ≈ 7 par cible. C'est le même ordre que l'épée (Cloud Step Slash ≈ 8,4), avec plus de portée et des recharges un peu plus longues.
 
 Chaque compétence a deux versions, au sol et en l'air, chacune avec sa propre animation (Epic Fight, faite comme celles des autres arts).
 
@@ -66,14 +65,6 @@ Cinq estocs très rapides, chacun dans une direction un peu différente devant s
 - **Animation :** la lance ramenée derrière l'épaule, le corps vrillé ; un tour complet, accroupi, la lance à l'horizontale, les mains au bout de la hampe pour la plus grande portée ; il se redresse en garde.
 - **Effet :** un arc de poussière au ras du sol.
 
-### Le mouvement secret : Returning Horse Spear
-
-(*Huímǎqiāng*, la feinte la plus célèbre de la lance : le cavalier fait mine de fuir, puis se retourne et frappe.) Il n'est pas expliqué dans le manuel : il se **découvre**, comme les secrets des autres arts.
-
-- **Comment le découvrir** : réussir 10 parades parfaites avec une lance.
-- **Comment le déclencher** : dans la seconde et demie qui suit une **parade parfaite**, tourner le dos à l'ennemi (comme une fuite) et frapper. Le joueur pivote d'un coup et plante un estoc dans l'ennemi derrière lui (×2,0), qui est **étourdi** 1 seconde. Gratuit en Qi.
-- **Animation :** deux pas de retraite, la lance traînée derrière ; d'un coup, le joueur pivote sur le pied avant et l'estoc part sous son bras, en arrière, sans regarder ; puis il fait face.
-
 ## Le finish : « Three Peaks Pierce » (Percée des Trois Pics)
 
 Sur un joueur mis à terre (B), comme les autres arts, en cinématique vue par les deux joueurs : trois estocs (un pour chaque pic du drapeau), puis la lance plantée dans le sol à côté du vaincu, la houppe bleue qui retombe. Débloqué quand les trois compétences sont apprises.
@@ -94,7 +85,6 @@ Le capitaine est le premier boss qui se bat avec un art : ses attaques sont les 
 - **De loin (plus de 4 blocs)** : Piercing Dragon pour fondre sur le joueur.
 - **À distance d'allonge (2,5 à 4 blocs)** : les M1 de lance, puis Plum Blossom Thrusts.
 - **Encerclé ou serré de près** : Sweep of a Thousand Soldiers.
-- **Contre** : après que le joueur a paré parfaitement un de ses coups, ou s'il passe dans son dos, il peut répondre par Returning Horse Spear.
 - **Tout est parable**, avec une préparation lisible avant chaque compétence, comme pour Sensei Yun et le Bandit Chief.
 - Recharges propres au boss, plus longues que celles du joueur, et dégâts réglés sur ses PV et son royaume.
 
@@ -102,4 +92,6 @@ Le capitaine est le premier boss qui se bat avec un art : ses attaques sont les 
 
 1. Où trouver le manuel : seulement sur le capitaine, ou aussi dans la caserne de l'avant-poste ?
 2. Le nom : « Celestial Peak Spear », comme prévu dans la liste des 12 arts.
-3. Le finish, et s'il faut un mouvement secret différent pour le capitaine.
+3. Le finish.
+
+> 15/10/2026 : pas de mouvement secret pour cet art (décision d'Enzo).
