@@ -132,6 +132,22 @@ Le Murim a donc **deux armées en guerre**, **une alliance fissurée de l'intér
 | **Quatre Grandes Familles** | alliées (rivales) | ennemi | complices du massacre | — | partenaire |
 | **Pavillon des Mille Canaux** | vend | vend en secret | ? | partenaire | — |
 
+### Couleurs, drapeaux et logos
+
+![Logos et drapeaux des cinq factions](../../art/factions/factions-sheet.png)
+
+| Faction | Couleurs | Emblème | Sens |
+|---|---|---|---|
+| Alliance orthodoxe | azur `#2B5FA8`, or pâle `#E9D9A6` | une épée plantée dans les trois pics sacrés | l'Alliance qui garde le centre |
+| Culte du Démon céleste | pourpre `#7E141C`, noir `#1A1012` | la lune rouge de Hong Yue, l'œil du Démon ouvert dedans | le sang et la renaissance du Culte |
+| Palais du Nord Obscur | nuit `#1B2230`, givre `#C9D6E3` | les sept étoiles du Boisseau du Nord au-dessus d'un pic de neige | le nord brûlé qui veille encore |
+| Quatre Grandes Familles | jade `#2E6B45`, or `#C9A45C` | quatre feuilles de camphrier autour d'un sceau | quatre lignées liées à une terre |
+| Pavillon des Mille Canaux | violet `#4B2F7A`, or `#C9A45C` | une pièce à trou carré sur les eaux des canaux | tout a un prix sur les eaux de l'est |
+
+Les logos (32 × 32) et les drapeaux (32 × 48, en queue d'aronde) sont du pixel-art dessiné par code :
+`node scripts/art/factions.cjs` les régénère dans `art/factions/`, avec `factions.json` (couleurs et sens). Ils
+serviront aux bannières des capitales, aux écrans de faction, au wiki et aux PNJ.
+
 > Pour la bêta, seules l'Alliance et le Culte ont leur capitale jouable ; les trois autres existent dans le récit, les
 > PNJ et les ruines (le Palais brûlé du nord, par exemple), et prendront forme plus tard.
 
