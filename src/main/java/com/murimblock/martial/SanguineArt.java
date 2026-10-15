@@ -52,7 +52,7 @@ public final class SanguineArt {
     }
     private static final Map<UUID,Sword> SWORDS=new HashMap<>();
     /** The javelin throw lets the sword go 0.35 s in. */
-    public static final int SWORD_RELEASE_TICKS=7;
+    public static final int SWORD_RELEASE_TICKS=17;
     /** The blood sword in hand strikes like a sword: attack added while it is out. */
     public static final double SWORD_DAMAGE=5;
     private static final ResourceLocation SWORD_MODIFIER=ResourceLocation.fromNamespaceAndPath("murimblock","blood_sword");

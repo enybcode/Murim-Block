@@ -31,7 +31,9 @@ function ready({x=0, y=0, h=.65, turn=-14, lean=-5}={}) {
 }
 const G = ready();
 const pose = (options, limbs={}) => ({...ready(options), ...limbs});
-const K = (t,p) => ({t,pose:p});
+const K = (t,p,feet) => feet?{t,pose:p,feet}:{t,pose:p};
+// Foot targets for a key: R and L at [x, y, z] (blocks; z above the ground for a foot in the air).
+const F = (R,L) => ({footR:{at:R,w:20},footL:{at:L,w:20}});
 
 const guard = [
   K(0,G), K(.4,pose({h:.642,turn:-15,lean:-6},{Hand_R:[['x',102]],Hand_L:[['x',90]]})),
@@ -119,22 +121,43 @@ const swordSummon = [
   // Into guard.
   K(1.15,G),
 ];
-// The second press: the javelin throw. Withdrawal: side-on, the right arm reaching straight back at shoulder height,
-// the sword over the shoulder point forward, the left arm pointing at the target, the weight back; the block; the whip
-// (hips, torso, the elbow high over the shoulder); the release point first at 0.35 s; the body falls forward after it.
+// The second press: a javelin throw with its run-up (15/10/2026, Enzo's request). The sword carried over the right
+// shoulder, point forward, the player runs three strides (the left arm pumping); a crossover step turns the body
+// side-on as the right arm draws straight back, the weight back; the left leg plants long ahead (the block); the whip
+// runs up from the hips through the torso to the elbow, high over the shoulder, and the sword leaves point first at
+// 0.85 s (SanguineArt.SWORD_RELEASE_TICKS); the body pitches over the front leg, the right leg comes through, and a last
+// step brings the player back into guard. The feet step for real; the player travels about 1.65 blocks.
+const carry=(o,limbs={})=>pose(o,{Arm_R:[['x',132],['y',-28],['z',8]],Hand_R:[['x',96]],Tool_R:[['x',-8]],Shoulder_R:[['z',-5]],...limbs});
 const swordThrow = [
   K(0,G),
-  K(.08,pose({y:-.05,h:.615,turn:48,lean:10},{Arm_R:[['x',-72],['y',-14],['z',8]],Hand_R:[['x',6]],Tool_R:[['x',-10]],
-    Shoulder_R:[['z',-4]],Arm_L:[['x',92],['y',8],['z',-4]],Hand_L:[['x',12]],Chest:[['x',-4],['z',10]],Head:[['x',-6],['z',-30]]})),
-  K(.18,pose({y:-.02,h:.6,turn:52,lean:15},{Arm_R:[['x',-80],['y',-12],['z',6]],Hand_R:[['x',4]],Tool_R:[['x',-10]],
-    Shoulder_R:[['z',-6]],Arm_L:[['x',96],['y',6],['z',-4]],Hand_L:[['x',8]],Chest:[['x',-6],['z',12]],Head:[['x',-8],['z',-34]]})),
-  K(.28,pose({y:.05,h:.62,turn:8,lean:2},{Arm_R:[['x',152],['y',-10],['z',20]],Hand_R:[['x',72]],Tool_R:[['x',-14]],
-    Shoulder_R:[['z',-8]],Arm_L:[['x',58],['y',22],['z',-6]],Hand_L:[['x',70]],Chest:[['x',4],['z',-4]],Head:[['x',-2],['z',-6]]})),
-  K(.35,pose({y:.12,h:.612,turn:-30,lean:-14},{Arm_R:[['x',124],['y',-4],['z',16]],Hand_R:[['x',4]],Tool_R:[['x',-8]],
-    Arm_L:[['x',18],['y',30]],Hand_L:[['x',96]],Chest:[['x',6],['z',-10]]})),
-  K(.50,pose({y:.16,h:.575,turn:-42,lean:-24},{Arm_R:[['x',62],['y',34],['z',8]],Hand_R:[['x',18]],
-    Arm_L:[['x',22],['y',32]],Hand_L:[['x',100]],Chest:[['x',8],['z',-12]]})),
-  K(.72,pose({y:.08,h:.615,turn:-24,lean:-10},{Arm_R:[['x',44],['y',-4]],Hand_R:[['x',70]]})), K(.95,G),
+  K(.10,carry({y:.02,h:.63,turn:12,lean:-6},{Arm_L:[['x',58],['y',14],['z',-8]],Hand_L:[['x',92]]}),F([.24,-.16,0],[-.24,.24,0])),
+  // The run-up: right, left, then the crossover.
+  K(.18,carry({y:.17,h:.66,turn:8,lean:-10},{Arm_L:[['x',78],['y',12]],Hand_L:[['x',88]]}),F([.2,.2,.14],[-.22,.24,0])),
+  K(.25,carry({y:.32,h:.62,turn:14,lean:-8},{Arm_L:[['x',30],['y',16]],Hand_L:[['x',96]]}),F([.18,.6,0],[-.22,.24,0])),
+  K(.33,carry({y:.48,h:.66,turn:10,lean:-10},{Arm_L:[['x',78],['y',12]],Hand_L:[['x',88]]}),F([.18,.6,0],[-.2,.62,.14])),
+  K(.40,carry({y:.64,h:.62,turn:18,lean:-8},{Arm_L:[['x',36],['y',16]],Hand_L:[['x',94]]}),F([.18,.6,0],[-.2,.98,0])),
+  // The crossover: side-on, the arm reaching straight back, the weight back.
+  K(.49,pose({y:.82,h:.65,turn:36,lean:4},{Arm_R:[['x',-30],['y',-20],['z',8]],Hand_R:[['x',40]],Tool_R:[['x',-10]],Shoulder_R:[['z',-5]],
+    Arm_L:[['x',80],['y',10],['z',-4]],Hand_L:[['x',30]],Chest:[['x',-3],['z',8]]}),F([.08,1.0,.12],[-.2,.98,0])),
+  K(.58,pose({y:.98,h:.62,turn:52,lean:12},{Arm_R:[['x',-74],['y',-14],['z',8]],Hand_R:[['x',6]],Tool_R:[['x',-10]],Shoulder_R:[['z',-6]],
+    Arm_L:[['x',94],['y',6],['z',-4]],Hand_L:[['x',10]],Chest:[['x',-6],['z',12]],Head:[['x',-6],['z',-38]]}),F([.08,1.22,0],[-.2,.98,0])),
+  // The block: the left leg plants long ahead, the body still back.
+  K(.65,pose({y:1.1,h:.63,turn:54,lean:14},{Arm_R:[['x',-80],['y',-12],['z',6]],Hand_R:[['x',4]],Tool_R:[['x',-10]],Shoulder_R:[['z',-6]],
+    Arm_L:[['x',96],['y',6],['z',-4]],Hand_L:[['x',8]],Chest:[['x',-7],['z',13]],Head:[['x',-8],['z',-40]]}),F([.08,1.22,0],[-.22,1.4,.12])),
+  K(.72,pose({y:1.16,h:.6,turn:48,lean:16},{Arm_R:[['x',-78],['y',-12],['z',6]],Hand_R:[['x',6]],Tool_R:[['x',-10]],Shoulder_R:[['z',-6]],
+    Arm_L:[['x',90],['y',8],['z',-4]],Hand_L:[['x',10]],Chest:[['x',-6],['z',12]],Head:[['x',-8],['z',-36]]}),F([.1,1.22,0],[-.22,1.56,0])),
+  // The whip: hips and torso come round, the elbow high over the shoulder, the forearm lagging; then the release.
+  K(.80,pose({y:1.26,h:.62,turn:6,lean:2},{Arm_R:[['x',152],['y',-10],['z',20]],Hand_R:[['x',74]],Tool_R:[['x',-14]],Shoulder_R:[['z',-8]],
+    Arm_L:[['x',56],['y',22],['z',-6]],Hand_L:[['x',70]],Chest:[['x',4],['z',-4]],Head:[['x',-2],['z',-6]]}),F([.12,1.26,.03],[-.22,1.56,0])),
+  K(.85,pose({y:1.36,h:.615,turn:-30,lean:-15},{Arm_R:[['x',122],['y',-4],['z',16]],Hand_R:[['x',4]],Tool_R:[['x',-8]],
+    Arm_L:[['x',18],['y',30]],Hand_L:[['x',96]],Chest:[['x',6],['z',-10]]}),F([.16,1.3,.05],[-.22,1.56,0])),
+  // Over the front leg; the right leg comes through, then a last step back into guard.
+  K(.97,pose({y:1.48,h:.59,turn:-42,lean:-26},{Arm_R:[['x',58],['y',34],['z',8]],Hand_R:[['x',18]],
+    Arm_L:[['x',22],['y',32]],Hand_L:[['x',100]],Chest:[['x',8],['z',-12]]}),F([.22,1.45,.1],[-.22,1.56,0])),
+  K(1.08,pose({y:1.56,h:.615,turn:-24,lean:-12},{Arm_R:[['x',44],['y',-4]],Hand_R:[['x',70]],
+    Arm_L:[['x',50],['y',18]],Hand_L:[['x',90]]}),F([.24,1.5,0],[-.22,1.56,0])),
+  K(1.18,pose({y:1.62,h:.635,turn:-16,lean:-7}),F([.24,1.5,0],[-.24,1.74,.1])),
+  K(1.3,pose({y:1.66}),F([.24,1.5,0],[-.24,1.9,0])),
 ];
 
 // Crystallization: brace across the chest, open the shoulders, then settle in guard.
@@ -181,8 +204,10 @@ function bake(keys) {
     let f=Math.max(0,Math.min(1,(t-keys[i].t)/(keys[i+1].t-keys[i].t)));
     f=f*f*(3-2*f);
     const p=interpolate(normalizedKeys[i].pose,normalizedKeys[i+1].pose,f);
-    const legs=ik.solve(p,LEG_VARS,FEET,180,0).pose;
-    return K(t,legs);
+    const fa=keys[i].feet||FEET,fb=keys[i+1].feet||FEET;
+    const feet=fa===fb?fa:Object.fromEntries(Object.keys(FEET).map(k=>[k,{w:FEET[k].w,at:fa[k].at.map((v,n)=>v+(fb[k].at[n]-v)*f)}]));
+    const legs=ik.solve(p,LEG_VARS,feet,feet===FEET?180:400,0).pose;
+    return K(t,legs,feet===FEET?undefined:feet);
   });
 }
 
@@ -228,9 +253,9 @@ function bodyOnly(p) {
 function build() {
   const baked=Object.fromEntries(Object.entries(CLIPS).map(([n,k])=>[n,bake(k)]));
   const showcase=[];
-  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.9],['sanguine_crystal_form',6.9],['sanguine_crystal_barrage',8.4]])
+  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.9],['sanguine_crystal_form',7.3],['sanguine_crystal_barrage',8.8]])
     showcase.push(...baked[name].map(k=>K(Math.round((k.t+offset)*10000)/10000,k.pose)));
-  showcase.push(K(10.2,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
+  showcase.push(K(10.6,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
   const {p,g}=bodyOnly(rig.project('sanguine_art',baked));
   for(const a of p.animations) {
     const keys=baked[a.name];
@@ -240,7 +265,7 @@ function build() {
       return {uuid:rig.uuid(),channel:'rotation',time:k.t,interpolation:'linear',color:-1,
         data_points:[{x:v[0],y:v[1],z:v[2]}]};})};
     a.markers=({sanguine_combo:[.18,.48,.92],sanguine_crystal_throw:[.30],
-      sanguine_sword_throw:[.35],sanguine_crystal_form:[.55],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
+      sanguine_sword_throw:[.85],sanguine_crystal_form:[.55],sanguine_crystal_barrage:[.30,1.22]}[a.name]||[])
       .map(time=>({time,color:5}));
   }
   p.animations[0].selected=true;
@@ -262,7 +287,8 @@ if(require.main===module) {
     let maxFootError=0;
     for(const k of keys) {
       const m=ik.measure(k.pose);
-      for(const foot of ['footR','footL'])maxFootError=Math.max(maxFootError,Math.hypot(...m[foot].map((v,i)=>v-FEET[foot].at[i])));
+      const feet=k.feet||FEET;
+      for(const foot of ['footR','footL'])maxFootError=Math.max(maxFootError,Math.hypot(...m[foot].map((v,i)=>v-feet[foot].at[i])));
     }
     console.log(name,keys.length,'poses,',keys.at(-1).t,'s, max planted-foot error',maxFootError.toFixed(4),'blocks');
   }

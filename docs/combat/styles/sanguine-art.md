@@ -70,7 +70,7 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 
 - **1re activation** (24 Qi, recharge 10 s) : l'épée de sang se forme dans la main (animation `sanguine_sword_summon`, 1 s : l'avant-bras levé, l'épée pousse vers le ciel, puis un moulinet et la garde). Elle reste en main : **on se bat avec comme avec une épée**. Le clic gauche enchaîne les quatre coupes d'épée (copies des frappes Azure, `sanguine_blade_*`, sans bouffée d'Epic Fight), +5 d'attaque tant qu'elle est sortie ; chaque coupe qui touche donne +1 à la jauge, comme un coup de poing.
 - **Tant qu'elle est sortie, aucune autre technique** (refus « throw your blood sword first »).
-- **2e activation** (gratuite, malgré la recharge, comme le plongeon du croissant) : le **lancer de javelot** (`sanguine_sword_throw`, 0,95 s, l'épée part pointe la première à 0,35 s) ; elle explose à l'impact. Un lancer qui touche donne +3 à la jauge (hors forme) et compte pour la quête Scarlet Release.
+- **2e activation** (gratuite, malgré la recharge, comme le plongeon du croissant) : le **lancer de javelot** (`sanguine_sword_throw`, 0,95 s, l'épée part pointe la première à 0,85 s, après une course d'élan, voir plus bas) ; elle explose à l'impact. Un lancer qui touche donne +3 à la jauge (hors forme) et compte pour la quête Scarlet Release.
 - Elle disparaît si le joueur quitte le mode combat, prend un objet en main, est mis K.O. ou meurt.
 - L'ancien arc de cercle est retiré : les coupes à l'épée le remplacent.
 
@@ -94,3 +94,8 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 - Le bonus (+5 d'attaque) et la jauge (+1 par coupe qui touche) ne changent pas. Les copies `sanguine_blade_*` sont retirées.
 - Tranchant (15/10/2026, demande d'Enzo) : en main, l'épée n'était orientée que par l'axe de sa lame, sa rotation autour de la lame laissée au hasard, si bien qu'elle frappait du plat. Ses tranchants (±X du modèle) sont maintenant dans le plan de l'avant-bras et de la lame, comme une vraie prise, et ses plats face aux côtés (`BloodCrystalRenderer.inHandOrientation`) : les coupes d'Epic Fight portent sur le fil.
 - Première personne (15/10/2026) : en garde, Epic Fight tient la main vide basse, hors de l'écran ; l'épée est levée devant les yeux (vers le haut et un peu vers l'intérieur) pour qu'on la voie, et revient en douceur dans la prise pour les coupes, le dégainé et le lancer (`BloodCrystalOverlay.firstPersonRaise`).
+
+## Le lancer avec élan (15/10/2026, demande d'Enzo)
+
+- `sanguine_sword_throw` refait en vrai lancer de javelot, 1,3 s : l'épée portée au-dessus de l'épaule droite, pointe devant ; **course d'élan** de trois foulées (le bras gauche balance) ; **pas croisé** qui met le corps de profil, bras droit tendu loin en arrière, poids en arrière ; **blocage** de la jambe gauche plantée loin devant ; **fouetté** des hanches au torse puis au coude haut au-dessus de l'épaule ; lâcher pointe la première à **0,85 s** (`SanguineArt.SWORD_RELEASE_TICKS` = 17) ; le corps bascule par-dessus la jambe avant, la jambe droite repasse, un dernier pas ramène en garde.
+- Les pieds marchent vraiment : chaque clé peut porter ses propres cibles de pieds (`F(R, L)` dans `sanguine-art.cjs`, interpolées dans `bake`), un pied posé reste fixe pendant qu'Epic Fight avance le joueur avec la racine. Le joueur avance d'environ 1,65 bloc.
