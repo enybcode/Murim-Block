@@ -6,6 +6,12 @@ Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, 
 
 ![La capitale de l'Alliance, maquette](images/alliance-capital/overview.jpg)
 
+## Prévu : l'arène de l'Alliance (15/10/2026)
+
+Maquettes voxel d'une arène de style Murim : un leitai de 17 × 17 (l'estrade de combat où le capitaine attend), deux tribunes couvertes, le pavillon des juges, la porte et une arche, avec son plan numéroté : [alliance-arena.md](alliance-arena.md). Rien n'est construit en jeu, en attente de validation.
+
+![L'arène de l'Alliance, maquette](images/alliance-arena/overview.jpg)
+
 ## Construit : l'avant-poste de l'Alliance (`alliance_outpost`, 15/10/2026)
 
 Un fort de garnison de 53 × 47 blocs au bord d'une route : porte, tour de guet et son feu de signal, salle du commandement, cour d'entraînement, caserne, écuries, infirmerie, tableau des avis, salon de thé pour les voyageurs. **Septième site**, construit comme les six autres, mais dans n'importe quel biome Murim et **seulement au centre de la carte ou à moins de 1 500 blocs d'une frontière entre régions**. Décomposition bloc par bloc, maquettes et habitants : [alliance-outpost.md](alliance-outpost.md). Nouveaux blocs : les tuiles azur de l'Alliance.
