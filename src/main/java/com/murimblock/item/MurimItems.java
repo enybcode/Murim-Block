@@ -51,6 +51,15 @@ public final class MurimItems {
             () -> new AxeItem(Tiers.IRON, new Item.Properties().rarity(Rarity.UNCOMMON).attributes(AxeItem.createAttributes(Tiers.IRON, 6.0F, -3.3F))));
 
     /**
+     * The Orthodox Alliance soldiers' spear, the Azure Peak Spear: a willow-leaf head on an azure socket where the three
+     * peaks of the Alliance flag are cast, blue horsehair, a navy shaft banded in gold, 2.6 blocks long. A spear for Epic
+     * Fight (data/murimblock/capabilities/weapons/alliance_spear.json: its stance, walk, run and thrusts): 6 damage,
+     * a little slower than a sword. Model from scripts/animation/alliance-spear-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> ALLIANCE_SPEAR = ITEMS.register("alliance_spear",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 2, -2.8F))));
+
+    /**
      * The Bandit Chief's armour, his look on a man's build: an iron brow band with a tiger plaque, a lamellar vest with
      * his tiger skin and spiked pauldron, crimson trousers under lamellar tassets, fur-cuffed boots
      * (MurimArmorMaterials.CHIEF_LAMELLAR). He drops one piece now and then (loot_table/entities/bandit_chief.json).
@@ -120,6 +129,7 @@ public final class MurimItems {
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
+                        output.accept(ALLIANCE_SPEAR.get());
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(CHIEF_BROW_BAND.get());

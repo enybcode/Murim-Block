@@ -63,6 +63,11 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   `textures/entity/bandit_chief.png`, projet Blockbench) ; `node scripts/animation/chief-axe-model.cjs` : sa grande hache ;
   `node scripts/animation/chief-axe.cjs` : ses trois attaques (`animations/biped/murim/chief_*.json`). Voir `docs/mobs/bandit-chief.md`.
   Les modèles 3D de mobs partagent `scripts/animation/mesh-kit.cjs`.
+- `node scripts/animation/alliance-spear-model.cjs` : l'Azure Peak Spear des soldats de l'Alliance orthodoxe (style 1 de
+  `scripts/concepts/alliance-spears.cjs`) : modèle en main `models/item/alliance_spear_3d.json` (tenu au milieu, incliné
+  de 35° comme la lance d'Epic Fight), icône `textures/item/alliance_spear.png`, source `art/blockbench/alliance_spear.bbmodel`.
+  Une lance pour Epic Fight (`capabilities/weapons/alliance_spear.json`). Vérification en vrai client :
+  `MURIM_TOUR_ONLY=spear gradlew -PgameTests runWeaponTour`.
 - `node scripts/animation/sensei-3d.cjs` : Sensei Yun en 3D (mesh `animmodels/entity/azure_sensei.json`, atlas
   `textures/entity/azure_sensei.png` et ses visages, projet Blockbench) ; `node scripts/animation/azure-cloud-sword-model.cjs` :
   son épée Azure Cloud (corps, houppe, transformations de la main, icône d'après le modèle ; `client/TasselSwordRenderer`

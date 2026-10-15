@@ -90,7 +90,7 @@ public final class WeaponTour {
 
     /** Who is filmed. */
     /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
-    private enum Actor { BANDIT, AXE, ARMOUR }
+    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -144,6 +144,15 @@ public final class WeaponTour {
         TAKES.add(new Take("armour-" + name, Actor.ARMOUR, side, null, combo, motion, frames, every));
     }
 
+    private static void spear(String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("spear-" + name, Actor.SPEAR, side, null, combo, motion, frames, every));
+    }
+
+    /** The weapon each of the player's takes holds. */
+    private static Item weaponOf(Actor actor) {
+        return actor == Actor.BANDIT ? MurimItems.BANDIT_DAO.get() : actor == Actor.SPEAR ? MurimItems.ALLIANCE_SPEAR.get() : MurimItems.CHIEF_GREAT_AXE.get();
+    }
+
     /** The takes, listed once in game: the animations' accessors are only filled in once Epic Fight has built them. */
     private static void listTakes() {
         // The bandit standing: one picture from each side, then its 5 s loop.
@@ -181,6 +190,13 @@ public final class WeaponTour {
         for (Side side : List.of(Side.FRONT_RIGHT, Side.BACK)) {
             armour("m1-1", side, 0, null, 24, 1);
             armour("m1-2", side, 1, null, 24, 1);
+        }
+        // The same player with the Alliance's Azure Peak Spear: its stance, walk and run, then each M1 of its chain.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) spear("idle", side, -1, LivingMotions.IDLE, 1, 1);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) spear("walk", side, -1, LivingMotions.WALK, 16, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) spear("run", side, -1, LivingMotions.RUN, 12, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT, Side.TOP)) {
+            for (int i = 0; i < chain.length; i++) spear(chain[i], side, i, null, 24, 1);
         }
         String only = System.getenv("MURIM_TOUR_ONLY");
         if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().equalsIgnoreCase(only.trim()));
@@ -331,10 +347,14 @@ public final class WeaponTour {
                     bandit = null;
                 }
                 if (wielder == null) wielder = spawnWielder(server, level);
-                report.add("info   great axe in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
             }
+            if (!wielder.getMainHandItem().is(weaponOf(t.actor()))) {
+                wielder.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(weaponOf(t.actor())));
+                EpicFightCombatDefaults.enforce(wielder);
+            }
+            if (fresh) report.add("info   " + weaponOf(t.actor()) + " in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
             // The air attack from a little above the ground (a player on a mock connection stays where it is put).
-            double lift = t.name().equals("axe-air") ? 1.4 : 0;
+            double lift = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? 1.4 : 0;
             wielder.moveTo(baseX, baseY + lift, baseZ, 0, 0);
             wielder.setYHeadRot(0);
             wielder.setYBodyRot(0);
@@ -348,7 +368,7 @@ public final class WeaponTour {
             wielder.setItemSlot(EquipmentSlot.FEET, armoured ? new ItemStack(MurimItems.CHIEF_FUR_BOOTS.get()) : ItemStack.EMPTY);
         }
         Side s = t.side();
-        double y = t.name().equals("axe-air") ? baseY + 1.4 : baseY;
+        double y = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? baseY + 1.4 : baseY;
         if (s == Side.TOP) self(server).teleportTo(level, baseX, y + 4.6 - 1.62, baseZ + 0.01, s.yaw, 90);
         else self(server).teleportTo(level, baseX + s.dx * DISTANCE, y + EYE - 1.62, baseZ + s.dz * DISTANCE, s.yaw, 6);
     }
@@ -396,7 +416,7 @@ public final class WeaponTour {
     private static void checkTake(Minecraft mc, Take t) {
         LivingEntity seen = seen(mc, t.actor());
         String what = t.name() + " from " + t.side().name().toLowerCase();
-        Item weapon = t.actor() == Actor.BANDIT ? MurimItems.BANDIT_DAO.get() : MurimItems.CHIEF_GREAT_AXE.get();
+        Item weapon = weaponOf(t.actor());
         check(seen != null && seen.getMainHandItem().is(weapon), what + ": holds " + weapon);
         if (t.actor() == Actor.ARMOUR) {
             check(seen != null && seen.getItemBySlot(EquipmentSlot.HEAD).is(MurimItems.CHIEF_BROW_BAND.get())
