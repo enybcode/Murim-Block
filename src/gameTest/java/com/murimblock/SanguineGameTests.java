@@ -348,6 +348,41 @@ public final class SanguineGameTests {
         h.runAfterDelay(1400,()->{h.assertTrue(crystals.getAsInt()==0,"The arena did not crumble away: "+crystals.getAsInt());
             h.assertTrue(blood.getAsInt()==0,"Blood was left behind: "+blood.getAsInt());end(h,p);});
     }
+    @GameTest(template="foundation_arena",batch="blood_vial",timeoutTicks=80)
+    public static void aBloodVialGivesTenCrystalsAndTheGaugeHoldsWhileOneIsInHand(GameTestHelper h) {
+        var p=adept(h);ticks(h,p,60);
+        // Outside the form: ten points of the gauge, kept while the vial is held.
+        p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(SanguineItems.BLOOD_VIAL.get(),2));
+        var vial=p.getMainHandItem();var left=vial.getItem().finishUsingItem(vial,p.level(),p);p.setItemInHand(InteractionHand.MAIN_HAND,left);
+        h.assertTrue(SanguineArt.state(p).gauge()==BloodVialItem.CRYSTALS,"A vial did not give ten gauge points: "+SanguineArt.state(p));
+        h.assertTrue(p.getMainHandItem().getCount()==1&&p.getInventory().countItem(Items.GLASS_BOTTLE)==1,"The vial was not used up into a bottle in the bag");
+        h.runAfterDelay(10,()->{
+            h.assertTrue(SanguineArt.state(p).gauge()==BloodVialItem.CRYSTALS,"The gauge was lost with a vial in hand: "+SanguineArt.state(p));
+            // In the form: ten dorsal crystals.
+            p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(BloodCrystalState.MAX_GAUGE,false,0));
+            MartialService.unlock(p,MartialArts.BLOOD_CRYSTAL_FORM);MartialService.assign(p,2,MartialArts.BLOOD_CRYSTAL_FORM.id());cast(h,p,2);
+            BloodVialItem.drink(p);
+        });
+        h.runAfterDelay(20,()->{
+            h.assertTrue(SanguineArt.state(p).crystals()==BloodCrystalState.MAX_CRYSTALS,"A vial did not give ten dorsal crystals in the form: "+SanguineArt.state(p));
+            h.assertTrue(h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.getBoundingBox().inflate(4),BloodCrystalEntity::dorsal).size()==BloodCrystalState.MAX_CRYSTALS,"The ten crystals are not on the back");
+            end(h,p);
+        });
+    }
+    @GameTest(template="foundation_arena",batch="blood_vial",timeoutTicks=40)
+    public static void aGlassBottleFillsWithBlood(GameTestHelper h) {
+        var p=adept(h);
+        // Blood two blocks ahead, a block down, and the player looking at it.
+        BlockPos at=p.blockPosition().offset(0,-1,2);
+        h.getLevel().setBlock(at,SanguineBlocks.BLOOD.get().defaultBlockState(),3);
+        p.moveTo(p.getX(),p.getY(),p.getZ(),0,40);
+        p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.GLASS_BOTTLE));
+        var result=net.neoforged.neoforge.common.CommonHooks.onItemRightClick(p,InteractionHand.MAIN_HAND);
+        h.assertTrue(result!=null&&result.consumesAction(),"Using a bottle on blood did nothing: "+result);
+        h.assertTrue(p.getMainHandItem().is(SanguineItems.BLOOD_VIAL.get()),"The bottle did not fill with blood: "+p.getMainHandItem());
+        h.getLevel().setBlock(at,Blocks.AIR.defaultBlockState(),3);end(h,p);
+    }
     @GameTest(template="foundation_arena",batch="crystal_parry",timeoutTicks=85)
     public static void aPerfectParryStopsTheThrownCrystal(GameTestHelper h) {
         var attacker=adept(h);var defender=adept(h);h.getLevel().getServer().setPvpAllowed(true);

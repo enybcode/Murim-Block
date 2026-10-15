@@ -230,7 +230,8 @@ public final class SanguineArt {
         if(tracked!=null&&tracked!=p){forget(id);return;}
         tickForm(p);
         // Out of combat (or hands full), the form holds to its end; the rest stops.
-        if(!eligible(p)){if(formHolds(p))stand(id);else forget(id);return;}
+        // A blood vial in hand keeps the gauge for the drink.
+        if(!eligible(p)){if(formHolds(p)||holdsVial(p))stand(id);else forget(id);return;}
         Charge c=CHARGES.get(id);long now=p.level().getGameTime();
         if(c!=null) {
             if(c.owner.level()!=c.crystal.level()||c.crystal.isRemoved()){cancelCharge(id);return;}
@@ -264,6 +265,16 @@ public final class SanguineArt {
         if(salvo!=null){salvo.removeIf(e->e.isRemoved()||e.state()==BloodCrystalEntity.FLYING);if(salvo.isEmpty())SALVOS.remove(id);}
         var orbit=CRYSTALS.get(id);
         if(orbit!=null&&orbit.stream().anyMatch(e->e.isRemoved()||e.level()!=p.level()))forget(id);
+    }
+    private static boolean holdsVial(Player p) {
+        return p.getMainHandItem().getItem() instanceof BloodVialItem||p.getOffhandItem().getItem() instanceof BloodVialItem;
+    }
+    /**
+     * A blood vial drunk (BloodVialItem): so many blood crystals, dorsal crystals in the form (up to its 10), points of the
+     * gauge outside it.
+     */
+    public static void bloodCrystals(ServerPlayer p,int amount) {
+        for(int i=0;i<amount;i++){var before=state(p);if(before.active()&&before.crystals()>=BloodCrystalState.MAX_CRYSTALS)break;icebergCrystal(p);}
     }
     private static boolean formHolds(ServerPlayer p) {
         return p.isAlive()&&state(p).active()&&FORMS.containsKey(p.getUUID());
