@@ -149,6 +149,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the Celestial Peak Spear (see SpearTour).
+        spearTour {
+            client()
+            gameDirectory = project.file('build/spear-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.spearTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: filming of a duel with Sensei Yun (see SenseiDuel; clip by scripts/showcase/make-clip.cjs).
         senseiDuel {
             client()
@@ -483,6 +492,22 @@ tasks.named('runLongFistTour').configure {
     doLast {
         def report = longFistTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Long Fist tour failed; see build/long-fist-tour-run/long-fist-tour-report.txt')
+    }
+}
+
+def spearTourSave = layout.buildDirectory.dir('spear-tour-run/saves/murim-spear')
+def spearTourReport = layout.buildDirectory.file('spear-tour-run/spear-tour-report.txt')
+def spearTourShots = layout.buildDirectory.dir('spear-tour-run/screenshots')
+tasks.named('runSpearTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only spear tour.')
+        spearTourSave.get().asFile.deleteDir()
+        spearTourShots.get().asFile.deleteDir()
+        spearTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = spearTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Spear tour failed; see build/spear-tour-run/spear-tour-report.txt')
     }
 }
 

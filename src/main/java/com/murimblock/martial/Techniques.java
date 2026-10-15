@@ -19,6 +19,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.holdsSword(player);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.bareHanded(player);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.bareHanded(player);
+        if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.holdsSpear(player);
         return true;
     }
 
@@ -34,6 +35,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.perform(player, patch, technique, riposte);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.perform(player, patch, technique);
         return false;
     }
 }

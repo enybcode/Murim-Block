@@ -46,6 +46,7 @@ public final class Murimblock {
         MurimBlocks.register(modEventBus);
         com.murimblock.martial.SanguineBlocks.register(modEventBus);
         com.murimblock.martial.SanguineItems.register(modEventBus);
+        com.murimblock.martial.CelestialPeakItems.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);
         ArmoredCrabEpicFight.register(modEventBus);

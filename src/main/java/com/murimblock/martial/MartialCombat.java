@@ -204,6 +204,11 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
             return;
         }
+        credit = CelestialPeakSpear.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CELESTIAL_PEAK_SPEAR, credit, CelestialPeakSpear.isStrike(animation), false));
+            return;
+        }
         SWINGS.remove(player.getUUID());
     }
 
@@ -226,6 +231,9 @@ public final class MartialCombat {
         float factor = comboFactor(prior);
         // A technique (not a strike) strikes as its weapon and its Qi allow (TechniquePower).
         if (!swing.strike) factor *= (float) TechniquePower.factor(player, swing.art);
+        // Long Reach: a spear hit at the point strikes a fifth harder.
+        if (swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR) && CelestialPeakSpear.reaches(player) && CelestialPeakSpear.atReach(player, event.getTarget()))
+            factor *= CelestialPeakSpear.REACH_BONUS;
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -245,14 +253,16 @@ public final class MartialCombat {
         boolean enemy = isEnemy(target, player);
         boolean fist = swing.art.equals(MartialArts.LONG_FIST);
         boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
+        boolean spear = swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR);
         if (fist) LongFist.onHit(player, target, animation, enemy);
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
+        else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
         else AzureCloudSword.onHit(player, target, animation, swing.riposte);
         // The combo: a knock-down ends it, and counts as complete after enough hits.
         long now = player.level().getGameTime();
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
-        if (fist ? LongFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
+        if (fist ? LongFist.knocksDown(animation) : spear ? CelestialPeakSpear.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
@@ -262,6 +272,10 @@ public final class MartialCombat {
         MartialArts.Art art = MartialArts.art(swing.art);
         if (swing.credit.equals(MartialArts.CLOUD_STEP_SLASH.id()) && swing.struck.add(target.getUUID()))
             MartialProgress.count(player, MartialArts.PATIENT_BLADE_DASH_HITS, 1);
+        // Piercing Dragon's lunge (not the dive) counts each enemy it passes through for First Line.
+        if ((animation == MurimAnimations.CELESTIAL_PIERCING_DRAGON || animation == MurimAnimations.CELESTIAL_PIERCING_DRAGON_LONG)
+                && swing.struck.add(target.getUUID()))
+            MartialProgress.count(player, MartialArts.FIRST_LINE_DRAGON_HITS, 1);
         // Tiger Step Punch's bound (not the secret, nor the dive) counts each enemy it strikes for First Steps.
         if ((animation == MurimAnimations.TIGER_STEP_PUNCH
                 || animation == MurimAnimations.TIGER_STEP_PUNCH_LONG) && swing.struck.add(target.getUUID()))

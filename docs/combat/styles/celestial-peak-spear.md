@@ -1,6 +1,6 @@
 # La Lance du Pic Céleste (天峰枪, *Tiānfēng Qiāng*)
 
-> **État : proposition du 15/10/2026, pas encore implémentée.** Demande d'Enzo : un bon art martial de lance pour le début du jeu, dont les techniques serviront aussi au **capitaine**, le boss de l'Alliance en cours de création (session « design »). C'est l'art n° 4 prévu pour la bêta, « Celestial Peak Spear » ([../../factions/README.md](../../factions/README.md) : orthodoxe, lance, charges et percées à longue portée). Les chiffres sont un premier jet, alignés sur [../technique-balance.md](../technique-balance.md). Les règles communes à tous les styles sont dans [../STYLES.md](../STYLES.md) ; les deux autres arts de départ sont [azure-cloud-sword.md](azure-cloud-sword.md) (épée) et [long-fist.md](long-fist.md) (mains nues).
+> **État : implémenté sur `test` le 15/10/2026, en attente de validation en jeu par Enzo** (voir « Ce qui est en jeu » à la fin). Demande d'Enzo : un bon art martial de lance pour le début du jeu, dont les techniques serviront aussi au **capitaine**, le boss de l'Alliance en cours de création (session « design »). C'est l'art n° 4 prévu pour la bêta, « Celestial Peak Spear » ([../../factions/README.md](../../factions/README.md) : orthodoxe, lance, charges et percées à longue portée). Les chiffres sont un premier jet, alignés sur [../technique-balance.md](../technique-balance.md). Les règles communes à tous les styles sont dans [../STYLES.md](../STYLES.md) ; les deux autres arts de départ sont [azure-cloud-sword.md](azure-cloud-sword.md) (épée) et [long-fist.md](long-fist.md) (mains nues).
 >
 > Les noms en jeu sont en anglais (règle du projet). Le nom anglais est donné en premier, la traduction entre parenthèses.
 
@@ -95,3 +95,17 @@ Le capitaine est le premier boss qui se bat avec un art : ses attaques sont les 
 3. Le finish.
 
 > 15/10/2026 : pas de mouvement secret pour cet art (décision d'Enzo).
+
+## Ce qui est en jeu (15/10/2026)
+
+- **Le manuel** `celestial_peak_spear_manual` (`CelestialPeakItems`, onglet Murimblock ; sprite `scripts/animation/celestial-manual.cjs`) apprend l'art à tout royaume. Où le trouver reste à décider (le capitaine).
+- **La lance en main** : toute arme qu'Epic Fight tient comme une lance (`CelestialPeakSpear.holdsSpear`) ; sans elle, « needs a spear in hand ».
+- **Long Reach** : un coup (M1 d'Epic Fight ou technique) qui touche à 3 blocs ou plus du corps de la cible fait ×1,2 et repousse d'un demi-bloc (`MartialCombat.onDealDamagePre`, `CelestialPeakSpear.onHit`) ; il compte pour « Hold the Distance ».
+- **Les techniques** (`CelestialPeakSpear.perform`, animations `MurimAnimations.CELESTIAL_*`, générées par `scripts/animation/celestial-spear.cjs` : la lance tenue à deux mains, la main gauche devant sur la hampe, la droite qui pousse) :
+  - Piercing Dragon : fente de 4 blocs (6 évoluée), boîte longue le long de la lance, jusqu'à 6 cibles traversées, ×1,5 ; en l'air, plongée pointe en avant, ×1,5, renverse ;
+  - Plum Blossom Thrusts : 5 estocs (8 évoluée) à ×0,35 qui tiennent la cible, puis un à ×0,8 qui repousse ; en l'air, 3 estocs puis la hampe abattue (×0,8, renverse) ;
+  - Sweep of a Thousand Soldiers : un tour complet (deux évoluée), anneau de 3,5 blocs (4 évoluée), ×1,2, renverse ; en l'air, la lance plantée à l'atterrissage, anneau de 3 blocs ×0,8.
+- **Quêtes** : « First Line » (20 ennemis traversés par Piercing Dragon) puis « Hold the Distance » (30 coups à l'allonge). **Évolutions** à 30, 60 et 90 de maîtrise. **Pas de secret.**
+- **Le finish** « Three Peaks Pierce » n'est pas encore fait (il passe par la cinématique de mise à terre, commune aux arts).
+- **Pour le capitaine** : les accesseurs `MurimAnimations.CELESTIAL_PIERCING_DRAGON`, `CELESTIAL_PLUM_BLOSSOM`, `CELESTIAL_THOUSAND_SWEEP` (et leurs variantes) sont prêts pour ses comportements.
+- Tests : `CelestialPeakSpearGameTests` (manuel et lance, la fente traverse deux cibles, les estocs touchent plusieurs fois, le balayage tout autour, l'allonge plus forte à la pointe), `CelestialPeakSpearDataTest` ; tour en vrai client : `gradlew -PgameTests runSpearTour`.
