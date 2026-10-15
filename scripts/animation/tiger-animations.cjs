@@ -20,7 +20,7 @@ const arg = n => (process.argv.find(a => a.startsWith(`--${n}=`)) || '').split('
 const PORT = Number(arg('port') || 9232);
 const FPS = 20;
 const TAU = Math.PI * 2;
-const TAILS = 7;
+const TAILS = 3;
 
 const smooth = t => t * t * (3 - 2 * t);
 /** Between keys [[time, value]]: eased, held before the first and after the last. */
@@ -130,7 +130,7 @@ async function connect(port) {
   return { evaluate, close: () => ws.close() };
 }
 /** Views: three-quarter from the front left, and the left side (walk). */
-const VIEWS = { three: { position: [-125, 78, -150], target: [0, 30, -8] }, side: { position: [-205, 40, -8], target: [0, 30, -8] } };
+const VIEWS = { three: { position: [-92, 58, -108], target: [0, 18, -4] }, side: { position: [-150, 24, 0], target: [0, 18, 0] } };
 const FILMS = { idle: ['three'], walk: ['three', 'side'], attack: ['three', 'side'] };
 
 async function film() {
