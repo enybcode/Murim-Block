@@ -57,6 +57,8 @@ public final class BanditChiefGameTests {
     private static BanditChiefEntity chief(GameTestHelper helper, BlockPos at) {
         BanditChiefEntity chief = MurimEntities.BANDIT_CHIEF.get().spawn(helper.getLevel(), helper.absolutePos(at), MobSpawnType.COMMAND);
         helper.assertTrue(chief != null, "No chief spawned");
+        // Kept whatever player another test left behind (a monster despawns when the nearest player is far away).
+        chief.setPersistenceRequired();
         return chief;
     }
 
@@ -113,6 +115,7 @@ public final class BanditChiefGameTests {
         BanditChiefEntity chief = chief(helper, new BlockPos(2, 1, 1));
         Zombie target = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 4));
         target.setNoAi(true);
+        target.setPersistenceRequired();
         target.getAttribute(Attributes.MAX_HEALTH).setBaseValue(300);
         target.setHealth(300);
         target.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));

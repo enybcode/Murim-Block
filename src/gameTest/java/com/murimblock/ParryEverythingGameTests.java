@@ -306,6 +306,9 @@ public final class ParryEverythingGameTests {
         Vec3 at = origin(slot);
         // Its chunk held (forced chunks tick their entities and Epic Fight's animations), released at the end.
         net.minecraft.world.level.ChunkPos chunk = new net.minecraft.world.level.ChunkPos(net.minecraft.core.BlockPos.containing(at));
+        // Generated now, with the ring around it that an entity-ticking chunk needs: in a new world, waiting for the
+        // chunk system to make them would spend the test's whole timeout (the GameTest server ticks without pause).
+        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) level.getChunk(chunk.x + dx, chunk.z + dz);
         level.setChunkForced(chunk.x, chunk.z, true);
         ServerPlayer defender = player(helper);
         EpicFightCombatDefaults.enforce(defender);
