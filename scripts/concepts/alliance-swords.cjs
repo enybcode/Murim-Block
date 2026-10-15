@@ -170,6 +170,135 @@ const STYLES = {
     },
     text: "Le jian d'apparat des officiers, sur lequel on prête serment en entrant dans l'Alliance : la garde est le sceau de la faction, une plaque azur cerclée d'or où l'on voit les pics et l'épée. Poignée laquée ivoire baguée d'or, perle de jade et houppe crème au pommeau, filet d'or le long de la lame.",
   },
+  // ---- A second series, closer to the Murim: slender long blades, small guards bent toward the blade, long tassels.
+  snow_plum_jian: {
+    name: 'Snow Plum Jian', zh: '雪梅剑', fr: 'Jian du Prunier sous la neige',
+    colours: { ...ALLIANCE, plum: '#F4F7FB' },
+    build(b) {
+      // A pommel cap, a grip of azure cord, a long two-strand tassel.
+      b.box('gold', 10, [-0.7, 0, -0.6], [0.7, 0.9, 0.6]);
+      b.box('gold', 12, [-0.35, -0.3, -0.3], [0.35, 0, 0.3]);
+      grip(b, 'azure', 'navy', 0.9, 5.6, 0.95, 0.7);
+      for (const x of [-0.25, 0.25]) b.box('azure', 7, [x - 0.18, -6.0, -0.18], [x + 0.18, -0.3, 0.18]);
+      b.box('gold', 11, [-0.4, -1.4, -0.4], [0.4, -0.9, 0.4]);
+      // The guard: small, its two wings bent up toward the blade, as a jian's are.
+      b.box('gold', 10, [-1.0, 5.6, -0.6], [1.0, 6.3, 0.6]);
+      for (const s of [-1, 1]) {
+        b.box('gold', 11, [s * 1.0 - (s > 0 ? 0 : 0.7), 5.9, -0.5], [s * 1.0 + (s > 0 ? 0.7 : 0), 6.8, 0.5]);
+        b.box('gold', 12, [s * 1.45 - 0.25, 6.8, -0.4], [s * 1.45 + 0.25, 7.3, 0.4]);
+      }
+      straight(b, 6.3, 26.5, 1.3, 'ice', 0.32);
+      // Plum blossoms climbing the blade's flat, white on the steel, the three peaks under them.
+      peakInlay(b, 0, 7.0, 0.17, 0.4);
+      for (const [x, y] of [[0.2, 9.2], [-0.25, 10.6], [0.15, 12.3]]) {
+        for (const sign of [-1, 1]) {
+          const [za, zb] = sign < 0 ? [-0.22, -0.16] : [0.16, 0.22];
+          b.box('plum', 15, [x - 0.3, y - 0.1, za], [x + 0.3, y + 0.1, zb]);
+          b.box('plum', 15, [x - 0.1, y - 0.3, za], [x + 0.1, y + 0.3, zb]);
+          b.box('gold', 12, [x - 0.06, y - 0.06, sign < 0 ? za - 0.02 : zb], [x + 0.06, y + 0.06, sign < 0 ? za : zb + 0.02]);
+        }
+      }
+    },
+    text: "Un jian long et fin comme ceux des grandes sectes : petite garde aux ailes relevées vers la lame, poignée de cordelette azur, longue houppe à deux brins. Sur le plat, trois fleurs de prunier blanches montent au-dessus des trois pics : le prunier qui fleurit sous la neige des sommets.",
+  },
+  ruyi_jian: {
+    name: 'Ruyi Cloud Jian', zh: '如意云剑', fr: 'Jian aux nuages ruyi',
+    colours: { ...ALLIANCE, jade: '#3f8f6e', ray: '#c9d3df' },
+    build(b) {
+      // A ruyi-head pommel, a grip of pale ray skin bound in navy, a cream tassel with a jade bead.
+      b.box('gold', 10, [-0.9, 0.2, -0.6], [0.9, 1.0, 0.6]);
+      b.box('gold', 12, [-0.6, -0.3, -0.5], [0.6, 0.2, 0.5]);
+      b.box('gold', 11, [-1.1, 0.6, -0.5], [-0.8, 1.2, 0.5]);
+      b.box('gold', 11, [0.8, 0.6, -0.5], [1.1, 1.2, 0.5]);
+      grip(b, 'ray', 'navy', 1.0, 5.4, 1.0, 1.4);
+      b.box('jade', 11, [-0.35, -1.2, -0.35], [0.35, -0.5, 0.35]);
+      tassel(b, 'cream', -1.2, 3.6, 0.5);
+      // The guard: two ruyi clouds back to back, curling toward the blade.
+      b.box('gold', 10, [-0.9, 5.4, -0.65], [0.9, 6.2, 0.65]);
+      for (const s of [-1, 1]) {
+        b.box('gold', 11, [s * 0.9 - (s > 0 ? 0 : 1.0), 5.6, -0.55], [s * 0.9 + (s > 0 ? 1.0 : 0), 6.2, 0.55]);
+        b.box('gold', 12, [s * 1.6 - 0.4, 6.2, -0.5], [s * 1.6 + 0.4, 6.9, 0.5]);
+        b.box('gold', 13, [s * 1.2 - 0.25, 6.6, -0.45], [s * 1.2 + 0.25, 7.0, 0.45]);
+      }
+      straight(b, 6.2, 25, 1.4, 'azure', 0.33);
+      peakInlay(b, 0, 6.8, 0.18, 0.42);
+    },
+    text: "Le jian élégant d'un maître : pommeau et garde en nuages ruyi (如意, « selon le souhait »), poignée de peau de raie claire liée de marine, houppe crème et perle de jade. Une gouttière d'azur court le long de la lame, les trois pics à sa base. Pour les anciens et les maîtres d'armes de l'Alliance.",
+  },
+  willow_dao: {
+    name: 'Willow Leaf Dao', zh: '柳叶刀', fr: 'Dao feuille de saule',
+    colours: { ...ALLIANCE },
+    build(b) {
+      // A cap, a navy grip, a long azure tassel.
+      b.box('gold', 10, [-0.75, 0, -0.6], [0.75, 0.9, 0.6]);
+      grip(b, 'navy', 'gold', 0.9, 5.5, 1.0, 1.2);
+      tassel(b, 'azure', 0.0, 4.2, 0.55);
+      // A small oval guard, gold over azure.
+      b.box('azure', 8, [-1.5, 5.5, -1.1], [1.5, 6.0, 1.1]);
+      b.box('gold', 11, [-1.25, 6.0, -0.9], [1.25, 6.4, 0.9]);
+      // The blade: slender and gently curved, single-edged (the edge on -x), the back bending toward +x as it rises.
+      const ROW = 1.6, rows = 12;
+      for (let i = 0; i < rows; i++) {
+        const k = i / rows, bend = 1.6 * k * k, w = 1.25 - 0.35 * Math.max(0, k - 0.7) / 0.3, y = 6.4 + i * ROW;
+        const back = 0.55 + bend;
+        b.box('steel', 7 + (i % 2), [back - w + 0.3, y, -0.2], [back, y + ROW, 0.2]);
+        b.box('edge', 14, [back - w, y, -0.13], [back - w + 0.3, y + ROW, 0.13]);
+        b.box('steel', 5, [back - 0.25, y, -0.26], [back, y + ROW, 0.26]);
+      }
+      const top = 6.4 + rows * ROW, tip = 0.55 + 1.6;
+      b.box('edge', 15, [tip - 0.8, top, -0.12], [tip, top + 0.8, 0.12]);
+      b.box('edge', 15, [tip - 0.35, top + 0.8, -0.1], [tip, top + 1.4, 0.1]);
+      peakInlay(b, 0.0, 7.0, 0.2, 0.4);
+    },
+    text: "Le liuyedao (柳叶刀), le sabre « feuille de saule » des héros errants : lame fine à un tranchant, doucement courbée jusqu'à la pointe, petite garde ovale, longue houppe azur, les trois pics gravés au talon. Léger et rapide, le sabre le plus répandu dans les romans de wuxia : pour les soldats d'élite et les éclaireurs.",
+  },
+  ring_dao: {
+    name: 'Ring Pommel Saber', zh: '环首刀', fr: 'Sabre à pommeau en anneau',
+    colours: { ...ALLIANCE },
+    build(b) {
+      // A large gold ring for a pommel, the three peaks inside it, an azure tassel tied through it.
+      b.box('gold', 11, [-1.4, -2.2, -0.3], [1.4, -1.7, 0.3]);
+      b.box('gold', 11, [-1.4, 0.1, -0.3], [1.4, 0.6, 0.3]);
+      b.box('gold', 10, [-1.4, -2.2, -0.3], [-0.9, 0.6, 0.3]);
+      b.box('gold', 10, [0.9, -2.2, -0.3], [1.4, 0.6, 0.3]);
+      peakInlay(b, 0, -1.6, 0.3, 0.35);
+      b.box('azure', 8, [-0.3, -3.0, -0.3], [0.3, -2.2, 0.3]);
+      for (const x of [-0.3, 0, 0.3]) b.box('azure', 7, [x - 0.15, -6.5, -0.15], [x + 0.15, -3.0, 0.15]);
+      // A long grip of navy cord, a plain small guard.
+      grip(b, 'navy', 'azure', 0.6, 6.2, 1.0, 0.8);
+      b.box('gold', 10, [-1.2, 6.2, -0.8], [1.2, 6.7, 0.8]);
+      // The blade: long and straight, single-edged (the edge on -x), a slanted point.
+      b.box('steel', 8, [-0.6, 6.7, -0.22], [0.75, 25, 0.22]);
+      b.box('edge', 14, [-0.95, 6.7, -0.14], [-0.6, 25, 0.14]);
+      b.box('steel', 5, [0.5, 6.7, -0.28], [0.75, 25, 0.28]);
+      b.box('steel', 9, [-0.6, 25, -0.2], [0.75, 26.0, 0.2]);
+      b.box('edge', 15, [-0.95, 25, -0.13], [0.2, 26.8, 0.13]);
+      b.box('edge', 15, [-0.95, 26.8, -0.1], [-0.4, 27.4, 0.1]);
+    },
+    text: "Le huanshou dao (环首刀), le sabre droit à pommeau en anneau des armées anciennes, l'ancêtre du hwando des récits de Murim. Lame droite à un tranchant, longue poignée de cordelette marine, et dans le grand anneau d'or les trois pics, une houppe azur nouée au travers. Austère et militaire : l'arme de la troupe.",
+  },
+  seven_star_jian: {
+    name: 'Seven Star Jian', zh: '七星剑', fr: 'Jian aux Sept Étoiles',
+    colours: { ...ALLIANCE, star: '#FFE9A8' },
+    build(b) {
+      b.box('gold', 10, [-0.8, 0, -0.65], [0.8, 1.0, 0.65]);
+      b.box('star', 15, [-0.25, 0.3, -0.7], [0.25, 0.7, 0.7]);
+      grip(b, 'navy', 'gold', 1.0, 5.8, 1.0, 1.6);
+      tassel(b, 'azure', 0.0, 4.0, 0.55);
+      // A small guard, the three peaks standing on it, the middle one holding the blade.
+      b.box('gold', 10, [-1.6, 5.8, -0.65], [1.6, 6.4, 0.65]);
+      b.box('gold', 11, [-1.5, 6.4, -0.5], [-0.9, 6.9, 0.5]);
+      b.box('gold', 11, [0.9, 6.4, -0.5], [1.5, 6.9, 0.5]);
+      b.box('gold', 12, [-0.75, 6.4, -0.55], [0.75, 7.3, 0.55]);
+      straight(b, 7.3, 26, 1.35, 'navy', 0.34);
+      // The Big Dipper inlaid in gold along the blade's flat, on both faces.
+      const dipper = [[0.15, 9.0], [-0.2, 10.4], [0.25, 11.6], [-0.1, 13.0], [0.2, 14.8], [-0.15, 16.6], [0.1, 18.6]];
+      for (const [x, y] of dipper) {
+        for (const [za, zb] of [[-0.24, -0.17], [0.17, 0.24]]) b.box('star', 15, [x - 0.15, y - 0.15, za], [x + 0.15, y + 0.15, zb]);
+      }
+    },
+    text: "Le qixingjian (七星剑), l'épée aux sept étoiles des légendes taoïstes : la Grande Ourse incrustée d'or sur une gouttière marine, comme un ciel de nuit au-dessus des pics. Petite garde où se dressent les trois pics, poignée marine baguée d'or, une étoile au pommeau, houppe azur. L'épée d'un chef ou d'un héros de l'Alliance.",
+  },
 };
 
 // ---------------------------------------------------------------- rendering
