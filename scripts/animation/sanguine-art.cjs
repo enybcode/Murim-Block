@@ -90,21 +90,34 @@ const throwing=[K(0,C),
  K(.42,pose({y:.11,h:.61,turn:-28,lean:-16},{Arm_R:[['x',72],['y',-4],['z',24]],Hand_R:[['x',8]]})),
  K(.72,pose({h:.635,turn:-18})),K(1.05,G)];
 
-// Scarlet Tear, a weapon summoned (15/10/2026, Enzo's request). The summoning: the right forearm rises upright beside
-// the body, the fist up, and the blood sword grows from it toward the sky, piece by piece; then the sword comes down
-// into a guard, held before the body, and the fight goes on with it.
+// Scarlet Tear, a weapon summoned (15/10/2026, Enzo's request): seen from outside, a sword drawn from its sheath. The
+// right hand crosses to the left hip and takes a hilt there, the left hand holding the (unseen) scabbard, the body
+// gathered low and wound up; the blade forms along the scabbard's line, behind the hip. Then the draw: the body unwinds
+// and the right arm sweeps the sword out of the sheath in one wide horizontal arc to the right, the left hand pulling
+// the scabbard back. A flick (chiburi, shaking the blood off): the sword lifts and snaps down beside the leg, then
+// comes up into guard. BloodCrystalOverlay turns the blade to match (sheath, then the arm's line, then the grip).
 const swordSummon = [
   K(0,G),
-  K(.10,pose({h:.63,turn:12,lean:-4},{Arm_R:[['x',62],['y',-46],['z',6]],Hand_R:[['x',96]],Tool_R:[['x',-6]],
-    Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]],Head:[['x',2],['z',-14]]})),
-  K(.50,pose({h:.628,turn:16,lean:-3},{Arm_R:[['x',70],['y',-50],['z',6]],Hand_R:[['x',100]],Tool_R:[['x',-4]],
-    Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]],Chest:[['x',-2]],Head:[['x',-4],['z',-16]]})),
-  // A flourish: the sword swept down and out to the side, then brought into guard.
-  K(.66,pose({h:.62,turn:-6,lean:-6},{Arm_R:[['x',40],['y',-62],['z',14]],Hand_R:[['x',30]],Tool_R:[['x',-6]],
-    Arm_L:[['x',58],['y',18],['z',-10]],Hand_L:[['x',92]],Head:[['x',2],['z',-4]]})),
-  K(.85,pose({h:.635,turn:-10,lean:-5},{Arm_R:[['x',46],['y',-14],['z',8]],Hand_R:[['x',78]],
-    Arm_L:[['x',60],['y',16],['z',-10]],Hand_L:[['x',90]]})),
-  K(1.0,G),
+  // The hand to the hilt at the left hip.
+  K(.16,pose({y:-.01,h:.62,turn:-34,lean:-12},{Arm_R:[['x',20],['y',40],['z',2]],Hand_R:[['x',82]],Tool_R:[['x',-10]],
+    Shoulder_R:[['z',-4]],Arm_L:[['x',6],['y',24],['z',-8]],Hand_L:[['x',72]],Chest:[['x',-6],['z',-8]]})),
+  // Wound up: the hilt drawn an inch, the weight sinking.
+  K(.36,pose({y:-.02,h:.605,turn:-38,lean:-14},{Arm_R:[['x',26],['y',32],['z',2]],Hand_R:[['x',72]],Tool_R:[['x',-10]],
+    Shoulder_R:[['z',-5]],Arm_L:[['x',2],['y',28],['z',-8]],Hand_L:[['x',66]],Chest:[['x',-7],['z',-10]]})),
+  // The draw: the body unwinds, the sword out in a horizontal arc.
+  K(.47,pose({y:.06,h:.615,turn:14,lean:-9},{Arm_R:[['x',88],['y',-30],['z',6]],Hand_R:[['x',14]],Tool_R:[['x',-4]],
+    Arm_L:[['x',-14],['y',30],['z',-10]],Hand_L:[['x',40]],Chest:[['x',-3],['z',6]]})),
+  K(.58,pose({y:.08,h:.62,turn:34,lean:-6},{Arm_R:[['x',86],['y',-80],['z',8]],Hand_R:[['x',4]],
+    Arm_L:[['x',-22],['y',34],['z',-10]],Hand_L:[['x',30]],Chest:[['x',-1],['z',10]]})),
+  // The flick: the sword lifts, then snaps down beside the right leg.
+  K(.72,pose({y:.05,h:.62,turn:22,lean:-3},{Arm_R:[['x',122],['y',-62],['z',10]],Hand_R:[['x',38]],
+    Arm_L:[['x',20],['y',24],['z',-10]],Hand_L:[['x',70]]})),
+  K(.82,pose({y:.04,h:.62,turn:10,lean:-8},{Arm_R:[['x',34],['y',-48],['z',8]],Hand_R:[['x',8]],
+    Arm_L:[['x',40],['y',18],['z',-10]],Hand_L:[['x',84]]})),
+  K(.96,pose({y:.03,h:.625,turn:4,lean:-7},{Arm_R:[['x',30],['y',-46],['z',8]],Hand_R:[['x',10]],
+    Arm_L:[['x',50],['y',16],['z',-10]],Hand_L:[['x',88]]})),
+  // Into guard.
+  K(1.15,G),
 ];
 // The second press: the javelin throw. Withdrawal: side-on, the right arm reaching straight back at shoulder height,
 // the sword over the shoulder point forward, the left arm pointing at the target, the weight back; the block; the whip
@@ -215,9 +228,9 @@ function bodyOnly(p) {
 function build() {
   const baked=Object.fromEntries(Object.entries(CLIPS).map(([n,k])=>[n,bake(k)]));
   const showcase=[];
-  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.75],['sanguine_crystal_form',6.3],['sanguine_crystal_barrage',7.9]])
+  for(const [name,offset] of [['sanguine_combo',0],['sanguine_crystal_charge',1.8],['sanguine_crystal_throw',3.4],['sanguine_sword_summon',4.7],['sanguine_sword_throw',5.9],['sanguine_crystal_form',6.9],['sanguine_crystal_barrage',8.4]])
     showcase.push(...baked[name].map(k=>K(Math.round((k.t+offset)*10000)/10000,k.pose)));
-  showcase.push(K(10.0,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
+  showcase.push(K(10.2,baked.sanguine_guard[0].pose));baked.sanguine_showcase=showcase;
   const {p,g}=bodyOnly(rig.project('sanguine_art',baked));
   for(const a of p.animations) {
     const keys=baked[a.name];

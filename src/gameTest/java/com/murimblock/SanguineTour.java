@@ -158,7 +158,7 @@ public final class SanguineTour {
                 case 776 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 796 -> {check(SanguineArt.holdsSword(mc.player),"Scarlet Tear summons a blood sword in the hand");
                     server.execute(()->check(MartialService.castSlot(self(server),2)==MartialService.CastResult.SWORD_OUT,"no other technique while the sword is out"));}
-                case 798,812 -> {EpicFightKeyMappings.ATTACK.setDown(true);mc.options.keyAttack.setDown(true);KeyMapping.click(EpicFightKeyMappings.ATTACK.getKey());attackReleaseAt=ticks+2;}
+                case 801,814 -> {EpicFightKeyMappings.ATTACK.setDown(true);mc.options.keyAttack.setDown(true);KeyMapping.click(EpicFightKeyMappings.ATTACK.getKey());attackReleaseAt=ticks+2;}
                 case 826 -> server.execute(()->check(zombie.getHealth()<500,"the sword cuts as a sword (M1): "+zombie.getHealth()));
                 case 832 -> {server.execute(()->{target(server,7);QiService.setQi(self(server),100);});}
                 case 836 -> press(mc,1);

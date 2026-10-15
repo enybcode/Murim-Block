@@ -80,3 +80,8 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 - Lame de cristal pourpre très sombre en six segments légèrement de travers, fendus de fissures lumineuses (une en travers, une le long) ; un éclat flotte à côté de chaque segment et dérive autour de la lame tant qu'elle est en main ; garde en couronne de six pics de cristal ; gemmes au pommeau et à la pointe.
 - Texture propre `textures/entity/blood_sword.png` (64 × 64) et `blood_sword_glowmask.png` : seules les fissures, les éclats lumineux et les gemmes brillent dans le noir. Le cristal garde sa texture.
 - Mêmes noms d'os que l'ancienne épée : formation pièce par pièce, vol et explosion inchangés. Tout est généré par `node scripts/animation/blood-sword.cjs`.
+
+## L'invocation en dégainé (15/10/2026, demande d'Enzo)
+
+- Vu de l'extérieur, le joueur **dégaine** son épée au lieu de se mettre en garde (`sanguine_sword_summon`, 1,15 s) : la main droite va chercher la poignée à la hanche gauche, la main gauche tient le fourreau (invisible), le corps se ramasse et se vrille ; puis il dégaine d'un coup en grand arc horizontal vers la droite, la main gauche ramenant le fourreau en arrière ; un coup sec pour chasser le sang (chiburi : la lame se lève puis claque le long de la jambe), et la garde.
+- La lame se forme le long du fourreau, derrière la hanche, pointe en arrière et un peu vers le bas, comme tirée d'un fourreau invisible (jusqu'à 0,38 s) ; elle prolonge ensuite le bras pendant l'arc et le chiburi, puis passe dans la prise normale à partir de 0,84 s (`BloodCrystalOverlay.DRAW`, `GRIP_FROM`, `bodyDirection`).

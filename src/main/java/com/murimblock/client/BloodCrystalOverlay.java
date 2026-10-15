@@ -60,13 +60,26 @@ public final class BloodCrystalOverlay {
     }
     /** The blood sword's grip in the hand's frame: the forearm runs along -Y; the blade leaves the fist forward. */
     static final net.minecraft.world.phys.Vec3 GRIP=new net.minecraft.world.phys.Vec3(0,.25,-1).normalize();
-    /** From this time into the summoning (s) the grown sword turns from the forearm's line into the grip. */
-    static final float GRIP_FROM=.55F;
+    /** The summoning is a draw (s): the blade lies along the scabbard at the left hip until DRAW, carries on the arm's
+     *  line through the arc and the flick, and turns into the grip from GRIP_FROM. */
+    static final float DRAW=.38F, GRIP_FROM=.84F;
     /** How far into an animation the player is (s), or -1. */
     static float clockOf(yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch<?> patch,
                          yesman.epicfight.api.animation.AnimationManager.AnimationAccessor<?> animation) {
         var clock=patch.getAnimator().getPlayerFor(animation);
         return clock!=null&&!clock.isEmpty()&&clock.getRealAnimation()==animation?clock.getElapsedTime():-1;
+    }
+    /** A direction fixed to the body (forward * along + up * rise, armature space: Y up, the right arm root at +X, the
+     *  body facing up × right), in the hand's frame. */
+    static net.minecraft.world.phys.Vec3 bodyDirection(OpenMatrix4f[] poses,yesman.epicfight.api.model.Armature armature,
+            OpenMatrix4f hand,OpenMatrix4f inverse,double along,double rise) {
+        var zero=net.minecraft.world.phys.Vec3.ZERO;
+        var right=OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_R").getId()],zero)
+                .subtract(OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_L").getId()],zero));
+        var up=new net.minecraft.world.phys.Vec3(0,1,0);
+        var direction=up.cross(right).normalize().scale(along).add(up.scale(rise));
+        var origin=OpenMatrix4f.transform(hand,zero);
+        return OpenMatrix4f.transform(inverse,origin.add(direction)).subtract(OpenMatrix4f.transform(inverse,origin)).normalize();
     }
     private static final class Layer<E extends AbstractClientPlayer,P extends AbstractClientPlayerPatch<E>>
             extends PatchedLayer<E,P,PlayerModel<E>,RenderLayer<E,PlayerModel<E>>> {
@@ -90,23 +103,21 @@ public final class BloodCrystalOverlay {
                     var forearm=OpenMatrix4f.transform(inverse,elbow).scale(-1).normalize();
                     // Held as a sword: out of the fist, forward of it (the hand's -Z), a little up.
                     var blade=GRIP;
-                    // Summoned: the sword grows along the raised forearm, toward the sky, then turns into the grip.
+                    // Summoned, a draw: in the sheath at the left hip the blade points back and a little down (it forms
+                    // there, as if pulled out of an unseen scabbard); drawn, it carries on the arm's line through the
+                    // arc and the flick; then it turns into the grip.
                     float summon=clockOf(patch,com.murimblock.integration.epicfight.MurimAnimations.SANGUINE_SWORD_SUMMON);
                     if(summon>=0&&summon<GRIP_FROM+.12F) {
-                        double f=Math.clamp((summon-GRIP_FROM)/.12,0,1);
-                        blade=forearm.scale(1-f).add(GRIP.scale(f)).normalize();
+                        var sheath=bodyDirection(poses,armature,hand,inverse,-1,-.35);
+                        double drawn=Math.clamp((summon-DRAW)/.1,0,1),held=Math.clamp((summon-GRIP_FROM)/.12,0,1);
+                        var out=sheath.scale(1-drawn).add(forearm.scale(drawn)).normalize();
+                        blade=out.scale(1-held).add(GRIP.scale(held)).normalize();
                     }
                     // Thrown: carried like a javelin, its point toward the front of the body, a little up, whatever
                     // the arm does, until it leaves the hand.
                     float t=clockOf(patch,com.murimblock.integration.epicfight.MurimAnimations.SANGUINE_SWORD_THROW);
                     if(t>=0) {
-                        var right=OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_R").getId()],zero)
-                                .subtract(OpenMatrix4f.transform(poses[armature.searchJointByName("Arm_L").getId()],zero));
-                        // Armature space: Y up, the right arm root at +X; the body faces up × right.
-                        var up=new net.minecraft.world.phys.Vec3(0,1,0);
-                        var forward=up.cross(right).normalize().scale(Math.cos(Math.toRadians(10))).add(up.scale(Math.sin(Math.toRadians(10))));
-                        var origin=OpenMatrix4f.transform(hand,zero);
-                        var javelin=OpenMatrix4f.transform(inverse,origin.add(forward)).subtract(OpenMatrix4f.transform(inverse,origin)).normalize();
+                        var javelin=bodyDirection(poses,armature,hand,inverse,1,Math.sin(Math.toRadians(10)));
                         double f=Math.min(1,t/.06);
                         blade=blade.scale(1-f).add(javelin.scale(f)).normalize();
                     }
