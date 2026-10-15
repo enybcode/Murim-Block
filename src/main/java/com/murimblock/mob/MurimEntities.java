@@ -22,6 +22,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.BloodCrystalEntity>> BLOOD_CRYSTAL =
             TYPES.register("blood_crystal", () -> EntityType.Builder.<com.murimblock.martial.BloodCrystalEntity>of(com.murimblock.martial.BloodCrystalEntity::new,MobCategory.MISC)
                     .sized(.75F,.75F).clientTrackingRange(8).updateInterval(1).build("murimblock:blood_crystal"));
+    /** A piece of Scarlet Bloom's show (a crystal, a beam, a stone): shown only, never saved. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.ScarletPieceEntity>> SCARLET_PIECE =
+            TYPES.register("scarlet_piece", () -> EntityType.Builder.<com.murimblock.martial.ScarletPieceEntity>of(com.murimblock.martial.ScarletPieceEntity::new, MobCategory.MISC)
+                    .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(8).updateInterval(1).build("murimblock:scarlet_piece"));
     public static final DeferredHolder<EntityType<?>, EntityType<TrainingOpponentEntity>> TRAINING_OPPONENT =
             TYPES.register("training_opponent", () -> EntityType.Builder.of(TrainingOpponentEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("murimblock:training_opponent"));

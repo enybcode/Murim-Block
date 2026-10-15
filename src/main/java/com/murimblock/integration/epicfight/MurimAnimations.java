@@ -154,6 +154,10 @@ public final class MurimAnimations {
     public static AnimationAccessor<AttackAnimation> INCH_FORCE;
     /** The finish, Final Palm. */
     public static AnimationAccessor<ActionAnimation> FINISH_LONG_FIST;
+    /** Scarlet Bloom, the Sanguine Art's finish (martial/ScarletBloom, scripts/animation/scarlet-bloom.cjs). */
+    public static AnimationAccessor<ActionAnimation> FINISH_SCARLET_BLOOM;
+    /** Scarlet Bloom's victim, thrown into the sky: flailing, spread, curled (scripts/animation/scarlet-bloom.cjs). */
+    public static AnimationAccessor<ActionAnimation> SCARLET_BLOOM_FLUNG;
 
     /** Rapid Fists' punches land every RAPID_FIST_GAP from RAPID_FIST_GAP on; the last one 0.24 s after the last of them. */
     public static final float RAPID_FIST_GAP = 0.1F, RAPID_FIST_LAST = 0.24F;
@@ -256,6 +260,8 @@ public final class MurimAnimations {
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
                 .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get()));
         FINISH_LONG_FIST = builder.nextAccessor("biped/murim/final_palm", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        FINISH_SCARLET_BLOOM = builder.nextAccessor("biped/murim/scarlet_bloom", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        SCARLET_BLOOM_FLUNG = builder.nextAccessor("biped/murim/scarlet_bloom_flung", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
     }
 
     private static DashAttackAnimation tigerStep(AnimationAccessor<? extends DashAttackAnimation> accessor, OBBCollider path) {

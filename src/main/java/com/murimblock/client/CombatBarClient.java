@@ -151,6 +151,8 @@ public final class CombatBarClient {
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
+        // Not over a finish's film (FinishCinematic hides the whole interface).
+        if (FinishCinematic.active()) return;
         if (player == null || player.isSpectator() || !inCombat(player) || !VanillaGuiLayers.HOTBAR.equals(event.getName())) return;
         event.setCanceled(true);
         // F1 (hidden interface) hides it, like the hotbar it replaces.

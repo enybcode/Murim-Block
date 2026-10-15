@@ -69,6 +69,7 @@ public final class KnockdownService {
             return switch (finish) {
                 case FinishCinematicPayload.AZURE_CLOUD -> AzureCloudSword.FINISH_HIT_TICK;
                 case FinishCinematicPayload.LONG_FIST -> LongFist.FINISH_HIT_TICK;
+                case FinishCinematicPayload.SCARLET_BLOOM -> com.murimblock.martial.ScarletBloom.HIT_TICK;
                 default -> FINISH_HIT_TICK;
             };
         }
@@ -162,7 +163,8 @@ public final class KnockdownService {
     public static void tick(ServerPlayer player) {
         KnockdownData data = data(player);
         if (data.downed()) {
-            player.setForcedPose(Pose.SWIMMING);
+            // Swept into the sky by Scarlet Bloom, the body is shown in its own animation, not lying down.
+            player.setForcedPose(com.murimblock.martial.ScarletBloom.sweeps(player) ? null : Pose.SWIMMING);
             applyModifiers(player);
             if (isBeingExecuted(player)) add(player.getAttribute(Attributes.MOVEMENT_SPEED), HELD, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             else remove(player.getAttribute(Attributes.MOVEMENT_SPEED), HELD);
@@ -218,15 +220,18 @@ public final class KnockdownService {
      */
     public static boolean execute(ServerPlayer executor, ServerPlayer target) {
         if (!canActOn(executor, target) || isCarried(target) || isBeingExecuted(target)) return false;
-        int finish = AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
+        int finish = com.murimblock.martial.ScarletBloom.finishes(executor) ? FinishCinematicPayload.SCARLET_BLOOM
+                : AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
                 : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST : FinishCinematicPayload.GENERIC;
         EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount(), finish));
         PlayerPatch<?> patch = EpicFightBridge.patch(executor);
         if (patch != null) patch.playAnimationSynchronized(switch (finish) {
             case FinishCinematicPayload.AZURE_CLOUD -> MurimAnimations.FINISH_AZURE;
             case FinishCinematicPayload.LONG_FIST -> MurimAnimations.FINISH_LONG_FIST;
+            case FinishCinematicPayload.SCARLET_BLOOM -> MurimAnimations.FINISH_SCARLET_BLOOM;
             default -> MurimAnimations.FINISH_GENERIC;
         }, 0.0F);
+        if (finish == FinishCinematicPayload.SCARLET_BLOOM) com.murimblock.martial.ScarletBloom.start(executor, target);
         cinematic(true, executor, target, finish);
         return true;
     }
@@ -237,8 +242,14 @@ public final class KnockdownService {
         for (Map.Entry<UUID, Execution> entry : List.copyOf(EXECUTIONS.entrySet())) {
             ServerPlayer executor = server.getPlayerList().getPlayer(entry.getKey());
             ServerPlayer victim = server.getPlayerList().getPlayer(entry.getValue().victim);
-            if (executor == null || victim == null || !executor.isAlive() || !isDowned(victim)
-                    || executor.distanceTo(victim) > ACTION_REACH + 1) { EXECUTIONS.remove(entry.getKey()); continue; }
+            // Scarlet Bloom throws the body into the sky: only how far it is across the ground counts.
+            double apart = executor == null || victim == null ? 0 : entry.getValue().finish == FinishCinematicPayload.SCARLET_BLOOM
+                    ? Math.hypot(executor.getX() - victim.getX(), executor.getZ() - victim.getZ()) : executor.distanceTo(victim);
+            if (executor == null || victim == null || !executor.isAlive() || !isDowned(victim) || apart > ACTION_REACH + 1) {
+                EXECUTIONS.remove(entry.getKey());
+                com.murimblock.martial.ScarletBloom.abort(entry.getKey(), server);
+                continue;
+            }
             int elapsed = server.getTickCount() - entry.getValue().started;
             if (entry.getValue().finish == FinishCinematicPayload.AZURE_CLOUD) AzureCloudSword.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.LONG_FIST) LongFist.finishTick(executor, victim, elapsed);
@@ -280,6 +291,7 @@ public final class KnockdownService {
         Execution e = EXECUTIONS.get(executor.getUUID());
         if (e != null && executor instanceof ServerPlayer ex && ex.server.getTickCount() - e.started < e.hitTick()) {
             EXECUTIONS.remove(executor.getUUID());
+            com.murimblock.martial.ScarletBloom.abort(executor.getUUID(), ex.server);
             ServerPlayer victim = ex.server.getPlayerList().getPlayer(e.victim);
             if (victim != null) cinematic(false, ex, victim);
         }
@@ -300,10 +312,12 @@ public final class KnockdownService {
         // A finish broken off by a departure: the other player's film stops too (a finish that lands is not broken off).
         Execution own = EXECUTIONS.remove(player.getUUID());
         if (own != null && player.server.getPlayerList().getPlayer(own.victim) instanceof ServerPlayer v && isDowned(v)) cinematic(false, player, v);
+        if (own != null) com.murimblock.martial.ScarletBloom.abort(player.getUUID(), player.server);
         EXECUTIONS.entrySet().removeIf(entry -> {
             if (!entry.getValue().victim.equals(player.getUUID())) return false;
             ServerPlayer ex = player.server.getPlayerList().getPlayer(entry.getKey());
             if (ex != null && !player.isDeadOrDying()) cinematic(false, ex, player);
+            if (!player.isDeadOrDying()) com.murimblock.martial.ScarletBloom.abort(entry.getKey(), player.server);
             return true;
         });
         if (isCarrying(player)) release(player);

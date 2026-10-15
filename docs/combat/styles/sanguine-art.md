@@ -146,3 +146,33 @@ Le parchemin n'enseigne qu'à partir de **Qi Crystallization** ; coûts en Qi (1
 - **Rien ne se construit dedans** : tant qu'il tient, aucun bloc ne se pose et aucun seau ne se vide dans son emprise (45 × 45, du dessous jusqu'au-dessus des flèches) (`BloodIceberg.inArena`, `BlockEvent.EntityPlaceEvent`, `RightClickBlock` d'un seau).
 - **Si son lanceur meurt, il s'effondre aussitôt** : le sang d'abord, puis la pierre du haut vers le bas en une demi-seconde (`BloodIceberg.collapse`, `collapseTick` sur `ServerTickEvent`).
 - Test : `theTempleIsUnbreakableClosedToBuildingAndFallsWithItsCaster`.
+
+## Le finish : Floraison écarlate — *Scarlet Bloom* (15/10/2026, demande d'Enzo)
+
+D'après le film de référence d'Enzo. B sur un joueur au sol (K.O.), pour qui a l'art sanguin en art principal **et
+toutes ses techniques débloquées** (`martial/ScarletBloom`, `ScarletBloom.finishes`). 7,8 s, vu par les deux joueurs
+comme un film à caméra mobile (`client/FinishCinematic.placeScarlet`), et par tous ceux qui sont autour :
+
+1. 0 s : l'exécuteur plonge la main dans le sol (`scripts/animation/scarlet-bloom.cjs`, clip `scarlet_bloom`).
+2. 0,7 s : un anneau de grands pics de cristal jaillit, un pic géant sous le corps, des blocs du sol volent ; la victime
+   est **emportée** à 9 blocs de haut, renversée en arrière et se débattant (clip `scarlet_bloom_flung` ; plus la pose de
+   K.O. pendant ce temps, la tête ne suit plus le regard).
+3. 2 s : dix cristaux quittent le dos de l'exécuteur, prennent place autour du corps et tissent une **cage** de rayons
+   de cristal ; le corps y pend, écartelé.
+4. 3,5 s : la cage se referme lentement en tournant, **en noir et blanc** pour les deux joueurs (post-effet
+   `shaders/post/scarlet_monochrome.json`) ; le corps se recroqueville.
+5. 5 s : l'exécuteur serre le poing : **exécution**. Une fleur de cristal s'ouvre, la cage éclate et **le corps éclate
+   avec elle**, au ralenti : tête, torse, bras et jambes (dans la peau du joueur) s'écartent parmi des giclées de sang
+   et de gros éclats ; 5,6 s : le temps repart, tout est projeté.
+6. 5 à 9 s : **pluie de sang** autour du cratère ; les morceaux du corps retombent et restent dans des flaques de sang ;
+   6,1 s : un cratère de grands cristaux se dresse.
+
+Tout est fait de modèles (Enzo ne voulait pas de particules) : `ScarletPieceEntity`, rendue par
+`client/ScarletPieceRenderer` (cristaux `geo/scarlet_spike|rod|shard|bloom` dans le style des cristaux de sang, sang
+`geo/scarlet_blood|puddle` et sa texture, blocs du sol, membres du modèle de joueur avec sa peau ; script
+`scripts/animation/scarlet-bloom-models.cjs`). Rien n'est construit ni sauvegardé ; tout disparaît 11,5 s après le début,
+ou tout de suite si le finish est interrompu (le corps est alors reposé au sol). Protocole réseau 19.
+
+Vérifications : `ScarletBloomGameTests` (réservé aux maîtres de l'art ; le corps monte, éclate en six morceaux, est
+exécuté, crédit à l'exécuteur ; tout est retiré à la fin ; interrompu, le corps est reposé vivant) ; film en vrai client :
+`gradlew -PgameTests runScarletBloomTour` (vue de l'exécuteur, vue d'un témoin).

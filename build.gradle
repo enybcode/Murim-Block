@@ -96,6 +96,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client film of Scarlet Bloom, the Sanguine Art's finish (see ScarletBloomTour).
+        scarletBloomTour {
+            client()
+            gameDirectory = project.file('build/scarlet-bloom-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.scarletBloomTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client check of Murim's guard, perfect and normal parry (see ParryTour).
         parryTour {
             client()
@@ -362,6 +371,22 @@ tasks.named('runSiteTour').configure {
     doLast {
         def report = siteTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Site tour failed; see build/site-tour-run/site-tour-report.txt')
+    }
+}
+
+def scarletBloomTourSave = layout.buildDirectory.dir('scarlet-bloom-tour-run/saves/murim-scarlet-bloom')
+def scarletBloomTourReport = layout.buildDirectory.file('scarlet-bloom-tour-run/scarlet-bloom-tour-report.txt')
+def scarletBloomTourShots = layout.buildDirectory.dir('scarlet-bloom-tour-run/screenshots')
+tasks.named('runScarletBloomTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Scarlet Bloom tour.')
+        scarletBloomTourSave.get().asFile.deleteDir()
+        scarletBloomTourShots.get().asFile.deleteDir()
+        scarletBloomTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = scarletBloomTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Scarlet Bloom tour failed; see build/scarlet-bloom-tour-run/scarlet-bloom-tour-report.txt')
     }
 }
 

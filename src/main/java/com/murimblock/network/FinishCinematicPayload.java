@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * Server to the two players of a finish: start (or, with {@code start} false, break off) the cinematic camera. Sent
  * only to the executor and the victim; everyone else watches the finish as usual. {@code finish} says which finish is
- * played, so the film's shots follow its timing ({@link #GENERIC}, {@link #AZURE_CLOUD}, {@link #LONG_FIST}).
+ * played, so the film's shots follow its timing ({@link #GENERIC}, {@link #AZURE_CLOUD}, {@link #LONG_FIST}, {@link #SCARLET_BLOOM}).
  */
 public record FinishCinematicPayload(boolean start, int executorId, int victimId, int finish) implements CustomPacketPayload {
     /** The generic finish (1.7 s, the blow at 0.9 s). */
@@ -19,6 +19,8 @@ public record FinishCinematicPayload(boolean start, int executorId, int victimId
     public static final int AZURE_CLOUD = 1;
     /** Final Palm, the Long Fist's finish (2 s, the palm at 1.4 s). */
     public static final int LONG_FIST = 2;
+    /** Scarlet Bloom, the Sanguine Art's finish (7.8 s: the body thrown up at 0.7 s, the cage closing from 3.5 s, its burst at 5.0 s, the body landing, executed, at 6.1 s). */
+    public static final int SCARLET_BLOOM = 3;
 
     public static final CustomPacketPayload.Type<FinishCinematicPayload> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "finish_cinematic"));

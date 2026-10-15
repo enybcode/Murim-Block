@@ -78,6 +78,7 @@ public final class KnockdownClient {
     @Nullable static Motions motion(Player player) {
         boolean moving = player.walkAnimation.speed() > MOVING;
         if (KnockdownService.isDowned(player)) {
+            if (player.isNoGravity()) return null; // swept into the sky by Scarlet Bloom
             if (KnockdownService.isCarried(player)) return Motions.CARRIED;
             return moving ? Motions.CRAWL : Motions.DOWNED;
         }
@@ -92,7 +93,8 @@ public final class KnockdownClient {
         for (Player player : minecraft.level.players()) {
             dieWhereTheyLie(player);
             // The local player computes its own pose: give it the crawl the server enforces.
-            if (KnockdownService.isDowned(player)) player.setForcedPose(Pose.SWIMMING);
+            // Not a body swept into the sky by Scarlet Bloom (weightless meanwhile): it shows its own animation.
+            if (KnockdownService.isDowned(player) && !player.isNoGravity()) player.setForcedPose(Pose.SWIMMING);
             else if (player.getForcedPose() == Pose.SWIMMING) player.setForcedPose(null);
             // A carried body faces where its carrier faces.
             Player carrier = KnockdownService.carrier(player);
