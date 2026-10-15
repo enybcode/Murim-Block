@@ -25,7 +25,7 @@ import javax.imageio.ImageIO;
  *   devourer_of_worlds (Blood Crystal Form): a body in shadow, crystals bursting from its shoulders and back, its heart lit;
  *   crystal_barrage: a volley of crystals flying in a fan, speed lines behind them;
  *   crimson_stance: the passive, a fist in guard, drops of blood rising round it;
- *   blood_iceberg: a jagged mountain of blood crystal rising out of the ground, spires round its peak, a figure on top.
+ *   blood_iceberg: the blood temple's arena, a wall of red bricks, gold spires lit at their tips, blood falling down it.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -309,6 +309,18 @@ public class TechniqueIcons {
         line(g, mx + nx * 0.3, my + ny * 0.3, x1 - dx * 0.12, y1 - dy * 0.12, 0.8f, CRYSTAL_LIGHT);
     }
 
+    /** A crystal of gold from (x0, y0) to its point (x1, y1), w wide: a dark side, a lit side, a glint. */
+    static void crystalGold(Graphics2D g, double x0, double y0, double x1, double y1, double w, Color dark, Color light) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), nx = -dy / len * w / 2, ny = dx / len * w / 2;
+        double mx = x0 + dx * 0.33, my = y0 + dy * 0.33;
+        Path2D lit = new Path2D.Double(), shade = new Path2D.Double();
+        lit.moveTo(x0, y0); lit.lineTo(mx + nx, my + ny); lit.lineTo(x1, y1); lit.closePath();
+        shade.moveTo(x0, y0); shade.lineTo(mx - nx, my - ny); shade.lineTo(x1, y1); shade.closePath();
+        g.setColor(dark.darker()); g.fill(shade);
+        g.setColor(dark); g.fill(lit);
+        line(g, mx + nx * 0.3, my + ny * 0.3, x1 - dx * 0.12, y1 - dy * 0.12, 0.8f, light);
+    }
+
     /** A drop of blood, its round foot at (x, y), r wide. */
     static void drop(Graphics2D g, double x, double y, double r, Color col) {
         g.setColor(col);
@@ -381,32 +393,27 @@ public class TechniqueIcons {
                 for (double[] v : volley) crystal(g, v[0], v[1], v[2], v[3], 3);
                 burst(g, 28, 14, 2.5, CRYSTAL_LIGHT);
             }
-            case 5 -> { // Blood Iceberg: a mountain of blood crystal out of the ground, spires round the peak, a figure on top.
-                // The ground, split where it rose.
-                g.setColor(SHADOW);
-                g.fillRect(2, 27, 28, 3);
-                line(g, 3, 27, 29, 27, 1f, BLOOD_DIM);
-                // The mountain: a broad crystal mass, then spires, the tallest at the middle.
-                Path2D mass = new Path2D.Double();
-                mass.moveTo(3, 27); mass.lineTo(9, 17); mass.lineTo(13, 13); mass.lineTo(16, 9); mass.lineTo(19, 13);
-                mass.lineTo(23, 17); mass.lineTo(29, 27); mass.closePath();
-                g.setColor(CRYSTAL_DARK); g.fill(mass);
-                Path2D lit = new Path2D.Double();
-                lit.moveTo(16, 9); lit.lineTo(19, 13); lit.lineTo(23, 17); lit.lineTo(29, 27); lit.lineTo(17, 27); lit.closePath();
-                g.setColor(BLOOD_RED); g.fill(lit);
-                crystal(g, 6, 26, 4, 16, 3.2);
-                crystal(g, 10, 22, 8, 12, 3.4);
-                crystal(g, 23, 22, 25, 11, 3.4);
-                crystal(g, 27, 26, 29, 17, 3);
-                crystal(g, 13, 18, 12, 9, 2.6);
-                crystal(g, 20, 18, 21, 8, 2.6);
-                line(g, 16, 10, 12, 26, 0.8f, CRYSTAL_LIGHT);
-                // A figure on the peak, arms wide.
-                g.setColor(SHADOW);
-                g.fill(new Rectangle2D.Double(15, 5, 2, 4));
-                disc(g, 16, 3.6, 1.3, SHADOW);
-                line(g, 13, 5, 19, 5, 1f, SHADOW);
-                for (int[] q : new int[][]{{9, 20}, {22, 21}, {15, 24}, {26, 25}}) px(img, q[0], q[1], CRYSTAL_LIGHT);
+            case 5 -> { // Blood Iceberg: the blood temple's arena, its wall of red bricks, gold spires lit at their tips, blood falling.
+                Color brick = c(118, 30, 24), brickDark = c(70, 14, 12), gold = c(208, 170, 58), goldLight = c(255, 236, 160), lantern = c(255, 200, 110);
+                // The ground and the arena's floor seen over the near wall, a gold seal on it.
+                g.setColor(SHADOW); g.fillRect(2, 27, 28, 3);
+                g.setColor(c(92, 22, 18)); g.fill(new Ellipse2D.Double(5, 12, 22, 8));
+                g.setColor(gold); g.setStroke(new BasicStroke(1f)); g.draw(new Ellipse2D.Double(10, 14, 12, 4));
+                px(img, 16, 16, goldLight);
+                // The near wall: courses of bricks, joints dark, crenels along its top.
+                g.setColor(brick); g.fillRect(4, 18, 24, 10);
+                g.setColor(brickDark);
+                for (int y = 20; y < 28; y += 3) g.drawLine(4, y, 27, y);
+                for (int y = 18, k = 0; y < 28; y += 3, k++) for (int x = 6 + (k % 2) * 2; x < 28; x += 5) g.drawLine(x, y, x, y + 2);
+                g.setColor(brick); for (int x = 4; x < 28; x += 4) g.fillRect(x, 16, 2, 2);
+                // Gold spires, each crowned with a lantern.
+                for (int[] sp : new int[][]{{6, 6}, {16, 2}, {26, 6}}) {
+                    crystalGold(g, sp[0], 18, sp[0], sp[1] + 3, 3.4, gold, goldLight);
+                    g.setColor(lantern); g.fillRect(sp[0] - 1, sp[1], 3, 3);
+                    px(img, sp[0], sp[1] + 1, c(255, 250, 230));
+                }
+                // Blood falling down the wall into the channel.
+                for (int x : new int[]{11, 21}) { line(g, x, 18, x, 26, 1.6f, BLOOD_RED); px(img, x, 27, CRYSTAL); }
             }
             default -> { // Crimson Stance: a fist in guard, drops of blood rising round it.
                 drop(g, 8, 10, 2, BLOOD_RED);

@@ -43,3 +43,28 @@ Conséquence voulue : un coup « mortel » d'un joueur ne met K.O. qu'un adversa
 ## Tests
 
 `TechniquePowerTest` (facteurs et limite), `MartialGameTests` (épée en fer et Qi, poings entraînés, trois coups de 8 sur 20 PV : 8, 4, puis rien ; trois secondes après, le combo suivant porte).
+
+## Le Sanguine Art, un art de haut niveau (15/10/2026, demande d'Enzo)
+
+- **Appris seulement à partir de Qi Crystallization** : le parchemin refuse un lecteur d'un royaume inférieur (« Sanguine Art can only be learnt from Qi Crystallization ») et l'indique dans son infobulle (`MartialArts.requiredRealm`, `SANGUINE_REALM`, `MartialManualItem`).
+- **Coûts en Qi** pour une réserve de 3 000 à 5 000 (environ 2 à 7 % par technique, l'ultime 10 à 17 %) :
+
+| Technique | Qi (avant) | Qi | Recharge |
+|---|---|---|---|
+| Blood Crystal | 18 | **100** | 8 s |
+| Scarlet Tear | 24 | **150** (le lancer reste gratuit) | 10 s |
+| Blood Crystal Form | 20 | **200** | 4 s |
+| Crystal Barrage | 18 | **120** | 6 s |
+| Blood Iceberg | 40 | **500** | 9 min |
+
+- **Dégâts** : la main durcie par le sang ajoute **+4** aux techniques à mains nues du Sanguine Art (`TechniquePower.BLOOD_TRAINING`, comme le +3 du Poing Long). À Qi Crystallization, les mains nues valent 1 + 4 (royaume) = 5, ×1,2 (bonus de dégâts du royaume) = 6 ; avec le sang, 10 : une lame de netherite. Au Qi de 3 000 (×1,59), une part de 1 vaut environ **16**.
+- **Parts retouchées** pour cette main plus forte : cristal de sang **1,0** (au lieu de 1,2) +0,07 par point de jauge, le grand cristal (20 points) **2,4** (au lieu de 3,0), son explosion **1,6 → 0,8** (au lieu de 2,0 → 1,0) ; chaque cristal de la salve **0,4** (au lieu de 0,45). L'épée de sang (+5 d'attaque en main, lancer ×1,2 + explosion ×1,2 → ×0,6) ne change pas.
+
+| Technique | Part | À Qi Crystallization (≈ 16 la part) |
+|---|---|---|
+| Blood Crystal (charge minimale) | 1,0 | ≈ 16 |
+| Grand cristal (jauge pleine) | 2,4 + explosion 1,6 | ≈ 38 + 26 |
+| Scarlet Tear, lancer | 1,2 + explosion 1,2 | ≈ 24 + 24 (main armée de l'épée) |
+| Crystal Barrage | 0,4 par cristal (10 au plus) | ≈ 6,4 chacun, 64 la salve pleine |
+
+La limite anti-one-shot (60 % de la vie en 3 s contre un joueur) s'applique toujours.

@@ -36,7 +36,10 @@ public final class SanguineGameTests {
     private static final java.util.Map<java.util.UUID,java.util.List<net.minecraft.world.entity.Entity>> OWNED=new java.util.HashMap<>();
     private static ServerPlayer adept(GameTestHelper h) {
         var p=player(h);EpicFightCombatDefaults.enforce(p);
+        // The scroll teaches only from Qi Crystallization; the rest of the test keeps a beginner's body.
+        com.murimblock.cultivation.CultivationService.setCultivation(p,MartialArts.SANGUINE_REALM,com.murimblock.cultivation.CultivationStage.EARLY);
         new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()).use(p.level(),p,InteractionHand.MAIN_HAND);
+        com.murimblock.cultivation.CultivationService.resetCultivation(p);
         p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);
         // Keep contacts in the already simulated spawn chunks; new distant chunks load their entity sections asynchronously.
         if(arenaOwner!=h){arenaOwner=h;participants=0;}
@@ -75,7 +78,7 @@ public final class SanguineGameTests {
         face(p,0);p.setNoGravity(false);p.setOnGround(true);p.setHealth(10);p.getFoodData().setFoodLevel(6);
         // Settle the held-item capabilities before starting a charge or a passive M1.
         p.doTick();p.doTick();
-        MartialService.clearCooldownsForTests(p);QiService.setQi(p,100);return p;
+        MartialService.clearCooldownsForTests(p);QiService.setQiMax(p,1000);QiService.setQi(p,1000);return p;
     }
     private static void face(ServerPlayer p,float yaw) {
         p.setYRot(yaw);p.setYHeadRot(yaw);p.yHeadRotO=yaw;p.setYBodyRot(yaw);p.yBodyRotO=yaw;p.yRotO=yaw;
@@ -112,7 +115,7 @@ public final class SanguineGameTests {
         for(var hand:InteractionHand.values()) {
             p.setItemInHand(hand,new ItemStack(Items.STICK));
             h.assertTrue(MartialService.castSlot(p,0)==MartialService.CastResult.NO_WEAPON,"Occupied hand accepted");
-            h.assertTrue(QiService.getQi(p)==100,"Refused cast spent Qi");p.setItemInHand(hand,ItemStack.EMPTY);
+            h.assertTrue(QiService.getQi(p)==1000,"Refused cast spent Qi");p.setItemInHand(hand,ItemStack.EMPTY);
         }
         end(h,p);
     }
@@ -123,11 +126,11 @@ public final class SanguineGameTests {
         h.runAfterDelay(10,()->{
             var crystals=h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.getBoundingBox().inflate(3));
             h.assertTrue(crystals.size()==1&&crystals.getFirst().crystalScale()>.35,"Hand crystal did not grow: "+crystals.stream().map(e->e.state()+":"+e.crystalScale()).toList()+", has="+SanguineArt.hasCharge(p)+", held="+SanguineArt.charging(p)+", pos="+p.position());
-            h.assertTrue(z.getHealth()==500&&QiService.getQi(p)==100,"Holding dealt damage or spent Qi");cast(h,p,0);
+            h.assertTrue(z.getHealth()==500&&QiService.getQi(p)==1000,"Holding dealt damage or spent Qi");cast(h,p,0);
         });
         h.runAfterDelay(65,()->{
             h.assertTrue(z.getHealth()<500,"Thrown crystal missed: "+z.getHealth());
-            h.assertTrue(p.getHealth()==10,"Crystal healed its caster");h.assertTrue(QiService.getQi(p)>=82&&QiService.getQi(p)<83,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z);
+            h.assertTrue(p.getHealth()==10,"Crystal healed its caster");h.assertTrue(QiService.getQi(p)>=900&&QiService.getQi(p)<903,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z);
         });
     }
     private static BloodCrystalEntity held(GameTestHelper h,ServerPlayer p) {
@@ -169,7 +172,7 @@ public final class SanguineGameTests {
             h.assertTrue(z.getHealth()<near.getHealth(),"The body struck took less than the one beside: "+z.getHealth()+" / "+near.getHealth());
             for(int dx=-2;dx<=2;dx++)for(int dz=0;dz<=10;dz++)
                 h.assertTrue(h.getLevel().getBlockState(BlockPos.containing(p.getX()+dx,119,8.5+dz)).is(Blocks.STONE),"The explosion broke a block");
-            h.assertTrue(QiService.getQi(p)>=82&&QiService.getQi(p)<83,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
+            h.assertTrue(QiService.getQi(p)>=900&&QiService.getQi(p)<903,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
         });
     }
     @GameTest(template="foundation_arena",batch="scarlet_sword",timeoutTicks=150)
@@ -188,7 +191,7 @@ public final class SanguineGameTests {
             h.assertTrue(!SanguineArt.silencesHit(near,yesman.epicfight.gameasset.Animations.SWORD_AUTO2),"Another fighter's sword would be silenced");
             h.assertTrue(p.getAttributeValue(Attributes.ATTACK_DAMAGE)>=bare+SanguineArt.SWORD_DAMAGE-.01,"The sword adds no attack: "+p.getAttributeValue(Attributes.ATTACK_DAMAGE));
             h.assertTrue(MartialService.castSlot(p,0)==MartialService.CastResult.SWORD_OUT,"Another technique was cast with the sword out");
-            QiService.setQi(p,100);face(p,0);patch.playAnimationSynchronized(yesman.epicfight.gameasset.Animations.SWORD_AUTO1,0);
+            QiService.setQi(p,1000);face(p,0);patch.playAnimationSynchronized(yesman.epicfight.gameasset.Animations.SWORD_AUTO1,0);
         });
         h.runAfterDelay(55,()->{
             h.assertTrue(near.getHealth()<500,"The sword's cut missed: "+near.getHealth());
@@ -242,7 +245,7 @@ public final class SanguineGameTests {
     public static void fullGaugeNeedsTheKeyAndFormLastsThirtySecondsThenSheds(GameTestHelper h) {
         var p=adept(h);MartialService.unlock(p,MartialArts.BLOOD_CRYSTAL_FORM);MartialService.assign(p,2,MartialArts.BLOOD_CRYSTAL_FORM.id());
         p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(9,false,0));
-        h.assertTrue(MartialService.castSlot(p,2)==MartialService.CastResult.FAILED&&QiService.getQi(p)==100,"Partial gauge transformed");
+        h.assertTrue(MartialService.castSlot(p,2)==MartialService.CastResult.FAILED&&QiService.getQi(p)==1000,"Partial gauge transformed");
         p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(BloodCrystalState.MAX_GAUGE,false,0));
         h.assertTrue(!SanguineArt.state(p).active(),"Gauge transformed automatically");cast(h,p,2);ticks(h,p,650);
         // Out of combat the form holds; at 30 s it ends and its crystals come away and fall.
@@ -265,7 +268,7 @@ public final class SanguineGameTests {
         for(int i=0;i<20;i++)h.runAfterDelay(35+i*22,()->{z.invulnerableTime=0;strike(p);});
         h.runAfterDelay(475,()->{
             h.assertTrue(SanguineArt.state(p).crystals()==10,"M1 stack cap failed: "+SanguineArt.state(p));idle(p);
-            QiService.setQi(p,100);cast(h,p,3);
+            QiService.setQi(p,1000);cast(h,p,3);
             h.assertTrue(SanguineArt.state(p).active()&&SanguineArt.state(p).crystals()==0,"Salvo ended form or did not consume crystals");
         });
         h.runAfterDelay(520,()->{h.assertTrue(SanguineArt.state(p).active(),"Form ended after salvo");end(h,p,z);});
@@ -382,6 +385,18 @@ public final class SanguineGameTests {
         h.assertTrue(result!=null&&result.consumesAction(),"Using a bottle on blood did nothing: "+result);
         h.assertTrue(p.getMainHandItem().is(SanguineItems.BLOOD_VIAL.get()),"The bottle did not fill with blood: "+p.getMainHandItem());
         h.getLevel().setBlock(at,Blocks.AIR.defaultBlockState(),3);end(h,p);
+    }
+    @GameTest(template="foundation_arena",batch="sanguine_realm",timeoutTicks=20)
+    public static void theSanguineScrollTeachesOnlyFromQiCrystallization(GameTestHelper h) {
+        var p=player(h);
+        var scroll=new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get());
+        com.murimblock.cultivation.CultivationService.setCultivation(p,com.murimblock.cultivation.CultivationRealm.QI_LIQUIDATION,com.murimblock.cultivation.CultivationStage.PEAK);
+        scroll.use(p.level(),p,InteractionHand.MAIN_HAND);
+        h.assertTrue(!MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Learnt the Sanguine Art below Qi Crystallization");
+        com.murimblock.cultivation.CultivationService.setCultivation(p,MartialArts.SANGUINE_REALM,com.murimblock.cultivation.CultivationStage.EARLY);
+        scroll.use(p.level(),p,InteractionHand.MAIN_HAND);
+        h.assertTrue(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Could not learn the Sanguine Art at Qi Crystallization");
+        com.murimblock.cultivation.CultivationService.resetCultivation(p);cleanup(p);h.succeed();
     }
     @GameTest(template="foundation_arena",batch="crystal_parry",timeoutTicks=85)
     public static void aPerfectParryStopsTheThrownCrystal(GameTestHelper h) {

@@ -344,6 +344,8 @@
   "item.murimblock.long_fist_scroll": "Long Fist Scroll",
   "art.murimblock.long_fist": "Long Fist",
   "item.murimblock.sanguine_art_scroll": "Sanguine Art Scroll",
+  "item.murimblock.martial_manual.realm": "Requires %s",
+  "art.murimblock.realm_required": "%s can only be learnt from %s",
   "art.murimblock.sanguine_art": "Sanguine Art",
   "passive.murimblock.crimson_stance": "Crimson Stance",
   "passive.murimblock.crimson_stance.desc": "Bare-hand crimson strikes and guard. Landed M1 strikes build the blood gauge, then earn dorsal crystals while transformed.",

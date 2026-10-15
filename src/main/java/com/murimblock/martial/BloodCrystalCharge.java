@@ -13,7 +13,7 @@ public final class BloodCrystalCharge {
     /** A held crystal leaves on its own after 3 s. */
     public static final int AUTO_RELEASE_TICKS = 60;
     /** Damage shares: the small crystal, and what each point adds (a full gauge adds 1.8); the great crystal's explosion and its reach. */
-    public static final double BASE_SHARE = 1.2, POINT_SHARE = 1.8 / MAX_POINTS, EXPLOSION_SHARE = 2.0, EXPLOSION_RADIUS = 3.5;
+    public static final double BASE_SHARE = 1.0, POINT_SHARE = 1.4 / MAX_POINTS, EXPLOSION_SHARE = 1.6, EXPLOSION_RADIUS = 3.5;
     /** Scale of the model (0.75 block at 1): forming 0.2 to 0.6, then a full gauge adds 3.4; the great crystal is 4 (3 blocks). */
     public static final float FORMED_SCALE = 0.6F, POINT_SCALE = 3.4F / MAX_POINTS;
 

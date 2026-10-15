@@ -83,11 +83,11 @@ public final class SanguineTour {
                     level.getGameRules().getRule(yesman.epicfight.world.gamerule.EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleKey()).set(false,server);
                     level.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(false,server);
                     level.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false,server);
-                    var p=self(server);new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()).use(level,p,InteractionHand.MAIN_HAND);
+                    var p=self(server);com.murimblock.cultivation.CultivationService.setCultivation(p,MartialArts.SANGUINE_REALM,com.murimblock.cultivation.CultivationStage.EARLY);new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()).use(level,p,InteractionHand.MAIN_HAND);
                     p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);
                     var ts=List.of(MartialArts.SCARLET_TEAR,MartialArts.BLOOD_CRYSTAL_FORM,MartialArts.CRYSTAL_BARRAGE,MartialArts.BLOOD_ICEBERG);
                     for(int i=0;i<ts.size();i++){MartialService.unlock(p,ts.get(i));MartialService.assign(p,i+1,ts.get(i).id());}
-                    CombatService.setCombatMode(p,true);QiService.setQiMax(p,100);QiService.setQi(p,100);
+                    CombatService.setCombatMode(p,true);QiService.setQiMax(p,3000);QiService.setQi(p,3000);
                     p.teleportTo(level,Math.floor(p.getX())+.5,p.getY(),Math.floor(p.getZ())+.5,0,0);p.getFoodData().setFoodLevel(6);
                     check(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"scroll teaches Sanguine Art");
                 });
@@ -105,7 +105,7 @@ public final class SanguineTour {
                 case 61 -> {check(m1Seen,"attack key uses Sanguine M1");}
                 case 78 -> {check(EpicFightBridge.patch(mc.player).currentCompositeMotion==MurimAnimations.Motions.SANGUINE_GUARD,"guard key uses Sanguine guard");capture(mc,"guard.png");}
                 case 86 -> EpicFightKeyMappings.GUARD.setDown(false);
-                case 92,150 -> server.execute(()->{MartialService.resetCooldowns(self(server));QiService.setQi(self(server),100);});
+                case 92,150 -> server.execute(()->{MartialService.resetCooldowns(self(server));QiService.setQi(self(server),3000);});
                 case 94,154 -> press(mc,1);
                 case 96,156 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 195 -> server.execute(()->check(SanguineArt.state(self(server)).gauge()==4,"one M1 and a landed sword throw build four gauge points: "+SanguineArt.state(self(server))));
@@ -113,7 +113,7 @@ public final class SanguineTour {
                 case 197 -> capture(mc,"gauge-four.png");
                 // Three more M1 make seven; the rest of the gauge is topped up for the form.
                 case 262 -> server.execute(()->{var p=self(server);p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(com.murimblock.martial.BloodCrystalState.MAX_GAUGE,false,0));});
-                case 268 -> server.execute(()->{check(SanguineArt.state(self(server)).gauge()==com.murimblock.martial.BloodCrystalState.MAX_GAUGE&&!SanguineArt.state(self(server)).active(),"full gauge waits for manual activation: "+SanguineArt.state(self(server)));QiService.setQi(self(server),100);});
+                case 268 -> server.execute(()->{check(SanguineArt.state(self(server)).gauge()==com.murimblock.martial.BloodCrystalState.MAX_GAUGE&&!SanguineArt.state(self(server)).active(),"full gauge waits for manual activation: "+SanguineArt.state(self(server)));QiService.setQi(self(server),3000);});
                 case 270 -> capture(mc,"gauge-full.png");
                 case 274 -> press(mc,2);
                 case 276 -> mc.options.keyHotbarSlots[2].setDown(false);
@@ -121,7 +121,7 @@ public final class SanguineTour {
                 case 308 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
                 case 313 -> capture(mc,"form-first-person.png");
                 case 319 -> view(mc,1.6,1.7,-3.4);
-                case 445 -> {check(SanguineArt.state(mc.player).crystals()==5,"five landed M1 earn five synchronized dorsal crystals");capture(mc,"form-back-five-crystals.png");server.execute(()->{target(server,7);QiService.setQi(self(server),100);});}
+                case 445 -> {check(SanguineArt.state(mc.player).crystals()==5,"five landed M1 earn five synchronized dorsal crystals");capture(mc,"form-back-five-crystals.png");server.execute(()->{target(server,7);QiService.setQi(self(server),3000);});}
                 case 450 -> view(mc,3.3,1.5,0);
                 case 454 -> press(mc,0);
                 case 466 -> {check(SanguineArt.charging(mc.player),"key 1 holds the crystal charge");capture(mc,"hand-charge.png");}
@@ -131,7 +131,7 @@ public final class SanguineTour {
                     check(!backs.isEmpty()&&backs.stream().noneMatch(c->((com.murimblock.client.BloodCrystalRenderer)mc.getEntityRenderDispatcher().getRenderer(c)).shouldRender(c,null,0,0,0)),"own back crystals stay out of the first-person view ("+backs.size()+")");capture(mc,"hand-charge-first-person.png");}
                 case 470 -> mc.options.keyHotbarSlots[0].setDown(false);
                 case 473 -> view(mc,3.3,1.5,0);
-                case 498 -> server.execute(()->{check(zombie.getHealth()<500&&self(server).getHealth()==10,"thrown hand crystal hits without healing");beforeSalvo=zombie.getHealth();QiService.setQi(self(server),100);});
+                case 498 -> server.execute(()->{check(zombie.getHealth()<500&&self(server).getHealth()==10,"thrown hand crystal hits without healing");beforeSalvo=zombie.getHealth();QiService.setQi(self(server),3000);});
                 case 504 -> press(mc,3);
                 case 506 -> mc.options.keyHotbarSlots[3].setDown(false);
                 case 550 -> {check(throwSeen,"release plays the throw animation");check(barrageSeen,"key 4 plays barrage animation");check(SanguineArt.state(mc.player).active()&&SanguineArt.state(mc.player).crystals()==0,"salvo consumes crystals and keeps form");capture(mc,"form-after-salvo.png");}
@@ -154,7 +154,7 @@ public final class SanguineTour {
                 case 745 -> server.execute(()->{check(zombie.getHealth()<500,"the great crystal strikes: "+zombie.getHealth());
                     check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>0,"its explosion throws Photon crystal shards");});
                 // Scarlet Tear's blood sword: summoned, fought with (two cuts), then thrown like a javelin on the second press.
-                case 765 -> server.execute(()->{target(server,2.0);var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,100);
+                case 765 -> server.execute(()->{target(server,2.0);var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,3000);
                     p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,com.murimblock.martial.BloodCrystalState.EMPTY);});
                 case 770 -> {view(mc,4.6,1.3,1.0);shardsBefore=com.murimblock.client.BloodCrystalEffects.shardsThrown();}
                 case 774 -> press(mc,1);
@@ -163,11 +163,11 @@ public final class SanguineTour {
                     server.execute(()->check(MartialService.castSlot(self(server),2)==MartialService.CastResult.SWORD_OUT,"no other technique while the sword is out"));}
                 case 801,814 -> {EpicFightKeyMappings.ATTACK.setDown(true);mc.options.keyAttack.setDown(true);KeyMapping.click(EpicFightKeyMappings.ATTACK.getKey());attackReleaseAt=ticks+2;}
                 case 826 -> server.execute(()->check(zombie.getHealth()<500,"the sword cuts as a sword (M1): "+zombie.getHealth()));
-                case 832 -> {server.execute(()->{target(server,7);QiService.setQi(self(server),100);});}
+                case 832 -> {server.execute(()->{target(server,7);QiService.setQi(self(server),3000);});}
                 case 836 -> press(mc,1);
                 case 838 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 870 -> {check(com.murimblock.client.BloodCrystalEffects.shardsThrown()>shardsBefore,"the second press throws the sword, which explodes");
-                    server.execute(()->{check(zombie.getHealth()<500,"the thrown sword strikes: "+zombie.getHealth());MartialService.resetCooldowns(self(server));QiService.setQi(self(server),100);});}
+                    server.execute(()->{check(zombie.getHealth()<500,"the thrown sword strikes: "+zombie.getHealth());MartialService.resetCooldowns(self(server));QiService.setQi(self(server),3000);});}
                 case 878 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
                 case 882 -> press(mc,1);
                 case 884 -> mc.options.keyHotbarSlots[1].setDown(false);
@@ -178,7 +178,7 @@ public final class SanguineTour {
                 case 919 -> capture(mc,"sword-first-person-throw.png");
                 // The form again, then its end: the crystals come away from the body and fall.
                 case 922 -> view(mc,3.4,1.5,2.2);
-                case 940 -> server.execute(()->{var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,100);
+                case 940 -> server.execute(()->{var p=self(server);MartialService.resetCooldowns(p);QiService.setQi(p,3000);
                     p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(com.murimblock.martial.BloodCrystalState.MAX_GAUGE,false,0));});
                 case 945 -> press(mc,2);
                 case 947 -> mc.options.keyHotbarSlots[2].setDown(false);
@@ -187,7 +187,7 @@ public final class SanguineTour {
                         .filter(e->e instanceof com.murimblock.martial.BloodCrystalEntity c&&c.shed()).count();
                     check(shed>=10&&!SanguineArt.state(mc.player).active(),"at the form's end its crystals come away and fall: "+shed);}
                 // Blood Iceberg: the mountain of blood crystal rises under the player, seen from afar.
-                case 1045 -> server.execute(()->{var p=self(server);if(zombie!=null)zombie.discard();MartialService.resetCooldowns(p);QiService.setQi(p,100);});
+                case 1045 -> server.execute(()->{var p=self(server);if(zombie!=null)zombie.discard();MartialService.resetCooldowns(p);QiService.setQi(p,3000);});
                 case 1047 -> view(mc,26,16,26);
                 case 1052 -> press(mc,4);
                 case 1054 -> mc.options.keyHotbarSlots[4].setDown(false);
@@ -215,7 +215,7 @@ public final class SanguineTour {
     }
     private static void target(MinecraftServer server,double distance) {
         var p=self(server);if(zombie!=null)zombie.discard();p.teleportTo(server.overworld(),start.x,start.y,start.z,0,0);
-        p.setDeltaMovement(Vec3.ZERO);p.setHealth(10);MartialService.resetCooldowns(p);QiService.setQi(p,100);
+        p.setDeltaMovement(Vec3.ZERO);p.setHealth(10);MartialService.resetCooldowns(p);QiService.setQi(p,3000);
         zombie=EntityType.ZOMBIE.create(server.overworld());zombie.setNoAi(true);zombie.setNoGravity(true);
         zombie.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
         zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,new ItemStack(net.minecraft.world.item.Items.LEATHER_HELMET));

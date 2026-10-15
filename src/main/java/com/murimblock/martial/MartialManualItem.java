@@ -37,6 +37,13 @@ public class MartialManualItem extends Item {
         if (level.isClientSide) return InteractionResultHolder.success(stack);
         MartialArts.Art definition = MartialArts.art(art);
         if (definition == null) return InteractionResultHolder.fail(stack);
+        // A high art's manual is a closed book below its realm.
+        var realm = MartialArts.requiredRealm(art);
+        if (realm != null && com.murimblock.cultivation.CultivationService.getRealm(player).ordinal() < realm.ordinal()) {
+            player.displayClientMessage(Component.translatable("art.murimblock.realm_required", Component.translatable(definition.translationKey()),
+                    Component.literal(realm.displayName())), true);
+            return InteractionResultHolder.fail(stack);
+        }
         if (player instanceof ServerPlayer serverPlayer && MartialService.learn(serverPlayer, definition)) {
             level.playSound(null, player.blockPosition(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.8F, 1.1F);
             stack.consume(1, player);
@@ -50,5 +57,8 @@ public class MartialManualItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         MartialArts.Art definition = MartialArts.art(art);
         if (definition != null) tooltip.add(Component.translatable("item.murimblock.martial_manual.tooltip", Component.translatable(definition.translationKey())));
+        var realm = MartialArts.requiredRealm(art);
+        if (realm != null) tooltip.add(Component.translatable("item.murimblock.martial_manual.realm", Component.literal(realm.displayName()))
+                .withStyle(net.minecraft.ChatFormatting.DARK_RED));
     }
 }

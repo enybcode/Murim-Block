@@ -29,16 +29,16 @@ class BloodCrystalChargeTest {
 
     @Test
     void pointsAddPowerAndAFullGaugeMakesTheGreatCrystal() {
-        assertEquals(1.2, BloodCrystalCharge.share(0), 1e-9);
-        assertEquals(3.0, BloodCrystalCharge.share(20), 1e-9);
+        assertEquals(1.0, BloodCrystalCharge.share(0), 1e-9);
+        assertEquals(2.4, BloodCrystalCharge.share(20), 1e-9);
         assertFalse(BloodCrystalCharge.great(19));
         assertTrue(BloodCrystalCharge.great(20));
     }
 
     @Test
     void theExplosionFadesToHalfAtItsEdge() {
-        assertEquals(2.0, BloodCrystalCharge.explosionShare(0), 1e-9);
-        assertEquals(1.0, BloodCrystalCharge.explosionShare(BloodCrystalCharge.EXPLOSION_RADIUS), 1e-9);
+        assertEquals(1.6, BloodCrystalCharge.explosionShare(0), 1e-9);
+        assertEquals(0.8, BloodCrystalCharge.explosionShare(BloodCrystalCharge.EXPLOSION_RADIUS), 1e-9);
         assertEquals(0.0, BloodCrystalCharge.explosionShare(BloodCrystalCharge.EXPLOSION_RADIUS + 0.1), 1e-9);
     }
 

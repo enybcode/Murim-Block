@@ -171,7 +171,7 @@ public final class SanguineArt {
             var crystals=CRYSTALS.get(p.getUUID());
             if(crystals==null||crystals.stream().filter(e->!e.isRemoved()).count()!=before.crystals())return false;
             CRYSTALS.remove(p.getUUID());set(p,before.consume());a=MurimAnimations.SANGUINE_CRYSTAL_BARRAGE;
-            float damage=Math.max(.5F,TechniquePower.damage(p,MartialArts.SANGUINE_ART,.45));
+            float damage=Math.max(.5F,TechniquePower.damage(p,MartialArts.SANGUINE_ART,.4));
             for(int i=0;i<crystals.size();i++)crystals.get(i).queue(6+i*2,damage);
             SALVOS.put(p.getUUID(),crystals);
         } else if(t==MartialArts.BLOOD_ICEBERG) {
