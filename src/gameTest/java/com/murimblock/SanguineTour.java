@@ -91,6 +91,16 @@ public final class SanguineTour {
                     p.teleportTo(level,Math.floor(p.getX())+.5,p.getY(),Math.floor(p.getZ())+.5,0,0);p.getFoodData().setFoodLevel(6);
                     check(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"scroll teaches Sanguine Art");
                 });
+                // The art in the Murim menu: the library, its passive, a technique page, the profile.
+                case 22 -> mc.setScreen(com.murimblock.client.gui.MurimProfileScreen.techniques());
+                case 25 -> capture(mc,"menu-library.png");
+                case 26 -> ((com.murimblock.client.gui.MurimProfileScreen)mc.screen).selectForTests(MartialArts.CRIMSON_STANCE.id());
+                case 29 -> capture(mc,"menu-passive.png");
+                case 30 -> ((com.murimblock.client.gui.MurimProfileScreen)mc.screen).selectForTests(MartialArts.SCARLET_TEAR.id());
+                case 33 -> capture(mc,"menu-scarlet-tear.png");
+                case 34 -> mc.setScreen(new com.murimblock.client.gui.MurimProfileScreen());
+                case 37 -> capture(mc,"menu-profile.png");
+                case 38 -> mc.setScreen(null);
                 case 40 -> {
                     yesman.epicfight.config.ClientConfig.showTargetIndicator=false;yesman.epicfight.config.ClientConfig.enableTargetEntityGuide=false;
                     // The recording camera can point at terrain; Adaptive would treat empty-hand input as mining.

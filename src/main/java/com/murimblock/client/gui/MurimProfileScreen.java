@@ -879,7 +879,16 @@ public final class MurimProfileScreen extends Screen {
         List<FormattedCharSequence> lines = font.split(styled, box.width() / scale);
         int maxLines = Math.max(1, box.height() / (font.lineHeight * scale));
         boolean truncated = lines.size() > maxLines;
-        if (truncated) lines = List.of(fit(styled.getString(), box.width() / scale).getVisualOrderText());
+        if (truncated) {
+            // Fill every line the box holds; only the last one ends in "..." (the whole text shows on hover).
+            List<net.minecraft.network.chat.FormattedText> parts = font.getSplitter().splitLines(styled.getString(), box.width() / scale, GUI_TEXT_STYLE);
+            List<FormattedCharSequence> kept = new java.util.ArrayList<>();
+            for (int i = 0; i < maxLines - 1; i++) kept.add(net.minecraft.locale.Language.getInstance().getVisualOrder(parts.get(i)));
+            StringBuilder rest = new StringBuilder();
+            for (int i = maxLines - 1; i < parts.size(); i++) rest.append(i > maxLines - 1 ? " " : "").append(parts.get(i).getString().strip());
+            kept.add(fit(rest.toString(), box.width() / scale).getVisualOrderText());
+            lines = kept;
+        }
         g.enableScissor(left + box.x(), top + box.y(), left + box.right(), top + box.bottom());
         g.pose().pushPose();
         try {
