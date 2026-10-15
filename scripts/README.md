@@ -74,6 +74,14 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
   (balancée par `client/TasselSwordRenderer`), transformations de la main `snow_plum_jian_held.json`, icône, source Blockbench.
   Une épée pour Epic Fight. Vérification : `MURIM_TOUR_ONLY=jian gradlew -PgameTests runWeaponTour` (M1 d'Epic Fight, puis
   ceux de l'Épée du Nuage Azur).
+- Armes de secte, chacune avec son propre type d'arme Epic Fight comme le font les addons (Dawn Day) :
+  `node scripts/animation/sect-weapon-models.cjs` écrit leurs pièces et icônes (éventail de fer ouvert par
+  `client/FanRenderer`, fouet-chaîne dont les maillons pendent sur une chaîne simulée, `client/ChainWhipRenderer` et
+  `RopeChain`, aiguilles volantes) ; `node scripts/animation/sect-weapons.cjs` leurs 21 animations (idle, 4 M1, course,
+  saut ; `art/blockbench/sect_weapons.bbmodel`), puis `blockbench-to-epicfight.cjs` sur ce projet. Types
+  `integration/epicfight/MurimWeaponCategories`, movesets et presets `MurimWeapons`, coups `SectWeaponAnimations`,
+  aiguilles lancées `mob/FlyingNeedleEntity`. Vérification : `SectWeaponGameTests`, puis
+  `MURIM_TOUR_ONLY=gallery MURIM_TOUR_ITEMS=murimblock:iron_fan,murimblock:chain_whip,murimblock:flying_needles gradlew -PgameTests runWeaponTour`.
 - `node scripts/animation/sensei-3d.cjs` : Sensei Yun en 3D (mesh `animmodels/entity/azure_sensei.json`, atlas
   `textures/entity/azure_sensei.png` et ses visages, projet Blockbench) ; `node scripts/animation/azure-cloud-sword-model.cjs` :
   son épée Azure Cloud (corps, houppe, transformations de la main, icône d'après le modèle ; `client/TasselSwordRenderer`

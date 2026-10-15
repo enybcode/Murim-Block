@@ -7,14 +7,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.TimeUtil;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -28,8 +32,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -39,9 +42,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -54,10 +59,12 @@ import java.util.function.Supplier;
  *   <li>Warrior Monk: his fists (the Long Fist's punches and kicks);</li>
  *   <li>Sergeant: the Snow Plum Jian and the Rattan Shield.</li>
  * </ul>
- * They keep the roads: they hunt bandits and every monster but the creeper, and leave players alone unless struck; a
- * soldier struck calls the others near him. They stay about where they were placed and never despawn.
+ * Neutral, as the zombified piglins: they attack no one first. Struck, a soldier turns on whoever struck him and calls
+ * every soldier near him (and again every few seconds while he sees his foe); they stay angry for 20 to 39 seconds
+ * after the last blow, then forget. A monster that strikes one of them is fought the same way. They stay about where
+ * they were placed and never despawn.
  */
-public class AllianceSoldierEntity extends PathfinderMob implements RangedAttackMob {
+public class AllianceSoldierEntity extends PathfinderMob implements RangedAttackMob, NeutralMob {
     /** The five kinds: the path of their entity type, their weapons, health, armour and own strength. */
     public enum Kind {
         SPEAR_GUARD("alliance_spear_guard", "spear", () -> new ItemStack(MurimItems.ALLIANCE_SPEAR.get()), () -> ItemStack.EMPTY, 30, 4, 2),
@@ -95,7 +102,16 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
     /** The chance he leaves his weapon (or shield), like the bandit's dao. */
     static final float WEAPON_DROP = 0.01F;
 
+    /** How long they stay angry after the last blow, and how often an angry soldier calls the others (as the piglins). */
+    private static final UniformInt ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39), ALERT_INTERVAL = TimeUtil.rangeOfSeconds(4, 6);
+
     private final Kind kind;
+    private int angerTime, ticksUntilNextAlert;
+    /** On patrol (AllianceWanderers): the leader picks far points to walk to, the others follow him. */
+    private boolean patrolLeader;
+    @Nullable private UUID patrolLeaderId;
+    @Nullable private BlockPos patrolTarget;
+    @Nullable private UUID angerTarget;
 
     public AllianceSoldierEntity(EntityType<? extends AllianceSoldierEntity> type, Level level, Kind kind) {
         super(type, level);
@@ -112,22 +128,56 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         goalSelector.addGoal(0, new FloatGoal(this));
         // The archer shoots (Epic Fight leaves a bow to the mob's own goals); the others fight with Epic Fight's moves.
         goalSelector.addGoal(2, new ShootGoal(this));
+        goalSelector.addGoal(4, new PatrolGoal(this));
         goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 0.9));
         WaterAvoidingRandomStrollGoal stroll = new WaterAvoidingRandomStrollGoal(this, 0.6);
         stroll.setInterval(200);
         goalSelector.addGoal(6, stroll);
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        // Only whoever strikes them (and whoever they are still angry at), as the piglins.
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false,
-                target -> target instanceof Enemy && !(target instanceof Creeper)));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        targetSelector.addGoal(3, new ResetUniversalAngerTargetGoal<>(this, false));
     }
 
     /** With a target, he is aggressive: the clients see it (his brows knot, MobFaces; the archer aims). */
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
+        updatePersistentAnger((ServerLevel) level(), true);
+        if (getTarget() != null) maybeAlertOthers();
         setAggressive(getTarget() != null);
     }
+
+    // ---- anger, as the piglins
+
+    /** Every few seconds while he sees his foe, the soldiers about him who are not fighting join in. */
+    private void maybeAlertOthers() {
+        if (ticksUntilNextAlert > 0) {
+            ticksUntilNextAlert--;
+            return;
+        }
+        LivingEntity foe = getTarget();
+        if (foe != null && getSensing().hasLineOfSight(foe)) {
+            double range = getAttributeValue(Attributes.FOLLOW_RANGE);
+            level().getEntitiesOfClass(AllianceSoldierEntity.class, AABB.unitCubeFromLowerCorner(position()).inflate(range, 10.0, range), EntitySelector.NO_SPECTATORS)
+                    .stream().filter(other -> other != this && other.getTarget() == null && !other.isAlliedTo(foe))
+                    .forEach(other -> other.setTarget(foe));
+        }
+        ticksUntilNextAlert = ALERT_INTERVAL.sample(getRandom());
+    }
+
+    @Override public void setTarget(@Nullable LivingEntity target) {
+        if (getTarget() == null && target != null) ticksUntilNextAlert = ALERT_INTERVAL.sample(getRandom());
+        if (target instanceof Player player) setLastHurtByPlayer(player);
+        super.setTarget(target);
+    }
+
+    @Override public int getRemainingPersistentAngerTime() { return angerTime; }
+    @Override public void setRemainingPersistentAngerTime(int time) { angerTime = time; }
+    @Override @Nullable public UUID getPersistentAngerTarget() { return angerTarget; }
+    @Override public void setPersistentAngerTarget(@Nullable UUID target) { angerTarget = target; }
+    @Override public void startPersistentAngerTimer() { setRemainingPersistentAngerTime(ANGER_TIME.sample(getRandom())); }
 
     // ---- the archer's bow
 
@@ -188,6 +238,81 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         }
     }
 
+    // ---- on patrol
+
+    /** How far a patrol's leader walks before choosing again (blocks), and how close the others keep to him. */
+    public static final int PATROL_STEP_MIN = 48, PATROL_STEP_MAX = 96, PATROL_KEEP = 5;
+
+    /** Makes him the leader of a patrol. */
+    public void leadPatrol() {
+        patrolLeader = true;
+        patrolLeaderId = null;
+    }
+
+    /** Puts him in the patrol of this leader. */
+    public void followPatrol(AllianceSoldierEntity leader) {
+        patrolLeader = false;
+        patrolLeaderId = leader.getUUID();
+    }
+
+    public boolean isPatrolLeader() { return patrolLeader; }
+    @Nullable public UUID patrolLeaderId() { return patrolLeaderId; }
+    @Nullable public BlockPos patrolTarget() { return patrolTarget; }
+    public boolean onPatrol() { return patrolLeader || patrolLeaderId != null; }
+
+    /**
+     * A patrol on the move, when nobody is fought: the leader walks at a steady pace to a point 48 to 96 blocks off, then
+     * chooses another (and another if the way is blocked); the others keep within 5 blocks of him. A patrol whose leader
+     * is gone takes the first of them for its new leader.
+     */
+    static final class PatrolGoal extends Goal {
+        private final AllianceSoldierEntity soldier;
+        private int stuck;
+
+        PatrolGoal(AllianceSoldierEntity soldier) {
+            this.soldier = soldier;
+            setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override public boolean canUse() {
+            return soldier.onPatrol() && soldier.getTarget() == null && !soldier.isVehicle();
+        }
+
+        @Override public void tick() {
+            if (!(soldier.level() instanceof ServerLevel level)) return;
+            if (soldier.patrolLeader) lead(level);
+            else follow(level);
+        }
+
+        private void lead(ServerLevel level) {
+            BlockPos target = soldier.patrolTarget;
+            boolean arrived = target != null && soldier.blockPosition().closerThan(target, 4);
+            if (target == null || arrived || ++stuck > 400) {
+                stuck = 0;
+                double angle = soldier.getRandom().nextDouble() * Math.PI * 2;
+                int step = PATROL_STEP_MIN + soldier.getRandom().nextInt(PATROL_STEP_MAX - PATROL_STEP_MIN + 1);
+                int x = soldier.getBlockX() + (int) Math.round(Math.cos(angle) * step), z = soldier.getBlockZ() + (int) Math.round(Math.sin(angle) * step);
+                soldier.patrolTarget = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
+                target = soldier.patrolTarget;
+            }
+            if (soldier.getNavigation().isDone()) soldier.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, 0.6);
+        }
+
+        private void follow(ServerLevel level) {
+            if (!(level.getEntity(soldier.patrolLeaderId) instanceof AllianceSoldierEntity leader) || !leader.isAlive()) {
+                // The leader is gone: the patrol goes on under the first who notices.
+                UUID lost = soldier.patrolLeaderId;
+                soldier.leadPatrol();
+                for (AllianceSoldierEntity other : level.getEntitiesOfClass(AllianceSoldierEntity.class, soldier.getBoundingBox().inflate(16),
+                        o -> o != soldier && lost.equals(o.patrolLeaderId)))
+                    other.followPatrol(soldier);
+                return;
+            }
+            if (soldier.distanceToSqr(leader) > PATROL_KEEP * PATROL_KEEP) soldier.getNavigation().moveTo(leader, 0.75);
+            else soldier.getNavigation().stop();
+        }
+    }
+
     // ---- his post
 
     /** Keeps him about his post, around this block. */
@@ -206,23 +331,37 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType type, @Nullable SpawnGroupData data) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, type, data);
         populateDefaultEquipmentSlots(level.getRandom(), difficulty);
-        if (!hasRestriction()) setHome(blockPosition());
-        setPersistenceRequired();
+        // Placed (an egg, a command, a structure), he keeps his post for good; out walking (a patrol, a monk on the
+        // road, AllianceWanderers), he goes where he likes and is gone once no one is near.
+        boolean wandering = type == MobSpawnType.NATURAL || type == MobSpawnType.PATROL;
+        if (!wandering) {
+            if (!hasRestriction()) setHome(blockPosition());
+            setPersistenceRequired();
+        }
         return result;
     }
 
+    /** Only those out walking can go (Mob.checkDespawn leaves alone those whose persistence is required). */
     @Override public boolean removeWhenFarAway(double distance) {
-        return false;
+        return true;
     }
 
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (hasRestriction()) tag.put("Home", NbtUtils.writeBlockPos(getRestrictCenter()));
+        addPersistentAngerSaveData(tag);
+        if (patrolLeader) tag.putBoolean("PatrolLeader", true);
+        if (patrolLeaderId != null) tag.putUUID("PatrolLeaderId", patrolLeaderId);
+        if (patrolTarget != null) tag.put("PatrolTarget", NbtUtils.writeBlockPos(patrolTarget));
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         NbtUtils.readBlockPos(tag, "Home").ifPresent(this::setHome);
+        readPersistentAngerSaveData(level(), tag);
+        patrolLeader = tag.getBoolean("PatrolLeader");
+        patrolLeaderId = tag.hasUUID("PatrolLeaderId") ? tag.getUUID("PatrolLeaderId") : null;
+        patrolTarget = NbtUtils.readBlockPos(tag, "PatrolTarget").orElse(null);
     }
 
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.PLAYER_HURT; }

@@ -1,0 +1,213 @@
+{
+ "credit": "Murimblock - scripts/animation/sect-weapon-models.cjs",
+ "textures": {
+  "0": "murimblock:item/sect_weapons",
+  "particle": "murimblock:item/sect_weapons"
+ },
+ "elements": [
+  {
+   "from": [
+    7.75,
+    1,
+    7.78
+   ],
+   "to": [
+    8.25,
+    11.4,
+    8.22
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      9,
+      0,
+      10,
+      1
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      9,
+      0,
+      10,
+      1
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      9,
+      0,
+      10,
+      1
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      9,
+      0,
+      10,
+      1
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      9,
+      0,
+      10,
+      1
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      9,
+      0,
+      10,
+      1
+     ],
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    7.75,
+    3,
+    7.8
+   ],
+   "to": [
+    7.85,
+    11.4,
+    8.2
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      15,
+      1,
+      16,
+      2
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      15,
+      1,
+      16,
+      2
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      15,
+      1,
+      16,
+      2
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      15,
+      1,
+      16,
+      2
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      15,
+      1,
+      16,
+      2
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      15,
+      1,
+      16,
+      2
+     ],
+     "texture": "#0"
+    }
+   }
+  },
+  {
+   "from": [
+    7.7,
+    1.6,
+    7.72
+   ],
+   "to": [
+    8.3,
+    2.4,
+    8.28
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      12,
+      3,
+      13,
+      4
+     ],
+     "texture": "#0"
+    },
+    "east": {
+     "uv": [
+      12,
+      3,
+      13,
+      4
+     ],
+     "texture": "#0"
+    },
+    "south": {
+     "uv": [
+      12,
+      3,
+      13,
+      4
+     ],
+     "texture": "#0"
+    },
+    "west": {
+     "uv": [
+      12,
+      3,
+      13,
+      4
+     ],
+     "texture": "#0"
+    },
+    "up": {
+     "uv": [
+      12,
+      3,
+      13,
+      4
+     ],
+     "texture": "#0"
+    },
+    "down": {
+     "uv": [
+      12,
+      3,
+      13,
+      4
+     ],
+     "texture": "#0"
+    }
+   }
+  }
+ ]
+}

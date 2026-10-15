@@ -24,8 +24,8 @@ import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
  * The Alliance's soldiers: each kind with the Alliance's weapon of his kind (Epic Fight takes the spear for a spear, the
- * jian for a sword), none despawns; they hunt bandits and leave players alone; the archer shoots; a soldier struck by a
- * player calls the others; they leave a few taels.
+ * jian for a sword), none despawns; neutral as the piglins, they attack no one first, a soldier struck by a player calls
+ * the others and they stay angry for a while; the archer shoots back; they leave a few taels.
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -60,7 +60,7 @@ public final class AllianceSoldierGameTests {
                     "The sergeant lacks his jian or shield: " + sergeant.getMainHandItem() + ", " + sergeant.getOffhandItem());
             for (AllianceSoldierEntity s : java.util.List.of(guard, disciple, archer, monk, sergeant)) {
                 helper.assertTrue(EpicFightCapabilities.getEntityPatch(s, LivingEntityPatch.class) != null, "No Epic Fight patch on " + s.getName().getString());
-                helper.assertTrue(!s.removeWhenFarAway(1.0E6) && s.isPersistenceRequired(), s.getName().getString() + " could despawn");
+                helper.assertTrue(s.isPersistenceRequired(), s.getName().getString() + " placed by hand could despawn");
             }
             helper.assertTrue(monk.getMaxHealth() > disciple.getMaxHealth() && sergeant.getMaxHealth() > monk.getMaxHealth(), "Health order off");
         } finally {
@@ -69,23 +69,23 @@ public final class AllianceSoldierGameTests {
         helper.succeed();
     }
 
-    /** A disciple beside a player and a bandit: he goes for the bandit, never the player. */
+    /** A disciple beside a player and a bandit: he attacks neither (he only answers blows). */
     @GameTest(template = "foundation_arena", batch = "soldier_targets", timeoutTicks = 100)
-    public static void soldiersHuntBanditsAndLeavePlayersAlone(GameTestHelper helper) {
+    public static void soldiersAttackNoOneFirst(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         var disciple = soldier(helper, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), new BlockPos(2, 1, 1));
         var bandit = helper.spawn(MurimEntities.MOUNTAIN_BANDIT.get(), new BlockPos(2, 1, 4));
         bandit.setNoAi(true);
-        helper.succeedWhen(() -> {
-            helper.assertTrue(disciple.getTarget() != player, "The disciple turned on the player");
-            helper.assertTrue(disciple.getTarget() == bandit, "The disciple does not go for the bandit: " + disciple.getTarget() + " ai " + disciple.isEffectiveAi() + " ticks " + disciple.tickCount + " targets " + disciple.targetSelector.getAvailableGoals().stream().map(g -> g.getGoal().getClass().getSimpleName() + (g.isRunning() ? "*" : "")).toList() + " goals " + disciple.goalSelector.getAvailableGoals().stream().map(g -> g.getGoal().getClass().getSimpleName() + (g.isRunning() ? "*" : "")).toList() + " sees " + disciple.getSensing().hasLineOfSight(bandit));
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(disciple.getTarget() == null && !disciple.isAngry(), "The disciple attacked first: " + disciple.getTarget());
             disciple.discard();
             bandit.discard();
             cleanup(player);
+            helper.succeed();
         });
     }
 
-    /** The archer, a zombie 4 blocks off: he draws and looses an arrow. */
+    /** The archer, struck by a zombie 4 blocks off: he draws and looses an arrow at it. */
     @GameTest(template = "foundation_arena", batch = "soldier_archer", timeoutTicks = 140)
     public static void theArcherShoots(GameTestHelper helper) {
         var archer = soldier(helper, MurimEntities.ALLIANCE_ARCHER.get(), new BlockPos(2, 1, 0));
@@ -94,6 +94,7 @@ public final class AllianceSoldierGameTests {
         // Not invulnerable: an invulnerable mob is no one's enemy. Health enough to take a few arrows.
         zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(200);
         zombie.setHealth(200);
+        helper.runAfterDelay(10, () -> archer.hurt(helper.getLevel().damageSources().mobAttack(zombie), 0.5F));
         AABB around = new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(16);
         helper.succeedWhen(() -> {
             var arrows = helper.getLevel().getEntitiesOfClass(Arrow.class, around, a -> a.getOwner() == archer);
@@ -116,10 +117,58 @@ public final class AllianceSoldierGameTests {
             helper.assertTrue(guard.getLastHurtByMob() == player, "Not struck yet");
             helper.assertTrue(guard.getTarget() == player, "The struck guard does not fight back");
             helper.assertTrue(sergeant.getTarget() == player, "The sergeant did not come to his help");
+            helper.assertTrue(guard.isAngryAt(player) && guard.getRemainingPersistentAngerTime() > 0 && guard.getRemainingPersistentAngerTime() <= 39 * 20,
+                    "The guard's anger is not the piglins': " + guard.getRemainingPersistentAngerTime());
             guard.discard();
             sergeant.discard();
             cleanup(player);
         });
+    }
+
+    /** A patrol: the sergeant leads two spear guards, a disciple and an archer; out walking, none is kept for good. */
+    @GameTest(template = "foundation_arena", batch = "soldier_patrol", timeoutTicks = 100)
+    public static void aPatrolWalksTogether(GameTestHelper helper) {
+        var patrol = com.murimblock.mob.AllianceWanderers.spawnPatrol(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)));
+        helper.assertTrue(patrol.size() == 5, "A patrol of " + patrol.size());
+        var leader = patrol.get(0);
+        helper.assertTrue(leader.kind() == AllianceSoldierEntity.Kind.SERGEANT && leader.isPatrolLeader(), "The sergeant does not lead");
+        java.util.Map<AllianceSoldierEntity.Kind, Integer> kinds = new java.util.EnumMap<>(AllianceSoldierEntity.Kind.class);
+        for (var s : patrol) {
+            kinds.merge(s.kind(), 1, Integer::sum);
+            helper.assertTrue(!s.isPersistenceRequired() && !s.hasRestriction(), s.getName().getString() + " on patrol is kept at a post");
+            if (s != leader) helper.assertTrue(leader.getUUID().equals(s.patrolLeaderId()), s.getName().getString() + " does not follow the sergeant");
+        }
+        helper.assertTrue(kinds.get(AllianceSoldierEntity.Kind.SPEAR_GUARD) == 2 && kinds.get(AllianceSoldierEntity.Kind.SWORD_DISCIPLE) == 1
+                && kinds.get(AllianceSoldierEntity.Kind.ARCHER) == 1, "Wrong patrol: " + kinds);
+        helper.runAfterDelay(40, () -> {
+            helper.assertTrue(leader.patrolTarget() != null, "The leader has chosen nowhere to go");
+            // The leader gone, the patrol goes on under one of the others.
+            leader.discard();
+            helper.runAfterDelay(10, () -> {
+                helper.assertTrue(patrol.stream().filter(s -> s != leader).anyMatch(AllianceSoldierEntity::isPatrolLeader), "The patrol has no leader left");
+                patrol.forEach(s -> s.discard());
+                helper.succeed();
+            });
+        });
+    }
+
+    /** Monks walk the mountains, patrols the Alliance's lands but not the Cult's desert. */
+    @GameTest(template = "foundation_arena", batch = "soldier_biomes")
+    public static void wanderersKeepToTheirBiomes(GameTestHelper helper) {
+        var biomes = helper.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        java.util.function.Function<String, net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome>> biome = name ->
+                biomes.getHolderOrThrow(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME,
+                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, name)));
+        for (String mountain : new String[] { "cloud_sea_peaks", "jade_karst_forest", "tianshan_snowfields", "kunlun_glaciers" })
+            helper.assertTrue(biome.apply(mountain).is(com.murimblock.mob.AllianceWanderers.MONK_BIOMES), "No monks in " + mountain);
+        helper.assertTrue(!biome.apply("jiangnan_waterlands").is(com.murimblock.mob.AllianceWanderers.MONK_BIOMES), "Monks in the waterlands");
+        helper.assertTrue(biome.apply("cloud_sea_peaks").is(com.murimblock.mob.AllianceWanderers.PATROL_BIOMES), "No patrols on the sacred peaks");
+        helper.assertTrue(!biome.apply("hexi_frontier_desert").is(com.murimblock.mob.AllianceWanderers.PATROL_BIOMES), "Patrols in the Cult's desert");
+        var monks = com.murimblock.mob.AllianceWanderers.spawnMonks(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)), 2);
+        helper.assertTrue(monks.size() == 2 && monks.stream().allMatch(m -> m.kind() == AllianceSoldierEntity.Kind.WARRIOR_MONK && !m.isPersistenceRequired() && !m.onPatrol()),
+                "The wandering monks are wrong");
+        monks.forEach(m -> m.discard());
+        helper.succeed();
     }
 
     /** Killed by a player, a soldier leaves one to three taels. */

@@ -51,6 +51,8 @@ public final class Murimblock {
         ArmoredCrabEpicFight.register(modEventBus);
         EpicFightContentRegistries.register(modEventBus);
         MurimSkills.register(modEventBus);
+        com.murimblock.integration.epicfight.MurimWeaponCategories.register(MOD_ID);
+        com.murimblock.integration.epicfight.MurimWeapons.register(modEventBus);
         CombatAttachments.register(modEventBus);
         CultivationAttachments.register(modEventBus);
         com.murimblock.cultivation.CultivationRegistries.register(modEventBus);

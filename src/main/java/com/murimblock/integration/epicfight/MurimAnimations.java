@@ -136,6 +136,7 @@ public final class MurimAnimations {
         buildBanditChief(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
+        SectWeaponAnimations.build(builder);
     }
 
     // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)
