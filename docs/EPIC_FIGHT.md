@@ -51,7 +51,10 @@ been removed. Martial styles/four configurable M1 slots are still future work.
 ## Content Retirement And Existing Worlds
 
 **Back up existing worlds before testing. Removed items are not recoverable without
-a backup.** Content retirement is scoped to item namespace `epicfight`:
+a backup.** Content retirement is scoped to item namespaces `epicfight` and `epicfight_dd` (Dawn Day).
+**Their weapons are exempt since 15/10/2026 (Enzo):** swords, greatswords, spears, tachi, daggers, gloves and Dawn
+Day's weapons (`item/WeaponsTab.isWeapon`) stay in inventories, keep their recipes and fill the creative tab
+"Murimblock: Weapons" with every other weapon installed. Skill books, gems, potions and materials stay retired:
 
 - Creative parent/search contents: use `BuildCreativeModeTabContentsEvent.remove`,
   not mutation of its read-only collection views. Empty native tabs are not useful

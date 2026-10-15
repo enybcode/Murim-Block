@@ -217,6 +217,14 @@ public final class MurimItems {
                     .displayItems((parameters, output) -> MurimBlocks.creativeOrder()
                             .forEach(block -> output.accept(block.get())))
                     .build());
+    /** Every weapon of every mod installed, Murimblock's first (WeaponsTab). */
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> WEAPONS_TAB = TABS.register("murimblock_weapons",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.murimblock_weapons"))
+                    .icon(() -> new ItemStack(ALLIANCE_SPEAR.get()))
+                    .withTabsBefore(NATURE_TAB.getKey())
+                    .displayItems(WeaponsTab::fill)
+                    .build());
 
     private MurimItems() { }
 

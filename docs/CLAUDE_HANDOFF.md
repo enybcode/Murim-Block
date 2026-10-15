@@ -43,7 +43,8 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
 - Direction retenue : Epic Fight comme dependance, pas un moteur de combat
   copie ou une reprise du vieux chantier de refonte autonome. Garder son moteur
   et ses API, restreindre sa presentation et sa progression natives.
-- Ni jauge jaune/stamina limitante, ni livres/items Epic Fight exposes, ni
+- Ni jauge jaune/stamina limitante, ni livres/items Epic Fight exposes (sauf leurs
+  ARMES, autorisees depuis le 15/10 a la demande d'Enzo, onglet Murimblock: Weapons), ni
   techniques Epic Fight dans Techniques. Pas de nouveau cout Qi pour garde,
   roulade ou attaques de base ; conserver les comportements Qi hors perimetre.
 - Ne pas extraire les animations/assets Epic Fight dans notre JAR : leurs

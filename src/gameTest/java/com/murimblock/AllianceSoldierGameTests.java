@@ -128,6 +128,8 @@ public final class AllianceSoldierGameTests {
     /** A patrol: the sergeant leads two spear guards, a disciple and an archer; out walking, none is kept for good. */
     @GameTest(template = "foundation_arena", batch = "soldier_patrol", timeoutTicks = 100)
     public static void aPatrolWalksTogether(GameTestHelper helper) {
+        // A player beside them: out walking, they would otherwise despawn at once (the nearest player is far off).
+        ServerPlayer player = player(helper);
         var patrol = com.murimblock.mob.AllianceWanderers.spawnPatrol(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)));
         helper.assertTrue(patrol.size() == 5, "A patrol of " + patrol.size());
         var leader = patrol.get(0);
@@ -147,6 +149,7 @@ public final class AllianceSoldierGameTests {
             helper.runAfterDelay(10, () -> {
                 helper.assertTrue(patrol.stream().filter(s -> s != leader).anyMatch(AllianceSoldierEntity::isPatrolLeader), "The patrol has no leader left");
                 patrol.forEach(s -> s.discard());
+                cleanup(player);
                 helper.succeed();
             });
         });
@@ -164,10 +167,12 @@ public final class AllianceSoldierGameTests {
         helper.assertTrue(!biome.apply("jiangnan_waterlands").is(com.murimblock.mob.AllianceWanderers.MONK_BIOMES), "Monks in the waterlands");
         helper.assertTrue(biome.apply("cloud_sea_peaks").is(com.murimblock.mob.AllianceWanderers.PATROL_BIOMES), "No patrols on the sacred peaks");
         helper.assertTrue(!biome.apply("hexi_frontier_desert").is(com.murimblock.mob.AllianceWanderers.PATROL_BIOMES), "Patrols in the Cult's desert");
+        ServerPlayer player = player(helper);
         var monks = com.murimblock.mob.AllianceWanderers.spawnMonks(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)), 2);
         helper.assertTrue(monks.size() == 2 && monks.stream().allMatch(m -> m.kind() == AllianceSoldierEntity.Kind.WARRIOR_MONK && !m.isPersistenceRequired() && !m.onPatrol()),
                 "The wandering monks are wrong");
         monks.forEach(m -> m.discard());
+        cleanup(player);
         helper.succeed();
     }
 
