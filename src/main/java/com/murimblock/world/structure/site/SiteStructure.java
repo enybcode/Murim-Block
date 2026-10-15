@@ -42,6 +42,7 @@ public final class SiteStructure extends Structure {
         ChunkPos chunk = context.chunkPos();
         int x = chunk.getMiddleBlockX(), z = chunk.getMiddleBlockZ();
         Site site = plan.site();
+        if (!site.allowedAt(x, z)) { count("place"); return Optional.empty(); }
         // The biome first: it is cheap, and /locate asks every cell of the grid.
         int sea = context.chunkGenerator().getSeaLevel(), r0 = site.reach();
         for (int dx = -r0; dx <= r0; dx += r0) for (int dz = -r0; dz <= r0; dz += r0) {

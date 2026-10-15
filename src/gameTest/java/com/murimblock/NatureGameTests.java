@@ -58,9 +58,11 @@ public final class NatureGameTests {
         // Every Murim nature block has an item, a loot table and is in the nature tab order (the Blood Iceberg's crystal,
         // a technique's passing blocks, is not nature: no item, no drop).
         long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)
-                && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))).count();
+                && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
+                && MurimBlocks.buildingOrder().stream().noneMatch(b -> b.getId().equals(k))).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
-        for (var block : MurimBlocks.creativeOrder()) {
+        // The building blocks (the main tab's) are checked the same way.
+        for (var block : java.util.stream.Stream.concat(MurimBlocks.creativeOrder().stream(), MurimBlocks.buildingOrder().stream()).toList()) {
             helper.assertTrue(block.get().asItem() != Items.AIR, "No item for " + block.getId());
             var loot = helper.getLevel().getServer().reloadableRegistries().getLootTable(block.get().getLootTable());
             helper.assertTrue(loot != LootTable.EMPTY, "No loot table for " + block.getId());

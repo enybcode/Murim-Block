@@ -443,5 +443,12 @@
   "block.murimblock.camphor_leaves": "Camphor Leaves",
   "block.murimblock.camphor_sapling": "Camphor Sapling",
   "block.murimblock.milk_vetch": "Chinese Milk Vetch",
-  "biome.murimblock.camphor_hills": "Camphor Hill Country"
+  "biome.murimblock.camphor_hills": "Camphor Hill Country",
+  "block.murimblock.azure_roof_tiles": "Azure Roof Tiles",
+  "block.murimblock.azure_roof_tile_stairs": "Azure Roof Tile Stairs",
+  "block.murimblock.azure_roof_tile_slab": "Azure Roof Tile Slab",
+  "villager.murimblock.alliance_outpost.commander": "Alliance Commander",
+  "villager.murimblock.alliance_outpost.quartermaster": "Alliance Quartermaster",
+  "villager.murimblock.alliance_outpost.medic": "Alliance Medic",
+  "villager.murimblock.alliance_outpost.tea_keeper": "Roadside Tea Keeper"
 }

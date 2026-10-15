@@ -85,6 +85,19 @@ public final class MurimMap {
         return Region.WEST;
     }
 
+    /**
+     * Whether a block lies in the centre, or within {@code distance} blocks of a frontier between two regions: one of
+     * eight points that far round it (and the block itself) falls in another region.
+     */
+    public static boolean centreOrFrontier(int x, int z, int distance) {
+        Region here = region(x, z);
+        if (here == Region.CENTER) return true;
+        int d = (int) Math.round(distance / Math.sqrt(2));
+        int[][] around = {{distance, 0}, {-distance, 0}, {0, distance}, {0, -distance}, {d, d}, {d, -d}, {-d, d}, {-d, -d}};
+        for (int[] p : around) if (region(x + p[0], z + p[1]) != here) return true;
+        return false;
+    }
+
     // ---------------------------------------------------------------- the mountains of the north
 
     /**

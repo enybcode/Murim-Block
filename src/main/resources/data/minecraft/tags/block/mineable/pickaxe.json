@@ -6,6 +6,9 @@
     "murimblock:pale_granite",
     "murimblock:pillar_sandstone",
     "murimblock:kunlun_rock",
-    "murimblock:raw_white_jade"
+    "murimblock:raw_white_jade",
+    "murimblock:azure_roof_tiles",
+    "murimblock:azure_roof_tile_stairs",
+    "murimblock:azure_roof_tile_slab"
   ]
 }

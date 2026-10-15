@@ -6,11 +6,11 @@ Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, 
 
 ![La capitale de l'Alliance, maquette](images/alliance-capital/overview.jpg)
 
-## Prévu : un avant-poste de l'Alliance (15/10/2026)
+## Construit : l'avant-poste de l'Alliance (`alliance_outpost`, 15/10/2026)
 
-Maquettes voxel d'un fort de garnison sur une butte au bord d'une route (environ 53 × 47 blocs) : porte, tour de guet et son feu de signal, salle du commandement, cour d'entraînement, caserne, écuries, infirmerie, tableau des avis, salon de thé pour les voyageurs, avec son plan numéroté : [alliance-outpost.md](alliance-outpost.md). Rien n'est construit en jeu.
+Un fort de garnison de 53 × 47 blocs au bord d'une route : porte, tour de guet et son feu de signal, salle du commandement, cour d'entraînement, caserne, écuries, infirmerie, tableau des avis, salon de thé pour les voyageurs. **Septième site**, construit comme les six autres, mais dans n'importe quel biome Murim et **seulement au centre de la carte ou à moins de 1 500 blocs d'une frontière entre régions**. Décomposition bloc par bloc, maquettes et habitants : [alliance-outpost.md](alliance-outpost.md). Nouveaux blocs : les tuiles azur de l'Alliance.
 
-![L'avant-poste de l'Alliance, maquette](images/alliance-outpost/overview.jpg)
+![L'avant-poste de l'Alliance en jeu](images/alliance-outpost/game-gate.jpg)
 
 ## Les six sites du 14/10/2026
 
@@ -29,13 +29,13 @@ Six structures de plus, une par biome Murim (le Huangshan a déjà le sanctuaire
 
 ### Comment elles sont faites
 
-- **Une structure par site** (`SiteStructure`, type `murimblock:site`), avec sa propre structure set (`random_spread`) et son tag de biome `has_structure/<id>`. Le JSON est écrit par `scripts/worldgen/generate-nature.cjs`.
+- **Une structure par site** (`SiteStructure`, type `murimblock:site`), avec sa propre structure set (`random_spread`) et son tag de biome `has_structure/<id>`. Le JSON est écrit par `scripts/worldgen/generate-nature.cjs`. Un site peut aussi limiter les endroits de la carte où il se pose (`Site.allowedAt`, l'avant-poste : centre et frontières).
 - **Où elle se pose** : au centre de son chunk, l'entrée tournée vers le côté le plus bas du terrain, et seulement si la place convient (dénivelé limité, pas d'eau sauf pour le jardin, toute l'emprise dans le biome). Sinon Minecraft essaie la case suivante de la grille.
 - **Le terrain** est modelé par Minecraft lui-même autour de chaque partie (`terrain_adaptation: beard_thin`, comme les villages vanilla) : le sol monte ou descend en pente douce jusqu'au site, sans falaise ni trou.
 - **Jamais de vide en dessous** : chaque sol, chaque mur et chaque poteau est fondé jusqu'au terrain naturel, à travers l'air ou l'eau (`Canvas.footing`).
 - **Jamais d'entrée sur le vide** : devant chaque porte, un abord sur sol plein (route, chemin, débarcadère), même si un ravin du lœss ou une rivière passe juste à côté.
 - **Jamais de trou dans un toit** : les toits du kit (`BuildKit.roof`, `gableRoof`, `shedRoof`) posent un plafond plein sous les tuiles.
-- **Rien ne pousse dedans** : un filtre de placement (`murimblock:away_from_sites`) écarte des sites les arbres, les bambous géants, les tours karstiques, les aiguilles, les piliers, les yardangs et les étangs.
+- **Rien ne pousse dedans** : un filtre de placement (`murimblock:away_from_sites`) écarte des sites les arbres, les bambous géants, les tours karstiques, les aiguilles, les piliers, les yardangs et les étangs, et depuis le 15/10 les fleurs et les herbes Murim (colza, chrysanthèmes, fougères...), à 8 blocs.
 - **Construites en code**, morceau par morceau (`SitePiece`), chunk par chunk comme toute structure ; le hasard est tiré de la position (jamais d'une suite), donc chaque chunk voit les mêmes choix. Le cadre `Canvas` tourne le plan, le découpe au chunk et note ce qu'il faut vérifier.
 - **Code** : [world/structure/site](../../src/main/java/com/murimblock/world/structure/site/), un fichier par site.
 

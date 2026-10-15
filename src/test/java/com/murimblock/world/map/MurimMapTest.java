@@ -17,6 +17,24 @@ class MurimMapTest {
     }
 
     @Test
+    void theAllianceOutpostsStandInTheCentreOrOnAFrontier() {
+        assertTrue(MurimMap.centreOrFrontier(0, 0, 1500));
+        // Deep in a region, far from any frontier: refused.
+        assertFalse(MurimMap.centreOrFrontier(0, -55_000, 1500));
+        assertFalse(MurimMap.centreOrFrontier(55_000, 0, 1500));
+        // Walking out from the centre to the north, the frontier is crossed once: near it allowed, past it refused.
+        int frontier = 0;
+        for (int z = 0; z > -60_000; z -= 100) if (MurimMap.region(0, z) != MurimMap.Region.CENTER) { frontier = z; break; }
+        assertTrue(frontier < -10_000, "the centre ends at " + frontier);
+        assertTrue(MurimMap.centreOrFrontier(0, frontier - 800, 1500));
+        assertFalse(MurimMap.centreOrFrontier(0, frontier - 8_000, 1500));
+        // A frontier between two outer regions (on the diagonal, far out) also counts.
+        boolean onDiagonal = false;
+        for (int k = 30_000; k < 60_000 && !onDiagonal; k += 500) onDiagonal = MurimMap.region(k, -k) != MurimMap.region(k + 3_000, -k + 3_000) && MurimMap.centreOrFrontier(k, -k, 1500);
+        assertTrue(onDiagonal);
+    }
+
+    @Test
     void theLayoutIsTheSameInEveryWorld() {
         // No seed in it: asked twice, the same answers.
         for (int x = -70_000; x <= 70_000; x += 9_973) for (int z = -70_000; z <= 70_000; z += 7_919) {
