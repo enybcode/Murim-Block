@@ -137,6 +137,7 @@ public final class MurimAnimations {
         buildBanditChief(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
+        buildSkyDrop(builder);
         SectWeaponAnimations.build(builder);
     }
 
@@ -415,6 +416,18 @@ public final class MurimAnimations {
      */
     public static AnimationAccessor<StaticAnimation> SENSEI_IDLE;
     public static AnimationAccessor<MovementAnimation> SENSEI_WALK;
+
+    /**
+     * The Alliance's reinforcements dropping from the sky (scripts/animation/sky-drop.cjs; the Peak Captain's summons):
+     * the fall, a loop, and the landing in a deep crouch, once, then up into guard.
+     */
+    public static AnimationAccessor<StaticAnimation> ALLIANCE_SKY_FALL;
+    public static AnimationAccessor<ActionAnimation> ALLIANCE_SKY_LANDING;
+
+    private static void buildSkyDrop(AnimationBuilder builder) {
+        ALLIANCE_SKY_FALL = builder.nextAccessor("biped/murim/alliance_sky_fall", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
+        ALLIANCE_SKY_LANDING = builder.nextAccessor("biped/murim/alliance_sky_landing", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+    }
 
     private static void buildAzureSensei(AnimationBuilder builder) {
         SENSEI_IDLE = builder.nextAccessor("biped/murim/sensei_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));

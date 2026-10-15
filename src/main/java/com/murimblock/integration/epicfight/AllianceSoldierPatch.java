@@ -87,8 +87,24 @@ public class AllianceSoldierPatch extends HumanoidMobPatch<AllianceSoldierEntity
         animator.addLivingAnimation(LivingMotions.DEATH, Animations.BIPED_DEATH);
     }
 
+    /** Whether his fall is now the sky drop's (its own pose) rather than Epic Fight's. */
+    private boolean skyPose;
+
+    /**
+     * Dropped from the sky by the captain, he falls in his own pose (sky-drop.cjs) from the first tick, on every side
+     * (the flag is synced); any other fall is Epic Fight's.
+     */
     @Override
     public void updateMotion(boolean considerInaction) {
+        boolean sky = getOriginal().skyFalling();
+        if (sky != skyPose) {
+            skyPose = sky;
+            getAnimator().addLivingAnimation(LivingMotions.FALL, sky ? MurimAnimations.ALLIANCE_SKY_FALL : Animations.BIPED_FALL);
+        }
+        if (sky) {
+            currentLivingMotion = LivingMotions.FALL;
+            return;
+        }
         if (getOriginal().kind() == AllianceSoldierEntity.Kind.ARCHER) commonAggressiveRangedMobUpdateMotion(considerInaction);
         else commonAggressiveMobUpdateMotion(considerInaction);
     }

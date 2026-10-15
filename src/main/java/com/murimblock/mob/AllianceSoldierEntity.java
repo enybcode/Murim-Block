@@ -313,6 +313,68 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         }
     }
 
+    // ---- dropped from the sky (the Peak Captain's reinforcements)
+
+    /** Summoned by the captain: he leaves neither loot nor experience (no farming the captain's waves). */
+    private boolean summoned;
+    /** Falling from the sky: no fall damage, the fall's pose; he lands in a crouch (sky-drop.cjs). Seen by the clients. */
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Boolean> SKY_FALLING =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(AllianceSoldierEntity.class, net.minecraft.network.syncher.EntityDataSerializers.BOOLEAN);
+    /** Ticks left of the landing, during which no fall can hurt him either. */
+    private int landing;
+
+    /**
+     * Sends him down from the sky, summoned: he falls in the fall's pose, takes no fall damage, lands in a crouch with a
+     * thud and a ring of dust, then fights whoever he was set on. He keeps no post (he goes wherever his foe is).
+     */
+    public void dropFromSky() {
+        summoned = true;
+        entityData.set(SKY_FALLING, true);
+        clearRestriction();
+        setPersistenceRequired();
+    }
+
+    public boolean summoned() { return summoned; }
+    public boolean skyFalling() { return entityData.get(SKY_FALLING); }
+
+    @Override protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SKY_FALLING, false);
+    }
+
+    @Override public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
+        if (skyFalling() || landing > 0) return false;
+        return super.causeFallDamage(distance, multiplier, source);
+    }
+
+    @Override public void aiStep() {
+        super.aiStep();
+        if (landing > 0) landing--;
+        if (skyFalling() && onGround() && level() instanceof ServerLevel server) land(server);
+    }
+
+    private void land(ServerLevel server) {
+        entityData.set(SKY_FALLING, false);
+        landing = 30;
+        fallDistance = 0;
+        var patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(this, yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch.class);
+        if (patch != null) patch.playAnimationSynchronized(com.murimblock.integration.epicfight.MurimAnimations.ALLIANCE_SKY_LANDING, 0);
+        var ground = server.getBlockState(blockPosition().below());
+        if (!ground.isAir()) server.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK, ground),
+                getX(), getY() + 0.1, getZ(), 40, 0.9, 0.05, 0.9, 0.15);
+        server.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, getX(), getY() + 0.1, getZ(), 16, 0.8, 0.05, 0.8, 0.03);
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_BIG_FALL, net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 0.7F);
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.ARMOR_EQUIP_IRON.value(), net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 0.8F);
+    }
+
+    @Override protected boolean shouldDropLoot() {
+        return !summoned && super.shouldDropLoot();
+    }
+
+    @Override protected int getBaseExperienceReward() {
+        return summoned ? 0 : super.getBaseExperienceReward();
+    }
+
     // ---- his post
 
     /** Keeps him about his post, around this block. */
@@ -353,6 +415,8 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         if (patrolLeader) tag.putBoolean("PatrolLeader", true);
         if (patrolLeaderId != null) tag.putUUID("PatrolLeaderId", patrolLeaderId);
         if (patrolTarget != null) tag.put("PatrolTarget", NbtUtils.writeBlockPos(patrolTarget));
+        if (summoned) tag.putBoolean("Summoned", true);
+        if (skyFalling()) tag.putBoolean("SkyFalling", true);
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
@@ -362,6 +426,8 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         patrolLeader = tag.getBoolean("PatrolLeader");
         patrolLeaderId = tag.hasUUID("PatrolLeaderId") ? tag.getUUID("PatrolLeaderId") : null;
         patrolTarget = NbtUtils.readBlockPos(tag, "PatrolTarget").orElse(null);
+        summoned = tag.getBoolean("Summoned");
+        entityData.set(SKY_FALLING, tag.getBoolean("SkyFalling"));
     }
 
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.PLAYER_HURT; }
