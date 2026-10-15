@@ -175,6 +175,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a mugshot of every Murim mob for the wiki (see MugshotTour).
+        mugshotTour {
+            client()
+            gameDirectory = project.file('build/mugshot-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.mugshotTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: the two-client check on a dedicated server (MpTourServer, MpTourClient; scripts/mp/run-mp-tour.sh).
         mpServer {
             server()
