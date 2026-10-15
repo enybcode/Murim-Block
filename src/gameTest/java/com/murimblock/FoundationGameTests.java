@@ -97,6 +97,13 @@ public final class FoundationGameTests {
         nbt.put("entities", new ListTag());
         level.getStructureManager().getOrCreate(ResourceLocation.parse("murimblock:foundation_arena"))
                 .load(level.registryAccess().lookupOrThrow(Registries.BLOCK), nbt);
+        // The Blood Iceberg's arena is 45 blocks across: its own empty template, so no other test stands next to it.
+        CompoundTag wide = nbt.copy();
+        ListTag wideSize = new ListTag();
+        for (int v : new int[]{48, 32, 48}) wideSize.add(IntTag.valueOf(v));
+        wide.put("size", wideSize);
+        level.getStructureManager().getOrCreate(ResourceLocation.parse("murimblock:iceberg_arena"))
+                .load(level.registryAccess().lookupOrThrow(Registries.BLOCK), wide);
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation", timeoutTicks = 40)

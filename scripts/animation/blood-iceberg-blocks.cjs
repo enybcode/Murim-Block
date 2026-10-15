@@ -1,6 +1,6 @@
 // The Blood Iceberg's two blocks (BloodIceberg, SanguineBlocks): blood crystal, and blood crystal veined with glowing blood.
-// 16 x 16 pixel art in the art's palette: dark crimson facets cut on the diagonal, a lit edge on each, black flaws; the
-// veined one crossed by bright red veins (it gives light 9). Writes their textures, block models and blockstates.
+// 16 x 16 pixel art in the art's palette: large cut facets, bright ridges, glints; the veined one crossed by a bright
+// vein of blood (it gives light 9). Writes their textures, block models and blockstates.
 //   node scripts/animation/blood-iceberg-blocks.cjs
 const fs = require('node:fs'), path = require('node:path'), zlib = require('node:zlib');
 const root = path.join(__dirname, '../../src/main/resources/assets/murimblock');
@@ -19,30 +19,27 @@ const hash = (x, y, s) => { let h = (x * 374761393 + y * 668265263 + s * 2147483
 const mix = (a, b, t) => { const ch = (k) => Math.round(((a >>> k) & 255) * (1 - t) + ((b >>> k) & 255) * t); return (ch(16) << 16) | (ch(8) << 8) | ch(0); };
 const P = { flaw: 0x140105, dark: 0x2e040b, deep: 0x5c0a18, red: 0x9b1429, bright: 0xd63a52, glint: 0xff9aa8 };
 
+const wrap = (d) => Math.min(Math.abs(d), 16 - Math.abs(d));
 /**
- * Crystal facets: a few large cells (a Voronoi of seed points, wrapping so the block tiles), each cut flat in one shade
- * and lighter toward its heart like a gem, dark seams between them, a glint on the brightest.
+ * Cut gem (Enzo's choice among four, 15/10/2026): a few large facets, each one shade lit from the top left, bright ridges
+ * between them, a glint on some; the veined one crossed by a bright vein of blood.
  */
-function crystal(x, y, seed) {
-  const pts = [];
-  for (let k = 0; k < 7; k++) pts.push([hash(k, 1, seed) * 16, hash(k, 2, seed) * 16, [P.deep, P.red, P.deep, P.dark, P.red, P.deep, P.bright][k]]);
-  const dist = (px, py, q) => { const dx = Math.min(Math.abs(px - q[0]), 16 - Math.abs(px - q[0])), dy = Math.min(Math.abs(py - q[1]), 16 - Math.abs(py - q[1])); return Math.hypot(dx, dy); };
-  const cell = (px, py) => { let best = 0, d0 = 1e9, d1 = 1e9; pts.forEach((q, i) => { const d = dist(px + .5, py + .5, q); if (d < d0) { d1 = d0; d0 = d; best = i; } else if (d < d1) d1 = d; }); return { best, d0, d1 }; };
-  const c = cell(x, y);
-  // A seam where two cells meet.
-  if (c.d1 - c.d0 < .9) return mix(P.flaw, P.dark, .5);
-  const base = pts[c.best][2];
-  let col = mix(base, P.glint, Math.max(0, .35 - c.d0 * .07));
-  if (c.d0 < .8 && (base === P.bright || base === P.red)) col = P.glint;
-  return mix(col, P.dark, hash(x, y, seed) * .12);
+function gem(x, y, seed) {
+  const pts = []; for (let k = 0; k < 6; k++) pts.push([hash(k, 1, seed) * 16, hash(k, 2, seed) * 16, k]);
+  let a = null, d0 = 99, d1 = 99;
+  for (const q of pts) { const d = Math.hypot(wrap(x + .5 - q[0]), wrap(y + .5 - q[1])); if (d < d0) { d1 = d0; d0 = d; a = q; } else if (d < d1) d1 = d; }
+  const shades = [0x5c0a18, 0x8a1226, 0x6e0d1e, 0xa8182f, 0x4a0814, 0x7a1022];
+  if (d1 - d0 < .8) return 0xe0506a;
+  const lit = ((x + .5 - a[0]) * -.6 + (y + .5 - a[1]) * -.8) / 8;
+  let c = mix(shades[a[2]], 0xd63a52, .25 + lit * .5);
+  if (d0 < .9 && a[2] % 3 === 0) c = 0xffc2cc;
+  return c;
 }
-const vein = (x, y) => Math.abs(y - (7 + 3 * Math.sin(x * .7))) < .9 || Math.abs(x - (5 + 2 * Math.sin(y * .9))) < .7 && y > 6;
-
 const tex = path.join(root, 'textures/block'), models = path.join(root, 'models/block'), states = path.join(root, 'blockstates');
 for (const d of [tex, models, states]) fs.mkdirSync(d, { recursive: true });
 const blocks = {
-  blood_crystal_block: (x, y) => crystal(x, y, 3),
-  blood_crystal_vein: (x, y) => vein(x, y) ? mix(P.bright, P.glint, hash(x, y, 9) * .5) : crystal(x, y, 11),
+  blood_crystal_block: (x, y) => gem(x, y, 3),
+  blood_crystal_vein: (x, y) => Math.abs(y - (7 + 3 * Math.sin(x * .7))) < .8 ? mix(P.bright, P.glint, hash(x, y, 2)) : gem(x, y, 11),
 };
 for (const [name, pixel] of Object.entries(blocks)) {
   fs.writeFileSync(path.join(tex, name + '.png'), png(16, 16, pixel));

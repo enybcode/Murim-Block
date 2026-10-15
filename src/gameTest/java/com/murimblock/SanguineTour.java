@@ -188,12 +188,12 @@ public final class SanguineTour {
                     check(shed>=10&&!SanguineArt.state(mc.player).active(),"at the form's end its crystals come away and fall: "+shed);}
                 // Blood Iceberg: the mountain of blood crystal rises under the player, seen from afar.
                 case 1045 -> server.execute(()->{var p=self(server);if(zombie!=null)zombie.discard();MartialService.resetCooldowns(p);QiService.setQi(p,100);});
-                case 1047 -> view(mc,24,15,24);
+                case 1047 -> view(mc,30,22,30);
                 case 1052 -> press(mc,4);
                 case 1054 -> mc.options.keyHotbarSlots[4].setDown(false);
                 case 1100 -> server.execute(()->{var p=self(server);int n=0;var c=BlockPos.containing(start);
-                    for(BlockPos at:BlockPos.betweenClosed(c.offset(-15,-12,-15),c.offset(15,18,15)))if(p.level().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
-                    check(n>500&&p.getY()>start.y+BloodIceberg.PEAK-1&&p.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST),"key 5 raises the Blood Iceberg and carries the player to its peak: "+n+" blocks, y "+p.getY());});
+                    for(BlockPos at:BlockPos.betweenClosed(c.offset(-BloodIceberg.RADIUS,-BloodIceberg.DEPTH,-BloodIceberg.RADIUS),c.offset(BloodIceberg.RADIUS,BloodIceberg.TOP+2,BloodIceberg.RADIUS)))if(p.level().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
+                    check(n>3000&&p.getY()>=start.y+BloodIceberg.FLOOR&&p.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST),"key 5 raises the Blood Iceberg arena and carries the player onto it: "+n+" blocks, y "+p.getY());});
                 case 1125 -> finish(mc);
                 default -> { }
             }
