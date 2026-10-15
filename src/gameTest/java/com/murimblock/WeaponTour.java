@@ -61,7 +61,7 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 
-/**
+    /**
  * Development-only real-client check of the weapons in hand (gradlew -PgameTests runWeaponTour), in a fresh flat world
  * filmed from several sides by the local spectator:
  * <ul>
@@ -92,7 +92,7 @@ public final class WeaponTour {
 
     /** Who is filmed. */
     /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
-    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD }
+    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD, STAFF }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -154,6 +154,19 @@ public final class WeaponTour {
         TAKES.add(new Take((actor == Actor.JIAN ? "jian-" : "jian-azure-") + name, actor, side, null, combo, motion, frames, every));
     }
 
+    /**
+     * An addon's staff, to see its moves (never shipped with Murimblock): its registry name from MURIM_TOUR_STAFF, by
+     * default Dawn Day's iron battlestaff; air when that addon is not installed (the tour's build/weapon-tour-run/mods).
+     */
+    private static Item addonStaff() {
+        String id = System.getenv().getOrDefault("MURIM_TOUR_STAFF", "epicfight_dd:iron_battlestaff");
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse(id));
+    }
+
+    private static void staff(String name, Side side, int combo, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("staff-" + name, Actor.STAFF, side, null, combo, motion, frames, every));
+    }
+
     /** A take's combo for raising the guard instead of an M1. */
     private static final int GUARD = 99;
 
@@ -167,6 +180,7 @@ public final class WeaponTour {
             case BANDIT -> MurimItems.BANDIT_DAO.get();
             case SPEAR -> MurimItems.ALLIANCE_SPEAR.get();
             case JIAN, JIAN_AZURE, SHIELD -> MurimItems.SNOW_PLUM_JIAN.get();
+            case STAFF -> addonStaff();
             default -> MurimItems.CHIEF_GREAT_AXE.get();
         };
     }
@@ -236,6 +250,16 @@ public final class WeaponTour {
             shield("m1-2", side, 1, null, 18, 1);
         }
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.LEFT, Side.TOP)) shield("guard", side, GUARD, null, 12, 2);
+        // An addon's staff (only with the addon installed): its stance, walk, run, its whole M1 chain.
+        if (addonStaff() != net.minecraft.world.item.Items.AIR) {
+            for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK)) staff("idle", side, -1, LivingMotions.IDLE, 1, 1);
+            for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) staff("walk", side, -1, LivingMotions.WALK, 16, 2);
+            staff("run", Side.FRONT_RIGHT, -1, LivingMotions.RUN, 12, 2);
+            String[] staffChain = {"m1-1", "m1-2", "m1-3", "m1-4", "m1-5", "dash", "air"};
+            for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.TOP)) {
+                for (int i = 0; i < staffChain.length; i++) staff(staffChain[i], side, i, null, 26, 1);
+            }
+        }
         String only = System.getenv("MURIM_TOUR_ONLY");
         if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().toLowerCase().startsWith(only.trim().toLowerCase()));
         check(TAKES.stream().filter(t -> t.actor() == Actor.BANDIT).allMatch(t -> t.motion() != null || t.played() != null), "every bandit take has its animation");
@@ -500,7 +524,7 @@ public final class WeaponTour {
         }
     }
 
-/**
+    /**
      * On the server, the wielder in the chief's armour (a real player, ticked: its worn equipment counts): 17 armour and
      * 4 toughness, and a zombie's blow of 10 takes what armour leaves of it (about 4.5), not 10 (generic damage would
      * go through any armour).
