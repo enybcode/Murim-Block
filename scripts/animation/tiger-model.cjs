@@ -92,32 +92,32 @@ for (const [k, y, a] of [[1, 26.6, 14], [2, 25.6, 4], [3, 24.6, -7], [4, 23.8, -
 // Front legs: the upper leg slanting back to the elbow, the forearm forward to the wrist, a wide paw, round toes, claws.
 pair('front_upper', 'front_leg_#', 'leg', [4.2, 16, -27], [12.8, 41, -13], 'auto', { rot: 6, pivot: [8.5, 34, -20] });
 pair('elbow', 'front_leg_#', 'leg', [5.2, 15, -16], [11.8, 22, -10.5]);
-pair('forearm', 'front_leg_#', 'leg_low', [4.6, 4, -26], [12.4, 19, -15], 'auto', { rot: -5, pivot: [8.5, 16, -20] });
-pair('front_paw', 'front_leg_#', 'paw', [3.8, 0, -29], [13.2, 5, -14]);
+pair('forearm', 'front_foot_#', 'leg_low', [4.6, 4, -26], [12.4, 19, -15], 'auto', { rot: -5, pivot: [8.5, 16, -20] });
+pair('front_paw', 'front_foot_#', 'paw', [3.8, 0, -29], [13.2, 5, -14]);
 // Hind legs: the haunch, the shank slanting back to the hock, the hock down to the paw.
 pair('thigh', 'hind_leg_#', 'leg', [4.6, 19, 7], [12.6, 43, 25]);
-pair('shank', 'hind_leg_#', 'leg', [5.4, 8, 15], [11.4, 24, 23], 'auto', { rot: 20, pivot: [8.4, 20, 19] });
-pair('hock', 'hind_leg_#', 'leg_low', [5.6, 3, 18], [10.8, 12, 24]);
-pair('hind_paw', 'hind_leg_#', 'paw', [4.8, 0, 11.5], [11.6, 4, 24.5]);
+pair('shank', 'hind_foot_#', 'leg', [5.4, 8, 15], [11.4, 24, 23], 'auto', { rot: 20, pivot: [8.4, 20, 19] });
+pair('hock', 'hind_foot_#', 'leg_low', [5.6, 3, 18], [10.8, 12, 24]);
+pair('hind_paw', 'hind_foot_#', 'paw', [4.8, 0, 11.5], [11.6, 4, 24.5]);
 for (const [leg, z, x0, step, w, h, len] of [['front', -29, 3.9, 2.4, 2.2, 4.2, 4], ['hind', 11.5, 4.9, 1.7, 1.6, 3.4, 3.4]])
   for (let i = 0; i < 4; i++) {
     const x = x0 + i * step;
-    pair(`${leg}_toe${i}`, leg + '_leg_#', 'toe', [x, 0, z - len], [x + w, h, z + 1], 0.6);
-    pair(`${leg}_claw${i}`, leg + '_leg_#', 'claw', [x + w * 0.28, 0, z - len - 1.8], [x + w * 0.72, 1.6, z - len + 0.2], 0);
+    pair(`${leg}_toe${i}`, leg + '_foot_#', 'toe', [x, 0, z - len], [x + w, h, z + 1], 0.6);
+    pair(`${leg}_claw${i}`, leg + '_foot_#', 'claw', [x + w * 0.28, 0, z - len - 1.8], [x + w * 0.72, 1.6, z - len + 0.2], 0);
   }
 // Tail: seven segments curling up and back from the hips, thinning, the last black.
 const TAIL = [[0, 33, 29], [0, 33.6, 34], [0, 35.4, 38.6], [0, 38.6, 42.2], [0, 42.8, 44.4], [0, 47.4, 45], [0, 51.6, 44], [0, 54.8, 41.8]];
 for (let i = 0; i < TAIL.length - 1; i++) {
   const [, ya, za] = TAIL[i], [, yb, zb] = TAIL[i + 1], th = 2.4 - i * 0.18;
   const len = Math.hypot(yb - ya, zb - za), ang = Math.atan2(yb - ya, zb - za) * 180 / Math.PI;
-  box('tail' + i, 'tail', i === TAIL.length - 2 ? 'tail_tip' : 'tail', [-th, ya - th, za], [th, ya + th, za + len + 0.8], th > 1.6 ? 0.8 : 0.5,
+  box('tail' + i, 'tail' + i, i === TAIL.length - 2 ? 'tail_tip' : 'tail', [-th, ya - th, za], [th, ya + th, za + len + 0.8], th > 1.6 ? 0.8 : 0.5,
     { rot: -ang, pivot: [0, ya, za], ord: i });
 }
 
 const LIFT = 5;
 for (const p of P) {
   p.orig = { from: p.from, to: p.to };
-  if (p.bone.includes('_leg')) continue;
+  if (p.bone.includes('_leg') || p.bone.includes('_foot')) continue;
   p.from = [p.from[0], p.from[1] + LIFT, p.from[2]]; p.to = [p.to[0], p.to[1] + LIFT, p.to[2]];
   if (p.pivot) p.pivot = [p.pivot[0], p.pivot[1] + LIFT, p.pivot[2]];
   p.lift = LIFT;
@@ -176,8 +176,17 @@ function paint(part, f, x, y, z, piece) {
       if (y > 6 && frac(t) < (part === 'leg' ? 0.3 : 0.2)) return grain(C.black, x, y, z);
       return grain(part === 'leg' ? mix(C.orange, C.pale, (43 - y) / 25) : mix(C.pale, C.white, (19 - y) / 10), x, y, z);
     }
-    case 'paw': return grain(f === 'down' ? C.pad : C.white, x, y, z);
-    case 'toe': return grain(f === 'down' ? C.pad : y < 1.6 && f !== 'up' ? C.shade : C.white, x, y, z);
+    case 'paw': {
+      if (f !== 'down') return grain(C.white, x, y, z);
+      // Under the paw: white fur round one broad dark pad.
+      const mx = (piece.from[0] + piece.to[0]) / 2, mz = (piece.from[2] + piece.to[2]) / 2 + 1;
+      return Math.abs(x - mx) < (piece.to[0] - piece.from[0]) * 0.28 && Math.abs(z - mz) < (piece.to[2] - piece.from[2]) * 0.2 ? grain(C.pad, x, y, z) : grain(C.shade, x, y, z);
+    }
+    case 'toe': {
+      if (f !== 'down') return grain(y < 1.6 && f !== 'up' ? C.shade : C.white, x, y, z);
+      const mx = (piece.from[0] + piece.to[0]) / 2, mz = (piece.from[2] + piece.to[2]) / 2;
+      return Math.hypot(x - mx, (z - mz) * 0.7) < 0.75 ? grain(C.pad, x, y, z) : grain(C.shade, x, y, z);     // a toe bean
+    }
     case 'claw': return y < 0.5 || z > piece.to[2] - 0.5 ? C.clawBase : C.claw;
     case 'skull': {
       const { th } = round(skullAt, x, y, z);
@@ -310,13 +319,18 @@ const elements = P.map(p => ({
   faces: Object.fromEntries(FACES.map(f => [f, p.uv[f] ? { uv: p.uv[f], texture: 0 } : { uv: [0, 0, 0, 0], texture: null }])),
   type: 'cube', uuid: stableId('tiger/' + p.name),
 }));
-const PIVOTS = { body: [0, 37, 0], head: [0, 36, -32], jaw: [0, 26, -46], front_leg_l: [8.5, 34, -20], front_leg_r: [-8.5, 34, -20],
-  hind_leg_l: [8.6, 34, 16], hind_leg_r: [-8.6, 34, 16], tail: [0, 38, 29] };
+// The joints: shoulders and hips where the legs meet the (lifted) body, elbows, knees, the neck, the jaw, the tail's.
+const PIVOTS = { body: [0, 37, 0], head: [0, 37, -33], jaw: [0, 26, -46],
+  front_leg_l: [8.5, 39, -20], front_leg_r: [-8.5, 39, -20], front_foot_l: [8.5, 18, -19], front_foot_r: [-8.5, 18, -19],
+  hind_leg_l: [8.6, 39, 16], hind_leg_r: [-8.6, 39, 16], hind_foot_l: [8.4, 22, 19], hind_foot_r: [-8.4, 22, 19] };
+TAIL.forEach(([, y, z], i) => { PIVOTS['tail' + i] = [0, y + LIFT, z]; });
 const group = (name, children) => ({ name, origin: PIVOTS[name] || [0, 0, 0], color: 0, uuid: stableId('tiger/bone/' + name), export: true,
   mirror_uv: false, isOpen: true, locked: false, visibility: true, autouv: 0,
   children: [...elements.filter((e, i) => P[i].bone === name).map(e => e.uuid), ...children] });
-const outliner = [group('body', [group('head', [group('jaw', [])]), group('front_leg_l', []), group('front_leg_r', []),
-  group('hind_leg_l', []), group('hind_leg_r', []), group('tail', [])])];
+const tail = i => group('tail' + i, i < TAIL.length - 2 ? [tail(i + 1)] : []);
+const leg = (name, foot) => group(name, [group(foot, [])]);
+const outliner = [group('body', [group('head', [group('jaw', [])]), leg('front_leg_l', 'front_foot_l'), leg('front_leg_r', 'front_foot_r'),
+  leg('hind_leg_l', 'hind_foot_l'), leg('hind_leg_r', 'hind_foot_r'), tail(0)])];
 const texture = png(ATLAS, ATLAS, img);
 const project = {
   meta: { format_version: '4.10', model_format: 'free', box_uv: false }, name: 'tiger', model_identifier: '', visible_box: [1, 1, 0],
@@ -328,6 +342,8 @@ const project = {
     saved: false, uuid: stableId('tiger/texture'), source: 'data:image/png;base64,' + texture.toString('base64') }],
 };
 fs.mkdirSync(path.join(ROOT, 'art', 'blockbench'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', 'tiger.bbmodel'), JSON.stringify(project));
+const file = path.join(ROOT, 'art', 'blockbench', 'tiger.bbmodel');
+if (fs.existsSync(file)) { const old = JSON.parse(fs.readFileSync(file, 'utf8')); if (old.animations) project.animations = old.animations; }
+fs.writeFileSync(file, JSON.stringify(project));
 fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', 'tiger.png'), texture);
 console.log('tiger:', P.length, 'cubes,', faces.length, 'textured faces, atlas', ATLAS, 'used to row', cy + shelf);
