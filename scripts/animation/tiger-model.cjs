@@ -41,129 +41,172 @@ add('tail1', 'tail1', 'tail', [-1.5, 26.5, 25], [1.5, 29.5, 33]);
 add('tail2', 'tail2', 'tail', [-1.5, 26.5, 33], [1.5, 29.5, 40]);
 
 // ---------------------------------------------------------------- the coat
+// Colour ramps, darkest first: each texel takes a level, nudged by a fur grain (single texels a shade up or down,
+// strands along the hair, a soft mottling), so no area is one flat colour.
 const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-const C = {
-  orange: hex('#E39A35'), dark: hex('#C97F27'), light: hex('#F0B455'), white: hex('#EEE7DC'), shade: hex('#D9CFC1'),
-  stripe: hex('#2A2F3E'), nose: hex('#D88A8A'), noseDark: hex('#9E5555'), mouth: hex('#3B1F22'), tongue: hex('#C9646C'),
-  eye: hex('#E8B23A'), pupil: hex('#1E2230'), fang: hex('#F7F3EA'), claw: hex('#3A3F4E'),
+const RAMP = {
+  O: ['#8F4E16', '#AE611C', '#C77424', '#DC8D2F', '#E9A340', '#F2B858', '#F8CC78'].map(hex),
+  W: ['#ABA192', '#C2B8A9', '#D6CDBF', '#E5DED3', '#F0EBE3', '#F8F5EF'].map(hex),
+  S: ['#11141C', '#1C2130', '#282E40', '#363E54'].map(hex),
+  N: ['#8E4B4B', '#B86A6A', '#D68888', '#E6A3A0'].map(hex),
+  M: ['#2A1416', '#3B1F22', '#5A2D33'].map(hex),
 };
+const C = { eye: hex('#E8B23A'), eyeLight: hex('#F5D26A'), pupil: hex('#141822'), fang: hex('#F7F3EA'), tongue: hex('#C9646C') };
 const hash = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
-/** A Minecraft-like speckle: a few texels a shade lighter or darker. */
-const tone = (c, x, y, z) => { const h = hash(Math.floor(x * 7 + z * 3), Math.floor(y * 5 - z)); return h < 0.12 ? c.map(v => v * 0.93) : h > 0.9 ? c.map(v => Math.min(255, v * 1.05)) : c; };
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, s = t => t * t * (3 - 2 * t);
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * s(xf) + (c - a) * s(yf) + (a - b - c + d) * s(xf) * s(yf);
+}
+/** A colour from a ramp: [ramp, level]; the fur grain moves the level. Plain arrays are exact colours. */
+const sh = (r, l) => ({ r, l });
+function tone(c, x, y, z, f) {
+  if (Array.isArray(c)) return c;
+  const ramp = RAMP[c.r];
+  const fx = Math.floor(x + 100), fy = Math.floor(y + 100), fz = Math.floor(z + 100);
+  const [u, v] = f === 'up' || f === 'down' ? [fx, fz] : f === 'east' || f === 'west' ? [fz, fy] : [fx, fy];
+  const strand = (f === 'up' || f === 'down') ? hash(u * 3, 7) : hash(u, 13);            // hair running down the face
+  const g = hash(u * 1.7 + (f === 'north' ? 5 : f === 'south' ? 9 : f === 'up' ? 3 : 1), v * 2.3);
+  let l = c.l + (vnoise(u / 3.5, v / 3.5) - 0.5) * 1.1 + (strand < 0.18 ? -0.6 : strand > 0.86 ? 0.4 : 0);
+  if (g < 0.12) l -= 1; else if (g > 0.9) l += 1;
+  return ramp[Math.max(0, Math.min(ramp.length - 1, Math.round(l)))];
+}
 
-/**
- * The flank stripes: one every 4 pixels along z, stepping one pixel along every 3 rows (the stair-stepped look),
- * two pixels wide near the spine and one lower down, each ending at its own height above the belly.
- */
+// The flank stripes: close together (gaps of 2 or 3), each stepping its own way down the flank, wide near the spine and
+// thinning, some forking low down into two prongs, each ending at its own height; short flecks between some of them.
 const STRIPES = [];
-for (let z = -14.5, k = 0; z < 15; k++) { STRIPES.push({ z, k, dir: hash(k, 5) < 0.5 ? -1 : 1, end: 19 + Math.floor(hash(k, 3) * 6), cross: 1 + Math.floor(hash(k, 9) * 4) }); z += 3 + Math.floor(hash(k, 7) * 3); }
-/** On the flanks: does a stripe pass this texel? Each steps one pixel aside every two rows, two wide near the spine. */
+for (let z = -15.5, k = 0; z < 15.5; k++) {
+  STRIPES.push({ z, k, dir: hash(k, 5) < 0.5 ? -1 : 1, end: 17 + Math.floor(hash(k, 3) * 7), cross: Math.floor(hash(k, 9) * 4),
+    fork: hash(k, 21) < 0.4 ? 21 + Math.floor(hash(k, 23) * 4) : 0, fleck: hash(k, 31) < 0.5 ? 22 + Math.floor(hash(k, 33) * 6) : 0 });
+  z += 2.5 + Math.floor(hash(k, 7) * 2);
+}
 function flankStripe(y, z, top) {
   const zi = Math.floor(z), d = top - y;
   return STRIPES.some(st => {
     if (y < st.end) return false;
     const c = Math.floor(st.z + st.dir * (Math.floor(d / 2) % 3));
-    return zi === c || (d < 4 && zi === c + st.dir);
+    if (st.fork && y < st.fork) return zi === c - 1 || zi === c + 1;                       // the two prongs
+    if (zi === c) return true;
+    if (d < 4 && zi === c + st.dir) return true;                                            // wide by the spine
+    return st.fleck && zi === c + 2 * st.dir && y >= st.fleck && y < st.fleck + 2;          // a fleck beside it
   });
 }
-/** Across the back: the same stripes, reaching in from the flanks, meeting over the spine or not. */
 function backStripe(ax, z) {
   const zi = Math.floor(z);
-  return STRIPES.some(st => (zi === Math.floor(st.z) || zi === Math.floor(st.z) + st.dir) && ax > st.cross - 1);
+  return STRIPES.some(st => (zi === Math.floor(st.z) || (ax > 3 && zi === Math.floor(st.z) + st.dir)) && ax >= st.cross);
 }
+/** The ragged edge of the white belly fur along a flank. */
+const bellyLine = z => 19 + Math.floor(hash(Math.floor(z + 50), 11) * 2.5);
 
 function paint(part, f, x, y, z, p) {
   const ax = Math.abs(x);
   const side = f === 'east' || f === 'west';
   switch (part) {
     case 'body': {
-      if (f === 'down') return C.white;
-      if (f === 'up') {
-        if (backStripe(ax, z)) return C.stripe;
-        return ax < 1 ? C.dark : C.orange;
-      }
+      if (f === 'down') return sh('W', 2.4);
+      if (f === 'up') return backStripe(ax, z) ? sh('S', 1) : sh('O', ax < 1.5 ? 1.4 : 2.1);
       if (f === 'north') {
-        if (y < 25 && ax < 6) return y < 22 ? C.white : C.shade;
-        return y > 28 && ax % 4 === 1 ? C.stripe : C.orange;
+        if (y < 25 && ax < 5.5) {                                                           // the white chest
+          if (ax > 3.5 && (Math.floor(y) + Math.floor(ax)) % 3 === 0 && y > 20) return sh('S', 2);
+          return sh('W', y < 21 ? 3 : 3.8);
+        }
+        if (y > 26 && Math.floor(ax) % 3 === 1 && y < 31 - (ax % 2)) return sh('S', 1);
+        return sh('O', 2.6);
       }
-      if (f === 'south') return y < 20 ? C.white : (y % 4 === 1 && ax > 2 ? C.stripe : C.orange);
-      if (y < 19) return C.white;
-      if (y < 20) return hash(z, 1) < 0.5 ? C.white : C.light;
-      if (flankStripe(y, z, 31)) return C.stripe;
-      return y > 28 ? C.dark : y < 22 ? C.light : C.orange;
+      if (f === 'south') {
+        if (y < bellyLine(ax * 3)) return sh('W', 3);
+        if (ax > 1.5 && (Math.floor(y) + Math.floor(ax / 2)) % 3 === 0) return sh('S', 1);
+        return sh('O', 2.4);
+      }
+      const b = bellyLine(z);
+      if (y < b) return sh('W', 3.2 + (y - 16) * 0.2);
+      if (y < b + 1) return sh('O', 5.2);
+      if (flankStripe(y, z, 31)) return sh('S', 1);
+      return sh('O', 1.6 + (31 - y) / 12 * 3);
     }
     case 'head': {
       if (f === 'north') {
-        // Eyes: a dark brow line slanting down to the nose, an amber eye with a dark pupil, white above the brows.
-        if (y >= 29 && y < 30 && ax >= 2 && ax < 5) return C.stripe;                        // the brow line
-        if (y >= 27 && y < 29 && ax >= 2 && ax < 5) {                                        // the eye: white, amber, pupil
-          if (ax < 3) return y >= 28 ? C.stripe : C.white;
-          return ax < 4 ? (y >= 28 ? C.pupil : C.eye) : C.white;
+        if (y >= 29 && y < 30 && ax >= 1.5 && ax < 5) return sh('S', 0.5);                // the brow line
+        if (y >= 27 && y < 29 && ax >= 2 && ax < 5) {                                        // the eye
+          if (ax < 3) return y >= 28 ? sh('S', 1) : sh('W', 4);
+          if (ax < 4) return y >= 28 ? C.pupil : C.eye;
+          return y >= 28 ? C.eyeLight : sh('W', 4);
         }
-        if (y >= 30 && y < 31 && ax >= 2 && ax < 6) return C.white;                         // white over the eye
+        if (y >= 30 && y < 31 && ax >= 1.5 && ax < 6) return sh('W', 4.5);                 // white over the eye
         if (y >= 31) {                                                                       // forehead marks
-          if (ax < 1 && y >= 32) return C.stripe;
-          if ((ax >= 3 && ax < 4 && y >= 32) || (ax >= 6 && y >= 31 && y < 33)) return C.stripe;
-          return C.orange;
+          if (ax < 1 && y >= 31.5) return sh('S', 1);
+          if (ax >= 2 && ax < 3 && y >= 32) return sh('S', 1);
+          if (ax >= 3.5 && ax < 4.5 && y >= 31 && y < 33) return sh('S', 1);
+          return sh('O', 2.4);
         }
-        if (ax >= 5 && y < 30) return C.white;                                              // the white cheeks
-        return ax < 2 ? C.light : C.orange;
+        if (ax >= 5) return (ax >= 5.5 && y > 23 && Math.floor(y) - Math.floor(ax / 2) === 21 + Math.floor((ax - 5.5) / 2) % 1 * 0 || (ax >= 5.5 && y > 24 && y < 28 && Math.floor(y) === Math.floor(ax / 2) + 22)) ? sh('S', 1.5) : sh('W', 3.6);  // cheeks: two slanting streaks
+        return sh('O', ax < 1.5 ? 4.4 : 3.4);
       }
-      if (f === 'up') return ((Math.floor(z) + 30) % 4 === 0 && ax > 1.5 && ax < 5.5) ? C.stripe : C.orange;
-      if (f === 'down') return C.white;
-      if (f === 'south') return C.orange;
-      if (y < 26) return C.white;
-      return (Math.floor(y) + Math.floor(z / 2)) % 5 === 0 && z < -18 && y > 27 ? C.stripe : C.orange;
+      if (f === 'up') return ((Math.floor(z) + 31) % 3 === 0 && ax > 1 && ax < 6) || (ax < 1 && Math.floor(z) % 3 === 0) ? sh('S', 1) : sh('O', 2);
+      if (f === 'down') return sh('W', 2.5);
+      if (f === 'south') return (Math.floor(y) % 3 === 0 && ax > 2) ? sh('S', 1) : sh('O', 2.2);
+      if (y < 25 + (Math.floor(z) % 2)) return (Math.floor(y + z * 0.5) % 3 === 0 && y > 22) ? sh('S', 2) : sh('W', 3.4);
+      return (Math.floor(y + z * 0.6) % 3 === 0) ? sh('S', 1) : sh('O', 1.8 + (34 - y) / 9 * 2);
     }
     case 'muzzle': {
-      if (f === 'up') return z < -30 && ax < 2 ? C.nose : ax < 1 ? C.light : C.orange;
+      if (f === 'up') return z < -30 && ax < 2 ? sh('N', 2) : ax < 1 ? sh('O', 4.6) : (Math.floor(z) % 2 === 0 && ax > 2.5 ? sh('S', 2) : sh('O', 3.4));
       if (f === 'north') {
-        if (y >= 25 && ax < 2) return y >= 26 || ax < 1 ? C.nose : C.noseDark;               // the nose
-        if (ax < 1 && y >= 23) return C.mouth;                                               // under the nose
-        if (y < 23 && ax >= 1 && ax < 3) return C.mouth;                                     // the lips, each side
-        if (y < 25 && y >= 23 && ax >= 2 && (Math.floor(ax) + Math.floor(y)) % 2 === 0) return C.shade; // whisker dots
-        return C.white;
+        if (y >= 25 && ax < 2) return y >= 26 ? sh('N', ax < 1 ? 3 : 2) : ax < 1 ? sh('N', 1) : sh('N', 0);   // the nose
+        if (ax < 1 && y >= 23) return sh('M', 1);
+        if (y < 23 && ax >= 1 && ax < 3) return sh('M', 1);
+        if (y < 25 && y >= 23 && ax >= 2 && (Math.floor(ax) + Math.floor(y)) % 2 === 0) return sh('W', 0.6);  // whisker dots
+        return sh('W', 4);
       }
-      if (side) return y >= 26 ? C.orange : y < 23 ? C.mouth : C.white;
-      return C.white;
+      if (side) return y >= 26 ? sh('O', 3) : y < 23 ? sh('M', 1) : (Math.floor(z) % 2 === 0 && y < 25 ? sh('W', 1) : sh('W', 3.6));
+      return sh('W', 3);
     }
-    case 'cheek': return y >= 26 ? C.orange : (f !== 'down' && (y + z) % 4 === 0 && y > 22) ? C.stripe : C.white;
+    case 'cheek': {
+      if (y >= 26) return sh('O', 2.6);
+      if (f !== 'down' && (Math.floor(y) + Math.floor(z)) % 3 === 0 && y > 22) return sh('S', 2);
+      return sh('W', f === 'down' ? 2 : 3.8);
+    }
     case 'ear': {
       const cx = (p.from[0] + p.to[0]) / 2;
-      if (f === 'north') return y >= 36 || Math.abs(x - cx) > 1 ? C.stripe : C.white;
-      if (f === 'south') return Math.abs(x - cx) < 1 && y >= 35 && y < 36 ? C.white : C.stripe;
-      return y >= 36 ? C.stripe : C.orange;
+      if (f === 'north') return y >= 36 || Math.abs(x - cx) > 1 ? sh('S', 1) : sh('W', 4.4);
+      if (f === 'south') return Math.abs(x - cx) < 1 && y >= 35 && y < 36 ? sh('W', 5) : sh('S', 1);
+      return y >= 36 ? sh('S', 1) : sh('O', 2.4);
     }
     case 'fang': return C.fang;
     case 'jaw': {
-      if (f === 'up') return z < -29 ? C.mouth : C.tongue;
-      if (f === 'north') return C.white;
-      return C.white;
+      if (f === 'up') return z < -29 ? sh('M', 0) : C.tongue;
+      return sh('W', f === 'down' ? 2 : 3.6);
     }
     case 'leg': {
       const inner = (f === 'east' && x < 0) || (f === 'west' && x > 0) || f === 'south';
-      if (inner || f === 'down') return C.white;
-      if (f === 'up') return C.orange;
-      return y % 4 === 1 && y > 9 ? C.stripe : y < 10 ? C.light : C.orange;
+      if (inner || f === 'down') return sh('W', 3.2);
+      if (f === 'up') return sh('O', 2);
+      const u = f === 'north' ? ax : z;
+      // Bands round the leg, stepping a row every three pixels across, one in five broken.
+      const band = Math.floor(y) + Math.floor((u + 20) / 3) % 2;
+      if (y > 9 && band % 3 === 0 && hash(band, Math.floor((u + 20) / 2)) > 0.2) return sh('S', 1);
+      return y < 10 ? sh('O', 5) : sh('O', 2.2 + (19 - y) / 9 * 2);
     }
     case 'shin': {
-      if (f === 'up') return C.orange;
-      if (f === 'down') return C.shade;
+      if (f === 'up') return sh('O', 3);
+      if (f === 'down') return sh('W', 1.6);
       const outer = (f === 'east' && x > 0) || (f === 'west' && x < 0);
-      return outer && y >= 6 && y < 7 ? C.stripe : C.white;
+      if (outer && y >= 6) return Math.floor(y) === 6 ? sh('S', 1) : sh('O', 4.6);
+      if (outer && y >= 3 && y < 4 && Math.floor(z) % 2 === 0) return sh('S', 2);
+      return sh('W', 3.6 - (y < 1 ? 1 : 0));
     }
     case 'toes': {
-      // Claw lines between the toes, and dark claw tips along the front edge.
-      if (f === 'down') return C.shade;
+      if (f === 'down') return sh('W', 1.4);
       const rel = x - p.from[0];
-      if ((f === 'north' || f === 'up') && Math.floor(rel) % 2 === 1 && rel > 0.5 && rel < 5.5) return C.claw;
-      if (f === 'north' && y < 1) return C.shade;
-      return C.white;
+      if ((f === 'north' || f === 'up') && Math.floor(rel) % 2 === 1 && rel > 0.5 && rel < 5.5) return sh('S', 2);   // claw lines
+      if (f === 'north' && y < 1) return sh('W', 1.8);
+      return sh('W', 4);
     }
     case 'tail': {
-      if (p.name === 'tail2' && z >= 37) return C.stripe;                                      // the dark tip
-      if (f === 'down') return C.white;
-      return Math.floor(z) % 3 === 0 ? C.stripe : C.orange;
+      if (p.name === 'tail2' && z >= 37) return sh('S', 1);                                     // the dark tip
+      if (f === 'down') return sh('W', 3);
+      const zi = Math.floor(z);
+      if ((zi + (f === 'up' ? 1 : 0)) % 3 === 0 || (p.name === 'tail2' && zi % 3 === 1)) return sh('S', 1);
+      return sh('O', f === 'up' ? 2 : 3);
     }
   }
   return [255, 0, 255];
@@ -202,7 +245,7 @@ for (const face of faces) {
   (face.p.uv ||= {})[face.f] = [face.u, face.v, face.u + face.w, face.v + face.h];
   for (let v = 0; v < face.h; v++) for (let u = 0; u < face.w; u++) {
     const [x, y, z] = point(face.p, face.f, u, v, face.w, face.h);
-    const c = tone(paint(face.p.part, face.f, x, y, z, face.p), x, y, z).map(n => Math.max(0, Math.min(255, Math.round(n))));
+    const c = tone(paint(face.p.part, face.f, x, y, z, face.p), x, y, z, face.f).map(n => Math.max(0, Math.min(255, Math.round(n))));
     img.set([...c, 255], ((face.v + v) * ATLAS + face.u + u) * 4);
   }
 }
