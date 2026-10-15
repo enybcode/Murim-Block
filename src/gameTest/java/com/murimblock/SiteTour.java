@@ -62,7 +62,7 @@ public final class SiteTour {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final long SEED = 20261012L;
     static final String[] SITES = {"jade_river_stilt_village", "yellow_river_bandit_den", "jade_gate_beacon_post",
-            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet", "alliance_outpost"};
+            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet", "alliance_outpost", "alliance_arena"};
     private static final Pattern AT = Pattern.compile("\\[(-?\\d+), ~, (-?\\d+)\\]");
     private static boolean creating, finished, failed;
     private static int ticks, index = -1, step;
@@ -268,6 +268,7 @@ public final class SiteTour {
             case "misty_bamboo_temple" -> SitePlan.BAMBOO_TEMPLE;
             case "lotus_moon_garden" -> SitePlan.LOTUS_GARDEN;
             case "alliance_outpost" -> SitePlan.ALLIANCE_OUTPOST;
+            case "alliance_arena" -> SitePlan.ALLIANCE_ARENA;
             default -> SitePlan.PEACH_HAMLET;
         };
     }
@@ -287,7 +288,7 @@ public final class SiteTour {
             case "jade_gate_beacon_post" -> "hexi_frontier_desert";
             case "misty_bamboo_temple" -> "shu_bamboo_sea";
             case "lotus_moon_garden" -> "jiangnan_waterlands";
-            case "alliance_outpost" -> "*"; // any Murim biome, in the centre or on a frontier
+            case "alliance_outpost", "alliance_arena" -> "*"; // any Murim biome, in the centre or on a frontier
             default -> "peach_blossom_valley";
         };
     }

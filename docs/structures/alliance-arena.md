@@ -1,10 +1,12 @@
-# Arène de l'Alliance orthodoxe — maquettes (proposition à valider par Enzo)
+# Arène de l'Alliance orthodoxe (`alliance_arena`)
 
 > Demandes d'Enzo du 15/10/2026 : « crée une structure pour l'Alliance, une sorte d'arène où il y aura le capitaine
 > dedans, une arène dans le style Murim » ; « fais-moi une maquette avant de construire quoi que ce soit » ; « plus
-> grande l'arène, le boss pourra invoquer des unités ».
+> grande l'arène, le boss pourra invoquer des unités » ; maquette validée (« parfait, ajoute-la ») : le capitaine
+> n'apparaîtra que là, des coffres à piller, une structure peu commune mais pas extrêmement rare, sans qu'il y en ait
+> trop, « comme un avant-poste de pillards ».
 >
-> **Statut : maquettes voxel, rien n'est construit en jeu.** Mêmes couleurs que l'[avant-poste](alliance-outpost.md) :
+> **Statut : construit en jeu** (sur `test`, en attente de validation d'Enzo), voir [En jeu](#en-jeu). Mêmes couleurs que l'[avant-poste](alliance-outpost.md) :
 > tuiles azur, ornements or, colonnes rouges, murs blancs. Le capitaine est le boss de l'Alliance de la session
 > « design » (`murimblock:peak_captain`, pas encore sur `test`), qui se bat avec la
 > [Lance du Pic Céleste](../combat/styles/celestial-peak-spear.md) ; l'invocation d'unités est à ajouter à son combat.
@@ -57,15 +59,36 @@ sur les sceaux, les tribunes pleines, le pavillon des juges au fond.
 
 ![Le leitai](images/alliance-arena/leitai.jpg)
 
-## En jeu, une fois validé
+## En jeu
 
-- Un site comme les autres (`murimblock:alliance_arena`), construit en code bloc par bloc, trouvé par `/locate`.
-- **Matériaux prévus** : briques de pierre et calcite pour les murs, tuiles azur pour les toits, manglier écorcé
+![Vue du ciel, en jeu](images/alliance-arena/game-air.jpg)
+
+![Le leitai et ses sceaux, en jeu](images/alliance-arena/game-leitai.jpg)
+
+![Le capitaine (un sergent en attendant) sur le leitai, le pavillon des juges au fond](images/alliance-arena/game-captain.jpg)
+
+- **Structure** `murimblock:alliance_arena` (`AllianceArena`), construite en code bloc par bloc d'après la maquette,
+  trouvée par `/locate structure murimblock:alliance_arena`.
+- **Fréquence** : peu commune, à peu près comme un avant-poste de pillards. Une tentative par carré de 40 chunks
+  (640 blocs) de côté, au moins 16 chunks entre deux, refusée si le terrain ne convient pas (plus de 8 blocs de
+  dénivelé, de l'eau) ou si l'endroit n'est ni au centre ni près d'une frontière de régions. Sur la graine de test, la
+  première est à 1 105 blocs du départ.
+- **Coffres** (table `chests/alliance_arena`) : un dans chaque salle des troupes, un dans le pavillon des juges. Chacun
+  tient 3 à 6 lots : taels d'argent, fer, or, pain, bœuf, flèches, émeraudes, parfois un diamant ; une fois sur trois
+  une pilule de rassemblement du Qi ; 15 % de chances d'une arme de l'Alliance (lance, bouclier de rotin, jian de la
+  prune des neiges) ; 12 % du rouleau du Poing Long. Le pavillon garde aussi la cache des sites (tonneau).
+- **Le capitaine n'apparaît que là**, au centre du leitai. Tant que son entité (`murimblock:peak_captain`, session
+  « design ») n'est pas sur `test`, un **sergent de l'Alliance** tient sa place : `AllianceArena.captain` est le seul
+  endroit à changer.
+- **Vérifié** : GameTest `allianceArenaIsWholeAndCarried` (561 vérifications, 28 772 blocs, identique d'un coup ou
+  chunk par chunk, habitants à leur place puis remis dans un site vidé), visite en vrai client (`runSiteTour`). Pas
+  encore vu par Enzo en jeu.
+- **Matériaux** : briques de pierre et calcite pour les murs, tuiles azur pour les toits, manglier écorcé
   (rouge) pour les colonnes et la jupe du leitai, pierre lisse pour le plateau, tapis rouge pour le cercle, bloc de
   rayon de miel pour l'or des sceaux et des bandeaux, chêne noir pour les poutres et les mâts, cloches, feux de camp,
   tonneaux.
-- **Habitants** : le capitaine au centre du leitai ; deux gardes à la lance à la porte ; des disciples à l'épée dans
-  les tribunes. Tant que le capitaine n'est pas sur `test`, un sergent de l'Alliance tiendrait sa place.
+- **Habitants** : le capitaine au centre du leitai ; deux gardes à la lance à la porte ; deux disciples à l'épée dans
+  les galeries des tribunes.
 - **L'invocation** fait partie du combat du capitaine (session « design ») ; l'arène fournit les points d'apparition :
   les quatre sceaux et les portes des deux salles des troupes.
 

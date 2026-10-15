@@ -6,11 +6,11 @@ Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, 
 
 ![La capitale de l'Alliance, maquette](images/alliance-capital/overview.jpg)
 
-## Prévu : l'arène de l'Alliance (15/10/2026)
+## Construit : l'arène de l'Alliance (`alliance_arena`, 15/10/2026)
 
-Maquettes voxel d'une grande arène de style Murim (cour de 73 × 73) : un leitai de 27 × 27 (l'estrade de combat où le capitaine attend et invoque ses unités sur quatre sceaux), deux tribunes couvertes, deux salles des troupes, le pavillon des juges, la porte et une arche, avec son plan numéroté : [alliance-arena.md](alliance-arena.md). Rien n'est construit en jeu, en attente de validation.
+Maquettes voxel d'une grande arène de style Murim (cour de 73 × 73) : un leitai de 27 × 27 (l'estrade de combat où le capitaine attend et invoque ses unités sur quatre sceaux), deux tribunes couvertes, deux salles des troupes, le pavillon des juges, la porte et une arche, avec son plan numéroté : [alliance-arena.md](alliance-arena.md). **Huitième site**, construit d'après la maquette validée : peu commune (comme un avant-poste de pillards), au centre ou près d'une frontière de régions ; trois coffres à piller ; le capitaine n'apparaît que là (un sergent en attendant son entité).
 
-![L'arène de l'Alliance, maquette](images/alliance-arena/overview.jpg)
+![L'arène de l'Alliance en jeu](images/alliance-arena/game-air.jpg)
 
 ## Construit : l'avant-poste de l'Alliance (`alliance_outpost`, 15/10/2026)
 

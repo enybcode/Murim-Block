@@ -66,6 +66,9 @@ public final class SiteGameTests {
     @GameTest(template = "foundation_arena", batch = "site_alliance_outpost", timeoutTicks = 900)
     public static void allianceOutpostIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.ALLIANCE_OUTPOST, "alliance_outpost", 6400, Rotation.CLOCKWISE_180, GROUND); }
 
+    @GameTest(template = "foundation_arena", batch = "site_alliance_arena", timeoutTicks = 1200)
+    public static void allianceArenaIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.ALLIANCE_ARENA, "alliance_arena", 6900, Rotation.COUNTERCLOCKWISE_90, GROUND); }
+
     private static void check(GameTestHelper helper, SitePlan plan, String structure, int x, Rotation rotation, int... levels) {
         ServerLevel level = helper.getLevel();
         BoundingBox box = SitePiece.wholeBox(plan, x, Z, rotation, levels).inflatedBy(3);
@@ -183,6 +186,7 @@ public final class SiteGameTests {
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
+            case ALLIANCE_ARENA -> Map.of("murimblock:alliance_sergeant", 1, "murimblock:alliance_spear_guard", 2, "murimblock:alliance_sword_disciple", 2);
             case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2, "murimblock:alliance_spear_guard", 2,
                     "murimblock:alliance_sword_disciple", 2, "murimblock:alliance_archer", 1, "murimblock:alliance_sergeant", 1, "murimblock:alliance_warrior_monk", 1);
             default -> Map.of();

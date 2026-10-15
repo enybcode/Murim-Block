@@ -16,6 +16,14 @@ public final class SiteLoot {
     public static final ResourceKey<LootTable> CACHE = ResourceKey.create(Registries.LOOT_TABLE,
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "chests/murim_cache"));
 
+    /**
+     * The chests of the Alliance's arena (the troop halls, the judges' pavilion): silver taels, iron and gold, the
+     * Alliance's food and arrows, sometimes a Qi Gathering Pill, rarely an Alliance weapon or a martial manual
+     * (data/murimblock/loot_table/chests/alliance_arena.json).
+     */
+    public static final ResourceKey<LootTable> ARENA = ResourceKey.create(Registries.LOOT_TABLE,
+            ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "chests/alliance_arena"));
+
     private SiteLoot() {
     }
 }
