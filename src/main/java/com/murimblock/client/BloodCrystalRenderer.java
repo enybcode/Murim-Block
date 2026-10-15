@@ -45,7 +45,7 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
     private static ResourceLocation asset(String path) {return ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID,path);}
     public BloodCrystalRenderer(EntityRendererProvider.Context context) {
         super(context,new Model());shadowRadius=0;
-        // blood_crystal_shot_glowmask.png: the pale facet lines of a thrown crystal shine a little in the dark.
+        // The glowmasks: a thrown crystal's pale facet lines and the blood sword's cracks, shards and gems shine in the dark.
         addRenderLayer(new AutoGlowingGeoLayer<>(this) {
             @Override public void render(PoseStack pose,BloodCrystalEntity crystal,BakedGeoModel model,RenderType type,MultiBufferSource buffers,
                                          VertexConsumer buffer,float partial,int light,int overlay) {
@@ -111,7 +111,7 @@ public final class BloodCrystalRenderer extends GeoEntityRenderer<BloodCrystalEn
             return asset(entity.dorsal()?"geo/blood_crystal_floating.geo.json":entity.sword()?"geo/blood_sword.geo.json":"geo/blood_crystal_shot.geo.json");
         }
         @Override public ResourceLocation getTextureResource(BloodCrystalEntity entity) {
-            return asset(entity.dorsal()?"textures/entity/blood_crystal.png":"textures/entity/blood_crystal_shot.png");
+            return asset(entity.dorsal()?"textures/entity/blood_crystal.png":entity.sword()?"textures/entity/blood_sword.png":"textures/entity/blood_crystal_shot.png");
         }
         @Override public ResourceLocation getAnimationResource(BloodCrystalEntity entity) {
             return asset(entity.dorsal()?"animations/blood_crystal_floating.animation.json":entity.sword()?"animations/blood_sword.animation.json":"animations/blood_crystal_shot.animation.json");

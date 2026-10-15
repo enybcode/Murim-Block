@@ -73,3 +73,10 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 - **2e activation** (gratuite, malgré la recharge, comme le plongeon du croissant) : le **lancer de javelot** (`sanguine_sword_throw`, 0,95 s, l'épée part pointe la première à 0,35 s) ; elle explose à l'impact. Un lancer qui touche donne +3 à la jauge (hors forme) et compte pour la quête Scarlet Release.
 - Elle disparaît si le joueur quitte le mode combat, prend un objet en main, est mis K.O. ou meurt.
 - L'ancien arc de cercle est retiré : les coupes à l'épée le remplacent.
+
+## L'épée « Cristal fendu » (15/10/2026, choix d'Enzo)
+
+- Choisie parmi quatre styles plus sombres et plus détaillés (sang coagulé, lame-veine, croc du démon, cristal fendu).
+- Lame de cristal pourpre très sombre en six segments légèrement de travers, fendus de fissures lumineuses (une en travers, une le long) ; un éclat flotte à côté de chaque segment et dérive autour de la lame tant qu'elle est en main ; garde en couronne de six pics de cristal ; gemmes au pommeau et à la pointe.
+- Texture propre `textures/entity/blood_sword.png` (64 × 64) et `blood_sword_glowmask.png` : seules les fissures, les éclats lumineux et les gemmes brillent dans le noir. Le cristal garde sa texture.
+- Mêmes noms d'os que l'ancienne épée : formation pièce par pièce, vol et explosion inchangés. Tout est généré par `node scripts/animation/blood-sword.cjs`.
