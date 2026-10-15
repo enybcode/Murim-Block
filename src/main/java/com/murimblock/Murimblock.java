@@ -45,6 +45,7 @@ public final class Murimblock {
         // Blocks first: they add their block items to MurimItems before its registry is attached.
         MurimBlocks.register(modEventBus);
         com.murimblock.martial.SanguineBlocks.register(modEventBus);
+        com.murimblock.martial.SanguineItems.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);
         ArmoredCrabEpicFight.register(modEventBus);
