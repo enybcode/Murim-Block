@@ -3,6 +3,8 @@ package com.murimblock.integration.epicfight;
 import com.google.gson.JsonElement;
 import com.murimblock.Murimblock;
 import java.util.stream.Stream;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +16,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -26,17 +29,27 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-/** Retire engine items without unregistering IDs needed to load existing worlds. */
+/**
+ * Retire engine items without unregistering IDs needed to load existing worlds: Epic Fight's, and those of its add-on
+ * Dawn Day, whose animations we use and nothing else (its weapons, skill books, potions, gems and materials).
+ */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class EpicFightContentPolicy {
     private EpicFightContentPolicy() { }
 
     public static boolean isNative(ResourceLocation id) {
-        return id != null && id.getNamespace().equals("epicfight");
+        return id != null && (id.getNamespace().equals("epicfight") || id.getNamespace().equals(DAWN_DAY));
     }
 
+    /** Dawn Day's namespace (Epic Fight: Dawn Day, a required dependency for its animations only). */
+    public static final String DAWN_DAY = "epicfight_dd";
+
     public static boolean blocked(ItemStack stack) {
-        return !stack.isEmpty() && isNative(BuiltInRegistries.ITEM.getKey(stack.getItem()));
+        if (stack.isEmpty()) return false;
+        if (isNative(BuiltInRegistries.ITEM.getKey(stack.getItem()))) return true;
+        // Dawn Day's potions are vanilla potion items holding its own potion types.
+        PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
+        return potion != null && potion.potion().flatMap(Holder::unwrapKey).map(key -> isNative(key.location())).orElse(false);
     }
 
     public static boolean blockedRecipe(ResourceLocation id, JsonElement json) {

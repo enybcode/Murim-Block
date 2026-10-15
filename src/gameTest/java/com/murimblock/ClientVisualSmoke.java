@@ -697,9 +697,9 @@ public final class ClientVisualSmoke {
             headers = list.children().stream().filter(entry -> entry instanceof KeyBindsList.CategoryEntry).count();
             list.setScrollAmount(Math.max(0, list.getMaxScroll() - 80));
         }
-        // Five Murim controls (charge Qi, combat mode, profile, execute, combat bar slot 10), attack, guard, dodge and
-        // four target-lock controls.
-        require(visible == 12, "Expected 12 useful mappings in a single Murim category, got " + visible);
+        // Six Murim controls (meditate, Qi Sense, combat mode, profile, execute, combat bar slot 10), attack, guard, dodge
+        // and four target-lock controls. Dawn Day's stance switch is hidden with the native keys.
+        require(visible == 13, "Expected 13 useful mappings in a single Murim category, got " + visible);
         long categories = Arrays.stream(mc.options.keyMappings).filter(mapping -> !EpicFightControls.hidden(mapping))
                 .map(KeyMapping::getCategory).distinct().count();
         require(headers == categories, "Unexpected empty or duplicated keybind sections: " + headers);

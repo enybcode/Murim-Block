@@ -294,6 +294,28 @@ public final class FoundationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void dawnDayContentIsRetiredButLoaded(GameTestHelper helper) {
+        // Dawn Day is loaded for its animations; every one of its items and potions is retired.
+        helper.assertTrue(net.neoforged.fml.ModList.get().isLoaded(EpicFightContentPolicy.DAWN_DAY), "Dawn Day not loaded");
+        int items = 0, potions = 0;
+        for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (!net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(EpicFightContentPolicy.DAWN_DAY)) continue;
+            items++;
+            helper.assertTrue(EpicFightContentPolicy.blocked(new ItemStack(item)), "Dawn Day item kept: " + item);
+        }
+        for (var entry : net.minecraft.core.registries.BuiltInRegistries.POTION.holders().toList()) {
+            if (!entry.key().location().getNamespace().equals(EpicFightContentPolicy.DAWN_DAY)) continue;
+            potions++;
+            helper.assertTrue(EpicFightContentPolicy.blocked(net.minecraft.world.item.alchemy.PotionContents.createItemStack(Items.POTION, entry)),
+                    "Dawn Day potion kept: " + entry.key().location());
+        }
+        helper.assertTrue(items > 0, "Dawn Day registered no item");
+        helper.assertFalse(EpicFightContentPolicy.blocked(net.minecraft.world.item.alchemy.PotionContents.createItemStack(Items.POTION,
+                net.minecraft.world.item.alchemy.Potions.HEALING)), "A vanilla potion was retired");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "foundation")
     public static void nativeRecipesAreFilteredAndVanillaRecipesRemain(GameTestHelper helper) {
         var manager = helper.getLevel().getRecipeManager();
         for (var recipe : manager.getRecipes()) {

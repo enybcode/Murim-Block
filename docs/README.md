@@ -4,6 +4,7 @@
 
 - [Architecture](ARCHITECTURE.md): packages, authority and addon boundaries.
 - [Epic Fight](EPIC_FIGHT.md): pinned dependency and retained/disabled features.
+- [Dawn Day](DAWN_DAY.md): Epic Fight add-on used for its animations only; items, key and skills retired (15 October).
 - [Clear Manuscript](gui/TAB_LAYOUT.md): current GUI, not the V4 reference.
 - [Qi rewards](QI_REWARDS.md): balance and temporary anti-farm history.
 - [Qi and cultivation](cultivation/qi-cultivation.md): meditation, aura, breakthroughs, the inner world and the Heart Demon, Qi Sense, elixirs, realm bonuses (14 October, on test).

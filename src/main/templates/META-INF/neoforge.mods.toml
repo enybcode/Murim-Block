@@ -36,6 +36,14 @@ versionRange="[${epic_fight_version}]"
 ordering="AFTER"
 side="BOTH"
 
+# Epic Fight: Dawn Day, for its animations only; its items, keys and skills are retired (EpicFightContentPolicy).
+[[dependencies.${mod_id}]]
+modId="epicfight_dd"
+type="required"
+versionRange="[${dawn_day_version}]"
+ordering="AFTER"
+side="BOTH"
+
 [[dependencies.${mod_id}]]
 modId="geckolib"
 type="required"

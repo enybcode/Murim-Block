@@ -9,6 +9,8 @@ class EpicFightContentPolicyTest {
     @Test
     void onlyExactEngineNamespaceIsBlocked() {
         assertTrue(EpicFightContentPolicy.isNative(ResourceLocation.parse("epicfight:skillbook")));
+        assertTrue(EpicFightContentPolicy.isNative(ResourceLocation.parse("epicfight_dd:halberd")));
+        assertFalse(EpicFightContentPolicy.isNative(ResourceLocation.parse("epicfight_ddx:halberd")));
         assertFalse(EpicFightContentPolicy.isNative(ResourceLocation.parse("murimblock:skillbook")));
         assertFalse(EpicFightContentPolicy.isNative(ResourceLocation.parse("addon:epicfight_book")));
         assertFalse(EpicFightContentPolicy.isNative(null));
