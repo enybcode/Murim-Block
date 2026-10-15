@@ -108,9 +108,12 @@ public final class SanguineTour {
                 case 94,154 -> press(mc,1);
                 case 96,156 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 195 -> server.execute(()->check(SanguineArt.state(self(server)).gauge()==4,"one M1 and a landed sword throw build four gauge points: "+SanguineArt.state(self(server))));
+                // The gauge as drops over the weapon slot: four lit, then all ten bright.
+                case 197 -> capture(mc,"gauge-four.png");
                 // Three more M1 make seven; the rest of the gauge is topped up for the form.
                 case 262 -> server.execute(()->{var p=self(server);p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(10,false,0));});
                 case 268 -> server.execute(()->{check(SanguineArt.state(self(server)).gauge()==10&&!SanguineArt.state(self(server)).active(),"full gauge waits for manual activation: "+SanguineArt.state(self(server)));QiService.setQi(self(server),100);});
+                case 270 -> capture(mc,"gauge-full.png");
                 case 274 -> press(mc,2);
                 case 276 -> mc.options.keyHotbarSlots[2].setDown(false);
                 case 303 -> {check(SanguineArt.state(mc.player).active(),"key 3 activates synchronized form");capture(mc,"form-front.png");}

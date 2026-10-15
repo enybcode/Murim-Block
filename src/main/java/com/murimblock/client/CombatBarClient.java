@@ -176,16 +176,7 @@ public final class CombatBarClient {
             // On the right of the bar (above it are the Qi bar and the level).
             g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), x0 + width + 6, y + 7, 0xFFE8C25A, true);
         }
-        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) {
-            var state = com.murimblock.martial.SanguineArt.state(player);
-            int gx = Math.max(4, x0 - 123), gy = y - 20;
-            Component label = Component.translatable(state.active() ? "hud.murimblock.blood_crystals" : "hud.murimblock.blood_gauge",
-                    state.active() ? state.crystals() : state.gauge(), 10);
-            g.drawString(mc.font, label, gx, gy, 0xFFD27A7E, true);
-            g.fill(gx, gy + 11, gx + 104, gy + 16, 0xDD290D13);
-            g.fill(gx + 1, gy + 12, gx + 1 + (state.active() ? state.crystals() : state.gauge()) * 10, gy + 15, 0xFF981019);
-            if (!state.active() && state.gauge() == 10) g.drawString(mc.font, Component.translatable("hud.murimblock.blood_ready"), gx, gy - 10, 0xFFE3B1B3, true);
-        }
+        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) bloodDrops(g, mc, player, x0 - 27, y - 12);
         // The weapon in hand.
         g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);
         g.renderItem(player.getMainHandItem(), x0 - 26, y + 3);
@@ -225,6 +216,36 @@ public final class CombatBarClient {
             g.pose().scale(0.5F, 0.5F, 1);
             g.drawString(mc.font, label, 0, 0, 0xFFE8DCB8, true);
             g.pose().popPose();
+        }
+    }
+
+    /**
+     * The Sanguine Art's blood gauge, no text: ten small drops in two rows of five over the weapon slot, (x, y) the top
+     * left. They fill one by one, red; full, they all turn bright with a glint, pulsing (Blood Crystal Form is ready). In
+     * the form, they become small crystals, one lit for each dorsal crystal earned.
+     */
+    static void bloodDrops(GuiGraphics g, Minecraft mc, LocalPlayer player, int x, int y) {
+        var state = com.murimblock.martial.SanguineArt.state(player);
+        boolean form = state.active(), full = !form && state.gauge() >= 10;
+        int lit = form ? state.crystals() : state.gauge();
+        boolean bright = full && mc.level != null && (mc.level.getGameTime() / 6) % 2 == 0;
+        for (int i = 0; i < 10; i++) {
+            int dx = x + (i % 5) * 5, dy = y + (i / 5) * 5;
+            boolean on = i < lit;
+            if (form) {
+                // A small crystal: a dark rim, a light heart.
+                int rim = on ? 0xFFB0263F : 0xC83A0C12, heart = on ? 0xFFFF8FA3 : 0xC83A0C12;
+                g.fill(dx + 1, dy, dx + 2, dy + 4, rim);
+                g.fill(dx, dy + 1, dx + 3, dy + 3, rim);
+                g.fill(dx + 1, dy + 1, dx + 2, dy + 3, heart);
+            } else {
+                // A drop: its point up, round below.
+                int col = !on ? 0xC83A0C12 : full ? (bright ? 0xFFFF8A96 : 0xFFFF6A7C) : 0xFFC0182C;
+                g.fill(dx + 1, dy, dx + 2, dy + 1, col);
+                g.fill(dx, dy + 1, dx + 3, dy + 3, col);
+                g.fill(dx + 1, dy + 3, dx + 2, dy + 4, col);
+                if (on) g.fill(dx, dy + 1, dx + 1, dy + 2, full ? 0xFFFFFFFF : 0xFFFF6A7C);
+            }
         }
     }
 
