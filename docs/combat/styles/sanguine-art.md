@@ -110,7 +110,7 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 
 ## Blood Iceberg, la dernière technique (15/10/2026, demande d'Enzo)
 
-- **5e technique** (`blood_iceberg`, 40 Qi, **recharge 9 min** = 10 800 ticks) ; quête « Crimson Peak » : tenir trois Blood Crystal Forms jusqu'à leur fin (`crimson_peak.forms`). Icône dans `TechniqueIcons.java` (une montagne de cristal, une silhouette au sommet).
+- **5e technique** (`blood_iceberg`, 750 Qi, **recharge 9 min** = 10 800 ticks) ; quête « Crimson Peak » : tenir trois Blood Crystal Forms jusqu'à leur fin (`crimson_peak.forms`). Icône dans `TechniqueIcons.java` (une montagne de cristal, une silhouette au sommet).
 - **Animation** (`sanguine_iceberg`, 1,7 s) : un genou presque à terre, les deux paumes frappent le sol (0,3 s), puis le joueur se redresse avec la montagne, bras levés, et se tient au sommet bras ouverts.
 - **La montagne** (`BloodIceberg`) : 30 × 30 blocs (un carré arrondi), sommet à 9 blocs au-dessus des pieds, flancs irréguliers et 12 flèches de cristal (+3 à +7,5) autour du sommet, plate au milieu pour s'y tenir ; elle comble la pente jusqu'à 12 blocs sous les pieds. Elle monte du sol en 1 s (6 ticks après le cast), couche par couche, et **porte en haut** le joueur et tout ce qui se trouve dessus (`lift`). Elle ne remplit que l'air et ce qu'un bloc peut remplacer (herbe, fleurs, neige) : elle ne casse jamais un bloc ; l'herbe et les fleurs remplacées ne reviennent pas.
 - **Les blocs** (`SanguineBlocks`) : `blood_crystal_block` et `blood_crystal_vein` (veines lumineuses, lumière 9, 12 % des blocs et le haut des flèches) ; textures en facettes de cristal générées par `scripts/animation/blood-iceberg-blocks.cjs`. Aucun objet, aucun butin. Chaque bloc programme sa disparition (tick planifié, sauvegardé avec le chunk) : **au bout de 60 s, la montagne s'effrite du haut vers le bas** en quelques secondes, et rien ne reste même si le serveur s'arrête avant.
@@ -142,7 +142,7 @@ Le parchemin n'enseigne qu'à partir de **Qi Crystallization** ; coûts en Qi (1
 
 ### Les règles du temple (15/10/2026, demande d'Enzo)
 
-- **Incassable** : la pierre du temple ne se casse ni à la main, ni aux explosions (résistance 3 600 000), ni aux pistons ; elle ne part qu'à la fin de ses 60 s (ou en créatif).
+- **Incassable** : la pierre du temple ne se casse ni à la main, ni aux explosions (résistance 3 600 000), ni aux pistons ; elle ne part qu'à la fin de ses 60 s (ou en créatif). Durée confirmée par Enzo le 15/10/2026 : le temple tient 60 s, la technique se recharge en 9 min.
 - **Rien ne se construit dedans** : tant qu'il tient, aucun bloc ne se pose et aucun seau ne se vide dans son emprise (45 × 45, du dessous jusqu'au-dessus des flèches) (`BloodIceberg.inArena`, `BlockEvent.EntityPlaceEvent`, `RightClickBlock` d'un seau).
 - **Si son lanceur meurt, il s'effondre aussitôt** : le sang d'abord, puis la pierre du haut vers le bas en une demi-seconde (`BloodIceberg.collapse`, `collapseTick` sur `ServerTickEvent`).
 - Test : `theTempleIsUnbreakableClosedToBuildingAndFallsWithItsCaster`.
