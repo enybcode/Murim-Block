@@ -45,10 +45,13 @@ import org.jetbrains.annotations.Nullable;
  * right-clicked, he opens Minecraft's trading screen; struck, he stops trading and runs. He keeps to a few blocks around
  * where he was placed and never despawns. Not spawned in the world yet: a spawn egg and /summon, until the Alliance's
  * capital has its market.
- * <p>His wares are fixed (see {@link #wares()}): the Alliance's weapons, pills and healing, the Long Fist scroll; and he
+ * <p>His wares are fixed (see {@link #wares()}): the Alliance's weapons, pills and healing, the Long Fist scroll, and at
+ * {@link #PENDANT_PRICE} taels apiece the locator pendants that point to each kind of structure; and he
  * buys the spoils of bandits and crabs for taels. Each trade can be made a few times, then he restocks every half day.
  */
 public class AllianceMerchantEntity extends PathfinderMob implements Merchant {
+    /** A locator pendant's price, in taels (two full stacks). */
+    public static final int PENDANT_PRICE = 128;
     /** How far from his stall he strolls (blocks). */
     public static final int HOME_RADIUS = 6;
     /** How often he restocks (ticks: half a Minecraft day). */
@@ -145,6 +148,9 @@ public class AllianceMerchantEntity extends PathfinderMob implements Merchant {
         list.add(sells(new ItemStack(MurimItems.ALLIANCE_SPEAR.get()), 24, 2));
         list.add(sells(new ItemStack(MurimItems.SNOW_PLUM_JIAN.get()), 24, 2));
         list.add(sells(new ItemStack(MurimItems.RATTAN_SHIELD.get()), 12, 2));
+        // The two knives (Enzo, 15/10/2026: bought here, or found by great luck in a site's barrel).
+        list.add(sells(new ItemStack(MurimItems.BISHOU.get()), 16, 2));
+        list.add(sells(new ItemStack(MurimItems.FLYING_KNIFE.get()), 12, 2));
         // Pills and healing, food for the road.
         list.add(sells(new ItemStack(MurimItems.QI_GATHERING_PILL.get()), 6, 8));
         list.add(sells(new ItemStack(MurimItems.REALM_BREAKING_PILL.get()), 32, 2));
@@ -153,6 +159,9 @@ public class AllianceMerchantEntity extends PathfinderMob implements Merchant {
         list.add(sells(new ItemStack(Items.BREAD, 4), 1, 16));
         // The one art sold openly: the Long Fist, a free art.
         list.add(sells(new ItemStack(MurimItems.LONG_FIST_SCROLL.get()), 40, 1));
+        // Locator pendants, his dearest wares: two full stacks of taels each, one of each per restock.
+        MurimItems.pendants().forEach(pendant -> list.add(new MerchantOffer(taels(64), java.util.Optional.of(taels(64)),
+                new ItemStack(pendant.get()), 1, 0, 0.0F)));
         // Spoils he takes for taels.
         list.add(buys(MurimItems.BANDIT_DAO.get(), 1, 3, 8));
         list.add(buys(MurimItems.CHIEF_GREAT_AXE.get(), 1, 12, 2));

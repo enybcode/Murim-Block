@@ -70,6 +70,9 @@ public final class ArmoredCrabEpicFight {
             // Their chief: the same skeleton, drawn larger.
             event.registerEntityPatch(MurimEntities.BANDIT_CHIEF.get(), BanditChiefPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_CHIEF.get(), Armatures.BIPED);
+            // The Crab King: the biped skeleton too, drawn larger, his pincers on its arms.
+            event.registerEntityPatch(MurimEntities.CRAB_KING.get(), CrabKingPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.CRAB_KING.get(), Armatures.BIPED);
             // The Heart Demon: a copy of its owner, on the player's own skeleton.
             event.registerEntityPatch(MurimEntities.HEART_DEMON.get(), HeartDemonPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.HEART_DEMON.get(), Armatures.BIPED);

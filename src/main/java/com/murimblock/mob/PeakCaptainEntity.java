@@ -207,12 +207,15 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
         foe = from == null ? null : from.getUUID();
         withPatch(PeakCaptainPatch::holdBack);
         getNavigation().stop();
-        // The leap: away from his foe (toward his post when he has one), up.
-        Vec3 away = from != null ? position().subtract(from.position()) : post != null ? Vec3.atBottomCenterOf(post).subtract(position()) : getLookAngle().reverse();
-        away = away.multiply(1, 0, 1);
-        away = away.lengthSqr() < 1.0E-4 ? getLookAngle().reverse().multiply(1, 0, 1) : away.normalize();
-        setDeltaMovement(away.x * 1.1, 0.55, away.z * 1.1);
-        hurtMarked = true;
+        // The leap: onto his post when he has one (it lands him there, on his leitai, never off its edge); else a bound
+        // back from his foe.
+        if (post != null) leapTo(Vec3.atBottomCenterOf(post));
+        else {
+            Vec3 away = from != null ? position().subtract(from.position()).multiply(1, 0, 1) : Vec3.ZERO;
+            away = away.lengthSqr() < 1.0E-4 ? getLookAngle().reverse().multiply(1, 0, 1).normalize() : away.normalize();
+            setDeltaMovement(away.x * 0.6, 0.5, away.z * 0.6);
+            hurtMarked = true;
+        }
         server.playSound(null, getX(), getY(), getZ(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 4.0F, 1.0F);
         for (ServerPlayer player : server.getPlayers(p -> p.distanceToSqr(this) < 48 * 48))
             player.displayClientMessage(net.minecraft.network.chat.Component.translatable("entity.murimblock.peak_captain.call"), true);
@@ -240,6 +243,9 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
         for (int i = 0; i < count; i++) {
             double a = start + i * Math.PI * 2 / count;
             Vec3 at = dropPoint(server, centre.x + Math.cos(a) * DROP_RING, centre.y, centre.z + Math.sin(a) * DROP_RING);
+            // No ground there (a drop, a wall): he lands beside the captain instead.
+            if (at == null) at = dropPoint(server, getX() + Math.cos(a) * 1.5, getY(), getZ() + Math.sin(a) * 1.5);
+            if (at == null) at = position().add(0, 1, 0);
             AllianceSoldierEntity man = MurimEntities.ALLIANCE_SPEAR_GUARD.get().create(server);
             if (man == null) continue;
             float yaw = enemy != null ? (float) Math.toDegrees(Math.atan2(-(enemy.getX() - at.x), enemy.getZ() - at.z)) : getYRot();
@@ -259,14 +265,15 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
 
     /**
      * Where a man dropping near (x, y, z) starts: above the ground there (searched a few blocks up and down from y), as
-     * high as the open sky allows, DROP_HEIGHT at most.
+     * high as the open sky allows, DROP_HEIGHT at most; null when there is no firm ground with room to stand there.
      */
-    static Vec3 dropPoint(ServerLevel server, double x, double y, double z) {
+    @Nullable static Vec3 dropPoint(ServerLevel server, double x, double y, double z) {
         BlockPos.MutableBlockPos p = BlockPos.containing(x, y + 4, z).mutable();
         int lowest = p.getY() - 12;
         while (p.getY() > lowest && !(server.getBlockState(p.below()).isFaceSturdy(server, p.below(), net.minecraft.core.Direction.UP)
                 && server.getBlockState(p).getCollisionShape(server, p).isEmpty() && server.getBlockState(p.above()).getCollisionShape(server, p.above()).isEmpty()))
             p.move(0, -1, 0);
+        if (p.getY() <= lowest) return null;
         int ground = p.getY(), top = ground;
         while (top - ground < DROP_HEIGHT && server.getBlockState(p.setY(top + 1)).getCollisionShape(server, p).isEmpty()
                 && server.getBlockState(p.setY(top + 2)).getCollisionShape(server, p).isEmpty()) top++;
@@ -352,8 +359,30 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
     }
 
     /** With no one to fight, he walks back to his post and faces the way he faced there. */
+    /** Flight time of his leaps (ticks). */
+    static final int LEAP_TICKS = 16;
+
+    /**
+     * A leap that lands him on {@code to}: up and across in LEAP_TICKS, by the game's own gravity (0.08 a tick) and the
+     * drag of the air (0.98 up and down, 0.91 across). Far off, he leaps no further than 12 blocks.
+     */
+    public void leapTo(Vec3 to) {
+        Vec3 across = to.subtract(position()).multiply(1, 0, 1);
+        double far = Math.min(across.length(), 12), rise = to.y - getY();
+        double spread = (1 - Math.pow(0.91, LEAP_TICKS)) / 0.09;
+        double vy = Math.max(0.42, (rise + 0.04 * LEAP_TICKS * LEAP_TICKS) / LEAP_TICKS);
+        Vec3 v = across.lengthSqr() < 1.0E-4 ? Vec3.ZERO : across.normalize().scale(far / spread);
+        getNavigation().stop();
+        setDeltaMovement(v.x, vy, v.z);
+        hurtMarked = true;
+        hasImpulse = true;
+    }
+
     static final class ReturnToPostGoal extends Goal {
         private final PeakCaptainEntity captain;
+        /** Ticks he has made no headway toward his post: he leaps onto it when walking will not do (a raised leitai). */
+        private int stuck;
+        private double best;
 
         ReturnToPostGoal(PeakCaptainEntity captain) {
             this.captain = captain;
@@ -366,11 +395,37 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
         }
 
         @Override public boolean canContinueToUse() {
-            return canUse() && !captain.getNavigation().isDone();
+            return canUse();
         }
 
+        @Override public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+
         @Override public void start() {
+            stuck = 0;
+            best = Double.MAX_VALUE;
+            walk();
+        }
+
+        private void walk() {
             captain.getNavigation().moveTo(captain.post.getX() + 0.5, captain.post.getY(), captain.post.getZ() + 0.5, 0.8);
+        }
+
+        @Override public void tick() {
+            double now = captain.post.distToCenterSqr(captain.position());
+            if (now < best - 0.25) {
+                best = now;
+                stuck = 0;
+            } else stuck++;
+            if (captain.getNavigation().isDone() && stuck % 10 == 0) walk();
+            // Two seconds without getting nearer (no way up, a wall): one leap, from the ground, onto the post.
+            if (stuck >= 40 && captain.onGround()) {
+                captain.leapTo(Vec3.atBottomCenterOf(captain.post));
+                stuck = 0;
+                best = Double.MAX_VALUE;
+            }
         }
     }
 

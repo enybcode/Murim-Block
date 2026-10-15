@@ -73,6 +73,7 @@ public final class CultivationRules {
         return switch (entityId) {
             case "murimblock:bandit_chief" -> 30;
             case "murimblock:azure_sensei" -> 30;
+            case "murimblock:crab_king" -> 30;
             case "minecraft:elder_guardian" -> 100;
             case "minecraft:warden" -> 250;
             case "minecraft:wither" -> 400;
@@ -272,6 +273,7 @@ public final class CultivationRules {
             case "murimblock:mountain_bandit" -> new CultivationData(CultivationRealm.QI_SENSING, CultivationStage.MIDDLE);
             case "murimblock:crab_man" -> new CultivationData(CultivationRealm.QI_SENSING, CultivationStage.LATE);
             case "murimblock:bandit_chief" -> new CultivationData(CultivationRealm.QI_GUIDING, CultivationStage.PEAK);
+            case "murimblock:crab_king" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.LATE);
             case "minecraft:elder_guardian" -> new CultivationData(CultivationRealm.QI_LIQUIDATION, CultivationStage.MIDDLE);
             case "minecraft:warden" -> new CultivationData(CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
             case "minecraft:wither" -> new CultivationData(CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);

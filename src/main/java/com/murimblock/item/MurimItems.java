@@ -86,6 +86,8 @@ public final class MurimItems {
     }
 
     /** Tiger orange and the dark of his vest. */
+    public static final DeferredItem<DeferredSpawnEggItem> CRAB_KING_SPAWN_EGG = ITEMS.register("crab_king_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.CRAB_KING, 0x6E1A20, 0x55361F, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> BANDIT_CHIEF_SPAWN_EGG = ITEMS.register("bandit_chief_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_CHIEF, 0xD07A28, 0x2A1A14, new Item.Properties()));
 
@@ -111,6 +113,18 @@ public final class MurimItems {
      */
     public static final DeferredItem<SwordItem> SNOW_PLUM_JIAN = ITEMS.register("snow_plum_jian",
             () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.4F))));
+
+    /**
+     * Two Murim knives, daggers for Epic Fight (data/murimblock/capabilities/weapons: its own dagger moveset, quick
+     * stabs and slashes, two of them dual-wielded), not thrown; sold by the Alliance merchant, rarely found (3 %) in a
+     * site's barrel (chests/murim_cache): the Bishou (匕首), a straight double-edged dagger, black cord and a
+     * jade pommel, 4 damage; the Flying Knife (飞刀), a thin leaf blade, a steel ring and a red cloth, lighter and quicker,
+     * 3 damage. Models from scripts/animation/murim-knives-model.cjs (Enzo's choice, 15/10/2026).
+     */
+    public static final DeferredItem<SwordItem> BISHOU = ITEMS.register("bishou",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 1, -2.0F))));
+    public static final DeferredItem<SwordItem> FLYING_KNIFE = ITEMS.register("flying_knife",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 0, -1.6F))));
 
     /**
      * The Orthodox Alliance's Rattan Shield (藤牌): rattan coiled into a deep dome, a medallion with the Alliance flag on
@@ -187,6 +201,26 @@ public final class MurimItems {
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
             () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 
+    /**
+     * Locator pendants, sold dear by the Alliance Merchant: like the sect token, a needle that points to the nearest
+     * structure of one kind. Only the structures that matter have one (Enzo, 15/10): those with a boss, or with people
+     * who give quests (none yet). Each looks like where it leads
+     * (scripts/worldgen/PendantTextures.java).
+     */
+    public static final DeferredItem<LocatorPendantItem> BAMBOO_TEMPLE_PENDANT = pendant("misty_bamboo_temple");
+    public static final DeferredItem<LocatorPendantItem> BANDIT_DEN_PENDANT = pendant("yellow_river_bandit_den");
+    public static final DeferredItem<LocatorPendantItem> ALLIANCE_ARENA_PENDANT = pendant("alliance_arena");
+
+    private static DeferredItem<LocatorPendantItem> pendant(String structure) {
+        return ITEMS.register(structure + "_pendant",
+                () -> new LocatorPendantItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), structure));
+    }
+
+    /** Every locator pendant, in the merchant's order. */
+    public static java.util.List<DeferredItem<LocatorPendantItem>> pendants() {
+        return java.util.List.of(BAMBOO_TEMPLE_PENDANT, BANDIT_DEN_PENDANT, ALLIANCE_ARENA_PENDANT);
+    }
+
     /** Manual of the Cloud Cliff sect's art: read, it teaches the Azure Cloud Sword Art and is used up. */
     public static final DeferredItem<MartialManualItem> AZURE_CLOUD_SWORD_MANUAL = ITEMS.register("azure_cloud_sword_manual",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
@@ -219,9 +253,12 @@ public final class MurimItems {
                         output.accept(MOUNTAIN_BANDIT_SPAWN_EGG.get());
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
+                        output.accept(CRAB_KING_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(ALLIANCE_SPEAR.get());
                         output.accept(SNOW_PLUM_JIAN.get());
+                        output.accept(BISHOU.get());
+                        output.accept(FLYING_KNIFE.get());
                         output.accept(RATTAN_SHIELD.get());
                         output.accept(IRON_FAN.get());
                         output.accept(CHAIN_WHIP.get());
@@ -247,6 +284,7 @@ public final class MurimItems {
                         output.accept(PEAK_GUARD_GREAVES.get());
                         MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
+                        pendants().forEach(pendant -> output.accept(pendant.get()));
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());

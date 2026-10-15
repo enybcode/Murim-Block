@@ -96,6 +96,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the whole fight against the Peak Captain on his leitai (see PeakCaptainFightTour).
+        peakCaptainFightTour {
+            client()
+            gameDirectory = project.file('build/peak-captain-fight-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.peakCaptainFightTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at the Captain of the Peak Guard and his swinging cloth (see PeakCaptainTour).
         peakCaptainTour {
             client()
@@ -164,6 +173,15 @@ neoForge {
             gameDirectory = project.file('build/spear-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.spearTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the Murim knives (see KnifeTour).
+        knifeTour {
+            client()
+            gameDirectory = project.file('build/knife-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.knifeTour', 'true'
             disableIdeRun()
         }
 
@@ -401,6 +419,22 @@ tasks.named('runSiteTour').configure {
     }
 }
 
+def peakCaptainFightTourSave = layout.buildDirectory.dir('peak-captain-fight-tour-run/saves/murim-peak-captain-fight')
+def peakCaptainFightTourReport = layout.buildDirectory.file('peak-captain-fight-tour-run/peak-captain-fight-tour-report.txt')
+def peakCaptainFightTourShots = layout.buildDirectory.dir('peak-captain-fight-tour-run/screenshots')
+tasks.named('runPeakCaptainFightTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Peak Captain fight tour.')
+        peakCaptainFightTourSave.get().asFile.deleteDir()
+        peakCaptainFightTourShots.get().asFile.deleteDir()
+        peakCaptainFightTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = peakCaptainFightTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Peak Captain fight tour failed; see build/peak-captain-fight-tour-run/peak-captain-fight-tour-report.txt')
+    }
+}
+
 def peakCaptainTourSave = layout.buildDirectory.dir('peak-captain-tour-run/saves/murim-peak-captain')
 def peakCaptainTourReport = layout.buildDirectory.file('peak-captain-tour-run/peak-captain-tour-report.txt')
 def peakCaptainTourShots = layout.buildDirectory.dir('peak-captain-tour-run/screenshots')
@@ -529,6 +563,21 @@ tasks.named('runLongFistTour').configure {
     }
 }
 
+def knifeTourSave = layout.buildDirectory.dir('knife-tour-run/saves/murim-knife')
+def knifeTourReport = layout.buildDirectory.file('knife-tour-run/knife-tour-report.txt')
+def knifeTourShots = layout.buildDirectory.dir('knife-tour-run/screenshots')
+tasks.named('runKnifeTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only knife tour.')
+        knifeTourSave.get().asFile.deleteDir()
+        knifeTourShots.get().asFile.deleteDir()
+        knifeTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = knifeTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Knife tour failed; see build/knife-tour-run/knife-tour-report.txt')
+    }
+}
 def spearTourSave = layout.buildDirectory.dir('spear-tour-run/saves/murim-spear')
 def spearTourReport = layout.buildDirectory.file('spear-tour-run/spear-tour-report.txt')
 def spearTourShots = layout.buildDirectory.dir('spear-tour-run/screenshots')
