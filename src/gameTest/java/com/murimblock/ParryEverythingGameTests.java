@@ -115,6 +115,15 @@ public final class ParryEverythingGameTests {
         return new Attacker(p, EpicFightBridge.patch(p), 2.4);
     }
 
+    /** A player with a knife in each hand (Epic Fight's daggers, dual-wielded when both hands hold one), at a knife's reach. */
+    private static Attacker knifeFighter(GameTestHelper helper, boolean dual) {
+        ServerPlayer p = player(helper);
+        EpicFightCombatDefaults.enforce(p);
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.BISHOU.get()));
+        if (dual) p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(MurimItems.FLYING_KNIFE.get()));
+        return new Attacker(p, EpicFightBridge.patch(p), 1.3);
+    }
+
     /** The Captain of the Peak Guard, his Crimson Dragon Spear in hand. */
     private static Attacker captain(ServerLevel level, ServerPlayer defender) {
         Mob captain = MurimEntities.PEAK_CAPTAIN.get().create(level);
@@ -246,6 +255,26 @@ public final class ParryEverythingGameTests {
                 Move.one("piercing_dragon", () -> MurimAnimations.CELESTIAL_PIERCING_DRAGON),
                 Move.many("plum_blossom", () -> MurimAnimations.CELESTIAL_PLUM_BLOSSOM),
                 Move.one("thousand_sweep", () -> MurimAnimations.CELESTIAL_THOUSAND_SWEEP)));
+    }
+
+    @GameTest(template = "foundation_arena", batch = "parry_survey_knives", timeoutTicks = (3 * 5 + 2) * CASE_TICKS + 200)
+    public static void everyKnifeBlowCanBeParried(GameTestHelper helper) {
+        survey(helper, 10, "Bishou", (level, defender) -> knifeFighter(helper, false), List.of(
+                Move.one("dagger_auto1", () -> Animations.DAGGER_AUTO1),
+                Move.one("dagger_auto2", () -> Animations.DAGGER_AUTO2),
+                Move.one("dagger_auto3", () -> Animations.DAGGER_AUTO3),
+                Move.one("dagger_dash", () -> Animations.DAGGER_DASH),
+                Move.one("dagger_air_slash", () -> Animations.DAGGER_AIR_SLASH)));
+    }
+
+    @GameTest(template = "foundation_arena", batch = "parry_survey_dual_knives", timeoutTicks = (3 * 5 + 2) * CASE_TICKS + 200)
+    public static void everyDualKnifeBlowCanBeParried(GameTestHelper helper) {
+        survey(helper, 11, "Bishou and Flying Knife", (level, defender) -> knifeFighter(helper, true), List.of(
+                Move.one("dual_auto1", () -> Animations.DAGGER_DUAL_AUTO1),
+                Move.one("dual_auto2", () -> Animations.DAGGER_DUAL_AUTO2),
+                Move.one("dual_auto3", () -> Animations.DAGGER_DUAL_AUTO3),
+                Move.one("dual_auto4", () -> Animations.DAGGER_DUAL_AUTO4),
+                Move.one("dual_dash", () -> Animations.DAGGER_DUAL_DASH)));
     }
 
     /**

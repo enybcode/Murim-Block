@@ -103,6 +103,17 @@ public final class MurimItems {
             () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.4F))));
 
     /**
+     * Two Murim knives, daggers for Epic Fight (data/murimblock/capabilities/weapons: its own dagger moveset, quick
+     * stabs and slashes, two of them dual-wielded): the Bishou (匕首), a straight double-edged dagger, black cord and a
+     * jade pommel, 4 damage; the Flying Knife (飞刀), a thin leaf blade, a steel ring and a red cloth, lighter and quicker,
+     * 3 damage. Models from scripts/animation/murim-knives-model.cjs (Enzo's choice, 15/10/2026).
+     */
+    public static final DeferredItem<SwordItem> BISHOU = ITEMS.register("bishou",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 1, -2.0F))));
+    public static final DeferredItem<SwordItem> FLYING_KNIFE = ITEMS.register("flying_knife",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 0, -1.6F))));
+
+    /**
      * The Orthodox Alliance's Rattan Shield (藤牌): rattan coiled into a deep dome, a medallion with the Alliance flag on
      * top, a blue cord bound round the edge. A shield (Epic Fight gives every shield its guard and parry), lighter than
      * the vanilla one. Model from scripts/animation/rattan-shield-model.cjs, held through item_skins/rattan_shield.json.
@@ -229,6 +240,8 @@ public final class MurimItems {
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(ALLIANCE_SPEAR.get());
                         output.accept(SNOW_PLUM_JIAN.get());
+                        output.accept(BISHOU.get());
+                        output.accept(FLYING_KNIFE.get());
                         output.accept(RATTAN_SHIELD.get());
                         output.accept(IRON_FAN.get());
                         output.accept(CHAIN_WHIP.get());

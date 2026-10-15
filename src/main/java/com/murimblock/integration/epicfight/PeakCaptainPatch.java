@@ -65,9 +65,15 @@ public class PeakCaptainPatch extends HumanoidMobPatch<PeakCaptainEntity> {
         if (getOriginal().phase() == PeakCaptainEntity.Phase.RETREAT) holdBack();
     }
 
-    /** No attack and no chase: his men fight. */
+    /**
+     * No attack and no chase: his men fight. The goals are stopped before they are taken away: a goal removed while it
+     * runs keeps its hold on moving (GoalSelector's locks), and he could never walk again, not even back to his post.
+     */
     public void holdBack() {
-        getOriginal().goalSelector.removeAllGoals(goal -> goal instanceof AnimatedAttackGoal || goal instanceof TargetChasingGoal);
+        var goals = getOriginal().goalSelector;
+        java.util.function.Predicate<net.minecraft.world.entity.ai.goal.Goal> attack = goal -> goal instanceof AnimatedAttackGoal || goal instanceof TargetChasingGoal;
+        goals.getAvailableGoals().stream().filter(w -> w.isRunning() && attack.test(w.getGoal())).toList().forEach(net.minecraft.world.entity.ai.goal.WrappedGoal::stop);
+        goals.removeAllGoals(attack);
     }
 
     /** Back in the fight with the Celestial Peak Spear (the entity is already in its ART phase). */
