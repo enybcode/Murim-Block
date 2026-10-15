@@ -29,6 +29,7 @@ Ces scripts demandent un Blockbench isolé : `Blockbench.exe --remote-debugging-
 - `node scripts/concepts/render-concepts.cjs` : les maquettes des structures de chaque biome, dans `docs/biomes/images/structures-*`.
 - `node scripts/concepts/render-proposals.cjs` : les quatre propositions de structures, dans `docs/structures/images`.
 - `node scripts/concepts/render-capital.cjs` : les maquettes de la capitale de l'Alliance (vues, plan numéroté, coupe des secrets), en PNG dans `docs/structures/images/alliance-capital` (le document utilise des JPEG de 1600 px).
+- `node scripts/concepts/render-outpost.cjs [--port=9232]` : les maquettes de l'avant-poste de l'Alliance (vue d'ensemble, route, cour, plan numéroté), en PNG dans `docs/structures/images/alliance-outpost` ; voir `docs/structures/alliance-outpost.md`.
 - `st-runtime.js` est le kit voxel commun : matériaux, toits chinois, salles, pavillons, arbres, personnages.
 
 ## showcase

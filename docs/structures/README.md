@@ -6,6 +6,12 @@ Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, 
 
 ![La capitale de l'Alliance, maquette](images/alliance-capital/overview.jpg)
 
+## Prévu : un avant-poste de l'Alliance (15/10/2026)
+
+Maquettes voxel d'un fort de garnison sur une butte au bord d'une route (environ 53 × 47 blocs) : porte, tour de guet et son feu de signal, salle du commandement, cour d'entraînement, caserne, écuries, infirmerie, tableau des avis, salon de thé pour les voyageurs, avec son plan numéroté : [alliance-outpost.md](alliance-outpost.md). Rien n'est construit en jeu.
+
+![L'avant-poste de l'Alliance, maquette](images/alliance-outpost/overview.jpg)
+
 ## Les six sites du 14/10/2026
 
 Six structures de plus, une par biome Murim (le Huangshan a déjà le sanctuaire). Ce sont de vraies structures Minecraft : elles apparaissent toutes seules dans les mondes neufs et `/locate structure murimblock:<id>` les trouve. Chacune a sa fiche technique, avec des conseils sur ce qu'on devrait y mettre.
