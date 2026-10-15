@@ -99,7 +99,7 @@ public final class SanguineGameTests {
     }
     private static void form(GameTestHelper h,ServerPlayer p) {
         MartialService.unlock(p,MartialArts.BLOOD_CRYSTAL_FORM);MartialService.assign(p,2,MartialArts.BLOOD_CRYSTAL_FORM.id());
-        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(10,false,0));cast(h,p,2);
+        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(BloodCrystalState.MAX_GAUGE,false,0));cast(h,p,2);
     }
     private static void strike(ServerPlayer p) {face(p,0);EpicFightBridge.patch(p).playAnimationSynchronized(MurimAnimations.SANGUINE_STRAIGHT,0);}
     private static void idle(ServerPlayer p) {EpicFightBridge.patch(p).playAnimationSynchronized(Animations.BIPED_IDLE,0);}
@@ -137,29 +137,30 @@ public final class SanguineGameTests {
     @GameTest(template="foundation_arena",batch="crystal_draw",timeoutTicks=100)
     public static void holdingDrawsTheGaugeIntoTheCrystal(GameTestHelper h) {
         var p=adept(h);var z=target(h,p,0,7);var side=target(h,p,2.2,7);
-        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(6,false,0));
+        // Twelve of the twenty points: the crystal grows to 0.6 + 12 x 0.17, no great one.
+        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(12,false,0));
         h.assertTrue(MartialService.aim(p,0),"Charge refused");ticks(h,p,90);
         h.runAfterDelay(45,()->{
             var c=held(h,p);
             h.assertTrue(SanguineArt.state(p).gauge()==0,"The charge did not draw the gauge: "+SanguineArt.state(p));
-            h.assertTrue(c!=null&&c.points()==6&&!c.great()&&c.crystalScale()>2.5F&&c.crystalScale()<2.8F,
-                    "The crystal does not hold six points: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale()));
+            h.assertTrue(c!=null&&c.points()==12&&!c.great()&&c.crystalScale()>2.5F&&c.crystalScale()<2.8F,
+                    "The crystal does not hold twelve points: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale()));
             cast(h,p,0);
         });
         h.runAfterDelay(85,()->{
             h.assertTrue(z.getHealth()<500,"The charged crystal missed: "+z.getHealth());
-            h.assertTrue(side.getHealth()==500,"A crystal of six points exploded: "+side.getHealth());end(h,p,z,side);
+            h.assertTrue(side.getHealth()==500,"A crystal of twelve points exploded: "+side.getHealth());end(h,p,z,side);
         });
     }
     @GameTest(template="foundation_arena",batch="crystal_great",timeoutTicks=125)
     public static void aFullGaugeMakesAGreatCrystalThatExplodesWithoutBreakingBlocks(GameTestHelper h) {
         var p=adept(h);var z=target(h,p,0,8);var near=target(h,p,1.8,9.2);
-        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(10,false,0));
+        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(BloodCrystalState.MAX_GAUGE,false,0));
         h.assertTrue(MartialService.aim(p,0),"Charge refused");ticks(h,p,115);
         h.runAfterDelay(56,()->{
             var c=held(h,p);
             h.assertTrue(c!=null&&c.great()&&Math.abs(c.crystalScale()-4F)<.01F&&SanguineArt.state(p).gauge()==0,
-                    "No great crystal of ten points: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale())+", "+SanguineArt.state(p));
+                    "No great crystal of a full gauge: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale())+", "+SanguineArt.state(p));
             h.assertTrue(Math.abs(c.getBbWidth()-3)<.01,"The great crystal is not 3 blocks across: "+c.getBbWidth());
         });
         h.runAfterDelay(110,()->{
@@ -240,7 +241,7 @@ public final class SanguineGameTests {
         var p=adept(h);MartialService.unlock(p,MartialArts.BLOOD_CRYSTAL_FORM);MartialService.assign(p,2,MartialArts.BLOOD_CRYSTAL_FORM.id());
         p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(9,false,0));
         h.assertTrue(MartialService.castSlot(p,2)==MartialService.CastResult.FAILED&&QiService.getQi(p)==100,"Partial gauge transformed");
-        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(10,false,0));
+        p.setData(BloodCrystalAttachments.STATE,new BloodCrystalState(BloodCrystalState.MAX_GAUGE,false,0));
         h.assertTrue(!SanguineArt.state(p).active(),"Gauge transformed automatically");cast(h,p,2);ticks(h,p,650);
         h.runAfterDelay(640,()->{h.assertTrue(SanguineArt.state(p).active()&&SanguineArt.state(p).crystals()==0,"Form expired on a timer");end(h,p);});
     }

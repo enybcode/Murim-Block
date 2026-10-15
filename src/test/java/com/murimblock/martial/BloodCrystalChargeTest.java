@@ -8,31 +8,31 @@ import org.junit.jupiter.api.Test;
 
 class BloodCrystalChargeTest {
     @Test
-    void pointsAreDrawnEveryFifthOfASecondAfterTheMinimumCharge() {
+    void pointsAreDrawnEveryTenthOfASecondAfterTheMinimumCharge() {
         assertFalse(BloodCrystalCharge.drawsPoint(11, 0));
         assertTrue(BloodCrystalCharge.drawsPoint(12, 0));
         assertFalse(BloodCrystalCharge.drawsPoint(13, 1));
-        assertTrue(BloodCrystalCharge.drawsPoint(16, 1));
-        assertFalse(BloodCrystalCharge.drawsPoint(52, 10), "no eleventh point");
+        assertTrue(BloodCrystalCharge.drawsPoint(14, 1));
+        assertFalse(BloodCrystalCharge.drawsPoint(52, 20), "no twenty-first point");
         int points = 0;
         for (int held = 0; held <= BloodCrystalCharge.AUTO_RELEASE_TICKS; held++) if (BloodCrystalCharge.drawsPoint(held, points)) points++;
-        assertEquals(10, points, "a full charge draws the whole gauge before it leaves on its own");
+        assertEquals(BloodCrystalState.MAX_GAUGE, points, "a full charge draws the whole gauge before it leaves on its own");
     }
 
     @Test
-    void theCrystalGrowsToThreeBlocksAtTenPoints() {
+    void theCrystalGrowsToThreeBlocksAtAFullGauge() {
         assertEquals(0.2F, BloodCrystalCharge.scale(0, 0), 1e-6);
         assertEquals(0.6F, BloodCrystalCharge.scale(12, 0), 1e-6);
-        assertEquals(4.0F, BloodCrystalCharge.scale(60, 10), 1e-5);
-        assertEquals(3.0, 0.75 * BloodCrystalCharge.scale(60, 10), 1e-5, "the great crystal is 3 blocks across");
+        assertEquals(4.0F, BloodCrystalCharge.scale(60, 20), 1e-5);
+        assertEquals(3.0, 0.75 * BloodCrystalCharge.scale(60, 20), 1e-5, "the great crystal is 3 blocks across");
     }
 
     @Test
-    void pointsAddPowerAndTenMakeTheGreatCrystal() {
+    void pointsAddPowerAndAFullGaugeMakesTheGreatCrystal() {
         assertEquals(1.2, BloodCrystalCharge.share(0), 1e-9);
-        assertEquals(3.0, BloodCrystalCharge.share(10), 1e-9);
-        assertFalse(BloodCrystalCharge.great(9));
-        assertTrue(BloodCrystalCharge.great(10));
+        assertEquals(3.0, BloodCrystalCharge.share(20), 1e-9);
+        assertFalse(BloodCrystalCharge.great(19));
+        assertTrue(BloodCrystalCharge.great(20));
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.murimblock.client;
 
 import com.murimblock.Murimblock;
 import com.murimblock.api.MurimblockApi;
+import com.murimblock.martial.BloodCrystalState;
 import com.murimblock.martial.MartialArts;
 import com.murimblock.martial.MartialData;
 import com.murimblock.martial.MartialService;
@@ -176,7 +177,7 @@ public final class CombatBarClient {
             // On the right of the bar (above it are the Qi bar and the level).
             g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), x0 + width + 6, y + 7, 0xFFE8C25A, true);
         }
-        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) bloodDrops(g, mc, player, x0 - 27, y - 12);
+        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) bloodDrops(g, mc, player, x0 - 52, y - 2);
         // The weapon in hand.
         g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);
         g.renderItem(player.getMainHandItem(), x0 - 26, y + 3);
@@ -220,17 +221,18 @@ public final class CombatBarClient {
     }
 
     /**
-     * The Sanguine Art's blood gauge, no text: ten small drops in two rows of five over the weapon slot, (x, y) the top
-     * left. They fill one by one, red; full, they all turn bright with a glint, pulsing (Blood Crystal Form is ready). In
-     * the form, they become small crystals, one lit for each dorsal crystal earned.
+     * The Sanguine Art's blood gauge, no text: twenty small drops in two rows of ten over and beside the weapon slot, (x,
+     * y) the bottom left: low enough to stay under the chat. They fill one by one, red; full, they all turn bright with a glint, pulsing (Blood Crystal Form is ready). In
+     * the form, they become a row of ten small crystals, one lit for each dorsal crystal earned.
      */
     static void bloodDrops(GuiGraphics g, Minecraft mc, LocalPlayer player, int x, int y) {
         var state = com.murimblock.martial.SanguineArt.state(player);
-        boolean form = state.active(), full = !form && state.gauge() >= 10;
-        int lit = form ? state.crystals() : state.gauge();
+        boolean form = state.active(), full = !form && state.gauge() >= BloodCrystalState.MAX_GAUGE;
+        int lit = form ? state.crystals() : state.gauge(), count = form ? BloodCrystalState.MAX_CRYSTALS : BloodCrystalState.MAX_GAUGE;
+        int top = y - (count / 10) * 5;
         boolean bright = full && mc.level != null && (mc.level.getGameTime() / 6) % 2 == 0;
-        for (int i = 0; i < 10; i++) {
-            int dx = x + (i % 5) * 5, dy = y + (i / 5) * 5;
+        for (int i = 0; i < count; i++) {
+            int dx = x + (i % 10) * 5, dy = top + (i / 10) * 5;
             boolean on = i < lit;
             if (form) {
                 // A small crystal: a dark rim, a light heart.

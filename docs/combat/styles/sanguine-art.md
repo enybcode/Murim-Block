@@ -6,7 +6,7 @@ Branche personnelle **Colleuhu95**. Révision du 14 octobre 2026 demandée par C
 
 Sanguine Art doit être le style principal. Les deux mains sont vides. Le joueur conserve son skin et son équipement : la forme est une surcouche transparente animée par le squelette Epic Fight, pas un objet d'armure.
 
-La jauge est plafonnée à 10. Un M1 qui touche un ennemi donne 1 point ; Scarlet Tear donne 3 points par utilisation réussie, même si plusieurs cibles sont touchées. Air, parade, garde, allié et animal ne donnent aucun point. La jauge pleine attend une activation manuelle, sans transformation automatique.
+La jauge est plafonnée à 20 (15/10/2026, demande d'Enzo ; 10 avant). Un M1 qui touche un ennemi donne 1 point ; Scarlet Tear donne 3 points par utilisation réussie, même si plusieurs cibles sont touchées. Air, parade, garde, allié et animal ne donnent aucun point. La jauge pleine attend une activation manuelle, sans transformation automatique.
 
 | Case initiale | Technique | Qi | Recharge | Action |
 |---|---|---:|---:|---|
@@ -48,8 +48,8 @@ Avant la fusion d'`origin/test`, le test `CultivationGameTests.theRemnantSoulGiv
 Sur le modèle de la boule d'eau du Crab Man :
 
 - **Dans la main** : le cristal se forme (animation GeckoLib `form`), six petits fragments tournent autour de lui (`charge`). Il est penché vers l'avant.
-- **La charge consomme la jauge** : après 0,6 s, tant qu'on reste appuyé, il tire un point de la jauge de sang toutes les 0,2 s (`BloodCrystalCharge`) et grossit (échelle 0,6 + 0,34 par point). Dégâts : ×1,2 + 0,18 par point.
-- **À 10 points**, c'est le **grand cristal** : 3 blocs de large, plus lent et plus lourd. À l'impact, il **explose** (rayon 3,5 blocs, ×2 au centre à ×1 au bord, recul), sans casser de bloc. Le corps touché directement prend les dégâts du cristal, pas l'explosion.
+- **La charge consomme la jauge** : après 0,6 s, tant qu'on reste appuyé, il tire un point de la jauge de sang toutes les 0,1 s (`BloodCrystalCharge` : la jauge entière en 2 s) et grossit (échelle 0,6 + 0,17 par point). Dégâts : ×1,2 + 0,09 par point. À jauge pleine, le grand cristal est donc le même qu'avec l'ancienne jauge de 10.
+- **À 20 points** (la jauge pleine), c'est le **grand cristal** : 3 blocs de large, plus lent et plus lourd. À l'impact, il **explose** (rayon 3,5 blocs, ×2 au centre à ×1 au bord, recul), sans casser de bloc. Le corps touché directement prend les dégâts du cristal, pas l'explosion.
 - **Physique** : lancé comme une pierre (traînée 0,99, gravité 0,025, 0,035 pour le grand), visé pour arriver où regarde le lanceur ; il tourne sur lui-même en vol. Les cristaux de la salve restent droits.
 - **Impacts** : il éclate selon ce qu'il touche (`shatter_ground`, `shatter_wall`, `shatter_body`), comme la boule d'eau ; le grand cristal joue `explode`. Un bref éclair rouge Photon à chaque impact ; **seule l'explosion lance des particules** Photon (160 éclats aux rouges du cristal, qui retombent et rebondissent).
 - Il part seul après 3 s. Interrompue, la charge perd les points tirés.

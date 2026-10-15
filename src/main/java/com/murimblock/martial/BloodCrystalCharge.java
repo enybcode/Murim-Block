@@ -2,20 +2,20 @@ package com.murimblock.martial;
 
 /**
  * Blood Crystal's charge, in numbers. Held, the crystal forms in the hand; past the minimum charge, every few ticks it
- * draws one point of the blood gauge into itself, growing and gaining power. Ten points make the great crystal, 3
- * blocks across, which explodes where it lands. A crystal thrown without points is the small one.
+ * draws one point of the blood gauge into itself, growing and gaining power. The whole gauge (20 points) makes the
+ * great crystal, 3 blocks across, which explodes where it lands. A crystal thrown without points is the small one.
  */
 public final class BloodCrystalCharge {
-    /** Ticks before the crystal can be thrown (0.6 s), and between two points drawn from the gauge (0.2 s). */
-    public static final int MIN_TICKS = 12, POINT_TICKS = 4;
+    /** Ticks before the crystal can be thrown (0.6 s), and between two points drawn from the gauge (0.1 s: the whole gauge in 2 s). */
+    public static final int MIN_TICKS = 12, POINT_TICKS = 2;
     /** Points a crystal can hold: the whole gauge. */
     public static final int MAX_POINTS = BloodCrystalState.MAX_GAUGE;
     /** A held crystal leaves on its own after 3 s. */
     public static final int AUTO_RELEASE_TICKS = 60;
-    /** Damage shares: the small crystal, and what each point adds; the great crystal's explosion and its reach. */
-    public static final double BASE_SHARE = 1.2, POINT_SHARE = 0.18, EXPLOSION_SHARE = 2.0, EXPLOSION_RADIUS = 3.5;
-    /** Scale of the model (0.75 block at 1): forming 0.2 to 0.6, then 0.34 more per point; the great crystal is 4 (3 blocks). */
-    public static final float FORMED_SCALE = 0.6F, POINT_SCALE = 0.34F;
+    /** Damage shares: the small crystal, and what each point adds (a full gauge adds 1.8); the great crystal's explosion and its reach. */
+    public static final double BASE_SHARE = 1.2, POINT_SHARE = 1.8 / MAX_POINTS, EXPLOSION_SHARE = 2.0, EXPLOSION_RADIUS = 3.5;
+    /** Scale of the model (0.75 block at 1): forming 0.2 to 0.6, then a full gauge adds 3.4; the great crystal is 4 (3 blocks). */
+    public static final float FORMED_SCALE = 0.6F, POINT_SCALE = 3.4F / MAX_POINTS;
 
     private BloodCrystalCharge() {
     }

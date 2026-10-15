@@ -6,7 +6,8 @@ import net.minecraft.network.codec.StreamCodec;
 
 /** Unsaved combat state: every tracking client sees the same transformation and earned crystal count. */
 public record BloodCrystalState(int gauge, boolean active, int crystals) {
-    public static final int MAX_GAUGE = 10, MAX_CRYSTALS = 10;
+    /** The blood gauge fills to 20 (the form, the great crystal); the form earns up to 10 dorsal crystals. */
+    public static final int MAX_GAUGE = 20, MAX_CRYSTALS = 10;
     public static final BloodCrystalState EMPTY = new BloodCrystalState(0, false, 0);
     public static final StreamCodec<ByteBuf, BloodCrystalState> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, BloodCrystalState::gauge,

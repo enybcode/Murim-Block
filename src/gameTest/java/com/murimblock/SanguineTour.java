@@ -108,11 +108,11 @@ public final class SanguineTour {
                 case 94,154 -> press(mc,1);
                 case 96,156 -> mc.options.keyHotbarSlots[1].setDown(false);
                 case 195 -> server.execute(()->check(SanguineArt.state(self(server)).gauge()==4,"one M1 and a landed sword throw build four gauge points: "+SanguineArt.state(self(server))));
-                // The gauge as drops over the weapon slot: four lit, then all ten bright.
+                // The gauge as drops over the weapon slot: four lit, then all twenty bright.
                 case 197 -> capture(mc,"gauge-four.png");
                 // Three more M1 make seven; the rest of the gauge is topped up for the form.
-                case 262 -> server.execute(()->{var p=self(server);p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(10,false,0));});
-                case 268 -> server.execute(()->{check(SanguineArt.state(self(server)).gauge()==10&&!SanguineArt.state(self(server)).active(),"full gauge waits for manual activation: "+SanguineArt.state(self(server)));QiService.setQi(self(server),100);});
+                case 262 -> server.execute(()->{var p=self(server);p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(com.murimblock.martial.BloodCrystalState.MAX_GAUGE,false,0));});
+                case 268 -> server.execute(()->{check(SanguineArt.state(self(server)).gauge()==com.murimblock.martial.BloodCrystalState.MAX_GAUGE&&!SanguineArt.state(self(server)).active(),"full gauge waits for manual activation: "+SanguineArt.state(self(server)));QiService.setQi(self(server),100);});
                 case 270 -> capture(mc,"gauge-full.png");
                 case 274 -> press(mc,2);
                 case 276 -> mc.options.keyHotbarSlots[2].setDown(false);
@@ -141,10 +141,11 @@ public final class SanguineTour {
                 case 616 -> {check(!SanguineArt.state(mc.player).active(),"V exits combat and removes form");capture(mc,"combat-exit.png");}
                 // The great crystal: a full gauge drawn into it while key 1 is held, then its explosion, filmed from the side.
                 case 632 -> server.execute(()->{var p=self(server);CombatService.setCombatMode(p,true);target(server,9);
-                    p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(10,false,0));});
+                    p.setData(com.murimblock.martial.BloodCrystalAttachments.STATE,new com.murimblock.martial.BloodCrystalState(com.murimblock.martial.BloodCrystalState.MAX_GAUGE,false,0));});
                 case 636 -> viewAlong(mc,7.5,3.2,4.5);
                 case 640 -> press(mc,0);
-                case 690 -> server.execute(()->{var c=server.overworld().getEntitiesOfClass(com.murimblock.martial.BloodCrystalEntity.class,self(server).getBoundingBox().inflate(5)).stream()
+                // Twenty points at one every tenth of a second, past the first 0.6 s and the key reaching the server.
+                case 694 -> server.execute(()->{var c=server.overworld().getEntitiesOfClass(com.murimblock.martial.BloodCrystalEntity.class,self(server).getBoundingBox().inflate(5)).stream()
                         .filter(e->e.state()==com.murimblock.martial.BloodCrystalEntity.CHARGING).findFirst().orElse(null);
                     check(c!=null&&c.great()&&SanguineArt.state(self(server)).gauge()==0,"holding key 1 draws the whole gauge into a great crystal: "+(c==null?"none":c.points()+" points, scale "+c.crystalScale()));});
                 case 703 -> mc.options.keyHotbarSlots[0].setDown(false);
