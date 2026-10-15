@@ -62,7 +62,8 @@ public final class MugshotTour {
             new Sitter("crab-man", MurimEntities.CRAB_MAN::get),
             new Sitter("armored-crab", MurimEntities.ARMORED_CRAB::get),
             new Sitter("training-opponent", MurimEntities.TRAINING_OPPONENT::get),
-            new Sitter("heart-demon", MurimEntities.HEART_DEMON::get));
+            new Sitter("heart-demon", MurimEntities.HEART_DEMON::get),
+            new Sitter("alliance-merchant", MurimEntities.ALLIANCE_MERCHANT::get));
 
     private MugshotTour() { }
 
