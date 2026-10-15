@@ -622,6 +622,19 @@ public final class MartialCombat {
     // ---------------------------------------------------------------- hooks
 
     public static void registerHooks() {
+        // The Blood Iceberg's rules: its caster's death brings it down; nothing is built or poured in it.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) -> {
+            if (event.getEntity() instanceof ServerPlayer player) BloodIceberg.collapse(player);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) ->
+                BloodIceberg.collapseTick(event.getServer()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent event) -> {
+            if (event.getLevel() instanceof net.minecraft.world.level.Level level && BloodIceberg.inArena(level, event.getPos())) event.setCanceled(true);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock event) -> {
+            if (event.getItemStack().getItem() instanceof net.minecraft.world.item.BucketItem
+                    && BloodIceberg.inArena(event.getLevel(), event.getPos().relative(event.getFace() == null ? net.minecraft.core.Direction.UP : event.getFace()))) event.setCanceled(true);
+        });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {

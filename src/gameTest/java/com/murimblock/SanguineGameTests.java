@@ -398,6 +398,34 @@ public final class SanguineGameTests {
         h.assertTrue(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Could not learn the Sanguine Art at Qi Crystallization");
         com.murimblock.cultivation.CultivationService.resetCultivation(p);cleanup(p);h.succeed();
     }
+    @GameTest(template="iceberg_arena",batch="blood_iceberg_rules",timeoutTicks=200)
+    public static void theTempleIsUnbreakableClosedToBuildingAndFallsWithItsCaster(GameTestHelper h) {
+        var p=adept(h);MartialService.unlock(p,MartialArts.BLOOD_ICEBERG);MartialService.assign(p,4,MartialArts.BLOOD_ICEBERG.id());
+        var middle=h.absoluteVec(new net.minecraft.world.phys.Vec3(24.5,0,24.5));p.teleportTo(middle.x,p.getY(),middle.z);
+        BlockPos centre=p.blockPosition();
+        java.util.function.IntSupplier stone=()->{int n=0;
+            for(BlockPos at:BlockPos.betweenClosed(centre.offset(-BloodIceberg.RADIUS,-BloodIceberg.DEPTH,-BloodIceberg.RADIUS),centre.offset(BloodIceberg.RADIUS,BloodIceberg.TOP+2,BloodIceberg.RADIUS)))
+                if(h.getLevel().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
+            return n;};
+        cast(h,p,4);ticks(h,p,120);
+        h.runAfterDelay(60,()->{
+            // Unbreakable stone.
+            BlockPos floor=p.blockPosition().below();
+            h.assertTrue(h.getLevel().getBlockState(floor).getBlock() instanceof BloodIcebergBlock,"Not standing on the temple");
+            h.assertTrue(h.getLevel().getBlockState(floor).getDestroySpeed(h.getLevel(),floor)<0,"The temple's stone can be broken");
+            // Nothing built in it: a block placed on its floor is refused.
+            BlockPos above=p.blockPosition().offset(2,0,0);
+            var snapshot=net.neoforged.neoforge.common.util.BlockSnapshot.create(h.getLevel().dimension(),h.getLevel(),above);
+            h.getLevel().setBlock(above,Blocks.STONE.defaultBlockState(),3);
+            boolean refused=net.neoforged.neoforge.event.EventHooks.onBlockPlace(p,snapshot,net.minecraft.core.Direction.UP);
+            h.getLevel().setBlock(above,Blocks.AIR.defaultBlockState(),3);
+            h.assertTrue(refused,"A block could be placed in the arena");
+            // Its caster dies: it falls.
+            h.assertTrue(stone.getAsInt()>3000,"No temple");
+            p.setHealth(20);p.hurt(p.damageSources().fellOutOfWorld(),1000);
+        });
+        h.runAfterDelay(90,()->{h.assertTrue(stone.getAsInt()==0,"The temple stood after its caster died: "+stone.getAsInt());end(h,p);});
+    }
     @GameTest(template="foundation_arena",batch="crystal_parry",timeoutTicks=85)
     public static void aPerfectParryStopsTheThrownCrystal(GameTestHelper h) {
         var attacker=adept(h);var defender=adept(h);h.getLevel().getServer().setPvpAllowed(true);

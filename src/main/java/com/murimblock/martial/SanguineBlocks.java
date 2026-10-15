@@ -31,7 +31,8 @@ public final class SanguineBlocks {
     }
 
     private static DeferredBlock<BloodIcebergBlock> temple(String name, MapColor color, SoundType sound, int light) {
-        return BLOCKS.register(name, () -> new BloodIcebergBlock(BlockBehaviour.Properties.of().mapColor(color).strength(2F, 6F).sound(sound)
+        // Unbreakable, by hand or by explosion; it goes when its time is up (BloodIceberg).
+        return BLOCKS.register(name, () -> new BloodIcebergBlock(BlockBehaviour.Properties.of().mapColor(color).strength(-1F, 3_600_000F).sound(sound)
                 .lightLevel(s -> light).noLootTable().pushReaction(PushReaction.BLOCK).isValidSpawn((s, l, p, t) -> false)));
     }
 

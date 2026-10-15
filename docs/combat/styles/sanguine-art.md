@@ -139,3 +139,10 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 ## Art de haut niveau (15/10/2026)
 
 Le parchemin n'enseigne qu'à partir de **Qi Crystallization** ; coûts en Qi (100, 150, 200, 120, 500), main durcie par le sang (+4) et parts retouchées : voir `docs/combat/technique-balance.md`. Icône de Blood Iceberg redessinée en temple (mur de briques, flèches d'or et lanternes, sang qui coule).
+
+### Les règles du temple (15/10/2026, demande d'Enzo)
+
+- **Incassable** : la pierre du temple ne se casse ni à la main, ni aux explosions (résistance 3 600 000), ni aux pistons ; elle ne part qu'à la fin de ses 60 s (ou en créatif).
+- **Rien ne se construit dedans** : tant qu'il tient, aucun bloc ne se pose et aucun seau ne se vide dans son emprise (45 × 45, du dessous jusqu'au-dessus des flèches) (`BloodIceberg.inArena`, `BlockEvent.EntityPlaceEvent`, `RightClickBlock` d'un seau).
+- **Si son lanceur meurt, il s'effondre aussitôt** : le sang d'abord, puis la pierre du haut vers le bas en une demi-seconde (`BloodIceberg.collapse`, `collapseTick` sur `ServerTickEvent`).
+- Test : `theTempleIsUnbreakableClosedToBuildingAndFallsWithItsCaster`.

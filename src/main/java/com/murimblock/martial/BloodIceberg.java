@@ -35,6 +35,9 @@ import net.minecraft.world.phys.AABB;
  * It only fills air (and grass, flowers, snow: what a block may replace), never breaks a block. Each of its blocks, and
  * each of its springs of blood, removes itself by a scheduled tick (saved with the chunk), so nothing is left behind even
  * if the server stops; the flowing blood dries up once its springs are gone.
+ * <p>
+ * Its stone cannot be broken (by hand, explosion or piston), nothing can be built or poured in it while it stands, and
+ * it collapses at once if its caster dies (15/10/2026, Enzo's rules).
  */
 public final class BloodIceberg {
     /**
@@ -66,6 +69,9 @@ public final class BloodIceberg {
         final int maxY;
         int placed;
         boolean flowing;
+        /** Collapsing (its caster died): how many of its blocks, from the top, have been taken away. */
+        boolean collapsing;
+        int removed;
 
         Peak(ResourceKey<Level> level, BlockPos centre, List<Spot> spots, List<Spot> springs, long start) {
             this.level = level; this.centre = centre; this.spots = spots; this.springs = springs; this.start = start;
@@ -182,7 +188,7 @@ public final class BloodIceberg {
     /** Every tick, for each player: their arena rising, then its gifts while they are in it. */
     static void tick(ServerPlayer p) {
         Peak k = PEAKS.get(p.getUUID());
-        if (k == null) return;
+        if (k == null || k.collapsing) return;
         long now = p.level().getGameTime();
         if (now >= k.ends + 60) { PEAKS.remove(p.getUUID()); return; }
         if (!p.level().dimension().equals(k.level)) return;
@@ -247,6 +253,45 @@ public final class BloodIceberg {
         e.teleportTo(e.getX(), up.getY(), e.getZ());
         e.resetFallDistance();
         e.setDeltaMovement(e.getDeltaMovement().multiply(1, 0, 1));
+    }
+
+    /** Whether a position is in an arena that stands (its footprint, from under the ground to over its spires). */
+    public static boolean inArena(Level level, BlockPos pos) {
+        long now = level.getGameTime();
+        for (Peak k : PEAKS.values()) {
+            if (k.collapsing || now >= k.ends || !k.level.equals(level.dimension())) continue;
+            if (Math.abs(pos.getX() - k.centre.getX()) <= RADIUS + 1 && Math.abs(pos.getZ() - k.centre.getZ()) <= RADIUS + 1
+                    && pos.getY() >= k.centre.getY() - DEPTH - 1 && pos.getY() <= k.maxY + 4) return true;
+        }
+        return false;
+    }
+
+    /** Its caster died: the arena collapses at once (BloodIceberg.collapseTick takes it down, top first, in half a second). */
+    public static void collapse(ServerPlayer p) {
+        Peak k = PEAKS.get(p.getUUID());
+        if (k == null || k.collapsing) return;
+        k.collapsing = true;
+        ServerLevel level = p.server.getLevel(k.level);
+        if (level != null) level.playSound(null, k.centre.getX() + .5, k.centre.getY() + FLOOR, k.centre.getZ() + .5,
+                SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.4F, .6F);
+    }
+
+    /** Each server tick: collapsing arenas come down, their blood first, then their stone from the top, in 10 ticks. */
+    public static void collapseTick(net.minecraft.server.MinecraftServer server) {
+        for (var it = PEAKS.values().iterator(); it.hasNext(); ) {
+            Peak k = it.next();
+            if (!k.collapsing) continue;
+            ServerLevel level = server.getLevel(k.level);
+            if (level == null) { it.remove(); continue; }
+            if (k.removed == 0) for (Spot s : k.springs) if (level.getBlockState(s.pos()).is(block(Kind.BLOOD))) level.setBlock(s.pos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            int batch = Math.max(1, k.placed / 10 + 1);
+            for (int n = 0; n < batch && k.removed < k.placed; n++) {
+                Spot s = k.spots.get(k.placed - 1 - k.removed++);
+                if (level.getBlockState(s.pos()).getBlock() instanceof BloodIcebergBlock)
+                    level.setBlock(s.pos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            }
+            if (k.removed >= k.placed) it.remove();
+        }
     }
 
     /** Whether the player is in (or on, or at the foot of) their arena. */
