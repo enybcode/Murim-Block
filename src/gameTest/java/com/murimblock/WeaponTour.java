@@ -157,6 +157,7 @@ public final class WeaponTour {
     /**
      * An addon's staff, to see its moves (never shipped with Murimblock): its registry name from MURIM_TOUR_STAFF, by
      * default Dawn Day's iron battlestaff; air when that addon is not installed (the tour's build/weapon-tour-run/mods).
+     * Skipped while Murimblock retires it (docs/DAWN_DAY.md).
      */
     private static Item addonStaff() {
         String id = System.getenv().getOrDefault("MURIM_TOUR_STAFF", "epicfight_dd:iron_battlestaff");
@@ -308,7 +309,10 @@ public final class WeaponTour {
         }
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.LEFT, Side.TOP)) shield("guard", side, GUARD, null, 12, 2);
         // An addon's staff (only with the addon installed): its stance, walk, run, its whole M1 chain.
-        if (addonStaff() != net.minecraft.world.item.Items.AIR) {
+        // Not when Murimblock retires that item (Dawn Day's, since it became a dependency for its animations only): it
+        // would be taken from the player's hand. MURIM_TOUR_STAFF can still name another addon's staff.
+        if (addonStaff() != net.minecraft.world.item.Items.AIR
+                && !com.murimblock.integration.epicfight.EpicFightContentPolicy.blocked(new net.minecraft.world.item.ItemStack(addonStaff()))) {
             for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK)) staff("idle", side, -1, LivingMotions.IDLE, 1, 1);
             for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) staff("walk", side, -1, LivingMotions.WALK, 16, 2);
             staff("run", Side.FRONT_RIGHT, -1, LivingMotions.RUN, 12, 2);
