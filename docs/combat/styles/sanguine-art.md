@@ -85,3 +85,10 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 
 - Vu de l'extérieur, le joueur **dégaine** son épée au lieu de se mettre en garde (`sanguine_sword_summon`, 1,15 s) : la main droite va chercher la poignée à la hanche gauche, la main gauche tient le fourreau (invisible), le corps se ramasse et se vrille ; puis il dégaine d'un coup en grand arc horizontal vers la droite, la main gauche ramenant le fourreau en arrière ; un coup sec pour chasser le sang (chiburi : la lame se lève puis claque le long de la jambe), et la garde.
 - La lame se forme le long du fourreau, derrière la hanche, pointe en arrière et un peu vers le bas, comme tirée d'un fourreau invisible (jusqu'à 0,38 s) ; elle prolonge ensuite le bras pendant l'arc et le chiburi, puis passe dans la prise normale à partir de 0,84 s (`BloodCrystalOverlay.DRAW`, `GRIP_FROM`, `bodyDirection`).
+
+## M1 de l'épée : le combo d'épée de base d'Epic Fight (15/10/2026, demande d'Enzo)
+
+- Les coupes Azure étaient propres à l'Épée du Nuage Azur : tant que l'épée de sang est sortie, le clic gauche joue désormais le combo d'épée de base d'Epic Fight (`SWORD_AUTO1` à `AUTO3`, l'attaque en course `SWORD_DASH` et l'attaque aérienne `SWORD_AIR_SLASH`), comme n'importe quelle épée.
+- Leurs étincelles d'impact sont coupées pour l'épée de sang seulement (`SanguineHitSparkMixin`, `SanguineArt.silencesHit`) : l'art reste sans particules ; les autres épées gardent les leurs.
+- L'épée étant tenue main vide, Epic Fight lui donnerait la portée d'un poing : elle coupe avec la portée d'une épée longue (`SanguineSwordReachMixin`, `ColliderPreset.LONGSWORD`).
+- Le bonus (+5 d'attaque) et la jauge (+1 par coupe qui touche) ne changent pas. Les copies `sanguine_blade_*` sont retirées.

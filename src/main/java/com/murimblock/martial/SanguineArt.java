@@ -56,11 +56,20 @@ public final class SanguineArt {
     /** The blood sword in hand strikes like a sword: attack added while it is out. */
     public static final double SWORD_DAMAGE=5;
     private static final ResourceLocation SWORD_MODIFIER=ResourceLocation.fromNamespaceAndPath("murimblock","blood_sword");
-    /** The sword's cuts (the Azure art's four sword strikes, without hit puffs): the M1 chain while the blood sword is out. */
-    private static final List<AnimationAccessor<? extends AttackAnimation>> swordChain() {
-        return List.of(MurimAnimations.SANGUINE_BLADE_DRIFT,MurimAnimations.SANGUINE_BLADE_RETURN,MurimAnimations.SANGUINE_BLADE_PIERCE,MurimAnimations.SANGUINE_BLADE_FALL);
+    /**
+     * The M1 chain while the blood sword is out: Epic Fight's base sword combo (three cuts, the dash and the air slash),
+     * as for any sword (Enzo, 15/10/2026). Their hit sparks are silenced for the blood sword ({@link #silencesHit}).
+     */
+    private static List<AnimationAccessor<? extends AttackAnimation>> swordChain() {
+        return List.of(yesman.epicfight.gameasset.Animations.SWORD_AUTO1,yesman.epicfight.gameasset.Animations.SWORD_AUTO2,
+                yesman.epicfight.gameasset.Animations.SWORD_AUTO3,yesman.epicfight.gameasset.Animations.SWORD_DASH,
+                yesman.epicfight.gameasset.Animations.SWORD_AIR_SLASH);
     }
     static boolean isSwordStrike(AnimationAccessor<? extends StaticAnimation> a) { return a!=null&&swordChain().contains(a); }
+    /** The Sanguine Art shows no particles: a blood sword's cut spawns no Epic Fight hit sparks. */
+    public static boolean silencesHit(net.minecraft.world.entity.Entity attacker,AnimationAccessor<? extends StaticAnimation> a) {
+        return attacker instanceof Player p&&isSwordStrike(a)&&holdsSword(p);
+    }
     /**
      * Whether the player's blood sword is out (not yet thrown). The server keeps it; a client sees it as the sword
      * entity in the player's hand.

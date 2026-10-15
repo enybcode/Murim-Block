@@ -183,10 +183,12 @@ public final class SanguineGameTests {
             h.assertTrue(SanguineArt.holdsSword(p),"No blood sword out");
             var patch=EpicFightBridge.patch(p);
             var chain=patch.getHoldingItemCapability(InteractionHand.MAIN_HAND).getAutoAttackMotion(patch);
-            h.assertTrue(chain.getFirst()==MurimAnimations.SANGUINE_BLADE_DRIFT,"The sword does not cut as a sword: "+chain.getFirst());
+            h.assertTrue(chain.getFirst()==yesman.epicfight.gameasset.Animations.SWORD_AUTO1,"The sword does not cut with Epic Fight's sword M1: "+chain.getFirst());
+            h.assertTrue(SanguineArt.silencesHit(p,yesman.epicfight.gameasset.Animations.SWORD_AUTO2),"The blood sword's cuts would spark");
+            h.assertTrue(!SanguineArt.silencesHit(near,yesman.epicfight.gameasset.Animations.SWORD_AUTO2),"Another fighter's sword would be silenced");
             h.assertTrue(p.getAttributeValue(Attributes.ATTACK_DAMAGE)>=bare+SanguineArt.SWORD_DAMAGE-.01,"The sword adds no attack: "+p.getAttributeValue(Attributes.ATTACK_DAMAGE));
             h.assertTrue(MartialService.castSlot(p,0)==MartialService.CastResult.SWORD_OUT,"Another technique was cast with the sword out");
-            QiService.setQi(p,100);face(p,0);patch.playAnimationSynchronized(MurimAnimations.SANGUINE_BLADE_DRIFT,0);
+            QiService.setQi(p,100);face(p,0);patch.playAnimationSynchronized(yesman.epicfight.gameasset.Animations.SWORD_AUTO1,0);
         });
         h.runAfterDelay(55,()->{
             h.assertTrue(near.getHealth()<500,"The sword's cut missed: "+near.getHealth());
