@@ -133,6 +133,7 @@ public final class MurimAnimations {
         buildAzureCloudSword(builder);
         buildLongFist(builder);
         buildSanguineArt(builder);
+        buildCelestialPeakSpear(builder);
         buildBanditChief(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
@@ -262,6 +263,102 @@ public final class MurimAnimations {
         FINISH_LONG_FIST = builder.nextAccessor("biped/murim/final_palm", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
         FINISH_SCARLET_BLOOM = builder.nextAccessor("biped/murim/scarlet_bloom", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
         SCARLET_BLOOM_FLUNG = builder.nextAccessor("biped/murim/scarlet_bloom_flung", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Celestial Peak Spear (scripts/animation/celestial-spear.cjs)
+
+    /**
+     * The Celestial Peak Spear's techniques, also for the Peak Captain: Piercing Dragon (the lunge, its long one, the dive),
+     * Plum Blossom Thrusts (five, eight, the air ones), Sweep of a Thousand Soldiers (one turn, two, the landing).
+     */
+    public static AnimationAccessor<DashAttackAnimation> CELESTIAL_PIERCING_DRAGON, CELESTIAL_PIERCING_DRAGON_LONG, CELESTIAL_PIERCING_DIVE;
+    public static AnimationAccessor<AttackAnimation> CELESTIAL_PLUM_BLOSSOM, CELESTIAL_PLUM_RAIN, CELESTIAL_PLUM_AIR;
+    public static AnimationAccessor<AttackAnimation> CELESTIAL_THOUSAND_SWEEP, CELESTIAL_TEN_THOUSAND_SWEEP, CELESTIAL_SWEEP_LANDING;
+    /** When each quick thrust lands (s), and the last (celestial-spear.cjs, its timings). */
+    static final float[] PLUM_THRUSTS = {0.1F, 0.2F, 0.3F, 0.4F, 0.5F}, RAIN_THRUSTS = {0.085F, 0.17F, 0.255F, 0.34F, 0.425F, 0.51F, 0.595F, 0.68F};
+    static final float PLUM_LAST = 0.7F, RAIN_LAST = 0.88F;
+    /** The lunge's path: a long box along the spear, the point 2 blocks ahead of the body (4 and 6 blocks flown). */
+    private static final OBBCollider DRAGON_PATH = new OBBCollider(0.6D, 0.7D, 2.4D, 0.0D, 1.1D, -2.2D);
+    private static final OBBCollider DRAGON_PATH_LONG = new OBBCollider(0.6D, 0.7D, 3.2D, 0.0D, 1.1D, -3.0D);
+    private static final OBBCollider DRAGON_DIVE = new OBBCollider(0.9D, 1.4D, 1.4D, 0.0D, 0.2D, -1.6D);
+    /** A thrust: a narrow box out to the spear's point, 3.5 blocks ahead. */
+    private static final OBBCollider THRUST_BOX = new OBBCollider(0.7D, 0.7D, 1.6D, 0.0D, 1.2D, -1.9D);
+    private static final OBBCollider SHAFT_BOX = new OBBCollider(0.9D, 1.2D, 1.2D, 0.0D, 0.4D, -1.4D);
+    /** The sweep: a ring 3.5 blocks round at the knees (4 evolved); the landing's wave 3 blocks round. */
+    private static final OBBCollider SWEEP_RING = new OBBCollider(3.5D, 0.7D, 3.5D, 0.0D, 0.5D, 0.0D);
+    private static final OBBCollider SWEEP_RING_GREAT = new OBBCollider(4.0D, 0.8D, 4.0D, 0.0D, 0.5D, 0.0D);
+    private static final OBBCollider SWEEP_LANDING_RING = new OBBCollider(3.0D, 0.7D, 3.0D, 0.0D, 0.4D, 0.0D);
+
+    private static void buildCelestialPeakSpear(AnimationBuilder builder) {
+        // The lunge: the point out ahead from 0.16 s (the body flying) to 0.44 s; it goes through all in its line.
+        CELESTIAL_PIERCING_DRAGON = builder.nextAccessor("biped/murim/celestial_piercing_dragon", a -> dragon(a, DRAGON_PATH));
+        CELESTIAL_PIERCING_DRAGON_LONG = builder.nextAccessor("biped/murim/celestial_piercing_dragon_long", a -> dragon(a, DRAGON_PATH_LONG));
+        CELESTIAL_PIERCING_DIVE = builder.nextAccessor("biped/murim/celestial_piercing_dive", a -> technique(new DashAttackAnimation(0.06F, 0.16F, 0.22F, 0.42F, 0.7F, DRAGON_DIVE, root(), a, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true)
+                .addProperty(ActionAnimationProperty.MOVE_VERTICAL, true));
+        CELESTIAL_PLUM_BLOSSOM = builder.nextAccessor("biped/murim/celestial_plum_blossom", a -> plum(a, PLUM_THRUSTS, PLUM_LAST));
+        CELESTIAL_PLUM_RAIN = builder.nextAccessor("biped/murim/celestial_plum_rain", a -> plum(a, RAIN_THRUSTS, RAIN_LAST));
+        CELESTIAL_PLUM_AIR = builder.nextAccessor("biped/murim/celestial_plum_air", a -> {
+            float[] thrusts = {0.1F, 0.2F, 0.3F};
+            Phase[] phases = new Phase[thrusts.length + 1];
+            float start = 0.0F;
+            for (int i = 0; i < thrusts.length; i++) {
+                float t = thrusts[i];
+                phases[i] = new Phase(start, t - 0.04F, t - 0.02F, t + 0.03F, t + 0.04F, t + 0.05F, root(), THRUST_BOX)
+                        .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                        .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                        .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
+                start = t + 0.05F;
+            }
+            phases[thrusts.length] = new Phase(start, 0.46F, 0.48F, 0.6F, 0.85F, Float.MAX_VALUE, root(), SHAFT_BOX)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get());
+            return new AttackAnimation(0.05F, a, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
+        });
+        // The sweep: the spear goes round at the knees from 0.26 s through the turn(s), knocking down all it meets.
+        CELESTIAL_THOUSAND_SWEEP = builder.nextAccessor("biped/murim/celestial_thousand_sweep", a -> technique(new AttackAnimation(0.06F, 0.2F, 0.26F, 0.6F, 1.0F, SWEEP_RING, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(7))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        CELESTIAL_TEN_THOUSAND_SWEEP = builder.nextAccessor("biped/murim/celestial_ten_thousand_sweep", a -> technique(new AttackAnimation(0.06F, 0.2F, 0.26F, 0.92F, 1.32F, SWEEP_RING_GREAT, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(9))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        CELESTIAL_SWEEP_LANDING = builder.nextAccessor("biped/murim/celestial_sweep_landing", a -> technique(new AttackAnimation(0.04F, 0.14F, 0.18F, 0.32F, 0.62F, SWEEP_LANDING_RING, root(), a, Armatures.BIPED), 0.8F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(7))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+    }
+
+    private static DashAttackAnimation dragon(AnimationAccessor<? extends DashAttackAnimation> accessor, OBBCollider path) {
+        return technique(new DashAttackAnimation(0.06F, 0.12F, 0.16F, 0.44F, 0.78F, path, root(), accessor, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(5))
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true);
+    }
+
+    /** Plum Blossom Thrusts: one phase per quick thrust (light, holds the target), then the last (pushes 2 blocks). */
+    private static AttackAnimation plum(AnimationAccessor<? extends AttackAnimation> accessor, float[] thrusts, float last) {
+        Phase[] phases = new Phase[thrusts.length + 1];
+        float start = 0.0F;
+        for (int i = 0; i < thrusts.length; i++) {
+            float t = thrusts[i];
+            phases[i] = new Phase(start, t - 0.04F, t - 0.02F, t + 0.03F, t + 0.04F, t + 0.05F, root(), THRUST_BOX)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
+            start = t + 0.05F;
+        }
+        phases[thrusts.length] = new Phase(start, last - 0.04F, last - 0.02F, last + 0.1F, last + 0.36F, Float.MAX_VALUE, root(), THRUST_BOX)
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(2.5F))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get());
+        return new AttackAnimation(0.06F, accessor, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
     }
 
     private static DashAttackAnimation tigerStep(AnimationAccessor<? extends DashAttackAnimation> accessor, OBBCollider path) {

@@ -26,14 +26,20 @@ import javax.imageio.ImageIO;
  *   crystal_barrage: a volley of crystals flying in a fan, speed lines behind them;
  *   crimson_stance: the passive, a fist in guard, drops of blood rising round it;
  *   blood_iceberg: the blood temple's arena, a wall of red bricks, gold spires lit at their tips, blood falling down it.
+ * And the Celestial Peak Spear's, "peak night": a navy night, a gold frame, the spear in steel and azure, the Alliance's:
+ *   piercing_dragon: the spear driven level across the square, a long trail behind it, the dragon's line;
+ *   plum_blossom_thrusts: five spear points fanned out from one hand like a plum flower, a petal of light at each;
+ *   thousand_soldier_sweep: the spear round in a full ring at the knees, dust thrown out from it;
+ *   long_reach: the passive, a spear level with a gold mark at its point, 3 blocks out.
  */
 public class TechniqueIcons {
     static final int W = 32;
     static final String[] NAMES = {"cloud_step_slash", "thousand_drizzle", "heaven_splitting_crescent", "swallow_returns", "flowing_cloud_stance",
             "tiger_step_punch", "rapid_fists", "whirlwind_kick", "inch_force", "steady_breath",
-            "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance", "blood_iceberg"};
+            "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance", "blood_iceberg",
+            "piercing_dragon", "plum_blossom_thrusts", "thousand_soldier_sweep", "long_reach"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -44,7 +50,8 @@ public class TechniqueIcons {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
             if (i < FIST) jade(g, img, i);
             else if (i < BLOOD) ember(g, img, i - FIST);
-            else blood(g, img, i - BLOOD);
+            else if (i < SPEAR) blood(g, img, i - BLOOD);
+            else peak(g, img, i - SPEAR);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -330,6 +337,65 @@ public class TechniqueIcons {
         p.quadTo(x, y + r * 1.3, x - r, y);
         p.quadTo(x - r * 1.1, y - r * 0.6, x, y - r * 2.4);
         g.fill(p);
+    }
+
+    // ------------------------------------------------------------ D: peak night, the Celestial Peak Spear
+
+    static final Color NAVY_GOLD = c(217, 178, 95), SPEAR_STEEL = c(214, 222, 230), STEEL_DARK = c(130, 140, 150), AZURE = c(43, 95, 168),
+            AZURE_LIGHT = c(120, 170, 235), SHAFT = c(34, 52, 92);
+
+    static void peakBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 15.5) / 22.0;
+            img.setRGB(x, y, c((int) (10 + 14 * (1 - d)), (int) (16 + 22 * (1 - d)), (int) (34 + 40 * (1 - d))).getRGB());
+        }
+        g.setColor(NAVY_GOLD); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(60, 52, 30)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A spear from its butt (x0, y0) to its point (x1, y1): a navy shaft, an azure socket, a steel leaf head. */
+    static void spear(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+        double hx = x1 - ux * 6, hy = y1 - uy * 6;
+        line(g, x0, y0, hx, hy, 1.6f, SHAFT);
+        line(g, x0, y0, hx, hy, 0.6f, c(70, 96, 150));
+        line(g, hx - ux * 1.5, hy - uy * 1.5, hx, hy, 2.2f, AZURE);
+        Path2D head = new Path2D.Double();
+        double nx = -uy * 1.6, ny = ux * 1.6;
+        head.moveTo(hx, hy); head.lineTo(hx + ux * 2.5 + nx, hy + uy * 2.5 + ny); head.lineTo(x1, y1); head.lineTo(hx + ux * 2.5 - nx, hy + uy * 2.5 - ny); head.closePath();
+        g.setColor(STEEL_DARK); g.fill(head);
+        line(g, hx + ux * 0.5, hy + uy * 0.5, x1 - ux * 0.5, y1 - uy * 0.5, 0.7f, SPEAR_STEEL);
+        px(img, (int) Math.round(hx - ux), (int) Math.round(hy - uy + 1), c(200, 60, 50));
+    }
+
+    static void peak(Graphics2D g, BufferedImage img, int i) {
+        peakBack(img, g);
+        switch (i) {
+            case 0 -> { // Piercing Dragon: the spear driven level across, a long trail behind.
+                for (int k = 0; k < 3; k++) line(g, 2, 14 + k * 2, 14, 15 + k * 1.2, 1f, k == 1 ? AZURE_LIGHT : AZURE);
+                spear(g, img, 6, 17, 29, 15);
+                burst(g, 29, 15, 2.5, AZURE_LIGHT);
+            }
+            case 1 -> { // Plum Blossom Thrusts: five points fanned from one hand, a petal of light at each.
+                double[][] tips = {{27, 6}, {29, 13}, {28, 21}, {22, 27}, {20, 3}};
+                for (double[] t : tips) spear(g, img, 5, 24, t[0], t[1]);
+                for (double[] t : tips) { disc(g, t[0], t[1], 1.6, c(255, 200, 220)); px(img, (int) t[0], (int) t[1], c(255, 255, 255)); }
+            }
+            case 2 -> { // Sweep of a Thousand Soldiers: the spear round in a ring at the knees, dust thrown out.
+                g.setColor(AZURE); g.setStroke(new BasicStroke(2f)); g.draw(new Ellipse2D.Double(3, 14, 26, 11));
+                g.setColor(AZURE_LIGHT); g.setStroke(new BasicStroke(0.8f)); g.draw(new Arc2D.Double(3, 14, 26, 11, 200, 160, Arc2D.OPEN));
+                spear(g, img, 16, 20, 29, 22);
+                for (int[] q : new int[][]{{3, 27}, {6, 29}, {27, 28}, {29, 26}, {16, 29}}) px(img, q[0], q[1], c(190, 170, 130));
+                // A small figure crouched in the middle.
+                g.setColor(c(16, 22, 40)); g.fill(new Ellipse2D.Double(13, 10, 6, 6)); g.fill(new RoundRectangle2D.Double(12, 15, 8, 6, 3, 3));
+            }
+            default -> { // Long Reach: a spear level, a gold mark at its point 3 blocks out.
+                spear(g, img, 3, 20, 27, 20);
+                for (int k = 0; k < 3; k++) { g.setColor(NAVY_GOLD); g.fillRect(6 + k * 7, 25, 5, 1); }
+                line(g, 27, 12, 27, 26, 1f, NAVY_GOLD);
+                disc(g, 27, 20, 2.2, c(255, 230, 150));
+            }
+        }
     }
 
     static void blood(Graphics2D g, BufferedImage img, int i) {

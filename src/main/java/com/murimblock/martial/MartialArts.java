@@ -167,6 +167,23 @@ public final class MartialArts {
     public static final Evolution HUNDRED_FISTS = new Evolution(RAPID_FISTS.id(), 60, "evolution.murimblock.hundred_fists");
     public static final Evolution TORNADO_KICK = new Evolution(WHIRLWIND_KICK.id(), 90, "evolution.murimblock.tornado_kick");
 
+    // ---------------------------------------------------------------- the Celestial Peak Spear (docs/combat/styles/celestial-peak-spear.md)
+
+    /** The Orthodox Alliance's spear: a spear in hand, Epic Fight's own spear M1; an art of the start of the game. */
+    public static final ResourceLocation CELESTIAL_PEAK_SPEAR = id("celestial_peak_spear");
+    public static final Technique PIERCING_DRAGON = new Technique(id("piercing_dragon"), CELESTIAL_PEAK_SPEAR, 12, 120);
+    public static final Technique PLUM_BLOSSOM_THRUSTS = new Technique(id("plum_blossom_thrusts"), CELESTIAL_PEAK_SPEAR, 18, 180);
+    public static final Technique THOUSAND_SOLDIER_SWEEP = new Technique(id("thousand_soldier_sweep"), CELESTIAL_PEAK_SPEAR, 22, 240);
+    /** Its passive keeps Epic Fight's spear strikes; a hit at the point (3 blocks or more) strikes harder and pushes. */
+    public static final Passive LONG_REACH = new Passive(id("long_reach"), List.of(), List.of());
+    public static final String FIRST_LINE_DRAGON_HITS = "first_line.dragon_hits";
+    public static final String HOLD_THE_DISTANCE_HITS = "hold_the_distance.reach_hits";
+    public static final Quest FIRST_LINE = new Quest("first_line", PLUM_BLOSSOM_THRUSTS.id(), List.of(new QuestStep(FIRST_LINE_DRAGON_HITS, 20)));
+    public static final Quest HOLD_THE_DISTANCE = new Quest("hold_the_distance", THOUSAND_SOLDIER_SWEEP.id(), List.of(new QuestStep(HOLD_THE_DISTANCE_HITS, 30)));
+    public static final Evolution SOARING_DRAGON = new Evolution(PIERCING_DRAGON.id(), 30, "evolution.murimblock.soaring_dragon");
+    public static final Evolution PLUM_RAIN = new Evolution(PLUM_BLOSSOM_THRUSTS.id(), 60, "evolution.murimblock.plum_rain");
+    public static final Evolution TEN_THOUSAND_SWEEP = new Evolution(THOUSAND_SOLDIER_SWEEP.id(), 90, "evolution.murimblock.sweep_of_ten_thousand");
+
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     /**
@@ -213,6 +230,8 @@ public final class MartialArts {
         add(new Art(LONG_FIST, List.of(TIGER_STEP_PUNCH, RAPID_FISTS, WHIRLWIND_KICK, INCH_FORCE),
                 STEADY_BREATH, List.of(FIRST_STEPS, UNBROKEN_FLURRY),
                 List.of(TIGER_LEAP, HUNDRED_FISTS, TORNADO_KICK)));
+        add(new Art(CELESTIAL_PEAK_SPEAR, List.of(PIERCING_DRAGON, PLUM_BLOSSOM_THRUSTS, THOUSAND_SOLDIER_SWEEP),
+                LONG_REACH, List.of(FIRST_LINE, HOLD_THE_DISTANCE), List.of(SOARING_DRAGON, PLUM_RAIN, TEN_THOUSAND_SWEEP)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }
