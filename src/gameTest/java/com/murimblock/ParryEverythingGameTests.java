@@ -48,7 +48,9 @@ import static com.murimblock.testing.GameTestPlayers.player;
 /**
  * Everything the mod added that strikes can be parried with Murim's guard, beyond what the Azure Cloud's own survey
  * (AzureParryGameTests), the bandits, the chief and the water ball already check: the Long Fist's techniques at a
- * player, the Heart Demon (sword and fists) and its shadow, Sensei Yun, the crab man's and the armoured crab's claws.
+ * player, the Heart Demon (sword and fists) and its shadow, Sensei Yun, the crab man's and the armoured crab's claws, the
+ * Celestial Peak Spear's techniques at a player, and the Captain of the Peak Guard (his spear blows and the art's techniques
+ * he is to use).
  * Each move is played three times at a player facing the attacker: unguarded (it must hurt: the case tests something),
  * into a perfect parry (nothing goes through; for a flurry, its first hit) and into a held guard (half at most). A table
  * of every case is written to the log ("Parry survey"). Near the world's origin, as Epic Fight's boxes want it.
@@ -102,6 +104,22 @@ public final class ParryEverythingGameTests {
         Mob sensei = MurimEntities.AZURE_SENSEI.get().create(level);
         sensei.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.AZURE_CLOUD_SWORD.get()));
         return mob(level, sensei, 1.6);
+    }
+
+    /** A player of the Celestial Peak Spear, the Alliance spear in hand, at a spear's reach. */
+    private static Attacker spearman(GameTestHelper helper) {
+        ServerPlayer p = player(helper);
+        EpicFightCombatDefaults.enforce(p);
+        new ItemStack(com.murimblock.martial.CelestialPeakItems.MANUAL.get()).use(p.level(), p, InteractionHand.MAIN_HAND);
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.ALLIANCE_SPEAR.get()));
+        return new Attacker(p, EpicFightBridge.patch(p), 2.4);
+    }
+
+    /** The Captain of the Peak Guard, his Crimson Dragon Spear in hand. */
+    private static Attacker captain(ServerLevel level, ServerPlayer defender) {
+        Mob captain = MurimEntities.PEAK_CAPTAIN.get().create(level);
+        captain.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.CRIMSON_DRAGON_SPEAR.get()));
+        return mob(level, captain, 2.4);
     }
 
     private static Attacker crabMan(ServerLevel level, ServerPlayer defender) {
@@ -200,6 +218,34 @@ public final class ParryEverythingGameTests {
         Mob zombie = EntityType.ZOMBIE.create(level);
         zombie.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
         return mob(level, zombie, 1.6);
+    }
+
+    @GameTest(template = "foundation_arena", batch = "parry_survey_celestial_spear", timeoutTicks = (3 * 12 + 2) * CASE_TICKS + 200)
+    public static void everyCelestialPeakSpearTechniqueCanBeParried(GameTestHelper helper) {
+        survey(helper, 8, "Celestial Peak Spear", (level, defender) -> spearman(helper), List.of(
+                Move.one("piercing_dragon", () -> MurimAnimations.CELESTIAL_PIERCING_DRAGON),
+                Move.one("soaring_dragon", () -> MurimAnimations.CELESTIAL_PIERCING_DRAGON_LONG),
+                Move.one("piercing_dive", () -> MurimAnimations.CELESTIAL_PIERCING_DIVE),
+                Move.many("plum_blossom", () -> MurimAnimations.CELESTIAL_PLUM_BLOSSOM),
+                Move.many("plum_rain", () -> MurimAnimations.CELESTIAL_PLUM_RAIN),
+                Move.many("plum_air", () -> MurimAnimations.CELESTIAL_PLUM_AIR),
+                Move.one("thousand_sweep", () -> MurimAnimations.CELESTIAL_THOUSAND_SWEEP),
+                Move.one("ten_thousand_sweep", () -> MurimAnimations.CELESTIAL_TEN_THOUSAND_SWEEP),
+                Move.one("sweep_landing", () -> MurimAnimations.CELESTIAL_SWEEP_LANDING),
+                Move.one("spear_m1_1", () -> Animations.SPEAR_TWOHAND_AUTO1),
+                Move.one("spear_m1_2", () -> Animations.SPEAR_TWOHAND_AUTO2),
+                Move.one("spear_dash", () -> Animations.SPEAR_DASH)));
+    }
+
+    @GameTest(template = "foundation_arena", batch = "parry_survey_peak_captain", timeoutTicks = (3 * 6 + 2) * CASE_TICKS + 200)
+    public static void everyBlowOfThePeakCaptainCanBeParried(GameTestHelper helper) {
+        survey(helper, 9, "Peak Captain", ParryEverythingGameTests::captain, List.of(
+                Move.one("mob_spear_1", () -> Animations.BIPED_MOB_SPEAR_TWOHAND1),
+                Move.one("mob_spear_2", () -> Animations.BIPED_MOB_SPEAR_TWOHAND2),
+                Move.one("mob_spear_3", () -> Animations.BIPED_MOB_SPEAR_TWOHAND3),
+                Move.one("piercing_dragon", () -> MurimAnimations.CELESTIAL_PIERCING_DRAGON),
+                Move.many("plum_blossom", () -> MurimAnimations.CELESTIAL_PLUM_BLOSSOM),
+                Move.one("thousand_sweep", () -> MurimAnimations.CELESTIAL_THOUSAND_SWEEP)));
     }
 
     /**
