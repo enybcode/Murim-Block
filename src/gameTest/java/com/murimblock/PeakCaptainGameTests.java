@@ -2,6 +2,7 @@ package com.murimblock;
 
 import com.murimblock.integration.epicfight.PeakCaptainPatch;
 import com.murimblock.item.MurimItems;
+import com.murimblock.mob.AllianceSoldierEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.mob.PeakCaptainEntity;
 import net.minecraft.core.BlockPos;
@@ -96,7 +97,7 @@ public final class PeakCaptainGameTests {
         }));
     }
 
-    /** Killed by a player: one armour piece every time (each of the four in turn), the spear about 15 times in 100. */
+    /** Killed by a player: the Celestial Peak Spear's manual and one armour piece every time (each of the four in turn), the spear about 15 times in 100. */
     @GameTest(template = "foundation_arena", batch = "captain_loot")
     public static void heLeavesAPieceOfArmourEveryTimeAndHisSpearNowAndThen(GameTestHelper helper) {
         ServerPlayer player = player(helper);
@@ -111,19 +112,85 @@ public final class PeakCaptainGameTests {
                 .withParameter(LootContextParams.DAMAGE_SOURCE, helper.getLevel().damageSources().playerAttack(player))
                 .withParameter(LootContextParams.LAST_DAMAGE_PLAYER, player).withParameter(LootContextParams.ATTACKING_ENTITY, player)
                 .create(LootContextParamSets.ENTITY);
-        int rolls = 400, spears = 0;
+        int rolls = 400, spears = 0, manuals = 0;
         var seen = new java.util.HashSet<net.minecraft.world.item.Item>();
         for (int i = 0; i < rolls; i++) {
             var items = table.getRandomItems(byPlayer);
             long armour = items.stream().filter(s -> pieces.contains(s.getItem())).peek(s -> seen.add(s.getItem())).count();
             helper.assertTrue(armour == 1, "He left " + armour + " pieces of armour");
             spears += (int) items.stream().filter(s -> s.is(MurimItems.CRIMSON_DRAGON_SPEAR.get())).count();
+            manuals += (int) items.stream().filter(s -> s.is(com.murimblock.martial.CelestialPeakItems.MANUAL.get())).count();
         }
         captain.discard();
         cleanup(player);
         // 60 of 400 expected.
         helper.assertTrue(spears >= 35 && spears <= 90, "He left his spear " + spears + " times in " + rolls + ", not about 15 in 100");
+        helper.assertTrue(manuals == rolls, "He left the Celestial Peak Spear's manual " + manuals + " times in " + rolls + ", not every time");
         helper.assertTrue(seen.size() == 4, "Not every piece of his armour came: " + seen);
         helper.succeed();
+    }
+
+    /**
+     * At half his health he retreats: blows glance off him, three spear guards drop from the sky set on his foe, then
+     * four more once they are down; then he fights with the Celestial Peak Spear.
+     */
+    @GameTest(template = "foundation_arena", batch = "captain_waves", timeoutTicks = 200)
+    public static void atHalfHealthHeCallsTwoWavesThenTakesUpTheArt(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        PeakCaptainEntity captain = captain(helper, new BlockPos(2, 1, 3));
+        java.util.List<AllianceSoldierEntity> everyone = new java.util.ArrayList<>();
+        helper.runAfterDelay(5, () -> {
+            captain.setHealth(captain.getMaxHealth() * PeakCaptainEntity.RETREAT_AT + 1);
+            captain.invulnerableTime = 0;
+            captain.hurt(player.damageSources().playerAttack(player), 8.0F);
+            helper.assertTrue(captain.phase() == PeakCaptainEntity.Phase.RETREAT, "Below half his health he does not retreat: " + captain.phase() + " at " + captain.getHealth());
+            float health = captain.getHealth();
+            captain.invulnerableTime = 0;
+            helper.assertTrue(!captain.hurt(player.damageSources().playerAttack(player), 8.0F) && captain.getHealth() == health, "In his retreat, a blow still hurts him");
+        });
+        helper.runAfterDelay(5 + PeakCaptainEntity.FIRST_CALL + 2, () -> {
+            var wave = captain.waveMen();
+            helper.assertTrue(captain.wavesCalled() == 1 && wave.size() == PeakCaptainEntity.WAVES[0], "The first wave: " + wave.size() + " men");
+            for (var man : wave) {
+                helper.assertTrue(man.kind() == AllianceSoldierEntity.Kind.SPEAR_GUARD, "Not a spear guard: " + man.kind());
+                helper.assertTrue(man.summoned() && man.skyFalling(), "He did not drop from the sky");
+                helper.assertTrue(man.getY() > captain.getY() + 3, "He starts too low: " + (man.getY() - captain.getY()));
+                helper.assertTrue(man.getTarget() == player, "He is not set on the captain's foe: " + man.getTarget());
+            }
+            everyone.addAll(wave);
+            wave.forEach(man -> man.discard());
+        });
+        helper.runAfterDelay(5 + PeakCaptainEntity.FIRST_CALL + 6, () -> {
+            var wave = captain.waveMen();
+            helper.assertTrue(captain.wavesCalled() == 2 && wave.size() == PeakCaptainEntity.WAVES[1], "The second wave: " + wave.size() + " men");
+            everyone.addAll(wave);
+            wave.forEach(man -> man.discard());
+        });
+        helper.runAfterDelay(5 + PeakCaptainEntity.FIRST_CALL + 10, () -> {
+            helper.assertTrue(captain.phase() == PeakCaptainEntity.Phase.ART, "With both waves down he does not come back: " + captain.phase());
+            helper.assertTrue(captain.goalSelector.getAvailableGoals().stream().anyMatch(g -> g.getGoal() instanceof yesman.epicfight.world.entity.ai.goal.AnimatedAttackGoal),
+                    "Back in the fight, he has no attacks");
+            helper.assertTrue(everyone.size() == 7, "Not 3 + 4 men: " + everyone.size());
+            captain.discard();
+            cleanup(player);
+            helper.succeed();
+        });
+    }
+
+    /** Dropped from 15 blocks up, a spear guard lands in his crouch unhurt; summoned, he leaves no loot. */
+    @GameTest(template = "foundation_arena", batch = "captain_sky_drop", timeoutTicks = 120)
+    public static void hisMenLandUnhurt(GameTestHelper helper) {
+        AllianceSoldierEntity man = MurimEntities.ALLIANCE_SPEAR_GUARD.get().create(helper.getLevel());
+        BlockPos at = helper.absolutePos(new BlockPos(2, 16, 2));
+        man.moveTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 0, 0);
+        man.finalizeSpawn(helper.getLevel(), helper.getLevel().getCurrentDifficultyAt(at), MobSpawnType.MOB_SUMMONED, null);
+        man.dropFromSky();
+        helper.getLevel().addFreshEntity(man);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(man.onGround() && !man.skyFalling(), "Still falling at " + man.getY());
+            helper.assertTrue(man.getHealth() == man.getMaxHealth(), "The fall hurt him: " + man.getHealth());
+            helper.assertTrue(man.summoned() && !man.hasRestriction(), "Summoned, he keeps a post");
+            man.discard();
+        });
     }
 }

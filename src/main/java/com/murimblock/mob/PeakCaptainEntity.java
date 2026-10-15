@@ -1,6 +1,7 @@
 package com.murimblock.mob;
 
 import com.murimblock.integration.epicfight.EpicFightMobSupport;
+import com.murimblock.integration.epicfight.PeakCaptainPatch;
 import com.murimblock.item.MurimItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -10,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -38,6 +40,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 
@@ -53,19 +56,46 @@ import java.util.UUID;
  * <p>
  * Neutral, as the Alliance's soldiers: he attacks no one first. Struck, he turns on whoever struck him and calls the
  * soldiers near him; he stays angry 30 to 50 seconds after the last blow. Strong (180 health, his armour's 20 points,
- * hard to stagger), Epic Fight's spear moves (PeakCaptainPatch); every one can be parried. His health shows in a boss
- * bar. He never loses his gear by the usual drop: his loot table leaves one piece of the armour every time and the
- * spear now and then.
+ * hard to stagger); every move can be parried. His health shows in a boss bar. He never loses his gear by the usual
+ * drop: his loot table leaves the Celestial Peak Spear's manual and one piece of the armour every time, the spear now
+ * and then.
+ * <p>
+ * Three phases ({@link Phase}):
+ * <ol>
+ *   <li>SPEAR: Epic Fight's spear moves (PeakCaptainPatch);</li>
+ *   <li>RETREAT: at half his health he leaps back out of the fight to his post and calls the Peak Guard: two waves of
+ *   spear guards drop from the sky around him (three, then four once the first are down), set on whoever he fights.
+ *   Out of the fight, behind his men, blows glance off him. It lasts until both waves are down, a minute at most;</li>
+ *   <li>ART: he comes back with the Celestial Peak Spear's techniques (docs/combat/styles/celestial-peak-spear.md).</li>
+ * </ol>
  */
 public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
     /** How long he stays angry after the last blow, and how often, angry, he calls the soldiers about him. */
     private static final UniformInt ANGER_TIME = TimeUtil.rangeOfSeconds(30, 50), ALERT_INTERVAL = TimeUtil.rangeOfSeconds(4, 6);
+
+    /** The fight's three phases. */
+    public enum Phase { SPEAR, RETREAT, ART }
+
+    /** The share of his health at which he retreats and calls his men. */
+    public static final float RETREAT_AT = 0.5F;
+    /** The two waves of spear guards, one after the other. */
+    public static final int[] WAVES = {3, 4};
+    /** Ticks: from the retreat to the first wave; the longest a wave is waited for; the retreat's longest. */
+    public static final int FIRST_CALL = 20, WAVE_PATIENCE = 30 * 20, RETREAT_LONGEST = 60 * 20;
+    /** How far around his post his men land (blocks), and the highest they drop from. */
+    static final double DROP_RING = 6.0;
+    static final int DROP_HEIGHT = 18;
 
     private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_10);
     private int angerTime, ticksUntilNextAlert;
     @Nullable private UUID angerTarget;
     /** Where he stands guard (his spawn point): he goes back there when he has no one to fight. */
     @Nullable private BlockPos post;
+    private Phase phase = Phase.SPEAR;
+    /** In the retreat: ticks since it began, the waves called so far, the men of the last one, and his foe. */
+    private int retreatTicks, wavesCalled, waveTicks;
+    private final java.util.List<UUID> waveMen = new java.util.ArrayList<>();
+    @Nullable private UUID foe;
 
     public PeakCaptainEntity(EntityType<? extends PeakCaptainEntity> type, Level level) {
         super(type, level);
@@ -134,8 +164,126 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
         bossBar.setProgress(getHealth() / getMaxHealth());
         updatePersistentAnger((ServerLevel) level(), true);
         if (getTarget() != null) maybeAlertSoldiers();
+        if (phase == Phase.RETREAT) retreatTick((ServerLevel) level());
         // With a target, he is aggressive: the clients see it (his face frowns, MobFaces).
         setAggressive(getTarget() != null);
+    }
+
+    // ---- the phases
+
+    public Phase phase() {
+        return phase;
+    }
+
+    /** His men of the wave now fighting, those still alive. */
+    public java.util.List<AllianceSoldierEntity> waveMen() {
+        if (!(level() instanceof ServerLevel server)) return java.util.List.of();
+        return waveMen.stream().map(server::getEntity).filter(e -> e instanceof AllianceSoldierEntity s && s.isAlive())
+                .map(e -> (AllianceSoldierEntity) e).toList();
+    }
+
+    public int wavesCalled() {
+        return wavesCalled;
+    }
+
+    /** Out of the fight, behind his men, blows glance off him (all but those that ignore invulnerability). */
+    @Override public boolean hurt(DamageSource source, float amount) {
+        if (phase == Phase.RETREAT && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            if (!level().isClientSide) playSound(SoundEvents.SHIELD_BLOCK, 1.0F, 0.8F);
+            return false;
+        }
+        boolean hurt = super.hurt(source, amount);
+        if (hurt && isAlive() && phase == Phase.SPEAR && getHealth() <= getMaxHealth() * RETREAT_AT && level() instanceof ServerLevel server)
+            retreat(server, source.getEntity() instanceof LivingEntity attacker ? attacker : getTarget());
+        return hurt;
+    }
+
+    /** Phase 2: he leaps back out of the fight, toward his post, and calls his men. */
+    public void retreat(ServerLevel server, @Nullable LivingEntity from) {
+        phase = Phase.RETREAT;
+        retreatTicks = 0;
+        wavesCalled = 0;
+        waveMen.clear();
+        foe = from == null ? null : from.getUUID();
+        withPatch(PeakCaptainPatch::holdBack);
+        getNavigation().stop();
+        // The leap: away from his foe (toward his post when he has one), up.
+        Vec3 away = from != null ? position().subtract(from.position()) : post != null ? Vec3.atBottomCenterOf(post).subtract(position()) : getLookAngle().reverse();
+        away = away.multiply(1, 0, 1);
+        away = away.lengthSqr() < 1.0E-4 ? getLookAngle().reverse().multiply(1, 0, 1) : away.normalize();
+        setDeltaMovement(away.x * 1.1, 0.55, away.z * 1.1);
+        hurtMarked = true;
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 4.0F, 1.0F);
+        for (ServerPlayer player : server.getPlayers(p -> p.distanceToSqr(this) < 48 * 48))
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("entity.murimblock.peak_captain.call"), true);
+    }
+
+    private void retreatTick(ServerLevel server) {
+        retreatTicks++;
+        waveTicks++;
+        LivingEntity enemy = foe == null ? null : server.getEntity(foe) instanceof LivingEntity e && e.isAlive() ? e : null;
+        if (enemy != null) getLookControl().setLookAt(enemy, 30, 30);
+        boolean waveDown = waveMen().isEmpty() || waveTicks > WAVE_PATIENCE;
+        if (wavesCalled == 0 && retreatTicks >= FIRST_CALL) callWave(server, WAVES[0], enemy);
+        else if (wavesCalled > 0 && wavesCalled < WAVES.length && waveDown) callWave(server, WAVES[wavesCalled], enemy);
+        else if (wavesCalled == WAVES.length && waveDown || retreatTicks > RETREAT_LONGEST) takeUpTheArt(server, enemy);
+    }
+
+    /** A wave of spear guards drops from the sky around his post, set on his foe. */
+    private void callWave(ServerLevel server, int count, @Nullable LivingEntity enemy) {
+        wavesCalled++;
+        waveTicks = 0;
+        waveMen.clear();
+        if (enemy == null) enemy = server.getNearestPlayer(this, 24);
+        Vec3 centre = post != null ? Vec3.atBottomCenterOf(post) : position();
+        double start = getRandom().nextDouble() * Math.PI * 2;
+        for (int i = 0; i < count; i++) {
+            double a = start + i * Math.PI * 2 / count;
+            Vec3 at = dropPoint(server, centre.x + Math.cos(a) * DROP_RING, centre.y, centre.z + Math.sin(a) * DROP_RING);
+            AllianceSoldierEntity man = MurimEntities.ALLIANCE_SPEAR_GUARD.get().create(server);
+            if (man == null) continue;
+            float yaw = enemy != null ? (float) Math.toDegrees(Math.atan2(-(enemy.getX() - at.x), enemy.getZ() - at.z)) : getYRot();
+            man.moveTo(at.x, at.y, at.z, yaw, 0);
+            man.finalizeSpawn(server, server.getCurrentDifficultyAt(BlockPos.containing(at)), MobSpawnType.MOB_SUMMONED, null);
+            man.dropFromSky();
+            if (enemy != null) {
+                man.setTarget(enemy);
+                man.setPersistentAngerTarget(enemy.getUUID());
+                man.startPersistentAngerTimer();
+            }
+            server.addFreshEntity(man);
+            waveMen.add(man.getUUID());
+        }
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 4.0F, 1.2F);
+    }
+
+    /**
+     * Where a man dropping near (x, y, z) starts: above the ground there (searched a few blocks up and down from y), as
+     * high as the open sky allows, DROP_HEIGHT at most.
+     */
+    static Vec3 dropPoint(ServerLevel server, double x, double y, double z) {
+        BlockPos.MutableBlockPos p = BlockPos.containing(x, y + 4, z).mutable();
+        int lowest = p.getY() - 12;
+        while (p.getY() > lowest && !(server.getBlockState(p.below()).isFaceSturdy(server, p.below(), net.minecraft.core.Direction.UP)
+                && server.getBlockState(p).getCollisionShape(server, p).isEmpty() && server.getBlockState(p.above()).getCollisionShape(server, p.above()).isEmpty()))
+            p.move(0, -1, 0);
+        int ground = p.getY(), top = ground;
+        while (top - ground < DROP_HEIGHT && server.getBlockState(p.setY(top + 1)).getCollisionShape(server, p).isEmpty()
+                && server.getBlockState(p.setY(top + 2)).getCollisionShape(server, p).isEmpty()) top++;
+        return new Vec3(Math.floor(x) + 0.5, top, Math.floor(z) + 0.5);
+    }
+
+    /** Phase 3: back into the fight with the Celestial Peak Spear's techniques. */
+    public void takeUpTheArt(ServerLevel server, @Nullable LivingEntity enemy) {
+        phase = Phase.ART;
+        withPatch(PeakCaptainPatch::takeUpTheArt);
+        if (enemy != null) setTarget(enemy);
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.TRIDENT_RIPTIDE_3.value(), SoundSource.HOSTILE, 1.2F, 0.8F);
+    }
+
+    private void withPatch(java.util.function.Consumer<PeakCaptainPatch> action) {
+        PeakCaptainPatch patch = yesman.epicfight.world.capabilities.EpicFightCapabilities.getEntityPatch(this, PeakCaptainPatch.class);
+        if (patch != null) action.accept(patch);
     }
 
     // ---- anger, as the Alliance's soldiers
@@ -172,12 +320,29 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
         super.addAdditionalSaveData(tag);
         addPersistentAngerSaveData(tag);
         if (post != null) tag.put("Post", NbtUtils.writeBlockPos(post));
+        tag.putString("Phase", phase.name());
+        tag.putInt("RetreatTicks", retreatTicks);
+        tag.putInt("WavesCalled", wavesCalled);
+        net.minecraft.nbt.ListTag men = new net.minecraft.nbt.ListTag();
+        for (UUID man : waveMen) men.add(NbtUtils.createUUID(man));
+        tag.put("WaveMen", men);
+        if (foe != null) tag.putUUID("Foe", foe);
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         readPersistentAngerSaveData(level(), tag);
         post = NbtUtils.readBlockPos(tag, "Post").orElse(null);
+        try {
+            phase = tag.contains("Phase") ? Phase.valueOf(tag.getString("Phase")) : Phase.SPEAR;
+        } catch (IllegalArgumentException e) {
+            phase = Phase.SPEAR;
+        }
+        retreatTicks = tag.getInt("RetreatTicks");
+        wavesCalled = tag.getInt("WavesCalled");
+        waveMen.clear();
+        for (var man : tag.getList("WaveMen", net.minecraft.nbt.Tag.TAG_INT_ARRAY)) waveMen.add(NbtUtils.loadUUID(man));
+        foe = tag.hasUUID("Foe") ? tag.getUUID("Foe") : null;
         if (hasCustomName()) bossBar.setName(getDisplayName());
     }
 
@@ -196,7 +361,8 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
         }
 
         @Override public boolean canUse() {
-            return captain.post != null && captain.getTarget() == null && captain.post.distToCenterSqr(captain.position()) > 2.5 * 2.5;
+            return captain.post != null && (captain.getTarget() == null || captain.phase == Phase.RETREAT)
+                    && captain.post.distToCenterSqr(captain.position()) > 2.5 * 2.5;
         }
 
         @Override public boolean canContinueToUse() {

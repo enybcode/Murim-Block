@@ -99,6 +99,7 @@
   "entity.murimblock.alliance_merchant": "Alliance Merchant",
   "entity.murimblock.alliance_spear_guard": "Alliance Spear Guard",
   "entity.murimblock.peak_captain": "Captain of the Peak Guard",
+  "entity.murimblock.peak_captain.call": "Peak Guard, to me!",
   "item.murimblock.peak_captain_spawn_egg": "Captain of the Peak Guard Spawn Egg",
   "item.murimblock.crimson_dragon_spear": "Crimson Dragon Spear",
   "item.murimblock.peak_guard_helm": "Peak Guard Helm",

@@ -186,13 +186,24 @@ public final class SpearTour {
             case 306 -> server.execute(() -> { reset(server, 0, 2.0); EpicFightCapabilities.getEntityPatch(self(server), PlayerPatch.class).playAnimationSynchronized(MurimAnimations.CELESTIAL_PIERCING_DRAGON_LONG, 0.0F); });
             case 336 -> server.execute(() -> { reset(server, 0, 2.8); EpicFightCapabilities.getEntityPatch(self(server), PlayerPatch.class).playAnimationSynchronized(MurimAnimations.CELESTIAL_PLUM_RAIN, 0.0F); });
             case 366 -> server.execute(() -> { reset(server, 0, 3.0); EpicFightCapabilities.getEntityPatch(self(server), PlayerPatch.class).playAnimationSynchronized(MurimAnimations.CELESTIAL_TEN_THOUSAND_SWEEP, 0.0F); });
+            // The same three from the player's eyes: the spear in view, nothing filling the screen.
             case 400 -> {
                 mc.setCameraEntity(mc.player);
                 mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
-                mc.setScreen(new MurimProfileScreen());
+                server.execute(() -> reset(server, 0, 3.0));
             }
-            case 406 -> capture(mc, "13-profile.png");
-            case 410 -> {
+            case 404 -> capture(mc, "14-first-person-guard.png");
+            case 406 -> press(mc, 0);
+            case 408 -> mc.options.keyHotbarSlots[0].setDown(false);
+            case 436 -> server.execute(() -> reset(server, 0, 2.8));
+            case 440 -> press(mc, 1);
+            case 442 -> mc.options.keyHotbarSlots[1].setDown(false);
+            case 470 -> server.execute(() -> { reset(server, 0, 2.5); zombie(server, 2.5, 0); });
+            case 474 -> press(mc, 2);
+            case 476 -> mc.options.keyHotbarSlots[2].setDown(false);
+            case 504 -> mc.setScreen(new MurimProfileScreen());
+            case 510 -> capture(mc, "13-profile.png");
+            case 514 -> {
                 server.execute(() -> zombies.forEach(Zombie::discard));
                 finish(mc);
             }
@@ -208,6 +219,9 @@ public final class SpearTour {
         record(mc, "10-soaring-dragon", 306, 334, 1);
         record(mc, "11-plum-rain", 336, 364, 1);
         record(mc, "12-ten-thousand", 366, 398, 1);
+        record(mc, "15-first-person-dragon", 406, 432, 1);
+        record(mc, "16-first-person-plum", 440, 468, 1);
+        record(mc, "17-first-person-sweep", 474, 502, 1);
     }
 
     /** A sturdy zombie without AI, `dx` to the side and `dz` in front of the player. */

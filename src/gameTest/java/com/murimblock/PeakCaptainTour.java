@@ -49,6 +49,9 @@ public final class PeakCaptainTour {
     private static final List<String> report = new ArrayList<>();
     /** The film: from RUN, LENGTH ticks, a frame every 2 ticks; he turns at TURN. */
     private static final int RUN = 100, TURN = RUN + 40, LENGTH = 100;
+    /** The second phase's film: from CALL, CALL_LENGTH ticks, a frame every 2 ticks. */
+    private static final int CALL = RUN + LENGTH + 30, CALL_LENGTH = 110;
+    private static volatile net.minecraft.world.entity.monster.Zombie foe;
 
     private PeakCaptainTour() { }
 
@@ -94,6 +97,7 @@ public final class PeakCaptainTour {
     }
 
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
+        if (ticks >= CALL && ticks <= CALL + CALL_LENGTH && (ticks - CALL) % 2 == 0) capture(mc, String.format("05-waves/frame-%03d.png", (ticks - CALL) / 2));
         if (ticks >= RUN && ticks <= RUN + LENGTH && (ticks - RUN) % 2 == 0) capture(mc, String.format("04-run/frame-%03d.png", (ticks - RUN) / 2));
         // The run: he is led along the x axis, then back.
         if (ticks >= RUN - 4 && ticks <= RUN + LENGTH && captain != null) {
@@ -145,10 +149,33 @@ public final class PeakCaptainTour {
                 look(server, 0, 1.4, -11, 0, 1.0, 0);
                 server.execute(() -> captain.setNoAi(false));
             }
-            case RUN + LENGTH + 6 -> {
-                server.execute(() -> check(Math.abs(captain.getX() - baseX) > 2, "he ran (at " + (captain.getX() - baseX) + ")"));
-                finish(mc);
+            case RUN + LENGTH + 6 -> server.execute(() -> check(Math.abs(captain.getX() - baseX) > 2, "he ran (at " + (captain.getX() - baseX) + ")"));
+            // 2. The second phase: a zombie brings him to half his health; he retreats and calls the Peak Guard.
+            case CALL - 20 -> {
+                server.execute(() -> {
+                    ServerLevel level = server.overworld();
+                    captain.getNavigation().stop();
+                    captain.teleportTo(baseX, baseY, baseZ);
+                    foe = net.minecraft.world.entity.EntityType.ZOMBIE.spawn(level, BlockPos.containing(baseX + 2.5, baseY, baseZ - 3), MobSpawnType.COMMAND);
+                    foe.setNoAi(true);
+                    foe.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(400);
+                    foe.setHealth(400);
+                });
+                look(server, -9, 4.5, -9, 0, 2.5, 0);
             }
+            case CALL -> server.execute(() -> {
+                captain.setHealth(captain.getMaxHealth() * PeakCaptainEntity.RETREAT_AT + 1);
+                captain.invulnerableTime = 0;
+                captain.hurt(server.overworld().damageSources().mobAttack(foe), 8);
+                check(captain.phase() == PeakCaptainEntity.Phase.RETREAT, "at half his health he retreats");
+            });
+            case CALL + PeakCaptainEntity.FIRST_CALL + 4 -> server.execute(() -> check(captain.waveMen().size() == PeakCaptainEntity.WAVES[0] && captain.waveMen().get(0).skyFalling(), "the first wave drops from the sky"));
+            case CALL + CALL_LENGTH -> server.execute(() -> {
+                var men = captain.waveMen();
+                check(!men.isEmpty() && men.stream().allMatch(m -> !m.skyFalling() && m.getHealth() == m.getMaxHealth()), "they land unhurt");
+                check(men.stream().allMatch(m -> m.getTarget() == foe), "they fight his foe");
+            });
+            case CALL + CALL_LENGTH + 4 -> finish(mc);
             default -> { }
         }
     }
