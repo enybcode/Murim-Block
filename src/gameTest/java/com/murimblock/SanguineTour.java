@@ -198,7 +198,10 @@ public final class SanguineTour {
                 case 1175 -> capture(mc,"iceberg-blood.png");
                 case 1176 -> view(mc,10,5,-6);
                 case 1185 -> capture(mc,"iceberg-blood-falls.png");
-                case 1190 -> finish(mc);
+                case 1186 -> server.execute(()->{CombatService.setCombatMode(self(server),false);self(server).getInventory().setItem(8,new ItemStack(SanguineItems.BLOOD_VIAL.get(),3));});
+                case 1188 -> {camera=null;mc.setCameraEntity(mc.player);mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);}
+                case 1192 -> capture(mc,"blood-vial-hotbar.png");
+                case 1196 -> finish(mc);
                 default -> { }
             }
             if(ticks>=46&&ticks<=60&&playing(mc,MurimAnimations.SANGUINE_STRAIGHT))m1Seen=true;

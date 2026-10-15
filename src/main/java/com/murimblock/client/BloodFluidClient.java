@@ -15,13 +15,21 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import org.joml.Vector3f;
 
-/** How blood looks: its own still and flowing textures (blood-iceberg-blocks.cjs), half see-through, a red murk inside it. */
+/**
+ * How blood looks: its own still and flowing textures (blood-iceberg-blocks.cjs), half see-through, a red murk inside it;
+ * and the blood vial, Minecraft's own water bottle with its liquid tinted blood red (models/item/blood_vial.json).
+ */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class BloodFluidClient {
     private static final ResourceLocation STILL = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "block/blood_still");
     private static final ResourceLocation FLOW = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "block/blood_flow");
 
     private BloodFluidClient() {
+    }
+
+    @SubscribeEvent
+    public static void vialColour(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
+        event.register((stack, layer) -> layer == 0 ? 0xFF8A0A14 : -1, com.murimblock.martial.SanguineItems.BLOOD_VIAL.get());
     }
 
     @SubscribeEvent
