@@ -295,14 +295,17 @@ public final class FoundationGameTests {
 
     @GameTest(template = "foundation_arena", batch = "foundation")
     public static void dawnDayContentIsRetiredButLoaded(GameTestHelper helper) {
-        // Dawn Day is loaded for its animations; every one of its items and potions is retired.
+        // Dawn Day is loaded for its animations; its weapons are kept (the Weapons tab), every other item and potion retired.
         helper.assertTrue(net.neoforged.fml.ModList.get().isLoaded(EpicFightContentPolicy.DAWN_DAY), "Dawn Day not loaded");
-        int items = 0, potions = 0;
+        int items = 0, weapons = 0, potions = 0;
         for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
             if (!net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(EpicFightContentPolicy.DAWN_DAY)) continue;
             items++;
-            helper.assertTrue(EpicFightContentPolicy.blocked(new ItemStack(item)), "Dawn Day item kept: " + item);
+            boolean weapon = com.murimblock.item.WeaponsTab.isWeapon(item);
+            if (weapon) weapons++;
+            helper.assertTrue(EpicFightContentPolicy.blocked(new ItemStack(item)) != weapon, (weapon ? "Dawn Day weapon retired: " : "Dawn Day item kept: ") + item);
         }
+        helper.assertTrue(weapons > 0 && weapons < items, "Dawn Day weapons " + weapons + " of " + items);
         for (var entry : net.minecraft.core.registries.BuiltInRegistries.POTION.holders().toList()) {
             if (!entry.key().location().getNamespace().equals(EpicFightContentPolicy.DAWN_DAY)) continue;
             potions++;
@@ -319,10 +322,27 @@ public final class FoundationGameTests {
     public static void nativeRecipesAreFilteredAndVanillaRecipesRemain(GameTestHelper helper) {
         var manager = helper.getLevel().getRecipeManager();
         for (var recipe : manager.getRecipes()) {
-            helper.assertFalse(EpicFightContentPolicy.isNative(recipe.id()), "Native recipe remained: " + recipe.id());
-            helper.assertFalse(EpicFightContentPolicy.blocked(recipe.value().getResultItem(helper.getLevel().registryAccess())), "Native recipe output remained");
+            // Only the recipes of their weapons remain.
+            ItemStack made = recipe.value().getResultItem(helper.getLevel().registryAccess());
+            helper.assertFalse(EpicFightContentPolicy.isNative(recipe.id()) && !com.murimblock.item.WeaponsTab.isWeapon(made.getItem()), "Native recipe remained: " + recipe.id());
+            helper.assertFalse(EpicFightContentPolicy.blocked(made), "Native recipe output remained");
         }
         helper.assertTrue(manager.byKey(ResourceLocation.parse("minecraft:iron_sword")).isPresent(), "Vanilla sword recipe missing");
+        helper.succeed();
+    }
+
+    /** The Weapons tab: Murimblock's weapons first, then Epic Fight's, Dawn Day's and Minecraft's; no skill book, gem or pickaxe. */
+    @GameTest(template = "foundation_arena", batch = "foundation")
+    public static void theWeaponsTabHoldsEveryWeapon(GameTestHelper helper) {
+        var tab = com.murimblock.item.MurimItems.WEAPONS_TAB.get();
+        tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
+        var shown = tab.getDisplayItems().stream().map(s -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(s.getItem()).toString()).toList();
+        for (String id : new String[] { "murimblock:alliance_spear", "murimblock:snow_plum_jian", "murimblock:iron_fan", "murimblock:rattan_shield", "murimblock:bandit_dao",
+                "epicfight:iron_spear", "epicfight:iron_greatsword", "epicfight:uchigatana", "epicfight_dd:iron_halberd", "minecraft:diamond_sword", "minecraft:bow", "minecraft:trident", "minecraft:shield" })
+            helper.assertTrue(shown.contains(id), "Not in the Weapons tab: " + id);
+        for (String id : new String[] { "epicfight:skillbook", "epicfight_dd:amber", "minecraft:iron_pickaxe", "murimblock:silver_tael" })
+            helper.assertFalse(shown.contains(id), "In the Weapons tab: " + id);
+        helper.assertTrue(shown.get(0).startsWith("murimblock:") && shown.indexOf("epicfight:iron_spear") < shown.indexOf("minecraft:diamond_sword"), "The tab's order is off: " + shown.subList(0, 5));
         helper.succeed();
     }
 

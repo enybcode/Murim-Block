@@ -31,7 +31,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
  * Retire engine items without unregistering IDs needed to load existing worlds: Epic Fight's, and those of its add-on
- * Dawn Day, whose animations we use and nothing else (its weapons, skill books, potions, gems and materials).
+ * Dawn Day, whose animations we use (their skill books, potions, gems and materials). Their <b>weapons</b> are allowed
+ * again since 15/10/2026 (Enzo): in the Weapons tab (item/WeaponsTab), in inventories, with their recipes.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class EpicFightContentPolicy {
@@ -46,21 +47,27 @@ public final class EpicFightContentPolicy {
 
     public static boolean blocked(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        if (isNative(BuiltInRegistries.ITEM.getKey(stack.getItem()))) return true;
+        if (isNative(BuiltInRegistries.ITEM.getKey(stack.getItem()))) return !com.murimblock.item.WeaponsTab.isWeapon(stack.getItem());
         // Dawn Day's potions are vanilla potion items holding its own potion types.
         PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
         return potion != null && potion.potion().flatMap(Holder::unwrapKey).map(key -> isNative(key.location())).orElse(false);
     }
 
     public static boolean blockedRecipe(ResourceLocation id, JsonElement json) {
-        if (isNative(id)) return true;
-        if (!json.isJsonObject()) return false;
+        ResourceLocation made = result(json);
+        // A recipe for one of their weapons stays, whatever its own name.
+        if (made != null && isNative(made)) return !BuiltInRegistries.ITEM.getOptional(made).map(com.murimblock.item.WeaponsTab::isWeapon).orElse(false);
+        return isNative(id);
+    }
+
+    /** The item a recipe makes, or null. */
+    private static ResourceLocation result(JsonElement json) {
+        if (!json.isJsonObject()) return null;
         JsonElement result = json.getAsJsonObject().get("result");
-        if (result == null) return false;
+        if (result == null) return null;
         JsonElement item = result.isJsonObject() ? result.getAsJsonObject().get("id") : result;
         if (item == null && result.isJsonObject()) item = result.getAsJsonObject().get("item");
-        return item != null && item.isJsonPrimitive() && item.getAsJsonPrimitive().isString()
-                && isNative(ResourceLocation.tryParse(item.getAsString()));
+        return item != null && item.isJsonPrimitive() && item.getAsJsonPrimitive().isString() ? ResourceLocation.tryParse(item.getAsString()) : null;
     }
 
     public static int clear(Container container) {

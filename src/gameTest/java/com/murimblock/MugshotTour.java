@@ -40,7 +40,8 @@ import org.slf4j.Logger;
  * Development-only mugshots of every Murim mob for the wiki (gradlew -PgameTests runMugshotTour): in a fresh flat world,
  * each mob in turn stands still before a police line-up wall, its height marked in bands, facing the camera, which is
  * framed on its head; one picture from the front and one from three-quarters. Pictures go to
- * build/mugshot-tour-run/screenshots/&lt;mob&gt;-front.png and -side.png, the report to mugshot-tour-report.txt.
+ * build/mugshot-tour-run/screenshots/&lt;mob&gt;-front.png and -side.png, then the creative Weapons tab (weapons-tab.png);
+ * the report to mugshot-tour-report.txt.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MugshotTour {
@@ -131,7 +132,17 @@ public final class MugshotTour {
         int n = (ticks - START) / EACH, t = (ticks - START) % EACH;
         if (ticks < START) return;
         if (n >= SITTERS.size()) {
-            if (t == 0) finish(mc);
+            // Last, the creative inventory open on the Weapons tab.
+            if (t == 0) {
+                mc.options.hideGui = false;
+                var screen = new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(mc.player, mc.player.connection.enabledFeatures(), true);
+                mc.setScreen(screen);
+                var select = screen.getClass().getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
+                select.setAccessible(true);
+                select.invoke(screen, com.murimblock.item.MurimItems.WEAPONS_TAB.get());
+            }
+            if (t == 20) shot(mc, "weapons-tab");
+            if (t == 30) finish(mc);
             return;
         }
         Sitter s = SITTERS.get(n);
