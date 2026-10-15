@@ -326,7 +326,13 @@ public final class SanguineGameTests {
             for(BlockPos at:BlockPos.betweenClosed(centre.offset(-BloodIceberg.RADIUS,-BloodIceberg.DEPTH,-BloodIceberg.RADIUS),centre.offset(BloodIceberg.RADIUS,BloodIceberg.TOP+2,BloodIceberg.RADIUS)))
                 if(h.getLevel().getBlockState(at).getBlock() instanceof BloodIcebergBlock)n++;
             return n;};
+        java.util.function.IntSupplier blood=()->{int n=0;
+            for(BlockPos at:BlockPos.betweenClosed(centre.offset(-BloodIceberg.RADIUS,-BloodIceberg.DEPTH,-BloodIceberg.RADIUS),centre.offset(BloodIceberg.RADIUS,BloodIceberg.TOP+2,BloodIceberg.RADIUS)))
+                if(h.getLevel().getBlockState(at).is(SanguineBlocks.BLOOD.get()))n++;
+            return n;};
         cast(h,p,4);ticks(h,p,1420);
+        // Blood: the channel full and the falls pouring down the tiers; all of it gone at the end.
+        h.runAfterDelay(90,()->h.assertTrue(blood.getAsInt()>150,"No blood in the arena: "+blood.getAsInt()));
         h.assertTrue(MartialService.cooldownLeft(p,MartialArts.BLOOD_ICEBERG.id())>10700,"No 9-minute cooldown: "+MartialService.cooldownLeft(p,MartialArts.BLOOD_ICEBERG.id()));
         h.runAfterDelay(50,()->{
             int n=crystals.getAsInt();
@@ -339,7 +345,8 @@ public final class SanguineGameTests {
             h.assertTrue(SanguineArt.state(p).gauge()>=1,"No blood crystal grew back in the arena: "+SanguineArt.state(p));
         });
         // 60 s later it crumbles, leaving nothing.
-        h.runAfterDelay(1400,()->{h.assertTrue(crystals.getAsInt()==0,"The arena did not crumble away: "+crystals.getAsInt());end(h,p);});
+        h.runAfterDelay(1400,()->{h.assertTrue(crystals.getAsInt()==0,"The arena did not crumble away: "+crystals.getAsInt());
+            h.assertTrue(blood.getAsInt()==0,"Blood was left behind: "+blood.getAsInt());end(h,p);});
     }
     @GameTest(template="foundation_arena",batch="crystal_parry",timeoutTicks=85)
     public static void aPerfectParryStopsTheThrownCrystal(GameTestHelper h) {
