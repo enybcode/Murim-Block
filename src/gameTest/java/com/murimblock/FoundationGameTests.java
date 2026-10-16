@@ -104,6 +104,14 @@ public final class FoundationGameTests {
         wide.put("size", wideSize);
         level.getStructureManager().getOrCreate(ResourceLocation.parse("murimblock:iceberg_arena"))
                 .load(level.registryAccess().lookupOrThrow(Registries.BLOCK), wide);
+        // The spear's targets stand up to 4 blocks from the player: 9 across, so they stay inside the test. A GameTest
+        // force-loads only its template's chunks, and a mob moved past it, into a chunk not loaded, is out of reach.
+        CompoundTag spear = nbt.copy();
+        ListTag spearSize = new ListTag();
+        for (int v : new int[]{9, 5, 9}) spearSize.add(IntTag.valueOf(v));
+        spear.put("size", spearSize);
+        level.getStructureManager().getOrCreate(ResourceLocation.parse("murimblock:spear_arena"))
+                .load(level.registryAccess().lookupOrThrow(Registries.BLOCK), spear);
     }
 
     @GameTest(template = "foundation_arena", batch = "foundation", timeoutTicks = 40)
