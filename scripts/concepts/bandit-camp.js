@@ -2,12 +2,24 @@
 // 1 block. x east, z south, y up. A hollow among wooded hills, ringed by a palisade of sharpened logs and a ditch, the
 // gate to the south behind spiked barricades, four watchtowers; inside, the chief's longhall to the north, a bonfire
 // plaza in the middle, two bunkhouses and a ring of hide tents, the loot store, prisoners' cages, a horse pen and a
-// training ring. It holds thirty hostile men, each shown where he stands.
+// training ring. It holds thirty hostile men, each shown where he stands; when the thirty are dead, the war drum before
+// the longhall sounds and the boss comes out of it (his seat stands empty until then). One camp in each region of the
+// Murim map, dressed for its land: the centre's wooded hollow, the north's snows, the west's dry lands, the south's
+// bamboo and karst, the east's waterlands.
 window.CAMP = (() => {
   const S = ST;
   const P = 6;            // the camp's floor
   const R = 42;           // the palisade's radius
   const GATE = 3;         // half the gate's width
+  /** Each region's camp: its ground, hills, palisade, roofs, tents, trees, and whether its ditch holds water. */
+  const THEMES = {
+    centre: { ground: 'grass_dry', hill: 'grass', wall: 'log', tip: 'log_end', roof: 'thatch', bunk: 'hide_dark', tents: ['hide', 'hide_dark'], trees: 'pine', rock: 'stone' },
+    north: { ground: 'snow', hill: 'snow', wall: 'wood_dark', tip: 'snow', roof: 'snow', bunk: 'snow', tents: ['robe_white', 'hide'], trees: 'pine', rock: 'granite' },
+    west: { ground: 'sand', hill: 'loess', wall: 'rammed', tip: 'mud_brick', roof: 'thatch', bunk: 'sandstone', tents: ['hide', 'sandstone'], trees: 'none', rock: 'sandstone_layer' },
+    south: { ground: 'grass_lush', hill: 'grass_lush', wall: 'bamboo', tip: 'bamboo_dark', roof: 'thatch', bunk: 'bamboo_dark', tents: ['hide', 'hide_dark'], trees: 'bamboo', rock: 'limestone' },
+    east: { ground: 'grass', hill: 'grass_lush', wall: 'log', tip: 'log_end', roof: 'tile', bunk: 'tile', tents: ['hide', 'hide_dark'], trees: 'round', rock: 'stone', moat: true },
+  };
+  let T = THEMES.centre;
 
   // The hollow: flat inside the ditch, wooded hills rising all round, highest to the north.
   function height(x, z) {
@@ -24,7 +36,7 @@ window.CAMP = (() => {
     for (const [dx, dz] of [[-2, -2], [2, -2], [-2, 2], [2, 2]]) S.fill(cx + dx, P + 1, cz + dz, cx + dx, P + h + 3, cz + dz, 'log');
     S.fill(cx - 2, P + h, cz - 2, cx + 2, P + h, cz + 2, 'wood');
     for (let i = -2; i <= 2; i++) for (const [x, z] of [[cx + i, cz - 2], [cx + i, cz + 2], [cx - 2, cz + i], [cx + 2, cz + i]]) S.set(x, P + h + 1, z, 'wood_dark');
-    S.roof(cx - 2, cz - 2, cx + 2, cz + 2, P + h + 4, { type: 'pyramid', mat: 'thatch', ridge: 'wood_dark', overhang: 1 });
+    S.roof(cx - 2, cz - 2, cx + 2, cz + 2, P + h + 4, { type: 'pyramid', mat: T.roof, ridge: 'wood_dark', overhang: 1 });
     S.fill(cx, P + 1, cz + 3, cx, P + h, cz + 3, 'wood_light');           // the ladder
     // A crossed brace between the legs.
     for (let y = 0; y < h - 2; y++) { S.set(cx - 2 + Math.round(y * 4 / (h - 2)), P + 2 + y, cz - 2, 'wood'); }
@@ -57,10 +69,15 @@ window.CAMP = (() => {
   const MEN = [];
   const man = (x, y, z, robe = 'robe_black', hat = 'hair', role = 'bandit') => { MEN.push(role); S.person(x, y, z, robe, hat); };
 
-  function build() {
+  function build(region = 'centre') {
+    T = THEMES[region];
     S.clear(); MEN.length = 0;
     const r = S.seeded(1313);
-    S.ground(-110, -110, 110, 120, height, (x, z, h) => (h >= P && Math.hypot(x, z) < R + 2 ? 'grass_dry' : 'grass'), 'dirt', 3);
+    S.ground(-110, -110, 110, 120, height, (x, z, h) => (h >= P && Math.hypot(x, z) < R + 2 ? T.ground : T.hill), 'dirt', 3);
+    if (T.moat) for (let x = -R - 5; x <= R + 5; x++) for (let z = -R - 5; z <= R + 5; z++) {
+      const d = Math.hypot(x, z);
+      if (d > R + 2 && d <= R + 4 && !(Math.abs(x) <= 2 && z > 0)) S.set(x, P - 1, z, 'water');
+    }
     // Trodden ground inside, paths of mud.
     for (let x = -R; x <= R; x++) for (let z = -R; z <= R; z++) {
       const d = Math.hypot(x, z);
@@ -75,8 +92,8 @@ window.CAMP = (() => {
       const t = a * Math.PI / 180, x = Math.round(Math.sin(t) * R), z = Math.round(Math.cos(t) * R);
       if (z > 0 && Math.abs(x) <= GATE) continue;
       const tall = (x + z) % 2 === 0 ? 7 : 6;
-      S.fill(x, P + 1, z, x, P + tall, z, 'log');
-      S.set(x, P + tall + 1, z, 'log_end');                              // the sharpened tips
+      S.fill(x, P + 1, z, x, P + tall, z, T.wall);
+      S.set(x, P + tall + 1, z, T.tip);                                  // the sharpened tips
     }
     // Inside it, a walkway of planks on posts, a man's height below the tips.
     for (let a = 0; a < 360; a += 0.8) {
@@ -90,7 +107,7 @@ window.CAMP = (() => {
       S.fill(gx - 2, P + 1, R - 2, gx + 2, P + 9, R + 2, 'log');
       S.fill(gx - 1, P + 1, R - 1, gx + 1, P + 9, R + 1, null);
       S.fill(gx - 2, P + 9, R - 2, gx + 2, P + 9, R + 2, 'wood');
-      S.roof(gx - 2, R - 2, gx + 2, R + 2, P + 10, { type: 'pyramid', mat: 'thatch', ridge: 'wood_dark', overhang: 1 });
+      S.roof(gx - 2, R - 2, gx + 2, R + 2, P + 10, { type: 'pyramid', mat: T.roof, ridge: 'wood_dark', overhang: 1 });
       S.fill(gx - 1, P + 6, R + 2, gx + 1, P + 8, R + 2, 'rag');
       // The gate leaves, swung open inward.
       S.fill(s * GATE, P + 1, R - 1, s * GATE, P + 6, R - 5, 'log');
@@ -104,13 +121,17 @@ window.CAMP = (() => {
 
     // ------------------------------------------------ the chief's longhall (north)
     S.fill(-15, P + 1, -37, 15, P + 1, -23, 'stone');
-    longhouse(-14, -36, 14, -24, 6, 'thatch', 'log');
+    longhouse(-14, -36, 14, -24, 6, T.roof, 'log');
     S.fill(-2, P + 2, -24, 2, P + 5, -24, null);                           // the doorway
     S.fill(-3, P + 6, -23, 3, P + 7, -23, 'rag');                           // the red banner over it
     for (const x of [-5, 5]) S.fill(x, P + 2, -22, x, P + 9, -22, 'log');   // banner poles
     for (const x of [-5, 5]) S.fill(x + 1, P + 6, -22, x + 1, P + 9, -22, 'rag');
     S.fill(-1, P + 2, -35, 1, P + 3, -35, 'wood_dark');                     // the chief's seat
     S.set(-2, P + 2, -35, 'hide'); S.set(2, P + 2, -35, 'hide');
+    // The war drum: a great red drum on a dark stand before the hall; it sounds when the thirty are dead.
+    S.fill(6, P + 1, -20, 10, P + 1, -20, 'wood_dark'); S.fill(6, P + 1, -18, 10, P + 1, -18, 'wood_dark');
+    S.fill(7, P + 2, -21, 9, P + 5, -17, 'rag'); S.fill(7, P + 6, -21, 9, P + 6, -17, 'hide');
+    S.fill(6, P + 3, -20, 6, P + 4, -18, 'gold'); S.fill(10, P + 3, -20, 10, P + 4, -18, 'gold');
 
     // ------------------------------------------------ the bonfire plaza (centre)
     S.walls(-2, P + 1, -2, 2, P + 1, 2, 'stone');
@@ -122,11 +143,11 @@ window.CAMP = (() => {
     S.set(10, P + 2, -2, 'iron'); S.set(10, P + 1, -2, 'fire');              // the cooking pot
 
     // ------------------------------------------------ bunkhouses and tents
-    longhouse(-38, -12, -28, 10, 5, 'hide_dark', 'log');                   // west bunkhouse
-    longhouse(28, -12, 38, 10, 5, 'hide_dark', 'log');                     // east bunkhouse
+    longhouse(-38, -12, -28, 10, 5, T.bunk, 'log');                        // west bunkhouse
+    longhouse(28, -12, 38, 10, 5, T.bunk, 'log');                          // east bunkhouse
     S.fill(-28, P + 2, -2, -28, P + 4, 1, null); S.fill(28, P + 2, -2, 28, P + 4, 1, null);
     for (const [x, z, m] of [[-20, -16, 'hide'], [-14, -14, 'hide_dark'], [14, -14, 'hide'], [20, -16, 'hide_dark'],
-      [-22, 14, 'hide_dark'], [-16, 18, 'hide'], [16, 18, 'hide_dark'], [22, 14, 'hide'], [-10, 26, 'hide'], [10, 26, 'hide_dark']]) tent(x, z, 2, 3, m);
+      [-22, 14, 'hide_dark'], [-16, 18, 'hide'], [16, 18, 'hide_dark'], [22, 14, 'hide'], [-10, 26, 'hide'], [10, 26, 'hide_dark']]) tent(x, z, 2, 3, T.tents[m === 'hide' ? 0 : 1]);
 
     // ------------------------------------------------ the loot store (north-east), cages (south-west), horse pen, training ring
     for (const [x, z, n] of [[18, -28, 3], [19, -28, 2], [20, -28, 3], [18, -27, 1], [21, -27, 2], [22, -29, 1]]) crate(x, z, n);
@@ -149,7 +170,7 @@ window.CAMP = (() => {
     for (const [x, z] of [[19, 24], [25, 28]]) { S.fill(x, P + 1, z, x, P + 2, z, 'wood'); S.set(x, P + 3, z, 'hay'); }
 
     // ------------------------------------------------ the thirty
-    man(0, P + 1, -33, 'robe_red', 'gold', 'chief');                         // 1 the chief, on his seat
+    man(-9, P + 1, 3, 'robe_red', 'hair', 'lieutenant');                    // (the seat stays empty: the boss's)
     man(-4, P + 1, -21, 'robe_red', 'hair', 'lieutenant'); man(4, P + 1, -21, 'robe_red', 'hair', 'lieutenant');   // 2 at the hall's door
     man(-5, P + 1, 4, 'robe_red', 'hair', 'lieutenant');                     // 1 at the fire
     towers.forEach(([x, z], i) => man(x, tops[i], z, 'robe_black', 'hair', 'archer'));   // 4 archers on the towers
@@ -163,20 +184,38 @@ window.CAMP = (() => {
     for (let k = 0; k < 90; k++) {
       const x = Math.round((r() - 0.5) * 210), z = Math.round(-105 + r() * 220);
       if (Math.hypot(x, z) < R + 9 || (Math.abs(x) < 6 && z > 0)) continue;
-      S.pine(x, height(x, z), z, 5 + Math.floor(r() * 4), r);
+      if (T.trees === 'pine') S.pine(x, height(x, z), z, 5 + Math.floor(r() * 4), r);
+      else if (T.trees === 'bamboo') { for (let b = 0; b < 4; b++) S.bamboo(x + (b % 2) * 2, height(x, z), z + (b >> 1) * 2, 9 + Math.floor(r() * 6), r); }
+      else if (T.trees === 'round') S.tree(x, height(x, z), z, { trunk: 'bark', leaves: 'leaves', h: 5, r: 3, rnd: r });
     }
-    for (let k = 0; k < 30; k++) {
+    for (let k = 0; k < (T.trees === 'none' ? 60 : 30); k++) {
       const x = Math.round((r() - 0.5) * 200), z = Math.round(-100 + r() * 210);
       if (Math.hypot(x, z) < R + 8) continue;
-      S.blob(x, height(x, z), z, 2, 1, 2, 'stone', 0.2, r);
+      S.blob(x, height(x, z), z, 2, 1, 2, T.rock, 0.2, r);
     }
     return MEN.length;
+  }
+
+  /** The boss: twice a man's height, crimson armour over black, a gold crown, a great dao in his right hand. */
+  function boss(x, y, z) {
+    S.fill(x - 1, y + 1, z - 1, x, y + 3, z, 'robe_black');                // legs
+    S.fill(x - 1, y + 4, z - 1, x, y + 6, z, 'rag');                       // the body in crimson armour
+    S.fill(x - 2, y + 5, z - 1, x - 2, y + 6, z, 'gold'); S.fill(x + 1, y + 5, z - 1, x + 1, y + 6, z, 'gold');   // shoulder plates
+    S.fill(x - 2, y + 2, z - 1, x - 2, y + 4, z - 1, 'skin'); S.fill(x + 1, y + 2, z - 1, x + 1, y + 4, z - 1, 'skin');   // arms
+    S.fill(x - 1, y + 7, z - 1, x, y + 8, z, 'skin');                       // head
+    S.fill(x - 1, y + 9, z - 1, x, y + 9, z, 'gold');                       // crown
+    S.fill(x - 1, y + 8, z - 1, x, y + 8, z - 1, 'hair');                   // brows
+    S.fill(x - 2, y + 1, z - 2, x - 2, y + 1, z - 6, 'iron');               // the dao, its point on the ground
+    S.fill(x - 2, y + 2, z - 2, x - 2, y + 2, z - 4, 'iron');
   }
 
   // ---------------------------------------------------------------- views
   const SKY = '#C3D2DE';
   function overview() { build(); return { view: { unclamped: true, position: [96, 74, 118], target: [0, 4, 0], fov: 52 }, sky: SKY, fog: [300, 800] }; }
   function gate() { build(); return { view: { unclamped: true, position: [6, 27, 80], target: [0, 9, 34], fov: 56 }, sky: SKY, fog: [220, 650] }; }
+  function bossView() { build(); boss(0, P, -16); for (let k = 0; k < 8; k++) S.set(Math.round(Math.sin(k) * 3), P + 2 + k, -16 + Math.round(Math.cos(k) * 2), 'smoke');
+    return { view: { unclamped: true, position: [-9, 15, 6], target: [0, 10, -18], fov: 58 }, sky: SKY, fog: [220, 650] }; }
+  const regionView = region => () => { build(region); return { view: { unclamped: true, position: [96, 74, 118], target: [0, 4, 0], fov: 52 }, sky: region === 'north' ? '#D8E2EA' : SKY, fog: [300, 800] }; };
   function plaza() { build(); return { view: { unclamped: true, position: [-24, 22, 34], target: [2, 6, -12], fov: 64 }, sky: SKY, fog: [220, 650] }; }
   function plan() {
     const n = build();
@@ -187,6 +226,6 @@ window.CAMP = (() => {
     return { view: { unclamped: true, position: [0, 150, 70], target: [0, 4, 2], fov: 58 }, sky: SKY, fog: [500, 1100], marks, men: n };
   }
 
-  return { overview, gate, plaza, plan, men: () => build() };
+  return { overview, gate, plaza, plan, boss: bossView, north: regionView('north'), west: regionView('west'), south: regionView('south'), east: regionView('east'), men: () => build() };
 })();
 true;

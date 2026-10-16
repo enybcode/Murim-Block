@@ -1,6 +1,8 @@
 # Grand camp de bandits — maquettes (proposition à valider par Enzo)
 
-> Demande d'Enzo du 16/10/2026 : « fais-moi une maquette d'un grand camp de bandits pour accueillir 30 mobs hostiles ».
+> Demande d'Enzo du 16/10/2026 : « fais-moi une maquette d'un grand camp de bandits pour accueillir 30 mobs hostiles »,
+> puis : « l'objectif sera d'y ajouter un boss qui spawn quand on tue tous les mobs, et il devra y avoir un camp dans
+> chaque région ».
 >
 > **Statut : maquettes voxel, rien n'est construit en jeu.** Maquettes : `node scripts/concepts/render-bandit-camp.cjs`
 > (Blockbench isolé, `--port=` ; port 9232 par défaut), scène dans `scripts/concepts/bandit-camp.js`. 1 voxel = 1 bloc.
@@ -18,6 +20,43 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
   par le sud sur un pont de rondins ; le tout tient dans environ 100 × 130 blocs avec la route.
 - **Où** (à décider) : dans les collines et les forêts, loin des capitales ; plutôt rare, comme un manoir des bois.
 
+## Le boss : le camp à nettoyer
+
+1. On arrive devant un camp plein : **trente bandits** à leurs postes. Le siège du chef, dans la grande salle, est
+   **vide**.
+2. Il faut les tuer **tous**. (À l'écran, une petite barre « Bandits : 18 / 30 » pourrait suivre le compte.)
+3. Au dernier mort, le **tambour de guerre** devant la grande salle résonne trois fois, de la fumée sort de la porte,
+   et le **boss** en sort : deux fois la taille d'un homme, en armure rouge et or, une couronne d'or, un grand dao.
+4. Le boss vaincu, le camp est **libéré** : il ne se repeuple plus, et le butin de la grande salle s'ouvre.
+
+![Le boss sort de la grande salle](images/bandit-camp/boss.jpg)
+
+Le boss n'existe pas encore : un **nouveau mob** à créer (modèle, attaques, barre de boss), plus fort que le Bandit
+Chief ; ou, pour commencer, le Bandit Chief lui-même avec plus de vie. En jeu, le camp compte ses bandits encore en
+vie (ceux qui ont été placés à sa construction) et fait apparaître le boss quand il n'en reste aucun.
+
+## Un camp dans chaque région
+
+Un camp par région de la carte Murim, le même plan habillé pour sa terre :
+
+| Région | Le camp |
+|---|---|
+| **Centre** | Creux entre des collines aux pins, palissade de rondins, toits de chaume, tentes de peaux |
+| **Nord** | Dans les neiges : palissade de bois sombre aux pointes enneigées, toits couverts de neige, tentes blanches |
+| **Ouest** | Dans le désert et le lœss : murs de terre damée, chaume, tentes de peau et de grès, sans arbres |
+| **Sud** | Dans la mer de bambous : palissade de bambou, dortoirs de bambou, bosquets tout autour |
+| **Est** | Pays des eaux : palissade de rondins, toits de tuiles sombres, un fossé rempli d'eau |
+
+![Centre](images/bandit-camp/overview.jpg)
+
+![Nord](images/bandit-camp/north.jpg)
+
+![Ouest](images/bandit-camp/west.jpg)
+
+![Sud](images/bandit-camp/south.jpg)
+
+![Est](images/bandit-camp/east.jpg)
+
 ## Le plan
 
 ![Plan numéroté](images/bandit-camp/plan.jpg)
@@ -26,8 +65,8 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 |---|---|---|---|
 | 1 | **Porte** | Deux tours de rondins à toit de chaume, bannières rouges, battants ouverts, linteau | 2 devant, 2 sur les tours |
 | 2 | **Tours de guet** (4) | Sur pilotis de rondins, plateforme à garde-corps, toit de chaume, échelle | 1 archer dans chacune |
-| 3 | **Grande salle du chef** | Longue maison de rondins sur socle de pierre, toit de chaume, bannière rouge, siège du chef | Le chef ; 2 lieutenants à la porte |
-| 4 | **Place du grand feu** | Feu de camp entouré de pierres, bancs de rondins, marmite sur trépied, fumée | 6 bandits et 1 lieutenant |
+| 3 | **Grande salle du chef** | Longue maison de rondins sur socle de pierre, toit de chaume, bannière rouge, siège vide du boss, **tambour de guerre** devant | 2 lieutenants à la porte ; le boss, à la fin |
+| 4 | **Place du grand feu** | Feu de camp entouré de pierres, bancs de rondins, marmite sur trépied, fumée | 6 bandits et 2 lieutenants |
 | 5 | **Dortoirs** (2) | Longues maisons de rondins à toit de peaux, à l'ouest et à l'est | Leurs lits (8 chacun) |
 | 6 | **Tentes** (10) | Tentes de peaux en A sur perches, chiffon rouge au sommet | 3 couchages chacune |
 | 7 | **Butin** | Caisses empilées, tas d'or et d'argent volés, charrette chargée de soie | 2 gardiens |
@@ -37,7 +76,7 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 | 11 | **Barricades** | Chevaux de frise en rondins taillés devant la porte | — |
 | 12 | **Chemin de ronde** | Planches derrière la palissade, sous les pointes | 4 sentinelles |
 
-**Les trente** : 1 chef, 3 lieutenants, 4 archers, 4 gardes de la porte, 6 autour du feu, 4 à l'entraînement,
+**Les trente** : 4 lieutenants, 4 archers, 4 gardes de la porte, 6 autour du feu, 4 à l'entraînement,
 2 au butin, 2 aux cages, 4 sur le chemin de ronde. Les couchages (2 × 8 + 10 × 3 = 46) dépassent trente : il en
 reste pour ceux qui patrouillent dehors.
 
@@ -55,8 +94,8 @@ tentes et les dortoirs.
 ## En jeu, une fois validé
 
 - Un site comme les autres, construit en code bloc par bloc, trouvé par `/locate`.
-- **Habitants** : les Mountain Bandits existants (leurs cinq tenues), un **Bandit Chief** dans la salle, avec ses
-  lieutenants et des archers. Les **archers et les lieutenants n'existent pas encore** : il faudrait les créer (un
+- **Habitants** : les Mountain Bandits existants (leurs cinq tenues), avec des lieutenants et des archers ; le boss à
+  la fin. Les **archers et les lieutenants n'existent pas encore** : il faudrait les créer (un
   bandit à l'arc, un bandit plus fort) ou les remplacer par des bandits ordinaires.
 - **Butin** : coffres du butin volé (taels d'argent, or, soie, armes des bandits), la cache des sites.
 - **Matériaux prévus** : rondins de chêne noir et d'épicéa (palissade, tours, maisons), chaume en balles de foin et
@@ -64,7 +103,8 @@ tentes et les dortoirs.
 
 ## Questions pour Enzo
 
-- Où le poser (collines, forêts, plateau de lœss du nord comme le repaire actuel) et à quelle fréquence ?
+- Un seul camp par région (cinq dans le monde), ou un par région tous les quelques milliers de blocs ?
+- Le boss : un nouveau mob à créer (nom, arme, attaques), ou le Bandit Chief renforcé pour commencer ? Que lâche-t-il ?
+- Les bandits qui sortent du camp (poursuite) comptent-ils encore ? S'ils s'éloignent trop, reviennent-ils ?
 - Les archers et les lieutenants : les créer comme nouveaux mobs, ou seulement des bandits ordinaires ?
-- Les bandits tués réapparaissent-ils (un camp qu'on « nettoie » une fois pour toutes, ou qui se repeuple) ?
 - Un prisonnier à délivrer dans les cages, avec une récompense ?
