@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+[[mods]]
+modId="bloodsect"
+version="1.10.1"
+displayName="Blood Sect Decor"
+description="Dark blood fluid and Blood Ninja guards with blood dao attacks and articulated Murim robes."
+[[dependencies.bloodsect]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.248,21.2)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.bloodsect]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"

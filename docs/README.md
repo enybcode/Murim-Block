@@ -24,6 +24,8 @@
 
 ## Development And Delivery
 
+- [Blood Cult test delivery](../addons/blood-sect-decor/README.md): standalone Blood Sect Decor 1.10.1 sources, Blood Ninja, blood dao and [underground WorldEdit base](../art/structures/blood-cult/README.md); not integrated into the main mod.
+
 - [Point de reprise et installation sur un autre PC](../l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md): état courant, derniers échanges Claude, dépendances et suite.
 - [Local publication, 13 October](DELIVERY_2026_10_13.md): combat/techniques changes, current checks and remaining validation.
 - [Git workflow](GIT_WORKFLOW.md): `test` for pending validation, `main` stable.
