@@ -22,6 +22,8 @@ import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
+import java.util.List;
+
 import static com.murimblock.testing.GameTestPlayers.cleanup;
 import static com.murimblock.testing.GameTestPlayers.player;
 
@@ -410,6 +412,42 @@ public final class CrabKingGameTests {
             helper.assertTrue(mist.densityAt(c.add(0, 30, 0), 0) > 0.9F, "Thin up under the vault");
             helper.assertTrue(mist.densityAt(c.add(r + 6, 1, 0), 0) == 0, "It spills out of the cavern");
             mists.forEach(net.minecraft.world.entity.Entity::discard);
+            king.discard();
+            helper.succeed();
+        });
+    }
+
+    /** The water ball as in a fight: a giant ball swells over him, is hurled at his target and bursts all round it. */
+    @GameTest(template = "iceberg_arena", batch = "crab_king_water_ball", timeoutTicks = 160)
+    public static void hisGiantWaterBallStrikesAndBurstsAllRound(GameTestHelper helper) {
+        CrabKingEntity king = king(helper, new BlockPos(24, 1, 10));
+        king.setNoAi(true);
+        pinFacing(helper, king);
+        net.minecraft.world.phys.Vec3 base = net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(24, 1, 10)));
+        Zombie target = EntityType.ZOMBIE.create(helper.getLevel()), beside = EntityType.ZOMBIE.create(helper.getLevel());
+        target.moveTo(base.x, base.y, base.z + 9, 180, 0);
+        beside.moveTo(base.x + 2.5, base.y, base.z + 9, 180, 0);
+        for (Zombie z : List.of(target, beside)) {
+            z.setNoAi(true);
+            z.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.LEATHER_HELMET));
+            helper.getLevel().addFreshEntity(z);
+        }
+        float[] health = {target.getHealth(), beside.getHealth()};
+        float[] biggest = {0};
+        helper.runAfterDelay(2, () -> {
+            king.setTarget(target);
+            EpicFightCapabilities.getEntityPatch(king, LivingEntityPatch.class).playAnimationSynchronized(CrabKingAnimations.WATER_BALL, 0);
+        });
+        helper.onEachTick(() -> {
+            for (var ball : helper.getLevel().getEntitiesOfClass(com.murimblock.mob.WaterBallEntity.class, king.getBoundingBox().inflate(20)))
+                if (ball.isBig()) biggest[0] = Math.max(biggest[0], ball.ballScale());
+        });
+        helper.runAfterDelay(120, () -> {
+            helper.assertTrue(biggest[0] >= CrabKingEntity.ORB_SCALE - 0.01F, "His ball never swelled to its fullest: " + biggest[0]);
+            helper.assertTrue(target.getHealth() < health[0] - 8, "The ball did not strike his target hard: " + target.getHealth());
+            helper.assertTrue(beside.getHealth() < health[1], "It did not burst all round");
+            target.discard();
+            beside.discard();
             king.discard();
             helper.succeed();
         });

@@ -24,7 +24,9 @@
 //                    at BURROW_PLUNGE and held there, trembling, while the giant pincer he calls fights (CrabKingEntity,
 //                    CrabPincerEntity: 4.6 s), then pulled out;
 //   crab_king_mist   the mist (Enzo, 16/10): hunched, the pincers crossed before his face, the shell heaving, then flung
-//                    wide at MIST_RELEASE as the mist bursts out of him (CrabMistEntity); he is gone into it at MIST_GONE.
+//                    wide at MIST_RELEASE as the mist bursts out of him (CrabMistEntity); he is gone into it at MIST_GONE;
+//   crab_king_water_ball  the water ball: pincers raised, a giant ball swelling between them (from ORB_FORM), hurled at
+//                    ORB_THROW (CrabKingEntity, WaterBallEntity).
 // The victim is held between the jaws: GRIP, the point halfway between the middles of the pincer's two fingers
 // (crab-king-3d.cjs), is worked out for every frame of the hold from these poses and written as
 // integration/epicfight/CrabKingGrip.java, which the server follows (blocks, at his size).
@@ -288,7 +290,30 @@ const MIST_RELEASE = 0.75, MIST_GONE = 1.2;
   ];
 }
 
-module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE, SQUEEZES, BURROW_PLUNGE, MIST_RELEASE, MIST_GONE };
+// The water ball (Enzo, 16/10: "the blue crab's water ball, but much bigger"): both pincers raised over his head, wide
+// open; a ball of water swells between them from ORB_FORM (CrabKingEntity), four lesser ones circling it; the back
+// arched, then hurled ahead at ORB_THROW, the body following it down.
+const ORB_FORM = 0.35, ORB_THROW = 1.5;
+{
+  const RAISED = (heave = 0) => ({ ...STANCE(), Root: { pos: [0, 0, HIP - 0.02] }, Torso: [['x', 4 + heave * 2]], Chest: [['x', 10 + heave * 3]],
+    Head: [['x', -30]], Arm_R: [['x', 164 - heave * 4], ['y', -30]], Hand_R: [['x', 26]], Arm_L: [['x', 164 - heave * 4], ['y', 30]], Hand_L: [['x', 26]],
+    ...pincers(36 + heave * 6), Thigh_R: [['x', 4], ['y', -10]], Leg_R: [['x', -8]], Thigh_L: [['x', -4], ['y', 10]], Leg_L: [['x', -6]] });
+  const ARCHED = { ...RAISED(1), Root: { pos: [0, -0.12, HIP - 0.04] }, Torso: [['x', 16]], Chest: [['x', 20]], Head: [['x', -34]],
+    Arm_R: [['x', 186], ['y', -26]], Arm_L: [['x', 186], ['y', 26]], Thigh_R: [['x', -6], ['y', -10]], Leg_R: [['x', -10]], Thigh_L: [['x', 22], ['y', 10]], Leg_L: [['x', -30]] };
+  const HURLED = { ...STANCE(), Root: { pos: [0, 0.3, HIP - 0.16] }, Torso: [['x', -34]], Chest: [['x', -14]], Head: [['x', 6]],
+    Arm_R: [['x', 72], ['y', -18]], Hand_R: [['x', 6]], Arm_L: [['x', 72], ['y', 18]], Hand_L: [['x', 6]], ...pincers(30),
+    Thigh_R: [['x', 46], ['y', -8]], Leg_R: [['x', -60]], Thigh_L: [['x', -10], ['y', 8]], Leg_L: [['x', -20]] };
+  anims.crab_king_water_ball = [
+    { t: 0, pose: STANCE() },
+    { t: ORB_FORM, pose: RAISED(0) }, { t: 0.6, pose: RAISED(1) }, { t: 0.85, pose: RAISED(0) }, { t: 1.1, pose: RAISED(1) },
+    { t: 1.32, pose: ARCHED },
+    { t: ORB_THROW, pose: HURLED },
+    { t: 1.85, pose: { ...HURLED, Torso: [['x', -30]], Arm_R: [['x', 64], ['y', -18]], Arm_L: [['x', 64], ['y', 18]] } },
+    { t: 2.3, pose: STANCE() },
+  ];
+}
+
+module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE, SQUEEZES, BURROW_PLUNGE, MIST_RELEASE, MIST_GONE, ORB_FORM, ORB_THROW };
 
 /**
  * GRIP: between the jaws, for each frame of the hold (and the catch), in the character's axes at his size (blocks:

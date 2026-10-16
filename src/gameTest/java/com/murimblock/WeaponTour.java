@@ -299,6 +299,8 @@ public final class WeaponTour {
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("burrow", side, CrabKingAnimations.BURROW, null, 60, 2);
         // His mist: he breathes it and is gone into it (seen from outside it, then from within).
         for (Side side : List.of(Side.FRONT_RIGHT, Side.FRONT)) king("mist", side, CrabKingAnimations.MIST, null, 40, 2);
+        // His water ball, on a husk before him (wide).
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) king("water-ball", side, CrabKingAnimations.WATER_BALL, null, 50, 2);
         king("death", Side.FRONT_RIGHT, Animations.BIPED_DEATH, null, 14, 2);
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) axe("idle", side, -1, LivingMotions.IDLE, 1, 1);
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) axe("walk", side, -1, LivingMotions.WALK, 16, 2);
@@ -492,7 +494,7 @@ public final class WeaponTour {
         }
         // Farther still for the pincers from the deep: him, his target and the two giant pincers in the frame.
         // Outside his mist (11 blocks round him) for its wide take.
-        zoom = t.name().startsWith("king-burrow") || t.name().equals("king-mist") && t.side() == Side.FRONT_RIGHT ? 4.6 : t.actor() == Actor.KING ? 2.4 : 1;
+        zoom = t.name().startsWith("king-burrow") || t.name().startsWith("king-water-ball") || t.name().equals("king-mist") && t.side() == Side.FRONT_RIGHT ? 4.6 : t.actor() == Actor.KING ? 2.4 : 1;
         // A stone wall across his throw for the grab's takes (he knocks a crater into it), gone for the others.
         boolean wall = t.name().startsWith("king-grab");
         for (int x = -5; x <= 5; x++) for (int y = 0; y < 6; y++) {
@@ -528,9 +530,11 @@ public final class WeaponTour {
             }
             // Out of his mist for any other take.
             if (bandit instanceof com.murimblock.mob.CrabKingEntity king && !t.name().startsWith("king-mist")) king.reveal(level);
+            // And no mist left over from the last take.
+            if (!t.name().startsWith("king-mist")) level.getEntitiesOfClass(com.murimblock.mob.CrabMistEntity.class, bandit.getBoundingBox().inflate(80)).forEach(net.minecraft.world.entity.Entity::discard);
             // Running is chasing: Epic Fight runs an aggressive mob that moves.
             bandit.setAggressive(t.motion() == LivingMotions.CHASE);
-            if (t.name().startsWith("king-burrow")) {
+            if (t.name().startsWith("king-burrow") || t.name().startsWith("king-water-ball")) {
                 // A husk eight blocks before him, his target: the two pincers come before it (CrabKingEntity.callPincers).
                 victim = net.minecraft.world.entity.EntityType.HUSK.create(level);
                 victim.moveTo(baseX, baseY, baseZ + com.murimblock.mob.CrabKingEntity.PINCER_AHEAD, 180, 0);

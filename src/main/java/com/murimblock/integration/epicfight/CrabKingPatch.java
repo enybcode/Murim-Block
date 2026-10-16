@@ -30,7 +30,10 @@ import java.util.Set;
  *   plunged meanwhile;</li>
  *   <li>the mist, within 12 blocks, with a 25 s cooldown: he breathes a thick mist round him and is gone into it, until
  *   he strikes or is struck (CrabKingEntity, CrabMistEntity). Gone into it, the grab is all he can do (Enzo, 16/10),
- *   at once, whatever its cooldown: he stalks unseen and comes out of the mist with it.</li>
+ *   at once, whatever its cooldown: he stalks unseen and comes out of the mist with it;</li>
+ *   <li>the water ball, from 6 to 18 blocks, with a 13 s cooldown: the crab man's, far bigger: a giant ball of water
+ *   swells between his raised pincers and is hurled at his target, four lesser ones after it; it bursts all round
+ *   where it lands (CrabKingEntity, WaterBallEntity).</li>
  * </ul>
  * He walks and chases with his own heavy walk.
  * The crab art's techniques will join them when the art is made (docs/mobs/crab-king.md).
@@ -67,6 +70,8 @@ public class CrabKingPatch extends HumanoidMobPatch<CrabKingEntity> {
                         .animationBehavior(CrabKingAnimations.BURROW).withinDistance(4.0D, 14.0D))))
                 .newBehaviorSeries(series(5.0F, 500).nextBehavior(seen(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
                         .animationBehavior(CrabKingAnimations.MIST).withinDistance(0.0D, 12.0D))))
+                .newBehaviorSeries(series(6.0F, 260).nextBehavior(seen(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
+                        .animationBehavior(CrabKingAnimations.WATER_BALL).withinDistance(6.0D, 18.0D))))
                 // Out of his mist: the grab, the moment he is near enough.
                 .newBehaviorSeries(series(100.0F, 0).nextBehavior(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
                         .animationBehavior(CrabKingAnimations.GRAB).withinEyeHeight().withinDistance(1.5D, 5.0D).custom(CrabKingPatch::hidden)));

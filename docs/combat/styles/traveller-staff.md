@@ -11,8 +11,9 @@ deux viroles de fer et une cordelette rouge, fait deux blocs de long ; ses anima
 
 ## Le parchemin
 
-- **« Traveller's Staff Scroll »** (Parchemin du Bâton du Voyageur), dans l'onglet Murimblock. **Où le trouver : à décider
-  avec Enzo.**
+- **« Traveller's Staff Scroll »** (Parchemin du Bâton du Voyageur). **Pour l'instant vendu par le marchand de l'Alliance au
+  même prix que le parchemin du Poing Long** : 40 taels d'argent, un par réassort (Enzo, 16/10/2026). Aussi dans l'onglet
+  Murimblock.
 - La fiche ne définit ni quêtes, ni secret, ni évolutions : **le parchemin enseigne les trois techniques d'un coup**, placées
   sur les touches 1 à 3. C'est une règle générale : une technique qu'aucune quête ne débloque, et qui n'est pas un secret,
   vient avec le manuel (`MartialData.learn`). Aucun autre art n'est concerné.
@@ -62,4 +63,4 @@ sont ceux du jeu.
 - Tests : `TravellerStaffGameTests` (parchemin, frappe devant et pas derrière, rafale, troisième coup doublé, rempart
   devant/derrière, Qi, 3 s, recharge, relâchement). Vrai client : `gradlew -PgameTests runTravellerStaffTour` (écrans et
   icônes, barre de combat, les trois techniques au clavier) et `runStaffTour` (film des animations au ralenti).
-- À décider : où trouver le parchemin ; quêtes, évolutions, secret et finish éventuels.
+- À décider : un lieu définitif pour le parchemin ; quêtes, évolutions, secret et finish éventuels.

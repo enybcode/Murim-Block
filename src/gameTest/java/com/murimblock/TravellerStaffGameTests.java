@@ -111,6 +111,18 @@ public final class TravellerStaffGameTests {
         end(helper, player);
     }
 
+    /** For now, the Alliance merchant sells the scroll at the Long Fist scroll's price (Enzo, 16/10/2026). */
+    @GameTest(template = "spear_arena", batch = "staff_merchant")
+    public static void theMerchantSellsTheScrollAtTheLongFistsPrice(GameTestHelper helper) {
+        var offers = com.murimblock.mob.AllianceMerchantEntity.wares();
+        var scroll = offers.stream().filter(o -> o.getResult().is(TravellerStaffItems.SCROLL.get())).findFirst();
+        var fist = offers.stream().filter(o -> o.getResult().is(MurimItems.LONG_FIST_SCROLL.get())).findFirst();
+        helper.assertTrue(scroll.isPresent() && fist.isPresent(), "The merchant does not sell both scrolls");
+        helper.assertTrue(ItemStack.matches(scroll.get().getBaseCostA(), fist.get().getBaseCostA()) && scroll.get().getMaxUses() == fist.get().getMaxUses(),
+                "The staff scroll's price is not the Long Fist's: " + scroll.get().getBaseCostA() + " against " + fist.get().getBaseCostA());
+        helper.succeed();
+    }
+
     @GameTest(template = "spear_arena", batch = "staff_strike", timeoutTicks = 100)
     public static void theVerticalStrikeLandsAheadNotBehind(GameTestHelper helper) {
         ServerPlayer player = traveller(helper);

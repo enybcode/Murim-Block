@@ -101,6 +101,42 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 - **Butin** (choix d'Enzo) : **le coffre du chef** de la grande salle s'ouvre à sa mort ; **un art martial**, le [Poing Brise-Montagne](../combat/styles/mountain-shattering-fist.md) (zone et destruction, ses propres mouvements ; lâché à coup sûr comme le manuel de Sensei Yun) ;
   **du Qi max** à la première victoire (par exemple +40, plus que Sensei Yun).
 
+## Seconde phase : l'arène dans le ciel (maquette du 16/10, à valider)
+
+> Demandes d'Enzo : « une arène dans le ciel, une espèce de météore creusé » ; « fais plus grand, le fight aura de gros
+> dégâts de zone, il faut vraiment une grosse zone » ; « et même en profondeur ».
+>
+> `node scripts/concepts/render-warlord-sky-arena.cjs --port=<Blockbench isolé>` (voxels : `warlord-sky-arena.js`) rend
+> les vues en PNG dans `images/warlord-sky-arena/` ; celles de cette fiche sont passées en JPEG.
+
+![Le météore creusé au-dessus de la mer de nuages](images/warlord-sky-arena/overview.jpg)
+
+- **Un météore flottant** d'environ **170 blocs de large** et 150 de haut, en basalte noir et roche brûlée, veiné de
+  lave qui rougeoie ; dessous, un cône rugueux d'où pendent des coulées de roche en fusion. Des blocs arrachés par la
+  chute dérivent autour. Très loin dessous, une mer de nuages.
+- **Creusé en cuvette** : un **sol de combat plat de près de 100 blocs de large** (rayon 48), pour ses gros coups de
+  zone, puis des **parois qui montent de 40 blocs** jusqu'au bord (rayon 72). On voit tout le combat depuis le fond, et
+  personne ne peut se cacher derrière quoi que ce soit : seuls quelques rochers bas sont épars sur le sol.
+- **Au centre, la cicatrice de son atterrissage** : obsidienne et lave, et **14 fissures rougeoyantes** qui en
+  rayonnent sur le sol.
+- **Autour du sol**, 12 braseros de bronze. **Sur le bord**, 34 pics de roche, certains penchés vers l'extérieur, et
+  6 grandes bannières pourpre et or du Seigneur.
+
+![Depuis le bord](images/warlord-sky-arena/rim.jpg)
+![Sur le sol de combat, à hauteur de joueur](images/warlord-sky-arena/floor.jpg)
+
+![Plan : 1 la cicatrice, 2 le sol de combat, 3 un brasero, 4 les parois de la cuvette, 5 les pics et les bannières du bord](images/warlord-sky-arena/plan.jpg)
+![Dessous](images/warlord-sky-arena/below.jpg)
+
+**Propositions pour le jeu (à décider)** :
+- **Comment on y monte** : sous la moitié de sa vie, il rugit, frappe le fond du cratère d'un Brise-ciel, et la
+  cinématique emporte tous les joueurs du combat avec lui dans le ciel ; ils retombent dans la cuvette du météore.
+- **Où il est** : construit dans le ciel au-dessus du camp, vers y 200 à 300 (la limite est 320), le temps du combat. Il
+  disparaît après, ou il reste comme une curiosité visible de loin.
+- **Tomber du bord** : on retombe dans le cratère du camp, avec une chute amortie ou une vraie mort, à choisir.
+- **Le sol de combat** pourrait se fissurer de plus en plus à chaque Brise-terre (les fissures s'élargissent), jusqu'à
+  la fin du combat.
+
 ## Questions pour Enzo
 
 - Son nom (Bandit Warlord ? un nom chinois ?) et ses couleurs (pourpre et or, ou plus sombre) ?

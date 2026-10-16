@@ -1,0 +1,2789 @@
+{
+  "texture_size": [
+    256,
+    256
+  ],
+  "materials": {
+    "cloth": [
+      34,
+      36,
+      39
+    ],
+    "hood": [
+      25,
+      27,
+      30
+    ],
+    "steel": [
+      63,
+      65,
+      65
+    ],
+    "edge": [
+      101,
+      99,
+      94
+    ],
+    "red": [
+      94,
+      23,
+      32
+    ],
+    "red_light": [
+      130,
+      33,
+      43
+    ],
+    "mask": [
+      86,
+      25,
+      32
+    ],
+    "black": [
+      17,
+      18,
+      21
+    ],
+    "wrap": [
+      93,
+      79,
+      65
+    ],
+    "eyes": [
+      180,
+      145,
+      114
+    ],
+    "blood": [
+      110,
+      14,
+      29
+    ],
+    "blood_edge": [
+      162,
+      36,
+      44
+    ],
+    "blood_shadow": [
+      57,
+      8,
+      21
+    ],
+    "blood_ridge": [
+      133,
+      24,
+      39
+    ],
+    "bronze": [
+      116,
+      87,
+      59
+    ],
+    "red_shadow": [
+      59,
+      16,
+      27
+    ]
+  },
+  "parts": [
+    {
+      "name": "head",
+      "parent": "root",
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "head_shadow",
+          "origin": [
+            -3.115,
+            -6.58,
+            -2.73
+          ],
+          "size": [
+            6.23,
+            6.58,
+            5.46
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "hood_crown",
+          "origin": [
+            -3.471,
+            -7.52,
+            -3.2760000000000002
+          ],
+          "size": [
+            6.942,
+            1.41,
+            6.643
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        },
+        {
+          "name": "hood_back",
+          "origin": [
+            -3.471,
+            -6.109999999999999,
+            2.5025
+          ],
+          "size": [
+            6.942,
+            6.109999999999999,
+            1.0010000000000001
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        },
+        {
+          "name": "hood_right",
+          "origin": [
+            -3.56,
+            -6.109999999999999,
+            -3.185
+          ],
+          "size": [
+            1.068,
+            6.109999999999999,
+            5.915
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        },
+        {
+          "name": "hood_left",
+          "origin": [
+            2.492,
+            -6.109999999999999,
+            -3.185
+          ],
+          "size": [
+            1.068,
+            6.109999999999999,
+            5.915
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        },
+        {
+          "name": "forehead_band",
+          "origin": [
+            -3.204,
+            -6.627,
+            -3.3670000000000004
+          ],
+          "size": [
+            6.408,
+            0.6579999999999999,
+            0.273
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "eye_socket",
+          "origin": [
+            -2.492,
+            -4.747,
+            -2.9575
+          ],
+          "size": [
+            4.984,
+            1.034,
+            0.273
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "eye_right",
+          "origin": [
+            -2.225,
+            -4.465,
+            -3.2578
+          ],
+          "size": [
+            1.335,
+            0.3008,
+            0.2275
+          ],
+          "material": "eyes",
+          "uv": [
+            32,
+            64
+          ]
+        },
+        {
+          "name": "pupil_right",
+          "origin": [
+            -1.6909999999999998,
+            -4.512,
+            -3.5217
+          ],
+          "size": [
+            0.3115,
+            0.47,
+            0.1365
+          ],
+          "material": "mask",
+          "uv": [
+            64,
+            32
+          ]
+        },
+        {
+          "name": "eye_left",
+          "origin": [
+            0.89,
+            -4.465,
+            -3.2578
+          ],
+          "size": [
+            1.335,
+            0.3008,
+            0.2275
+          ],
+          "material": "eyes",
+          "uv": [
+            32,
+            64
+          ]
+        },
+        {
+          "name": "pupil_left",
+          "origin": [
+            1.4240000000000002,
+            -4.512,
+            -3.5217
+          ],
+          "size": [
+            0.3115,
+            0.47,
+            0.1365
+          ],
+          "material": "mask",
+          "uv": [
+            64,
+            32
+          ]
+        },
+        {
+          "name": "mask_main",
+          "origin": [
+            -2.403,
+            -3.666,
+            -3.4579999999999997
+          ],
+          "size": [
+            4.806,
+            2.6319999999999997,
+            0.91
+          ],
+          "material": "mask",
+          "uv": [
+            64,
+            32
+          ]
+        },
+        {
+          "name": "mask_vent_-1.6",
+          "origin": [
+            -1.5397,
+            -2.444,
+            -3.7674
+          ],
+          "size": [
+            0.23140000000000002,
+            0.705,
+            0.1365
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "mask_vent_-0.8",
+          "origin": [
+            -0.8277000000000001,
+            -2.444,
+            -3.7674
+          ],
+          "size": [
+            0.23140000000000002,
+            0.705,
+            0.1365
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "mask_vent_0",
+          "origin": [
+            -0.11570000000000001,
+            -2.444,
+            -3.7674
+          ],
+          "size": [
+            0.23140000000000002,
+            0.705,
+            0.1365
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "mask_vent_0.8",
+          "origin": [
+            0.5963,
+            -2.444,
+            -3.7674
+          ],
+          "size": [
+            0.23140000000000002,
+            0.705,
+            0.1365
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "mask_vent_1.6",
+          "origin": [
+            1.3083000000000002,
+            -2.444,
+            -3.7674
+          ],
+          "size": [
+            0.23140000000000002,
+            0.705,
+            0.1365
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hat",
+      "parent": "root",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "boxes": []
+    },
+    {
+      "name": "body",
+      "parent": "root",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "tunic",
+          "origin": [
+            -3.3,
+            0,
+            -1.9
+          ],
+          "size": [
+            6.6,
+            7,
+            3.8
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "chest_underplate",
+          "origin": [
+            -3.3,
+            0.5,
+            -2.25
+          ],
+          "size": [
+            6.6,
+            6.8,
+            0.5
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "chest_lamellar_0",
+          "origin": [
+            -3.2,
+            1,
+            -2.65
+          ],
+          "size": [
+            6.4,
+            1.65,
+            0.6
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "chest_trim_0",
+          "origin": [
+            -3.25,
+            2.45,
+            -2.75
+          ],
+          "size": [
+            6.5,
+            0.22,
+            0.4
+          ],
+          "material": "edge",
+          "uv": [
+            96,
+            0
+          ]
+        },
+        {
+          "name": "chest_lamellar_1",
+          "origin": [
+            -3.2,
+            3,
+            -2.65
+          ],
+          "size": [
+            6.4,
+            1.65,
+            0.6
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "chest_trim_1",
+          "origin": [
+            -3.25,
+            4.45,
+            -2.75
+          ],
+          "size": [
+            6.5,
+            0.22,
+            0.4
+          ],
+          "material": "edge",
+          "uv": [
+            96,
+            0
+          ]
+        },
+        {
+          "name": "chest_lamellar_2",
+          "origin": [
+            -3.2,
+            5,
+            -2.65
+          ],
+          "size": [
+            6.4,
+            1.65,
+            0.6
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "chest_trim_2",
+          "origin": [
+            -3.25,
+            6.45,
+            -2.75
+          ],
+          "size": [
+            6.5,
+            0.22,
+            0.4
+          ],
+          "material": "edge",
+          "uv": [
+            96,
+            0
+          ]
+        },
+        {
+          "name": "belt",
+          "origin": [
+            -3.75,
+            8.2,
+            -2.5
+          ],
+          "size": [
+            7.5,
+            2.4,
+            5
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "belt_top",
+          "origin": [
+            -3.8,
+            8.2,
+            -2.55
+          ],
+          "size": [
+            7.6,
+            0.4,
+            5.1
+          ],
+          "material": "red_light",
+          "uv": [
+            32,
+            32
+          ]
+        },
+        {
+          "name": "belt_bottom",
+          "origin": [
+            -3.8,
+            10.2,
+            -2.55
+          ],
+          "size": [
+            7.6,
+            0.4,
+            5.1
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "belt_knot",
+          "origin": [
+            1.7,
+            8.5,
+            -3.1
+          ],
+          "size": [
+            1.4,
+            1.5,
+            1
+          ],
+          "material": "red_light",
+          "uv": [
+            32,
+            32
+          ]
+        },
+        {
+          "name": "scarf_collar",
+          "origin": [
+            -4.1,
+            -0.7,
+            -2.85
+          ],
+          "size": [
+            8.2,
+            2,
+            5.7
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "scarf_fold",
+          "origin": [
+            -4.2,
+            0.25,
+            -2.95
+          ],
+          "size": [
+            8.4,
+            0.8,
+            5.9
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "tunic_waist",
+          "origin": [
+            -2.95,
+            6,
+            -1.7
+          ],
+          "size": [
+            5.9,
+            6,
+            3.4
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "plate_rivet_0_-2.7",
+          "origin": [
+            -2.8400000000000003,
+            1.1,
+            -2.91
+          ],
+          "size": [
+            0.28,
+            0.28,
+            0.16
+          ],
+          "material": "bronze",
+          "uv": [
+            64,
+            96
+          ]
+        },
+        {
+          "name": "plate_rivet_0_2.7",
+          "origin": [
+            2.56,
+            1.1,
+            -2.91
+          ],
+          "size": [
+            0.28,
+            0.28,
+            0.16
+          ],
+          "material": "bronze",
+          "uv": [
+            64,
+            96
+          ]
+        },
+        {
+          "name": "plate_rivet_1_-2.7",
+          "origin": [
+            -2.8400000000000003,
+            3.1,
+            -2.91
+          ],
+          "size": [
+            0.28,
+            0.28,
+            0.16
+          ],
+          "material": "bronze",
+          "uv": [
+            64,
+            96
+          ]
+        },
+        {
+          "name": "plate_rivet_1_2.7",
+          "origin": [
+            2.56,
+            3.1,
+            -2.91
+          ],
+          "size": [
+            0.28,
+            0.28,
+            0.16
+          ],
+          "material": "bronze",
+          "uv": [
+            64,
+            96
+          ]
+        },
+        {
+          "name": "plate_rivet_2_-2.7",
+          "origin": [
+            -2.8400000000000003,
+            5.1,
+            -2.91
+          ],
+          "size": [
+            0.28,
+            0.28,
+            0.16
+          ],
+          "material": "bronze",
+          "uv": [
+            64,
+            96
+          ]
+        },
+        {
+          "name": "plate_rivet_2_2.7",
+          "origin": [
+            2.56,
+            5.1,
+            -2.91
+          ],
+          "size": [
+            0.28,
+            0.28,
+            0.16
+          ],
+          "material": "bronze",
+          "uv": [
+            64,
+            96
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_arm",
+      "parent": "root",
+      "pivot": [
+        -5,
+        2,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "right_sleeve",
+          "origin": [
+            -2.3,
+            -2,
+            -1.6
+          ],
+          "size": [
+            3.2,
+            6.2,
+            3.2
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "shoulder_wrap",
+          "origin": [
+            -2.65,
+            -1.5,
+            -1.9
+          ],
+          "size": [
+            3.8,
+            1.6,
+            3.8
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "right_glove",
+          "origin": [
+            -2.441,
+            7.4,
+            -1.7289999999999999
+          ],
+          "size": [
+            3.3819999999999997,
+            2.8,
+            3.4579999999999997
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "right_bracer",
+          "origin": [
+            -2.441,
+            4.5,
+            -1.82
+          ],
+          "size": [
+            3.3819999999999997,
+            3.0,
+            3.64
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "right_bracer_inlay",
+          "origin": [
+            -1.2999999999999998,
+            4.55,
+            -2.45
+          ],
+          "size": [
+            1.1,
+            2.7,
+            0.45
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "right_binding_0",
+          "origin": [
+            -2.6999999999999997,
+            3.2,
+            -2.08
+          ],
+          "size": [
+            3.9,
+            0.4,
+            4.16
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        },
+        {
+          "name": "right_binding_1",
+          "origin": [
+            -2.6999999999999997,
+            4,
+            -2.08
+          ],
+          "size": [
+            3.9,
+            0.4,
+            4.16
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        },
+        {
+          "name": "right_binding_2",
+          "origin": [
+            -2.6999999999999997,
+            6.6,
+            -2.08
+          ],
+          "size": [
+            3.9,
+            0.4,
+            4.16
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        },
+        {
+          "name": "right_forearm",
+          "origin": [
+            -2.2,
+            4,
+            -1.5
+          ],
+          "size": [
+            3,
+            6,
+            3
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "right_finger_seam_0",
+          "origin": [
+            -1.85,
+            9.6,
+            -1.84
+          ],
+          "size": [
+            0.08,
+            0.45,
+            0.1
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "right_finger_seam_1",
+          "origin": [
+            -1.05,
+            9.6,
+            -1.84
+          ],
+          "size": [
+            0.08,
+            0.45,
+            0.1
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "right_finger_seam_2",
+          "origin": [
+            -0.25,
+            9.6,
+            -1.84
+          ],
+          "size": [
+            0.08,
+            0.45,
+            0.1
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_arm",
+      "parent": "root",
+      "pivot": [
+        5,
+        2,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "left_sleeve",
+          "origin": [
+            -0.9,
+            -2,
+            -1.6
+          ],
+          "size": [
+            3.2,
+            6.2,
+            3.2
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "left_glove",
+          "origin": [
+            -0.9409999999999998,
+            7.4,
+            -1.7289999999999999
+          ],
+          "size": [
+            3.3819999999999997,
+            2.8,
+            3.4579999999999997
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "left_bracer",
+          "origin": [
+            -0.9409999999999998,
+            4.5,
+            -1.82
+          ],
+          "size": [
+            3.3819999999999997,
+            3.0,
+            3.64
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "left_bracer_inlay",
+          "origin": [
+            0.20000000000000018,
+            4.55,
+            -2.45
+          ],
+          "size": [
+            1.1,
+            2.7,
+            0.45
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "left_binding_0",
+          "origin": [
+            -1.2,
+            3.2,
+            -2.08
+          ],
+          "size": [
+            3.9,
+            0.4,
+            4.16
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        },
+        {
+          "name": "left_binding_1",
+          "origin": [
+            -1.2,
+            4,
+            -2.08
+          ],
+          "size": [
+            3.9,
+            0.4,
+            4.16
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        },
+        {
+          "name": "left_binding_2",
+          "origin": [
+            -1.2,
+            6.6,
+            -2.08
+          ],
+          "size": [
+            3.9,
+            0.4,
+            4.16
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        },
+        {
+          "name": "left_forearm",
+          "origin": [
+            -0.8,
+            4,
+            -1.5
+          ],
+          "size": [
+            3,
+            6,
+            3
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "left_finger_seam_0",
+          "origin": [
+            -0.65,
+            9.6,
+            -1.84
+          ],
+          "size": [
+            0.08,
+            0.45,
+            0.1
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "left_finger_seam_1",
+          "origin": [
+            0.15000000000000002,
+            9.6,
+            -1.84
+          ],
+          "size": [
+            0.08,
+            0.45,
+            0.1
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "left_finger_seam_2",
+          "origin": [
+            0.9500000000000001,
+            9.6,
+            -1.84
+          ],
+          "size": [
+            0.08,
+            0.45,
+            0.1
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_leg",
+      "parent": "root",
+      "pivot": [
+        -1.9,
+        12,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "right_leg_trousers",
+          "origin": [
+            -1.575,
+            0.0,
+            -1.6560000000000001
+          ],
+          "size": [
+            3.15,
+            12.0,
+            3.3120000000000003
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        },
+        {
+          "name": "right_leg_boot",
+          "origin": [
+            -1.71,
+            8.0,
+            -2.1319999999999997
+          ],
+          "size": [
+            3.42,
+            4.0,
+            3.8640000000000003
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "right_leg_sole",
+          "origin": [
+            -1.755,
+            11.4,
+            -2.178
+          ],
+          "size": [
+            3.51,
+            0.6,
+            3.956
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "right_leg_shin_plate",
+          "origin": [
+            -1.5,
+            5,
+            -2.25
+          ],
+          "size": [
+            3,
+            4.5,
+            0.5
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "right_leg_shin_red",
+          "origin": [
+            -0.45,
+            5.2,
+            -2.8
+          ],
+          "size": [
+            0.9,
+            3.8,
+            0.55
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "right_leg_shin_binding_0",
+          "origin": [
+            -1.88,
+            5.5,
+            -2.35
+          ],
+          "size": [
+            3.76,
+            0.55,
+            4.2
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "right_leg_shin_binding_1",
+          "origin": [
+            -1.88,
+            7.5,
+            -2.35
+          ],
+          "size": [
+            3.76,
+            0.55,
+            4.2
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "right_boot_stitch",
+          "origin": [
+            -1.4,
+            10.8,
+            -2.25
+          ],
+          "size": [
+            2.8,
+            0.17,
+            0.12
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_leg",
+      "parent": "root",
+      "pivot": [
+        1.9,
+        12,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "left_leg_trousers",
+          "origin": [
+            -1.575,
+            0.0,
+            -1.6560000000000001
+          ],
+          "size": [
+            3.15,
+            12.0,
+            3.3120000000000003
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        },
+        {
+          "name": "left_leg_boot",
+          "origin": [
+            -1.71,
+            8.0,
+            -2.1319999999999997
+          ],
+          "size": [
+            3.42,
+            4.0,
+            3.8640000000000003
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "left_leg_sole",
+          "origin": [
+            -1.755,
+            11.4,
+            -2.178
+          ],
+          "size": [
+            3.51,
+            0.6,
+            3.956
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "left_leg_shin_plate",
+          "origin": [
+            -1.5,
+            5,
+            -2.25
+          ],
+          "size": [
+            3,
+            4.5,
+            0.5
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        },
+        {
+          "name": "left_leg_shin_red",
+          "origin": [
+            -0.45,
+            5.2,
+            -2.8
+          ],
+          "size": [
+            0.9,
+            3.8,
+            0.55
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "left_leg_shin_binding_0",
+          "origin": [
+            -1.88,
+            5.5,
+            -2.35
+          ],
+          "size": [
+            3.76,
+            0.55,
+            4.2
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "left_leg_shin_binding_1",
+          "origin": [
+            -1.88,
+            7.5,
+            -2.35
+          ],
+          "size": [
+            3.76,
+            0.55,
+            4.2
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "left_boot_stitch",
+          "origin": [
+            -1.4,
+            10.8,
+            -2.25
+          ],
+          "size": [
+            2.8,
+            0.17,
+            0.12
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "name": "brow_right",
+      "parent": "head",
+      "pivot": [
+        0.0,
+        -5.452,
+        -3.2760000000000002
+      ],
+      "rotation": [
+        0,
+        0,
+        -9
+      ],
+      "boxes": [
+        {
+          "name": "brow_right",
+          "origin": [
+            -3.204,
+            -0.517,
+            -0.40950000000000003
+          ],
+          "size": [
+            3.293,
+            1.034,
+            0.8190000000000001
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "brow_left",
+      "parent": "head",
+      "pivot": [
+        0.0,
+        -5.452,
+        -3.2760000000000002
+      ],
+      "rotation": [
+        0,
+        0,
+        9
+      ],
+      "boxes": [
+        {
+          "name": "brow_left",
+          "origin": [
+            -0.08900000000000001,
+            -0.517,
+            -0.40950000000000003
+          ],
+          "size": [
+            3.293,
+            1.034,
+            0.8190000000000001
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "forehead_seal",
+      "parent": "head",
+      "pivot": [
+        0.0,
+        -6.204,
+        -3.549
+      ],
+      "rotation": [
+        0,
+        0,
+        45
+      ],
+      "boxes": [
+        {
+          "name": "forehead_seal",
+          "origin": [
+            -0.445,
+            -0.47,
+            -0.1365
+          ],
+          "size": [
+            0.89,
+            0.94,
+            0.273
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mask_jaw",
+      "parent": "head",
+      "pivot": [
+        0.0,
+        -0.94,
+        -3.3670000000000004
+      ],
+      "rotation": [
+        12,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "mask_jaw",
+          "origin": [
+            -1.4596,
+            -0.564,
+            -0.36400000000000005
+          ],
+          "size": [
+            2.9192,
+            1.128,
+            0.7280000000000001
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mask_ridge_right",
+      "parent": "head",
+      "pivot": [
+        0.0,
+        -2.209,
+        -3.6582
+      ],
+      "rotation": [
+        0,
+        0,
+        14
+      ],
+      "boxes": [
+        {
+          "name": "mask_ridge_right",
+          "origin": [
+            -2.225,
+            -0.235,
+            -0.20020000000000002
+          ],
+          "size": [
+            2.314,
+            0.47,
+            0.40040000000000003
+          ],
+          "material": "red_light",
+          "uv": [
+            32,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mask_ridge_left",
+      "parent": "head",
+      "pivot": [
+        0.0,
+        -2.209,
+        -3.6582
+      ],
+      "rotation": [
+        0,
+        0,
+        -14
+      ],
+      "boxes": [
+        {
+          "name": "mask_ridge_left",
+          "origin": [
+            -0.08900000000000001,
+            -0.235,
+            -0.20020000000000002
+          ],
+          "size": [
+            2.314,
+            0.47,
+            0.40040000000000003
+          ],
+          "material": "red_light",
+          "uv": [
+            32,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mask_nose",
+      "parent": "head",
+      "pivot": [
+        0.0,
+        -3.525,
+        -3.5035000000000003
+      ],
+      "rotation": [
+        15,
+        0,
+        0
+      ],
+      "boxes": [
+        {
+          "name": "mask_nose",
+          "origin": [
+            -0.4005,
+            -0.564,
+            -0.455
+          ],
+          "size": [
+            0.801,
+            1.128,
+            0.91
+          ],
+          "material": "mask",
+          "uv": [
+            64,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cross_sash",
+      "parent": "body",
+      "pivot": [
+        -2.5,
+        0.25,
+        -3.08
+      ],
+      "rotation": [
+        0,
+        0,
+        -34
+      ],
+      "boxes": [
+        {
+          "name": "cross_sash",
+          "origin": [
+            -0.65,
+            -0.8,
+            -0.2
+          ],
+          "size": [
+            1.3,
+            9.5,
+            0.4
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sect_seal",
+      "parent": "body",
+      "pivot": [
+        1.7,
+        3.7,
+        -3.25
+      ],
+      "rotation": [
+        0,
+        0,
+        45
+      ],
+      "boxes": [
+        {
+          "name": "sect_seal",
+          "origin": [
+            -0.65,
+            -0.65,
+            -0.25
+          ],
+          "size": [
+            1.3,
+            1.3,
+            0.5
+          ],
+          "material": "bronze",
+          "uv": [
+            64,
+            96
+          ]
+        }
+      ]
+    },
+    {
+      "name": "belt_tie",
+      "parent": "body",
+      "pivot": [
+        2.6,
+        10,
+        -2.8
+      ],
+      "rotation": [
+        -10,
+        0,
+        -15
+      ],
+      "boxes": [
+        {
+          "name": "belt_tie",
+          "origin": [
+            -0.7,
+            0,
+            -0.25
+          ],
+          "size": [
+            1.4,
+            4,
+            0.5
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tabard_left",
+      "parent": "body",
+      "pivot": [
+        2,
+        10.5,
+        -2.1
+      ],
+      "rotation": [
+        -8,
+        0,
+        -7
+      ],
+      "boxes": [
+        {
+          "name": "tabard_left",
+          "origin": [
+            -1.5,
+            0,
+            -0.35
+          ],
+          "size": [
+            3,
+            6,
+            0.7
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        },
+        {
+          "name": "tabard_left_hem",
+          "origin": [
+            -1.5,
+            5.3,
+            -0.39
+          ],
+          "size": [
+            3,
+            0.55,
+            0.8
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "tabard_left_piping",
+          "origin": [
+            -1.5,
+            0.2,
+            -0.4
+          ],
+          "size": [
+            0.35,
+            5.5,
+            0.8
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "tabard_left_center_fold",
+          "origin": [
+            -0.12,
+            0.5,
+            -0.47
+          ],
+          "size": [
+            0.24,
+            4.6,
+            0.16
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "tabard_left_stitched_edge",
+          "origin": [
+            1.1,
+            0.3,
+            -0.48
+          ],
+          "size": [
+            0.12,
+            5,
+            0.15
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tabard_right",
+      "parent": "body",
+      "pivot": [
+        -2,
+        10.5,
+        -2.1
+      ],
+      "rotation": [
+        -8,
+        0,
+        7
+      ],
+      "boxes": [
+        {
+          "name": "tabard_right",
+          "origin": [
+            -1.5,
+            0,
+            -0.35
+          ],
+          "size": [
+            3,
+            6,
+            0.7
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        },
+        {
+          "name": "tabard_right_hem",
+          "origin": [
+            -1.5,
+            5.3,
+            -0.39
+          ],
+          "size": [
+            3,
+            0.55,
+            0.8
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        },
+        {
+          "name": "tabard_right_piping",
+          "origin": [
+            -1.5,
+            0.2,
+            -0.4
+          ],
+          "size": [
+            0.35,
+            5.5,
+            0.8
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        },
+        {
+          "name": "tabard_right_center_fold",
+          "origin": [
+            -0.12,
+            0.5,
+            -0.47
+          ],
+          "size": [
+            0.24,
+            4.6,
+            0.16
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        },
+        {
+          "name": "tabard_right_stitched_edge",
+          "origin": [
+            1.1,
+            0.3,
+            -0.48
+          ],
+          "size": [
+            0.12,
+            5,
+            0.15
+          ],
+          "material": "wrap",
+          "uv": [
+            0,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pauldron",
+      "parent": "left_arm",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -12
+      ],
+      "boxes": [
+        {
+          "name": "pauldron",
+          "origin": [
+            -1.8,
+            -2.5,
+            -2.139
+          ],
+          "size": [
+            4.611,
+            1.476,
+            4.278
+          ],
+          "material": "steel",
+          "uv": [
+            64,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pauldron_skirt",
+      "parent": "left_arm",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -14
+      ],
+      "boxes": [
+        {
+          "name": "pauldron_skirt",
+          "origin": [
+            -0.1,
+            -0.7,
+            -2.1855
+          ],
+          "size": [
+            3.306,
+            1.722,
+            4.371
+          ],
+          "material": "black",
+          "uv": [
+            96,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pauldron_rim",
+      "parent": "left_arm",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        -12
+      ],
+      "boxes": [
+        {
+          "name": "pauldron_rim",
+          "origin": [
+            -1.95,
+            -2.75,
+            -2.232
+          ],
+          "size": [
+            4.785,
+            0.369,
+            4.464
+          ],
+          "material": "edge",
+          "uv": [
+            96,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scarf_tail",
+      "parent": "body",
+      "pivot": [
+        2.8,
+        0.1,
+        3
+      ],
+      "rotation": [
+        18,
+        0,
+        -18
+      ],
+      "boxes": [
+        {
+          "name": "scarf_tail",
+          "origin": [
+            -1.6,
+            0,
+            0
+          ],
+          "size": [
+            3.2,
+            8,
+            0.55
+          ],
+          "material": "red",
+          "uv": [
+            0,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scarf_tip",
+      "parent": "scarf_tail",
+      "pivot": [
+        0,
+        7.8,
+        0
+      ],
+      "rotation": [
+        -15,
+        0,
+        8
+      ],
+      "boxes": [
+        {
+          "name": "scarf_tip",
+          "origin": [
+            -1.4,
+            0,
+            0
+          ],
+          "size": [
+            2.8,
+            4,
+            0.5
+          ],
+          "material": "red_shadow",
+          "uv": [
+            96,
+            96
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scarf_short",
+      "parent": "body",
+      "pivot": [
+        3,
+        0.4,
+        3.4
+      ],
+      "rotation": [
+        30,
+        0,
+        -35
+      ],
+      "boxes": [
+        {
+          "name": "scarf_short",
+          "origin": [
+            -1.15,
+            0,
+            0
+          ],
+          "size": [
+            2.3,
+            7,
+            0.55
+          ],
+          "material": "red_light",
+          "uv": [
+            32,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hood_seam_left",
+      "parent": "head",
+      "pivot": [
+        3.36,
+        -3.8,
+        -3.1
+      ],
+      "rotation": [
+        0,
+        20,
+        -5
+      ],
+      "boxes": [
+        {
+          "name": "hood_seam_left",
+          "origin": [
+            -0.13,
+            -2.5,
+            -0.17
+          ],
+          "size": [
+            0.26,
+            5,
+            0.34
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cheek_fold_left",
+      "parent": "head",
+      "pivot": [
+        2.85,
+        -1.9,
+        -3.35
+      ],
+      "rotation": [
+        0,
+        0,
+        12
+      ],
+      "boxes": [
+        {
+          "name": "cheek_fold_left",
+          "origin": [
+            -0.25,
+            -1.5,
+            -0.22
+          ],
+          "size": [
+            0.5,
+            3,
+            0.44
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hood_seam_right",
+      "parent": "head",
+      "pivot": [
+        -3.36,
+        -3.8,
+        -3.1
+      ],
+      "rotation": [
+        0,
+        -20,
+        5
+      ],
+      "boxes": [
+        {
+          "name": "hood_seam_right",
+          "origin": [
+            -0.13,
+            -2.5,
+            -0.17
+          ],
+          "size": [
+            0.26,
+            5,
+            0.34
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cheek_fold_right",
+      "parent": "head",
+      "pivot": [
+        -2.85,
+        -1.9,
+        -3.35
+      ],
+      "rotation": [
+        0,
+        0,
+        -12
+      ],
+      "boxes": [
+        {
+          "name": "cheek_fold_right",
+          "origin": [
+            -0.25,
+            -1.5,
+            -0.22
+          ],
+          "size": [
+            0.5,
+            3,
+            0.44
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_elbow_fold",
+      "parent": "left_arm",
+      "pivot": [
+        0.7,
+        4.1,
+        -1.7
+      ],
+      "rotation": [
+        0,
+        0,
+        8
+      ],
+      "boxes": [
+        {
+          "name": "left_elbow_fold",
+          "origin": [
+            -1.5,
+            -0.2,
+            -0.15
+          ],
+          "size": [
+            3,
+            0.4,
+            0.3
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_sleeve_fold",
+      "parent": "left_arm",
+      "pivot": [
+        0.7,
+        2.6,
+        -1.8
+      ],
+      "rotation": [
+        0,
+        0,
+        -12
+      ],
+      "boxes": [
+        {
+          "name": "left_sleeve_fold",
+          "origin": [
+            -1.5,
+            -0.15,
+            -0.15
+          ],
+          "size": [
+            3,
+            0.3,
+            0.3
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_knee_fold",
+      "parent": "left_leg",
+      "pivot": [
+        0,
+        4.3,
+        -1.85
+      ],
+      "rotation": [
+        0,
+        0,
+        7
+      ],
+      "boxes": [
+        {
+          "name": "left_knee_fold",
+          "origin": [
+            -1.4,
+            -0.18,
+            -0.18
+          ],
+          "size": [
+            2.8,
+            0.36,
+            0.36
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "left_tunic_fold",
+      "parent": "body",
+      "pivot": [
+        2.9,
+        1.4,
+        -2.16
+      ],
+      "rotation": [
+        0,
+        0,
+        9
+      ],
+      "boxes": [
+        {
+          "name": "left_tunic_fold",
+          "origin": [
+            -0.18,
+            0,
+            -0.16
+          ],
+          "size": [
+            0.36,
+            6,
+            0.32
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_elbow_fold",
+      "parent": "right_arm",
+      "pivot": [
+        -0.7,
+        4.1,
+        -1.7
+      ],
+      "rotation": [
+        0,
+        0,
+        -8
+      ],
+      "boxes": [
+        {
+          "name": "right_elbow_fold",
+          "origin": [
+            -1.5,
+            -0.2,
+            -0.15
+          ],
+          "size": [
+            3,
+            0.4,
+            0.3
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_sleeve_fold",
+      "parent": "right_arm",
+      "pivot": [
+        -0.7,
+        2.6,
+        -1.8
+      ],
+      "rotation": [
+        0,
+        0,
+        12
+      ],
+      "boxes": [
+        {
+          "name": "right_sleeve_fold",
+          "origin": [
+            -1.5,
+            -0.15,
+            -0.15
+          ],
+          "size": [
+            3,
+            0.3,
+            0.3
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_knee_fold",
+      "parent": "right_leg",
+      "pivot": [
+        0,
+        4.3,
+        -1.85
+      ],
+      "rotation": [
+        0,
+        0,
+        -7
+      ],
+      "boxes": [
+        {
+          "name": "right_knee_fold",
+          "origin": [
+            -1.4,
+            -0.18,
+            -0.18
+          ],
+          "size": [
+            2.8,
+            0.36,
+            0.36
+          ],
+          "material": "cloth",
+          "uv": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "right_tunic_fold",
+      "parent": "body",
+      "pivot": [
+        -2.9,
+        1.4,
+        -2.16
+      ],
+      "rotation": [
+        0,
+        0,
+        -9
+      ],
+      "boxes": [
+        {
+          "name": "right_tunic_fold",
+          "origin": [
+            -0.18,
+            0,
+            -0.16
+          ],
+          "size": [
+            0.36,
+            6,
+            0.32
+          ],
+          "material": "hood",
+          "uv": [
+            32,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "collar_inner",
+      "parent": "body",
+      "pivot": [
+        0,
+        -0.3,
+        -2.95
+      ],
+      "rotation": [
+        0,
+        0,
+        -6
+      ],
+      "boxes": [
+        {
+          "name": "collar_inner",
+          "origin": [
+            -2.6,
+            -0.25,
+            -0.2
+          ],
+          "size": [
+            5.2,
+            0.5,
+            0.4
+          ],
+          "material": "red_light",
+          "uv": [
+            32,
+            32
+          ]
+        }
+      ]
+    }
+  ],
+  "uv_size": [
+    128,
+    128
+  ]
+}

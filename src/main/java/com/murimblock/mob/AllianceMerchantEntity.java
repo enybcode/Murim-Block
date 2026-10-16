@@ -165,8 +165,9 @@ public class AllianceMerchantEntity extends PathfinderMob implements Merchant {
         list.add(sells(new ItemStack(Items.GOLDEN_APPLE), 8, 4));
         // Bread, the small change's affair: four loaves for a string of cash.
         list.add(new MerchantOffer(new ItemCost(MurimItems.CASH_STRING.get(), 1), new ItemStack(Items.BREAD, 4), 16, 0, 0.0F));
-        // The one art sold openly: the Long Fist, a free art.
+        // The arts sold openly: the Long Fist, a free art; the Traveller's Staff Art, at its price for now (Enzo, 16/10/2026).
         list.add(sells(new ItemStack(MurimItems.LONG_FIST_SCROLL.get()), 40, 1));
+        list.add(sells(new ItemStack(com.murimblock.martial.TravellerStaffItems.SCROLL.get()), 40, 1));
         // The sect's jade token, dearest of all: a stack of taels and 32 gold yuanbao, one per restock.
         list.add(new MerchantOffer(taels(SECT_TOKEN_TAELS), java.util.Optional.of(new ItemCost(MurimItems.GOLD_YUANBAO.get(), SECT_TOKEN_YUANBAO)),
                 new ItemStack(MurimItems.SECT_TOKEN.get()), 1, 0, 0.0F));
