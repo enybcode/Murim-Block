@@ -553,5 +553,11 @@
   "entity.murimblock.tiger": "Tiger",
   "item.murimblock.tiger_spawn_egg": "Tiger Spawn Egg",
   "item.murimblock.tiger_pelt": "Tiger Pelt",
-  "item.murimblock.tiger_claw": "Tiger Claw"
+  "item.murimblock.tiger_claw": "Tiger Claw",
+  "fluid_type.murimblock.dark_blood": "Dark Blood",
+  "block.murimblock.dark_blood": "Dark Blood",
+  "item.murimblock.dark_blood_bucket": "Dark Blood Bucket",
+  "entity.murimblock.blood_ninja": "Blood Ninja",
+  "item.murimblock.blood_ninja_spawn_egg": "Blood Ninja Spawn Egg",
+  "item.murimblock.blood_dao": "Blood Dao"
 }

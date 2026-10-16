@@ -31,7 +31,7 @@
   "air": 716545,
   "palette_states": 24,
   "bytes": 26315,
-  "sha256": "15e92590d6ced6421b65af84ca2c103c7468f0a146f9c42905589afbab6a3c16",
+  "sha256": "383f228e4d1fb7a7ecf13cdb2a194ef4c25b00eee4e8d11968e572dc7134328f",
   "targets": {
     "Dortoirs": [
       -44,
@@ -270,8 +270,8 @@
     "minecraft:red_nether_bricks": 666,
     "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]": 356,
     "minecraft:dark_oak_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 256,
-    "bloodsect:blood[level=0]": 922,
-    "bloodsect:blood[level=8]": 170,
+    "murimblock:dark_blood[level=0]": 922,
+    "murimblock:dark_blood[level=8]": 170,
     "minecraft:deepslate_tiles": 25670,
     "minecraft:polished_andesite": 15592,
     "minecraft:stripped_dark_oak_wood[axis=y]": 1768,

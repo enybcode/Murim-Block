@@ -59,6 +59,7 @@ public final class NatureGameTests {
         // a technique's passing blocks, is not nature: no item, no drop).
         long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)
                 && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
+                && com.murimblock.bloodsect.BloodSect.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
                 && MurimBlocks.buildingOrder().stream().noneMatch(b -> b.getId().equals(k))).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
         // The building blocks (the main tab's) are checked the same way.

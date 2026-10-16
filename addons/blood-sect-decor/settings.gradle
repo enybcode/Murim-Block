@@ -1,2 +1,0 @@
-pluginManagement { repositories { gradlePluginPortal() } }
-rootProject.name = 'BloodSectDecor'

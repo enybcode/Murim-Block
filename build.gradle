@@ -105,6 +105,30 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client checks of the Blood Sect (com.murimblock.bloodsect): the blood cloud step, the dao's
+        // M1, the cultists' looks (BloodCloudStepTour, BloodDaoM1Tour, CultistLookTour).
+        bloodCloudStepTour {
+            client()
+            gameDirectory = project.file('build/blood-cloud-step-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.cloudStepTour', 'true'
+            disableIdeRun()
+        }
+        bloodDaoM1Tour {
+            client()
+            gameDirectory = project.file('build/blood-dao-m1-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.daoM1Tour', 'true'
+            disableIdeRun()
+        }
+        cultistLookTour {
+            client()
+            gameDirectory = project.file('build/cultist-look-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.cultistLookTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client check of the Traveller's Staff Art in play (see TravellerStaffTour).
         travellerStaffTour {
             client()

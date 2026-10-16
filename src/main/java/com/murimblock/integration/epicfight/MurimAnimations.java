@@ -441,7 +441,7 @@ public final class MurimAnimations {
     /** The strike: narrow, 2.5 blocks out before the player, from the chest down. */
     private static final OBBCollider STAFF_STRIKE_BOX = new OBBCollider(0.45D, 0.9D, 1.2D, 0.0D, 1.0D, -1.4D);
     /** A thrust: a narrow corridor 3 blocks out at chest height. */
-    private static final OBBCollider STAFF_THRUST_BOX = new OBBCollider(0.4D, 0.5D, 1.4D, 0.0D, 1.15D, -1.7D);
+    private static final OBBCollider STAFF_THRUST_BOX = new OBBCollider(0.5D, 0.7D, 1.5D, 0.0D, 1.0D, -1.6D);
 
     private static void buildStaffArt(AnimationBuilder builder) {
         // One hit, the first met (x1.5 of the technique's base), from the top of the swing down to just past the contact.

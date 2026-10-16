@@ -10,14 +10,14 @@ Minecraft Java 1.21.1 (DataVersion 3955).
 - Trône, appartements privés, escaliers intérieurs, 7 bassins et 4 cascades.
 - Construction et mobilier seulement : aucun boss, aucun mob, 14 coffres vides.
 
-Le [mod Blood Sect Decor](../../../addons/blood-sect-decor/README.md) fournit
-`bloodsect:blood`, utilisé dans les bassins et cascades. Ce fichier n'est donc
-pas une structure vanilla. Il ne se génère pas naturellement et `/locate`
+Murimblock fournit le sang sombre de la secte, `murimblock:dark_blood` (`com.murimblock.bloodsect`,
+l'ancien addon Blood Sect Decor fusionné dans le mod le 16/10/2026), utilisé dans les bassins et cascades
+(la palette a été renommée de `bloodsect:blood`). Ce fichier n'est donc pas une structure vanilla. Il ne se génère pas naturellement et `/locate`
 ne peut pas le trouver.
 
 ## Importation
 
-1. Installer Blood Sect Decor 1.10.1 et WorldEdit 7.3.8 dans un profil NeoForge 1.21.1.
+1. Installer Murimblock et WorldEdit 7.3.8 dans un profil NeoForge 1.21.1.
 2. Copier le `.schem` dans `config/worldedit/schematics` du profil.
 3. Ouvrir un monde de test avec commandes autorisées. Le collage remplace la
    roche et l'air de son volume ; utiliser un emplacement libre.
