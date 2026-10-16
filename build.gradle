@@ -316,6 +316,18 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: the transformation recorded as a video (smooth frames at a slowed tick rate, and its sounds
+        // logged for the soundtrack): build/transform-video-run/video, then scripts/animation/make-video.cjs (see WarlordTour).
+        transformVideo {
+            client()
+            gameDirectory = project.file('build/transform-video-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            systemProperty 'murimblock.transformTour', 'true'
+            systemProperty 'murimblock.videoTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a film of the Mountain-Shattering Fist's techniques in a real client (see MountainFistTour).
         mountainFistTour {
             client()

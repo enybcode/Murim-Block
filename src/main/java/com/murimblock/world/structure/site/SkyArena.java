@@ -102,9 +102,12 @@ public final class SkyArena {
         return new Schematic(w, h, l, offset, palette, cells);
     }
 
+    /** Off in the server GameTests that only follow the film: a million and a half blocks would slow the tests after it. */
+    public static boolean enabled = true;
+
     /** Begins placing the arena with its paste point at (x, PASTE_Y, z); false if no schematic. */
     public static boolean place(ServerLevel level, int x, int z) {
-        Schematic schem = schematic(level);
+        Schematic schem = enabled ? schematic(level) : null;
         if (schem == null) return false;
         JOBS.add(new Job(level, schem, new BlockPos(x, Math.min(PASTE_Y, level.getMaxBuildHeight() - 1 - schem.height - schem.offset[1]), z)));
         return true;

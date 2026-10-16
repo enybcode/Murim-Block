@@ -60,6 +60,8 @@ public final class SonOfTheDemonGameTests {
 
     @GameTest(template = "foundation_arena", batch = "son_of_the_demon_film", timeoutTicks = WarlordTransformation.END + 80)
     public static void aKillingBlowTurnsTheWarlordIntoTheSonOfTheDemon(GameTestHelper helper) {
+        // The film without its arena (SkyArena.enabled): he lands on the ground; the arena has its own test and the client film.
+        SkyArena.enabled = false;
         BanditWarlordEntity w = MurimEntities.BANDIT_WARLORD.get().spawn(helper.getLevel(), helper.absolutePos(new BlockPos(3, 1, 3)), MobSpawnType.COMMAND);
         helper.assertTrue(w != null, "No Bandit Warlord spawned");
         ServerPlayer player = player(helper);
@@ -101,6 +103,7 @@ public final class SonOfTheDemonGameTests {
             helper.assertTrue(s.getHealth() < s.getMaxHealth(), "He cannot be hurt once the fight begins");
             s.discard();
             cleanup(player);
+            SkyArena.enabled = true;
             helper.succeed();
         });
     }

@@ -49,7 +49,11 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
  * crater seen from above, then each of his moves. A picture every other tick, to build/warlord-tour-run/screenshots/
  * &lt;part&gt;/frame-NNN.png (GIFs with scripts/animation/FramesToGif.java). With murimblock.transformTour (gradlew -PgameTests
  * runTransformTour), after the crater a killing blow instead of his moves: his transformation into the Son of the Demon
- * as the player sees it, the arena in the sky built over the camp and the player carried onto it (transform/).
+ * as the player sees it, the arena in the sky built over the camp and the player carried onto it (transform/). With
+ * murimblock.videoTour too (gradlew -PgameTests runTransformVideo), the film is recorded for a video: the server slowed to
+ * a quarter of its speed so that no frame is missed, a picture every 1/30 s of the film's own time (video/frames), and
+ * every sound it plays logged with its time, file, volume, pitch and distance (video/sounds.tsv), for
+ * scripts/animation/make-video.cjs to build the MP4 with its soundtrack.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class WarlordTour {
@@ -199,10 +203,72 @@ public final class WarlordTour {
 
     private static boolean sawTransformation;
 
+    // ---------------------------------------------------------------- the video
+    private static final boolean VIDEO = Boolean.getBoolean("murimblock.videoTour");
+    /** The server's speed while recording (ticks a second): a quarter of the game's, so every frame is drawn in time. */
+    private static final float SLOW = 5;
+    private static final double FPS = 30;
+    private static long filmStart = -1;
+    private static int frame;
+    private static final StringBuilder sounds = new StringBuilder();
+
+    private static double filmTime(Minecraft mc, float partial) {
+        return filmStart < 0 || mc.level == null ? -1 : mc.level.getGameTime() - filmStart + partial;
+    }
+
+    /** A picture every 1/30 s of the film's time (a frame repeated when the game drew none in that time). */
+    @SubscribeEvent
+    public static void onVideoFrame(net.neoforged.neoforge.client.event.RenderFrameEvent.Post event) {
+        if (!VIDEO || filmStart < 0 || finished) return;
+        Minecraft mc = Minecraft.getInstance();
+        double ft = filmTime(mc, event.getPartialTick().getGameTimeDeltaPartialTick(false));
+        if (ft < 0) return;
+        try {
+            Path file = null;
+            while (frame * 20.0 / FPS <= ft) {
+                Path next = mc.gameDirectory.toPath().resolve("video/frames").resolve(String.format("f-%05d.png", frame));
+                if (file == null) {
+                    try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
+                        image.writeToFile(next);
+                    }
+                    file = next;
+                } else {
+                    Files.copy(file, next, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+                frame++;
+            }
+        } catch (Exception e) {
+            LOGGER.error("Video frame failed", e);
+        }
+    }
+
+    /** Every sound the film plays: its film time (ticks), file, volume, pitch, whether heard everywhere, its distance. */
+    @SubscribeEvent
+    public static void onVideoSound(net.neoforged.neoforge.client.event.sound.PlaySoundEvent event) {
+        if (!VIDEO || filmStart < 0 || finished) return;
+        Minecraft mc = Minecraft.getInstance();
+        var s = event.getSound();
+        if (s == null || mc.level == null) return;
+        if (s.getSound() == null) s.resolve(mc.getSoundManager());
+        if (s.getSound() == null || s.getSound() == net.minecraft.client.sounds.SoundManager.EMPTY_SOUND) return;
+        var cam = mc.gameRenderer.getMainCamera().getPosition();
+        boolean everywhere = s.isRelative() || s.getAttenuation() == net.minecraft.client.resources.sounds.SoundInstance.Attenuation.NONE;
+        double d = everywhere ? 0 : Math.sqrt(cam.distanceToSqr(s.getX(), s.getY(), s.getZ()));
+        float volume = s.getVolume() * s.getSound().getVolume().sample(mc.level.random);
+        sounds.append(String.format(java.util.Locale.ROOT, "%.3f	%s	%.3f	%.3f	%s	%.2f	%s%n", filmTime(mc, 0), s.getSound().getPath(),
+                volume, s.getPitch(), everywhere, d, s.getLocation()));
+    }
+
     /** The killing blow, then the transformation filmed as the player sees it, to its end and a little after. */
     private static void transform(Minecraft mc, MinecraftServer server, int t) throws Exception {
         if (t == 0) {
             mc.options.hideGui = false;
+            if (VIDEO) {
+                filmStart = mc.level.getGameTime();
+                Files.createDirectories(mc.gameDirectory.toPath().resolve("video/frames"));
+                sounds.setLength(0);
+                server.execute(() -> server.tickRateManager().setTickRate(SLOW));
+            }
             server.execute(() -> {
                 // One warlord only (the emptied camp may have called a second): the others and their bars go.
                 for (BanditWarlordEntity other : server.overworld().getEntitiesOfClass(BanditWarlordEntity.class, new net.minecraft.world.phys.AABB(cx - 60, g - 40, cz - 60, cx + 60, g + 200, cz + 60)))
@@ -219,7 +285,15 @@ public final class WarlordTour {
             return;
         }
         sawTransformation |= com.murimblock.client.TransformationCinematic.active();
-        if (t % 2 == 0) shot(mc, "transform/frame-" + String.format("%03d", t / 2));
+        if (!VIDEO && t % 2 == 0) shot(mc, "transform/frame-" + String.format("%03d", t / 2));
+        if (VIDEO && filmTime(mc, 0) > com.murimblock.world.structure.site.WarlordTransformation.END + 40) {
+            Files.writeString(mc.gameDirectory.toPath().resolve("video/sounds.tsv"), sounds.toString());
+            server.execute(() -> server.tickRateManager().setTickRate(20));
+            check(frame > 900, "the film was recorded: " + frame + " frames");
+            finish(mc);
+            return;
+        }
+        if (VIDEO) return;
         if (t == com.murimblock.world.structure.site.WarlordTransformation.END + 30) {
             check(sawTransformation, "the transformation played as a film");
             server.execute(() -> {
