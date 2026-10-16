@@ -184,6 +184,27 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 
 ![Le début de la transformation](images/warlord-transform.gif) ![Le gorille](images/warlord-avatar-chest_beat.gif)
 
+**Film final, validé par Enzo le 17/10** (« on garde l'animation ») :
+[vidéo](images/son-of-the-demon.mp4), à refaire avec `gradlew -PgameTests runTransformVideo` puis
+`node scripts/animation/make-video.cjs`. 36 s :
+
+1. à genoux ;
+2. le poing au sol ;
+3. la tête frappée ;
+4. le cœur-bloc, rouge, qui s'arrête puis repart en or ;
+5. le cri et la peau qui se déchire ;
+6. l'éclair ;
+7. le rugissement et les coups sur le torse ;
+8. l'aura ;
+9. en vue subjective, il marche vers toi et t'écrase de son poing (image d'impact manga, puis noir pendant que le
+   météore se charge) ;
+10. réveil dans son poing en plein vol, autour du météore ;
+11. à la troisième personne, il te jette ; tu creuses un petit cratère ;
+12. sonné, tu le vois atterrir et rugir ;
+13. le titre, puis retour dans tes yeux.
+
+Le texte ci-dessous décrit la première version, du 16/10.
+
 **En jeu (validé par Enzo le 16/10, en place)** : `WarlordTransformation` (serveur, 600 ticks) et
 `client/TransformationCinematic` (les 10 plans), `TransformationPayload`.
 
