@@ -1,0 +1,289 @@
+{
+  "file": "culte_sang_souterrain_boss_72.schem",
+  "size": [
+    161,
+    90,
+    149
+  ],
+  "minimum": [
+    -72,
+    -80,
+    -96
+  ],
+  "maximum": [
+    88,
+    9,
+    52
+  ],
+  "origin": [
+    0,
+    0,
+    49
+  ],
+  "offset": [
+    -72,
+    -80,
+    -145
+  ],
+  "minecraft": "1.21.1",
+  "data_version": 3955,
+  "non_air": 1442465,
+  "air": 716545,
+  "palette_states": 24,
+  "bytes": 26315,
+  "sha256": "15e92590d6ced6421b65af84ca2c103c7468f0a146f9c42905589afbab6a3c16",
+  "targets": {
+    "Dortoirs": [
+      -44,
+      -12,
+      -28
+    ],
+    "Armurerie": [
+      44,
+      -12,
+      -28
+    ],
+    "Réfectoire": [
+      -44,
+      -12,
+      24
+    ],
+    "Cuisines": [
+      44,
+      -12,
+      24
+    ],
+    "Tribune": [
+      5,
+      -12,
+      -39
+    ],
+    "Entrée": [
+      5,
+      -12,
+      35
+    ],
+    "Entraînement": [
+      -44,
+      -24,
+      -28
+    ],
+    "Bibliothèque": [
+      44,
+      -24,
+      -28
+    ],
+    "Forge rituelle": [
+      -44,
+      -24,
+      24
+    ],
+    "Réserves": [
+      44,
+      -24,
+      24
+    ],
+    "Reliquaire": [
+      5,
+      -24,
+      -39
+    ],
+    "Salle des serments": [
+      5,
+      -24,
+      35
+    ],
+    "Ossuaire": [
+      -44,
+      -40,
+      24
+    ],
+    "Trésor": [
+      44,
+      -40,
+      24
+    ],
+    "Archives scellées": [
+      5,
+      -40,
+      -37
+    ],
+    "Accès du chef": [
+      0,
+      -40,
+      29
+    ],
+    "Surface entrance": [
+      0,
+      0,
+      49
+    ],
+    "Main sanctuary": [
+      0,
+      -24,
+      5
+    ],
+    "Crypt": [
+      0,
+      -40,
+      5
+    ],
+    "Boss arena": [
+      0,
+      -76,
+      -28
+    ],
+    "Boss throne": [
+      0,
+      -73,
+      -77
+    ],
+    "Boss quarters": [
+      68,
+      -76,
+      -28
+    ],
+    "West stair -40": [
+      -48,
+      -40,
+      -12
+    ],
+    "West stair -24": [
+      -48,
+      -24,
+      -12
+    ],
+    "West stair -12": [
+      -48,
+      -12,
+      -12
+    ],
+    "East stair -40": [
+      46,
+      -40,
+      -12
+    ],
+    "East stair -24": [
+      46,
+      -24,
+      -12
+    ],
+    "East stair -12": [
+      46,
+      -12,
+      -12
+    ]
+  },
+  "pools": [
+    [
+      -5,
+      4,
+      -12,
+      -27,
+      -24
+    ],
+    [
+      -6,
+      5,
+      -24,
+      -26,
+      -23
+    ],
+    [
+      -8,
+      7,
+      -40,
+      -22,
+      -14
+    ],
+    [
+      -48,
+      -45,
+      -76,
+      -74,
+      5
+    ],
+    [
+      44,
+      47,
+      -76,
+      -74,
+      5
+    ],
+    [
+      -18,
+      -16,
+      -24,
+      -15,
+      5
+    ],
+    [
+      15,
+      17,
+      -24,
+      -15,
+      5
+    ]
+  ],
+  "falls": [
+    [
+      -2,
+      1,
+      -24,
+      -24,
+      -12
+    ],
+    [
+      -1,
+      0,
+      -22,
+      -40,
+      -33
+    ],
+    [
+      -47,
+      -46,
+      -74,
+      -76,
+      -49
+    ],
+    [
+      45,
+      46,
+      -74,
+      -76,
+      -49
+    ]
+  ],
+  "boss_arena": {
+    "diameter": 72,
+    "clear_height": 30,
+    "floor": -76
+  },
+  "materials": {
+    "minecraft:air": 716545,
+    "minecraft:deepslate[axis=y]": 1328458,
+    "minecraft:deepslate_bricks": 27153,
+    "minecraft:polished_deepslate": 28209,
+    "minecraft:smooth_sandstone": 3412,
+    "minecraft:dark_oak_planks": 7747,
+    "minecraft:red_nether_bricks": 666,
+    "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]": 356,
+    "minecraft:dark_oak_fence[east=false,north=false,south=false,waterlogged=false,west=false]": 256,
+    "bloodsect:blood[level=0]": 922,
+    "bloodsect:blood[level=8]": 170,
+    "minecraft:deepslate_tiles": 25670,
+    "minecraft:polished_andesite": 15592,
+    "minecraft:stripped_dark_oak_wood[axis=y]": 1768,
+    "minecraft:polished_blackstone": 556,
+    "minecraft:red_terracotta": 64,
+    "minecraft:waxed_cut_copper": 703,
+    "minecraft:shroomlight": 24,
+    "minecraft:chest[facing=south,type=single,waterlogged=false]": 14,
+    "minecraft:lantern[hanging=false,waterlogged=false]": 60,
+    "minecraft:smooth_sandstone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]": 156,
+    "minecraft:smooth_sandstone_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]": 84,
+    "minecraft:light[level=15,waterlogged=false]": 423,
+    "minecraft:lantern[hanging=true,waterlogged=false]": 2
+  }
+}
