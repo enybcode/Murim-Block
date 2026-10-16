@@ -218,4 +218,4 @@ function bbmodel(name, pieces, outfits, atlases, atlas, folder) {
   };
 }
 
-module.exports = { colour, isSide, all, folds, fringe, wraps, rim, FACES, pack, paintAtlas, png, JOINTS, PARTS, mesh, bbmodel, stableId };
+module.exports = { colour, isSide, all, folds, fringe, wraps, rim, FACES, pack, paintAtlas, png, JOINTS, PARTS, mesh, bbmodel, stableId, corners, tilt };

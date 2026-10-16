@@ -13,8 +13,15 @@ public final class BloodNinjaRenderer extends HumanoidMobRenderer<BloodNinja, Re
     public BloodNinjaRenderer(EntityRendererProvider.Context context) {
         super(context, new ReferenceNinjaModel(context.bakeLayer(ReferenceNinjaModel.LAYER)), .4F);
         this.layers.removeIf(layer -> layer instanceof ItemInHandLayer);
+        this.addLayer(new CultistArmourLayer(this));
         this.addLayer(new AnimatedBloodDaoLayer(this, context));
     }
 
-    @Override public ResourceLocation getTextureLocation(BloodNinja ninja) { return TEXTURE; }
+    /** Murimblock's Blood Cultist (CultistMesh): its outfit's atlas, a blink for three ticks every four seconds or so. */
+    @Override public ResourceLocation getTextureLocation(BloodNinja ninja) {
+        CultistMesh mesh = CultistMesh.get();
+        if (mesh == null) return TEXTURE;
+        boolean blink = Math.floorMod(ninja.tickCount + ninja.getId() * 37, 83) < 3;
+        return mesh.texture(ninja.getOutfit(), blink);
+    }
 }

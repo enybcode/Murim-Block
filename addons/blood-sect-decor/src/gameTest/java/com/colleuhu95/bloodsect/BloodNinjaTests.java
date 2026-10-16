@@ -45,6 +45,26 @@ public final class BloodNinjaTests {
             });
         });
     }
+    /** Spawned, a cultist draws one of the five outfits and an armour (or none), and keeps them through a save. */
+    @GameTest(template = "patrol", timeoutTicks = 20)
+    public static void aCultistDrawsItsLookAndKeepsIt(GameTestHelper test) {
+        var seen = new java.util.HashSet<String>();
+        for (int i = 0; i < 40; i++) {
+            var n = BloodSectDecor.BLOOD_NINJA.get().spawn(test.getLevel(), test.absolutePos(new BlockPos(4, 2, 4)), net.minecraft.world.entity.MobSpawnType.SPAWN_EGG);
+            test.assertTrue(n != null && n.getOutfit() >= 0 && n.getOutfit() < BloodNinja.OUTFITS && n.getArmour() >= 0 && n.getArmour() < BloodNinja.ARMOURS, "A look out of range");
+            seen.add(n.getOutfit() + "/" + n.getArmour());
+            var tag = new CompoundTag();
+            n.addAdditionalSaveData(tag);
+            var copy = BloodSectDecor.BLOOD_NINJA.get().create(test.getLevel());
+            copy.readAdditionalSaveData(tag);
+            test.assertTrue(copy.getOutfit() == n.getOutfit() && copy.getArmour() == n.getArmour(), "The look was not saved: " + n.getOutfit() + "/" + n.getArmour());
+            n.discard();
+            copy.discard();
+        }
+        test.assertTrue(seen.size() >= 8, "Forty cultists drew only " + seen.size() + " looks");
+        test.succeed();
+    }
+
     private static BloodNinja ninja(GameTestHelper test) {
         test.getLevel().getServer().setDifficulty(Difficulty.NORMAL, true);
         test.assertBlockPresent(Blocks.SMOOTH_SANDSTONE, 4, 1, 4);
