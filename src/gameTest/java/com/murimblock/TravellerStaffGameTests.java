@@ -144,6 +144,14 @@ public final class TravellerStaffGameTests {
     public static void theFlurryOfPointsStrikesAgainAndAgain(GameTestHelper helper) {
         ServerPlayer player = traveller(helper);
         Zombie zombie = dummy(helper, player, 0, 2.4);
+        // GameTest chooses coordinates millions of blocks out. Epic Fight casts world translations to floats,
+        // making this narrow collider miss at some seeds. Use the local fixture pattern from FoundationGameTests;
+        // preserve the 2.4-block target distance, animation, timing and repeated-hit assertions.
+        helper.getLevel().getChunk(0, 0);
+        helper.getLevel().setChunkForced(0, 0, true);
+        player.moveTo(8.5, 70, 8.5, 0, 0);
+        zombie.moveTo(8.5, 70, 10.9, 180, 0);
+        zombie.setNoGravity(true);
         whenReachable(helper, player, () -> {
             helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "The Flurry of Points was not cast");
             float[] early = new float[1];

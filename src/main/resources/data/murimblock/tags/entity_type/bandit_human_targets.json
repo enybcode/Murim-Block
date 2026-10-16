@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#murimblock:bandit_enemies", "murimblock:alliance_merchant", "murimblock:golden_dragon_sage",
+    "minecraft:villager", "minecraft:wandering_trader", "minecraft:pillager", "minecraft:vindicator",
+    "minecraft:evoker", "minecraft:illusioner", "minecraft:witch", "minecraft:iron_golem"
+  ]
+}

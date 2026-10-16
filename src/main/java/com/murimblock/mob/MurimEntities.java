@@ -157,9 +157,9 @@ public final class MurimEntities {
         // Same biomes, about seven times rarer: data/murimblock/neoforge/biome_modifier/crab_man_spawns.json.
         event.register(CRAB_MAN.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 CrabManEntity::checkCrabManSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        // As the zombie: on the ground, in the dark (data/murimblock/neoforge/biome_modifier/mountain_bandit_spawns.json).
+        // Surface brigands: ordinary ground checks, rarer in daylight (see SpawnPolicy).
         event.register(MOUNTAIN_BANDIT.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+                com.murimblock.world.SpawnPolicy::checkBanditSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         // On open ground in the centre of the map, day and night (data/murimblock/neoforge/biome_modifier/tiger_spawns.json).
         event.register(TIGER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 TigerEntity::checkTigerSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);

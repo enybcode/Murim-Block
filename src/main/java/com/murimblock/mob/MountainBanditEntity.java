@@ -13,6 +13,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -99,9 +100,19 @@ public class MountainBanditEntity extends Monster {
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         // Hit, it calls the bandits around it onto whoever hit it.
-        targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(MountainBanditEntity.class));
+        targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 5, true, false, BanditRelations::prey));
         // Epic Fight installs its attack and chase goals for the dao in hand (MountainBanditPatch). No vanilla melee goal.
+    }
+
+    @Override public boolean canAttack(LivingEntity target) {
+        return BanditRelations.mayFight(target) && super.canAttack(target);
+    }
+
+    /** A human brigand does not avoid daylight when choosing a place to spawn or walk. */
+    @Override public float getWalkTargetValue(net.minecraft.core.BlockPos pos, net.minecraft.world.level.LevelReader world) {
+        return 0;
     }
 
     /** With a target, it is aggressive: the clients see it (its face frowns, MobFaces). */

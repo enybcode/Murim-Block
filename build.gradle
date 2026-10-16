@@ -69,6 +69,14 @@ neoForge {
             disableIdeRun()
         }
 
+        banditEcologyTour {
+            client()
+            gameDirectory = project.file('build/bandit-ecology-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.banditEcologyTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client tour of the Murim biomes in a fresh normal world (see BiomeTour).
         biomeTour {
             client()

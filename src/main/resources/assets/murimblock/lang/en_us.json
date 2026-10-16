@@ -1,4 +1,9 @@
 {
+  "command.murimblock.spawn.protected": "Natural spawning blocked in region %s. Existing mobs and intentional spawns are unchanged.",
+  "command.murimblock.spawn.removed": "Spawn protection removed: %s.",
+  "command.murimblock.spawn.missing": "No spawn protection named %s in this dimension.",
+  "command.murimblock.spawn.list": "Protected regions in this dimension: %s",
+  "command.murimblock.spawn.region": "%s: (%s, %s, %s) to (%s, %s, %s)",
   "key.categories.murimblock": "Murimblock",
   "entity.murimblock.training_opponent": "Training Opponent",
   "entity.murimblock.armored_crab": "Armored Crab",
