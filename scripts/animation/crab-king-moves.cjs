@@ -22,7 +22,9 @@
 //   crab_king_thrown looped while the victim flies: flailing, until it lands (knocked down);
 //   crab_king_burrow "Pincer from the deep" (Enzo, 16/10): both pincers raised high, plunged into the ground before him
 //                    at BURROW_PLUNGE and held there, trembling, while the giant pincer he calls fights (CrabKingEntity,
-//                    CrabPincerEntity: 4.6 s), then pulled out.
+//                    CrabPincerEntity: 4.6 s), then pulled out;
+//   crab_king_mist   the mist (Enzo, 16/10): hunched, the pincers crossed before his face, the shell heaving, then flung
+//                    wide at MIST_RELEASE as the mist bursts out of him (CrabMistEntity); he is gone into it at MIST_GONE.
 // The victim is held between the jaws: GRIP, the point halfway between the middles of the pincer's two fingers
 // (crab-king-3d.cjs), is worked out for every frame of the hold from these poses and written as
 // integration/epicfight/CrabKingGrip.java, which the server follows (blocks, at his size).
@@ -268,7 +270,25 @@ const BURROW_PLUNGE = 0.62;
   anims.crab_king_burrow = keys;
 }
 
-module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE, SQUEEZES, BURROW_PLUNGE };
+// The mist: hunched, the pincers crossed before his face, the shell heaving; flung wide as it bursts out of him.
+const MIST_RELEASE = 0.75, MIST_GONE = 1.2;
+{
+  const HUNCHED = (heave = 0) => ({ ...STANCE(), Root: { pos: [0, 0, HIP - 0.14] }, Torso: [['x', -30]], Chest: [['x', -16 + heave * 6]],
+    Head: [['x', 18]], Arm_R: [['x', 70], ['y', -2], ['z', 34]], Hand_R: [['x', 70]], Arm_L: [['x', 70], ['y', 2], ['z', -34]], Hand_L: [['x', 70]],
+    ...pincers(4), Thigh_R: [['x', 30], ['y', -10]], Leg_R: [['x', -44]], Thigh_L: [['x', 24], ['y', 10]], Leg_L: [['x', -38]] });
+  const FLUNG = { ...STANCE(), Root: { pos: [0, 0, HIP - 0.02] }, Torso: [['x', 6]], Chest: [['x', 18]], Head: [['x', -26]],
+    Arm_R: [['x', 60], ['y', -70]], Hand_R: [['x', 20]], Arm_L: [['x', 60], ['y', 70]], Hand_L: [['x', 20]], ...pincers(40),
+    Thigh_R: [['x', 6], ['y', -12]], Leg_R: [['x', -8]], Thigh_L: [['x', -2], ['y', 12]], Leg_L: [['x', -6]] };
+  anims.crab_king_mist = [
+    { t: 0, pose: STANCE() },
+    { t: 0.3, pose: HUNCHED(0) }, { t: 0.42, pose: HUNCHED(1) }, { t: 0.54, pose: HUNCHED(0) }, { t: 0.66, pose: HUNCHED(1) },
+    { t: MIST_RELEASE, pose: FLUNG },
+    { t: MIST_GONE, pose: { ...FLUNG, Arm_R: [['x', 40], ['y', -60]], Arm_L: [['x', 40], ['y', 60]] } },
+    { t: 1.5, pose: STANCE() },
+  ];
+}
+
+module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE, SQUEEZES, BURROW_PLUNGE, MIST_RELEASE, MIST_GONE };
 
 /**
  * GRIP: between the jaws, for each frame of the hold (and the catch), in the character's axes at his size (blocks:

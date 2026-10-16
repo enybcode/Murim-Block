@@ -297,6 +297,8 @@ public final class WeaponTour {
         king("grab-pov", Side.FRONT, CrabKingAnimations.GRAB, null, 56, 2);
         // The pincers from the deep, on a husk before him.
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("burrow", side, CrabKingAnimations.BURROW, null, 60, 2);
+        // His mist: he breathes it and is gone into it (seen from outside it, then from within).
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.FRONT)) king("mist", side, CrabKingAnimations.MIST, null, 40, 2);
         king("death", Side.FRONT_RIGHT, Animations.BIPED_DEATH, null, 14, 2);
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) axe("idle", side, -1, LivingMotions.IDLE, 1, 1);
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) axe("walk", side, -1, LivingMotions.WALK, 16, 2);
@@ -489,7 +491,8 @@ public final class WeaponTour {
             me.removeAllEffects();
         }
         // Farther still for the pincers from the deep: him, his target and the two giant pincers in the frame.
-        zoom = t.name().startsWith("king-burrow") ? 4.6 : t.actor() == Actor.KING ? 2.4 : 1;
+        // Outside his mist (11 blocks round him) for its wide take.
+        zoom = t.name().startsWith("king-burrow") || t.name().equals("king-mist") && t.side() == Side.FRONT_RIGHT ? 4.6 : t.actor() == Actor.KING ? 2.4 : 1;
         // A stone wall across his throw for the grab's takes (he knocks a crater into it), gone for the others.
         boolean wall = t.name().startsWith("king-grab");
         for (int x = -5; x <= 5; x++) for (int y = 0; y < 6; y++) {
@@ -523,6 +526,8 @@ public final class WeaponTour {
                 bandit.setYBodyRot(0);
                 bandit.setYHeadRot(0);
             }
+            // Out of his mist for any other take.
+            if (bandit instanceof com.murimblock.mob.CrabKingEntity king && !t.name().startsWith("king-mist")) king.reveal(level);
             // Running is chasing: Epic Fight runs an aggressive mob that moves.
             bandit.setAggressive(t.motion() == LivingMotions.CHASE);
             if (t.name().startsWith("king-burrow")) {
@@ -589,6 +594,12 @@ public final class WeaponTour {
         double y = t.name().endsWith("-air") && !isMob(t.actor()) ? baseY + 1.4 : baseY;
         if (s == Side.TOP) self(server).teleportTo(level, baseX, y + 4.6 * zoom - 1.62, baseZ + 0.01, s.yaw, 90);
         else self(server).teleportTo(level, baseX + s.dx * DISTANCE * zoom, y + EYE * zoom - 1.62, baseZ + s.dz * DISTANCE * zoom, s.yaw, 6);
+        if (t.name().startsWith("king-mist")) {
+            // A spectator sees what is invisible: in creative, the camera sees him go into his mist.
+            me.setGameMode(GameType.CREATIVE);
+            me.getAbilities().flying = true;
+            me.onUpdateAbilities();
+        }
         if (t.name().equals(POV)) {
             // The camera's player in survival before the pincer (CrabKingGrip.CATCH: his right and ahead), unhurt.
             me.setGameMode(GameType.SURVIVAL);

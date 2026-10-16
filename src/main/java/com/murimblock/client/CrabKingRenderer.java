@@ -66,6 +66,9 @@ public final class CrabKingRenderer extends HumanoidMobRenderer<CrabKingEntity, 
         @Override
         public void render(CrabKingEntity king, CrabKingPatch patch, CrabKingRenderer renderer, MultiBufferSource buffers,
                            PoseStack poseStack, int light, float partialTicks) {
+            // Gone into his mist (CrabKingEntity): unseen, but by spectators.
+            var viewer = net.minecraft.client.Minecraft.getInstance().player;
+            if (king.isInvisible() && (viewer == null || !viewer.isSpectator())) return;
             IdlePhase.desync(king, patch, CrabKingAnimations.IDLE);
             super.render(king, patch, renderer, buffers, poseStack, light, partialTicks);
         }

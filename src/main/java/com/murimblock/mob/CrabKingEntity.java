@@ -56,7 +56,8 @@ import yesman.epicfight.world.damagesource.StunType;
  * a wall, it leaves a crater in it (Enzo, 16/10; not where mobs may not grief). Meanwhile: no attack, guard, roll, item, technique or meditation, no
  * moving. The pincers from the deep: he plunges both pincers into the ground and holds them there while two giant ones
  * (CrabPincerEntity), some seven blocks tall, burst up before his target, one on either side of it, the ground shaking
- * (client/CrabPincerShake), each sweeping all round, striking to its side and trying to pinch it. The victim plays its own animations (crab_king_victim, crab_king_thrown), and a player sees it as a film
+ * (client/CrabPincerShake), each sweeping all round, striking to its side and trying to pinch it. The mist: he breathes
+ * a thick mist round him (CrabMistEntity) and is gone into it, unseen, until he strikes, is struck or it thins. The victim plays its own animations (crab_king_victim, crab_king_thrown), and a player sees it as a film
  * (client/GrabCinematic). Under half his health he roars and calls two armoured crabs out of the ground,
  * once. He breathes under water and moves faster in it. His health shows in a boss bar to the players near him. The crab
  * art's manual will be his drop when the art is made.
@@ -103,6 +104,9 @@ public class CrabKingEntity extends Monster {
     /** The pincers still to come: when (his tick count) and where. */
     private final java.util.List<Object[]> pincersToCome = new java.util.ArrayList<>();
     private boolean burrowed;
+    /** The mist: whether the one now playing has burst out, whether he is gone into it, the mist he is hidden in. */
+    private boolean misted, hidden;
+    @Nullable private CrabMistEntity mist;
     /** Ticks to his next heavy step while he walks. */
     private int stepIn;
 
@@ -214,7 +218,72 @@ public class CrabKingEntity extends Monster {
             shockwaveTick(server);
             grabTick(server);
             burrowTick(server);
+            mistTick(server);
         }
+    }
+
+    // ---- the mist
+
+    private void mistTick(ServerLevel server) {
+        AnimationPlayer main = mainPlayer();
+        var playing = main == null ? null : main.getRealAnimation();
+        boolean breathing = playing == CrabKingAnimations.MIST && !main.isEnd();
+        if (!breathing) misted = false;
+        else {
+            float t = main.getElapsedTime();
+            if (!misted && t >= CrabKingAnimations.MIST_RELEASE) {
+                misted = true;
+                breatheMist(server);
+            }
+            if (!hidden && misted && t >= CrabKingAnimations.MIST_GONE) hide(server);
+        }
+        // Gone into it until he strikes (an attack of his begins), or it thins out.
+        if (hidden) {
+            boolean striking = playing != null && playing != CrabKingAnimations.MIST && main != null && !main.isEnd()
+                    && (playing.get() instanceof yesman.epicfight.api.animation.types.AttackAnimation
+                        || playing == CrabKingAnimations.GRAB || playing == CrabKingAnimations.BURROW);
+            if (striking || mist == null || mist.isRemoved() || mist.tickCount > CrabMistEntity.LIFETIME - CrabMistEntity.FADE) reveal(server);
+        }
+    }
+
+    /** The mist bursts out of him: a thick cloud round him (CrabMistEntity), with a great sigh. */
+    public void breatheMist(ServerLevel server) {
+        if (mist != null && !mist.isRemoved()) mist.discard();
+        mist = new CrabMistEntity(MurimEntities.CRAB_MIST.get(), server);
+        mist.moveTo(getX(), getY(), getZ(), 0, 0);
+        server.addFreshEntity(mist);
+        server.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 2, getZ(), 80, 2.5, 1.5, 2.5, 0.12);
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.ELDER_GUARDIAN_AMBIENT, SoundSource.HOSTILE, 1.4F, 0.5F);
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.HOSTILE, 1.4F, 0.4F);
+    }
+
+    /** Gone into the mist: unseen (as any invisible thing: no model, no shadow, no name). His steps are still heard. */
+    public void hide(ServerLevel server) {
+        hidden = true;
+        setInvisible(true);
+        server.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 2, getZ(), 40, 1.2, 1.5, 1.2, 0.05);
+    }
+
+    /** Out of the mist: seen again, in a burst of it and spray. */
+    public void reveal(ServerLevel server) {
+        if (!hidden) return;
+        hidden = false;
+        setInvisible(false);
+        server.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 2, getZ(), 50, 1.2, 1.6, 1.2, 0.15);
+        server.sendParticles(ParticleTypes.SPLASH, getX(), getY() + 2, getZ(), 40, 1.0, 1.4, 1.0, 0.2);
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.TURTLE_AMBIENT_LAND, SoundSource.HOSTILE, 1.6F, 0.4F);
+    }
+
+    /** Whether he is gone into his mist now. */
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    /** Struck in the mist, he is seen again. */
+    @Override public boolean hurt(DamageSource source, float amount) {
+        boolean hurt = super.hurt(source, amount);
+        if (hurt && hidden && level() instanceof ServerLevel server) reveal(server);
+        return hurt;
     }
 
     // ---- pincers from the deep
@@ -577,6 +646,8 @@ public class CrabKingEntity extends Monster {
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         enraged = tag.getBoolean("Enraged");
+        // The mist is never saved: loaded, he is seen.
+        setInvisible(false);
         if (hasCustomName()) bossBar.setName(getDisplayName());
     }
 
