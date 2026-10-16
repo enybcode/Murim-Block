@@ -13,8 +13,6 @@
 > Maquettes : `node scripts/concepts/render-outpost.cjs` (Blockbench isolé, port 9232 par défaut, `--port=` pour un
 > autre), scène dans `scripts/concepts/outpost.js`. 1 voxel = 1 bloc.
 
-![Vue d'ensemble](images/alliance-outpost/overview.jpg)
-
 ## L'idée
 
 Un **fort de garnison** sur une butte au bord d'une route : ce que l'Alliance pose là où elle veut tenir un passage,
@@ -29,8 +27,6 @@ capitale.
   désert face au Culte), avec quelques variantes : sable et grès au Hexi, neige au nord.
 
 ## Le plan
-
-![Plan numéroté](images/alliance-outpost/plan.jpg)
 
 | N° | Lieu | Ce qu'on y fait | Qui y est |
 |---|---|---|---|
@@ -51,20 +47,10 @@ capitale.
 
 **Depuis la route** : l'arche au pied de la butte, le salon de thé, la porte, les tours d'angle, la fumée du signal.
 
-![Depuis la route](images/alliance-outpost/road.jpg)
-
 **La cour** : la salle du commandement au fond, les mannequins et les disciples, la caserne à gauche, les écuries à
 droite, la tour de guet.
 
-![La cour](images/alliance-outpost/yard.jpg)
-
 ## En jeu
-
-![La route, le paifang et la porte, en jeu](images/alliance-outpost/game-gate.jpg)
-
-![Vu du ciel : la tente, la caserne, la cour, la porte, le salon de thé](images/alliance-outpost/game-air.jpg)
-
-![Le commandant dans la salle](images/alliance-outpost/game-hall.jpg)
 
 - **Structure** `murimblock:alliance_outpost` (`AllianceOutpost`, plan `alliance_outpost`), comme les autres sites
   ([README](README.md)) : construite en code, chunk par chunk, l'entrée tournée vers le terrain le plus bas.

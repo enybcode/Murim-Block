@@ -6,8 +6,6 @@
 > fait 4 blocs de haut : bonne hauteur sous plafond. Bien éclairé, pour voir le combat.
 > Maquette retenue : **C, le Puits aux racines** (trois proposées : la Fosse engloutie, la Nef de la jonque, le Puits).
 
-![En jeu, vue d'en haut](images/crab-king-lair/03-the-cavern.jpg)
-
 ## Où
 
 - **Une seule par monde**, construite au premier démarrage, après le sanctuaire (`CrabLairPlacement`, sauvegarde
@@ -22,9 +20,6 @@
   du marais.
 
 ## Forme (`CrabLairBuilder`)
-
-![Le puits dans le marais](images/crab-king-lair/01-shaft-from-the-swamp.jpg)
-![Vue plongeante dans le puits](images/crab-king-lair/02-down-the-shaft.jpg)
 
 - **Grotte ronde de 88 blocs** de large, son sol 46 blocs sous le marais.
 - **Hauteur sous plafond** : 42 blocs au centre, plus de 25 blocs sur toute la zone de combat. Les stalactites ne
@@ -49,8 +44,6 @@
   - lichen lumineux sur les parois ;
   - blocs de lumière invisibles de niveau 14 au-dessus de tout le sol, si bien qu'aucun autre monstre n'y apparaît.
 
-![La jonque brisée](images/crab-king-lair/04-the-junk.jpg)
-
 ## Occupants
 
 - Le **Roi Crabe**, à côté de la mare, face au puits.
@@ -59,15 +52,11 @@
 - Son rouleau d'art (l'art du crabe, pas encore fait) sera dans son butin (`loot_table/entities/crab_king.json`, session
   « armes »).
 
-![Le Roi Crabe dans son antre](images/crab-king-lair/06-the-king.jpg)
-
 ## Maquette (`scripts/concepts/crab-cave.js`)
 
 - `node scripts/concepts/render-crab-cave.cjs [--only=c_open,c_inside] [--port=]` rend les vues voxel (1 voxel =
   1 bloc) dans un Blockbench isolé ;
 - propositions A (`a_open`, `a_inside`, `a_surface`), B (`b_*`) et C (`c_*`).
-
-![Maquette C](images/crab-king-lair/mockup-c_open.jpg)
 
 ## Vérifications
 

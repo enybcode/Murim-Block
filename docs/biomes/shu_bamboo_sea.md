@@ -1,8 +1,5 @@
 # Mer de bambous de Shu (`murimblock:shu_bamboo_sea`) — biome moyen
 
-![En jeu](images/shu_bamboo_sea-a.jpg)
-![Au sol](images/shu_bamboo_sea-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.**
@@ -49,9 +46,6 @@
 | Herbe et champignons | vanilla | |
 
 ## Structures prévues
-
-![Temple taoïste étagé dans la pente, escalier couvert et pont de câbles de bambou](images/structures-bamboo-a.jpg)
-![Le pont de bambou sur la gorge](images/structures-bamboo-b.jpg)
 
 1. **Temple taoïste de montagne.**
    - Modèles réels : le Tianshi Dong et le Shangqing Gong du Qingcheng (UNESCO, l'un des berceaux du taoïsme).

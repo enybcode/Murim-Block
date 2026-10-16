@@ -14,8 +14,6 @@
 > Maquettes : `node scripts/concepts/render-arena.cjs` (Blockbench isolé, `--port=` ; port 9232 par défaut), scène
 > dans `scripts/concepts/arena.js`. 1 voxel = 1 bloc. Les PNG rendus ont été convertis en JPG pour la doc.
 
-![Vue d'ensemble](images/alliance-arena/overview.jpg)
-
 ## L'idée
 
 Un **leitai** (擂台), l'estrade de combat des romans Murim : une plateforme carrée surélevée où l'on règle les défis
@@ -30,8 +28,6 @@ colonne de Qi sur les quatre sceaux dorés du leitai, et d'autres sortent en ren
   d'une frontière entre régions** (les terres de l'Alliance). Plus rare que l'avant-poste, qui depuis le 15/10/2026 apparaît partout dans la bulle (un tous les 1 000 blocs environ).
 
 ## Le plan
-
-![Plan numéroté](images/alliance-arena/plan.jpg)
 
 | N° | Lieu | Ce que c'est | Qui y est |
 |---|---|---|---|
@@ -52,20 +48,10 @@ colonne de Qi sur les quatre sceaux dorés du leitai, et d'autres sortent en ren
 
 **Depuis la route** : l'arche, la porte, les gardes.
 
-![Depuis la route](images/alliance-arena/gate.jpg)
-
 **Le leitai pendant le combat** : le capitaine (coiffe dorée) face à un challenger, ses quatre unités qui surgissent
 sur les sceaux, les tribunes pleines, le pavillon des juges au fond.
 
-![Le leitai](images/alliance-arena/leitai.jpg)
-
 ## En jeu
-
-![Vue du ciel, en jeu](images/alliance-arena/game-air.jpg)
-
-![Le leitai et ses sceaux, en jeu](images/alliance-arena/game-leitai.jpg)
-
-![Le capitaine (un sergent en attendant) sur le leitai, le pavillon des juges au fond](images/alliance-arena/game-captain.jpg)
 
 - **Structure** `murimblock:alliance_arena` (`AllianceArena`), construite en code bloc par bloc d'après la maquette,
   trouvée par `/locate structure murimblock:alliance_arena`.

@@ -9,8 +9,6 @@
 > (Blockbench isolé, `--port=` ; port 9232 par défaut), scène dans `scripts/concepts/bandit-camp.js`. 1 voxel = 1 bloc.
 > Les PNG rendus ont été convertis en JPG pour la doc.
 
-![Vue d'ensemble](images/bandit-camp/overview.jpg)
-
 ## L'idée
 
 Le repaire d'une grande bande, bien plus gros que le [repaire du Fleuve Jaune](yellow_river_bandit_den.md) : un fort de
@@ -42,8 +40,6 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 > structure qui change ; ce serait l'ultime de l'art, il commencerait par ça, un changement du terrain » ; « il tombe du
 > ciel comme une météorite avec du feu, et il y aura une cinématique quand il spawn ».
 
-![Il tombe du ciel en météore sur le camp vidé](images/bandit-camp/fall.jpg)
-
 - **La chute** est l'**ultime du [Poing Brise-Montagne](../combat/styles/mountain-shattering-fist.md)** : le boss ouvre
   le combat avec elle. Il atterrit poing en avant, un genou à terre, puis se relève et rugit.
 - **La cinématique** (demande d'Enzo) : au dernier bandit mort, **tous les joueurs dans le camp** la voient
@@ -64,19 +60,11 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 - **Il reste** : c'est le terrain du combat contre le boss, puis **une arène de PvP pour de bon** : le cratère ne se
   rebouche pas, le camp ne se repeuple pas. La grande salle (avec le coffre du chef) est au bord, abîmée mais debout.
 
-![Le cratère, le boss au fond](images/bandit-camp/crater.jpg)
-
-![Du bord, en regardant au fond](images/bandit-camp/crater_rim.jpg)
-
-![Sa chute, son atterrissage et son rugissement](../mobs/images/warlord-sky_fall.gif)
-
 **En jeu** (`WarlordCrater`, `WarlordEntrance`, voir [la fiche du Seigneur](../mobs/bandit-warlord.md#en-jeu-16102026--reprends-le-boss)) :
 un creux de **24 blocs de rayon et 10 de profondeur** (plus petit que la maquette, pour que la grande salle et son coffre
 restent debout au bord), un bourrelet de 4 blocs, les ruines jusqu'à la palissade ; jamais un coffre ou un tonneau, ni la
 bedrock, ni sous le fond du monde ; creusé à 6 000 blocs par tick. Le camp note que son seigneur est venu (une fois) ; si
 le serveur s'arrête entre le dernier mort et sa chute, il tombe au retour d'un joueur dans le camp.
-
-![Le cratère en jeu](images/bandit-camp/game-crater.jpg)
 
 *La proposition d'avant :* le camp garde son plan ; à l'impact, le serveur creuse le cratère et casse le camp autour,
 **réparti sur plusieurs ticks** comme la construction du sanctuaire (pas de gel du serveur ; la cinématique couvre ce
@@ -84,8 +72,6 @@ temps), et note le camp comme « cratère » (une sauvegarde, pour ne plus le re
 `SiteResidents` ne lui rende pas ses bandits). Les coffres et la cache de la grande salle sont gardés. Le dessin est un
 motif fixe tiré de la position du camp (le même cratère pour tous les joueurs). Fichier de la maquette :
 `scripts/concepts/bandit-camp.js` (`crater`, `falling`), vues `fall`, `crater`, `crater_rim`.
-
-![Le boss sort de la grande salle (ancienne idée)](images/bandit-camp/boss.jpg)
 
 Le boss n'existe pas encore : un **nouveau mob** à créer (modèle, attaques, barre de boss), plus fort que le Bandit
 Chief ; ou, pour commencer, le Bandit Chief lui-même avec plus de vie. En jeu, le camp compte ses bandits encore en
@@ -103,19 +89,7 @@ Un camp par région de la carte Murim, le même plan habillé pour sa terre :
 | **Sud** | Dans la mer de bambous : palissade de bambou, dortoirs de bambou, bosquets tout autour |
 | **Est** | Pays des eaux : palissade de rondins, toits de tuiles sombres, un fossé rempli d'eau |
 
-![Centre](images/bandit-camp/overview.jpg)
-
-![Nord](images/bandit-camp/north.jpg)
-
-![Ouest](images/bandit-camp/west.jpg)
-
-![Sud](images/bandit-camp/south.jpg)
-
-![Est](images/bandit-camp/east.jpg)
-
 ## Le plan
-
-![Plan numéroté](images/bandit-camp/plan.jpg)
 
 | N° | Lieu | Ce que c'est | Bandits |
 |---|---|---|---|
@@ -140,18 +114,10 @@ reste pour ceux qui patrouillent dehors.
 
 **Depuis la route** : les barricades, le pont, la porte et ses gardes, les tours, la fumée du grand feu.
 
-![Depuis la route](images/bandit-camp/gate.jpg)
-
 **La place du grand feu** : les bandits autour du feu, les bancs, la grande salle du chef et ses lieutenants, les
 tentes et les dortoirs.
 
-![La place](images/bandit-camp/plaza.jpg)
-
 ## En jeu
-
-![Le camp en jeu, vu du ciel](images/bandit-camp/game-air.jpg)
-
-![La porte en jeu, ses gardes](images/bandit-camp/game-gate.jpg)
 
 - **Structure** `murimblock:bandit_camp` (`BanditCamp`), construite en code bloc par bloc d'après la maquette,
   trouvée par `/locate structure murimblock:bandit_camp`.

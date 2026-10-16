@@ -1,8 +1,5 @@
 # Glaciers du Kunlun (`murimblock:kunlun_glaciers`) — biome de montagne du nord
 
-![En jeu](images/kunlun_glaciers-a.jpg)
-![Au sol](images/kunlun_glaciers-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.** Le Kunlun borde le plateau tibétain au nord, au-dessus du bassin du Tarim.

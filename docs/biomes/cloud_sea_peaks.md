@@ -1,8 +1,5 @@
 # Pics de la mer de nuages (`murimblock:cloud_sea_peaks`) — biome moyen
 
-![En jeu](images/cloud_sea_peaks-a.jpg)
-![Au sol](images/cloud_sea_peaks-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.** Ce biome reprend le Huangshan, les « monts Jaunes » de l'Anhui, site UNESCO mixte depuis 1990.
@@ -47,9 +44,6 @@
 | Herbe, fougère, mousse | vanilla | |
 
 ## Structures prévues
-
-![Sanctuaire taoïste sur une aiguille, chemin de planches en spirale, pavillon et pins de falaise](images/structures-peaks-a.jpg)
-![Le sanctuaire vu de plus près](images/structures-peaks-b.jpg)
 
 1. **Chemin de planches à flanc de falaise** (zhandao), menant à un sanctuaire taoïste au sommet.
    - Modèles réels : le chemin Changkong du Huashan, le palais Nanyan du Wudang (UNESCO).

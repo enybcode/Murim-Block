@@ -1,8 +1,5 @@
 # Forêt des pics de jade (`murimblock:jade_karst_forest`) — grand biome
 
-![En jeu](images/jade_karst_forest-a.jpg)
-![Au sol](images/jade_karst_forest-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.** Ce biome reprend le karst à tours de Guilin et Yangshuo, le long de la rivière Li (Guangxi). C'est le site UNESCO « Karst de Chine du Sud ». La rivière Li fait 164 km et descend doucement de 141 m à 103 m : elle est large et lente, avec des bancs de galets. Le socle est un calcaire dévonien et carbonifère d'environ 2 600 m d'épaisseur. On y trouve deux formes :
@@ -46,9 +43,6 @@
 | Herbe haute et fougère | vanilla | |
 
 ## Structures prévues
-
-![Village sur pilotis, pont en dos d'âne et tours karstiques](images/structures-karst-a.jpg)
-![Vue depuis la berge](images/structures-karst-b.jpg)
 
 1. **Village zhuang ou yao sur pilotis** (ganlan, diaojiaolou).
    - Modèles réels : Ping'an et Dazhai sur les rizières de Longji.

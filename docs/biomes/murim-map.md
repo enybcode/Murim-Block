@@ -2,8 +2,6 @@
 
 > Demande d'Enzo du 14/10/2026 : que le monde soit vraiment le Murim, une « bulle de l'art martial » où tout le monde s'affronte, avec des régions connues d'avance (glace, désert, montagnes…) et des structures placées au hasard. Base des futures capitales et factions. Sur `test`, en attente de validation en jeu.
 
-![La carte de la graine 1](images/murim-map-1.png)
-
 *Un pixel = 100 blocs. Blanc : neiges du Tianshan ; bleu glacier : chaînes du Kunlun ; vert sombre : collines aux camphriers ; ocre et brun : désert du Hexi et plateau de lœss ; vert vif et vert sombre : mer de bambous et karst ; turquoise : pays des eaux ; rose : vallée des pêchers ; gris clair : pics de la mer de nuages ; bleu nuit : l'océan ; au-delà, le monde vanilla.*
 
 ## Les grandes lignes
@@ -28,8 +26,6 @@
 > sont ceux des régions, plus des points cardinaux.
 >
 > **Les mondes créés avant restent incompatibles** : leurs nouveaux morceaux suivraient la nouvelle disposition.
-
-![Les régions de six mondes](images/murim-layouts.png)
 
 *Les régions de six mondes (graines 1, 2, 3, 42, 20261012, 8675309), un pixel = 200 blocs. Rose : centre ; blanc : neiges ; jaune : terres sèches ; vert : terres humides ; bleu : pays des eaux ; bleu nuit : l'océan.*
 

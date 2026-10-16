@@ -5,10 +5,6 @@
 > au-dessus de tout ». **En jeu sous sa forme humaine** (assis dans le Sanctuaire de la Falaise des Nuages) ; la forme
 > de dragon n'est encore qu'une maquette.
 
-![Le Dragon d'Or, de face](images/golden-dragon/concept-front.png)
-
-![La tête](images/golden-dragon/concept-head.png)
-
 ## Ce qui est décidé
 
 - **Construction** : de gros cubes (environ 230), les détails peints dans la texture (carreaux de 64 × 64), pas des
@@ -23,8 +19,6 @@
 - **Taille** : environ 40 blocs de haut dressé, 50 de long en vol (un joueur fait 1,8 bloc).
 - **Poses étudiées** : dressé en S, enroulé au sol la tête levée, en vol à l'horizontale.
 
-![Poses et échelle (un joueur à ses pieds)](images/golden-dragon/concept-poses.png)
-
 - **Le modèle** : `scripts/concepts/golden-dragon.cjs` (géométrie Bedrock et atlas 512 × 512). C'est notre propre
   dessin, construit à la manière des dragons en gros cubes qu'Enzo a montrés ; on ne copie aucun modèle trouvé en ligne
   (ni un personnage d'une autre œuvre), pour les droits.
@@ -32,10 +26,6 @@
 ## Sa forme humaine, en jeu (16/10/2026)
 
 Demande d'Enzo : « pour l'instant tu le laisses en forme humaine dans la première structure qu'on a faite ».
-
-![La forme humaine (Blockbench)](images/golden-dragon/human-form.png)
-
-![Dans la salle du sanctuaire](images/golden-dragon/game-sanctuary.png)
 
 - **Entité** `murimblock:golden_dragon_sage` (`GoldenDragonSageEntity`), nommée **The Golden Dragon** ; œuf « Golden Dragon Spawn Egg ».
 - **Modèle** sur le squelette humain d'Epic Fight, comme Sensei Yun (`scripts/animation/golden-dragon-sage-3d.cjs` : maillage

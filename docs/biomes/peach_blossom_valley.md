@@ -1,8 +1,5 @@
 # Vallée des fleurs de pêcher (`murimblock:peach_blossom_valley`) — biome moyen
 
-![En jeu](images/peach_blossom_valley-a.jpg)
-![Au sol](images/peach_blossom_valley-ground.jpg)
-
 ## Inspiration
 
 **Le récit.** *La Source aux fleurs de pêcher*, de Tao Yuanming (vers 421) :
@@ -50,9 +47,6 @@
 | Herbe | vanilla | |
 
 ## Structures prévues
-
-![Le village caché entre les piliers de grès, vu depuis le passage de la grotte](images/structures-peach-b.jpg)
-![Vue d'ensemble : anneau de piliers, ruisseau, maisons au toit de chaume, pêchers](images/structures-peach-a.jpg)
 
 1. **Entrée par la grotte et embarcadère du pêcheur.**
    - Tunnel étroit de 2×3 blocs sur environ 20 blocs, de plus en plus clair vers la sortie.

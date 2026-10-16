@@ -1,8 +1,5 @@
 # Désert de la frontière du Hexi (`murimblock:hexi_frontier_desert`) — grand biome
 
-![En jeu](images/hexi_frontier_desert-b.jpg)
-![Au sol : gravier du Gobi, yardangs et peupliers dorés](images/hexi_frontier_desert-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.** Le corridor du Hexi s'étend sur environ 1 000 km, entre les monts Qilian enneigés et le plateau mongol.
@@ -48,9 +45,6 @@
 | Buisson mort | vanilla | |
 
 ## Structures prévues
-
-![Forteresse de passe, Grande Muraille, tours à signaux, oasis et yardangs](images/structures-desert-a.jpg)
-![Vue de l'ouest](images/structures-desert-b.jpg)
 
 1. **Forteresse de passe** inspirée de Jiayuguan.
    - Le modèle réel a été commencé en 1372, avec des murs en terre damée d'environ 10,7 m.

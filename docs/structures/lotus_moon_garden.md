@@ -1,9 +1,5 @@
 # Jardin de la Lune et des Lotus
 
-![Vue aérienne : l'étang, le pont en zigzag et la salle](images/sites/lotus_moon_garden-a.jpg)
-![Vue du nord-est](images/sites/lotus_moon_garden-b.jpg)
-![Devant la porte de lune](images/sites/lotus_moon_garden-ground.jpg)
-
 | Fiche | |
 |---|---|
 | Nom en jeu (id) | Lotus Moon Garden (`murimblock:lotus_moon_garden`) |
@@ -28,8 +24,6 @@
 - **Trois rocailles** de pierres du lac Tai, pâles et trouées.
 
 - **Ses habitants** (14/10, demande d'Enzo) : 3 villageois des pays d'eau, chacun avec son métier et son nom : le **lettré** (`Lotus Garden Scholar`, bibliothécaire) dans la salle de la cithare et de l'épée, le **jardinier** (`Lotus Garden Gardener`, fermier) dans la galerie couverte, le **maître de thé** (`Lotus Garden Tea Master`, clerc) dans le pavillon sur l'eau.
-
-![Le jardinier au bout de la galerie](images/sites/lotus_moon_garden-villager.jpg)
 
 **Chemins** (mosaïque de pierres grises) : porte de lune → pont → salle ; porte → galerie → porte ouest de la salle ; porte → long des bambous → pavillon → porte est de la salle. Tous les chemins font des boucles ; aucun ne finit dans le vide.
 

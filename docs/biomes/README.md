@@ -4,13 +4,7 @@ Dix biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époqu
 
 **Depuis le 14/10/2026, ils ne se mélangent plus au monde vanilla : ils forment la [carte Murim](murim-map.md)**, une bulle de 40 000 × 150 000 blocs aux régions fixes (centre, nord, ouest, sud, est), entourée de 10 000 blocs d'océan, puis le monde vanilla.
 
-![La carte Murim](images/murim-map-1.png)
-
 Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangshan, un site pour chacun des six autres) : voir [les structures Murim](../structures/README.md). Chaque fiche de biome décrit aussi, en maquettes voxel, d'autres structures prévues pour la suite.
-
-![Les sept biomes en jeu](images/biomes-en-jeu.jpg)
-
-![Les 72 textures du mod](images/blocs.png)
 
 ## Refonte du 14 octobre : le rendu « comme Minecraft »
 
@@ -27,8 +21,6 @@ Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangsh
 - **Jiangnan** (`WaterlandsFeature`) : les terres juste sous le niveau de la mer deviennent des champs à fleur d'eau, des canaux sinueux et des étangs peu profonds à fond de vase, avec çà et là le lac ouvert.
 - **Végétation par taches** (`noise_threshold_count`) : bosquets et clairières au lieu d'un semis uniforme.
 - **Sols.** Lœss nu sur la plus grande partie du plateau, sable et pavages de gravier du Gobi dans le désert, mousse et terre racinaire sur les pentes de la bambouseraie.
-
-![Maquettes des structures prévues](images/structures-prevues.jpg)
 
 | Biome (id) | Taille | Inspiration réelle | Fiche |
 |---|---|---|---|

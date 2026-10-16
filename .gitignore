@@ -42,3 +42,11 @@ CLAUDE.local.md
 ### Operating systems ###
 .DS_Store
 Thumbs.db
+
+# Renders, mock-ups and captures stay local: the docs keep only text (cleanup of 17 Oct).
+docs/**/*.gif
+docs/**/*.png
+docs/**/*.jpg
+docs/**/*.jpeg
+docs/**/*.webp
+docs/**/*.mp4
