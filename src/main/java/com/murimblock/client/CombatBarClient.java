@@ -94,9 +94,17 @@ public final class CombatBarClient {
         java.util.Arrays.fill(HELD, -1);
     }
 
-    /** Whether a technique is held to aim before it goes (Cloud Step Slash: its draw stance). */
+    /** Whether a technique is held before it goes (Cloud Step Slash: its draw stance) or while it lasts (the Spinning Rampart). */
     static boolean heldToAim(Optional<ResourceLocation> technique) {
-        return technique.filter(id -> id.equals(MartialArts.CLOUD_STEP_SLASH.id()) || id.equals(MartialArts.BLOOD_CRYSTAL.id())).isPresent();
+        return technique.filter(id -> id.equals(MartialArts.CLOUD_STEP_SLASH.id()) || id.equals(MartialArts.BLOOD_CRYSTAL.id())
+                || id.equals(MartialArts.SPINNING_RAMPART.id())).isPresent();
+    }
+
+    /** How long a held technique may be held before it goes (or stops) by itself. */
+    private static int maxHeld(Optional<ResourceLocation> technique) {
+        if (technique.filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent()) return MartialArts.BLOOD_CRYSTAL_MAX_CHARGE;
+        if (technique.filter(MartialArts.SPINNING_RAMPART.id()::equals).isPresent()) return MartialArts.RAMPART_MAX_TICKS;
+        return MartialArts.CLOUD_STEP_AIM_MAX_TICKS;
     }
 
     /**
@@ -126,7 +134,7 @@ public final class CombatBarClient {
                     HELD[i] = 0;
                     FIRED[i] = false;
                     PacketDistributor.sendToServer(new TechniquePayloads.Aim(i));
-                } else if (++HELD[i] >= (data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent() ? MartialArts.BLOOD_CRYSTAL_MAX_CHARGE : MartialArts.CLOUD_STEP_AIM_MAX_TICKS) && !FIRED[i]) {
+                } else if (++HELD[i] >= maxHeld(data.slot(i)) && !FIRED[i]) {
                     FIRED[i] = true;
                     // Blood Crystal reaches its maximum on the server; a second cast would only report cooldown.
                     if (!data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent())

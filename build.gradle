@@ -96,6 +96,24 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client film of the Traveller's Staff Art's animations (see StaffTour).
+        staffTour {
+            client()
+            gameDirectory = project.file('build/staff-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.staffTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the Traveller's Staff Art in play (see TravellerStaffTour).
+        travellerStaffTour {
+            client()
+            gameDirectory = project.file('build/traveller-staff-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.travellerStaffTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at the Crab King's lair, the Root Well (see CrabLairTour).
         crabLairTour {
             client()
@@ -443,6 +461,38 @@ tasks.named('runSiteTour').configure {
     doLast {
         def report = siteTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Site tour failed; see build/site-tour-run/site-tour-report.txt')
+    }
+}
+
+def staffTourSave = layout.buildDirectory.dir('staff-tour-run/saves/murim-staff')
+def staffTourReport = layout.buildDirectory.file('staff-tour-run/staff-tour-report.txt')
+def staffTourShots = layout.buildDirectory.dir('staff-tour-run/screenshots')
+tasks.named('runStaffTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only staff tour.')
+        staffTourSave.get().asFile.deleteDir()
+        staffTourShots.get().asFile.deleteDir()
+        staffTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = staffTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Staff tour failed; see build/staff-tour-run/staff-tour-report.txt')
+    }
+}
+
+def travellerStaffTourSave = layout.buildDirectory.dir('traveller-staff-tour-run/saves/murim-traveller-staff')
+def travellerStaffTourReport = layout.buildDirectory.file('traveller-staff-tour-run/traveller-staff-tour-report.txt')
+def travellerStaffTourShots = layout.buildDirectory.dir('traveller-staff-tour-run/screenshots')
+tasks.named('runTravellerStaffTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException("Use -PgameTests for the development-only Traveller's Staff tour.")
+        travellerStaffTourSave.get().asFile.deleteDir()
+        travellerStaffTourShots.get().asFile.deleteDir()
+        travellerStaffTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = travellerStaffTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException("Traveller's Staff tour failed; see build/traveller-staff-tour-run/traveller-staff-tour-report.txt")
     }
 }
 

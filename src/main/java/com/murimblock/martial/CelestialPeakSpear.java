@@ -56,10 +56,10 @@ public final class CelestialPeakSpear {
         return MartialService.data(player).mainArt().filter(MartialArts.CELESTIAL_PEAK_SPEAR::equals).isPresent();
     }
 
-    /** A spear in the main hand: an item Epic Fight fights with as a spear. */
+    /** A spear in the main hand: an item Epic Fight fights with as a spear (not the Traveller's Staff, which only does). */
     public static boolean holdsSpear(Player player) {
         ItemStack stack = player.getMainHandItem();
-        if (stack.isEmpty()) return false;
+        if (stack.isEmpty() || stack.is(com.murimblock.item.MurimItems.TRAVELLER_STAFF.get())) return false;
         CapabilityItem cap = EpicFightCapabilities.getItemStackCapability(stack);
         return cap != null && cap.getWeaponCategory() == CapabilityItem.WeaponCategories.SPEAR;
     }

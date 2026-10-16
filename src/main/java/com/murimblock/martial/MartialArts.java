@@ -184,6 +184,19 @@ public final class MartialArts {
     public static final Evolution PLUM_RAIN = new Evolution(PLUM_BLOSSOM_THRUSTS.id(), 60, "evolution.murimblock.plum_rain");
     public static final Evolution TEN_THOUSAND_SWEEP = new Evolution(THOUSAND_SOLDIER_SWEEP.id(), 90, "evolution.murimblock.sweep_of_ten_thousand");
 
+    // ---------------------------------------------------------------- the Traveller's Staff Art (docs/combat/styles/traveller-staff.md)
+
+    /** The staff held in both hands (Enzo's design sheet, 16/10/2026): pressure at close quarters and a guard in front. */
+    public static final ResourceLocation TRAVELLER_STAFF = id("traveller_staff");
+    public static final Technique VERTICAL_STRIKE = new Technique(id("vertical_strike"), TRAVELLER_STAFF, 12, 120);
+    public static final Technique POINT_FLURRY = new Technique(id("point_flurry"), TRAVELLER_STAFF, 18, 180);
+    /** Held: 10 Qi to start, then 5 a second, 3 s at most; its 12 s cooldown runs from its end. */
+    public static final Technique SPINNING_RAMPART = new Technique(id("spinning_rampart"), TRAVELLER_STAFF, 10, 240);
+    public static final double RAMPART_QI_PER_SECOND = 5;
+    public static final int RAMPART_MAX_TICKS = 60;
+    /** Its passive keeps Epic Fight's strikes; the third of a chain strikes twice as hard. */
+    public static final Passive THIRD_RESONANCE = new Passive(id("third_resonance"), List.of(), List.of());
+
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     /**
@@ -232,6 +245,8 @@ public final class MartialArts {
                 List.of(TIGER_LEAP, HUNDRED_FISTS, TORNADO_KICK)));
         add(new Art(CELESTIAL_PEAK_SPEAR, List.of(PIERCING_DRAGON, PLUM_BLOSSOM_THRUSTS, THOUSAND_SOLDIER_SWEEP),
                 LONG_REACH, List.of(FIRST_LINE, HOLD_THE_DISTANCE), List.of(SOARING_DRAGON, PLUM_RAIN, TEN_THOUSAND_SWEEP)));
+        // No quests, secret nor evolutions defined yet: the scroll teaches all three techniques.
+        add(new Art(TRAVELLER_STAFF, List.of(VERTICAL_STRIKE, POINT_FLURRY, SPINNING_RAMPART), THIRD_RESONANCE, List.of(), List.of()));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }

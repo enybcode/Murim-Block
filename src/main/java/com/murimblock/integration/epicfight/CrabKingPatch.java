@@ -27,7 +27,10 @@ import java.util.Set;
  *   squeezed and thrown (CrabKingEntity);</li>
  *   <li>the pincer from the deep, from 4 to 14 blocks (his reach at a distance), with a 15 s cooldown: a giant pincer out
  *   of the ground sweeps, strikes to its side and pinches toward his target (CrabPincerEntity); he holds his own
- *   plunged meanwhile.</li>
+ *   plunged meanwhile;</li>
+ *   <li>the mist, within 12 blocks, with a 25 s cooldown: he breathes a thick mist round him and is gone into it, until
+ *   he strikes or is struck (CrabKingEntity, CrabMistEntity). Gone into it, the grab is all he can do (Enzo, 16/10),
+ *   at once, whatever its cooldown: he stalks unseen and comes out of the mist with it.</li>
  * </ul>
  * He walks and chases with his own heavy walk.
  * The crab art's techniques will join them when the art is made (docs/mobs/crab-king.md).
@@ -42,7 +45,16 @@ public class CrabKingPatch extends HumanoidMobPatch<CrabKingEntity> {
     }
 
     private static CombatBehaviors.Behavior.Builder<HumanoidMobPatch<?>> move(AnimationAccessor<? extends StaticAnimation> animation, double min, double max) {
-        return CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder().animationBehavior(animation).withinEyeHeight().withinDistance(min, max);
+        return seen(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder().animationBehavior(animation).withinEyeHeight().withinDistance(min, max));
+    }
+
+    /** Only while he is seen: gone into his mist, he can but grab. */
+    private static CombatBehaviors.Behavior.Builder<HumanoidMobPatch<?>> seen(CombatBehaviors.Behavior.Builder<HumanoidMobPatch<?>> behavior) {
+        return behavior.custom(patch -> !hidden(patch));
+    }
+
+    private static boolean hidden(HumanoidMobPatch<?> patch) {
+        return patch.getOriginal() instanceof CrabKingEntity king && king.isHidden();
     }
 
     private static CombatBehaviors.Builder<HumanoidMobPatch<?>> pincers() {
@@ -51,8 +63,13 @@ public class CrabKingPatch extends HumanoidMobPatch<CrabKingEntity> {
                 .newBehaviorSeries(series(7.0F, 50).nextBehavior(move(CrabKingAnimations.SNAP, 2.0D, 5.8D)))
                 .newBehaviorSeries(series(6.0F, 160).nextBehavior(move(CrabKingAnimations.SLAM, 0.0D, 4.8D)))
                 .newBehaviorSeries(series(6.0F, 220).nextBehavior(move(CrabKingAnimations.GRAB, 1.5D, 5.0D)))
-                .newBehaviorSeries(series(8.0F, 300).nextBehavior(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
-                        .animationBehavior(CrabKingAnimations.BURROW).withinDistance(4.0D, 14.0D)));
+                .newBehaviorSeries(series(8.0F, 300).nextBehavior(seen(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
+                        .animationBehavior(CrabKingAnimations.BURROW).withinDistance(4.0D, 14.0D))))
+                .newBehaviorSeries(series(5.0F, 500).nextBehavior(seen(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
+                        .animationBehavior(CrabKingAnimations.MIST).withinDistance(0.0D, 12.0D))))
+                // Out of his mist: the grab, the moment he is near enough.
+                .newBehaviorSeries(series(100.0F, 0).nextBehavior(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
+                        .animationBehavior(CrabKingAnimations.GRAB).withinEyeHeight().withinDistance(1.5D, 5.0D).custom(CrabKingPatch::hidden)));
     }
 
     @Override

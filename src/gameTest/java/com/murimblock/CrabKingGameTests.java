@@ -340,6 +340,98 @@ public final class CrabKingGameTests {
         });
     }
 
+    /** The mist played as in a fight: it bursts out of him, he is gone into it; struck, he is seen again. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_mist", timeoutTicks = 80)
+    public static void inHisMistHeIsUnseenUntilStruck(GameTestHelper helper) {
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 2));
+        king.setNoAi(true);
+        helper.runAfterDelay(2, () -> EpicFightCapabilities.getEntityPatch(king, LivingEntityPatch.class).playAnimationSynchronized(CrabKingAnimations.MIST, 0));
+        // 1.2 s in (24 ticks), gone.
+        helper.runAfterDelay(32, () -> {
+            var mists = helper.getLevel().getEntitiesOfClass(com.murimblock.mob.CrabMistEntity.class, king.getBoundingBox().inflate(4));
+            helper.assertTrue(mists.size() == 1, "No mist burst out of him: " + mists.size());
+            helper.assertTrue(king.isHidden() && king.isInvisible(), "He is not gone into his mist");
+            king.hurt(helper.getLevel().damageSources().generic(), 2);
+            helper.assertTrue(!king.isHidden() && !king.isInvisible(), "Struck, he is still unseen");
+            mists.forEach(net.minecraft.world.entity.Entity::discard);
+            king.discard();
+            helper.succeed();
+        });
+    }
+
+    /** Gone into his mist, the grab is all he does: hidden near a player, he grabs him and comes out of the mist. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_mist_grab", timeoutTicks = 200)
+    public static void inHisMistHeCanButGrab(GameTestHelper helper) {
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 2));
+        net.minecraft.world.entity.monster.Zombie prey = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 5));
+        prey.setNoAi(true);
+        java.util.Set<Object> played = new java.util.HashSet<>();
+        helper.runAfterDelay(2, () -> {
+            king.breatheMist(helper.getLevel());
+            king.hide(helper.getLevel());
+            king.setTarget(prey);
+        });
+        helper.onEachTick(() -> {
+            var main = EpicFightCapabilities.getEntityPatch(king, LivingEntityPatch.class).getAnimator().getPlayerFor(null);
+            if (main == null || main.isEnd()) return;
+            var anim = main.getRealAnimation();
+            if (anim == CrabKingAnimations.SWEEP || anim == CrabKingAnimations.SNAP || anim == CrabKingAnimations.SLAM
+                    || anim == CrabKingAnimations.BURROW || anim == CrabKingAnimations.MIST) helper.fail("Hidden, he played " + anim);
+            if (anim == CrabKingAnimations.GRAB && !played.contains("grab")) {
+                played.add("grab");
+                // Out of the mist as the grab begins (on his own tick).
+                helper.runAfterDelay(2, () -> {
+                    helper.assertTrue(!king.isHidden() && !king.isInvisible(), "He grabs and stays unseen");
+                    helper.getLevel().getEntitiesOfClass(com.murimblock.mob.CrabMistEntity.class, king.getBoundingBox().inflate(4)).forEach(net.minecraft.world.entity.Entity::discard);
+                    king.discard();
+                    prey.discard();
+                    helper.succeed();
+                });
+            }
+        });
+    }
+
+    /** In his lair, his mist fills the whole cavern: thick by its far wall, from the floor up to its vault. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_mist_lair", timeoutTicks = 80)
+    public static void inHisLairHisMistFillsTheWholeArena(GameTestHelper helper) {
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 2));
+        king.setNoAi(true);
+        BlockPos home = helper.absolutePos(new BlockPos(0, 0, 0));
+        king.setLair(home);
+        helper.runAfterDelay(2, () -> king.breatheMist(helper.getLevel()));
+        helper.runAfterDelay(2 + com.murimblock.mob.CrabMistEntity.FADE + 2, () -> {
+            var mists = helper.getLevel().getEntitiesOfClass(com.murimblock.mob.CrabMistEntity.class, new net.minecraft.world.phys.AABB(home).inflate(4));
+            helper.assertTrue(mists.size() == 1, "No mist on his lair: " + mists.size());
+            var mist = mists.get(0);
+            int r = com.murimblock.world.structure.CrabLairBuilder.RADIUS;
+            var c = net.minecraft.world.phys.Vec3.atBottomCenterOf(home);
+            helper.assertTrue(mist.densityAt(c.add(r - 4, 1, 0), 0) > 0.9F, "Thin by the far wall: " + mist.densityAt(c.add(r - 4, 1, 0), 0));
+            helper.assertTrue(mist.densityAt(c.add(0, 1, -(r - 4)), 0) > 0.9F, "Thin by the other wall");
+            helper.assertTrue(mist.densityAt(c.add(0, 30, 0), 0) > 0.9F, "Thin up under the vault");
+            helper.assertTrue(mist.densityAt(c.add(r + 6, 1, 0), 0) == 0, "It spills out of the cavern");
+            mists.forEach(net.minecraft.world.entity.Entity::discard);
+            king.discard();
+            helper.succeed();
+        });
+    }
+
+    /** Gone into his mist, he is seen again when it thins out. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_mist_ends", timeoutTicks = 260)
+    public static void heIsSeenAgainWhenHisMistThins(GameTestHelper helper) {
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 2));
+        king.setNoAi(true);
+        helper.runAfterDelay(2, () -> {
+            king.breatheMist(helper.getLevel());
+            king.hide(helper.getLevel());
+            helper.assertTrue(king.isInvisible(), "He is not hidden");
+        });
+        helper.runAfterDelay(2 + com.murimblock.mob.CrabMistEntity.LIFETIME - com.murimblock.mob.CrabMistEntity.FADE + 4, () -> {
+            helper.assertTrue(!king.isInvisible(), "He stays unseen as his mist thins");
+            king.discard();
+            helper.succeed();
+        });
+    }
+
     /** Nothing before him: the pincer shuts on air. */
     @GameTest(template = "foundation_arena", batch = "crab_king_grab_miss")
     public static void theGrabCatchesNothingOutOfReach(GameTestHelper helper) {

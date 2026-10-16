@@ -186,6 +186,14 @@ public final class MurimItems {
      * Epic Fight (data/murimblock/capabilities/weapons/crimson_dragon_spear.json), stronger than the soldiers': 7 damage.
      * He leaves it now and then (loot_table/entities/peak_captain.json). Model from scripts/animation/crimson-dragon-spear-model.cjs.
      */
+    /**
+     * The Traveller's Staff (行者棍), the Traveller's Staff Art's weapon (Enzo's design sheet, 16/10/2026): a plain staff of
+     * pale ash, two blocks long, iron ferrules, a red cord at its middle. A spear for Epic Fight
+     * (data/murimblock/capabilities/weapons/traveller_staff.json), held at its middle; the art's animations slide it
+     * through the hands (scripts/animation/staff-art.cjs). Model from scripts/animation/traveller-staff-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> TRAVELLER_STAFF = ITEMS.register("traveller_staff",
+            () -> new SwordItem(Tiers.WOOD, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.WOOD, 3, -2.6F))));
     public static final DeferredItem<SwordItem> CRIMSON_DRAGON_SPEAR = ITEMS.register("crimson_dragon_spear",
             () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.8F))));
 

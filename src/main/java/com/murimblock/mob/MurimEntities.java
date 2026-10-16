@@ -86,6 +86,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<QiBladeEntity>> QI_BLADE =
             TYPES.register("qi_blade", () -> EntityType.Builder.<QiBladeEntity>of(QiBladeEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F).clientTrackingRange(6).updateInterval(1).build("murimblock:qi_blade"));
+    /** The Crab King's mist (CrabMistEntity): a cloud round where he breathed it; no model, no box to speak of. */
+    public static final DeferredHolder<EntityType<?>, EntityType<CrabMistEntity>> CRAB_MIST =
+            TYPES.register("crab_mist", () -> EntityType.Builder.<CrabMistEntity>of(CrabMistEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F).clientTrackingRange(10).updateInterval(20).build("murimblock:crab_mist"));
     /** The giant pincer the Crab King calls out of the ground (CrabPincerEntity): some seven blocks tall. */
     public static final DeferredHolder<EntityType<?>, EntityType<CrabPincerEntity>> CRAB_PINCER =
             TYPES.register("crab_pincer", () -> EntityType.Builder.<CrabPincerEntity>of(CrabPincerEntity::new, MobCategory.MISC)

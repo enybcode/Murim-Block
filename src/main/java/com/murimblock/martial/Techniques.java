@@ -8,7 +8,8 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 /**
  * What each technique does, through Epic Fight: the technique plays its attack animation, whose own colliders deal the
  * damage (no second damage loop). Checks that do not depend on the technique are in {@link MartialService#castSlot};
- * each art's techniques and their variants are in its own class ({@link AzureCloudSword}, {@link LongFist}).
+ * each art's techniques and their variants are in its own class ({@link AzureCloudSword}, {@link LongFist},
+ * {@link TravellerStaff}...).
  */
 final class Techniques {
     private Techniques() {
@@ -20,6 +21,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.bareHanded(player);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.bareHanded(player);
         if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.holdsSpear(player);
+        if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.holdsStaff(player);
         return true;
     }
 
@@ -36,6 +38,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.perform(player, patch, technique);
         return false;
     }
 }

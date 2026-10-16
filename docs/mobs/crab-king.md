@@ -80,6 +80,15 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   sombre à chaque jointure ; chaque mouvement se répartit sur les jointures, chacune un peu en retard sur celle d'en
   dessous, si bien que le bras se courbe en se couchant, en frappant, et la paume s'enroule en pinçant.
   Ses coups sont ceux du roi : une garde levée à temps les pare ; ni le roi, ni ses crabes ne sont touchés.
+- **Brume** (16/10, demandes d'Enzo ; `crab_king_mist`, à moins de 12 blocs, recharge 25 s) : voûté, les pinces
+  croisées devant la face, la carapace qui se soulève, puis les bras jetés grands ouverts (0,75 s) : une brume épaisse
+  jaillit de lui (`CrabMistEntity`, 12 s, s'épaissit puis s'éclaircit sur 1,5 s) : **dans son antre, elle remplit toute
+  l'arène** (toute la grotte, du sol à la voûte, 46 blocs de rayon ; l'antre est retenu par le roi, `Lair` dans sa
+  sauvegarde, ou retrouvé par `CrabLairPlacement`), ailleurs 11 blocs de rayon autour de lui et il **disparaît
+  dedans** (1,2 s) : invisible comme toute chose invisible (ni modèle, ni ombre, ni nom), ses pas s'entendent encore.
+  Dedans, la vue des joueurs se ferme à 7 blocs de gris (`client/CrabMistClient`). **Caché, il ne peut que lancer sa
+  prise**, aussitôt à portée et quelle que soit sa recharge : il rôde sans être vu et sort de la brume en attrapant. Il
+  reparaît quand il attaque, quand on le frappe ou quand la brume s'éclaircit. Jamais sauvegardée : rechargé, il se voit.
 - **Rage** : sous la moitié de sa vie, une seule fois (sauvegardé), il rugit (`crab_king_roar`) et deux crabes cuirassés
   sortent du sol à ses côtés, sur sa cible.
 - Un crabe : il respire sous l'eau (tag `minecraft:can_breathe_under_water`) et va plus vite dans l'eau.
@@ -103,6 +112,7 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   `art/blockbench/crab_king_moves.bbmodel`) ;
 - `scripts/animation/mesh-preview.cjs crab_king` : rendu du mesh tel qu'écrit, au repos (`images/crab_king-*.png`) ;
 - Java : `mob/CrabKingEntity`, `integration/epicfight/CrabKingPatch`, `CrabKingAnimations`, `client/CrabKingRenderer` ;
+  la brume `mob/CrabMistEntity`, `client/CrabMistClient` ;
   butin `loot_table/entities/crab_king.json`.
 
 ## Vérification
@@ -112,7 +122,9 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   les mâchoires, soulève, jette, la victime atterrit blessée), le cratère dans un mur de pierre, la prise dans le vide,
   un joueur tenu qui ne peut rien faire (entravé, verrous d'Epic Fight, technique refusée, attaque annulée) jusqu'à
   l'atterrissage, et libéré à la mort du boss ; les deux pinces des profondeurs (de part et d'autre de la cible, la
-  seconde après la première, toutes deux la pinçant) ; les trois coups d'une pince géante, chacun sur son zombie ; il se bat avec ses pinces et touche.
+  seconde après la première, toutes deux la pinçant) ; les trois coups d'une pince géante, chacun sur son zombie ; la brume
+  (remplit l'antre jusqu'à ses parois et sa voûte, sans en déborder ; il y disparaît, reparaît frappé ou quand elle s'éclaircit ; caché, il ne fait que sa prise et en sort visible) ; il se bat avec ses pinces et touche.
 - En vrai client : `MURIM_TOUR_ONLY=king gradlew -PgameTests runWeaponTour` (debout de chaque côté, idle, marche, ses trois
   attaques, sa prise sur un zombie du désert jeté dans un mur (cratère), ses pinces des profondeurs sur un zombie du désert (plan large), la même vue par le joueur attrapé (`king-grab-pov` :
-  le joueur de la caméra lui-même, en survie, protégé des dégâts), son rugissement, sa mort).
+  le joueur de la caméra lui-même, en survie, protégé des dégâts), son rugissement, sa brume vue de dehors puis de dedans (`king-mist`, joueur de la caméra en créatif : un spectateur
+  voit les invisibles), sa mort).

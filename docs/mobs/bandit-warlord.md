@@ -72,7 +72,7 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
   fumée ; il tombe environ 3 s. Intouchable pendant la chute et l'atterrissage. À l'impact : explosion, flammes, poussière,
   tonnerre ; tout ce qui est à 10 blocs est **projeté** (sans dégâts : on ne pouvait pas l'éviter) ; il atterrit poing au
   sol, se relève et rugit (2,8 s), puis le combat commence. Le **cratère** se creuse à l'impact.
-- **La cinématique** (`client/WarlordCinematic`, protocole réseau 20), pour les joueurs du camp, environ 9 s, sans
+- **La cinématique** (`client/WarlordCinematic`, protocole réseau 21), pour les joueurs du camp, environ 9 s, sans
   bouger ni être touchés (Résistance V et Chute lente) : le tambour de près, la caméra qui monte vers le ciel, un point
   rouge qui grossit, puis **la caméra descend avec lui, juste au-dessus de son épaule, le camp qui fonce vers lui**
   (Enzo : « un vrai gros plan, vu d'en haut, comme la météorite de One Punch Man »), le flash blanc et la secousse de
