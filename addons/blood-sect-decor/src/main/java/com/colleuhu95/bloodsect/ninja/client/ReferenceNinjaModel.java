@@ -101,8 +101,51 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
         return new Vector3f(-hip.x,12+p.crouch()-hip.y,-hip.z);
     }
 
+    /**
+     * The hand, from the forearm's pivot: Murimblock's cultist has forearms of full length (the hand 10 pixels below the
+     * shoulder), the imported ninja shorter ones (ReferenceNinjaGeometry.HAND_OFFSET_Y).
+     */
+    private static float handOffsetY() {
+        return CultistMesh.get() != null ? -3.8F : ReferenceNinjaGeometry.HAND_OFFSET_Y;
+    }
+
+    /**
+     * Draws the Blood Cultist's look (CultistMesh) on this model's parts, posed as they are: the cloth with `armour` 0, or
+     * one of the four armours (1 to 4). Head and arms follow the body, as in the ninja's own render.
+     */
+    public void renderCultist(CultistMesh mesh, int armour, PoseStack stack, VertexConsumer buffer, int light, int overlay, int color) {
+        java.util.function.Function<String, float[][]> quads = part -> armour == 0 ? mesh.part(part) : mesh.armour(armour, part);
+        stack.pushPose();
+        this.body.translateAndRotate(stack);
+        CultistMesh.draw(quads.apply("body"), stack, buffer, light, overlay, color);
+        stack.pushPose();
+        this.head.translateAndRotate(stack);
+        CultistMesh.draw(quads.apply("head"), stack, buffer, light, overlay, color);
+        stack.popPose();
+        limb(quads, "right_arm", this.rightArm, "right_forearm", this.rightForearm, stack, buffer, light, overlay, color);
+        limb(quads, "left_arm", this.leftArm, "left_forearm", this.leftForearm, stack, buffer, light, overlay, color);
+        stack.popPose();
+        limb(quads, "right_leg", this.rightLeg, "right_shin", this.rightShin, stack, buffer, light, overlay, color);
+        limb(quads, "left_leg", this.leftLeg, "left_shin", this.leftShin, stack, buffer, light, overlay, color);
+    }
+
+    private static void limb(java.util.function.Function<String, float[][]> quads, String upper, ModelPart upperPart, String lower, ModelPart lowerPart,
+                             PoseStack stack, VertexConsumer buffer, int light, int overlay, int color) {
+        stack.pushPose();
+        upperPart.translateAndRotate(stack);
+        CultistMesh.draw(quads.apply(upper), stack, buffer, light, overlay, color);
+        lowerPart.translateAndRotate(stack);
+        CultistMesh.draw(quads.apply(lower), stack, buffer, light, overlay, color);
+        stack.popPose();
+    }
+
     @Override
     public void renderToBuffer(PoseStack stack, VertexConsumer buffer, int light, int overlay, int color) {
+        CultistMesh mesh = CultistMesh.get();
+        if (mesh != null) {
+            renderCultist(mesh, 0, stack, buffer, light, overlay, color);
+            return;
+        }
         this.body.render(stack, buffer, light, overlay, color);
         stack.pushPose();
         this.body.translateAndRotate(stack);
@@ -120,7 +163,7 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
         this.getArm(side).translateAndRotate(stack);
         (side == HumanoidArm.RIGHT ? this.rightForearm : this.leftForearm).translateAndRotate(stack);
         // Keep the grip aligned with the imported shorter forearm and unchanged hand.
-        stack.translate(side == HumanoidArm.RIGHT ? .0625F : -.0625F, ReferenceNinjaGeometry.HAND_OFFSET_Y / 16, 1.8F / 16);
+        stack.translate(side == HumanoidArm.RIGHT ? .0625F : -.0625F, handOffsetY() / 16, 1.8F / 16);
     }
 
     /** Evaluate an earlier hand pose without mutating the live model, for the blade's swept ribbon. */
@@ -131,7 +174,7 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
         stack.mulPose(new Quaternionf().rotationZYX(0,cut.torsoY()*Mth.DEG_TO_RAD,cut.torsoX()*Mth.DEG_TO_RAD));
         translatePart(stack, this.rightArm, cut.armX()*Mth.DEG_TO_RAD, cut.armY()*Mth.DEG_TO_RAD, cut.armZ()*Mth.DEG_TO_RAD);
         translatePart(stack, this.rightForearm, cut.elbowX()*Mth.DEG_TO_RAD, 0, 0);
-        stack.translate(.0625F, ReferenceNinjaGeometry.HAND_OFFSET_Y/16, 1.8F/16);
+        stack.translate(.0625F, handOffsetY()/16, 1.8F/16);
     }
 
     private static void translatePart(PoseStack stack, ModelPart part, float x, float y, float z) {

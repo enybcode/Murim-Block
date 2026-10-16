@@ -7,6 +7,13 @@ inclus dans le build du mod principal Murimblock.
 
 ## Contenu
 
+- **Apparence (16/10/2026, demande d'Enzo)** : le ninja porte le modèle des **cultistes de sang** de Murimblock.
+  Chaque ninja tire à l'apparition un rang parmi 5 (acolyte, disciple, zélote, lieur de sang, ancien) et une armure
+  légère parmi 4, ou aucune : une épaulière unique, une brigandine, des calottes de fer, des lamelles. Le tirage est
+  sauvegardé (`Outfit`, `Armour`). Les quads sont dessinés sur les parties du modèle existant
+  (`ReferenceNinjaModel`, `CultistMesh`, `CultistArmourLayer`), donc les poses et attaques ne changent pas. Fichiers
+  générés par `scripts/animation/blood-cultist-addon.cjs` à la racine du dépôt ; projets Blockbench
+  `art/blockbench/blood_cultist.bbmodel` et `blood_cult_armor_*.bbmodel`. Sans ces fichiers, l'ancien modèle reste.
 - **Blood Ninja** : 24 PV, patrouille autour de son poste, poursuit les joueurs
   en survie puis revient ; ignore les joueurs créatifs et spectateurs.
 - **Blood Dao** réservé au ninja, avec M1 diagonal animé, traînée et gouttes de sang.
@@ -41,7 +48,7 @@ Les classes et mondes du harnais restent dans les dossiers de développement ;
 ne pas installer un JAR de test ni un JAR contenant `src/gameTest`.
 
 Les tours graphiques facultatifs se lancent avec le même `-p` et
-`-PgameTests runCloudStepTour` ou `-PgameTests runDaoM1Tour`.
+`-PgameTests runCloudStepTour`, `-PgameTests runDaoM1Tour` ou `-PgameTests runCultistLookTour` (les 5 rangs et leurs armures).
 Le client normal utilise `-p addons/blood-sect-decor runClient`, sans `-PgameTests`.
 
 ## Installation de test

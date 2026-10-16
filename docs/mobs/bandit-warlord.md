@@ -108,6 +108,10 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 >
 > `node scripts/concepts/render-warlord-sky-arena.cjs --port=<Blockbench isolé>` (voxels : `warlord-sky-arena.js`) rend
 > les vues en PNG dans `images/warlord-sky-arena/` ; celles de cette fiche sont passées en JPEG.
+>
+> **Ces images sont la maquette.** Le modèle réel à construire, en vrais blocs, est
+> [`art/structures/warlord-sky-arena/warlord_sky_arena.schem`](../../art/structures/warlord-sky-arena/README.md)
+> (WorldEdit Sponge v3, blocs vanilla), généré par `node scripts/worldgen/warlord-sky-arena.cjs`.
 
 ![Le météore creusé au-dessus de la mer de nuages](images/warlord-sky-arena/overview.jpg)
 
@@ -115,7 +119,7 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
   lave qui rougeoie ; dessous, un cône rugueux d'où pendent des coulées de roche en fusion. Des blocs arrachés par la
   chute dérivent autour. Très loin dessous, une mer de nuages.
 - **Creusé en cuvette** : un **sol de combat plat de près de 100 blocs de large** (rayon 48), pour ses gros coups de
-  zone, puis des **parois qui montent de 40 blocs** jusqu'au bord (rayon 72). On voit tout le combat depuis le fond, et
+  zone, puis des **parois qui montent d'environ 40 blocs** (26 à 47 selon l'endroit) jusqu'au bord (rayon 72). On voit tout le combat depuis le fond, et
   personne ne peut se cacher derrière quoi que ce soit : seuls quelques rochers bas sont épars sur le sol.
 - **Au centre, la cicatrice de son atterrissage** : obsidienne et lave, et **14 fissures rougeoyantes** qui en
   rayonnent sur le sol.

@@ -30,6 +30,14 @@ neoForge {
             systemProperty 'bloodsect.daoM1Tour', 'true'
             disableIdeRun()
         }
+        cultistLookTour {
+            client()
+            sourceSet = sourceSets.gameTest
+            gameDirectory = project.file('build/cultist-look-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.cultistLookTour', 'true'
+            disableIdeRun()
+        }
         gameTestServer {
             type = 'gameTestServer'
             sourceSet = sourceSets.gameTest

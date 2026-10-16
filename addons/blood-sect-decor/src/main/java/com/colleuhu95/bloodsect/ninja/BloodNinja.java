@@ -31,6 +31,13 @@ public final class BloodNinja extends Monster {
     private static final EntityDataAccessor<Long> DAO_START = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Float> DAO_YAW = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DAO_KIND = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.INT);
+    /** The cultist's look (Murimblock's model, scripts/animation/blood-cultist-addon.cjs): its rank's outfit, its armour. */
+    private static final EntityDataAccessor<Integer> OUTFIT = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> ARMOUR = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.INT);
+    /** Acolyte, disciple, zealot, bloodbinder, elder. */
+    public static final int OUTFITS = 5;
+    /** None, then the four light armours: a single pad, a brigandine, iron caps, lamellae. */
+    public static final int ARMOURS = 5;
     private BlockPos guardPost;
     private final BloodStepAttack bloodStep = new BloodStepAttack(this);
     private final BloodDaoM1Attack daoM1 = new BloodDaoM1Attack(this);
@@ -50,6 +57,8 @@ public final class BloodNinja extends Monster {
         builder.define(DAO_START, -1L);
         builder.define(DAO_YAW, 0F);
         builder.define(DAO_KIND, DaoAttackMotion.CLOUD_STEP);
+        builder.define(OUTFIT, 0);
+        builder.define(ARMOUR, 0);
     }
 
     public float getDaoAttackAge(float partial) {
@@ -58,6 +67,21 @@ public final class BloodNinja extends Monster {
     }
 
     public int getDaoAttackVariant() { return entityData.get(DAO_KIND); }
+    public int getOutfit() { return Math.floorMod(entityData.get(OUTFIT), OUTFITS); }
+    /** 0 for none, 1 to 4 for the four armours. */
+    public int getArmour() { return Math.floorMod(entityData.get(ARMOUR), ARMOURS); }
+    public void setLook(int outfit, int armour) {
+        entityData.set(OUTFIT, Math.floorMod(outfit, OUTFITS));
+        entityData.set(ARMOUR, Math.floorMod(armour, ARMOURS));
+    }
+
+    /** A new cultist draws its rank's outfit and its armour (or none), like the bandits their outfits. */
+    @Override
+    public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(net.minecraft.world.level.ServerLevelAccessor level, net.minecraft.world.DifficultyInstance difficulty,
+            net.minecraft.world.entity.MobSpawnType reason, net.minecraft.world.entity.SpawnGroupData data) {
+        setLook(this.random.nextInt(OUTFITS), this.random.nextInt(ARMOURS));
+        return super.finalizeSpawn(level, difficulty, reason, data);
+    }
     public float getDaoYaw() { return entityData.get(DAO_YAW); }
     public boolean isDaoAttacking() { return getDaoAttackAge(0) < DaoAttackMotion.duration(getDaoAttackVariant()); }
     public float getDrainAge(float partial) { return level().getGameTime()-lastDrainTime+partial; }
@@ -161,6 +185,8 @@ public final class BloodNinja extends Monster {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putLong("GuardPost", this.getGuardPost().asLong());
+        tag.putInt("Outfit", getOutfit());
+        tag.putInt("Armour", getArmour());
     }
 
     @Override
@@ -173,6 +199,7 @@ public final class BloodNinja extends Monster {
         this.bloodStep.reset();
         this.daoM1.reset();
         if (tag.contains("GuardPost", Tag.TAG_LONG)) this.setGuardPost(BlockPos.of(tag.getLong("GuardPost")));
+        setLook(tag.getInt("Outfit"), tag.getInt("Armour"));
     }
 
     @Override protected SoundEvent getHurtSound(DamageSource source) { return SoundEvents.PLAYER_HURT; }

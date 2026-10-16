@@ -1,0 +1,144 @@
+{
+  "file": "warlord_sky_arena.schem",
+  "format": "Sponge v3",
+  "minecraft": "1.21.1",
+  "data_version": 3955,
+  "size": [
+    195,
+    173,
+    206
+  ],
+  "minimum": [
+    -98,
+    -116,
+    -103
+  ],
+  "maximum": [
+    96,
+    56,
+    102
+  ],
+  "paste_point": "middle of the fighting floor, standing on it (0, 1, 0)",
+  "non_air": 1475855,
+  "air": 5473555,
+  "palette_states": 15,
+  "blocks": {
+    "minecraft:magma_block": 3808,
+    "minecraft:blackstone": 37435,
+    "minecraft:basalt[axis=y]": 1413234,
+    "minecraft:tuff": 9662,
+    "minecraft:smooth_basalt": 11016,
+    "minecraft:obsidian": 181,
+    "minecraft:crying_obsidian": 15,
+    "minecraft:polished_blackstone": 36,
+    "minecraft:waxed_cut_copper": 96,
+    "minecraft:netherrack": 12,
+    "minecraft:fire[age=0,east=false,north=false,south=false,up=false,west=false]": 12,
+    "minecraft:dark_oak_log[axis=y]": 30,
+    "minecraft:gold_block": 48,
+    "minecraft:purple_wool": 270
+  },
+  "bytes": 138101,
+  "sha256": "f713d22df8d8f76dc16b3c213b3186f26e473314899dddb6ac566e47c826ba03",
+  "targets": {
+    "Fighting floor middle (the scar)": [
+      0,
+      1,
+      0
+    ],
+    "Braziers": [
+      [
+        44,
+        1,
+        12
+      ],
+      [
+        33,
+        1,
+        33
+      ],
+      [
+        12,
+        1,
+        44
+      ],
+      [
+        -12,
+        1,
+        44
+      ],
+      [
+        -33,
+        1,
+        33
+      ],
+      [
+        -44,
+        1,
+        12
+      ],
+      [
+        -44,
+        1,
+        -12
+      ],
+      [
+        -33,
+        1,
+        -33
+      ],
+      [
+        -12,
+        1,
+        -44
+      ],
+      [
+        12,
+        1,
+        -44
+      ],
+      [
+        33,
+        1,
+        -33
+      ],
+      [
+        44,
+        1,
+        -12
+      ]
+    ],
+    "Banners": [
+      [
+        70,
+        37,
+        0
+      ],
+      [
+        35,
+        34,
+        61
+      ],
+      [
+        -35,
+        36,
+        61
+      ],
+      [
+        -70,
+        35,
+        0
+      ],
+      [
+        -35,
+        36,
+        -61
+      ],
+      [
+        35,
+        36,
+        -61
+      ]
+    ]
+  }
+}
