@@ -163,6 +163,8 @@ public final class MurimItems {
     public static final DeferredItem<Item> CASH_STRING = ITEMS.register("cash_string", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SILVER_TAEL = ITEMS.register("silver_tael", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_DRAGON_SAGE, 0x1F7A58, 0xF0C24A, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
     /** The Alliance's soldiers' eggs, in azure, each with its own second colour. */
@@ -286,6 +288,7 @@ public final class MurimItems {
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
+                        output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SPEAR_GUARD_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG.get());
                         output.accept(ALLIANCE_ARCHER_SPAWN_EGG.get());

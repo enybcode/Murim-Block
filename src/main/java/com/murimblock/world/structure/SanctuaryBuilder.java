@@ -78,6 +78,14 @@ public final class SanctuaryBuilder {
     static final int LIBRARY_LECTERN_X = 13, LIBRARY_LECTERN_Z = 1;
 
     /** The library's lectern of a sanctuary built on this centre (at its base) with this summit. */
+    /**
+     * Where the Golden Dragon in human form sits (GoldenDragonSageEntity): on the red carpet of the main hall, the block
+     * before the altar, facing the doors (south).
+     */
+    public static BlockPos sageSeat(BlockPos centre, int top) {
+        return new BlockPos(centre.getX(), top + 3, centre.getZ() - 11);
+    }
+
     public static BlockPos libraryLectern(BlockPos centre, int top) {
         return new BlockPos(centre.getX() + LIBRARY_LECTERN_X, top + 2, centre.getZ() + LIBRARY_LECTERN_Z);
     }
