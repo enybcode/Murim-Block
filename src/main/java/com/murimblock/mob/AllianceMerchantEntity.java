@@ -46,12 +46,19 @@ import org.jetbrains.annotations.Nullable;
  * where he was placed and never despawns. Not spawned in the world yet: a spawn egg and /summon, until the Alliance's
  * capital has its market.
  * <p>His wares are fixed (see {@link #wares()}): the Alliance's weapons, pills and healing, the Long Fist scroll, and at
- * {@link #PENDANT_PRICE} taels apiece the locator pendants that point to each kind of structure; and he
+ * {@link #PENDANT_PRICE} taels apiece the locator pendants that point to each kind of structure, and the sect's token
+ * that points to the sanctuary for a fortune ({@link #SECT_TOKEN_TAELS} taels and {@link #SECT_TOKEN_GOLD_BLOCKS} blocks
+ * of gold); and he
  * buys the spoils of bandits and crabs for taels. Each trade can be made a few times, then he restocks every half day.
  */
 public class AllianceMerchantEntity extends PathfinderMob implements Merchant {
     /** A locator pendant's price, in taels (two full stacks). */
     public static final int PENDANT_PRICE = 128;
+    /**
+     * The Cloud Cliff Sect's jade token, which points to its sanctuary: no longer given to new players (Enzo,
+     * 16/10/2026), sold here only, at a ruinous price: a full stack of taels and 32 blocks of gold.
+     */
+    public static final int SECT_TOKEN_TAELS = 64, SECT_TOKEN_GOLD_BLOCKS = 32;
     /** How far from his stall he strolls (blocks). */
     public static final int HOME_RADIUS = 6;
     /** How often he restocks (ticks: half a Minecraft day). */
@@ -159,7 +166,10 @@ public class AllianceMerchantEntity extends PathfinderMob implements Merchant {
         list.add(sells(new ItemStack(Items.BREAD, 4), 1, 16));
         // The one art sold openly: the Long Fist, a free art.
         list.add(sells(new ItemStack(MurimItems.LONG_FIST_SCROLL.get()), 40, 1));
-        // Locator pendants, his dearest wares: two full stacks of taels each, one of each per restock.
+        // The sect's jade token, dearest of all: a stack of taels and 32 blocks of gold, one per restock.
+        list.add(new MerchantOffer(taels(SECT_TOKEN_TAELS), java.util.Optional.of(new ItemCost(Items.GOLD_BLOCK, SECT_TOKEN_GOLD_BLOCKS)),
+                new ItemStack(MurimItems.SECT_TOKEN.get()), 1, 0, 0.0F));
+        // Locator pendants, his dearest wares after it: two full stacks of taels each, one of each per restock.
         MurimItems.pendants().forEach(pendant -> list.add(new MerchantOffer(taels(64), java.util.Optional.of(taels(64)),
                 new ItemStack(pendant.get()), 1, 0, 0.0F)));
         // Spoils he takes for taels.

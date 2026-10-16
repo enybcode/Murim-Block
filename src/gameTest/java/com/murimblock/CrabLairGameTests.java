@@ -7,10 +7,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ThreadedLevelLightEngine;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The Crab King's lair, built whole in solid rock far from the other tests: an open cavern with the headroom a giant
@@ -40,9 +47,39 @@ public final class CrabLairGameTests {
                         : Blocks.AIR.defaultBlockState(), 2 | 16);
             CrabLairBuilder lair = new CrabLairBuilder(level, X, SURFACE, Z, 42L);
             lair.buildAll();
-            // The light spreads over a few ticks.
-            helper.runAfterDelay(400, () -> check(helper, level, lair.floorY(), r, area));
+            // The light engine works on its own thread, in real time, while this server runs its ticks unthrottled: a
+            // number of ticks says nothing about whether it has caught up with the hundreds of thousands of blocks just
+            // set. Wait for it to have run every light update queued for the lair's chunks.
+            CompletableFuture<Void> lit = lightSettled(level, r);
+            helper.runAfterDelay(400, () -> whenLit(helper, level, lit, 0, () -> check(helper, level, lair.floorY(), r, area)));
         });
+    }
+
+    /**
+     * Done once every light update queued for the chunks round the lair has been propagated. A light check queued by a
+     * block change runs after its batch's propagation, so a first round of markers only says the checks are in the
+     * engine; a second round, behind a further propagation, says they are spread.
+     */
+    private static CompletableFuture<Void> lightSettled(ServerLevel level, int r) {
+        ThreadedLevelLightEngine light = level.getChunkSource().getLightEngine();
+        return pendingLight(light, r).thenCompose(v -> pendingLight(light, r));
+    }
+
+    private static CompletableFuture<Void> pendingLight(ThreadedLevelLightEngine light, int r) {
+        List<CompletableFuture<?>> all = new ArrayList<>();
+        for (int cx = (X - r) >> 4; cx <= (X + r) >> 4; cx++) for (int cz = (Z - r) >> 4; cz <= (Z + r) >> 4; cz++) all.add(light.waitForPendingTasks(cx, cz));
+        return CompletableFuture.allOf(all.toArray(CompletableFuture[]::new));
+    }
+
+    /** Runs {@code then} once the light has settled, leaving the light thread up to a tick's real time between ticks. */
+    private static void whenLit(GameTestHelper helper, ServerLevel level, CompletableFuture<Void> lit, int waited, Runnable then) {
+        if (!lit.isDone()) {
+            // A light batch under 1000 tasks only runs when the server asks for it.
+            level.getChunkSource().getLightEngine().tryScheduleUpdate();
+            try { lit.get(50, TimeUnit.MILLISECONDS); } catch (TimeoutException e) { } catch (Exception e) { throw new RuntimeException(e); }
+        }
+        if (lit.isDone()) { System.out.println("[CrabLairGameTests] light settled after " + waited + " more ticks"); then.run(); }
+        else helper.runAfterDelay(1, () -> whenLit(helper, level, lit, waited + 1, then));
     }
 
     private static void check(GameTestHelper helper, ServerLevel level, int floor, int r, AABB area) {

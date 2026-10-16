@@ -18,7 +18,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 /**
  * Sect token: a jade medallion of the Cloud Cliff sect whose needle points to the sanctuary, anywhere in the overworld
@@ -26,7 +25,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  * one on first joining; other ways to get one (a mob drop...) are still to be decided with Enzo.
  */
 public class SectTokenItem extends Item {
-    private static final String RECEIVED = "murimblock_sect_token_received";
 
     public SectTokenItem(Properties properties) {
         super(properties);
@@ -75,15 +73,5 @@ public class SectTokenItem extends Item {
     static BlockPos target(ServerLevel overworld) {
         SanctuaryPlacement data = SanctuaryPlacement.get(overworld);
         return data.centre() == null ? null : data.centre().atY(data.top());
-    }
-
-    /** First connection: one token per player, ever. */
-    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        var tag = player.getPersistentData();
-        if (tag.getBoolean(RECEIVED)) return;
-        tag.putBoolean(RECEIVED, true);
-        ItemStack token = new ItemStack(MurimItems.SECT_TOKEN.get());
-        if (!player.getInventory().add(token)) player.drop(token, false);
     }
 }

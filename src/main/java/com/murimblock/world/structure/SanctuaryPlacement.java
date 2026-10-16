@@ -223,17 +223,22 @@ public final class SanctuaryPlacement extends SavedData {
      * ring; the nearest sample whose 7x7 neighbourhood is mostly peaks. Falls back to the nearest Murim biome sample,
      * then the spawn. Each grid cell is sampled once (cached), and the search stops and resumes between ticks.
      */
+    /** How far the sanctuary reaches from its centre, its gangway and path included (for SiteSpacing). */
+    static final int REACH = 48;
+
     static final class SiteSearch {
         static final int STEP = 32, RINGS = SEARCH_RADIUS / STEP;
         private final BiomeSource source;
         private final Climate.Sampler sampler;
         private final BlockPos spawn;
+        private final ServerLevel level;
         private final Map<Long, Holder<Biome>> cache = new HashMap<>();
         private int ring;
         @Nullable private BlockPos murim;
         private double murimDist = Double.MAX_VALUE;
 
         SiteSearch(ServerLevel level, BlockPos spawn) {
+            this.level = level;
             this.source = level.getChunkSource().getGenerator().getBiomeSource();
             this.sampler = level.getChunkSource().randomState().sampler();
             this.spawn = spawn;
@@ -265,6 +270,9 @@ public final class SanctuaryPlacement extends SavedData {
                     int inside = 0;
                     for (int a = -3; a <= 3; a++) for (int b = -3; b <= 3; b++) if (biome(i + a, j + b).is(MurimBiomes.CLOUD_SEA_PEAKS)) inside++;
                     if (inside < 30) continue;
+                    // At least SiteSpacing.GAP blocks from any Murim site (its spire, foot and gangway within REACH).
+                    BlockPos p = at(i, j);
+                    if (com.murimblock.world.structure.site.SiteSpacing.crowded(level, p.getX(), p.getZ(), REACH)) continue;
                     if (d < bestDist) { bestDist = d; best = at(i, j); }
                 }
                 ring++;

@@ -103,8 +103,8 @@ une documentation contradictoire ; signaler les ecarts au lieu de les masquer.
   le point d'apparition n'est PAS deplace (demande d'Enzo). Le chemin finit au sud par
   une passerelle dans l'axe du portique ; couche sous les toits fermee. Construction repartie sur
   les ticks (SanctuaryPlacement.Job, ticket de chargement, ~50 ms max par tick). Kit commun pour
-  les structures : world/structure/kit (BuildKit, RoofTiles). Jeton de la Secte (boussole de jade) donne une
-  fois a la premiere connexion. Pas dans les mondes plats/tests. docs/structures.
+  les structures : world/structure/kit (BuildKit, RoofTiles). Jeton de la Secte (boussole de jade) vendu par le
+  marchand de l'Alliance (64 taels + 32 blocs d'or, 16/10), plus donne a la connexion. Pas dans les mondes plats/tests. docs/structures.
 - Mise a terre PvP (12/10/2026, local) : un coup mortel d'un joueur met K.O. au lieu de tuer
   (combat/knockdown : KnockdownService, KnockdownEvents ; client/KnockdownClient). Ramper,
   V porter/poser, B executer (finish generique, l'art martial aura le sien), releve apres 30 s
