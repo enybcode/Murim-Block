@@ -163,7 +163,9 @@ public final class SiteGameTests {
                 if (!level.getBlockState(BlockPos.containing(m.getX(), m.getY() - 0.1, m.getZ())).blocksMotion()) misplaced.add(who + " stands on nothing");
                 if (!m.isPersistenceRequired()) misplaced.add(who + " may despawn");
                 if (m instanceof Villager v && (!inRoom || v.getVillagerData().getProfession() == VillagerProfession.NONE)) misplaced.add(who + " is not at home with a trade");
-                if (m instanceof BanditChiefEntity && !inRoom) misplaced.add(who + " is not in his cave");
+                if (m instanceof BanditChiefEntity && plan == SitePlan.BANDIT_DEN && !inRoom) misplaced.add(who + " is not in his cave");
+                if (plan == SitePlan.BANDIT_CAMP && com.murimblock.world.structure.site.BanditCampCount.campOf(m).orElse(0) != com.murimblock.world.structure.site.BanditCampCount.camp(x, Z))
+                    misplaced.add(who + " is not counted in his camp's garrison");
             }
             spawned.forEach(m -> m.discard());
             // Chunk by chunk, each part only in the chunks its box touches, in reverse order.
@@ -228,7 +230,7 @@ public final class SiteGameTests {
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
-            case BANDIT_CAMP -> Map.of("murimblock:mountain_bandit", 30);
+            case BANDIT_CAMP -> Map.of("murimblock:mountain_bandit", 30, "murimblock:bandit_chief", 5);
             case ALLIANCE_ARENA -> Map.of("murimblock:peak_captain", 1, "murimblock:alliance_merchant", 1, "murimblock:alliance_spear_guard", 2, "murimblock:alliance_sword_disciple", 2);
             case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2, "murimblock:alliance_merchant", 1, "murimblock:alliance_spear_guard", 2,
                     "murimblock:alliance_sword_disciple", 2, "murimblock:alliance_archer", 1, "murimblock:alliance_sergeant", 1, "murimblock:alliance_warrior_monk", 1);

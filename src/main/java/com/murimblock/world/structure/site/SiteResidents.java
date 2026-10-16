@@ -66,6 +66,11 @@ public final class SiteResidents extends SavedData {
         }
     }
 
+    /** Whether this site was already looked at (its residents placed, or found there). */
+    public static boolean settled(ServerLevel level, StructureStart start) {
+        return get(level).settled.contains(key(start));
+    }
+
     private static String key(StructureStart start) {
         return start.getStructure() instanceof SiteStructure site ? site.plan().getSerializedName() + "@" + start.getChunkPos().toLong() : "?";
     }
