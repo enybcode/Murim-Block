@@ -205,7 +205,7 @@ public final class CrabManGameTests {
                 for (var drop : event.getDrops()) {
                     ItemStack stack = drop.getItem();
                     if (stack.is(Items.COD)) cod += stack.getCount();
-                    else if (stack.is(com.murimblock.item.MurimItems.SILVER_TAEL.get())) continue; // a tael or two for the merchant
+                    else if (stack.is(com.murimblock.item.MurimItems.SILVER_TAEL.get()) || stack.is(com.murimblock.item.MurimItems.COPPER_CASH.get())) continue; // a tael or two, some copper cash
                     else helper.assertTrue(stack.is(Items.SALMON) && stack.getCount() <= 1 || stack.is(Items.TRIDENT),
                             "Crab man dropped something else than fish or a trident: " + stack);
                 }
@@ -229,7 +229,7 @@ public final class CrabManGameTests {
         man.setNoAi(true);
         try {
             var byPlayer = LootRolls.roll(helper.getLevel(), man, player, 4000);
-            helper.assertTrue(byPlayer.onlyContains(Items.COD, Items.SALMON, Items.TRIDENT, com.murimblock.item.MurimItems.SILVER_TAEL.get()), "Crab man loot holds something else: " + byPlayer.rollsWith());
+            helper.assertTrue(byPlayer.onlyContains(Items.COD, Items.SALMON, Items.TRIDENT, com.murimblock.item.MurimItems.SILVER_TAEL.get(), com.murimblock.item.MurimItems.COPPER_CASH.get()), "Crab man loot holds something else: " + byPlayer.rollsWith());
             helper.assertTrue(byPlayer.rollsWith(Items.COD) == 4000 && byPlayer.mostInOneRoll(Items.COD) == 2,
                     "Crab man cod not one or two each time: " + byPlayer.rollsWith(Items.COD) + " rolls, at most " + byPlayer.mostInOneRoll(Items.COD));
             helper.assertTrue(byPlayer.mostInOneRoll(Items.SALMON) == 1 && byPlayer.rollsWith(Items.SALMON) > 1600 && byPlayer.rollsWith(Items.SALMON) < 2400,

@@ -155,7 +155,7 @@ public final class SanctuaryGameTests {
 
     /**
      * The sect's token is no longer given at the first login: the Alliance merchant sells it, once per restock, for a
-     * stack of taels and 32 blocks of gold; its needle points to the sanctuary.
+     * stack of taels and 32 gold yuanbao; its needle points to the sanctuary.
      */
     @GameTest(template = "foundation_arena", batch = "sanctuary_token")
     public static void theTokenIsBoughtDearAndPointsToTheSanctuary(GameTestHelper helper) {
@@ -170,8 +170,8 @@ public final class SanctuaryGameTests {
         helper.assertTrue(offer.isPresent(), "The Alliance merchant does not sell the sect's token");
         var sold = offer.get();
         helper.assertTrue(sold.getBaseCostA().is(MurimItems.SILVER_TAEL.get()) && sold.getBaseCostA().getCount() == com.murimblock.mob.AllianceMerchantEntity.SECT_TOKEN_TAELS
-                && sold.getCostB().is(net.minecraft.world.item.Items.GOLD_BLOCK) && sold.getCostB().getCount() == com.murimblock.mob.AllianceMerchantEntity.SECT_TOKEN_GOLD_BLOCKS
-                && sold.getMaxUses() == 1, "The token's price is not a stack of taels and 32 gold blocks, once: " + sold.getBaseCostA() + " + " + sold.getCostB());
+                && sold.getCostB().is(MurimItems.GOLD_YUANBAO.get()) && sold.getCostB().getCount() == com.murimblock.mob.AllianceMerchantEntity.SECT_TOKEN_YUANBAO
+                && sold.getMaxUses() == 1, "The token's price is not a stack of taels and 32 gold yuanbao, once: " + sold.getBaseCostA() + " + " + sold.getCostB());
         player.getInventory().clearContent();
         // Inventory.add moves the stack into a slot (the one passed is emptied): tick the one in the inventory.
         player.getInventory().add(sold.getResult().copy());

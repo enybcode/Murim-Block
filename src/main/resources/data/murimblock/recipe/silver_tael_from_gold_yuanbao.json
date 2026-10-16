@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "murim_money",
+  "ingredients": [
+    {
+      "item": "murimblock:gold_yuanbao"
+    }
+  ],
+  "result": {
+    "id": "murimblock:silver_tael",
+    "count": 9
+  }
+}

@@ -43,9 +43,9 @@ Il vend (prix en taëls) :
 | Realm Breaking Pill | 32 | 2 |
 | Potion de soin | 4 | 6 |
 | Pomme dorée | 8 | 4 |
-| 4 pains | 1 | 16 |
+| 4 pains | 1 ligature de pièces (String of Cash) | 16 |
 | Long Fist Scroll (art libre) | 40 | 1 |
-| **Sect Token** (jeton de jade, pointe vers le sanctuaire ; plus donné à la connexion, Enzo 16/10) | **64 taels + 32 blocs d'or** | 1 |
+| **Sect Token** (jeton de jade, pointe vers le sanctuaire ; plus donné à la connexion, Enzo 16/10) | **64 taels + 32 lingots d'or (Gold Yuanbao)** | 1 |
 | Misty Bamboo Daoist Temple Pendant | 128 (64 + 64) | 1 |
 | Yellow River Bandit Den Pendant | 128 (64 + 64) | 1 |
 | Alliance Arena Pendant | 128 (64 + 64) | 1 |

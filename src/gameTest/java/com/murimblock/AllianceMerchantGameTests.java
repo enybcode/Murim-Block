@@ -36,8 +36,10 @@ public final class AllianceMerchantGameTests {
         return merchant;
     }
 
+    /** The Murim's money, any of its four kinds (copper cash, strings of cash, taels, gold yuanbao). */
     private static boolean tael(ItemStack stack) {
-        return stack.is(MurimItems.SILVER_TAEL.get());
+        return stack.is(MurimItems.SILVER_TAEL.get()) || stack.is(MurimItems.COPPER_CASH.get()) || stack.is(MurimItems.CASH_STRING.get())
+                || stack.is(MurimItems.GOLD_YUANBAO.get());
     }
 
     @GameTest(template = "foundation_arena", batch = "merchant_wares")
@@ -53,9 +55,9 @@ public final class AllianceMerchantGameTests {
             for (MerchantOffer offer : offers) {
                 // Either he takes taels for a ware, or he gives taels for a spoil; never anything for nothing.
                 helper.assertTrue(tael(offer.getBaseCostA()) != tael(offer.getResult()), "A trade not in taels: " + offer.getBaseCostA() + " -> " + offer.getResult());
-                // A second price, if any, is taels too (the locator pendants cost two stacks), but for the sect's token: gold.
+                // A second price, if any, is taels too (the locator pendants cost two stacks), but for the sect's token: gold yuanbao.
                 boolean token = offer.getResult().is(MurimItems.SECT_TOKEN.get());
-                helper.assertTrue((offer.getCostB().isEmpty() || tael(offer.getCostB()) || token && offer.getCostB().is(net.minecraft.world.item.Items.GOLD_BLOCK)) && offer.getBaseCostA().getCount() > 0 && offer.getMaxUses() > 0, "A strange trade: " + offer.getBaseCostA());
+                helper.assertTrue((offer.getCostB().isEmpty() || tael(offer.getCostB()) || token && offer.getCostB().is(MurimItems.GOLD_YUANBAO.get())) && offer.getBaseCostA().getCount() > 0 && offer.getMaxUses() > 0, "A strange trade: " + offer.getBaseCostA());
                 if (offer.getResult().is(MurimItems.ALLIANCE_SPEAR.get())) spear = offer.getBaseCostA().getCount() == 24;
                 if (offer.getBaseCostA().is(MurimItems.BANDIT_DAO.get())) dao = offer.getResult().getCount() == 3;
                 if (offer.getResult().is(MurimItems.BISHOU.get())) bishou = offer.getBaseCostA().getCount() == 16;

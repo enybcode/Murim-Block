@@ -113,7 +113,7 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
 - **Ce que c'est.** Un médaillon de jade cerclé d'or, dont l'aiguille rouge pointe vers le sommet du sanctuaire partout dans la Surface. C'est une cible de magnétite qui ne demande aucune magnétite.
 - **Ses 32 images** sont dessinées par `scripts/worldgen/TokenTextures.java` et suivent les mêmes paliers que la boussole vanilla.
 - **Le clic droit** affiche la direction et la distance, par exemple « Sanctuaire de la Falaise des Nuages : 1 240 blocs au nord-est ». Le message est en anglais, comme tout le texte du mod (règle du projet). Il y a une seconde de recharge entre deux utilisations.
-- **Où l'avoir.** Il n'est plus donné aux nouveaux joueurs (Enzo, 16/10/2026). Le marchand de l'Alliance le vend, une fois par réassort, à un prix ruineux : une pile de 64 taels d'argent et 32 blocs d'or (`AllianceMerchantEntity.SECT_TOKEN_*`). Il est aussi dans l'onglet créatif Murimblock.
+- **Où l'avoir.** Il n'est plus donné aux nouveaux joueurs (Enzo, 16/10/2026). Le marchand de l'Alliance le vend, une fois par réassort, à un prix ruineux : une pile de 64 taels d'argent et 32 lingots d'or yuanbao (`AllianceMerchantEntity.SECT_TOKEN_*`, [la monnaie](../items/currency.md)). Il est aussi dans l'onglet créatif Murimblock.
 - **À décider avec Enzo** : une autre façon d'en obtenir un, par exemple sur un mob.
 
 ## Le trouver avec /locate

@@ -147,10 +147,22 @@ public final class MurimItems {
             () -> new ShieldItem(new Item.Properties().durability(280)));
 
     /**
-     * A silver tael (银两), a small boat-shaped ingot: the Murim's money. Bandits, their chief, crab men and Sensei Yun
-     * leave some (their loot tables), and the Alliance Merchant trades in them (mob/AllianceMerchantEntity).
+     * The Murim's money, as in ancient China (docs/items/currency.md), four kinds, each worth nine of the one below and
+     * changed at a crafting table (nine into one, one back into nine):
+     * <ul>
+     *   <li>the copper cash (铜钱), the round bronze coin with its square hole, small change: bandits and crab men carry a
+     *   few;</li>
+     *   <li>the string of cash (一串钱), nine coins on a red cord;</li>
+     *   <li>the silver tael (银两), a small boat-shaped ingot, the money of trade: the Alliance Merchant's prices, the
+     *   bosses' and the soldiers' loot;</li>
+     *   <li>the gold yuanbao (金元宝), the great gold ingot, for fortunes (the sect's token at the merchant).</li>
+     * </ul>
+     * Icons from scripts/animation/currency-icons.cjs and silver-tael-icon.cjs.
      */
+    public static final DeferredItem<Item> COPPER_CASH = ITEMS.register("copper_cash", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CASH_STRING = ITEMS.register("cash_string", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SILVER_TAEL = ITEMS.register("silver_tael", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
     /** The Alliance's soldiers' eggs, in azure, each with its own second colour. */
@@ -271,7 +283,10 @@ public final class MurimItems {
                         output.accept(ALLIANCE_ARCHER_SPAWN_EGG.get());
                         output.accept(ALLIANCE_WARRIOR_MONK_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SERGEANT_SPAWN_EGG.get());
+                        output.accept(COPPER_CASH.get());
+                        output.accept(CASH_STRING.get());
                         output.accept(SILVER_TAEL.get());
+                        output.accept(GOLD_YUANBAO.get());
                         output.accept(CHIEF_BROW_BAND.get());
                         output.accept(CHIEF_LAMELLAR_VEST.get());
                         output.accept(CHIEF_TASSETS.get());
