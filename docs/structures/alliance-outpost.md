@@ -69,11 +69,13 @@ droite, la tour de guet.
 - **Structure** `murimblock:alliance_outpost` (`AllianceOutpost`, plan `alliance_outpost`), comme les autres sites
   ([README](README.md)) : construite en code, chunk par chunk, l'entrée tournée vers le terrain le plus bas.
   `/locate structure murimblock:alliance_outpost` la trouve.
-- **Où** : dans n'importe quel biome Murim, mais **seulement au centre de la carte, ou à moins de 1 500 blocs d'une
-  frontière entre deux régions** (centre/nord, centre/ouest, nord/est...) : `MurimMap.centreOrFrontier`, vérifié avant
-  tout le reste (`Site.allowedAt`). Jamais au cœur d'une région ni hors de la bulle Murim.
-- **Fréquence** : une tentative par carré de 64 chunks (1 024 blocs) de côté, refusée si le terrain est trop pentu
-  (plus de 8 blocs de dénivelé) ou dans l'eau. Sur la graine de test, le premier est à 1 602 blocs du départ.
+- **Où** : dans n'importe quel biome Murim, **partout dans la bulle** (15/10/2026, demande d'Enzo : l'avant-poste, sans
+  boss, apparaît souvent ; avant, seulement au centre et près des frontières, ce que garde l'arène). Jamais hors de la
+  bulle Murim ni dans son anneau d'océan (`Site.allowedAt`).
+- **Fréquence** : une tentative par carré de 60 chunks (960 blocs) de côté, soit **un avant-poste tous les 1 000 blocs
+  environ**, refusée si le terrain est trop pentu (plus de 8 blocs de dénivelé) ou dans l'eau.
+- **Le marchand de l'Alliance** se tient au bord de la route devant la porte, en face du salon de thé ; il est dans
+  chaque site de l'Alliance (aussi dans l'arène, à l'intérieur de la porte).
 - **Habitants pour l'instant** : le commandant (cartographe, dans la salle), l'intendant (armurier, à la caserne), le
   médecin (clerc, sous la tente) et le tenancier du salon de thé (fermier) : des villageois avec leurs métiers et leurs
   noms anglais ; deux chevaux aux écuries. Les **soldats de l'Alliance** les rejoindront quand leurs mobs existeront.

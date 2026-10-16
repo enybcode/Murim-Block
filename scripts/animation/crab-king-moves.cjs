@@ -6,7 +6,15 @@
 //   crab_king_snap   both pincers lifted open, then a lunge, both driven forward and snapped shut;
 //   crab_king_slam   both pincers raised high over the head and slammed to the ground ahead (the shockwave is the
 //                    server's, CrabKingEntity, at CrabKingAnimations.SLAM_IMPACT);
-//   crab_king_roar   under half his health: the pincers flung wide and open, the head thrown back.
+//   crab_king_roar   under half his health: the pincers flung wide and open, the head thrown back;
+//   crab_king_walk   his own walk, heavy (1.6 s, two steps, looped): each foot planted with the body sinking on it,
+//                    the weight swaying from side to side, the shoulders twisting against the hips, the pincers hanging
+//                    low and swinging a little;
+//   crab_king_grab   the grab tried: the great right pincer drawn back open, then a lunge and the pincer snapped shut
+//                    at GRAB_CATCH; if it caught nothing he draws back;
+//   crab_king_grab_hold  what he caught: lifted high in the closed pincer, squeezed three times, then raised over the
+//                    head and slammed to the ground ahead, the pincer opening at GRAB_RELEASE (CrabKingEntity holds
+//                    the victim in the pincer meanwhile).
 // Written as game files with quaternion turns between keys (pose.cjs writeSmooth), and as a Blockbench project to look
 // at the keys (art/blockbench/crab_king_moves.bbmodel).
 // Usage: node scripts/animation/crab-king-moves.cjs
@@ -98,7 +106,56 @@ anims.crab_king_roar = [
   { t: 2.0, pose: STANCE() },
 ];
 
-module.exports = { anims, SLAM_IMPACT };
+// The walk: heavy, two steps in 1.6 s, the body sinking onto each planted foot.
+{
+  const keys = [];
+  for (let t = 0; t <= 1.6001; t += 0.1) {
+    const p = (2 * Math.PI * t) / 1.6, sn = Math.sin(p), cs = Math.cos(p);
+    keys.push({ t: Math.round(t * 10) / 10, pose: {
+      Root: { pos: [0.035 * sn, 0, HIP - 0.05 - 0.045 * sn * sn] },
+      Torso: [['x', -12], ['z', -7 * sn], ['y', 4 * sn]], Chest: [['x', -8 + breath(t, 1.6, 1.5)], ['z', -3 * sn]],
+      Head: [['x', -14], ['z', 6 * sn]],
+      Thigh_R: [['x', 24 * sn], ['y', -8]], Leg_R: [['x', -8 - 26 * Math.max(0, cs)]],
+      Thigh_L: [['x', -24 * sn], ['y', 8]], Leg_L: [['x', -8 - 26 * Math.max(0, -cs)]],
+      Arm_R: [['x', 16 - 10 * sn], ['y', -20 - 3 * sn]], Hand_R: [['x', 24]],
+      Arm_L: [['x', 12 + 10 * sn], ['y', 18 - 3 * sn]], Hand_L: [['x', 20]],
+      ...pincers(6 + 4 * Math.max(0, sn), 6 + 4 * Math.max(0, -sn)),
+    } });
+  }
+  anims.crab_king_walk = keys;
+}
+
+// The grab: the great right pincer drawn back open, a lunge, snapped shut on what is before him.
+const GRAB_CATCH = 0.55, GRAB_RELEASE = 1.62;
+const CAUGHT = { ...STANCE(), Root: { pos: [0, 0.3, HIP - 0.1] }, Torso: [['x', -18], ['z', 0]], Chest: [['x', -6]], Head: [['x', -12]],
+  Arm_R: [['x', 88], ['y', -6], ['z', 0]], Hand_R: [['x', 6]], Arm_L: [['x', 24], ['y', 30]], Hand_L: [['x', 24]], ...pincers(0, 10),
+  Thigh_R: [['x', 34], ['y', -6]], Leg_R: [['x', -36]], Thigh_L: [['x', -20], ['y', 8]], Leg_L: [['x', -12]] };
+anims.crab_king_grab = [
+  { t: 0, pose: STANCE() },
+  { t: 0.4, pose: { ...STANCE(), Torso: [['x', -6], ['z', -22]], Chest: [['x', 6], ['z', -8]], Head: [['x', -10], ['z', 22]],
+      Arm_R: [['x', 62], ['y', -30], ['z', -40]], Hand_R: [['x', 40]], ...pincers(46, 8), Arm_L: [['x', 20], ['y', 26]] } },
+  { t: GRAB_CATCH, pose: CAUGHT },
+  { t: 0.75, pose: { ...CAUGHT, Arm_R: [['x', 78], ['y', -10]], Hand_R: [['x', 16]] } },
+  { t: 1.1, pose: { ...STANCE(), Root: { pos: [0, 0.3, HIP - 0.04] } } },
+];
+// Held: lifted high in the closed pincer, squeezed three times, raised over the head and slammed to the ground.
+const LIFTED = (squeeze = 0) => ({ ...STANCE(), Root: { pos: [0, 0.3, HIP - 0.04] }, Torso: [['x', -2]], Chest: [['x', 8 + squeeze * 3]], Head: [['x', -20]],
+  Arm_R: [['x', 120], ['y', -10]], Hand_R: [['x', 20 + squeeze * 8]], Arm_L: [['x', 30], ['y', 40]], Hand_L: [['x', 30]], ...pincers(0, 30),
+  Thigh_R: [['x', 12], ['y', -8]], Leg_R: [['x', -16]], Thigh_L: [['x', -8], ['y', 8]], Leg_L: [['x', -14]] });
+anims.crab_king_grab_hold = [
+  { t: 0, pose: { ...CAUGHT, Root: { pos: [0, 0.3, HIP - 0.1] } } },
+  { t: 0.35, pose: LIFTED() },
+  { t: 0.5, pose: LIFTED(1) }, { t: 0.65, pose: LIFTED() },
+  { t: 0.8, pose: LIFTED(1) }, { t: 0.95, pose: LIFTED() },
+  { t: 1.1, pose: LIFTED(1) }, { t: 1.2, pose: LIFTED() },
+  { t: 1.42, pose: { ...LIFTED(), Torso: [['x', 6]], Chest: [['x', 12]], Arm_R: [['x', 152], ['y', -8]], Hand_R: [['x', 22]] } },
+  { t: GRAB_RELEASE, pose: { ...STANCE(), Root: { pos: [0, 0.4, HIP - 0.2] }, Torso: [['x', -32]], Chest: [['x', -14]], Head: [['x', 6]],
+      Arm_R: [['x', 44], ['y', -10]], Hand_R: [['x', 6]], ...pincers(32, 10),
+      Thigh_R: [['x', 50], ['y', -8]], Leg_R: [['x', -68]], Thigh_L: [['x', 30], ['y', 8]], Leg_L: [['x', -50]] } },
+  { t: 2.0, pose: { ...STANCE(), Root: { pos: [0, 0.4, HIP - 0.04] } } },
+];
+
+module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE };
 
 if (require.main === module) {
   for (const [name, keys] of Object.entries(anims)) writeSmooth(name, keys);

@@ -310,11 +310,13 @@ final class AllianceArena extends Site {
         c.spawn(0, g + TOP + 1, -2, Direction.SOUTH, MurimEntities.PEAK_CAPTAIN.get(), captain -> { });
     }
 
-    /** Two spear guards inside the gate, two sword disciples watching from the stands' galleries. */
+    /** Two spear guards inside the gate, two sword disciples watching from the stands' galleries, the merchant. */
     private static void guards(Canvas c, int g) {
         c.spawn(-3, g + 1, W - 3, Direction.SOUTH, MurimEntities.ALLIANCE_SPEAR_GUARD.get(), guard -> { });
         c.spawn(3, g + 1, W - 3, Direction.SOUTH, MurimEntities.ALLIANCE_SPEAR_GUARD.get(), guard -> { });
         c.spawn(-29, g + 6, 3, Direction.EAST, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), disciple -> { });
         c.spawn(29, g + 6, -3, Direction.WEST, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), disciple -> { });
+        // The Alliance merchant, inside the gate east of the way: in every Alliance site.
+        c.spawn(8, g + 1, 25, Direction.WEST, MurimEntities.ALLIANCE_MERCHANT.get(), merchant -> { });
     }
 }

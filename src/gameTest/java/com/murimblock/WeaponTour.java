@@ -74,7 +74,8 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
  *   <li>the same player in the Bandit Chief's armour (its four pieces, Epic Fight's armour meshes): standing, walking,
  *   running and the axe's first two M1s.</li>
  * </ul>
- * The Crab King too (a mob, the camera farther back): standing, walking, his three attacks, his roar and his death.
+ * The Crab King too (a mob, the camera farther back): standing, his heavy walk, his three attacks, his grab (a husk
+ * before him to catch), his roar and his death.
  * MURIM_TOUR_ONLY=bandit, =king, =axe or =armour films one of them. The camera follows the actor (the cuts carry it forward), and
  * Epic Fight's red outline of the aimed-at entity is turned off. Frames go to
  * build/weapon-tour-run/screenshots/&lt;take&gt;/&lt;side&gt;/, the report to weapon-tour-report.txt.
@@ -134,8 +135,10 @@ public final class WeaponTour {
     private static boolean creating, finished, failed;
     private static int ticks;
     private static volatile net.minecraft.world.entity.Mob bandit;
-    /** How much farther and higher the camera stands for this actor (the Crab King is 1.5 times a man). */
+    /** How much farther and higher the camera stands for this actor (the Crab King is twice a man). */
     private static double zoom = 1;
+    /** Who the Crab King's grab catches in its takes: a husk before his great pincer. */
+    private static volatile net.minecraft.world.entity.monster.Husk victim;
     private static volatile ServerPlayer wielder;
     /** What the server last asked the actor to play (the same accessor on both sides of an integrated server). */
     private static volatile AnimationAccessor<? extends StaticAnimation> asked;
@@ -289,6 +292,7 @@ public final class WeaponTour {
             king("slam", side, CrabKingAnimations.SLAM, null, 30, 1);
             king("roar", side, CrabKingAnimations.ROAR, null, 20, 2);
         }
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("grab", side, CrabKingAnimations.GRAB, null, 34, 2);
         king("death", Side.FRONT_RIGHT, Animations.BIPED_DEATH, null, 14, 2);
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) axe("idle", side, -1, LivingMotions.IDLE, 1, 1);
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) axe("walk", side, -1, LivingMotions.WALK, 16, 2);
@@ -415,6 +419,7 @@ public final class WeaponTour {
             if (take == TAKES.size()) {
                 server.execute(() -> {
                     if (bandit != null) bandit.discard();
+                    if (victim != null) victim.discard();
                     if (wielder != null) server.getPlayerList().remove(wielder);
                 });
                 finish(mc);
@@ -469,7 +474,11 @@ public final class WeaponTour {
     /** The camera on the take's side of its actor (a new one, facing +Z, when asked). */
     private static void begin(MinecraftServer server, Take t, boolean fresh) {
         ServerLevel level = server.overworld();
-        zoom = t.actor() == Actor.KING ? 1.75 : 1;
+        zoom = t.actor() == Actor.KING ? 2.4 : 1;
+        if (victim != null) {
+            victim.discard();
+            victim = null;
+        }
         if (isMob(t.actor())) {
             if (fresh) {
                 if (bandit != null) bandit.discard();
@@ -495,6 +504,16 @@ public final class WeaponTour {
             }
             // Running is chasing: Epic Fight runs an aggressive mob that moves.
             bandit.setAggressive(t.motion() == LivingMotions.CHASE);
+            if (t.name().startsWith("king-grab")) {
+                // Something for the pincer to catch, before him and a little to his right (-x as he faces +z): a husk, which does
+                // not burn in the sun.
+                victim = net.minecraft.world.entity.EntityType.HUSK.create(level);
+                victim.moveTo(baseX - 0.75, baseY, baseZ + 2.6, 180, 0);
+                victim.setBaby(false);
+                victim.setPersistenceRequired();
+                level.addFreshEntity(victim);
+                victim.setNoAi(true);
+            }
         } else {
             if (fresh) {
                 if (bandit != null) {

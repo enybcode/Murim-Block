@@ -25,8 +25,8 @@ import yesman.epicfight.client.renderer.patched.entity.PHumanoidRenderer;
 
 /**
  * The Crab King: Epic Fight draws him with his own 3D model on the biped skeleton (animmodels/entity/crab_king, a
- * HumanoidMesh; texture textures/entity/crab_king.png), both from scripts/animation/crab-king-3d.cjs, 1.5 times a man's
- * size. He has no flat skin: without Epic Fight's renderer the player-shaped fallback shows his atlas, not meant for it.
+ * HumanoidMesh; texture textures/entity/crab_king.png), both from scripts/animation/crab-king-3d.cjs, twice a man's
+ * size: four blocks tall. He has no flat skin: without Epic Fight's renderer the player-shaped fallback shows his atlas, not meant for it.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CrabKingRenderer extends HumanoidMobRenderer<CrabKingEntity, PlayerModel<CrabKingEntity>> {
@@ -34,11 +34,11 @@ public final class CrabKingRenderer extends HumanoidMobRenderer<CrabKingEntity, 
     static final MeshAccessor<HumanoidMesh> MESH =
             MeshAccessor.create(Murimblock.MOD_ID, "entity/crab_king", loader -> loader.loadSkinnedMesh(HumanoidMesh::new));
     /** How much larger than a man he is drawn (his box is as much larger: MurimEntities.CRAB_KING). */
-    public static final float SCALE = 1.5F;
+    public static final float SCALE = 2.0F;
     private static boolean patchedRendererHooked;
 
     public CrabKingRenderer(EntityRendererProvider.Context context) {
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 1.0F);
+        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 1.3F);
     }
 
     @Override public ResourceLocation getTextureLocation(CrabKingEntity king) {

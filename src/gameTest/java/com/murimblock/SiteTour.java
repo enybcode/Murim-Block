@@ -172,7 +172,7 @@ public final class SiteTour {
                         if (residents.isEmpty()) return;
                         // From the corner of the resident's own room farthest from them, at eye height.
                         Mob v = residents.get(0);
-                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : v instanceof com.murimblock.mob.AllianceSoldierEntity ? "soldier" : v instanceof com.murimblock.mob.PeakCaptainEntity ? "captain" : "chief";
+                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : v instanceof com.murimblock.mob.AllianceSoldierEntity ? "soldier" : v instanceof com.murimblock.mob.PeakCaptainEntity ? "captain" : v instanceof com.murimblock.mob.AllianceMerchantEntity ? "merchant" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
@@ -253,7 +253,7 @@ public final class SiteTour {
         LOGGER.info("Site tour: {}", line);
         boolean rightBiome = expectedBiome(name).equals("*")
                 ? level.getBiome(first.origin()).is(net.minecraft.tags.TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes")))
-                        && com.murimblock.world.map.MurimMap.centreOrFrontier(first.origin().getX(), first.origin().getZ(), 1500)
+                        && (!name.equals("alliance_arena") || com.murimblock.world.map.MurimMap.centreOrFrontier(first.origin().getX(), first.origin().getZ(), 1500))
                 : biome.equals(expectedBiome(name));
         if (!problems.isEmpty() || !rightBiome) failed = true;
         Direction front = first.rotation().rotate(Direction.SOUTH);
@@ -286,7 +286,7 @@ public final class SiteTour {
         return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4, 16, 4), // down into pits and caves
                         m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity || m instanceof CrabManEntity
                                 || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity
-                                || m instanceof com.murimblock.mob.PeakCaptainEntity).stream()
+                                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.AllianceMerchantEntity).stream()
                 .sorted(java.util.Comparator.<Mob>comparingInt(m -> m instanceof BanditChiefEntity ? 0 : 1).thenComparing(m -> m.getName().getString())).toList();
     }
 
@@ -297,7 +297,7 @@ public final class SiteTour {
             case "jade_gate_beacon_post" -> "hexi_frontier_desert";
             case "misty_bamboo_temple" -> "shu_bamboo_sea";
             case "lotus_moon_garden" -> "jiangnan_waterlands";
-            case "alliance_outpost", "alliance_arena" -> "*"; // any Murim biome, in the centre or on a frontier
+            case "alliance_outpost", "alliance_arena" -> "*"; // any Murim biome (the arena in the centre or on a frontier)
             default -> "peach_blossom_valley";
         };
     }

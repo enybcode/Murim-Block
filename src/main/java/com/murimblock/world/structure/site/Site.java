@@ -53,6 +53,12 @@ public abstract class Site {
     /** Whether the site may stand at this block of the world (its centre), before anything else is asked. */
     public boolean allowedAt(int x, int z) { return true; }
 
+    /**
+     * Whether the site steps aside for the other Murim sites (SiteStructure.nearOtherSite): a site spawned often, which
+     * would otherwise fall on the rarer ones now and then.
+     */
+    public boolean keepsClearOfOtherSites() { return false; }
+
     // ---------------------------------------------------------------- choosing a place
 
     /** Diagnostics (site tour): places refused for water, and for too steep ground. */
