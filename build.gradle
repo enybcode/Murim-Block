@@ -194,6 +194,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: film of the weapons' swing trails (see TrailTour).
+        trailTour {
+            client()
+            gameDirectory = project.file('build/trail-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.trailTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: filming of a duel with Sensei Yun (see SenseiDuel; clip by scripts/showcase/make-clip.cjs).
         senseiDuel {
             client()
@@ -588,6 +597,15 @@ tasks.named('runLongFistTour').configure {
     }
 }
 
+def trailTourSave = layout.buildDirectory.dir('trail-tour-run/saves/murim-trail')
+def trailTourShots = layout.buildDirectory.dir('trail-tour-run/screenshots')
+tasks.named('runTrailTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only trail tour.')
+        trailTourSave.get().asFile.deleteDir()
+        trailTourShots.get().asFile.deleteDir()
+    }
+}
 def knifeTourSave = layout.buildDirectory.dir('knife-tour-run/saves/murim-knife')
 def knifeTourReport = layout.buildDirectory.file('knife-tour-run/knife-tour-report.txt')
 def knifeTourShots = layout.buildDirectory.dir('knife-tour-run/screenshots')
