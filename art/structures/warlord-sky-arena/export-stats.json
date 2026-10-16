@@ -6,30 +6,31 @@
   "size": [
     195,
     173,
-    206
+    204
   ],
   "minimum": [
-    -98,
+    -91,
     -116,
-    -103
+    -102
   ],
   "maximum": [
-    96,
+    103,
     56,
-    102
+    101
   ],
   "paste_point": "middle of the fighting floor, standing on it (0, 1, 0)",
-  "non_air": 1475855,
-  "air": 5473555,
-  "palette_states": 15,
+  "non_air": 1475785,
+  "air": 5406155,
+  "palette_states": 16,
   "blocks": {
-    "minecraft:magma_block": 3808,
-    "minecraft:blackstone": 37435,
-    "minecraft:basalt[axis=y]": 1413234,
-    "minecraft:tuff": 9662,
-    "minecraft:smooth_basalt": 11016,
-    "minecraft:obsidian": 181,
-    "minecraft:crying_obsidian": 15,
+    "minecraft:blackstone": 37229,
+    "minecraft:basalt[axis=y]": 1413452,
+    "minecraft:magma_block": 3645,
+    "minecraft:tuff": 9038,
+    "minecraft:smooth_basalt": 10715,
+    "minecraft:lava[level=0]": 1026,
+    "minecraft:obsidian": 170,
+    "minecraft:crying_obsidian": 6,
     "minecraft:polished_blackstone": 36,
     "minecraft:waxed_cut_copper": 96,
     "minecraft:netherrack": 12,
@@ -38,8 +39,8 @@
     "minecraft:gold_block": 48,
     "minecraft:purple_wool": 270
   },
-  "bytes": 138101,
-  "sha256": "f713d22df8d8f76dc16b3c213b3186f26e473314899dddb6ac566e47c826ba03",
+  "bytes": 137750,
+  "sha256": "6a72e4c10702c59c347472de7a8a7222abc98b89fa237d673c1676ab54d4f180",
   "targets": {
     "Fighting floor middle (the scar)": [
       0,

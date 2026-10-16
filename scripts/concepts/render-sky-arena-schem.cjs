@@ -83,13 +83,11 @@ async function connect(port) {
         await c.evaluate(`(() => { const a = ${JSON.stringify(part)}; for (let i = 0; i < a.length; i += 3) ST.set(a[i], a[i + 1], a[i + 2], ${JSON.stringify(m)}); return true; })()`);
       }
     }
-    // The sea of clouds far below, and the warlord with two players on the fighting floor, for scale.
+    // The sea of clouds far below.
     await c.evaluate(`(() => { const rnd = ST.seeded(77);
       for (let i = 0; i < 170; i++) { const x = Math.round((rnd() - 0.5) * 900), z = Math.round((rnd() - 0.5) * 900);
         ST.blob(x, -170 + Math.round(rnd() * 8), z, 14 + Math.floor(rnd() * 16), 3, 10 + Math.floor(rnd() * 14), 'cloud', 0.2, rnd); }
-      const w = (x, z) => { ST.fill(x, 1, z, x + 1, 2, z, 'robe_black'); ST.fill(x, 3, z, x + 1, 3, z, 'banner_purple'); ST.set(x - 1, 3, z, 'skin'); ST.set(x + 2, 3, z, 'skin');
-        ST.set(x - 1, 4, z, 'banner_purple'); ST.set(x + 2, 4, z, 'banner_purple'); ST.fill(x, 4, z, x + 1, 4, z, 'iron'); ST.set(x, 5, z, 'skin'); ST.set(x + 1, 5, z, 'skin'); };
-      w(3, -4); ST.person(-12, 0, 14, 'robe_blue'); ST.person(-17, 0, 8, 'robe_red'); return true; })()`);
+      return true; })()`);
     const views = {
       'render-overview': { position: [215, 200, 235], target: [0, -24, 0], fov: 44 },
       'render-bowl': { position: [52, 44, 58], target: [-8, -2, -8], fov: 62 },
