@@ -91,7 +91,7 @@ public final class BiomeTour {
 
     /** Where to look for a biome on the Murim map: the heart of its region (the centre's own at the origin). */
     static BlockPos regionHeart(ResourceKey<Biome> biome) {
-        int far = 45_000;
+        int far = com.murimblock.world.map.MurimMap.RADIUS * 3 / 5;
         if (biome == MurimBiomes.TIANSHAN_SNOWFIELDS || biome == MurimBiomes.KUNLUN_GLACIERS) return new BlockPos(0, 80, -far);
         if (biome == MurimBiomes.HEXI_FRONTIER_DESERT || biome == MurimBiomes.LOESS_PLATEAU) return new BlockPos(-far, 80, 0);
         if (biome == MurimBiomes.JADE_KARST_FOREST || biome == MurimBiomes.SHU_BAMBOO_SEA) return new BlockPos(0, 80, far);
@@ -338,15 +338,15 @@ public final class BiomeTour {
     private static void coast(Minecraft mc) throws Exception {
         coastTicks++;
         var server = mc.getSingleplayerServer();
-        int shore = com.murimblock.world.map.MurimMap.RADIUS - 1_500;
+        int shore = com.murimblock.world.map.MurimMap.RADIUS - 400;
         switch (coastTicks) {
             case 1 -> server.execute(() -> {
                 ServerLevel level = server.overworld();
                 var source = level.getChunkSource().getGenerator().getBiomeSource();
                 var sampler = level.getChunkSource().randomState().sampler();
                 java.util.function.IntFunction<String> at = x -> source.getNoiseBiome(x >> 2, 200 >> 2, 0, sampler).unwrapKey().map(k -> k.location().toString()).orElse("?");
-                String ring = at.apply(com.murimblock.world.map.MurimMap.RADIUS + 5_000), beyond = at.apply(com.murimblock.world.map.MurimMap.RADIUS + 20_000);
-                String line = "coast: " + at.apply(shore - 3_000) + " inland, " + ring + " in the ring, " + beyond + " beyond it";
+                String ring = at.apply(com.murimblock.world.map.MurimMap.RADIUS + com.murimblock.world.map.MurimMap.RING / 2), beyond = at.apply(com.murimblock.world.map.MurimMap.RADIUS + com.murimblock.world.map.MurimMap.RING + 6_000);
+                String line = "coast: " + at.apply(shore - 1_000) + " inland, " + ring + " in the ring, " + beyond + " beyond it";
                 report.add(line);
                 LOGGER.info("Biome tour: {}", line);
                 if (!ring.contains("ocean")) failed = true;

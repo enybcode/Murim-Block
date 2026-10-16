@@ -5,8 +5,9 @@ import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 
 /**
- * The map of the Murim world (docs/biomes/murim-map.md): a bubble of 150 000 x 150 000 blocks round the origin where
- * every land biome is a Murim one, an ocean 10 000 blocks wide around it, then the vanilla world.
+ * The map of the Murim world (docs/biomes/murim-map.md): a bubble of 40 000 x 40 000 blocks round the origin where
+ * every land biome is a Murim one, an ocean 4 000 blocks wide around it, then the vanilla world. (150 000 until
+ * 16/10/2026: Enzo chose a smaller world, every region within reach of a session, room left for the structures.)
  * <p>
  * Inside, the land is split into fixed regions, the same in every world (the seed only changes the biomes' patches
  * within a region, the relief and where the structures fall): the central mountains and valleys, the snows of the
@@ -14,14 +15,18 @@ import net.minecraft.world.level.levelgen.synth.SimplexNoise;
  * its own, seeded with a constant), so no line is straight.
  */
 public final class MurimMap {
-    /** Half the bubble's side: the Murim lands span -75 000 to 75 000 on both axes. */
-    public static final int RADIUS = 75_000;
+    /** Half the bubble's side: the Murim lands span -20 000 to 20 000 on both axes. */
+    public static final int RADIUS = 20_000;
     /** The ocean round the bubble. */
-    public static final int RING = 10_000;
+    public static final int RING = 4_000;
     /** Width of the shore at the bubble's edge, and of the ocean's return to the vanilla relief. */
-    public static final int EDGE = 2_000;
+    public static final int EDGE = 1_000;
     /** How far the coastline wanders from the square (blocks). */
-    public static final int COAST_WANDER = 1_500;
+    public static final int COAST_WANDER = 600;
+    /** The scale of the regions' wandering borders, against the map's first size (75 000). */
+    private static final double SCALE = RADIUS / 75_000.0;
+    /** The relief's fade towards the coast: from this far inside the shore, over this width. */
+    private static final int COAST_FADE_FROM = 1_000, COAST_FADE = 2_000;
 
     /** Continentalness kept at least inside (near inland: no sea), and the ocean's (deep ocean, not mushroom fields). */
     public static final double LAND = 0.05, SHORE_SEA = -0.6, DEEP_SEA = -0.8;
@@ -57,7 +62,7 @@ public final class MurimMap {
 
     /** A wandering of about -1 to 1, broad and then finer. */
     private static double wander(SimplexNoise noise, double x, double z) {
-        return 0.75 * noise.getValue(x / 14_000.0, z / 14_000.0) + 0.25 * noise.getValue(x / 3_500.0, z / 3_500.0);
+        return 0.75 * noise.getValue(x / (14_000.0 * SCALE), z / (14_000.0 * SCALE)) + 0.25 * noise.getValue(x / (3_500.0 * SCALE), z / (3_500.0 * SCALE));
     }
 
     /** How far out a block lies: the square's distance, its coastline wandering. */
@@ -132,7 +137,7 @@ public final class MurimMap {
         double v = (double) z / RADIUS + 0.16 * wander(noiseB, x, z);
         double r = Math.sqrt(u * u + v * v), a = Math.atan2(v, u);
         double out = smooth((r - CENTER_SHARE) / 0.12);
-        double coast = smooth((RADIUS - 3_000 - reach(x, z)) / 5_000);
+        double coast = smooth((RADIUS - COAST_FADE_FROM - reach(x, z)) / COAST_FADE);
         // The east sector (-pi/4 to pi/4) in full, the south (pi/4 to 3pi/4) at half.
         double east = smooth(Math.min(a + Math.PI / 4, Math.PI / 4 - a) / 0.22);
         double south = smooth(Math.min(a - Math.PI / 4, 3 * Math.PI / 4 - a) / 0.22) * 0.5;
@@ -140,8 +145,8 @@ public final class MurimMap {
         if (w <= 0) return 0;
         // Long hills: ridged noise stretched along one direction (turned 30 degrees off east, made to wander), so the
         // crests run on for kilometres, side by side, with long valleys between them.
-        double along = x * COS + z * SIN, across = -x * SIN + z * COS + 1_400 * noiseG.getValue(x / 6_000.0, z / 6_000.0);
-        double crest = 1 - Math.abs(noiseF.getValue(along / 9_000.0, across / 1_700.0));
+        double along = x * COS + z * SIN, across = -x * SIN + z * COS + 900 * noiseG.getValue(x / 3_500.0, z / 3_500.0);
+        double crest = 1 - Math.abs(noiseF.getValue(along / 5_000.0, across / 1_700.0));
         double fine = 1 - Math.abs(noiseG.getValue(along / 2_600.0, across / 650.0));
         double h = crest * crest * 0.75 + fine * fine * 0.25;
         return w * Math.max(0, (h - 0.3) / 0.7);
@@ -165,11 +170,11 @@ public final class MurimMap {
         // Inside the north sector (-3pi/4 to -pi/4), out of the centre, away from the coast: 1; fading over the edges.
         double sector = smooth(Math.min(a + 3 * Math.PI / 4, -Math.PI / 4 - a) / 0.22);
         double out = smooth((r - CENTER_SHARE) / 0.12);
-        double coast = smooth((RADIUS - 3_000 - reach(x, z)) / 5_000);
+        double coast = smooth((RADIUS - COAST_FADE_FROM - reach(x, z)) / COAST_FADE);
         double w = sector * out * coast;
         if (w <= 0) return new double[]{0, 0};
-        double broad = 1 - Math.abs(noiseD.getValue(x / 7_000.0, z / 7_000.0));
-        double fine = 1 - Math.abs(noiseE.getValue(x / 2_200.0, z / 2_200.0));
+        double broad = 1 - Math.abs(noiseD.getValue(x / 3_500.0, z / 3_500.0));
+        double fine = 1 - Math.abs(noiseE.getValue(x / 1_400.0, z / 1_400.0));
         double ridge = broad * broad * 0.7 + fine * fine * 0.3;
         return new double[]{w, Math.max(0, (ridge - 0.32) / 0.68)};
     }

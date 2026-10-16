@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 
 /**
  * The Murim map with the real noise (docs/biomes/murim-map.md): the "normal" world preset puts it on the overworld,
- * and over the whole map (a sample every 400 blocks, two seeds) every land block of the bubble has a Murim biome of
+ * and over the whole map (a sample every 100 blocks, two seeds) every land block of the bubble has a Murim biome of
  * its own region, the ring is deep ocean and the world beyond is vanilla. It also draws the map: murim-map-<seed>.png
  * in the GameTest server's folder (build/game-test-run).
  */
@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 @PrefixGameTestTemplate(false)
 public final class MurimMapGameTests {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int HALF = 90_000, STEP = 400;
+    private static final int HALF = MurimMap.RADIUS + MurimMap.RING + 2_000, STEP = 100;
 
     private MurimMapGameTests() { }
 
@@ -78,7 +78,7 @@ public final class MurimMapGameTests {
     }
 
     /**
-     * The north's ranges: the ground's height over the whole north (a point every 1 000 blocks), with the real terrain
+     * The north's ranges: the ground's height over the whole north (a point every 250 blocks), with the real terrain
      * noise. Immense (the highest well above vanilla's usual peaks) without ever reaching the world's ceiling.
      */
     @GameTest(template = "foundation_arena", batch = "murim_map_heights", timeoutTicks = 2000)
@@ -94,7 +94,7 @@ public final class MurimMapGameTests {
         var heightAccessor = net.minecraft.world.level.LevelHeightAccessor.create(-64, 384);
         int highest = 0, count = 0, above200 = 0;
         long sum = 0;
-        for (int x = -60_000; x <= 60_000; x += 1_000) for (int z = -72_000; z <= -25_000; z += 1_000) {
+        for (int x = -16_000; x <= 16_000; x += 250) for (int z = -19_000; z <= -6_000; z += 250) {
             if (MurimMap.region(x, z) != MurimMap.Region.NORTH) continue;
             int h = generator.getBaseHeight(x, z, net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, heightAccessor, state);
             highest = Math.max(highest, h);
@@ -138,12 +138,12 @@ public final class MurimMapGameTests {
                     wrong++;
                     if (firstWrong == null) firstWrong = key.location() + " in the " + region + " at " + x + ", " + z;
                 }
-            } else if (reach < MurimMap.RADIUS - 3_000 && !sea && !b.is(BiomeTags.IS_BEACH) && !b.is(BiomeTags.IS_RIVER)
+            } else if (reach < MurimMap.RADIUS - MurimMap.EDGE - 200 && !sea && !b.is(BiomeTags.IS_BEACH) && !b.is(BiomeTags.IS_RIVER)
                     && !b.is(net.minecraft.world.level.biome.Biomes.DRIPSTONE_CAVES) && !b.is(net.minecraft.world.level.biome.Biomes.LUSH_CAVES)
                     && !b.is(net.minecraft.world.level.biome.Biomes.DEEP_DARK)) {
                 insideVanillaLand++;
             }
-            if (reach > MurimMap.RADIUS + 2_500 && reach < MurimMap.RADIUS + MurimMap.RING - 2_500 && !sea) ringLand++;
+            if (reach > MurimMap.RADIUS + MurimMap.EDGE + 200 && reach < MurimMap.RADIUS + MurimMap.RING - MurimMap.EDGE - 200 && !sea) ringLand++;
             int colour = COLOURS.getOrDefault(key, sea ? (b.is(BiomeTags.IS_DEEP_OCEAN) ? 0x1A3A6A : 0x2E5C9A) : 0x6E7A68);
             map.setRGB(px, pz, colour);
         }
