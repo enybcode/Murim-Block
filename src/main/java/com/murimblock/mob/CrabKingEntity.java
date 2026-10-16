@@ -57,7 +57,8 @@ import yesman.epicfight.world.damagesource.StunType;
  * moving. The pincers from the deep: he plunges both pincers into the ground and holds them there while two giant ones
  * (CrabPincerEntity), some seven blocks tall, burst up before his target, one on either side of it, the ground shaking
  * (client/CrabPincerShake), each sweeping all round, striking to its side and trying to pinch it. The mist: he breathes
- * a thick mist round him (CrabMistEntity) and is gone into it, unseen, until he strikes, is struck or it thins. The victim plays its own animations (crab_king_victim, crab_king_thrown), and a player sees it as a film
+ * a thick mist round him (CrabMistEntity) and is gone into it, unseen, until he strikes, is struck or it thins. The water
+ * ball: the crab man's, far bigger (WaterBallEntity), swelling between his raised pincers, hurled, bursting all round. The victim plays its own animations (crab_king_victim, crab_king_thrown), and a player sees it as a film
  * (client/GrabCinematic). Under half his health he roars and calls two armoured crabs out of the ground,
  * once. He breathes under water and moves faster in it. His health shows in a boss bar to the players near him. The crab
  * art's manual will be his drop when the art is made.
@@ -221,7 +222,84 @@ public class CrabKingEntity extends Monster {
             grabTick(server);
             burrowTick(server);
             mistTick(server);
+            orbTick(server);
         }
+    }
+
+    // ---- the water ball
+
+    /** The giant ball's size at its fullest (the crab man's is 1): about four blocks across. */
+    public static final float ORB_SCALE = 6.0F;
+    /** Its lesser ones: size, speed, spread (degrees) and delay (ticks) of each, as the crab man's volley. */
+    static final float[][] ORB_VOLLEY = {{2.0F, 0.74F, -7, 3}, {1.7F, 0.72F, 8, 5}, {1.9F, 0.70F, -3, 7}, {1.6F, 0.68F, 4, 9}};
+    /** Over his head, between his raised pincers (blocks up and ahead of his feet); the lesser ones circle it. */
+    static final double ORB_UP = 5.9, ORB_AHEAD = 0.4, ORB_CIRCLE = 2.6;
+    public static final float ORB_SPEED = 0.62F;
+    private final java.util.List<WaterBallEntity> orbs = new java.util.ArrayList<>();
+    /** Whether the one now playing has formed its ball, and hurled it. */
+    private boolean orbFormed, orbThrown;
+
+    private void orbTick(ServerLevel server) {
+        AnimationPlayer main = mainPlayer();
+        boolean playing = main != null && main.getRealAnimation() == CrabKingAnimations.WATER_BALL && !main.isEnd();
+        if (!playing) {
+            orbFormed = orbThrown = false;
+            orbs.clear();
+            return;
+        }
+        float t = main.getElapsedTime();
+        if (!orbFormed && t >= CrabKingAnimations.ORB_FORM) {
+            orbFormed = true;
+            formOrb(server);
+        }
+        if (orbFormed && !orbThrown) {
+            // It swells to its fullest a little before the throw.
+            float k = Math.min(1, (t - CrabKingAnimations.ORB_FORM) / (CrabKingAnimations.ORB_THROW - 0.2F - CrabKingAnimations.ORB_FORM));
+            for (WaterBallEntity ball : orbs)
+                if (ball.isAlive() && ball.state() == WaterBallEntity.CHARGING)
+                    ball.setBallScale(ball.isBig() ? 1 + (ORB_SCALE - 1) * k : ORB_VOLLEY[ball.slot() - 1][0] * (0.3F + 0.7F * k));
+            if (t >= CrabKingAnimations.ORB_THROW) {
+                orbThrown = true;
+                hurlOrb(server, getTarget());
+            }
+        }
+    }
+
+    /** The ball forms between his raised pincers, with its four lesser ones, gurgling. */
+    public void formOrb(ServerLevel server) {
+        orbs.clear();
+        orbs.add(WaterBallEntity.charging(this, 1.0F, 0));
+        for (int i = 0; i < ORB_VOLLEY.length; i++) orbs.add(WaterBallEntity.charging(this, ORB_VOLLEY[i][0] * 0.3F, i + 1));
+        orbs.forEach(server::addFreshEntity);
+        server.playSound(null, getX(), getY() + ORB_UP, getZ(), SoundEvents.BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundSource.HOSTILE, 2.0F, 0.5F);
+        server.playSound(null, getX(), getY() + ORB_UP, getZ(), SoundEvents.ELDER_GUARDIAN_AMBIENT_LAND, SoundSource.HOSTILE, 1.4F, 0.6F);
+    }
+
+    /** Hurled at his target (straight ahead without one): the giant first, its lesser ones after it. */
+    public void hurlOrb(ServerLevel server, @Nullable LivingEntity target) {
+        for (WaterBallEntity ball : orbs) {
+            if (!ball.isAlive() || ball.state() != WaterBallEntity.CHARGING) continue;
+            if (ball.isBig()) {
+                ball.setBallScale(ORB_SCALE);
+                ball.launch(target, ORB_SPEED, 0, 0);
+            } else {
+                float[] v = ORB_VOLLEY[ball.slot() - 1];
+                ball.setBallScale(v[0]);
+                ball.launch(target, v[1], v[2], (int) v[3]);
+            }
+        }
+        orbs.clear();
+        server.playSound(null, getX(), getY() + ORB_UP, getZ(), SoundEvents.PLAYER_SPLASH_HIGH_SPEED, SoundSource.HOSTILE, 2.0F, 0.5F);
+    }
+
+    /** Where his ball is held (its middle): over his head, between his raised pincers; the lesser ones circle it. */
+    public Vec3 orbPoint(int slot, int age) {
+        double rad = Math.toRadians(yBodyRot);
+        Vec3 forward = new Vec3(-Math.sin(rad), 0, Math.cos(rad)), right = new Vec3(-forward.z, 0, forward.x);
+        Vec3 at = position().add(0, ORB_UP, 0).add(forward.scale(ORB_AHEAD));
+        if (slot == 0) return at;
+        double a = Math.toRadians(slot * 90 + (tickCount + age) * 12);
+        return at.add(right.scale(Math.cos(a) * ORB_CIRCLE)).add(forward.scale(Math.sin(a) * ORB_CIRCLE * 0.6)).add(0, Math.sin(a * 2) * 0.5, 0);
     }
 
     // ---- the mist

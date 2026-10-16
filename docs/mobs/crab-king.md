@@ -89,6 +89,13 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   Dedans, la vue des joueurs se ferme à 7 blocs de gris (`client/CrabMistClient`). **Caché, il ne peut que lancer sa
   prise**, aussitôt à portée et quelle que soit sa recharge : il rôde sans être vu et sort de la brume en attrapant. Il
   reparaît quand il attaque, quand on le frappe ou quand la brume s'éclaircit. Jamais sauvegardée : rechargé, il se voit.
+- **Bulle d'eau géante** (16/10, demande d'Enzo : celle de l'homme-crabe, en bien plus grand ; `crab_king_water_ball`,
+  6 à 18 blocs, recharge 13 s) : il lève ses deux pinces au-dessus de la tête, grandes ouvertes ; une boule d'eau
+  (`WaterBallEntity`, le même modèle GeckoLib) se forme entre elles à 0,35 s et enfle jusqu'à 6 fois sa taille (près de
+  4 blocs de large), quatre plus petites tournant autour ; il se cambre et la jette sur sa cible à 1,5 s, les petites
+  derrière elle. Touché de plein fouet : 1,1 × son attaque ; là où elle éclate (sol, mur ou corps), **tout ce qui est à
+  4,5 blocs** prend 0,7 ×, est projeté et ralenti (Lenteur II, 4 s) ; une petite : 0,3 ×. Une garde levée à temps la
+  pare comme un coup. Elle éteint le feu. Ni le roi, ni ses pinces, ni les crabes ne sont touchés.
 - **Rage** : sous la moitié de sa vie, une seule fois (sauvegardé), il rugit (`crab_king_roar`) et deux crabes cuirassés
   sortent du sol à ses côtés, sur sa cible.
 - Un crabe : il respire sous l'eau (tag `minecraft:can_breathe_under_water`) et va plus vite dans l'eau.
@@ -123,8 +130,9 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   un joueur tenu qui ne peut rien faire (entravé, verrous d'Epic Fight, technique refusée, attaque annulée) jusqu'à
   l'atterrissage, et libéré à la mort du boss ; les deux pinces des profondeurs (de part et d'autre de la cible, la
   seconde après la première, toutes deux la pinçant) ; les trois coups d'une pince géante, chacun sur son zombie ; la brume
-  (remplit l'antre jusqu'à ses parois et sa voûte, sans en déborder ; il y disparaît, reparaît frappé ou quand elle s'éclaircit ; caché, il ne fait que sa prise et en sort visible) ; il se bat avec ses pinces et touche.
+  (remplit l'antre jusqu'à ses parois et sa voûte, sans en déborder ; il y disparaît, reparaît frappé ou quand elle s'éclaircit ; caché, il ne fait que sa prise et en sort visible) ; la
+  bulle d'eau géante (enfle à sa pleine taille, frappe sa cible, éclate sur son voisin) ; il se bat avec ses pinces et touche.
 - En vrai client : `MURIM_TOUR_ONLY=king gradlew -PgameTests runWeaponTour` (debout de chaque côté, idle, marche, ses trois
   attaques, sa prise sur un zombie du désert jeté dans un mur (cratère), ses pinces des profondeurs sur un zombie du désert (plan large), la même vue par le joueur attrapé (`king-grab-pov` :
-  le joueur de la caméra lui-même, en survie, protégé des dégâts), son rugissement, sa brume vue de dehors puis de dedans (`king-mist`, joueur de la caméra en créatif : un spectateur
+  le joueur de la caméra lui-même, en survie, protégé des dégâts), son rugissement, sa bulle d'eau géante sur un zombie du désert (`king-water-ball`), sa brume vue de dehors puis de dedans (`king-mist`, joueur de la caméra en créatif : un spectateur
   voit les invisibles), sa mort).
