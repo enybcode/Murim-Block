@@ -1,5 +1,7 @@
 # Arène céleste du Seigneur des bandits : le météore creusé
 
+![Le vrai modèle, rendu depuis ses blocs](render-overview.jpg)
+
 `warlord_sky_arena.schem` est le modèle réel de l'arène de la seconde phase du
 [Seigneur des bandits](../../../docs/mobs/bandit-warlord.md#seconde-phase--larène-dans-le-ciel-maquette-du-1610-à-valider).
 C'est la structure à construire. Les images de la fiche du boss (`docs/mobs/images/warlord-sky-arena/`) ne sont que la
@@ -49,6 +51,9 @@ ce sont des lignes fines. On le remplacera par un bloc Murim si c'est gênant en
 
 - **Généré par** `node scripts/worldgen/warlord-sky-arena.cjs`. Même forme que la maquette
   (`scripts/concepts/warlord-sky-arena.js`), mais plein, en vrais blocs, avec un sol de combat parfaitement plat.
+- **`render-overview.jpg`, `render-bowl.jpg`, `render-floor.jpg`** : rendus 3D calculés depuis les blocs du `.schem` lui-même
+  (`node scripts/concepts/render-sky-arena-schem.cjs --port=<Blockbench isolé>`, puis passés en JPEG). Les personnages
+  pour l'échelle (le Seigneur et deux joueurs) sont ajoutés au rendu, ils ne sont pas dans la structure.
 - **`plans-de-l-arene.png`** est calculé depuis ses blocs : en haut, vu de dessus ; en bas, une coupe par le milieu.
   La ligne rouge marque la hauteur du sol de combat.
 - **`export-stats.json`** : dimensions, palette et nombre de blocs, positions des braseros et des bannières,
