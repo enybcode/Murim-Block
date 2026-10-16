@@ -27,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public final class BloodNinja extends Monster {
+public class BloodNinja extends Monster {
     private static final EntityDataAccessor<Long> DAO_START = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Float> DAO_YAW = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DAO_KIND = SynchedEntityData.defineId(BloodNinja.class, EntityDataSerializers.INT);
@@ -67,11 +67,15 @@ public final class BloodNinja extends Monster {
     }
 
     public int getDaoAttackVariant() { return entityData.get(DAO_KIND); }
-    public int getOutfit() { return Math.floorMod(entityData.get(OUTFIT), OUTFITS); }
+    public int getOutfit() { return Math.floorMod(entityData.get(OUTFIT), outfitCount()); }
+    /** How many outfits its rank has (the soldiers have their own, BloodSoldier). */
+    protected int outfitCount() { return OUTFITS; }
+    /** Its attack, set again when it is loaded. */
+    protected double baseAttack() { return 4; }
     /** 0 for none, 1 to 4 for the four armours. */
     public int getArmour() { return Math.floorMod(entityData.get(ARMOUR), ARMOURS); }
     public void setLook(int outfit, int armour) {
-        entityData.set(OUTFIT, Math.floorMod(outfit, OUTFITS));
+        entityData.set(OUTFIT, Math.floorMod(outfit, outfitCount()));
         entityData.set(ARMOUR, Math.floorMod(armour, ARMOURS));
     }
 
@@ -194,7 +198,7 @@ public final class BloodNinja extends Monster {
         super.readAdditionalSaveData(tag);
         this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(BloodSect.BLOOD_DAO.get()));
         this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-        this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4);
+        this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(baseAttack());
         this.setDropChance(EquipmentSlot.MAINHAND, 0);
         this.bloodStep.reset();
         this.daoM1.reset();

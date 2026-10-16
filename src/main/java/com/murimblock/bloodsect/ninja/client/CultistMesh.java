@@ -18,21 +18,24 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * The Blood Cultists' look, made in Murimblock (scripts/animation/blood-cultist-game.cjs): its faces as quads, by part of
  * the ninja's model, in each part's own space (vanilla pixels), with a free uv each (a vanilla cube's box uv cannot hold
- * them); and the four light armours' quads. Read once from assets/bloodsect/models/entity/blood_cultist.json.
+ * them); and the four light armours' quads. Read once from assets/murimblock/models/entity/blood_cultist.json. The Blood
+ * Soldiers' (soldier(), scripts/animation/blood-soldier-game.cjs) are read the same way from blood_soldier.json, their
+ * armour by the slot each piece of the Blood Lacquer is worn in (head, chest, legs, feet).
  */
 public final class CultistMesh {
-    private static final ResourceLocation FILE = ResourceLocation.fromNamespaceAndPath(BloodSect.ID, "models/entity/blood_cultist.json");
+    private static final Source CULTIST = new Source("blood_cultist"), SOLDIER = new Source("blood_soldier");
     /** The armours, in the order of BloodNinja's armour index (1 to 4). */
     public static final List<String> ARMOURS = List.of("a_single_pad", "b_brigandine", "c_iron_caps", "d_lamellae");
-    private static CultistMesh loaded;
-    private static boolean failed;
 
     /** Each part's quads: 4 corners of (x, y, z, u, v), then the normal: 23 floats a quad. */
     private final Map<String, float[][]> parts;
     private final Map<String, Map<String, float[][]>> armours = new HashMap<>();
     public final List<String> outfits;
+    /** Its outfits' textures' folder, textures/entity/<name>/. */
+    private final String name;
 
-    private CultistMesh(JsonObject json) {
+    private CultistMesh(String name, JsonObject json) {
+        this.name = name;
         this.parts = parts(json.getAsJsonObject("parts"));
         JsonObject a = json.getAsJsonObject("armour");
         for (String design : a.keySet()) armours.put(design, parts(a.getAsJsonObject(design)));
@@ -54,22 +57,44 @@ public final class CultistMesh {
         return out;
     }
 
-    /** The mesh, read the first time it is asked for (null if it cannot be read: the old look is drawn instead). */
+    /** The cultists' mesh, read the first time it is asked for (null if it cannot be read: the old look is drawn instead). */
     @Nullable public static CultistMesh get() {
-        if (loaded != null || failed) return loaded;
-        try (Reader r = Minecraft.getInstance().getResourceManager().openAsReader(FILE)) {
-            loaded = new CultistMesh(JsonParser.parseReader(r).getAsJsonObject());
-        } catch (Exception e) {
-            failed = true;
-            com.mojang.logging.LogUtils.getLogger().error("Could not read the Blood Cultist's mesh {}", FILE, e);
+        return CULTIST.get();
+    }
+
+    /** The soldiers' mesh, read the first time it is asked for (null if it cannot be read). */
+    @Nullable public static CultistMesh soldier() {
+        return SOLDIER.get();
+    }
+
+    /** One mesh file, read once. */
+    private static final class Source {
+        private final String name;
+        private final ResourceLocation file;
+        private CultistMesh loaded;
+        private boolean failed;
+
+        Source(String name) {
+            this.name = name;
+            this.file = ResourceLocation.fromNamespaceAndPath(BloodSect.ID, "models/entity/" + name + ".json");
         }
-        return loaded;
+
+        @Nullable CultistMesh get() {
+            if (loaded != null || failed) return loaded;
+            try (Reader r = Minecraft.getInstance().getResourceManager().openAsReader(file)) {
+                loaded = new CultistMesh(name, JsonParser.parseReader(r).getAsJsonObject());
+            } catch (Exception e) {
+                failed = true;
+                com.mojang.logging.LogUtils.getLogger().error("Could not read the Blood Sect's mesh {}", file, e);
+            }
+            return loaded;
+        }
     }
 
     /** The texture of an outfit (its blink a moment every few seconds). */
     public ResourceLocation texture(int outfit, boolean blink) {
         String key = outfits.get(Math.floorMod(outfit, outfits.size()));
-        return ResourceLocation.fromNamespaceAndPath(BloodSect.ID, "textures/entity/blood_cultist/" + key + (blink ? "_blink" : "") + ".png");
+        return ResourceLocation.fromNamespaceAndPath(BloodSect.ID, "textures/entity/" + name + "/" + key + (blink ? "_blink" : "") + ".png");
     }
 
     public static ResourceLocation armourTexture(int armour) {
@@ -83,7 +108,12 @@ public final class CultistMesh {
 
     /** One armour's quads of one part (armour 1 to 4). */
     public float[][] armour(int armour, String part) {
-        Map<String, float[][]> a = armours.get(ARMOURS.get(armour - 1));
+        return armour(ARMOURS.get(armour - 1), part);
+    }
+
+    /** The quads of one part of the armour (or piece of armour) of that name. */
+    public float[][] armour(String key, String part) {
+        Map<String, float[][]> a = armours.get(key);
         return a == null ? new float[0][] : a.getOrDefault(part, new float[0][]);
     }
 

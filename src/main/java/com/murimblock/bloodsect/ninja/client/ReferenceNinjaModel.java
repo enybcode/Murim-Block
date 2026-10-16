@@ -21,8 +21,16 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
     private final ModelPart rightForearm, leftForearm, rightShin, leftShin;
     private final ModelPart scarfTail, scarfTip, tabardLeft, tabardRight;
 
+    /** Whose look it draws: the cultists' (CultistMesh.get) or the soldiers' (CultistMesh.soldier). */
+    private final java.util.function.Supplier<CultistMesh> meshes;
+
     public ReferenceNinjaModel(ModelPart root) {
+        this(root, CultistMesh::get);
+    }
+
+    public ReferenceNinjaModel(ModelPart root, java.util.function.Supplier<CultistMesh> meshes) {
         super(root);
+        this.meshes = meshes;
         this.root = root;
         this.rightForearm = this.rightArm.getChild("right_forearm");
         this.leftForearm = this.leftArm.getChild("left_forearm");
@@ -67,10 +75,35 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
             this.rightLeg.xRot = this.leftLeg.xRot = -1.3F;
             this.rightShin.xRot = this.leftShin.xRot = 1.3F;
         }
+        if (ninja instanceof com.murimblock.bloodsect.ninja.BloodSoldier) soldierStance(phase, amount, age);
         float daoAge = ninja.getDaoAttackAge(Mth.clamp(age - ninja.tickCount, 0, 1));
         if (daoAge < DaoAttackMotion.duration(ninja.getDaoAttackVariant())) {
             applyDaoPose(daoAge,ninja.getDaoAttackVariant());
         }
+    }
+
+    /**
+     * The Blood Soldier's own idle and walk over the cultists' (Enzo, 17/10/2026): it stands straighter, its left hand
+     * resting on its sash by the dao, and now and then looks about; it marches with a firmer step, the left hand staying
+     * at its sash, the right arm swinging short.
+     */
+    private void soldierStance(float phase, float amount, float age) {
+        float stride = Mth.cos(phase) * amount;
+        float look = Mth.sin(age * .021F) * Mth.sin(age * .0073F);
+        this.body.xRot = amount * .03F;
+        this.body.zRot = stride * .015F;
+        this.head.yRot += look * .35F * (1 - amount);
+        this.rightLeg.xRot = stride * .75F;
+        this.leftLeg.xRot = -stride * .75F;
+        this.rightArm.xRot = -stride * .3F + Mth.sin(age * .07F) * .01F;
+        this.rightArm.zRot = .12F;
+        // The left hand on the sash: the arm hanging, turned in, the forearm bent across the waist.
+        this.leftArm.xRot = -.12F + stride * .04F;
+        this.leftArm.zRot = .1F;
+        this.leftArm.yRot = .95F;
+        this.leftForearm.xRot = -1.25F;
+        this.tabardLeft.xRot = -.04F - Math.max(0, -stride) * .4F;
+        this.tabardRight.xRot = -.04F - Math.max(0, stride) * .4F;
     }
 
     public void applyDaoPose(float age,int variant) {
@@ -105,8 +138,8 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
      * The hand, from the forearm's pivot: Murimblock's cultist has forearms of full length (the hand 10 pixels below the
      * shoulder), the imported ninja shorter ones (ReferenceNinjaGeometry.HAND_OFFSET_Y).
      */
-    private static float handOffsetY() {
-        return CultistMesh.get() != null ? -3.8F : ReferenceNinjaGeometry.HAND_OFFSET_Y;
+    private float handOffsetY() {
+        return meshes.get() != null ? -3.8F : ReferenceNinjaGeometry.HAND_OFFSET_Y;
     }
 
     /**
@@ -114,7 +147,11 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
      * one of the four armours (1 to 4). Head and arms follow the body, as in the ninja's own render.
      */
     public void renderCultist(CultistMesh mesh, int armour, PoseStack stack, VertexConsumer buffer, int light, int overlay, int color) {
-        java.util.function.Function<String, float[][]> quads = part -> armour == 0 ? mesh.part(part) : mesh.armour(armour, part);
+        renderQuads(part -> armour == 0 ? mesh.part(part) : mesh.armour(armour, part), stack, buffer, light, overlay, color);
+    }
+
+    /** Draws the quads `quads` gives for each part (by its name in the mesh file) on this model's parts, posed as they are. */
+    public void renderQuads(java.util.function.Function<String, float[][]> quads, PoseStack stack, VertexConsumer buffer, int light, int overlay, int color) {
         stack.pushPose();
         this.body.translateAndRotate(stack);
         CultistMesh.draw(quads.apply("body"), stack, buffer, light, overlay, color);
@@ -141,7 +178,7 @@ public final class ReferenceNinjaModel extends HumanoidModel<BloodNinja> {
 
     @Override
     public void renderToBuffer(PoseStack stack, VertexConsumer buffer, int light, int overlay, int color) {
-        CultistMesh mesh = CultistMesh.get();
+        CultistMesh mesh = meshes.get();
         if (mesh != null) {
             renderCultist(mesh, 0, stack, buffer, light, overlay, color);
             return;

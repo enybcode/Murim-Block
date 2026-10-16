@@ -214,6 +214,21 @@ public final class MurimItems {
                 .rarity(Rarity.RARE).durability(type.getDurability(MurimArmorMaterials.PEAK_GUARD_DURABILITY))));
     }
 
+    /**
+     * The Blood Lacquer, the Blood Sect's soldiers' armour (MurimArmorMaterials.BLOOD_LACQUER): an iron face guard with
+     * fangs, a cuirass of blood-red lacquered plates with flaring pauldrons and bracers, tassets with knee guards,
+     * greaves. A soldier wears it all and may drop any piece (com.murimblock.bloodsect.ninja.BloodSoldier).
+     */
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_MASK = bloodLacquer("blood_lacquer_mask", ArmorItem.Type.HELMET);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_CUIRASS = bloodLacquer("blood_lacquer_cuirass", ArmorItem.Type.CHESTPLATE);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_TASSETS = bloodLacquer("blood_lacquer_tassets", ArmorItem.Type.LEGGINGS);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_GREAVES = bloodLacquer("blood_lacquer_greaves", ArmorItem.Type.BOOTS);
+
+    private static DeferredItem<ArmorItem> bloodLacquer(String id, ArmorItem.Type type) {
+        return ITEMS.register(id, () -> new ArmorItem(MurimArmorMaterials.BLOOD_LACQUER, type, new Item.Properties()
+                .rarity(Rarity.UNCOMMON).durability(type.getDurability(MurimArmorMaterials.BLOOD_LACQUER_DURABILITY))));
+    }
+
     /** The azure of his coat and the gold of his armour. */
     public static final DeferredItem<DeferredSpawnEggItem> PEAK_CAPTAIN_SPAWN_EGG = ITEMS.register("peak_captain_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.PEAK_CAPTAIN, 0x2B5FA8, 0xE9C46A, new Item.Properties()));
@@ -315,6 +330,10 @@ public final class MurimItems {
                         output.accept(PEAK_GUARD_LAMELLAR.get());
                         output.accept(PEAK_GUARD_TASSETS.get());
                         output.accept(PEAK_GUARD_GREAVES.get());
+                        output.accept(BLOOD_LACQUER_MASK.get());
+                        output.accept(BLOOD_LACQUER_CUIRASS.get());
+                        output.accept(BLOOD_LACQUER_TASSETS.get());
+                        output.accept(BLOOD_LACQUER_GREAVES.get());
                         MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
                         pendants().forEach(pendant -> output.accept(pendant.get()));

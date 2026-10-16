@@ -586,5 +586,11 @@
   "item.murimblock.dark_blood_bucket": "Dark Blood Bucket",
   "entity.murimblock.blood_ninja": "Blood Ninja",
   "item.murimblock.blood_ninja_spawn_egg": "Blood Ninja Spawn Egg",
-  "item.murimblock.blood_dao": "Blood Dao"
+  "item.murimblock.blood_dao": "Blood Dao",
+  "entity.murimblock.blood_soldier": "Blood Soldier",
+  "item.murimblock.blood_soldier_spawn_egg": "Blood Soldier Spawn Egg",
+  "item.murimblock.blood_lacquer_mask": "Blood Lacquer Mask",
+  "item.murimblock.blood_lacquer_cuirass": "Blood Lacquer Cuirass",
+  "item.murimblock.blood_lacquer_tassets": "Blood Lacquer Tassets",
+  "item.murimblock.blood_lacquer_greaves": "Blood Lacquer Greaves"
 }

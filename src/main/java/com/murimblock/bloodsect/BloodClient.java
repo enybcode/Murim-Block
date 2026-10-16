@@ -2,6 +2,7 @@ package com.murimblock.bloodsect;
 
 import com.murimblock.bloodsect.ninja.client.ReferenceNinjaModel;
 import com.murimblock.bloodsect.ninja.client.BloodNinjaRenderer;
+import com.murimblock.bloodsect.ninja.client.BloodSoldierRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +28,7 @@ public final class BloodClient {
     @SubscribeEvent
     public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(BloodSect.BLOOD_NINJA.get(), BloodNinjaRenderer::new);
+        event.registerEntityRenderer(BloodSect.BLOOD_SOLDIER.get(), BloodSoldierRenderer::new);
     }
 
     @SubscribeEvent

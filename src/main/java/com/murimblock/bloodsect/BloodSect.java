@@ -1,6 +1,7 @@
 package com.murimblock.bloodsect;
 
 import com.murimblock.bloodsect.ninja.BloodNinja;
+import com.murimblock.bloodsect.ninja.BloodSoldier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -32,8 +33,8 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
 /**
  * The Blood Sect (Colleuhu95's Blood Sect Decor, merged into Murimblock on 16/10/2026): its dark blood (a liquid of its own,
- * not the Sanguine Art's blood), the Blood Ninja, the cultists of its lowest ranks, with their Blood Dao, and the blood
- * droplet particle. Registered by Murimblock (register).
+ * not the Sanguine Art's blood), the Blood Ninja, the cultists of its lowest ranks, with their Blood Dao, the Blood Soldier,
+ * its middle rank (17/10/2026), and the blood droplet particle. Registered by Murimblock (register).
  */
 public final class BloodSect {
     public static final String ID = com.murimblock.Murimblock.MOD_ID;
@@ -61,11 +62,17 @@ public final class BloodSect {
         new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
     public static final DeferredHolder<EntityType<?>, EntityType<BloodNinja>> BLOOD_NINJA = ENTITIES.register("blood_ninja", () ->
         EntityType.Builder.of(BloodNinja::new, MobCategory.MONSTER).sized(.6F, 1.9F).clientTrackingRange(10).updateInterval(1).build(ID + ":blood_ninja"));
+    public static final DeferredHolder<EntityType<?>, EntityType<BloodSoldier>> BLOOD_SOLDIER = ENTITIES.register("blood_soldier", () ->
+        EntityType.Builder.of(BloodSoldier::new, MobCategory.MONSTER).sized(.6F, 1.9F).clientTrackingRange(10).updateInterval(1).build(ID + ":blood_soldier"));
     // Mob equipment for this visual test: no recipe, creative listing or loot entry.
     // The ninja's existing attack attribute controls damage independently of the prop.
     public static final DeferredItem<Item> BLOOD_DAO = ITEMS.register("blood_dao", () -> new Item(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<DeferredSpawnEggItem> BLOOD_NINJA_SPAWN_EGG = ITEMS.register("blood_ninja_spawn_egg", () ->
         new DeferredSpawnEggItem(BLOOD_NINJA, 0x1B1C23, 0x670914, new Item.Properties()));
+
+    /** The black iron of its armour and the red of its lacquer. */
+    public static final DeferredItem<DeferredSpawnEggItem> BLOOD_SOLDIER_SPAWN_EGG = ITEMS.register("blood_soldier_spawn_egg", () ->
+        new DeferredSpawnEggItem(BLOOD_SOLDIER, 0x3A3B40, 0x8A1620, new Item.Properties()));
 
     private static BaseFlowingFluid.Properties properties() {
         return new BaseFlowingFluid.Properties(BLOOD_TYPE, BLOOD, FLOWING_BLOOD)
@@ -89,9 +96,13 @@ public final class BloodSect {
 
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(BLOOD_NINJA.get(), BloodNinja.createAttributes().build());
+        event.put(BLOOD_SOLDIER.get(), BloodSoldier.createAttributes().build());
     }
 
     private static void creativeItems(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey().equals(CreativeModeTabs.SPAWN_EGGS)) event.accept(BLOOD_NINJA_SPAWN_EGG.get());
+        if (event.getTabKey().equals(CreativeModeTabs.SPAWN_EGGS)) {
+            event.accept(BLOOD_NINJA_SPAWN_EGG.get());
+            event.accept(BLOOD_SOLDIER_SPAWN_EGG.get());
+        }
     }
 }

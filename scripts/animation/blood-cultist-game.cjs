@@ -35,8 +35,8 @@ const PIVOT = {
 const toVanilla = ([x, y, z]) => [-x, 24 - y, z];
 const r4 = v => Math.round(v * 1e4) / 1e4;
 
-/** Every face of `pieces` (packed) as a quad in its part's space. */
-function quads(pieces) {
+/** Every face of `pieces` (packed in an atlas of `atlas` texels) as a quad in its part's space. */
+function quads(pieces, atlas = ATLAS) {
   const out = {};
   for (const p of pieces) {
     const part = PART[p.bone];
@@ -53,7 +53,7 @@ function quads(pieces) {
       const len = Math.hypot(...n);
       if (len < 1e-9) continue;
       const q = [];
-      cs.forEach(([x, y, z], i) => q.push(r4(x - px), r4(y - py), r4(z - pz), r4(uv[i][0] / ATLAS), r4(uv[i][1] / ATLAS)));
+      cs.forEach(([x, y, z], i) => q.push(r4(x - px), r4(y - py), r4(z - pz), r4(uv[i][0] / atlas), r4(uv[i][1] / atlas)));
       q.push(...n.map(x => r4(x / len)));
       (out[part] = out[part] || []).push(q);
     }
