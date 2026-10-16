@@ -116,9 +116,12 @@ public final class KnockdownService {
         return false;
     }
 
-    /** Whether the player may fight, use items or skills: not while down, carried, carrying or finishing someone. */
+    /**
+     * Whether the player may fight, use items or skills: not while down, carried, carrying or finishing someone, nor
+     * while the Crab King holds them in his pincer.
+     */
     public static boolean isHindered(Player player) {
-        return isDowned(player) || isCarrying(player) || isExecuting(player);
+        return isDowned(player) || isCarrying(player) || isExecuting(player) || com.murimblock.mob.CrabKingEntity.isHeld(player);
     }
 
     // ---------------------------------------------------------------- knock-down and recovery

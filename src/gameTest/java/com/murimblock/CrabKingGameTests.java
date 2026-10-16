@@ -134,6 +134,68 @@ public final class CrabKingGameTests {
         });
     }
 
+    /**
+     * A player in his pincer can do nothing: hindered (no attack, item, technique or meditation), pinned in Epic Fight
+     * (no move, turn, attack, skill, item, switch), an attack of theirs cancelled; free again once slammed down.
+     */
+    @GameTest(template = "foundation_arena", batch = "crab_king_held", timeoutTicks = 140)
+    public static void aPlayerInHisPincerCanDoNothing(GameTestHelper helper) {
+        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 0));
+        king.setNoAi(true);
+        king.setYRot(0);
+        king.yBodyRot = 0;
+        ServerPlayer player = player(helper);
+        net.minecraft.world.phys.Vec3 at = net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(1, 1, 2)));
+        player.moveTo(at.x, at.y, at.z, 180, 0);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(king.catchBefore(helper.getLevel()) && king.held() == player, "The pincer did not catch the player");
+            helper.assertTrue(CrabKingEntity.isHeld(player), "The player is not counted held");
+            helper.assertTrue(com.murimblock.combat.knockdown.KnockdownService.isHindered(player), "A held player is not hindered");
+        });
+        helper.runAfterDelay(8, () -> {
+            var state = EpicFightCapabilities.getEntityPatch(player, LivingEntityPatch.class).getEntityState();
+            var pp = EpicFightCapabilities.getEntityPatch(player, LivingEntityPatch.class);
+            helper.assertTrue(state.inaction() && state.movementLocked() && state.turningLocked(), "A held player can still move: " + state
+                    + ", playing " + pp.getAnimator().getPlayerFor(null).getRealAnimation() + ", armature biped " + (pp.getArmature() == yesman.epicfight.gameasset.Armatures.BIPED.get()) + " " + pp.getArmature());
+            helper.assertTrue(!state.canBasicAttack() && !state.canUseSkill() && !state.canUseItem() && !state.canSwitchHoldingItem(),
+                    "A held player can still attack, use a skill or an item: " + state);
+            helper.assertTrue(com.murimblock.martial.MartialService.castSlot(player, 0) == com.murimblock.martial.MartialService.CastResult.HINDERED
+                    || com.murimblock.martial.MartialService.castSlot(player, 0) == com.murimblock.martial.MartialService.CastResult.NO_TECHNIQUE,
+                    "A held player could cast");
+            var attack = new net.neoforged.neoforge.event.entity.player.AttackEntityEvent(player, king);
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(attack);
+            helper.assertTrue(attack.isCanceled(), "A held player's attack on the king went through");
+        });
+        helper.runAfterDelay(90, () -> {
+            helper.assertTrue(king.held() == null && !CrabKingEntity.isHeld(player), "The player is still held after the slam");
+            helper.assertTrue(!com.murimblock.combat.knockdown.KnockdownService.isHindered(player), "The player is still hindered after the slam");
+            king.discard();
+            cleanup(player);
+            helper.succeed();
+        });
+    }
+
+    /** Killed while he holds a player, he lets go: no one stays stuck. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_held_kill", timeoutTicks = 60)
+    public static void killedHeLetsGo(GameTestHelper helper) {
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 0));
+        king.setNoAi(true);
+        king.setYRot(0);
+        king.yBodyRot = 0;
+        ServerPlayer player = player(helper);
+        net.minecraft.world.phys.Vec3 at = net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(1, 1, 2)));
+        player.moveTo(at.x, at.y, at.z, 180, 0);
+        helper.runAfterDelay(2, () -> helper.assertTrue(king.catchBefore(helper.getLevel()), "The pincer did not catch the player"));
+        helper.runAfterDelay(6, () -> king.kill());
+        helper.runAfterDelay(8, () -> {
+            helper.assertTrue(!CrabKingEntity.isHeld(player) && !com.murimblock.combat.knockdown.KnockdownService.isHindered(player),
+                    "The player stays held by a dead king");
+            cleanup(player);
+            helper.succeed();
+        });
+    }
+
     /** Nothing before him: the pincer shuts on air. */
     @GameTest(template = "foundation_arena", batch = "crab_king_grab_miss")
     public static void theGrabCatchesNothingOutOfReach(GameTestHelper helper) {

@@ -51,7 +51,8 @@ import yesman.epicfight.world.damagesource.StunType;
  * moved by blows) and slow, walking heavily (his steps are heard), his pincers his weapons: a sweep, a lunging snap and a
  * slam whose landing sends a shockwave (CrabKingPatch), every one parryable; and the grab: what the great pincer catches
  * is lifted up high, squeezed three times and slammed to the ground, knocked down. A guard does not stop the grab; a
- * perfect parry as the pincer shuts makes it miss. Under half his health he roars and calls two armoured crabs out of the ground,
+ * perfect parry as the pincer shuts makes it miss. A player he holds can do nothing until he lets go ({@link #isHeld}):
+ * no attack, guard, roll, item, technique or meditation, no moving. Under half his health he roars and calls two armoured crabs out of the ground,
  * once. He breathes under water and moves faster in it. His health shows in a boss bar to the players near him. The crab
  * art's manual will be his drop when the art is made.
  */
@@ -76,6 +77,8 @@ public class CrabKingEntity extends Monster {
     /** Whether the grab now playing has shut its pincer yet; who the pincer holds (null: no one), for how long, slammed yet. */
     private boolean grabShut, slammedDown;
     @Nullable private LivingEntity held;
+    /** The players a Crab King holds now, and which: server only. */
+    private static final java.util.Map<java.util.UUID, java.lang.ref.WeakReference<CrabKingEntity>> HOLDERS = new java.util.concurrent.ConcurrentHashMap<>();
     private int holdTicks;
     /** Ticks to his next heavy step while he walks. */
     private int stepIn;
@@ -197,6 +200,50 @@ public class CrabKingEntity extends Monster {
         return patch == null ? null : patch.getAnimator().getPlayerFor(null);
     }
 
+    /**
+     * Whether a Crab King holds this player now: it can do nothing (KnockdownService.isHindered counts it). Checked
+     * against the king himself, so a king killed, unloaded or broken off never leaves anyone stuck.
+     */
+    public static boolean isHeld(Player player) {
+        var ref = HOLDERS.get(player.getUUID());
+        CrabKingEntity king = ref == null ? null : ref.get();
+        if (king != null && king.isAlive() && !king.isRemoved() && king.held == player) return true;
+        if (ref != null) HOLDERS.remove(player.getUUID());
+        return false;
+    }
+
+    /** The catch pinned: off any mount, its own pinned animation (a humanoid: a player, a biped mob), counted held. */
+    private void pin(LivingEntity victim) {
+        victim.stopRiding();
+        if (victim instanceof Player player) HOLDERS.put(player.getUUID(), new java.lang.ref.WeakReference<>(this));
+        LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(victim, LivingEntityPatch.class);
+        // Each patch has its own copy of the biped skeleton: any humanoid one plays it.
+        if (patch != null && patch.getArmature() instanceof yesman.epicfight.model.armature.HumanoidArmature)
+            patch.playAnimationSynchronized(CrabKingAnimations.HELD, 0.0F);
+    }
+
+    /** The pincer lets go; broken off (not the slam), the catch is freed with a short stun that ends its pinned pose. */
+    private void letGo(boolean brokenOff) {
+        LivingEntity victim = held;
+        held = null;
+        if (victim == null) return;
+        if (victim instanceof Player player) HOLDERS.remove(player.getUUID());
+        if (brokenOff && victim.isAlive()) {
+            LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(victim, LivingEntityPatch.class);
+            if (patch != null) patch.applyStun(StunType.SHORT, 0.3F);
+        }
+    }
+
+    @Override public void remove(RemovalReason reason) {
+        letGo(true);
+        super.remove(reason);
+    }
+
+    @Override public void die(DamageSource source) {
+        letGo(true);
+        super.die(source);
+    }
+
     /** Who the great pincer holds now (null: no one). */
     @Nullable public LivingEntity held() {
         return held;
@@ -216,7 +263,7 @@ public class CrabKingEntity extends Monster {
         // Let go when the hold is over or broken off (the hold may take a tick to replace the grab).
         boolean holding = playing == CrabKingAnimations.GRAB_HOLD && !main.isEnd() || holdTicks < 2 && playing == CrabKingAnimations.GRAB;
         if (!holding || !held.isAlive() || !isAlive() || held.level() != level()) {
-            held = null;
+            letGo(true);
             return;
         }
         holdTicks++;
@@ -264,6 +311,7 @@ public class CrabKingEntity extends Monster {
         held = caught;
         holdTicks = 0;
         slammedDown = false;
+        pin(caught);
         LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(this, LivingEntityPatch.class);
         if (patch != null) patch.playAnimationSynchronized(CrabKingAnimations.GRAB_HOLD, 0.0F);
         return true;
@@ -287,7 +335,7 @@ public class CrabKingEntity extends Monster {
     private void slamDown(ServerLevel server) {
         slammedDown = true;
         LivingEntity victim = held;
-        held = null;
+        letGo(false);
         Vec3 at = position().add(ahead().scale(3.0)).add(right().scale(CATCH_RIGHT * 0.5));
         if (victim instanceof ServerPlayer player) player.connection.teleport(at.x, getY(), at.z, player.getYRot(), player.getXRot());
         else victim.teleportTo(at.x, getY(), at.z);

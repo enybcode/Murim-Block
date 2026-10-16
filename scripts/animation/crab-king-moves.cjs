@@ -14,7 +14,10 @@
 //                    at GRAB_CATCH; if it caught nothing he draws back;
 //   crab_king_grab_hold  what he caught: lifted high in the closed pincer, squeezed three times, then raised over the
 //                    head and slammed to the ground ahead, the pincer opening at GRAB_RELEASE (CrabKingEntity holds
-//                    the victim in the pincer meanwhile).
+//                    the victim in the pincer meanwhile);
+//   crab_king_held   played on whoever he holds (a player, a humanoid mob), looped: the arms pinned to the sides by
+//                    the pincer, the legs kicking in the air, the head thrown back and shaking (CrabKingAnimations.HELD
+//                    locks everything else meanwhile).
 // Written as game files with quaternion turns between keys (pose.cjs writeSmooth), and as a Blockbench project to look
 // at the keys (art/blockbench/crab_king_moves.bbmodel).
 // Usage: node scripts/animation/crab-king-moves.cjs
@@ -154,6 +157,22 @@ anims.crab_king_grab_hold = [
       Thigh_R: [['x', 50], ['y', -8]], Leg_R: [['x', -68]], Thigh_L: [['x', 30], ['y', 8]], Leg_L: [['x', -50]] } },
   { t: 2.0, pose: { ...STANCE(), Root: { pos: [0, 0.4, HIP - 0.04] } } },
 ];
+
+// Held in the pincer: the arms pinned, the legs kicking, the head back and shaking (0.8 s, looped).
+{
+  const keys = [];
+  for (let t = 0; t <= 0.8001; t += 0.05) {
+    const p = (2 * Math.PI * t) / 0.8, sn = Math.sin(p), s2 = Math.sin(2 * p);
+    keys.push({ t: Math.round(t * 100) / 100, pose: {
+      Root: { pos: [0, 0, HIP] },
+      Torso: [['x', 4 + 4 * s2], ['z', 6 * sn]], Chest: [['x', 6]], Head: [['x', -22 + 6 * s2], ['z', 14 * sn]],
+      Arm_R: [['x', 6], ['y', 6]], Hand_R: [['x', 14 + 8 * Math.max(0, sn)]], Arm_L: [['x', 6], ['y', -6]], Hand_L: [['x', 14 + 8 * Math.max(0, -sn)]],
+      Thigh_R: [['x', 26 * sn]], Leg_R: [['x', -18 - 22 * Math.max(0, Math.cos(p))]],
+      Thigh_L: [['x', -26 * sn]], Leg_L: [['x', -18 - 22 * Math.max(0, -Math.cos(p))]],
+    } });
+  }
+  anims.crab_king_held = keys;
+}
 
 module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE };
 

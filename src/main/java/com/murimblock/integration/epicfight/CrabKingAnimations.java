@@ -6,6 +6,7 @@ import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.property.AnimationProperty.AttackPhaseProperty;
 import yesman.epicfight.api.animation.types.ActionAnimation;
 import yesman.epicfight.api.animation.types.AttackAnimation;
+import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.utils.math.ValueModifier;
@@ -30,6 +31,8 @@ public final class CrabKingAnimations {
     public static AnimationAccessor<StaticAnimation> IDLE, WALK;
     public static AnimationAccessor<AttackAnimation> SWEEP, SNAP, SLAM;
     public static AnimationAccessor<ActionAnimation> ROAR, GRAB, GRAB_HOLD;
+    /** Played on whoever the pincer holds: pinned, kicking; nothing else can be done meanwhile. */
+    public static AnimationAccessor<StaticAnimation> HELD;
 
     /** When the slam's pincers meet the ground (seconds into it): the shockwave then. */
     public static final float SLAM_IMPACT = 0.74F;
@@ -41,6 +44,26 @@ public final class CrabKingAnimations {
     private static final OBBCollider SLAM_BOX = new OBBCollider(2.3D, 1.6D, 2.4D, 0.0D, 1.2D, -3.2D);
 
     private CrabKingAnimations() { }
+
+    /**
+     * Held in the pincer, looped: no moving or turning, no attack, guard, roll or skill, no item used or switched, Epic
+     * Fight's walking and idling kept from replacing it. Its states hold over the whole loop; it ends when the Crab King
+     * lets go (his slam's knock-down, or a short stun if he is broken off).
+     */
+    private static final class Pinned extends StaticAnimation {
+        Pinned(AnimationAccessor<? extends StaticAnimation> accessor) {
+            super(0.08F, true, accessor, Armatures.BIPED);
+            this.stateSpectrumBlueprint.clear().newTimePair(0.0F, Float.MAX_VALUE)
+                    .addState(EntityState.MOVEMENT_LOCKED, true)
+                    .addState(EntityState.TURNING_LOCKED, true)
+                    .addState(EntityState.INACTION, true)
+                    .addState(EntityState.UPDATE_LIVING_MOTION, false)
+                    .addState(EntityState.COMBO_ATTACKS_DOABLE, false)
+                    .addState(EntityState.SKILL_EXECUTABLE, false)
+                    .addState(EntityState.CAN_USE_ITEM, false)
+                    .addState(EntityState.CAN_SWITCH_HAND_ITEM, false);
+        }
+    }
 
     private static Joint root() {
         return Armatures.BIPED.get().rootJoint;
@@ -70,5 +93,6 @@ public final class CrabKingAnimations {
         WALK = builder.nextAccessor("biped/murim/crab_king_walk", a -> new StaticAnimation(0.2F, true, a, Armatures.BIPED));
         GRAB = builder.nextAccessor("biped/murim/crab_king_grab", a -> new ActionAnimation(0.12F, a, Armatures.BIPED));
         GRAB_HOLD = builder.nextAccessor("biped/murim/crab_king_grab_hold", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        HELD = builder.nextAccessor("biped/murim/crab_king_held", a -> new Pinned(a));
     }
 }

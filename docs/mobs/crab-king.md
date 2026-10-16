@@ -41,7 +41,10 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   (0,3 × l'attaque). Ce qu'elle attrape est soulevé haut devant lui, serré trois fois (0,25 × l'attaque chaque fois),
   levé au-dessus de sa tête puis abattu au sol devant lui à 1,62 s de la prise (0,8 × l'attaque, mis à terre). Une garde
   normale ne l'arrête pas ; une **parade parfaite** au moment où la pince se ferme la fait rater ; on peut l'esquiver.
-  Interrompu (étourdi, tué), il lâche ce qu'il tient. Pas de boîte d'Epic Fight : la prise est celle de `CrabKingEntity`.
+  **Tenu, un joueur ne peut rien faire** (16/10, demande d'Enzo) : ni bouger, ni tourner, ni attaquer, parer, rouler,
+  utiliser une compétence, un objet ou une technique Murim, ni méditer, ni changer d'objet en main ; il se débat
+  (`crab_king_held` : bras plaqués, jambes qui battent, tête renversée). Il reste libre de regarder autour de lui.
+  Interrompu (étourdi, tué, déchargé), il lâche ce qu'il tient : sa victime est libérée par un court étourdissement. Pas de boîte d'Epic Fight : la prise est celle de `CrabKingEntity`.
 - **Rage** : sous la moitié de sa vie, une seule fois (sauvegardé), il rugit (`crab_king_roar`) et deux crabes cuirassés
   sortent du sol à ses côtés, sur sa cible.
 - Un crabe : il respire sous l'eau (tag `minecraft:can_breathe_under_water`) et va plus vite dans l'eau.
@@ -68,6 +71,7 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
 
 - `CrabKingGameTests` : boss à lui (patch, idle, marche lourde, 4 blocs de haut, 260 PV, armure, ne disparaît pas,
   respire sous l'eau, barre de boss) ; rage (deux crabes, rugissement, une fois) ; onde de choc ; la prise (attrape,
-  soulève, abat au sol, blesse) et la prise dans le vide ; il se bat avec ses pinces et touche.
+  soulève, abat au sol, blesse), la prise dans le vide, un joueur tenu qui ne peut rien faire (entravé, verrous
+  d'Epic Fight, technique refusée, attaque annulée) et libéré après l'abattage ou à la mort du boss ; il se bat avec ses pinces et touche.
 - En vrai client : `MURIM_TOUR_ONLY=king gradlew -PgameTests runWeaponTour` (debout de chaque côté, idle, marche, ses trois
   attaques, sa prise sur un zombie, son rugissement, sa mort).
