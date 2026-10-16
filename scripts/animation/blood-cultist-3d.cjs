@@ -1,4 +1,4 @@
-// The Blood Cultists (Blood Sect), redone in Murimblock's own style from Colleuhu95's Blood Ninja (addons/blood-sect-decor),
+// The Blood Cultists (Blood Sect), redone in Murimblock's own style from Colleuhu95's Blood Ninja (com.murimblock.bloodsect),
 // in cloth only, on Epic Fight's biped skeleton (no weapon, no armour baked in: those are items of their own). One model
 // for five outfits, the sect's ranks, like the bandits' (a piece an outfit does not wear is clear in its atlas):
 //   acolyte      a black hood over the head, open on the face, a blood-red cloth mask from under the eyes, tied behind;
@@ -11,7 +11,7 @@
 // a red hem, trousers bound at the shin with two cords, cloth shoes. The face at 16 x 16 (hd-face.cjs), red-eyed, ten
 // expressions (client/MobFaces).
 //   art/blockbench/blood_cultist.bbmodel (+ blood_cultist/<outfit>.png)       the Blockbench project.
-// In game they are the Blood Sect Decor addon's Blood Ninja (blood-cultist-addon.cjs writes its files).
+// In game they are the Blood Sect's Blood Ninja (com.murimblock.bloodsect; blood-cultist-game.cjs writes its files).
 // Usage: node scripts/animation/blood-cultist-3d.cjs
 const fs = require('fs');
 const path = require('path');
@@ -213,7 +213,7 @@ function clothStrips(pieces, atlas) {
 }
 
 if (require.main === module) {
-  // The game files are the Blood Sect Decor addon's (blood-cultist-addon.cjs); here, the Blockbench project.
+  // The game files are blood-cultist-game.cjs's; here, the Blockbench project.
   const faces = kit.pack(PIECES, ATLAS);
   const art = path.join(ROOT, 'art', 'blockbench');
   fs.mkdirSync(path.join(art, 'blood_cultist'), { recursive: true });

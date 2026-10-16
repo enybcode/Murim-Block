@@ -2,7 +2,8 @@
 
 > Demande d'Enzo du 16/10/2026 : « un modèle de dragon géant doré, un mob légendaire unique, comme un dieu qui se
 > baladerait sur la carte » ; « il doit être majestueux, le mob ultime », et une forme humaine qui soit « l'entité
-> au-dessus de tout ». **Pas encore en jeu** : seulement le modèle validé en maquette.
+> au-dessus de tout ». **En jeu sous sa forme humaine** (assis dans le Sanctuaire de la Falaise des Nuages) ; la forme
+> de dragon n'est encore qu'une maquette.
 
 ![Le Dragon d'Or, de face](images/golden-dragon/concept-front.png)
 
@@ -28,10 +29,39 @@
   dessin, construit à la manière des dragons en gros cubes qu'Enzo a montrés ; on ne copie aucun modèle trouvé en ligne
   (ni un personnage d'une autre œuvre), pour les droits.
 
+## Sa forme humaine, en jeu (16/10/2026)
+
+Demande d'Enzo : « pour l'instant tu le laisses en forme humaine dans la première structure qu'on a faite ».
+
+![La forme humaine (Blockbench)](images/golden-dragon/human-form.png)
+
+![Dans la salle du sanctuaire](images/golden-dragon/game-sanctuary.png)
+
+- **Entité** `murimblock:golden_dragon_sage` (`GoldenDragonSageEntity`), nommée **The Golden Dragon** ; œuf « Golden Dragon Spawn Egg ».
+- **Modèle** sur le squelette humain d'Epic Fight, comme Sensei Yun (`scripts/animation/golden-dragon-sage-3d.cjs` : maillage
+  `animmodels/entity/golden_dragon_sage`, texture, projet Blockbench) :
+  - couronne d'or sur un chignon piqué de jade, longs cheveux blancs ;
+  - grande barbe blanche, yeux jade lumineux ;
+  - robe jade profond bordée d'or blanc, un dragon d'or brodé dans le dos, col de fourrure blanche ;
+  - ceinture or blanc à fermoir d'or, pendentif de jade blanc.
+- **Où** : dans la salle principale du **Sanctuaire de la Falaise des Nuages**, sur le tapis rouge devant l'autel, face
+  aux portes (`SanctuaryBuilder.sageSeat`).
+  - Placé une seule fois par monde (`SanctuaryPlacement.placeSage`, sauvegardé) : à la fin de la construction d'un
+    nouveau sanctuaire.
+  - Pour un sanctuaire construit avant, il est placé la première fois qu'un joueur s'approche à moins de 96 blocs.
+- **Comportement pour l'instant** :
+  - assis en lotus (la méditation des joueurs) ;
+  - aucun dégât ne le touche (sauf `/kill`), on ne peut pas le pousser et il ne quitte pas sa place ;
+  - il se tourne vers un joueur qui approche et revient face aux portes quand il est seul ;
+  - clic droit : une de quatre phrases, à tour de rôle (`message.murimblock.golden_dragon_sage.0` à `.3`), à faire
+    relire par la session « lore ».
+- **Vérifié** :
+  - GameTests `GoldenDragonSageGameTests` (invulnérable, immobile, placé une seule fois sur sa place) ;
+  - tour `runBiomeTour` (en monde neuf, présent à sa place, photo `sanctuary-sage.png`).
+
 ## À décider
 
-- Sa **forme humaine** (références d'Enzo : un vieux maître aux longs cheveux et à la barbe blancs, yeux violets
-  lumineux, robe violette et noire brodée de dragons d'or, aura violette).
+- Ce qu'il fait de plus sous forme humaine (dialogue, épreuve, aura), et ce qui le fait se changer en dragon.
 - Son **comportement** : vol lent au-dessus de la carte, repos enroulé sur un sommet, unique par monde, neutre sauf
   attaqué, combat de boss, récompense, réapparition.
 - Les **animations** (ondulation en vol), l'**intégration** en jeu (GeckoLib ou Epic Fight, segments du corps animés),

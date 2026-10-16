@@ -55,5 +55,24 @@ public final class MurimArmorMaterials {
     /** Durability: diamond's (33) less a little. */
     public static final int PEAK_GUARD_DURABILITY = 30;
 
+    /**
+     * The Blood Sect's lacquer, its soldiers': blood-red lacquered plates rimmed in black iron, an iron face guard with
+     * fangs. Between the Bandit Chief's lamellae and the Peak Guard's (18 armour in all, toughness 1 a piece), mended with
+     * iron. Flat look textures/models/armor/blood_lacquer_layer_1/2; with Epic Fight each piece is its own 3D mesh
+     * (animmodels/armor/, scripts/animation/blood-soldier-game.cjs).
+     */
+    public static final DeferredHolder<ArmorMaterial, ArmorMaterial> BLOOD_LACQUER = MATERIALS.register("blood_lacquer",
+            () -> new ArmorMaterial(Util.make(new EnumMap<>(ArmorItem.Type.class), defense -> {
+                defense.put(ArmorItem.Type.HELMET, 2);
+                defense.put(ArmorItem.Type.CHESTPLATE, 8);
+                defense.put(ArmorItem.Type.LEGGINGS, 5);
+                defense.put(ArmorItem.Type.BOOTS, 3);
+                defense.put(ArmorItem.Type.BODY, 8);
+            }), 13, SoundEvents.ARMOR_EQUIP_IRON, () -> Ingredient.of(Items.IRON_INGOT),
+                    List.of(new ArmorMaterial.Layer(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "blood_lacquer"))), 1.0F, 0.0F));
+
+    /** Durability: between iron (15) and diamond (33). */
+    public static final int BLOOD_LACQUER_DURABILITY = 27;
+
     private MurimArmorMaterials() { }
 }

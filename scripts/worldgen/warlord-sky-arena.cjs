@@ -44,7 +44,7 @@ function rock(x, y, z) {
 // ---------------------------------------------------------------- the blocks
 const B = {
   basalt: 'minecraft:basalt[axis=y]', blackstone: 'minecraft:blackstone', smooth_basalt: 'minecraft:smooth_basalt',
-  scorched: 'minecraft:tuff', obsidian: 'minecraft:obsidian', crying: 'minecraft:crying_obsidian', magma: 'minecraft:magma_block',
+  scorched: 'minecraft:tuff', obsidian: 'minecraft:obsidian', crying: 'minecraft:crying_obsidian', magma: 'minecraft:magma_block', lava: 'minecraft:lava[level=0]',
   log: 'minecraft:dark_oak_log[axis=y]', gold: 'minecraft:gold_block', purple: 'minecraft:purple_wool',
   pillar: 'minecraft:polished_blackstone', bowl: 'minecraft:waxed_cut_copper', netherrack: 'minecraft:netherrack', fire: 'minecraft:fire[age=0,east=false,north=false,south=false,up=false,west=false]',
   air: 'minecraft:air',
@@ -75,9 +75,12 @@ for (let x = X0; x < X0 + NX; x++) for (let z = X0; z < X0 + NZ; z++) for (let y
   else if (up && r < FLAT + 2 && y <= 1) {
     // The fighting floor: scorched basalt; the scar of his landing in the middle, cracks glowing out from it.
     const a = Math.atan2(z, x), crack = Math.abs(((a / (Math.PI * 2)) * 14 + 0.25 * fbm(x * 0.1, 0, z * 0.1) + 10) % 1 - 0.5);
-    if (r < 6) b = rnd() < 0.35 ? B.magma : rnd() < 0.2 ? B.crying : B.obsidian;
+    if (r < 4) b = B.magma;
+    else if (r < 6) b = rnd() < 0.35 ? B.magma : rnd() < 0.2 ? B.crying : B.obsidian;
     else if (r < 11) b = rnd() < 0.5 ? B.obsidian : B.scorched;
-    else if (crack > 0.475 && r < FLAT - 4) b = B.magma;
+    else if (crack > 0.462 && r < FLAT - 4) b = B.magma;
+    // A ring of lava round the fighting floor, at the foot of its walls.
+    else if (r >= FLAT - 1 && r < FLAT + 1) b = B.magma;
     else b = rnd() < 0.18 ? B.blackstone : rnd() < 0.5 ? B.scorched : B.smooth_basalt;
   } else {
     // Its walls and underside: basalt and blackstone, veined with molten rock.
@@ -142,6 +145,17 @@ for (let i = 0; i < 20; i++) {
   for (let k = 0; k < 3; k++) blob(Math.round(rnd() * 4 - 2 + Math.cos(a) * r), Math.round(y + rnd() * 3 - 1.5), Math.round(rnd() * 4 - 2 + Math.sin(a) * r), s, Math.max(1, s - 1), s, rnd() < 0.5 ? B.basalt : B.scorched, 0.3);
 }
 
+// Real lava (Enzo: "put lava for the cracks and all"): every molten block that cannot flow becomes a lava source, that is
+// with no air beside it or under it: the floor's cracks and the scar, the veins on upward faces. Those open to the side
+// or below (walls, underside, drips) stay magma blocks, or the lava would run down the meteor into the sky.
+const lavaIndex = pal(B.lava), magmaIndex = pal(B.magma);
+const toLava = [];
+for (let y = Y0 + 1; y < Y0 + NY - 1; y++) for (let z = X0 + 1; z < X0 + NZ - 1; z++) for (let x = X0 + 1; x < X0 + NX - 1; x++) {
+  if (grid[idx(x, y, z)] !== magmaIndex) continue;
+  if (get(x, y - 1, z) && get(x + 1, y, z) && get(x - 1, y, z) && get(x, y, z + 1) && get(x, y, z - 1)) toLava.push(idx(x, y, z));
+}
+for (const i of toLava) grid[i] = lavaIndex;
+
 // ---------------------------------------------------------------- trimmed to what is built
 let mn = [Infinity, Infinity, Infinity], mx = [-Infinity, -Infinity, -Infinity];
 for (let y = Y0; y < Y0 + NY; y++) for (let z = X0; z < X0 + NZ; z++) for (let x = X0; x < X0 + NX; x++)
@@ -190,6 +204,13 @@ let nonAir = 0;
 for (let y = mn[1]; y <= mx[1]; y++) for (let z = mn[2]; z <= mx[2]; z++) for (let x = mn[0]; x <= mx[0]; x++) {
   const v = grid[idx(x, y, z)]; if (!v) continue; nonAir++; counts[palette[v]] = (counts[palette[v]] || 0) + 1;
 }
+// Lava that could flow: open to the air beside or below (must be none).
+let lavaCount = 0, lavaLeaks = 0;
+for (let y = mn[1]; y <= mx[1]; y++) for (let z = mn[2]; z <= mx[2]; z++) for (let x = mn[0]; x <= mx[0]; x++) {
+  if (grid[idx(x, y, z)] !== lavaIndex) continue;
+  lavaCount++;
+  if (!get(x, y - 1, z) || !get(x + 1, y, z) || !get(x - 1, y, z) || !get(x, y, z + 1) || !get(x, y, z - 1)) lavaLeaks++;
+}
 // The fighting floor: columns within FLAT - 1 whose top is the floor (y 0), with 30 blocks of air above (bar braziers and boulders).
 let floorColumns = 0, clearColumns = 0, highestFloor = -Infinity, lowestFloor = Infinity;
 for (let x = -FLAT; x <= FLAT; x++) for (let z = -FLAT; z <= FLAT; z++) {
@@ -214,6 +235,7 @@ const verification = {
   fighting_floor: { radius: FLAT - 1, diameter: 2 * (FLAT - 1), columns: floorColumns, clear_columns_30_high: clearColumns, floor_y_range: [lowestFloor, highestFloor] },
   bowl: { rim_radius: BOWL, rim_height_above_floor: [Math.min(...rimHeights), Math.max(...rimHeights)] },
   vanilla_only: palette.every(p => p.startsWith('minecraft:')),
+  lava: { sources: lavaCount, contained: lavaLeaks === 0, open_beside_or_below: lavaLeaks },
   braziers: braziers.length, banners: banners.length, boulders_on_floor: boulders.length,
 };
 fs.writeFileSync(path.join(OUT, 'export-stats.json'), JSON.stringify(stats, null, 2) + '\n');
@@ -222,7 +244,7 @@ fs.writeFileSync(path.join(OUT, 'verification.json'), JSON.stringify(verificatio
 // ---------------------------------------------------------------- plans from its blocks: from above, and a cut through the middle
 const COLOUR = {
   [B.basalt]: [74, 70, 72], [B.blackstone]: [46, 42, 46], [B.smooth_basalt]: [72, 70, 74], [B.scorched]: [92, 90, 84], [B.obsidian]: [30, 24, 44],
-  [B.crying]: [70, 30, 120], [B.magma]: [240, 106, 40], [B.log]: [64, 46, 30], [B.gold]: [226, 185, 74], [B.purple]: [94, 42, 110],
+  [B.crying]: [70, 30, 120], [B.magma]: [240, 106, 40], [B.lava]: [255, 130, 20], [B.log]: [64, 46, 30], [B.gold]: [226, 185, 74], [B.purple]: [94, 42, 110],
   [B.pillar]: [56, 52, 60], [B.bowl]: [190, 110, 80], [B.netherrack]: [120, 40, 40], [B.fire]: [255, 200, 60],
 };
 function png(w, h, pixel) {

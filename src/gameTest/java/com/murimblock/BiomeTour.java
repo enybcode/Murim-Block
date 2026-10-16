@@ -313,7 +313,19 @@ public final class BiomeTour {
                 double ox = pavilion.getX() - c.getX(), oz = pavilion.getZ() - c.getZ(), d = Math.hypot(ox, oz);
                 lookAbs(mc, pavilion.getX() + 0.5 + ox / d * 9 - oz / d * 4, pavilion.getY() + 1, pavilion.getZ() + 0.5 + oz / d * 9 + ox / d * 4,
                         pavilion.getX() + 0.5, pavilion.getY() - 1, pavilion.getZ() + 0.5); }
-            case 620 -> { capture(mc, "sanctuary-pavilion.png"); sanctuaryStep = -1; }
+            case 620 -> capture(mc, "sanctuary-pavilion.png");
+            // The Golden Dragon in human form, seated before the altar of the main hall, seen from near the doors.
+            case 621 -> server.execute(() -> {
+                ServerLevel level = server.overworld();
+                BlockPos seat = com.murimblock.world.structure.SanctuaryBuilder.sageSeat(sanctuaryData.centre(), sanctuaryData.top());
+                var sages = level.getEntitiesOfClass(com.murimblock.mob.GoldenDragonSageEntity.class, new net.minecraft.world.phys.AABB(seat).inflate(3));
+                String line = "golden dragon sage: " + sages.size() + " at " + sages.stream().map(e -> e.blockPosition().toShortString()).toList() + ", seat " + seat.toShortString();
+                report.add(line);
+                LOGGER.info("Biome tour: {}", line);
+                if (sages.size() != 1) failed = true;
+            });
+            case 622 -> look(mc, 2.5, 4.6, -5.5, 0, 4.2, -11);
+            case 680 -> { capture(mc, "sanctuary-sage.png"); sanctuaryStep = -1; }
             default -> { }
         }
     }

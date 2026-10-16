@@ -171,6 +171,8 @@ public final class MurimItems {
     public static final DeferredItem<Item> CASH_STRING = ITEMS.register("cash_string", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SILVER_TAEL = ITEMS.register("silver_tael", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_DRAGON_SAGE, 0x1F7A58, 0xF0C24A, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
     /** The Alliance's soldiers' eggs, in azure, each with its own second colour. */
@@ -215,6 +217,21 @@ public final class MurimItems {
     private static DeferredItem<ArmorItem> peakGuardArmour(String id, ArmorItem.Type type) {
         return ITEMS.register(id, () -> new ArmorItem(MurimArmorMaterials.PEAK_GUARD, type, new Item.Properties()
                 .rarity(Rarity.RARE).durability(type.getDurability(MurimArmorMaterials.PEAK_GUARD_DURABILITY))));
+    }
+
+    /**
+     * The Blood Lacquer, the Blood Sect's soldiers' armour (MurimArmorMaterials.BLOOD_LACQUER): an iron face guard with
+     * fangs, a cuirass of blood-red lacquered plates with flaring pauldrons and bracers, tassets with knee guards,
+     * greaves. A soldier wears it all and may drop any piece (com.murimblock.bloodsect.ninja.BloodSoldier).
+     */
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_MASK = bloodLacquer("blood_lacquer_mask", ArmorItem.Type.HELMET);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_CUIRASS = bloodLacquer("blood_lacquer_cuirass", ArmorItem.Type.CHESTPLATE);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_TASSETS = bloodLacquer("blood_lacquer_tassets", ArmorItem.Type.LEGGINGS);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_GREAVES = bloodLacquer("blood_lacquer_greaves", ArmorItem.Type.BOOTS);
+
+    private static DeferredItem<ArmorItem> bloodLacquer(String id, ArmorItem.Type type) {
+        return ITEMS.register(id, () -> new ArmorItem(MurimArmorMaterials.BLOOD_LACQUER, type, new Item.Properties()
+                .rarity(Rarity.UNCOMMON).durability(type.getDurability(MurimArmorMaterials.BLOOD_LACQUER_DURABILITY))));
     }
 
     /** The azure of his coat and the gold of his armour. */
@@ -299,6 +316,7 @@ public final class MurimItems {
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
+                        output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SPEAR_GUARD_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG.get());
                         output.accept(ALLIANCE_ARCHER_SPAWN_EGG.get());
@@ -318,6 +336,10 @@ public final class MurimItems {
                         output.accept(PEAK_GUARD_LAMELLAR.get());
                         output.accept(PEAK_GUARD_TASSETS.get());
                         output.accept(PEAK_GUARD_GREAVES.get());
+                        output.accept(BLOOD_LACQUER_MASK.get());
+                        output.accept(BLOOD_LACQUER_CUIRASS.get());
+                        output.accept(BLOOD_LACQUER_TASSETS.get());
+                        output.accept(BLOOD_LACQUER_GREAVES.get());
                         MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
                         pendants().forEach(pendant -> output.accept(pendant.get()));
