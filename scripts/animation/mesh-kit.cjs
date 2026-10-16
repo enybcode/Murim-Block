@@ -198,7 +198,7 @@ function bbmodel(name, pieces, outfits, atlases, atlas, folder) {
   const elements = pieces.map(p => ({
     name: p.name, box_uv: false, rescale: false, locked: false, render_order: 'default', allow_mirror_modeling: true,
     from: p.from, to: p.to, autouv: 0, color: 0, origin: p.pivot || p.from.map((v, k) => (v + p.to[k]) / 2),
-    rotation: [p.tilt || 0, 0, 0], faces: Object.fromEntries(FACES.map(f => [f, { uv: p.uv[f], texture: 0 }])),
+    rotation: p.rot || [p.tilt || 0, 0, 0], faces: Object.fromEntries(FACES.map(f => [f, { uv: p.uv[f], texture: 0 }])),
     type: 'cube', uuid: stableId(name + '/' + p.name),
   }));
   const group = bone => ({

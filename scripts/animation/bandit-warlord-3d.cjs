@@ -422,4 +422,4 @@ if (require.main === module) {
   if (arg('film') !== 'false') film(proj, atlas).catch(e => { console.error(e); process.exit(1); });
 }
 
-module.exports = { PIECES, WARLORD, ANIMS, REST, LANDED, DIVE, CROUCH, FLEX, HIP };
+module.exports = { PIECES, WARLORD, ANIMS, REST, LANDED, DIVE, CROUCH, FLEX, HIP, connect, load, shot, save };
