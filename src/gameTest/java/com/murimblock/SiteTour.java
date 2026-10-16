@@ -292,9 +292,9 @@ public final class SiteTour {
         boolean rightBiome = expectedBiome(name).equals("*")
                 ? level.getBiome(first.origin()).is(net.minecraft.tags.TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes")))
                         && (!name.equals("alliance_arena") || com.murimblock.world.map.MurimMap.centreOrFrontier(first.origin().getX(), first.origin().getZ(), 1500))
-                        // A bandit camp: in the region it was looked for in (the centre's from the world's centre).
-                        && (!structureId(name).equals("bandit_camp") || com.murimblock.world.map.MurimMap.region(first.origin().getX(), first.origin().getZ())
-                                .name().equalsIgnoreCase(name.contains("@") ? name.split("@")[1] : "center"))
+                        // A bandit camp looked for from a region's heart: in that region (the nearest to the centre may lie anywhere).
+                        && (!name.contains("@") || com.murimblock.world.map.MurimMap.region(first.origin().getX(), first.origin().getZ())
+                                .name().equalsIgnoreCase(name.split("@")[1]))
                 : biome.equals(expectedBiome(name));
         if (!problems.isEmpty() || !rightBiome) failed = true;
         Direction front = first.rotation().rotate(Direction.SOUTH);

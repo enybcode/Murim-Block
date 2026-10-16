@@ -76,9 +76,6 @@ final class BanditCamp extends Site {
         return MurimMap.inBubble(x, z);
     }
 
-    /** Big, and allowed in every biome: it steps aside for any other site, so it never lands on one. */
-    @Override public boolean keepsClearOfOtherSites() { return true; }
-
     @Override public void build(Canvas c, int part, int[] levels) {
         int g = levels[0];
         Theme t = theme(MurimMap.region(c.wx(0, 0), c.wz(0, 0)));

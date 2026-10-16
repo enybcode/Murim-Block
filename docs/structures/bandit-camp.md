@@ -123,10 +123,7 @@ tentes et les dortoirs.
   de bandit, 10 % le rouleau du Poing Long).
 - **Pas encore de boss** : le siège du chef reste vide sur son estrade et le tambour de guerre attend devant la salle.
   Le compte des bandits et l'apparition du boss viendront avec lui.
-- **Vérifié** : GameTest `banditCampIsWholeAndCarried` (415 vérifications, 16 832 blocs, identique d'un coup ou chunk par
-  chunk, 30 bandits à leur place, debout sur du solide, puis remis dans un camp vidé) ; visite en vrai client
-  (`runSiteTour`). Seul le camp du centre est vérifié en jeu (les GameTests et la visite sont au centre) ; les quatre
-  autres habits ne sont vus que par le code.
+- **Vérifié** (16/10) : GameTests `banditCampIsWholeAndCarried` (centre) et un camp au cœur de chaque autre région (`theNorthsBanditCampIsDarkWoodUnderSnow`, `theWestsBanditCampIsRammedEarth`, `theSouthsBanditCampIsBamboo`, `theEastsBanditCampHasAMoat`) : 415 vérifications chacun, identique d'un coup ou chunk par chunk, 30 bandits à leur place puis remis dans un camp vidé, palissade de la bonne matière, neige au nord, eau dans le fossé à l'est. Visite en vrai client (`runSiteTour`, graine 20261012) : un camp cherché depuis le cœur de chaque région, chacun dans sa région (Tianshan, lœss, collines aux camphriers, Jiangnan), sans défaut, 30 bandits, remis après avoir été vidés. La visite a montré qu'un camp pouvait se poser sur un autre site (le Jardin des Lotus à l'est) : c'est réglé par la règle d'espacement de 100 blocs entre structures (`SiteSpacing`, session « hud »).
 
 ## Prévu, avant de construire
 
