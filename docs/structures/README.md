@@ -113,7 +113,7 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
 - **Ce que c'est.** Un médaillon de jade cerclé d'or, dont l'aiguille rouge pointe vers le sommet du sanctuaire partout dans la Surface. C'est une cible de magnétite qui ne demande aucune magnétite.
 - **Ses 32 images** sont dessinées par `scripts/worldgen/TokenTextures.java` et suivent les mêmes paliers que la boussole vanilla.
 - **Le clic droit** affiche la direction et la distance, par exemple « Sanctuaire de la Falaise des Nuages : 1 240 blocs au nord-est ». Le message est en anglais, comme tout le texte du mod (règle du projet). Il y a une seconde de recharge entre deux utilisations.
-- **Le don.** Il est donné une seule fois par joueur, à sa première connexion (drapeau `murimblock_sect_token_received`). Il est aussi dans l'onglet créatif Murimblock.
+- **Où l'avoir.** Il n'est plus donné aux nouveaux joueurs (Enzo, 16/10/2026). Le marchand de l'Alliance le vend, une fois par réassort, à un prix ruineux : une pile de 64 taels d'argent et 32 blocs d'or (`AllianceMerchantEntity.SECT_TOKEN_*`). Il est aussi dans l'onglet créatif Murimblock.
 - **À décider avec Enzo** : une autre façon d'en obtenir un, par exemple sur un mob.
 
 ## Le trouver avec /locate
@@ -127,7 +127,7 @@ Les plans et les intentions de jeu de chaque proposition ont été donnés à En
 - **GameTests** (`SanctuaryGameTests`) :
   - le sanctuaire complet se construit : 70 blocs, plus de 25 000 blocs de granite, toits verts, colonnes, chemin jusqu'au sommet, feu de signal sur la paille, cloche, passerelle d'entrée dégagée au sud, aucun vide sous les toits, aucune colonne ni tour au-dessus du vide, palier sûr ;
   - un monde plat n'en reçoit pas ;
-  - un seul jeton est donné à la première connexion ;
+  - aucun jeton n'est donné à la connexion, le marchand le vend à son prix ;
   - l'aiguille vise le sommet ;
   - les 8 directions sont justes ;
   - `/locate structure murimblock:cloud_cliff_sanctuary` échoue dans un monde sans sanctuaire et le trouve quand il existe.

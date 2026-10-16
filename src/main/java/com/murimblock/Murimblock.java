@@ -90,7 +90,6 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStarted);
         NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerTick);
         NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStopping);
-        NeoForge.EVENT_BUS.addListener(SectTokenItem::onPlayerLoggedIn);
         // Knock-down in PvP: K.O. instead of death, carry (V) or execute (B).
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, KnockdownEvents::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, KnockdownEvents::onDeath);

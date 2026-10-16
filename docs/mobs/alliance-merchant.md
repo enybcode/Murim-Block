@@ -45,13 +45,14 @@ Il vend (prix en taëls) :
 | Pomme dorée | 8 | 4 |
 | 4 pains | 1 | 16 |
 | Long Fist Scroll (art libre) | 40 | 1 |
+| **Sect Token** (jeton de jade, pointe vers le sanctuaire ; plus donné à la connexion, Enzo 16/10) | **64 taels + 32 blocs d'or** | 1 |
 | Misty Bamboo Daoist Temple Pendant | 128 (64 + 64) | 1 |
 | Yellow River Bandit Den Pendant | 128 (64 + 64) | 1 |
 | Alliance Arena Pendant | 128 (64 + 64) | 1 |
 
 ### Les pendentifs (demande d'Enzo du 15/10)
 
-- **Leur rôle.** Ce sont les marchandises les plus chères du marchand. Comme le Jeton de la Secte, chaque pendentif a une aiguille, mais elle pointe vers la structure **de son type la plus proche** (`LocatorPendantItem`).
+- **Leur rôle.** Ce sont, après le Jeton de la Secte, les marchandises les plus chères du marchand. Comme le Jeton de la Secte, chaque pendentif a une aiguille, mais elle pointe vers la structure **de son type la plus proche** (`LocatorPendantItem`).
 - **Leurs structures.** Seules les structures importantes ont un pendentif : celles qui ont un boss, ou des PNJ à quêtes (aucune pour l'instant). Aujourd'hui :
   - le temple de la Mer de Bambous (Sensei Yun) ;
   - le repaire des bandits du Fleuve Jaune (le Chef Bandit) ;
