@@ -154,6 +154,8 @@
   "key.murimblock.charge_qi": "Meditate (hold: Inner World)",
   "key.murimblock.qi_sense": "Qi Sense (hold)",
   "key.murimblock.combat_mode": "Combat Mode",
+  "bossbar.murimblock.bandit_camp": "Bandit Camp: %s / %s slain",
+  "message.murimblock.bandit_camp.cleared": "The camp falls silent. Not one bandit is left standing.",
   "message.murimblock.combat_mode.on": "Combat Mode: ON",
   "message.murimblock.combat_mode.off": "Combat Mode: OFF",
   "key.murimblock.open_profile": "Open Murim Profile",

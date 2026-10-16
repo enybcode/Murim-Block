@@ -23,9 +23,11 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 
 ## Le boss : le camp à nettoyer
 
-1. On arrive devant un camp plein : **trente bandits** à leurs postes. Le siège du chef, dans la grande salle, est
-   **vide**.
-2. Il faut les tuer **tous**. (À l'écran, une petite barre « Bandits : 18 / 30 » pourrait suivre le compte.)
+1. On arrive devant un camp plein : **trente bandits** à leurs postes et **cinq Bandit Chiefs** (mini-boss, demande
+   d'Enzo du 16/10). Le siège du chef, dans la grande salle, est **vide**.
+2. Il faut les tuer **tous**, les 35. **En jeu** : dès qu'on entre dans le camp (dans son fossé), une barre rouge
+   s'affiche en haut de l'écran comme la vie d'un boss, « Bandit Camp: 12 / 35 slain », et **se remplit à chaque mort**.
+   Elle disparaît quand on sort du camp.
 3. Au dernier mort, le **tambour de guerre** devant la grande salle résonne trois fois, puis le
    [Seigneur des bandits](../mobs/bandit-warlord.md) **tombe du ciel comme un météore**, enveloppé de feu, une traînée de
    flammes et de fumée derrière lui, droit sur la place ; **une cinématique** le montre.
@@ -166,8 +168,15 @@ tentes et les dortoirs.
 - **Butin** : un tonneau de la cache des sites et un coffre dans la grande salle, deux coffres au butin
   (`chests/bandit_camp` : taels d'argent, or, fer, soie, nourriture, cuir, émeraudes, rarement un diamant ; 12 % un dao
   de bandit, 10 % le rouleau du Poing Long).
-- **Pas encore de boss** : le siège du chef reste vide sur son estrade et le tambour de guerre attend devant la salle.
-  Le compte des bandits et l'apparition du boss viendront avec lui.
+- **Cinq Bandit Chiefs** (16/10, demande d'Enzo, en plus des 30) : deux de part et d'autre du siège vide dans la grande
+  salle, un devant la salle, un au milieu du cercle d'entraînement, un dans la porte. Leur barre de boss ne s'affiche
+  qu'une fois qu'ils se battent (une cible ou une blessure), pour ne pas couvrir l'écran de cinq barres ; c'est vrai aussi
+  du chef du repaire.
+- **Le compte** (16/10, `BanditCampCount`) : chacun des 35 porte la marque de son camp et compte une fois à sa mort, où
+  qu'il meure (un bandit sorti du camp aussi) ; les bandits errants ne comptent pas. Sauvegardé par monde. Un camp placé
+  avant le compte : à la première visite, ceux qui sont encore là sont marqués, les absents comptés morts. Au 35e mort, la
+  barre disparaît et un message s'affiche (« The camp falls silent… ») : **c'est là que le Seigneur des bandits tombera**,
+  quand il existera ; pour l'instant le siège reste vide.
 - **Vérifié** (16/10) : GameTests `banditCampIsWholeAndCarried` (centre) et un camp au cœur de chaque autre région (`theNorthsBanditCampIsDarkWoodUnderSnow`, `theWestsBanditCampIsRammedEarth`, `theSouthsBanditCampIsBamboo`, `theEastsBanditCampHasAMoat`) : 415 vérifications chacun, identique d'un coup ou chunk par chunk, 30 bandits à leur place puis remis dans un camp vidé, palissade de la bonne matière, neige au nord, eau dans le fossé à l'est. Visite en vrai client (`runSiteTour`, graine 20261012) : un camp cherché depuis le cœur de chaque région, chacun dans sa région (Tianshan, lœss, collines aux camphriers, Jiangnan), sans défaut, 30 bandits, remis après avoir été vidés. La visite a montré qu'un camp pouvait se poser sur un autre site (le Jardin des Lotus à l'est) : c'est réglé par la règle d'espacement de 100 blocs entre structures (`SiteSpacing`, session « hud »).
 
 ## Prévu, avant de construire

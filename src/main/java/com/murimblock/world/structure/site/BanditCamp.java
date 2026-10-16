@@ -25,13 +25,14 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * hold it, each at his post.
  * <p>One in every region of the Murim map, dressed for its land (the region of its centre): logs and thatch in the
  * centre, dark wood under snow in the north, rammed earth in the west, bamboo in the south, tiles and a moat in the east.
- * The boss who will come out of the longhall once the thirty are dead is not here yet: the seat waits for him.
+ * The thirty and their five Bandit Chiefs are counted (BanditCampCount: a bar inside the camp that fills as they die); the boss who will come once
+ * they are all dead is not here yet: the seat waits for him.
  */
 final class BanditCamp extends Site {
     /** The palisade's radius, half the gate's width. */
     static final int R = 42, GATE = 3;
-    /** How many bandits hold the camp. */
-    static final int BANDITS = 30;
+    /** How many bandits hold the camp, and Bandit Chiefs (mini-bosses) over them; all must fall before its boss comes. */
+    static final int BANDITS = 30, CHIEFS = 5, GARRISON = BANDITS + CHIEFS;
     /** Crimson Scarf: the lieutenants' outfit (MountainBanditEntity.OUTFITS). */
     private static final int CRIMSON = 1;
 
@@ -96,6 +97,7 @@ final class BanditCamp extends Site {
         pen(c, g);
         trainingRing(c, g);
         bandits(c, g, t);
+        chiefs(c, g);
     }
 
     // ---------------------------------------------------------------- the ground, the palisade, the gate
@@ -329,8 +331,19 @@ final class BanditCamp extends Site {
             int outfit = p[3] == 1 ? CRIMSON : c.pick(p[0], g, p[2], toIntegers(t.outfits()));
             Direction facing = p[2] > 30 ? Direction.SOUTH : Direction.fromDelta(Integer.signum(-p[0]) == 0 ? 0 : -Integer.signum(p[0]), 0, 0);
             if (facing == null) facing = Direction.SOUTH;
-            c.spawn(p[0], g + p[1], p[2], facing, MurimEntities.MOUNTAIN_BANDIT.get(), bandit -> bandit.setVariant(outfit));
+            c.spawn(p[0], g + p[1], p[2], facing, MurimEntities.MOUNTAIN_BANDIT.get(), bandit -> {
+                bandit.setVariant(outfit);
+                BanditCampCount.enlist(bandit, c.wx(0, 0), c.wz(0, 0));
+            });
         }
+    }
+
+    /** Where the five Bandit Chiefs stand: two by the empty seat in the hall, one before it, one in the ring, one in the gate: [x, z]. */
+    static final int[][] CHIEF_POSTS = {{-4, -30}, {4, -30}, {0, -16}, {21, 25}, {0, 32}};
+
+    private static void chiefs(Canvas c, int g) {
+        for (int[] p : CHIEF_POSTS)
+            c.spawn(p[0], g + 1, p[1], Direction.SOUTH, MurimEntities.BANDIT_CHIEF.get(), chief -> BanditCampCount.enlist(chief, c.wx(0, 0), c.wz(0, 0)));
     }
 
     private static Integer[] toIntegers(int[] a) {
