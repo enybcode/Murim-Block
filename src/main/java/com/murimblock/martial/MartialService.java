@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import java.util.List;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -64,9 +66,21 @@ public final class MartialService {
     public static boolean learn(ServerPlayer player, MartialArts.Art art) {
         MartialData before = data(player);
         if (before.knowsArt(art.id())) return false;
-        set(player, before.learn(art));
-        player.sendSystemMessage(Component.translatable("art.murimblock.learned", Component.translatable(art.translationKey()),
-                Component.translatable(art.first().translationKey())));
+        MartialData after = before.learn(art);
+        set(player, after);
+        List<MartialArts.Technique> taught = art.techniques().stream().filter(t -> after.hasTechnique(t.id()) && t.castable()).toList();
+        if (taught.size() > 1) {
+            // The manual taught more than its first technique (the Traveller's Staff Art's teaches all three).
+            MutableComponent names = Component.empty();
+            for (int i = 0; i < taught.size(); i++) {
+                if (i > 0) names.append(", ");
+                names.append(Component.translatable(taught.get(i).translationKey()));
+            }
+            player.sendSystemMessage(Component.translatable("art.murimblock.learned_all", Component.translatable(art.translationKey()), names));
+        } else {
+            player.sendSystemMessage(Component.translatable("art.murimblock.learned", Component.translatable(art.translationKey()),
+                    Component.translatable(art.first().translationKey())));
+        }
         return true;
     }
 
@@ -95,18 +109,21 @@ public final class MartialService {
         // Scarlet Tear's key again while its blood sword is out: the throw, free, whatever the cooldown.
         if (technique == MartialArts.SCARLET_TEAR && SanguineArt.holdsSword(player) && data(player).hasTechnique(id))
             return SanguineArt.throwSword(player) ? CastResult.CAST : CastResult.FAILED;
+        // The Spinning Rampart's key let go: it stops (it stopped by itself just before: nothing more to say).
+        if (technique == MartialArts.SPINNING_RAMPART && data(player).hasTechnique(id)) {
+            if (TravellerStaff.spinning(player)) { TravellerStaff.endRampart(player, true); return CastResult.CAST; }
+            if (TravellerStaff.justEnded(player)) return CastResult.CAST;
+        }
         CastResult check = check(player, technique);
         if (check != CastResult.CAST) return check;
+        // Not let go but tapped and refused at its start: say why (check), never cast it here.
+        if (technique == MartialArts.SPINNING_RAMPART) return CastResult.FAILED;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
         double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
         if (!Techniques.perform(player, technique, riposte)) return CastResult.FAILED;
         if (riposte != null) MartialCombat.consumeRiposte(player);
-        if (cost > 0) {
-            QiService.removeQi(player, cost);
-            // The meridians widen with use: a share of the Qi spent goes to Qi Max.
-            CultivationService.gainQiMax(player, cost * CultivationRules.TECHNIQUE_SHARE, CultivationService.Source.TECHNIQUE);
-        }
+        if (cost > 0) pay(player, cost);
         if (secondStep) {
             MartialCombat.takeSecondStep(player);
         } else {
@@ -126,6 +143,8 @@ public final class MartialService {
         if (!CombatService.isInCombatMode(player)) return CastResult.NOT_IN_COMBAT;
         // A blood sword in hand takes the hands and the mind: nothing else until it is thrown.
         if (SanguineArt.holdsSword(player)) return CastResult.SWORD_OUT;
+        // The Spinning Rampart takes the hands: no other technique while it spins.
+        if (TravellerStaff.spinning(player)) return CastResult.HINDERED;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || MeditationService.isMeditating(player)) return CastResult.HINDERED;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
@@ -151,7 +170,26 @@ public final class MartialService {
         MartialArts.Technique technique = id == null ? null : MartialArts.technique(id);
         if (check(player, technique) != CastResult.CAST) return false;
         if (technique == MartialArts.BLOOD_CRYSTAL) return SanguineArt.aim(player, slot);
+        if (technique == MartialArts.SPINNING_RAMPART) {
+            if (!TravellerStaff.startRampart(player)) return false;
+            pay(player, technique.qiCost());
+            // Not again while it spins; its true cooldown starts at its end (startCooldown).
+            READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, Long.MAX_VALUE / 2);
+            return true;
+        }
         return technique == MartialArts.CLOUD_STEP_SLASH && AzureCloudSword.aim(player);
+    }
+
+    /** Spends a technique's Qi; the meridians widen with use: a share of the Qi spent goes to Qi Max. */
+    static void pay(ServerPlayer player, double cost) {
+        QiService.removeQi(player, cost);
+        CultivationService.gainQiMax(player, cost * CultivationRules.TECHNIQUE_SHARE, CultivationService.Source.TECHNIQUE);
+    }
+
+    /** A technique's cooldown from now (the Spinning Rampart's, at its end), on the server and on the player's bar. */
+    static void startCooldown(ServerPlayer player, MartialArts.Technique technique) {
+        READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(technique.id(), player.level().getGameTime() + technique.cooldownTicks());
+        if (player.connection != null) PacketDistributor.sendToPlayer(player, new TechniquePayloads.Cooldown(technique.id(), technique.cooldownTicks()));
     }
 
     /** The player is busy only with a guard's recoil (holding the guard, or the parry's motion). */

@@ -544,8 +544,11 @@ public final class MurimProfileScreen extends Screen {
 
         section(g, new Box(side.x(), side.y(), side.width(), 9), label("techniques.strikes"));
         if (passive.strikes().isEmpty()) {
-            // A passive that keeps the bare-hand strikes as they are (the Long Fist's): nothing to choose.
-            text(g, label("techniques.strikes_bare_hands"), new Box(side.x(), side.y() + 14, side.width(), side.bottom() - side.y() - 14), INK, false, 1);
+            // A passive that keeps Epic Fight's strikes as they are (bare hands for the Long Fist; the weapon's own for an
+            // art that has its text): nothing to choose.
+            String own = "techniques.strikes_fixed." + art.id().getPath();
+            text(g, label(net.minecraft.client.resources.language.I18n.exists("gui.murimblock." + own) ? own : "techniques.strikes_bare_hands"),
+                    new Box(side.x(), side.y() + 14, side.width(), side.bottom() - side.y() - 14), INK, false, 1);
             return;
         }
         List<ResourceLocation> strikes = data.strikes(passive);

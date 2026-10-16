@@ -1,0 +1,26 @@
+{
+  "loader": "neoforge:separate_transforms",
+  "base": {
+    "parent": "murimblock:item/traveller_staff_3d"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/traveller_staff"
+      }
+    },
+    "ground": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/traveller_staff"
+      }
+    },
+    "fixed": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/traveller_staff"
+      }
+    }
+  }
+}

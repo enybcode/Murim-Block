@@ -91,7 +91,11 @@ public record MartialData(Set<ResourceLocation> arts, Set<ResourceLocation> tech
         a.add(art.id());
         MartialData d = with(a, techniques, bar, mastery, manualsReceived);
         if (mainArt.isEmpty()) d = d.withMainArt(art.id());
-        return d.unlock(art.first());
+        d = d.unlock(art.first());
+        // A technique no quest unlocks (and not a secret) comes with the manual too (the Traveller's Staff Art's).
+        for (MartialArts.Technique t : art.techniques())
+            if (t.castable() && art.questFor(t.id()) == null) d = d.unlock(t);
+        return d;
     }
 
     /** Unlocks a technique and puts it in the first free slot of the bar, if any (a secret never goes on the bar). */

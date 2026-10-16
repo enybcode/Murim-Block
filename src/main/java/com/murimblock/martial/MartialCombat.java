@@ -61,6 +61,8 @@ public final class MartialCombat {
     public static final int COMBO_GAP_TICKS = 30;
     /** Damage lost per hit already in the combo, and the least a hit still deals. */
     public static final float COMBO_DECAY = 0.08F, COMBO_FLOOR = 0.4F;
+    /** Third Resonance (the Traveller's Staff Art's passive): the third strike of a chain deals twice its damage. */
+    public static final float THIRD_RESONANCE_FACTOR = 2.0F;
     /** Hits before the knock-down for a combo to count as complete (quest). */
     public static final int COMPLETE_COMBO_HITS = 3;
     /** Thousand-Li Cloud Step: a second dash within this many ticks of the first is free. */
@@ -204,6 +206,13 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
             return;
         }
+        credit = TravellerStaff.creditOf(player, animation);
+        if (credit != null) {
+            boolean strike = TravellerStaff.isStrike(animation);
+            if (strike) TravellerStaff.strikeBegan(player);
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.TRAVELLER_STAFF, credit, strike, false));
+            return;
+        }
         credit = CelestialPeakSpear.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CELESTIAL_PEAK_SPEAR, credit, CelestialPeakSpear.isStrike(animation), false));
@@ -234,6 +243,9 @@ public final class MartialCombat {
         // Long Reach: a spear hit at the point strikes a fifth harder.
         if (swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR) && CelestialPeakSpear.reaches(player) && CelestialPeakSpear.atReach(player, event.getTarget()))
             factor *= CelestialPeakSpear.REACH_BONUS;
+        // Third Resonance: the third strike of a chain strikes twice as hard (not the techniques).
+        if (swing.art.equals(MartialArts.TRAVELLER_STAFF) && swing.strike && TravellerStaff.thirdOfChain(player))
+            factor *= THIRD_RESONANCE_FACTOR;
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -254,7 +266,8 @@ public final class MartialCombat {
         boolean fist = swing.art.equals(MartialArts.LONG_FIST);
         boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
         boolean spear = swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR);
-        if (fist) LongFist.onHit(player, target, animation, enemy);
+        if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
+        else if (fist) LongFist.onHit(player, target, animation, enemy);
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
         else AzureCloudSword.onHit(player, target, animation, swing.riposte);
@@ -617,6 +630,7 @@ public final class MartialCombat {
         tickSlams(player, now);
         keepAloft(player);
         AzureCloudSword.tickAim(player, now);
+        TravellerStaff.tick(player);
         SanguineArt.tick(player);
         BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
@@ -650,6 +664,10 @@ public final class MartialCombat {
                     && BloodIceberg.inArena(event.getLevel(), event.getPos().relative(event.getFace() == null ? net.minecraft.core.Direction.UP : event.getFace()))) event.setCanceled(true);
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
+        // The Spinning Rampart stops what comes from the front before anything else sees it (Epic Fight's stun included).
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onProjectileImpact);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {
             if (!event.enabled()) SanguineArt.leftCombat(event.getEntity().getUUID());
@@ -678,6 +696,7 @@ public final class MartialCombat {
         AzureCloudSword.forgetAim(id);
         LongFist.forget(id);
         SanguineArt.forget(id);
+        TravellerStaff.forget(id);
     }
 
     public static void clearForTests() {
@@ -697,5 +716,6 @@ public final class MartialCombat {
         LongFist.forget(null);
         SanguineArt.forget(null);
         BloodIceberg.forget(null);
+        TravellerStaff.forget(null);
     }
 }

@@ -5,12 +5,13 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 20: the Traveller's Staff Art (the Spinning Rampart's spin shown to everyone around).
      * 18: synchronized blood crystal combat state and projectile entity.
      * 17: conversations (the old master's dialogue, its pages and answers).
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "19";
+    private static final String NETWORK_VERSION = "20";
 
     private MurimblockNetworking() {
     }
@@ -47,6 +48,9 @@ public final class MurimblockNetworking {
                 (payload, context) -> com.murimblock.client.CombatBarClient.slamReady(payload.ticks()));
         registrar.playToClient(TechniquePayloads.DelayedCuts.TYPE, TechniquePayloads.DelayedCuts.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.DrizzleSlashEffects.delayedCuts(payload.attackerId(), payload.targetId()));
+        // The Spinning Rampart spun or stopped: its loop shown on everyone's screen.
+        registrar.playToClient(StaffSpinPayload.TYPE, StaffSpinPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.StaffClient.spin(payload.entityId(), payload.spinning()));
         // Client only: only ever sent to clients, so the client classes are never loaded on a dedicated server.
         registrar.playToClient(FinishCinematicPayload.TYPE, FinishCinematicPayload.STREAM_CODEC, (payload, context) -> {
             if (payload.start()) com.murimblock.client.FinishCinematic.start(payload.executorId(), payload.victimId(), payload.finish());

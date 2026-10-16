@@ -46,7 +46,8 @@ public final class TechniquePayloads {
                 case NOT_IN_COMBAT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.not_in_combat"), true);
                 case NO_WEAPON -> player.displayClientMessage(Component.translatable(technique.art().equals(MartialArts.LONG_FIST) || technique.art().equals(MartialArts.SANGUINE_ART)
                         ? "technique.murimblock.cast.bare_hands" : technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)
-                        ? "technique.murimblock.cast.no_spear" : "technique.murimblock.cast.no_weapon", name), true);
+                        ? "technique.murimblock.cast.no_spear" : technique.art().equals(MartialArts.TRAVELLER_STAFF)
+                        ? "technique.murimblock.cast.no_staff" : "technique.murimblock.cast.no_weapon", name), true);
                 case NO_ROOM -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_room", name), true);
                 case SWORD_OUT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.sword_out", name), true);
                 default -> { }

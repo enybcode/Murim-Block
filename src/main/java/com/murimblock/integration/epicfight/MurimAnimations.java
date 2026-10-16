@@ -138,6 +138,7 @@ public final class MurimAnimations {
         buildMeditation(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);
+        buildStaffArt(builder);
         SectWeaponAnimations.build(builder);
         CrabKingAnimations.build(builder);
     }
@@ -425,6 +426,51 @@ public final class MurimAnimations {
     public static AnimationAccessor<StaticAnimation> ALLIANCE_SKY_FALL;
     public static AnimationAccessor<ActionAnimation> ALLIANCE_SKY_LANDING;
 
+    // ---------------------------------------------------------------- the Traveller's Staff Art (scripts/animation/staff-art.cjs)
+
+    /**
+     * The Traveller's Staff Art's techniques, played 1.5 times faster than the design sheet's times (staff-art.cjs, its
+     * timings): the Vertical Strike (0.67 s), the Flurry of Points (0.8 s), the Spinning Rampart's start, loop and end.
+     */
+    public static AnimationAccessor<AttackAnimation> STAFF_VERTICAL_STRIKE, STAFF_POINT_FLURRY;
+    public static AnimationAccessor<ActionAnimation> STAFF_RAMPART_START, STAFF_RAMPART_END;
+    public static AnimationAccessor<StaticAnimation> STAFF_RAMPART_LOOP;
+    /** When the strike's top end lands, and each thrust's point (s, as played). */
+    public static final float STAFF_STRIKE_CONTACT = 0.3F;
+    static final float[] STAFF_THRUSTS = {0.1467F, 0.2533F, 0.36F, 0.4667F, 0.5867F};
+    /** The strike: narrow, 2.5 blocks out before the player, from the chest down. */
+    private static final OBBCollider STAFF_STRIKE_BOX = new OBBCollider(0.45D, 0.9D, 1.2D, 0.0D, 1.0D, -1.4D);
+    /** A thrust: a narrow corridor 3 blocks out at chest height. */
+    private static final OBBCollider STAFF_THRUST_BOX = new OBBCollider(0.4D, 0.5D, 1.4D, 0.0D, 1.15D, -1.7D);
+
+    private static void buildStaffArt(AnimationBuilder builder) {
+        // One hit, the first met (x1.5 of the technique's base), from the top of the swing down to just past the contact.
+        STAFF_VERTICAL_STRIKE = builder.nextAccessor("biped/murim/staff_vertical_strike", a -> technique(new AttackAnimation(0.06F,
+                STAFF_STRIKE_CONTACT - 0.1F, STAFF_STRIKE_CONTACT - 0.06F, STAFF_STRIKE_CONTACT + 0.05F, 0.56F, STAFF_STRIKE_BOX, root(), a, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.SHORT)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        // Five thrusts: four at x0.3 that hold the target, the last at x0.6 with a little push (x1.8 in all). Each strikes
+        // over 0.07 s round its contact, more than a server tick (a shorter window may fall between two ticks).
+        STAFF_POINT_FLURRY = builder.nextAccessor("biped/murim/staff_point_flurry", a -> {
+            Phase[] phases = new Phase[STAFF_THRUSTS.length];
+            float start = 0.0F;
+            for (int i = 0; i < STAFF_THRUSTS.length; i++) {
+                float t = STAFF_THRUSTS[i];
+                boolean last = i == STAFF_THRUSTS.length - 1;
+                phases[i] = new Phase(start, t - 0.045F, t - 0.035F, t + 0.035F, last ? 0.7F : t + 0.04F, last ? Float.MAX_VALUE : t + 0.045F, root(), STAFF_THRUST_BOX)
+                        .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(last ? 0.6F : 0.3F))
+                        .addProperty(AttackPhaseProperty.STUN_TYPE, last ? StunType.SHORT : StunType.HOLD)
+                        .addProperty(AttackPhaseProperty.SWING_SOUND, last ? EpicFightSounds.WHOOSH_BIG.get() : EpicFightSounds.WHOOSH_SHARP.get());
+                if (last) phases[i].addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(1.5F));
+                start = t + 0.045F;
+            }
+            return new AttackAnimation(0.06F, a, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
+        });
+        STAFF_RAMPART_START = builder.nextAccessor("biped/murim/staff_rampart_start", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        STAFF_RAMPART_LOOP = builder.nextAccessor("biped/murim/staff_rampart_loop", a -> new StaticAnimation(0.02F, true, a, Armatures.BIPED));
+        STAFF_RAMPART_END = builder.nextAccessor("biped/murim/staff_rampart_end", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+    }
+
     private static void buildSkyDrop(AnimationBuilder builder) {
         ALLIANCE_SKY_FALL = builder.nextAccessor("biped/murim/alliance_sky_fall", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
         ALLIANCE_SKY_LANDING = builder.nextAccessor("biped/murim/alliance_sky_landing", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
@@ -614,7 +660,9 @@ public final class MurimAnimations {
         FIST_GUARD,
         /** Seated in the lotus, meditating. */
         MEDITATE,
-        SANGUINE_GUARD;
+        SANGUINE_GUARD,
+        /** The Traveller's Staff spun before the chest (the Spinning Rampart held). */
+        STAFF_RAMPART;
 
         final int id;
 

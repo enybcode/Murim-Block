@@ -31,15 +31,22 @@ import javax.imageio.ImageIO;
  *   plum_blossom_thrusts: five spear points fanned out from one hand like a plum flower, a petal of light at each;
  *   thousand_soldier_sweep: the spear round in a full ring at the knees, dust thrown out from it;
  *   long_reach: the passive, a spear level with a gold mark at its point, 3 blocks out.
+ * And the Traveller's Staff Art's, "road dusk": a deep moss dusk, a bronze frame, the staff in pale ash with iron shoes and
+ * its red cord, the moves in warm light:
+ *   vertical_strike: the staff brought straight down, its arc of light from over the head, a dull burst where it lands;
+ *   point_flurry: the staff level, its point thrust out, four ghost points of the earlier thrusts behind it;
+ *   spinning_rampart: the staff spinning before a dark figure, a full disc of light, an arrow stopped dead on it;
+ *   third_resonance: the passive, three strikes in a row, the third a large ring of light (x2).
  */
 public class TechniqueIcons {
     static final int W = 32;
     static final String[] NAMES = {"cloud_step_slash", "thousand_drizzle", "heaven_splitting_crescent", "swallow_returns", "flowing_cloud_stance",
             "tiger_step_punch", "rapid_fists", "whirlwind_kick", "inch_force", "steady_breath",
             "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance", "blood_iceberg",
-            "piercing_dragon", "plum_blossom_thrusts", "thousand_soldier_sweep", "long_reach"};
+            "piercing_dragon", "plum_blossom_thrusts", "thousand_soldier_sweep", "long_reach",
+            "vertical_strike", "point_flurry", "spinning_rampart", "third_resonance"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -51,7 +58,8 @@ public class TechniqueIcons {
             if (i < FIST) jade(g, img, i);
             else if (i < BLOOD) ember(g, img, i - FIST);
             else if (i < SPEAR) blood(g, img, i - BLOOD);
-            else peak(g, img, i - SPEAR);
+            else if (i < STAFF) peak(g, img, i - SPEAR);
+            else road(g, img, i - STAFF);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -394,6 +402,78 @@ public class TechniqueIcons {
                 for (int k = 0; k < 3; k++) { g.setColor(NAVY_GOLD); g.fillRect(6 + k * 7, 25, 5, 1); }
                 line(g, 27, 12, 27, 26, 1f, NAVY_GOLD);
                 disc(g, 27, 20, 2.2, c(255, 230, 150));
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ the Traveller's Staff: road dusk
+
+    static final Color ASH = c(222, 196, 150), ASH_DARK = c(150, 116, 74), IRON = c(96, 102, 108), CORD = c(196, 48, 40),
+            DUSK_LIGHT = c(255, 214, 140), DUSK_DIM = c(150, 110, 64), BRONZE = c(176, 132, 74), FIGURE = c(18, 24, 18);
+
+    static void roadBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 15.5) / 22.0;
+            img.setRGB(x, y, c((int) (22 + 22 * (1 - d)), (int) (28 + 26 * (1 - d)), (int) (16 + 12 * (1 - d))).getRGB());
+        }
+        g.setColor(BRONZE); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(70, 56, 30)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A staff from (x0, y0) to (x1, y1): pale ash with a dark edge, iron shoes at both ends, a red cord a third along. */
+    static void staff(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+        line(g, x0, y0, x1, y1, 2.0f, ASH_DARK);
+        line(g, x0 - uy * 0.3, y0 + ux * 0.3, x1 - uy * 0.3, y1 + ux * 0.3, 1.0f, ASH);
+        line(g, x0, y0, x0 + ux * 1.8, y0 + uy * 1.8, 2.2f, IRON);
+        line(g, x1 - ux * 1.8, y1 - uy * 1.8, x1, y1, 2.2f, IRON);
+        double cx = x0 + dx * 0.36, cy = y0 + dy * 0.36;
+        line(g, cx - ux, cy - uy, cx + ux, cy + uy, 2.4f, CORD);
+    }
+
+    static void road(Graphics2D g, BufferedImage img, int i) {
+        roadBack(img, g);
+        switch (i) {
+            case 0 -> { // Vertical Strike: the arc from over the head, the staff come down level ahead, the burst at its end.
+                g.setColor(DUSK_DIM); g.setStroke(new BasicStroke(3f)); g.draw(new Arc2D.Double(2, 6, 26, 26, 95, -88, Arc2D.OPEN));
+                g.setColor(DUSK_LIGHT); g.setStroke(new BasicStroke(1f)); g.draw(new Arc2D.Double(2, 6, 26, 26, 90, -78, Arc2D.OPEN));
+                staff(g, img, 5, 23, 26, 19);
+                burst(g, 27, 19, 3.2, DUSK_LIGHT);
+                for (int[] q : new int[][]{{24, 28}, {28, 27}, {30, 29}}) px(img, q[0], q[1], c(170, 150, 110));
+                line(g, 3, 29, 30, 29, 1f, c(60, 52, 30));
+            }
+            case 1 -> { // Flurry of Points: the staff thrust level, four ghost points behind its point.
+                // The four thrusts before this one: short streaks of light ahead, each ending in its point.
+                for (double y : new double[]{12, 16, 25.5, 29}) {
+                    line(g, 16, y, 27, y, 1f, DUSK_DIM);
+                    line(g, 22, y, 27, y, 1f, DUSK_LIGHT);
+                    disc(g, 27.5, y, 1.0, c(255, 236, 190));
+                }
+                staff(g, img, 3, 21, 27, 21);
+                burst(g, 28.5, 21, 2.6, DUSK_LIGHT);
+            }
+            case 2 -> { // Spinning Rampart: a full disc of light, the staff across it, an arrow stopped dead on it.
+                g.setColor(c(255, 214, 140, 70)); g.fill(new Ellipse2D.Double(5, 4, 22, 22));
+                g.setColor(DUSK_DIM); g.setStroke(new BasicStroke(1.6f)); g.draw(new Ellipse2D.Double(5, 4, 22, 22));
+                g.setColor(DUSK_LIGHT); g.setStroke(new BasicStroke(0.8f)); g.draw(new Arc2D.Double(6, 5, 20, 20, 30, 120, Arc2D.OPEN));
+                g.draw(new Arc2D.Double(6, 5, 20, 20, 210, 120, Arc2D.OPEN));
+                staff(g, img, 8, 24, 24, 6);
+                // The arrow, from the right, its head broken off on the disc.
+                line(g, 26.5, 15, 29.5, 15, 1f, c(140, 110, 70));
+                px(img, 29, 14, c(230, 230, 230)); px(img, 29, 16, c(230, 230, 230));
+                burst(g, 26.5, 15, 2.2, c(255, 245, 220));
+                // The figure behind, only its head and shoulders under the disc.
+                g.setColor(FIGURE); g.fill(new Ellipse2D.Double(13, 25, 6, 5)); g.fill(new RoundRectangle2D.Double(9, 28, 14, 6, 4, 4));
+            }
+            default -> { // Third Resonance: two small strikes, then the third, a large ring of light.
+                disc(g, 7, 22, 1.4, DUSK_DIM);
+                disc(g, 13, 18, 1.8, DUSK_DIM);
+                g.setColor(DUSK_LIGHT); g.setStroke(new BasicStroke(1.4f)); g.draw(new Ellipse2D.Double(16, 6, 13, 13));
+                burst(g, 22.5, 12.5, 3.4, DUSK_LIGHT);
+                staff(g, img, 3, 29, 21, 14);
+                // "x2" under the ring, in bronze pixels.
+                for (int[] q : new int[][]{{21, 22}, {23, 24}, {22, 23}, {21, 24}, {23, 22}, {25, 22}, {26, 22}, {26, 23}, {25, 24}, {25, 25}, {26, 25}})
+                    px(img, q[0], q[1], BRONZE);
             }
         }
     }

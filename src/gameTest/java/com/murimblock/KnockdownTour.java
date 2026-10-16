@@ -320,6 +320,7 @@ public final class KnockdownTour {
             case FIST_GUARD -> MurimAnimations.LONG_FIST_GUARD;
             case SANGUINE_GUARD -> MurimAnimations.SANGUINE_GUARD;
             case MEDITATE -> MurimAnimations.MEDITATE;
+            case STAFF_RAMPART -> MurimAnimations.STAFF_RAMPART_LOOP;
         };
         check(motion == expected && playing != null && playing.registryName().equals(wanted.registryName()),
                 what + ": motion " + motion + ", playing " + (playing == null ? null : playing.registryName()));
