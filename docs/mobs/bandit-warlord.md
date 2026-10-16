@@ -183,8 +183,8 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 **En jeu (proposition)** : la montée est une illusion de caméra. Le météore est construit dans le ciel au-dessus du camp
 (vers y 230) pendant les plans 1 à 7 (réparti sur les ticks, comme le cratère) ; pendant le plan 9, quand la caméra
 traverse les nuages, les joueurs et le colosse sont portés dans sa cuvette ; le cratère du camp, en bas, reste tel quel.
-Pendant les 30 s, personne ne bouge ni ne prend de coups. Le titre « Son of the Demon » remplace son nom sur la barre de
-boss pour toute la seconde phase.
+Pendant les 30 s, personne ne bouge ni ne prend de coups. Le titre « Son of the Demon », petit, remplace son nom au-dessus
+de la barre de boss pour toute la seconde phase (Enzo : sans « Bandit Warlord », bien plus petit).
 
 ## Questions pour Enzo
 
