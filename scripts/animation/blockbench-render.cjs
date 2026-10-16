@@ -39,6 +39,14 @@ const VIEWS = {
   // Wide, for a dash (the character runs 5 blocks, 80 pixels, toward -z): from its right, and three-quarter ahead.
   wide: { position: [140, 34, -40], target: [0, 12, -40] },
   wide_front: { position: [115, 52, -150], target: [0, 12, -46] },
+  // Farther back and higher, for a tall model (a boss with something over its head): its three-quarter front, its side,
+  // its three-quarter back.
+  tall_front: { position: [-38, 34, -54], target: [0, 19, -2] },
+  tall_side: { position: [68, 24, -2], target: [0, 19, -2] },
+  tall_back: { position: [38, 34, 54], target: [0, 19, 2] },
+  // Close on the chest and the head, for checking textures.
+  close_front: { position: [-14, 26, -30], target: [0, 22, -2] },
+  close_back: { position: [14, 26, 30], target: [0, 22, 2] },
 };
 
 (async () => {
