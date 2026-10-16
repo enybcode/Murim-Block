@@ -44,7 +44,7 @@ public final class TechniquePayloads {
                         (MartialService.cooldownLeft(player, technique.id()) + 19) / 20), true);
                 case NO_QI -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_qi", name, (int) technique.qiCost()), true);
                 case NOT_IN_COMBAT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.not_in_combat"), true);
-                case NO_WEAPON -> player.displayClientMessage(Component.translatable(technique.art().equals(MartialArts.LONG_FIST) || technique.art().equals(MartialArts.SANGUINE_ART)
+                case NO_WEAPON -> player.displayClientMessage(Component.translatable(technique.art().equals(MartialArts.LONG_FIST) || technique.art().equals(MartialArts.SANGUINE_ART) || technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)
                         ? "technique.murimblock.cast.bare_hands" : technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)
                         ? "technique.murimblock.cast.no_spear" : technique.art().equals(MartialArts.TRAVELLER_STAFF)
                         ? "technique.murimblock.cast.no_staff" : "technique.murimblock.cast.no_weapon", name), true);

@@ -43,7 +43,7 @@ public final class BanditWarlordAnimations {
     public static final float COLLAPSE_IMPACT = 0.7F, LEAP_JUMP = 0.3F;
 
     /** The leap: nothing else may start meanwhile, he cannot turn; he moves (the entity flies), unlike an action. */
-    private static final class Airborne extends StaticAnimation {
+    static final class Airborne extends StaticAnimation {
         Airborne(AnimationAccessor<? extends StaticAnimation> accessor) {
             super(0.1F, false, accessor, Armatures.BIPED);
             this.stateSpectrumBlueprint.clear().newTimePair(0.0F, Float.MAX_VALUE)

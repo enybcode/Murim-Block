@@ -136,12 +136,66 @@ public final class MurimAnimations {
         buildCelestialPeakSpear(builder);
         buildBanditChief(builder);
         BanditWarlordAnimations.build(builder);
+        buildMountainFist(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);
         buildStaffArt(builder);
         SectWeaponAnimations.build(builder);
         CrabKingAnimations.build(builder);
+    }
+
+    // ---------------------------------------------------------------- the Mountain-Shattering Fist (scripts/animation/mountain-fist.cjs)
+
+    /** Mountain-Crushing Punch, Earth Breaker, Bull Charge and the secret Sky Breaker: the Bandit Warlord's own, at a man's size. */
+    public static AnimationAccessor<AttackAnimation> MSF_CRUSHER, MSF_EARTH_BREAKER, MSF_BULL_CHARGE, MSF_SKY_BREAKER;
+    /** Held while the body falls (a technique from the air, the ultimate's dive) and while it rises (the ultimate). */
+    public static AnimationAccessor<StaticAnimation> MSF_FALLING_FIST, MSF_ASCEND;
+    /** The landing of a dive; the finish, Mountain Burial. */
+    public static AnimationAccessor<ActionAnimation> MSF_LAND, FINISH_MOUNTAIN_BURIAL;
+    /** When the punch is through, the fists meet the ground (seconds into them): what breaks the ground then. */
+    public static final float MSF_CRUSHER_IMPACT = 0.45F, MSF_EARTH_IMPACT = 0.78F, MSF_SKY_IMPACT = 0.5F;
+    /** The charge runs from this time to that (seconds). */
+    public static final float MSF_CHARGE_FROM = 0.45F, MSF_CHARGE_TO = 1.05F;
+
+    /** The punch's fist: straight ahead, to some three blocks. */
+    private static final OBBCollider MSF_FIST = new OBBCollider(0.8D, 0.8D, 1.4D, 0.0D, 1.1D, -1.6D);
+    /** The fists on the ground: a shock all round, five blocks. */
+    private static final OBBCollider MSF_QUAKE = new OBBCollider(5.0D, 1.2D, 5.0D, 0.0D, 0.8D, 0.0D);
+    /** The shoulder ahead of the body all along the rush. */
+    private static final OBBCollider MSF_SHOULDER = new OBBCollider(0.9D, 1.0D, 0.9D, 0.0D, 1.0D, -1.0D);
+    /** The uppercut, rising before the body. */
+    private static final OBBCollider MSF_UPPERCUT = new OBBCollider(0.8D, 1.2D, 1.0D, 0.0D, 1.2D, -1.1D);
+
+    private static void buildMountainFist(AnimationBuilder builder) {
+        // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact.
+        MSF_CRUSHER = builder.nextAccessor("biped/murim/msf_crusher", a -> technique(new AttackAnimation(0.08F, 0.3F, 0.4F, 0.56F, 0.9F,
+                MSF_FIST, root(), a, Armatures.BIPED), 1.6F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_EARTH_BREAKER = builder.nextAccessor("biped/murim/msf_earth_breaker", a -> technique(new AttackAnimation(0.08F, 0.6F, 0.72F, 0.86F, 1.4F,
+                MSF_QUAKE, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(10))
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_BULL_CHARGE = builder.nextAccessor("biped/murim/msf_bull_charge", a -> technique(new AttackAnimation(0.08F, 0.35F, MSF_CHARGE_FROM, MSF_CHARGE_TO, 1.3F,
+                MSF_SHOULDER, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(8))
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_SKY_BREAKER = builder.nextAccessor("biped/murim/msf_sky_breaker", a -> technique(new AttackAnimation(0.08F, 0.35F, 0.42F, 0.6F, 0.95F,
+                MSF_UPPERCUT, root(), a, Armatures.BIPED), 2.0F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_FALLING_FIST = builder.nextAccessor("biped/murim/msf_falling_fist", BanditWarlordAnimations.Airborne::new);
+        MSF_ASCEND = builder.nextAccessor("biped/murim/msf_ascend", BanditWarlordAnimations.Airborne::new);
+        MSF_LAND = builder.nextAccessor("biped/murim/msf_land", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+        FINISH_MOUNTAIN_BURIAL = builder.nextAccessor("biped/murim/msf_burial", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)

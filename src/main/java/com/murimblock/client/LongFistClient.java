@@ -32,7 +32,8 @@ public final class LongFistClient {
         EpicFightClientEventHooks.Entity.MODIFY_PLAYER_LIVING_MOTION_COMPOSITE.registerEvent(e -> {
             var patch = e.getPlayerPatch();
             boolean guarding = e.getMotion() == LivingMotions.BLOCK || patch.getHoldingSkill() instanceof GuardSkill;
-            if (guarding && LongFist.guardsBareHanded(patch.getOriginal())) e.setMotion(Motions.FIST_GUARD);
+            if (guarding && (LongFist.guardsBareHanded(patch.getOriginal())
+                    || com.murimblock.martial.MountainShatteringFist.guardsBareHanded(patch.getOriginal()))) e.setMotion(Motions.FIST_GUARD);
         }, "murimblock:long_fist_guard", -10);
     }
 }

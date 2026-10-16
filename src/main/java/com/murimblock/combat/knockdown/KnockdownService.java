@@ -70,6 +70,7 @@ public final class KnockdownService {
                 case FinishCinematicPayload.AZURE_CLOUD -> AzureCloudSword.FINISH_HIT_TICK;
                 case FinishCinematicPayload.LONG_FIST -> LongFist.FINISH_HIT_TICK;
                 case FinishCinematicPayload.SCARLET_BLOOM -> com.murimblock.martial.ScarletBloom.HIT_TICK;
+                case FinishCinematicPayload.MOUNTAIN_BURIAL -> com.murimblock.martial.MountainShatteringFist.FINISH_HIT_TICK;
                 default -> FINISH_HIT_TICK;
             };
         }
@@ -225,13 +226,15 @@ public final class KnockdownService {
         if (!canActOn(executor, target) || isCarried(target) || isBeingExecuted(target)) return false;
         int finish = com.murimblock.martial.ScarletBloom.finishes(executor) ? FinishCinematicPayload.SCARLET_BLOOM
                 : AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
-                : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST : FinishCinematicPayload.GENERIC;
+                : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST
+                : com.murimblock.martial.MountainShatteringFist.finishes(executor) ? FinishCinematicPayload.MOUNTAIN_BURIAL : FinishCinematicPayload.GENERIC;
         EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount(), finish));
         PlayerPatch<?> patch = EpicFightBridge.patch(executor);
         if (patch != null) patch.playAnimationSynchronized(switch (finish) {
             case FinishCinematicPayload.AZURE_CLOUD -> MurimAnimations.FINISH_AZURE;
             case FinishCinematicPayload.LONG_FIST -> MurimAnimations.FINISH_LONG_FIST;
             case FinishCinematicPayload.SCARLET_BLOOM -> MurimAnimations.FINISH_SCARLET_BLOOM;
+            case FinishCinematicPayload.MOUNTAIN_BURIAL -> MurimAnimations.FINISH_MOUNTAIN_BURIAL;
             default -> MurimAnimations.FINISH_GENERIC;
         }, 0.0F);
         if (finish == FinishCinematicPayload.SCARLET_BLOOM) com.murimblock.martial.ScarletBloom.start(executor, target);
@@ -256,6 +259,7 @@ public final class KnockdownService {
             int elapsed = server.getTickCount() - entry.getValue().started;
             if (entry.getValue().finish == FinishCinematicPayload.AZURE_CLOUD) AzureCloudSword.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.LONG_FIST) LongFist.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.MOUNTAIN_BURIAL) com.murimblock.martial.MountainShatteringFist.finishTick(executor, victim, elapsed);
             if (elapsed < entry.getValue().hitTick()) continue;
             // The blow lands: the finish is over (the animation plays out on its own).
             EXECUTIONS.remove(entry.getKey());

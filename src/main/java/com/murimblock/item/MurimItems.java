@@ -249,6 +249,9 @@ public final class MurimItems {
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
 
     /** Scroll of the first art of the fist: read, it teaches the Long Fist and is used up. Where it is found is still to decide. */
+    /** The Bandit Warlord's scroll: read (from Qi Condensation), it teaches the Mountain-Shattering Fist and is used up. */
+    public static final DeferredItem<MartialManualItem> MOUNTAIN_SHATTERING_FIST_SCROLL = ITEMS.register("mountain_shattering_fist_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.MOUNTAIN_SHATTERING_FIST));
     public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), MartialArts.LONG_FIST));
 
@@ -314,6 +317,7 @@ public final class MurimItems {
                         pendants().forEach(pendant -> output.accept(pendant.get()));
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
+                        output.accept(MOUNTAIN_SHATTERING_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());

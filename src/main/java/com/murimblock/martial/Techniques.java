@@ -22,6 +22,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.bareHanded(player);
         if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.holdsSpear(player);
         if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.holdsStaff(player);
+        if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.bareHanded(player);
         return true;
     }
 
@@ -39,6 +40,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.perform(player, patch, technique);
         return false;
     }
 }

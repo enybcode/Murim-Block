@@ -274,6 +274,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a film of the Mountain-Shattering Fist's techniques in a real client (see MountainFistTour).
+        mountainFistTour {
+            client()
+            gameDirectory = project.file('build/mountain-fist-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.mountainFistTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a mugshot of every Murim mob for the wiki (see MugshotTour).
         mugshotTour {
             client()

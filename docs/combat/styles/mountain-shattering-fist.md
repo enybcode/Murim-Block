@@ -1,6 +1,6 @@
 # Le Poing Brise-Montagne (碎山拳, *Suì Shān Quán*)
 
-> **État : proposition du 16/10/2026, pas encore implémentée.** Demande d'Enzo : l'art martial que lâche le Seigneur des
+> **État : en jeu depuis le 16/10/2026** (voir « En jeu » à la fin ; à valider par Enzo). Demande d'Enzo : l'art martial que lâche le Seigneur des
 > bandits, boss des grands camps ([../../mobs/bandit-warlord.md](../../mobs/bandit-warlord.md)) : « un art avec beaucoup
 > de dégâts de zone et de destruction d'éléments ». Ses techniques sont les mouvements du boss : le joueur apprend ce
 > qu'il vient d'affronter, comme avec Sensei Yun et le capitaine. Les chiffres sont un premier jet, alignés sur
@@ -145,3 +145,41 @@ cratère pour de bon ([../../structures/bandit-camp.md](../../structures/bandit-
 3. **Le royaume** : à partir de Qi Condensation, ou plus tard ?
 4. Cet art s'ajoute-t-il aux 12 de la bêta (un 13e, « libre »), ou en remplace-t-il un ?
 5. L'ultime chez le joueur : un cratère de 8 blocs, recharge 5 minutes, débloqué à 100 de maîtrise ; trop fort, ou pas assez ?
+
+## En jeu (16/10/2026)
+
+Enzo : « commence l'art, mets en place le système, les assets visuels, et prépare des GIF pour que je valide » ; les blocs
+cassés **reviennent après 15 secondes** (son choix). Code : `martial/MountainShatteringFist`, `combat/ShatteredGround`
+(le terrain cassé, sauvegardé, règle de jeu `murimDestruction`), animations `scripts/animation/mountain-fist.cjs`
+(celles du Seigneur à taille d'homme), icônes `scripts/worldgen/TechniqueIcons.java` (« nuit de pierre »), rouleau
+`scripts/worldgen/ScrollTexture.java`.
+
+![Les icônes : passif, poing, brise-terre, charge, brise-ciel, ultime](images/mountain-fist-icons.png)
+
+| | Qi | Recharge | En jeu |
+|---|---|---|---|
+| **Earthshaker** (passif) | — | — | 30 % de l'attaque à tous à 1,5 bloc de la cible ; mains nues 3× plus rapides sur pierre et bois |
+| **Mountain-Crushing Punch** | 40 | 8 s | ×1,6, la cible repoussée de ~4 blocs ; cône de 5 blocs ×0,8 ; tunnel 2 × 2 sur 4 (évolué : 7 et 6) |
+| **Earth Breaker** | 60 | 14 s | ×1,2 à 5 blocs autour, projetés et ralentis 3 s ; cratère de 3 (évolué : 4 et une seconde onde) |
+| **Bull Charge** | 50 | 12 s | ×1,0, renverse ; perce les murs 2 × 3 (évolué : 3 de large) |
+| **Sky Breaker** (secret) | celui du poing | — | le poing lancé **accroupi** : uppercut ×2,0, la cible projetée à ~8 blocs, le sol éclate dessous ; révélé au premier coup |
+| De l'air (les trois) | — | — | plongée poing en avant, cratère (2,5 à 4) et coup tout autour |
+| **Heaven-Falling Mountain** (ultime) | 200 | 5 min | bond dans le ciel, suspendu un instant (cercle de feu au sol), chute en météore jusqu'à 12 blocs de là ; cratère de 8 et 4 de profondeur, ×3,0 au cœur, ×1,5 autour, en feu |
+| **Mountain Burial** (finish) | — | — | trois coups de poing, le corps enfoncé, un petit cratère |
+
+Quêtes : *Shatter the Stone* (200 blocs par le poing → Earth Breaker), *Shake the Earth* (10 techniques sur 3 ennemis
+ou plus → Bull Charge), *Heaven's Weight* (1 000 blocs brisés par l'art → l'ultime). Le rouleau demande **Qi
+Condensation** ; le Seigneur des bandits le lâche **toujours**. Rien ne casse dans les sites (sauf le cratère du camp dont
+le Seigneur est tombé), ni coffre, ni bedrock ; rien n'est lâché.
+
+Filmé en vrai client (`gradlew -PgameTests runMountainFistTour`) :
+
+![Passif](images/mountain-fist-passive.gif) ![Poing écrase-montagne](images/mountain-fist-crusher.gif)
+![Brise-terre](images/mountain-fist-earth_breaker.gif) ![Charge du taureau](images/mountain-fist-bull_charge.gif)
+![Brise-ciel](images/mountain-fist-sky_breaker.gif) ![De l'air](images/mountain-fist-dive.gif)
+![L'ultime](images/mountain-fist-ultimate.gif) ![Le sol revient (15 s)](images/mountain-fist-ground_returns.gif)
+
+**Vérifié** : GameTests `MountainShatteringFistGameTests` (rouleau et royaume, mains nues, cône et mur brisé,
+brise-terre tout autour et cratère qui revient, secret qui projette, atterrissage de l'ultime), `BanditWarlordGameTests`
+(terrain cassé qui revient, règle de jeu). **Pas encore vérifié** : le finish à deux vrais joueurs, les quêtes jouées
+jusqu'au bout.

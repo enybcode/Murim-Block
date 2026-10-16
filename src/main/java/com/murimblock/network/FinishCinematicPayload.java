@@ -21,6 +21,8 @@ public record FinishCinematicPayload(boolean start, int executorId, int victimId
     public static final int LONG_FIST = 2;
     /** Scarlet Bloom, the Sanguine Art's finish (7.8 s: the body thrown up at 0.7 s, the cage closing from 3.5 s, its burst at 5.0 s, the body landing, executed, at 6.1 s). */
     public static final int SCARLET_BLOOM = 3;
+    /** Mountain Burial, the Mountain-Shattering Fist's finish (2.4 s: three blows, the last at 1.4 s). */
+    public static final int MOUNTAIN_BURIAL = 4;
 
     public static final CustomPacketPayload.Type<FinishCinematicPayload> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "finish_cinematic"));

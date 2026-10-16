@@ -46,6 +46,8 @@ public final class FinishCinematic {
     static final Timing AZURE_CLOUD = new Timing(2.6F, 0.95F, 1.46F, 1.95F);
     /** Final Palm: the breath until 1.0 s, down on one knee, the palm at 1.4 s. */
     static final Timing LONG_FIST = new Timing(2.4F, 0.9F, 1.36F, 1.85F);
+    /** Mountain Burial: the fist raised until 0.3 s, three blows, the last at 1.4 s. */
+    static final Timing MOUNTAIN_BURIAL = new Timing(2.6F, 0.3F, 1.36F, 1.9F);
     /**
      * Scarlet Bloom: its own moving camera ({@link #placeScarlet}); 7.8 s, the eruption at 0.7 s, the cage closing from
      * 3.5 s, the burst at 5.0 s (slow motion until 5.6 s), the landing at 6.1 s.
@@ -93,6 +95,7 @@ public final class FinishCinematic {
         Entity e = mc.level.getEntity(executor), v = mc.level.getEntity(victim);
         if (e == null || v == null) return;
         timing = finish == FinishCinematicPayload.AZURE_CLOUD ? AZURE_CLOUD : finish == FinishCinematicPayload.LONG_FIST ? LONG_FIST
+                : finish == FinishCinematicPayload.MOUNTAIN_BURIAL ? MOUNTAIN_BURIAL
                 : finish == FinishCinematicPayload.SCARLET_BLOOM ? SCARLET_BLOOM : GENERIC;
         scarletOrigin = v.position();
         executorId = executor;
