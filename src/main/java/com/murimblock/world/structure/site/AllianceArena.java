@@ -63,6 +63,9 @@ final class AllianceArena extends Site {
         return MurimMap.inBubble(x, z) && MurimMap.centreOrFrontier(x, z, AllianceOutpost.FRONTIER);
     }
 
+    /** Big, and allowed in every biome: it steps aside for any other site, so it never lands on one. */
+    @Override public boolean keepsClearOfOtherSites() { return true; }
+
     @Override public void build(Canvas c, int part, int[] levels) {
         int g = levels[0];
         prepare(c, -W - 3, -W - 3, W + 3, W + 3, g, g + 34, s(Blocks.GRASS_BLOCK), s(Blocks.DIRT));

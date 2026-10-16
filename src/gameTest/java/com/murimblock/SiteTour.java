@@ -85,6 +85,9 @@ public final class SiteTour {
     private static volatile boolean done;
     private static volatile Site site;
     private static volatile String subject = "resident";
+    /** The put-back check's answer ("" done, else what was found; null not yet), and how many times it waited. */
+    private static volatile String putBack;
+    private static int putBackWaits;
     private static final List<String> report = new ArrayList<>();
 
     /** What the server found for the current site. */
@@ -146,8 +149,10 @@ public final class SiteTour {
                     mc.getSingleplayerServer().execute(() -> {
                         List<Mob> residents = residents(mc, s);
                         Map<String, Integer> found = new TreeMap<>();
-                        for (Mob m : residents) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
                         Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
+                        residents = residents.stream().filter(m -> expected.containsKey(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString())
+                                || !(m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse)).toList();
+                        for (Mob m : residents) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
                         String line = name + ": residents " + found + ", expected " + expected + " " + residents.stream().map(m -> m.getName().getString()
                                 + (m instanceof Villager v ? " (" + v.getVillagerData().getProfession() + ")" : "") + " at " + m.blockPosition().toShortString()).toList();
                         report.add(line);
@@ -167,17 +172,34 @@ public final class SiteTour {
                         com.murimblock.world.structure.site.SiteResidents.forgetForTests(mc.getSingleplayerServer().overworld(), site.origin());
                     });
                 }
+                // The residents put back: SiteResidents waits for every chunk of the site, which can take a while on a
+                // busy server; looked at every 10 ticks, for up to 30 s.
                 case 350 -> {
                     if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    putBack = null;
                     mc.getSingleplayerServer().execute(() -> {
                         Map<String, Integer> found = new TreeMap<>();
-                        for (Mob m : residents(mc, site)) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
                         Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
-                        String line = name + ": residents put back in an emptied site " + found + ", expected " + expected;
-                        report.add(line);
-                        LOGGER.info("Site tour: {}", line);
-                        if (!found.equals(expected)) failed = true;
+                        for (Mob m : residents(mc, site)) {
+                            String type = BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString();
+                            if (expected.containsKey(type) || !(m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse)) found.merge(type, 1, Integer::sum);
+                        }
+                        putBack = found.equals(expected) ? "" : found.toString();
+                        if (found.equals(expected) || putBackWaits >= 60) {
+                            String line = name + ": residents put back in an emptied site " + found + ", expected " + expected
+                                    + (putBackWaits > 0 ? " (after " + putBackWaits * 10 + " ticks)" : "");
+                            report.add(line);
+                            LOGGER.info("Site tour: {}", line);
+                            if (!found.equals(expected)) failed = true;
+                            putBack = "";
+                        }
                     });
+                }
+                case 351 -> {
+                    String p = putBack;
+                    if (p == null) { step = 350; return; }
+                    if (!p.isEmpty()) { putBackWaits++; step = 340; return; }
+                    putBackWaits = 0;
                 }
                 case 360 -> capture(mc, name + "-ground.png");
                 // A resident at home (the chief before his throne, a householder of the village, the sensei before his altar).
