@@ -28,6 +28,9 @@ window.ST = (() => {
     tile_azure: ['#3A68A8', 'tile'], banner_azure: ['#2B5FA8', 'noise'], bronze: ['#8A6A3A', 'noise'], chain: ['#3A3C40', 'brick'],
     qi: ['#9FE3FF', 'glow', 0.85], paper: ['#EFE6CC', 'plaster'], awning_red: ['#B84A3A', 'plank'], awning_blue: ['#4A78A8', 'plank'],
     awning_gold: ['#C9A45C', 'plank'], marble: ['#E4E2DC', 'speck'],
+    // A bandit camp's: tent hides, raw logs, trodden mud, red rags.
+    hide: ['#9A7A55', 'plaster'], hide_dark: ['#6B5038', 'plaster'], log: ['#6B4B2E', 'plank'], log_end: ['#B08A5A', 'noise'],
+    mud: ['#6E5A44', 'noise'], rag: ['#8E2E26', 'noise'], iron: ['#5A5C60', 'brick'],
   };
   const textures = {};
   function tex(name) {
