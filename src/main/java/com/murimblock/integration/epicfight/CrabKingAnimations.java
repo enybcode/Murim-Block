@@ -31,6 +31,9 @@ public final class CrabKingAnimations {
     public static AnimationAccessor<StaticAnimation> IDLE, WALK;
     public static AnimationAccessor<AttackAnimation> SWEEP, SNAP, SLAM;
     public static AnimationAccessor<ActionAnimation> ROAR, GRAB, GRAB_HOLD;
+    /** Pincers from the deep: both pincers plunged into the ground at {@link #BURROW_PLUNGE}, giant ones bursting ahead. */
+    public static AnimationAccessor<ActionAnimation> BURROW;
+    public static final float BURROW_PLUNGE = 0.62F;
     /** Played on whoever the pincer holds: pinned, kicking; nothing else can be done meanwhile. */
     public static AnimationAccessor<StaticAnimation> HELD;
     /** On the victim: the hold on its clock (struggling, frozen, crushed, whipped back), then flailing as it flies. */
@@ -95,6 +98,7 @@ public final class CrabKingAnimations {
         WALK = builder.nextAccessor("biped/murim/crab_king_walk", a -> new StaticAnimation(0.2F, true, a, Armatures.BIPED));
         GRAB = builder.nextAccessor("biped/murim/crab_king_grab", a -> new ActionAnimation(0.12F, a, Armatures.BIPED));
         GRAB_HOLD = builder.nextAccessor("biped/murim/crab_king_grab_hold", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        BURROW = builder.nextAccessor("biped/murim/crab_king_burrow", a -> new ActionAnimation(0.15F, a, Armatures.BIPED));
         HELD = builder.nextAccessor("biped/murim/crab_king_held", a -> new Pinned(a, true));
         VICTIM = builder.nextAccessor("biped/murim/crab_king_victim", a -> new Pinned(a, false));
         THROWN = builder.nextAccessor("biped/murim/crab_king_thrown", a -> new Pinned(a, true));

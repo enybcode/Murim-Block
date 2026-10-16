@@ -62,6 +62,24 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   l'image, puis il retrouve sa vue. Bandes de cinéma, pas d'interface.
   Interrompu (étourdi, tué, déchargé), le roi lâche ce qu'il tient : sa victime est libérée par un court étourdissement.
   Pas de boîte d'Epic Fight : la prise est celle de `CrabKingEntity`.
+- **Pinces des profondeurs** (16/10, demandes d'Enzo ; `crab_king_burrow`, 4 à 14 blocs, recharge 15 s) : il lève
+  ses deux pinces et les plante dans le sol devant lui (0,62 s), puis **les y garde, tremblant, pendant toute l'attaque**
+  (5,9 s en tout) : c'est le moment de le frapper. **Deux pinces géantes** (`CrabPincerEntity`, modèle Blockbench
+  `art/blockbench/crab_pincer.bbmodel` rendu par GeckoLib 2,2 fois plus grand, environ 7 blocs) sortent **devant sa
+  cible, une de chaque côté**, là où leur pincement l'atteint, la seconde 0,3 s après. Chacune, sur son animation
+  `attack` (4,6 s) :
+  - 0,6 s d'alerte : le sol se fissure et gronde où elle va sortir ; **la caméra des joueurs proches tremble**
+    (`client/CrabPincerShake`, plus fort près d'elle), puis elle jaillit grande ouverte ;
+  - **balayage** (1,4 à 2,2 s) : couchée presque à plat, elle balaie tout autour de son pied au ras du sol (6,2 blocs) :
+    qui est au sol est touché une fois (0,6 × l'attaque du roi) et repoussé ; **on l'évite en sautant** ;
+  - **coup sur le côté** (2,85 s) : redressée, elle s'abat sur sa droite, une bande de 6 blocs (1,0 ×, mis à terre) ;
+  - **pincement** (3,7 s) : elle se penche vers la cible, mâchoires grandes ouvertes, et se referme (0,9 ×, projeté en
+    l'air, étourdi) ;
+  - elle replonge et disparaît.
+  **Ses articulations** (16/10) : le bras est une chaîne d'os (pied, deux segments, paume, mâchoires), un anneau de peau
+  sombre à chaque jointure ; chaque mouvement se répartit sur les jointures, chacune un peu en retard sur celle d'en
+  dessous, si bien que le bras se courbe en se couchant, en frappant, et la paume s'enroule en pinçant.
+  Ses coups sont ceux du roi : une garde levée à temps les pare ; ni le roi, ni ses crabes ne sont touchés.
 - **Rage** : sous la moitié de sa vie, une seule fois (sauvegardé), il rugit (`crab_king_roar`) et deux crabes cuirassés
   sortent du sol à ses côtés, sur sa cible.
 - Un crabe : il respire sous l'eau (tag `minecraft:can_breathe_under_water`) et va plus vite dans l'eau.
@@ -78,6 +96,9 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
 
 - `scripts/animation/crab-king-3d.cjs` : le modèle (mesh `animmodels/entity/crab_king.json`, atlas
   `textures/entity/crab_king.png`, projet `art/blockbench/crab_king.bbmodel`, ses cubes tournés y sont droits) ;
+- `scripts/animation/crab-pincer-geo.cjs` : la pince géante (géométrie, animation et texture GeckoLib) ;
+  `scripts/animation/geo-to-bbmodel.cjs crab_pincer [--pose=attack@1.8]` l'ouvre dans Blockbench, la rend
+  (`images/crab_pincer-*.png`) et enregistre le projet `art/blockbench/crab_pincer.bbmodel` ;
 - `scripts/animation/crab-king-moves.cjs` : ses animations (`animations/biped/murim/crab_king_*.json`, projet
   `art/blockbench/crab_king_moves.bbmodel`) ;
 - `scripts/animation/mesh-preview.cjs crab_king` : rendu du mesh tel qu'écrit, au repos (`images/crab_king-*.png`) ;
@@ -90,7 +111,8 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   respire sous l'eau, barre de boss) ; rage (deux crabes, rugissement, une fois) ; onde de choc ; la prise (attrape entre
   les mâchoires, soulève, jette, la victime atterrit blessée), le cratère dans un mur de pierre, la prise dans le vide,
   un joueur tenu qui ne peut rien faire (entravé, verrous d'Epic Fight, technique refusée, attaque annulée) jusqu'à
-  l'atterrissage, et libéré à la mort du boss ; il se bat avec ses pinces et touche.
+  l'atterrissage, et libéré à la mort du boss ; les deux pinces des profondeurs (de part et d'autre de la cible, la
+  seconde après la première, toutes deux la pinçant) ; les trois coups d'une pince géante, chacun sur son zombie ; il se bat avec ses pinces et touche.
 - En vrai client : `MURIM_TOUR_ONLY=king gradlew -PgameTests runWeaponTour` (debout de chaque côté, idle, marche, ses trois
-  attaques, sa prise sur un zombie du désert jeté dans un mur (cratère), la même vue par le joueur attrapé (`king-grab-pov` :
+  attaques, sa prise sur un zombie du désert jeté dans un mur (cratère), ses pinces des profondeurs sur un zombie du désert (plan large), la même vue par le joueur attrapé (`king-grab-pov` :
   le joueur de la caméra lui-même, en survie, protégé des dégâts), son rugissement, sa mort).
