@@ -69,16 +69,51 @@ public final class SiteGameTests {
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp", timeoutTicks = 1200)
     public static void banditCampIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", 7600, Rotation.CLOCKWISE_90, GROUND); }
 
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_north", timeoutTicks = 1200)
+    public static void theNorthsBanditCampIsDarkWoodUnderSnow(GameTestHelper helper) { regionalCamp(helper, 0, -55_000, "north", Blocks.DARK_OAK_LOG); }
+
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_west", timeoutTicks = 1200)
+    public static void theWestsBanditCampIsRammedEarth(GameTestHelper helper) { regionalCamp(helper, -55_000, 0, "west", Blocks.PACKED_MUD); }
+
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_south", timeoutTicks = 1200)
+    public static void theSouthsBanditCampIsBamboo(GameTestHelper helper) { regionalCamp(helper, 0, 55_000, "south", Blocks.BAMBOO_BLOCK); }
+
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_east", timeoutTicks = 1200)
+    public static void theEastsBanditCampHasAMoat(GameTestHelper helper) { regionalCamp(helper, 55_000, 0, "east", Blocks.SPRUCE_LOG); }
+
+    /**
+     * A bandit camp in the heart of an outer region (rotation none: local north is world north): the whole site's checks
+     * and thirty bandits, and its palisade (local 0, -42) of that region's stuff; in the north snow on its tips, in the
+     * east water in its ditch, elsewhere none.
+     */
+    private static void regionalCamp(GameTestHelper helper, int x, int z, String region, Block wall) {
+        check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", x, z, Rotation.NONE, level -> {
+            BlockPos post = new BlockPos(x, GROUND + 2, z - 42);
+            helper.assertTrue(level.getBlockState(post).is(wall), region + " camp's palisade is " + level.getBlockState(post));
+            boolean snow = false;
+            for (int y = GROUND + 6; y <= GROUND + 9; y++) snow |= level.getBlockState(post.atY(y)).is(Blocks.SNOW);
+            helper.assertTrue(snow == region.equals("north"), region + " camp: snow on the palisade " + snow);
+            boolean water = level.getBlockState(new BlockPos(x, GROUND - 1, z - 45)).is(Blocks.WATER);
+            helper.assertTrue(water == region.equals("east"), region + " camp: water in the ditch " + water);
+        }, GROUND);
+    }
+
     @GameTest(template = "foundation_arena", batch = "site_alliance_arena", timeoutTicks = 1200)
     public static void allianceArenaIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.ALLIANCE_ARENA, "alliance_arena", 6900, Rotation.COUNTERCLOCKWISE_90, GROUND); }
 
     private static void check(GameTestHelper helper, SitePlan plan, String structure, int x, Rotation rotation, int... levels) {
+        check(helper, plan, structure, x, Z, rotation, null, levels);
+    }
+
+    /** As above, the site's centre at (x, z); {@code whole}, if given, looks at the site once it is built whole. */
+    private static void check(GameTestHelper helper, SitePlan plan, String structure, int x, int z, Rotation rotation,
+                              java.util.function.Consumer<ServerLevel> whole, int... levels) {
         ServerLevel level = helper.getLevel();
-        BoundingBox box = SitePiece.wholeBox(plan, x, Z, rotation, levels).inflatedBy(3);
+        BoundingBox box = SitePiece.wholeBox(plan, x, z, rotation, levels).inflatedBy(3);
         int y0 = GROUND - 14, y1 = box.maxY() + 8;
         for (int cx = box.minX() >> 4; cx <= box.maxX() >> 4; cx++) for (int cz = box.minZ() >> 4; cz <= box.maxZ() >> 4; cz++) level.setChunkForced(cx, cz, true);
         // Forced chunks take a few ticks to load their entities: build once they all have (the residents must be seen).
-        whenLoaded(helper, level, box, 0, () -> run(helper, level, plan, structure, x, rotation, box, y0, y1, levels));
+        whenLoaded(helper, level, box, 0, () -> run(helper, level, plan, structure, x, z, rotation, whole, box, y0, y1, levels));
     }
 
     /** Runs {@code then} once every chunk under {@code box} has its entities loaded (looked at every 5 ticks, 20 s at most). */
@@ -89,15 +124,16 @@ public final class SiteGameTests {
         });
     }
 
-    private static void run(GameTestHelper helper, ServerLevel level, SitePlan plan, String structure, int x, Rotation rotation,
-                            BoundingBox box, int y0, int y1, int[] levels) {
-        long seed = 0x5EEDL + x;
+    private static void run(GameTestHelper helper, ServerLevel level, SitePlan plan, String structure, int x, int Z, Rotation rotation,
+                            java.util.function.Consumer<ServerLevel> lookAt, BoundingBox box, int y0, int y1, int[] levels) {
+        long seed = 0x5EEDL + x + Z;
         try {
             residents(level, box).forEach(m -> m.discard()); // left by an earlier run of this persistent test world
             // Whole, as the tests and checks see it.
             ground(level, box, y0, y1);
             SitePiece.Built built = SitePiece.buildWhole(level, plan, x, Z, rotation, seed, levels);
             List<Canvas.Check> checks = built.checks();
+            if (lookAt != null) lookAt.accept(level);
             List<String> problems = SiteChecks.verify(level, checks);
             long whole = fingerprint(level, box, y0, y1);
             int blocks = count(level, box, y0, y1);

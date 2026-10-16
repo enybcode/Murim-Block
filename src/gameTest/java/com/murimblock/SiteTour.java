@@ -52,7 +52,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.slf4j.Logger;
 
 /**
- * Development-only tour of the seven Murim sites in a real client (gradlew -PgameTests runSiteTour): a fresh normal
+ * Development-only tour of the Murim sites (the bandit camp in each region) in a real client (gradlew -PgameTests runSiteTour): a fresh normal
  * world; for each site, the real /locate structure command, then a visit to what it found: the generated site must
  * pass its checks (roofs closed, nothing grown inside, floors carried), and three photos are taken
  * (build/site-tour-run/screenshots). Writes site-tour-report.txt and quits.
@@ -62,7 +62,23 @@ public final class SiteTour {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final long SEED = 20261012L;
     static final String[] SITES = {"jade_river_stilt_village", "yellow_river_bandit_den", "jade_gate_beacon_post",
-            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet", "alliance_outpost", "alliance_arena", "bandit_camp"};
+            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet", "alliance_outpost", "alliance_arena", "bandit_camp",
+            "bandit_camp@north", "bandit_camp@west", "bandit_camp@south", "bandit_camp@east"};
+    /** A site looked for from somewhere else than the world's centre: "id@region", /locate from the heart of that region. */
+    static String structureId(String name) {
+        return name.split("@")[0];
+    }
+
+    static Vec3 searchFrom(String name) {
+        String region = name.contains("@") ? name.split("@")[1] : "";
+        return switch (region) {
+            case "north" -> new Vec3(0.5, 100, -50_000.5);
+            case "south" -> new Vec3(0.5, 100, 50_000.5);
+            case "west" -> new Vec3(-50_000.5, 100, 0.5);
+            case "east" -> new Vec3(50_000.5, 100, 0.5);
+            default -> new Vec3(0.5, 100, 0.5);
+        };
+    }
     private static final Pattern AT = Pattern.compile("\\[(-?\\d+), ~, (-?\\d+)\\]");
     private static boolean creating, finished, failed;
     private static int ticks, index = -1, step;
@@ -213,11 +229,11 @@ public final class SiteTour {
             @Override public boolean acceptsFailure() { return true; }
             @Override public boolean shouldInformAdmins() { return false; }
         };
-        CommandSourceStack source = new CommandSourceStack(capture, new Vec3(0.5, 100, 0.5), Vec2.ZERO, level, 4, "SiteTour", Component.literal("SiteTour"), server, null);
+        CommandSourceStack source = new CommandSourceStack(capture, searchFrom(name), Vec2.ZERO, level, 4, "SiteTour", Component.literal("SiteTour"), server, null);
         long start = System.currentTimeMillis();
-        server.getCommands().performPrefixedCommand(source, "locate structure " + Murimblock.MOD_ID + ":" + name);
+        server.getCommands().performPrefixedCommand(source, "locate structure " + Murimblock.MOD_ID + ":" + structureId(name));
         String answer = messages.isEmpty() ? "(no answer)" : messages.get(0).getString();
-        var located = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, name));
+        var located = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, structureId(name)));
         String plan = located instanceof com.murimblock.world.structure.site.SiteStructure ss ? ss.plan().getSerializedName() : "?";
         StringBuilder stats = new StringBuilder();
         com.murimblock.world.structure.site.SiteStructure.STATS.forEach((k, v) -> { if (k.startsWith(plan + " ")) stats.append(k.substring(plan.length() + 1)).append('=').append(v.get()).append(' '); });
@@ -237,7 +253,7 @@ public final class SiteTour {
         }
         // Generate the site and its surroundings, then find the start the command pointed at.
         for (int cx = (x >> 4) - 3; cx <= (x >> 4) + 3; cx++) for (int cz = (z >> 4) - 3; cz <= (z >> 4) + 3; cz++) level.getChunk(cx, cz);
-        var structure = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, name));
+        var structure = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, structureId(name)));
         StructureStart start2 = level.getChunk(x >> 4, z >> 4).getStartForStructure(structure);
         if (start2 == null || !start2.isValid()) { fail(line + "; no structure start in that chunk"); return; }
         List<Canvas.Check> checks = new ArrayList<>();
@@ -254,6 +270,9 @@ public final class SiteTour {
         boolean rightBiome = expectedBiome(name).equals("*")
                 ? level.getBiome(first.origin()).is(net.minecraft.tags.TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes")))
                         && (!name.equals("alliance_arena") || com.murimblock.world.map.MurimMap.centreOrFrontier(first.origin().getX(), first.origin().getZ(), 1500))
+                        // A bandit camp: in the region it was looked for in (the centre's from the world's centre).
+                        && (!structureId(name).equals("bandit_camp") || com.murimblock.world.map.MurimMap.region(first.origin().getX(), first.origin().getZ())
+                                .name().equalsIgnoreCase(name.contains("@") ? name.split("@")[1] : "center"))
                 : biome.equals(expectedBiome(name));
         if (!problems.isEmpty() || !rightBiome) failed = true;
         Direction front = first.rotation().rotate(Direction.SOUTH);
@@ -269,7 +288,7 @@ public final class SiteTour {
     }
 
     static SitePlan planOf(String name) {
-        return switch (name) {
+        return switch (structureId(name)) {
             case "jade_river_stilt_village" -> SitePlan.STILT_VILLAGE;
             case "yellow_river_bandit_den" -> SitePlan.BANDIT_DEN;
             case "jade_gate_beacon_post" -> SitePlan.BEACON_POST;
@@ -292,7 +311,7 @@ public final class SiteTour {
     }
 
     static String expectedBiome(String name) {
-        return switch (name) {
+        return switch (structureId(name)) {
             case "jade_river_stilt_village" -> "jade_karst_forest";
             case "yellow_river_bandit_den" -> "loess_plateau";
             case "jade_gate_beacon_post" -> "hexi_frontier_desert";
