@@ -75,7 +75,7 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
  *   running and the axe's first two M1s.</li>
  * </ul>
  * The Crab King too (a mob, the camera farther back): standing, his heavy walk, his three attacks, his grab (a husk
- * before him to catch), his roar and his death.
+ * before him to catch), his pincers from the deep, his roar and his death.
  * MURIM_TOUR_ONLY=bandit, =king, =axe or =armour films one of them. The camera follows the actor (the cuts carry it forward), and
  * Epic Fight's red outline of the aimed-at entity is turned off. Frames go to
  * build/weapon-tour-run/screenshots/&lt;take&gt;/&lt;side&gt;/, the report to weapon-tour-report.txt.
@@ -295,6 +295,8 @@ public final class WeaponTour {
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("grab", side, CrabKingAnimations.GRAB, null, 46, 2);
         // The grab lived from inside: the camera's own player caught (client/GrabCinematic films it).
         king("grab-pov", Side.FRONT, CrabKingAnimations.GRAB, null, 56, 2);
+        // The pincers from the deep, on a husk before him.
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("burrow", side, CrabKingAnimations.BURROW, null, 60, 2);
         king("death", Side.FRONT_RIGHT, Animations.BIPED_DEATH, null, 14, 2);
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) axe("idle", side, -1, LivingMotions.IDLE, 1, 1);
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) axe("walk", side, -1, LivingMotions.WALK, 16, 2);
@@ -486,7 +488,8 @@ public final class WeaponTour {
             me.setGameMode(GameType.SPECTATOR);
             me.removeAllEffects();
         }
-        zoom = t.actor() == Actor.KING ? 2.4 : 1;
+        // Farther still for the pincers from the deep: him, his target and the two giant pincers in the frame.
+        zoom = t.name().startsWith("king-burrow") ? 4.6 : t.actor() == Actor.KING ? 2.4 : 1;
         // A stone wall across his throw for the grab's takes (he knocks a crater into it), gone for the others.
         boolean wall = t.name().startsWith("king-grab");
         for (int x = -5; x <= 5; x++) for (int y = 0; y < 6; y++) {
@@ -522,6 +525,16 @@ public final class WeaponTour {
             }
             // Running is chasing: Epic Fight runs an aggressive mob that moves.
             bandit.setAggressive(t.motion() == LivingMotions.CHASE);
+            if (t.name().startsWith("king-burrow")) {
+                // A husk eight blocks before him, his target: the two pincers come before it (CrabKingEntity.callPincers).
+                victim = net.minecraft.world.entity.EntityType.HUSK.create(level);
+                victim.moveTo(baseX, baseY, baseZ + com.murimblock.mob.CrabKingEntity.PINCER_AHEAD, 180, 0);
+                victim.setPersistenceRequired();
+                level.addFreshEntity(victim);
+                victim.setNoAi(true);
+                // His target: the pincers come before it, on either side.
+                bandit.setTarget(victim);
+            }
             if (t.name().equals("king-grab")) {
                 // Something for the pincer to catch, before him and a little to his right (-x as he faces +z): a husk, which does
                 // not burn in the sun.

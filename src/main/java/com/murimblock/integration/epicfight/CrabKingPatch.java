@@ -24,7 +24,10 @@ import java.util.Set;
  *   <li>the snap from 2 to 5.8 blocks: he lunges;</li>
  *   <li>the slam within 4.8 blocks, rarer, with an 8 s cooldown: its landing sends a shockwave;</li>
  *   <li>the grab from 1.5 to 5 blocks, rarer still, with an 11 s cooldown: what the great pincer catches is lifted,
- *   squeezed and slammed down (CrabKingEntity).</li>
+ *   squeezed and thrown (CrabKingEntity);</li>
+ *   <li>the pincer from the deep, from 4 to 14 blocks (his reach at a distance), with a 15 s cooldown: a giant pincer out
+ *   of the ground sweeps, strikes to its side and pinches toward his target (CrabPincerEntity); he holds his own
+ *   plunged meanwhile.</li>
  * </ul>
  * He walks and chases with his own heavy walk.
  * The crab art's techniques will join them when the art is made (docs/mobs/crab-king.md).
@@ -47,7 +50,9 @@ public class CrabKingPatch extends HumanoidMobPatch<CrabKingEntity> {
                 .newBehaviorSeries(series(10.0F, 30).nextBehavior(move(CrabKingAnimations.SWEEP, 0.0D, 5.0D)))
                 .newBehaviorSeries(series(7.0F, 50).nextBehavior(move(CrabKingAnimations.SNAP, 2.0D, 5.8D)))
                 .newBehaviorSeries(series(6.0F, 160).nextBehavior(move(CrabKingAnimations.SLAM, 0.0D, 4.8D)))
-                .newBehaviorSeries(series(6.0F, 220).nextBehavior(move(CrabKingAnimations.GRAB, 1.5D, 5.0D)));
+                .newBehaviorSeries(series(6.0F, 220).nextBehavior(move(CrabKingAnimations.GRAB, 1.5D, 5.0D)))
+                .newBehaviorSeries(series(8.0F, 300).nextBehavior(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
+                        .animationBehavior(CrabKingAnimations.BURROW).withinDistance(4.0D, 14.0D)));
     }
 
     @Override

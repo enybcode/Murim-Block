@@ -19,7 +19,10 @@
 //   crab_king_victim played once on whoever he holds, on the same clock: struggling while lifted, frozen as he draws
 //                    it to his face, crushed at each squeeze (back arched, arms pinned, head thrown back), limp between,
 //                    whipped back by the wind-up;
-//   crab_king_thrown looped while the victim flies: flailing, until it lands (knocked down).
+//   crab_king_thrown looped while the victim flies: flailing, until it lands (knocked down);
+//   crab_king_burrow "Pincer from the deep" (Enzo, 16/10): both pincers raised high, plunged into the ground before him
+//                    at BURROW_PLUNGE and held there, trembling, while the giant pincer he calls fights (CrabKingEntity,
+//                    CrabPincerEntity: 4.6 s), then pulled out.
 // The victim is held between the jaws: GRIP, the point halfway between the middles of the pincer's two fingers
 // (crab-king-3d.cjs), is worked out for every frame of the hold from these poses and written as
 // integration/epicfight/CrabKingGrip.java, which the server follows (blocks, at his size).
@@ -245,7 +248,27 @@ anims.crab_king_grab_hold = hold;
   anims.crab_king_held = keys;
 }
 
-module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE, SQUEEZES };
+// Pincers from the deep: both raised, plunged into the ground ahead and held, trembling, then pulled out.
+const BURROW_PLUNGE = 0.62;
+{
+  const PLUNGED = (shake = 0) => ({ ...STANCE(), Root: { pos: [0, 0.12, HIP - 0.3] }, Torso: [['x', -40], ['z', shake * 2]], Chest: [['x', -18 + shake]],
+    Head: [['x', 16], ['z', -shake * 3]],
+    Arm_R: [['x', 52], ['y', -14]], Hand_R: [['x', 0]], Arm_L: [['x', 52], ['y', 14]], Hand_L: [['x', 0]], ...pincers(30),
+    Thigh_R: [['x', 60], ['y', -10]], Leg_R: [['x', -84]], Thigh_L: [['x', 48], ['y', 10]], Leg_L: [['x', -70]] });
+  const keys = [
+    { t: 0, pose: STANCE() },
+    { t: 0.42, pose: { ...STANCE(), Root: { pos: [0, -0.05, HIP + 0.02] }, Torso: [['x', 8]], Chest: [['x', 14]], Head: [['x', -22]],
+        Arm_R: [['x', 172], ['y', -18]], Hand_R: [['x', 26]], Arm_L: [['x', 172], ['y', 18]], Hand_L: [['x', 26]], ...pincers(36) } },
+    { t: BURROW_PLUNGE, pose: PLUNGED() },
+  ];
+  // Held plunged, trembling, while the giant pincer fights (its life: 4.6 s from the plunge).
+  for (let t = 0.75, i = 0; t < 5.2; t += 0.1, i++) keys.push({ t: Math.round(t * 100) / 100, pose: PLUNGED(i % 2 ? 1.5 : -1.5) });
+  keys.push({ t: 5.5, pose: { ...PLUNGED(), Torso: [['x', -20]], Arm_R: [['x', 80], ['y', -16]], Hand_R: [['x', 20]], Arm_L: [['x', 80], ['y', 16]], Hand_L: [['x', 20]], ...pincers(12) } },
+    { t: 5.9, pose: STANCE() });
+  anims.crab_king_burrow = keys;
+}
+
+module.exports = { anims, SLAM_IMPACT, GRAB_CATCH, GRAB_RELEASE, SQUEEZES, BURROW_PLUNGE };
 
 /**
  * GRIP: between the jaws, for each frame of the hold (and the catch), in the character's axes at his size (blocks:

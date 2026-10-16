@@ -264,6 +264,82 @@ public final class CrabKingGameTests {
         });
     }
 
+    /**
+     * The pincer from the deep, its three blows each on a still zombie: the sweep on one on the ground near its foot, the
+     * strike on one on its side, the pinch on one where it shuts; it is gone at the end of its animation.
+     */
+    @GameTest(template = "foundation_arena", batch = "crab_king_pincer", timeoutTicks = 140)
+    public static void theGiantPincerSweepsStrikesAndPinches(GameTestHelper helper) {
+        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 0));
+        king.setNoAi(true);
+        pinFacing(helper, king);
+        net.minecraft.world.phys.Vec3 foot = net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 1, 2)));
+        com.murimblock.mob.CrabPincerEntity pincer = com.murimblock.mob.CrabPincerEntity.call(helper.getLevel(), king, foot, foot.add(0, 0, 5));
+        Zombie[] z = new Zombie[3];
+        float[] health = new float[3];
+        net.minecraft.world.phys.Vec3[] at = {foot.add(1.5, 0, 0), foot.add(pincer.strikeSide().scale(4)), pincer.pinchPoint()};
+        for (int i = 0; i < 3; i++) {
+            z[i] = EntityType.ZOMBIE.create(helper.getLevel());
+            z[i].moveTo(at[i].x, foot.y, at[i].z, 0, 0);
+            z[i].setNoAi(true);
+            z[i].setNoGravity(true);
+            helper.getLevel().addFreshEntity(z[i]);
+            health[i] = z[i].getHealth();
+        }
+        // Each still zombie kept on its spot until its blow (the sweep throws them).
+        helper.onEachTick(() -> {
+            int tick = pincer.tickCount;
+            for (int i = 0; i < 3; i++) {
+                int blowAt = i == 0 ? com.murimblock.mob.CrabPincerEntity.SWEEP_FROM : i == 1 ? com.murimblock.mob.CrabPincerEntity.STRIKE : com.murimblock.mob.CrabPincerEntity.PINCH;
+                if (tick < blowAt && i > 0) { z[i].teleportTo(at[i].x, foot.y, at[i].z); z[i].invulnerableTime = 0; }
+                // Out of the sweep's reach until their own blow: lifted above it.
+                if (i > 0 && tick >= com.murimblock.mob.CrabPincerEntity.SWEEP_FROM - 1 && tick <= com.murimblock.mob.CrabPincerEntity.SWEEP_TO + 1)
+                    z[i].teleportTo(at[i].x, foot.y + 4, at[i].z);
+            }
+        });
+        helper.runAfterDelay(100, () -> {
+            String[] blows = {"sweep", "strike", "pinch"};
+            for (int i = 0; i < 3; i++) helper.assertTrue(z[i].getHealth() < health[i], "The " + blows[i] + " did not land");
+            helper.assertTrue(pincer.isRemoved(), "The pincer stayed after its animation");
+            for (Zombie zz : z) zz.discard();
+            king.discard();
+            helper.succeed();
+        });
+    }
+
+    /** Called on a target, two giant pincers come before it, one on either side, the second a little after, both pinching it. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_two_pincers", timeoutTicks = 60)
+    public static void twoPincersComeBeforeTheTarget(GameTestHelper helper) {
+        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 0));
+        king.setNoAi(true);
+        pinFacing(helper, king);
+        Zombie target = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 4));
+        target.setNoAi(true);
+        helper.runAfterDelay(2, () -> {
+            king.callPincers(helper.getLevel(), target);
+            helper.assertTrue(king.pincersToCome() == 2, "Not two pincers called: " + king.pincersToCome());
+        });
+        helper.runAfterDelay(4, () -> helper.assertTrue(helper.getLevel().getEntitiesOfClass(com.murimblock.mob.CrabPincerEntity.class, king.getBoundingBox().inflate(16)).size() == 1,
+                "The first pincer should be out, not the second yet"));
+        helper.runAfterDelay(12, () -> {
+            var pincers = helper.getLevel().getEntitiesOfClass(com.murimblock.mob.CrabPincerEntity.class, king.getBoundingBox().inflate(16));
+            helper.assertTrue(pincers.size() == 2, "Not two pincers out: " + pincers.size());
+            double side = 0;
+            for (var p : pincers) {
+                helper.assertTrue(p.pinchPoint().distanceTo(target.position().multiply(1, 0, 1).add(0, p.getY(), 0)) < 1.2,
+                        "A pincer does not pinch its target: " + p.pinchPoint() + " for " + target.position());
+                side += p.position().subtract(target.position()).cross(target.position().subtract(king.position())).y;
+            }
+            helper.assertTrue(Math.abs(side) < 1.0, "The two pincers are not either side of the target");
+            pincers.forEach(net.minecraft.world.entity.Entity::discard);
+            target.discard();
+            king.discard();
+            helper.succeed();
+        });
+    }
+
     /** Nothing before him: the pincer shuts on air. */
     @GameTest(template = "foundation_arena", batch = "crab_king_grab_miss")
     public static void theGrabCatchesNothingOutOfReach(GameTestHelper helper) {

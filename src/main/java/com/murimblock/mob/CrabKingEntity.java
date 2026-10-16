@@ -54,7 +54,9 @@ import yesman.epicfight.world.damagesource.StunType;
  * knocked down. A guard does not stop the grab; a perfect parry as the pincer shuts makes it miss. A player he holds or
  * has thrown can do nothing until it lands ({@link #isHeld}). Where it lands, an impact like an explosion; thrown into
  * a wall, it leaves a crater in it (Enzo, 16/10; not where mobs may not grief). Meanwhile: no attack, guard, roll, item, technique or meditation, no
- * moving. The victim plays its own animations (crab_king_victim, crab_king_thrown), and a player sees it as a film
+ * moving. The pincers from the deep: he plunges both pincers into the ground and holds them there while two giant ones
+ * (CrabPincerEntity), some seven blocks tall, burst up before his target, one on either side of it, the ground shaking
+ * (client/CrabPincerShake), each sweeping all round, striking to its side and trying to pinch it. The victim plays its own animations (crab_king_victim, crab_king_thrown), and a player sees it as a film
  * (client/GrabCinematic). Under half his health he roars and calls two armoured crabs out of the ground,
  * once. He breathes under water and moves faster in it. His health shows in a boss bar to the players near him. The crab
  * art's manual will be his drop when the art is made.
@@ -92,6 +94,15 @@ public class CrabKingEntity extends Monster {
     /** The players a Crab King holds now, and which: server only. */
     private static final java.util.Map<java.util.UUID, java.lang.ref.WeakReference<CrabKingEntity>> HOLDERS = new java.util.concurrent.ConcurrentHashMap<>();
     private int holdTicks;
+    /**
+     * The pincers from the deep: how far before their target (toward him) they stand, either side of it; where they come
+     * with no target, before him (blocks); the second how many ticks after the first.
+     */
+    public static final double PINCER_BEFORE = 2.0, PINCER_AHEAD = 8.0;
+    public static final int PINCER_EVERY = 6;
+    /** The pincers still to come: when (his tick count) and where. */
+    private final java.util.List<Object[]> pincersToCome = new java.util.ArrayList<>();
+    private boolean burrowed;
     /** Ticks to his next heavy step while he walks. */
     private int stepIn;
 
@@ -202,7 +213,59 @@ public class CrabKingEntity extends Monster {
         if (level() instanceof ServerLevel server) {
             shockwaveTick(server);
             grabTick(server);
+            burrowTick(server);
         }
+    }
+
+    // ---- pincers from the deep
+
+    private void burrowTick(ServerLevel server) {
+        AnimationPlayer main = mainPlayer();
+        boolean burrowing = main != null && main.getRealAnimation() == CrabKingAnimations.BURROW && !main.isEnd();
+        if (!burrowing) burrowed = false;
+        else if (!burrowed && main.getElapsedTime() >= CrabKingAnimations.BURROW_PLUNGE) {
+            burrowed = true;
+            callPincers(server, getTarget());
+        }
+        for (var it = pincersToCome.iterator(); it.hasNext(); ) {
+            Object[] p = it.next();
+            if (tickCount < (int) p[0]) continue;
+            it.remove();
+            CrabPincerEntity.call(server, this, (Vec3) p[1], (Vec3) p[2]);
+        }
+    }
+
+    /**
+     * The pincers plunged in (Enzo, 16/10: "two, before the player"): two giant ones out of the ground before `target`,
+     * one on its left and one on its right, each where its pinch reaches it (CrabPincerEntity.REACH); the second a little
+     * after the first. With no target, before him. Each on the ground there.
+     */
+    public void callPincers(ServerLevel server, @Nullable LivingEntity target) {
+        Vec3 line = target != null ? target.position().subtract(position()).multiply(1, 0, 1) : ahead();
+        line = line.lengthSqr() < 1e-4 ? ahead() : line.normalize();
+        Vec3 aimAt = target != null ? target.position() : position().add(line.scale(PINCER_AHEAD));
+        Vec3 across = new Vec3(-line.z, 0, line.x);
+        server.playSound(null, getX(), getY(), getZ(), SoundEvents.WARDEN_DIG, SoundSource.HOSTILE, 1.4F, 0.6F);
+        double reach = CrabPincerEntity.REACH - 0.8, side = Math.sqrt(Math.max(0, reach * reach - PINCER_BEFORE * PINCER_BEFORE));
+        for (int n = 0; n < 2; n++) {
+            Vec3 at = ground(server, aimAt.subtract(line.scale(PINCER_BEFORE)).add(across.scale(n == 0 ? side : -side)));
+            if (at != null) pincersToCome.add(new Object[] {tickCount + n * PINCER_EVERY, at, aimAt});
+        }
+    }
+
+    /** The ground at a point: the top of the first solid block a few blocks above or below his feet (null: none). */
+    @Nullable private Vec3 ground(ServerLevel server, Vec3 at) {
+        BlockPos.MutableBlockPos p = BlockPos.containing(at.x, getY() + 3, at.z).mutable();
+        for (int i = 0; i < 9; i++, p.move(0, -1, 0)) {
+            if (server.getBlockState(p).isAir() && !server.getBlockState(p.below()).getCollisionShape(server, p.below()).isEmpty())
+                return new Vec3(at.x, p.getY(), at.z);
+        }
+        return null;
+    }
+
+    /** The pincers still to come from his last burrow. */
+    public int pincersToCome() {
+        return pincersToCome.size();
     }
 
     // ---- the grab

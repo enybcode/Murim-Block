@@ -82,6 +82,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<QiBladeEntity>> QI_BLADE =
             TYPES.register("qi_blade", () -> EntityType.Builder.<QiBladeEntity>of(QiBladeEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F).clientTrackingRange(6).updateInterval(1).build("murimblock:qi_blade"));
+    /** The giant pincer the Crab King calls out of the ground (CrabPincerEntity): some seven blocks tall. */
+    public static final DeferredHolder<EntityType<?>, EntityType<CrabPincerEntity>> CRAB_PINCER =
+            TYPES.register("crab_pincer", () -> EntityType.Builder.<CrabPincerEntity>of(CrabPincerEntity::new, MobCategory.MISC)
+                    .sized(2.4F, 7.2F).clientTrackingRange(8).updateInterval(2).build("murimblock:crab_pincer"));
     /** A needle thrown by the flying needles (FlyingNeedleEntity). */
     public static final DeferredHolder<EntityType<?>, EntityType<FlyingNeedleEntity>> FLYING_NEEDLE =
             TYPES.register("flying_needle", () -> EntityType.Builder.<FlyingNeedleEntity>of(FlyingNeedleEntity::new, MobCategory.MISC)
