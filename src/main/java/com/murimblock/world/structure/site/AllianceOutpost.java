@@ -68,9 +68,6 @@ final class AllianceOutpost extends Site {
         return MurimMap.inBubble(x, z);
     }
 
-    /** Frequent, so it steps aside for the other sites (a peach hamlet, the arena...) rather than fall on them. */
-    @Override public boolean keepsClearOfOtherSites() { return true; }
-
     @Override public void build(Canvas c, int part, int[] levels) {
         int g = levels[0];
         prepare(c, X0 - 3, Z0 - 3, X1 + 3, Z1 + 3, g, g + 34, s(Blocks.GRASS_BLOCK), s(Blocks.DIRT));

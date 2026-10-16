@@ -171,10 +171,12 @@ public final class CrabLairPlacement extends SavedData {
         private final BiomeSource source;
         private final Climate.Sampler sampler;
         private final BlockPos spawn, origin;
+        private final ServerLevel level;
         private final Map<Long, Holder<Biome>> cache = new HashMap<>();
         private int ring;
 
         Search(ServerLevel level, BlockPos origin, BlockPos spawn) {
+            this.level = level;
             this.origin = origin;
             this.source = level.getChunkSource().getGenerator().getBiomeSource();
             this.sampler = level.getChunkSource().randomState().sampler();
@@ -202,6 +204,8 @@ public final class CrabLairPlacement extends SavedData {
                     int in = 0;
                     for (int a = -3; a <= 3; a++) for (int b = -3; b <= 3; b++) if (jiangnan(i + a, j + b)) in++;
                     if (in < 36) continue;
+                    // At least SiteSpacing.GAP blocks from any Murim site (the lotus garden shares these waterlands).
+                    if (com.murimblock.world.structure.site.SiteSpacing.crowded(level, x, z, CrabLairBuilder.RADIUS + 4)) continue;
                     double d = Math.hypot(i, j);
                     if (d < bestDist) { bestDist = d; best = new BlockPos(x, 64, z); }
                 }
