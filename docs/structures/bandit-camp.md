@@ -1,10 +1,11 @@
-# Grand camp de bandits — maquettes (proposition à valider par Enzo)
+# Grand camp de bandits (`bandit_camp`)
 
 > Demande d'Enzo du 16/10/2026 : « fais-moi une maquette d'un grand camp de bandits pour accueillir 30 mobs hostiles »,
 > puis : « l'objectif sera d'y ajouter un boss qui spawn quand on tue tous les mobs, et il devra y avoir un camp dans
-> chaque région ».
+> chaque région » ; puis « crée les structures en rajoutant des bandits dedans ; pour l'instant le boss bandit tu laisses
+> tomber, mais mets déjà en place la structure ».
 >
-> **Statut : maquettes voxel, rien n'est construit en jeu.** Maquettes : `node scripts/concepts/render-bandit-camp.cjs`
+> **Statut : construit en jeu, sans le boss** (sur `test`, en attente de validation d'Enzo), voir [En jeu](#en-jeu). Maquettes : `node scripts/concepts/render-bandit-camp.cjs`
 > (Blockbench isolé, `--port=` ; port 9232 par défaut), scène dans `scripts/concepts/bandit-camp.js`. 1 voxel = 1 bloc.
 > Les PNG rendus ont été convertis en JPG pour la doc.
 
@@ -91,9 +92,44 @@ tentes et les dortoirs.
 
 ![La place](images/bandit-camp/plaza.jpg)
 
-## En jeu, une fois validé
+## En jeu
 
-- Un site comme les autres, construit en code bloc par bloc, trouvé par `/locate`.
+![Le camp en jeu, vu du ciel](images/bandit-camp/game-air.jpg)
+
+![La porte en jeu, ses gardes](images/bandit-camp/game-gate.jpg)
+
+- **Structure** `murimblock:bandit_camp` (`BanditCamp`), construite en code bloc par bloc d'après la maquette,
+  trouvée par `/locate structure murimblock:bandit_camp`.
+- **Dans chaque région** : n'importe quel biome Murim de la bulle ; une tentative tous les 128 chunks (environ
+  2 000 blocs), au moins 48 chunks entre deux camps, refusée si le terrain varie de plus de 10 blocs ou est dans
+  l'eau. Chaque région en compte donc beaucoup (elles font des dizaines de milliers de blocs). Le camp s'habille selon
+  la région de son centre (`BanditCamp.theme`) :
+
+| Région | Palissade | Toits | Tentes | Sol | Tenues des bandits |
+|---|---|---|---|---|---|
+| Centre | Rondins d'épicéa | Chaume (dalles de bambou, foin) ; dortoirs en épicéa | Laine marron, terre cuite brune | Herbe, terre, chemins | Cendre, écharpe pourpre, peau de loup |
+| Nord | Rondins de chêne noir, neige sur les pointes | Épicéa | Laine blanche et grise | Neige, podzol | Surtout peau de loup |
+| Ouest | Boue tassée (terre damée) | Chaume ; dortoirs en briques de boue | Laine marron, terre cuite orange | Sable, terre | Surtout pillards des dunes |
+| Sud | Blocs de bambou | Chaume ; dortoirs en bambou | Laine marron et verte | Herbe, mousse | Mélangées |
+| Est | Rondins d'épicéa, **fossé rempli d'eau** | Tuiles grises | Laine marron, terre cuite brune | Herbe, terre | Mélangées |
+
+- **Les trente** : 30 Mountain Bandits à leurs postes (`BanditCamp.POSTS`) : 4 lieutenants en écharpe pourpre (2 à la
+  porte de la grande salle, 2 au feu), 4 archers sur les tours de guet (ce sont des bandits au dao pour l'instant), 2 sur
+  les tours de la porte et 2 devant, 6 autour du feu, 4 au cercle d'entraînement, 2 au butin, 2 aux cages, 4 sentinelles.
+  Ils ne se repeuplent pas : un camp tué reste vide. (Les camps des mondes plus anciens reçoivent leurs bandits à la
+  première visite, comme les autres sites.)
+- **Butin** : un tonneau de la cache des sites et un coffre dans la grande salle, deux coffres au butin
+  (`chests/bandit_camp` : taels d'argent, or, fer, soie, nourriture, cuir, émeraudes, rarement un diamant ; 12 % un dao
+  de bandit, 10 % le rouleau du Poing Long).
+- **Pas encore de boss** : le siège du chef reste vide sur son estrade et le tambour de guerre attend devant la salle.
+  Le compte des bandits et l'apparition du boss viendront avec lui.
+- **Vérifié** : GameTest `banditCampIsWholeAndCarried` (415 vérifications, 16 832 blocs, identique d'un coup ou chunk par
+  chunk, 30 bandits à leur place, debout sur du solide, puis remis dans un camp vidé) ; visite en vrai client
+  (`runSiteTour`). Seul le camp du centre est vérifié en jeu (les GameTests et la visite sont au centre) ; les quatre
+  autres habits ne sont vus que par le code.
+
+## Prévu, avant de construire
+
 - **Habitants** : les Mountain Bandits existants (leurs cinq tenues), avec des lieutenants et des archers ; le boss à
   la fin. Les **archers et les lieutenants n'existent pas encore** : il faudrait les créer (un
   bandit à l'arc, un bandit plus fort) ou les remplacer par des bandits ordinaires.

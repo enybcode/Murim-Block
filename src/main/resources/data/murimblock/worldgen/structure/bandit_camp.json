@@ -1,0 +1,8 @@
+{
+  "type": "murimblock:site",
+  "plan": "bandit_camp",
+  "biomes": "#murimblock:has_structure/bandit_camp",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

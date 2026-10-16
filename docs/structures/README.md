@@ -1,8 +1,8 @@
 # Structures Murim
 
-## Prévu : un grand camp de bandits (16/10/2026)
+## Construit : le grand camp de bandits (`bandit_camp`, 16/10/2026)
 
-Maquettes voxel d'un fort de rondins de 85 blocs de diamètre pour trente bandits : palissade et fossé, porte gardée, quatre tours de guet, grande salle du chef, place du grand feu, dortoirs et tentes, butin, cages, enclos, cercle d'entraînement ; un boss sort de la grande salle quand les trente sont morts ; un camp dans chaque région, habillé pour sa terre ; avec son plan numéroté : [bandit-camp.md](bandit-camp.md). Rien n'est construit en jeu.
+Maquettes voxel d'un fort de rondins de 85 blocs de diamètre pour trente bandits : palissade et fossé, porte gardée, quatre tours de guet, grande salle du chef, place du grand feu, dortoirs et tentes, butin, cages, enclos, cercle d'entraînement ; un boss sort de la grande salle quand les trente sont morts ; un camp dans chaque région, habillé pour sa terre ; avec son plan numéroté : [bandit-camp.md](bandit-camp.md). Neuvième site, construit avec ses trente bandits, dans toutes les régions, sans le boss pour l'instant.
 
 ![Le grand camp de bandits, maquette](images/bandit-camp/overview.jpg)
 

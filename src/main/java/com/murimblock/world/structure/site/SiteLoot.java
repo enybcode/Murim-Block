@@ -24,6 +24,13 @@ public final class SiteLoot {
     public static final ResourceKey<LootTable> ARENA = ResourceKey.create(Registries.LOOT_TABLE,
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "chests/alliance_arena"));
 
+    /**
+     * The plunder of a bandit camp (its longhall and its loot store): silver taels, gold, iron, stolen silk and food,
+     * sometimes a bandit's dao or the Long Fist Scroll (data/murimblock/loot_table/chests/bandit_camp.json).
+     */
+    public static final ResourceKey<LootTable> BANDIT_CAMP = ResourceKey.create(Registries.LOOT_TABLE,
+            ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "chests/bandit_camp"));
+
     private SiteLoot() {
     }
 }

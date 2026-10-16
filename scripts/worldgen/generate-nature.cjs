@@ -597,6 +597,8 @@ const SITES = [
   ['alliance_outpost', 'alliance_outpost', '#' + id('murim_biomes'), 64, 24, 71007],
   // The arena: uncommon, about as often as a pillager outpost, in the same places as the outposts (AllianceArena.allowedAt).
   ['alliance_arena', 'alliance_arena', '#' + id('murim_biomes'), 40, 16, 71008],
+  // The great bandit camp: in every region (BanditCamp.allowedAt), one try every 2 048 blocks or so.
+  ['bandit_camp', 'bandit_camp', '#' + id('murim_biomes'), 128, 48, 71009],
 ];
 for (const [name, plan, biome, spacing, separation, salt] of SITES) {
   tag('worldgen/biome', `has_structure/${name}`, [biome.startsWith('#') ? biome : id(biome)], NS);
