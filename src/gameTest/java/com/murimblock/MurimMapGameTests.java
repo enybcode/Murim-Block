@@ -94,7 +94,7 @@ public final class MurimMapGameTests {
         var heightAccessor = net.minecraft.world.level.LevelHeightAccessor.create(-64, 384);
         int highest = 0, count = 0, above200 = 0;
         long sum = 0;
-        for (int x = -16_000; x <= 16_000; x += 250) for (int z = -19_000; z <= -6_000; z += 250) {
+        for (int x = -19_000; x <= 19_000; x += 250) for (int z = -19_000; z <= 19_000; z += 250) {
             if (MurimMap.region(x, z) != MurimMap.Region.NORTH) continue;
             int h = generator.getBaseHeight(x, z, net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, heightAccessor, state);
             highest = Math.max(highest, h);
@@ -158,8 +158,14 @@ public final class MurimMapGameTests {
         helper.assertTrue(ringLand == 0, "Land in the ocean ring: " + ringLand + " samples");
         // Inside the bubble only Murim land (vanilla keeps the caves, its rivers become Murim: none of its land biomes).
         helper.assertTrue(insideVanillaLand == 0, "Vanilla land inside the bubble: " + insideVanillaLand + " samples " + tally);
-        for (MurimMap.Region r : MurimMap.Region.values())
-            helper.assertTrue(murimByRegion.getOrDefault(r, 0) > 500, "The " + r + " has almost no land: " + murimByRegion);
+        // The five regions hold about the same land: each between a seventh and a quarter of it.
+        int land = murimByRegion.values().stream().mapToInt(Integer::intValue).sum();
+        LOGGER.info("Murim map {}: layout turned {} degrees, quarters {}, land by region {}", seed, Math.round(Math.toDegrees(MurimMap.layout().turn())),
+                java.util.Arrays.toString(MurimMap.layout().quarters()), murimByRegion);
+        for (MurimMap.Region r : MurimMap.Region.values()) {
+            int n = murimByRegion.getOrDefault(r, 0);
+            helper.assertTrue(n > land / 7 && n < land / 4, "The " + r + " holds " + n + " of " + land + " samples of land: " + murimByRegion);
+        }
         for (ResourceKey<Biome> b : MurimBiomes.ALL)
             helper.assertTrue(tally.getOrDefault(b.location().getPath(), 0) > 50, "Hardly any " + b.location() + " on the map: " + tally);
     }

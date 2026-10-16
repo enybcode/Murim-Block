@@ -16,19 +16,39 @@
 | **L'océan** | Un anneau de **4 000 blocs** autour de la bulle | Océan profond (gelé au nord, tiède au sud : c'est vanilla qui le colore selon le climat) |
 | **Le monde vanilla** | Au-delà | Minecraft normal, sans biome Murim |
 
-## Les régions, fixes dans chaque monde
+## Les régions, tirées au hasard dans chaque monde
 
-La disposition est **la même dans tous les mondes** : on sait où est chaque type de biome. La graine change seulement les taches de biomes à l'intérieur d'une région, le relief et l'emplacement des structures.
+> **16/10/2026, demande d'Enzo : « que le spawn des biomes et des structures soit aléatoire », « les régions à peu près égales ».**
+> Chaque monde tire sa propre disposition de sa graine (`MurimMap.configure`, au démarrage du serveur) : **les quatre
+> régions extérieures sont distribuées au hasard dans les quatre quartiers** autour du centre, **les quartiers sont
+> tournés d'un angle quelconque**, et leurs frontières ondulent selon un bruit propre au monde. Le centre reste autour de
+> l'origine. Les **cinq régions ont la même surface** à quelques pour cent près : le centre est un disque d'un cinquième
+> de la bulle (environ 10 000 blocs de rayon), chaque quartier en tient un autre cinquième. Dans chaque région, les
+> taches de biomes, le relief et l'emplacement des structures dépendent aussi de la graine. Les noms « nord », « ouest »…
+> sont ceux des régions, plus des points cardinaux.
+>
+> **Les mondes créés avant restent incompatibles** : leurs nouveaux morceaux suivraient la nouvelle disposition.
 
-| Région | Où | Biomes (selon le relief et l'humidité) |
+![Les régions de six mondes](images/murim-layouts.png)
+
+*Les régions de six mondes (graines 1, 2, 3, 42, 20261012, 8675309), un pixel = 200 blocs. Rose : centre ; blanc : neiges ; jaune : terres sèches ; vert : terres humides ; bleu : pays des eaux ; bleu nuit : l'océan.*
+
+Ce qui suit la disposition partout : les chaînes de glace des neiges et les collines du pays des eaux et des terres
+humides (`MurimMap.uplift`, `hills`), le choix des biomes, les sites qui dépendent d'une région (camps de bandits
+habillés selon leur région, tigre du centre, avant-postes et arène), le repaire du Roi Crabe dans le pays des eaux
+(`MurimMap.heart`), et les visites en vrai client qui vont chercher chaque région en son cœur.
+
+| Région | Où (disposition classique, sans monde) | Biomes (selon le relief et l'humidité) |
 |---|---|---|
-| **Centre** : montagnes et vallées sacrées | Un disque d'environ 6 000 blocs de rayon autour de l'origine | Pics de la mer de nuages sur les montagnes, vallée des fleurs de pêcher ailleurs |
+| **Centre** : montagnes et vallées sacrées | Un disque d'environ 10 000 blocs de rayon autour de l'origine | Pics de la mer de nuages sur les montagnes, vallée des fleurs de pêcher ailleurs |
 | **Nord** : les neiges | Vers −z | Glaciers du Kunlun sur les montagnes, champs de neige du Tianshan ailleurs |
 | **Ouest** : les terres sèches | Vers −x | Désert du Hexi là où c'est sec, plateau de lœss ailleurs |
 | **Sud** : les terres humides et les plaines | Vers +z | Karst de jade là où c'est humide, collines aux camphriers sur les terres douces, mer de bambous sur les reliefs ; de basses collines |
 | **Est** : collines et pays des eaux | Vers +x | Collines aux camphriers sur les collines (environ 45 blocs, `MurimMap.hills`), pays des eaux du Jiangnan dans les creux, pics de la mer de nuages sur les plus hauts sommets |
 
-Les frontières entre régions ondulent sur des milliers de blocs (un bruit à graine fixe) : pas de ligne droite.
+Les frontières entre régions ondulent sur des milliers de blocs (un bruit tiré de la graine du monde) : pas de ligne droite.
+
+**Vérifié** : tests unitaires (`MurimMapTest` : sur 64 graines, un même point lointain tombe dans chacune des quatre régions extérieures selon le monde, le cœur de chaque région est bien dans sa région ; sur quatre graines, chaque région tient entre un septième et un quart de la terre) ; GameTests (`MurimMapGameTests` : chaque biome dans sa région, régions de surface égale, environ 30 000 points de terre chacune) ; visite des biomes en vrai client (`runBiomeTour`).
 
 ## Les montagnes de glace du nord
 

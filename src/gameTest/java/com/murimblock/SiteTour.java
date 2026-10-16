@@ -71,13 +71,10 @@ public final class SiteTour {
 
     static Vec3 searchFrom(String name) {
         String region = name.contains("@") ? name.split("@")[1] : "";
-        return switch (region) {
-            case "north" -> new Vec3(0.5, 100, -50_000.5);
-            case "south" -> new Vec3(0.5, 100, 50_000.5);
-            case "west" -> new Vec3(-50_000.5, 100, 0.5);
-            case "east" -> new Vec3(50_000.5, 100, 0.5);
-            default -> new Vec3(0.5, 100, 0.5);
-        };
+        if (region.isEmpty()) return new Vec3(0.5, 100, 0.5);
+        // The heart of that region in this world's layout.
+        int[] heart = com.murimblock.world.map.MurimMap.heart(com.murimblock.world.map.MurimMap.Region.valueOf(region.toUpperCase(java.util.Locale.ROOT)), 0.75);
+        return new Vec3(heart[0] + 0.5, 100, heart[1] + 0.5);
     }
     private static final Pattern AT = Pattern.compile("\\[(-?\\d+), ~, (-?\\d+)\\]");
     private static boolean creating, finished, failed;

@@ -151,7 +151,8 @@ public final class CrabLairPlacement extends SavedData {
         BlockPos spawn = level.getSharedSpawnPos();
         if (!(level.getChunkSource().getGenerator().getBiomeSource() instanceof com.murimblock.world.map.MurimBiomeSource)) return spawn;
         if (com.murimblock.world.map.MurimMap.region(spawn.getX(), spawn.getZ()) == com.murimblock.world.map.MurimMap.Region.EAST) return spawn;
-        double tx = com.murimblock.world.map.MurimMap.RADIUS * 0.55, tz = 0;
+        int[] heart = com.murimblock.world.map.MurimMap.heart(com.murimblock.world.map.MurimMap.Region.EAST, 0.55);
+        double tx = heart[0], tz = heart[1];
         double dx = tx - spawn.getX(), dz = tz - spawn.getZ(), d = Math.hypot(dx, dz);
         for (double t = 0; t <= d; t += 250) {
             int x = (int) (spawn.getX() + dx / d * t), z = (int) (spawn.getZ() + dz / d * t);

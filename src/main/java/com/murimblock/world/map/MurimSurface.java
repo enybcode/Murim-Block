@@ -17,6 +17,8 @@ public final class MurimSurface {
     }
 
     public static void onServerAboutToStart(ServerAboutToStartEvent event) {
+        // The world's own layout of the regions, drawn from its seed before any chunk is generated.
+        MurimMap.configure(event.getServer().getWorldData().worldGenOptions().seed());
         for (LevelStem stem : event.getServer().registryAccess().registryOrThrow(Registries.LEVEL_STEM)) {
             if (stem.generator() instanceof NoiseBasedChunkGenerator generator && generator.getBiomeSource() instanceof MurimBiomeSource) {
                 ((IExtendedNoiseGeneratorSettings) (Object) generator.generatorSettings().value()).setRuleCategory(SurfaceRuleManager.RuleCategory.OVERWORLD);

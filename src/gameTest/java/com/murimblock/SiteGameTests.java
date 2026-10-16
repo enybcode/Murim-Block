@@ -70,23 +70,26 @@ public final class SiteGameTests {
     public static void banditCampIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", 7600, Rotation.CLOCKWISE_90, GROUND); }
 
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp_north", timeoutTicks = 1200)
-    public static void theNorthsBanditCampIsDarkWoodUnderSnow(GameTestHelper helper) { regionalCamp(helper, 0, -55_000, "north", Blocks.DARK_OAK_LOG); }
+    public static void theNorthsBanditCampIsDarkWoodUnderSnow(GameTestHelper helper) { regionalCamp(helper, "north", Blocks.DARK_OAK_LOG); }
 
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp_west", timeoutTicks = 1200)
-    public static void theWestsBanditCampIsRammedEarth(GameTestHelper helper) { regionalCamp(helper, -55_000, 0, "west", Blocks.PACKED_MUD); }
+    public static void theWestsBanditCampIsRammedEarth(GameTestHelper helper) { regionalCamp(helper, "west", Blocks.PACKED_MUD); }
 
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp_south", timeoutTicks = 1200)
-    public static void theSouthsBanditCampIsBamboo(GameTestHelper helper) { regionalCamp(helper, 0, 55_000, "south", Blocks.BAMBOO_BLOCK); }
+    public static void theSouthsBanditCampIsBamboo(GameTestHelper helper) { regionalCamp(helper, "south", Blocks.BAMBOO_BLOCK); }
 
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp_east", timeoutTicks = 1200)
-    public static void theEastsBanditCampHasAMoat(GameTestHelper helper) { regionalCamp(helper, 55_000, 0, "east", Blocks.SPRUCE_LOG); }
+    public static void theEastsBanditCampHasAMoat(GameTestHelper helper) { regionalCamp(helper, "east", Blocks.SPRUCE_LOG); }
 
     /**
      * A bandit camp in the heart of an outer region (rotation none: local north is world north): the whole site's checks
      * and thirty bandits, and its palisade (local 0, -42) of that region's stuff; in the north snow on its tips, in the
      * east water in its ditch, elsewhere none.
      */
-    private static void regionalCamp(GameTestHelper helper, int x, int z, String region, Block wall) {
+    private static void regionalCamp(GameTestHelper helper, String region, Block wall) {
+        // The heart of that region in the test world's layout (the regions are dealt anew in each world), on a grid of 16.
+        int[] heart = com.murimblock.world.map.MurimMap.heart(com.murimblock.world.map.MurimMap.Region.valueOf(region.toUpperCase(java.util.Locale.ROOT)), 0.75);
+        int x = heart[0] & ~15 | 8, z = heart[1] & ~15 | 8;
         check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", x, z, Rotation.NONE, level -> {
             BlockPos post = new BlockPos(x, GROUND + 2, z - 42);
             helper.assertTrue(level.getBlockState(post).is(wall), region + " camp's palisade is " + level.getBlockState(post));

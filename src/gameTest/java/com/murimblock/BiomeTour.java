@@ -91,13 +91,15 @@ public final class BiomeTour {
 
     /** Where to look for a biome on the Murim map: the heart of its region (the centre's own at the origin). */
     static BlockPos regionHeart(ResourceKey<Biome> biome) {
-        int far = com.murimblock.world.map.MurimMap.RADIUS * 3 / 5;
-        if (biome == MurimBiomes.TIANSHAN_SNOWFIELDS || biome == MurimBiomes.KUNLUN_GLACIERS) return new BlockPos(0, 80, -far);
-        if (biome == MurimBiomes.HEXI_FRONTIER_DESERT || biome == MurimBiomes.LOESS_PLATEAU) return new BlockPos(-far, 80, 0);
-        if (biome == MurimBiomes.JADE_KARST_FOREST || biome == MurimBiomes.SHU_BAMBOO_SEA) return new BlockPos(0, 80, far);
-        if (biome == MurimBiomes.JIANGNAN_WATERLANDS) return new BlockPos(far, 80, 0);
-        if (biome == MurimBiomes.CAMPHOR_HILLS) return new BlockPos(far, 80, 0);
-        return new BlockPos(0, 80, 0);
+        com.murimblock.world.map.MurimMap.Region region =
+                biome == MurimBiomes.TIANSHAN_SNOWFIELDS || biome == MurimBiomes.KUNLUN_GLACIERS ? com.murimblock.world.map.MurimMap.Region.NORTH
+                : biome == MurimBiomes.HEXI_FRONTIER_DESERT || biome == MurimBiomes.LOESS_PLATEAU ? com.murimblock.world.map.MurimMap.Region.WEST
+                : biome == MurimBiomes.JADE_KARST_FOREST || biome == MurimBiomes.SHU_BAMBOO_SEA ? com.murimblock.world.map.MurimMap.Region.SOUTH
+                : biome == MurimBiomes.JIANGNAN_WATERLANDS || biome == MurimBiomes.CAMPHOR_HILLS ? com.murimblock.world.map.MurimMap.Region.EAST
+                : com.murimblock.world.map.MurimMap.Region.CENTER;
+        // The heart of the region in this world's layout (the regions are dealt anew in each world).
+        int[] heart = com.murimblock.world.map.MurimMap.heart(region, 0.75);
+        return new BlockPos(heart[0], 80, heart[1]);
     }
 
     /** After the biomes: the bubble's coast and its ocean ring, seen from the shore looking out. */

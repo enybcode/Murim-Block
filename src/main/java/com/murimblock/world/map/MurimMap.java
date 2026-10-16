@@ -9,10 +9,13 @@ import net.minecraft.world.level.levelgen.synth.SimplexNoise;
  * every land biome is a Murim one, an ocean 4 000 blocks wide around it, then the vanilla world. (150 000 until
  * 16/10/2026: Enzo chose a smaller world, every region within reach of a session, room left for the structures.)
  * <p>
- * Inside, the land is split into fixed regions, the same in every world (the seed only changes the biomes' patches
- * within a region, the relief and where the structures fall): the central mountains and valleys, the snows of the
- * north, the deserts of the west, the humid south, the water country of the east. Their borders wander (a noise of
- * its own, seeded with a constant), so no line is straight.
+ * Inside, the land is split into five regions of about the same size: the central mountains and valleys, and round
+ * them in four quarters the snows, the dry lands, the humid lands and the water country. Since 16/10/2026 (Enzo:
+ * random regions, of about equal size) each world draws its own layout from its seed ({@link #configure}): which of
+ * the four quarters each outer region takes, how the quarters are turned, and how their borders wander, so no line is
+ * straight and no two worlds are alike. The centre stays round the origin. The names (north, west...) are the
+ * regions', not compass points any more. Without a world (unit tests) the classic layout holds: the snows to the
+ * north (-z), the dry lands west, the humid lands south, the water country east.
  */
 public final class MurimMap {
     /** Half the bubble's side: the Murim lands span -20 000 to 20 000 on both axes. */
@@ -31,33 +34,94 @@ public final class MurimMap {
     /** Continentalness kept at least inside (near inland: no sea), and the ocean's (deep ocean, not mushroom fields). */
     public static final double LAND = 0.05, SHORE_SEA = -0.6, DEEP_SEA = -0.8;
 
-    /** The regions; where each one lies is fixed. */
+    /** The regions (named after the classic layout's directions; a world's own layout puts them anywhere). */
     public enum Region { CENTER, NORTH, WEST, SOUTH, EAST }
 
-    /** Within this share of the radius from the origin, the centre. */
-    public static final double CENTER_SHARE = 0.30;
+    /**
+     * Within this share of the radius from the origin, the centre: a disc of a fifth of the square bubble (pi r^2 = 4/5),
+     * so the centre and each of the four quarters round it hold about the same land.
+     */
+    public static final double CENTER_SHARE = Math.sqrt(0.8 / Math.PI);
 
-    private static final long LAYOUT_SEED = 0x4D7552494D4D4150L; // "MuRIMMAP": the same layout in every world
-    private static volatile SimplexNoise noiseA, noiseB, noiseC, noiseD, noiseE, noiseF, noiseG;
+    /** The classic layout's seed ("MuRIMMAP"). */
+    private static final long LAYOUT_SEED = 0x4D7552494D4D4150L;
+
+    /**
+     * A world's layout: the region in each quarter (counted from {@code turn}, a quarter turn on each time, as atan2
+     * runs), and the noises of the borders (a, b), the coast (c), the ranges (d, e) and the hills (f, g).
+     */
+    public record Layout(long seed, double turn, Region[] quarters, SimplexNoise a, SimplexNoise b, SimplexNoise c,
+                         SimplexNoise d, SimplexNoise e, SimplexNoise f, SimplexNoise g) {
+        /** The classic layout: the snows to the north (-z), then the water country east, the humid lands south, the dry lands west. */
+        static Layout classic() {
+            XoroshiroRandomSource random = new XoroshiroRandomSource(LAYOUT_SEED);
+            SimplexNoise b = new SimplexNoise(random), c = new SimplexNoise(random), d = new SimplexNoise(random), e = new SimplexNoise(random);
+            SimplexNoise a = new SimplexNoise(random), f = new SimplexNoise(random), g = new SimplexNoise(random);
+            return new Layout(LAYOUT_SEED, 0, new Region[]{Region.NORTH, Region.EAST, Region.SOUTH, Region.WEST}, a, b, c, d, e, f, g);
+        }
+
+        /** A world's own layout, drawn from its seed. */
+        public static Layout of(long worldSeed) {
+            XoroshiroRandomSource random = new XoroshiroRandomSource(worldSeed ^ LAYOUT_SEED);
+            double turn = random.nextDouble() * 2 * Math.PI;
+            java.util.List<Region> outer = new java.util.ArrayList<>(java.util.List.of(Region.NORTH, Region.EAST, Region.SOUTH, Region.WEST));
+            for (int i = outer.size() - 1; i > 0; i--) java.util.Collections.swap(outer, i, random.nextInt(i + 1));
+            SimplexNoise a = new SimplexNoise(random), b = new SimplexNoise(random), c = new SimplexNoise(random), d = new SimplexNoise(random);
+            SimplexNoise e = new SimplexNoise(random), f = new SimplexNoise(random), g = new SimplexNoise(random);
+            return new Layout(worldSeed, turn, outer.toArray(Region[]::new), a, b, c, d, e, f, g);
+        }
+
+        /** Which quarter (0 to 3) an angle (atan2) falls in, and how far into it (0 to pi/2). */
+        double[] quarter(double angle) {
+            double t = ((angle - turn + 3 * Math.PI / 4) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            int k = Math.min(3, (int) (t / (Math.PI / 2)));
+            return new double[]{k, t - k * Math.PI / 2};
+        }
+
+        /** The quarter a region holds (-1 for the centre). */
+        int quarterOf(Region region) {
+            for (int k = 0; k < 4; k++) if (quarters[k] == region) return k;
+            return -1;
+        }
+    }
+
+    private static volatile Layout layout = Layout.classic();
 
     private MurimMap() {
     }
 
-    private static void init() {
-        if (noiseA != null) return;
-        synchronized (MurimMap.class) {
-            if (noiseA != null) return;
-            XoroshiroRandomSource random = new XoroshiroRandomSource(LAYOUT_SEED);
-            noiseB = new SimplexNoise(random);
-            noiseC = new SimplexNoise(random);
-            noiseD = new SimplexNoise(random);
-            noiseE = new SimplexNoise(random);
-            // (Drawn in this order so the regions of every older world stay where they were: A, then the hills' F and G.)
-            SimplexNoise a = new SimplexNoise(random);
-            noiseF = new SimplexNoise(random);
-            noiseG = new SimplexNoise(random);
-            noiseA = a;
-        }
+    /** Draws the layout of the world being started (its seed); called before any chunk is generated. */
+    public static void configure(long worldSeed) {
+        layout = Layout.of(worldSeed);
+    }
+
+    /** Back to the classic layout (unit tests). */
+    static void useClassic() {
+        layout = Layout.classic();
+    }
+
+    /** The layout in use. */
+    public static Layout layout() {
+        return layout;
+    }
+
+    /**
+     * The heart of a region: a block {@code share} of the radius out from the origin, in the middle of the region's
+     * quarter (the origin for the centre). Where to look for a region's biomes and structures.
+     */
+    public static int[] heart(Region region, double share) {
+        Layout l = layout;
+        int k = l.quarterOf(region);
+        if (k < 0) return new int[]{0, 0};
+        double a = l.turn() - 3 * Math.PI / 4 + (k + 0.5) * Math.PI / 2;
+        return new int[]{(int) Math.round(Math.cos(a) * share * RADIUS), (int) Math.round(Math.sin(a) * share * RADIUS)};
+    }
+
+    /** How strongly (0 to 1) a block at this angle lies inside a region's quarter, fading over its edges. */
+    private static double inQuarter(Layout l, Region region, double angle) {
+        double[] q = l.quarter(angle);
+        if (l.quarters()[(int) q[0]] != region) return 0;
+        return smooth(Math.min(q[1], Math.PI / 2 - q[1]) / 0.22);
     }
 
     /** A wandering of about -1 to 1, broad and then finer. */
@@ -67,8 +131,8 @@ public final class MurimMap {
 
     /** How far out a block lies: the square's distance, its coastline wandering. */
     public static double reach(int x, int z) {
-        init();
-        return Math.max(Math.abs(x), Math.abs(z)) + COAST_WANDER * wander(noiseC, x, z);
+        Layout l = layout;
+        return Math.max(Math.abs(x), Math.abs(z)) + COAST_WANDER * wander(l.c(), x, z);
     }
 
     /** Whether a block is within the Murim bubble (its coast included). */
@@ -78,16 +142,12 @@ public final class MurimMap {
 
     /** Which region a block of the bubble belongs to. */
     public static Region region(int x, int z) {
-        init();
-        double u = (double) x / RADIUS + 0.16 * wander(noiseA, x, z);
-        double v = (double) z / RADIUS + 0.16 * wander(noiseB, x, z);
+        Layout l = layout;
+        double u = (double) x / RADIUS + 0.16 * wander(l.a(), x, z);
+        double v = (double) z / RADIUS + 0.16 * wander(l.b(), x, z);
         if (u * u + v * v < CENTER_SHARE * CENTER_SHARE) return Region.CENTER;
-        // North is -z. The four sectors meet on the diagonals.
-        double a = Math.atan2(v, u);
-        if (a > -3 * Math.PI / 4 && a <= -Math.PI / 4) return Region.NORTH;
-        if (a > -Math.PI / 4 && a <= Math.PI / 4) return Region.EAST;
-        if (a > Math.PI / 4 && a <= 3 * Math.PI / 4) return Region.SOUTH;
-        return Region.WEST;
+        // The four quarters round the centre, as the world's layout turns and deals them.
+        return l.quarters()[(int) l.quarter(Math.atan2(v, u))[0]];
     }
 
     /**
@@ -132,22 +192,22 @@ public final class MurimMap {
      * by side, the Jiangnan's water country left in the long valleys between them. Fades out towards the regions' borders and the coast.
      */
     public static double hills(int x, int z) {
-        init();
-        double u = (double) x / RADIUS + 0.16 * wander(noiseA, x, z);
-        double v = (double) z / RADIUS + 0.16 * wander(noiseB, x, z);
+        Layout l = layout;
+        double u = (double) x / RADIUS + 0.16 * wander(l.a(), x, z);
+        double v = (double) z / RADIUS + 0.16 * wander(l.b(), x, z);
         double r = Math.sqrt(u * u + v * v), a = Math.atan2(v, u);
         double out = smooth((r - CENTER_SHARE) / 0.12);
         double coast = smooth((RADIUS - COAST_FADE_FROM - reach(x, z)) / COAST_FADE);
-        // The east sector (-pi/4 to pi/4) in full, the south (pi/4 to 3pi/4) at half.
-        double east = smooth(Math.min(a + Math.PI / 4, Math.PI / 4 - a) / 0.22);
-        double south = smooth(Math.min(a - Math.PI / 4, 3 * Math.PI / 4 - a) / 0.22) * 0.5;
+        // The east's quarter in full, the south's at half.
+        double east = inQuarter(l, Region.EAST, a);
+        double south = inQuarter(l, Region.SOUTH, a) * 0.5;
         double w = (east + south) * out * coast;
         if (w <= 0) return 0;
         // Long hills: ridged noise stretched along one direction (turned 30 degrees off east, made to wander), so the
         // crests run on for kilometres, side by side, with long valleys between them.
-        double along = x * COS + z * SIN, across = -x * SIN + z * COS + 900 * noiseG.getValue(x / 3_500.0, z / 3_500.0);
-        double crest = 1 - Math.abs(noiseF.getValue(along / 5_000.0, across / 1_700.0));
-        double fine = 1 - Math.abs(noiseG.getValue(along / 2_600.0, across / 650.0));
+        double along = x * COS + z * SIN, across = -x * SIN + z * COS + 900 * l.g().getValue(x / 3_500.0, z / 3_500.0);
+        double crest = 1 - Math.abs(l.f().getValue(along / 5_000.0, across / 1_700.0));
+        double fine = 1 - Math.abs(l.g().getValue(along / 2_600.0, across / 650.0));
         double h = crest * crest * 0.75 + fine * fine * 0.25;
         return w * Math.max(0, (h - 0.3) / 0.7);
     }
@@ -163,18 +223,18 @@ public final class MurimMap {
 
     /** {weight of the north here (0 to 1), height of the ranges here (0 to 1)}. */
     private static double[] ranges(int x, int z) {
-        init();
-        double u = (double) x / RADIUS + 0.16 * wander(noiseA, x, z);
-        double v = (double) z / RADIUS + 0.16 * wander(noiseB, x, z);
+        Layout l = layout;
+        double u = (double) x / RADIUS + 0.16 * wander(l.a(), x, z);
+        double v = (double) z / RADIUS + 0.16 * wander(l.b(), x, z);
         double r = Math.sqrt(u * u + v * v), a = Math.atan2(v, u);
-        // Inside the north sector (-3pi/4 to -pi/4), out of the centre, away from the coast: 1; fading over the edges.
-        double sector = smooth(Math.min(a + 3 * Math.PI / 4, -Math.PI / 4 - a) / 0.22);
+        // Inside the north's quarter, out of the centre, away from the coast: 1; fading over the edges.
+        double sector = inQuarter(l, Region.NORTH, a);
         double out = smooth((r - CENTER_SHARE) / 0.12);
         double coast = smooth((RADIUS - COAST_FADE_FROM - reach(x, z)) / COAST_FADE);
         double w = sector * out * coast;
         if (w <= 0) return new double[]{0, 0};
-        double broad = 1 - Math.abs(noiseD.getValue(x / 3_500.0, z / 3_500.0));
-        double fine = 1 - Math.abs(noiseE.getValue(x / 1_400.0, z / 1_400.0));
+        double broad = 1 - Math.abs(l.d().getValue(x / 3_500.0, z / 3_500.0));
+        double fine = 1 - Math.abs(l.e().getValue(x / 1_400.0, z / 1_400.0));
         double ridge = broad * broad * 0.7 + fine * fine * 0.3;
         return new double[]{w, Math.max(0, (ridge - 0.32) / 0.68)};
     }
