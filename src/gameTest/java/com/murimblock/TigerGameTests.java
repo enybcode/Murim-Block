@@ -87,11 +87,11 @@ public final class TigerGameTests {
 
     @GameTest(template = "foundation_arena", batch = "tiger")
     public static void theTigerLivesOnlyInTheCentreOfTheMap(GameTestHelper helper) {
-        helper.assertTrue(TigerEntity.inItsLands(0, 0) && TigerEntity.inItsLands(8_000, -5_000), "No tiger in the centre");
-        helper.assertFalse(TigerEntity.inItsLands(0, -55_000), "A tiger in the north");
-        helper.assertFalse(TigerEntity.inItsLands(55_000, 0), "A tiger in the east");
-        helper.assertFalse(TigerEntity.inItsLands(0, 55_000) || TigerEntity.inItsLands(-55_000, 0), "A tiger in the south or the west");
-        helper.assertFalse(TigerEntity.inItsLands(90_000, 0), "A tiger beyond the Murim bubble");
+        helper.assertTrue(TigerEntity.inItsLands(0, 0) && TigerEntity.inItsLands(2_500, -1_500), "No tiger in the centre");
+        helper.assertFalse(TigerEntity.inItsLands(0, -15_000), "A tiger in the north");
+        helper.assertFalse(TigerEntity.inItsLands(15_000, 0), "A tiger in the east");
+        helper.assertFalse(TigerEntity.inItsLands(0, 15_000) || TigerEntity.inItsLands(-15_000, 0), "A tiger in the south or the west");
+        helper.assertFalse(TigerEntity.inItsLands(30_000, 0), "A tiger beyond the Murim bubble");
         var level = helper.getLevel();
         var tiger = helper.spawn(MurimEntities.TIGER.get(), new BlockPos(2, 1, 2));
         helper.assertTrue(TigerEntity.checkTigerSpawnRules(MurimEntities.TIGER.get(), level, MobSpawnType.SPAWNER, tiger.blockPosition(), level.random),

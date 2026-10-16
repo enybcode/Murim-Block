@@ -86,6 +86,10 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerStarted);
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerTick);
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerStopping);
+        // The Crab King's lair, unique and secret, under a Jiangnan Waterlands (built after the sanctuary).
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerTick);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStopping);
         NeoForge.EVENT_BUS.addListener(SectTokenItem::onPlayerLoggedIn);
         // Knock-down in PvP: K.O. instead of death, carry (V) or execute (B).
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, KnockdownEvents::onLivingDeath);

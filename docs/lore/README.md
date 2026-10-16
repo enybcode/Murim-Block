@@ -21,7 +21,7 @@
 
 ## 2. Le Murim (武林, « la forêt des arts martiaux »)
 
-- **Le Murim** est une terre close de 150 000 blocs de côté : c'est la carte Murim. Ses habitants l'appellent simplement « le Murim » ou « le monde sous le Ciel » (天下).
+- **Le Murim** est une terre close de 40 000 blocs de côté : c'est la carte Murim. Ses habitants l'appellent simplement « le Murim » ou « le monde sous le Ciel » (天下).
 - **La Mer sans fin** (无尽海) l'entoure. Selon la légende, les Immortels l'ont tracée pour que les guerres des hommes du Murim ne débordent jamais sur le reste du monde.
 - **Au-delà de la mer**, il y aurait des terres sans Qi, les **Terres stériles** : le monde vanilla. Les gens du Murim n'y croient qu'à moitié. Aucun cultivateur qui y est parti n'en est revenu.
 - **Le Qi du Ciel et de la Terre** (天地之气) coule dans le sol le long des **veines du dragon** (龙脉).

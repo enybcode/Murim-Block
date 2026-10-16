@@ -2,7 +2,7 @@
 
 Dix biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époque impériale (des Tang aux Ming), avant les déforestations, les barrages et les villes modernes : sept du premier jet, et depuis le 14/10/2026 les deux neiges du nord (Tianshan et Kunlun) et les collines aux camphriers du sud et de l'est.
 
-**Depuis le 14/10/2026, ils ne se mélangent plus au monde vanilla : ils forment la [carte Murim](murim-map.md)**, une bulle de 150 000 × 150 000 blocs aux régions fixes (centre, nord, ouest, sud, est), entourée de 10 000 blocs d'océan, puis le monde vanilla.
+**Depuis le 14/10/2026, ils ne se mélangent plus au monde vanilla : ils forment la [carte Murim](murim-map.md)**, une bulle de 40 000 × 150 000 blocs aux régions fixes (centre, nord, ouest, sud, est), entourée de 10 000 blocs d'océan, puis le monde vanilla.
 
 ![La carte Murim](images/murim-map-1.png)
 
