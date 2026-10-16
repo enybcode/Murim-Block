@@ -41,16 +41,26 @@ import static com.murimblock.testing.GameTestPlayers.player;
 public final class CelestialPeakSpearGameTests {
     private CelestialPeakSpearGameTests() { }
 
-    /** A student of the spear (manual read), the Alliance spear in hand, on the ground, combat on, full Qi, facing south. */
+    /**
+     * The middle of spear_arena (9 by 9 blocks): every target placed from there stays inside the test, whose chunks alone
+     * are force-loaded. A zombie moved past the template into a chunk not loaded is hidden from the lookup, never hit.
+     */
+    private static final BlockPos CENTRE = new BlockPos(4, 1, 4);
+
+    /** A student of the spear in the middle of spear_arena: room all round for the sweep, and four blocks ahead. */
     private static ServerPlayer adept(GameTestHelper helper) {
+        return adept(helper, CENTRE);
+    }
+
+    /** A student of the spear (manual read), the Alliance spear in hand, on the ground, combat on, full Qi, facing south. */
+    private static ServerPlayer adept(GameTestHelper helper, BlockPos at) {
         ServerPlayer player = player(helper);
         EpicFightCombatDefaults.enforce(player);
         ItemStack manual = new ItemStack(CelestialPeakItems.MANUAL.get());
         manual.use(player.level(), player, InteractionHand.MAIN_HAND);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.ALLIANCE_SPEAR.get()));
-        BlockPos p = helper.absolutePos(new BlockPos(2, 1, 0));
-        // In the middle of the arena, room all round for the sweep.
-        player.moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 2.5, 0, 0);
+        BlockPos p = helper.absolutePos(at);
+        player.moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
         player.setOnGround(true);
         MartialService.clearCooldownsForTests(player);
         QiService.setQiMax(player, 100);
@@ -59,7 +69,7 @@ public final class CelestialPeakSpearGameTests {
     }
 
     private static Zombie dummy(GameTestHelper helper, ServerPlayer player, double dx, double dz) {
-        Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 2));
+        Zombie zombie = helper.spawn(EntityType.ZOMBIE, helper.relativePos(player.blockPosition()));
         zombie.setNoAi(true);
         zombie.getAttribute(Attributes.MAX_HEALTH).setBaseValue(200);
         zombie.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
@@ -70,8 +80,8 @@ public final class CelestialPeakSpearGameTests {
     }
 
     /**
-     * Runs {@code then} once the player's level finds every zombie where it was moved: a mob moved after its spawn may
-     * not be in the entity lookup yet on a busy GameTest server, and a blow aimed then misses for nothing.
+     * Runs {@code then} once the player's level finds every zombie where it was moved. Only the reach test needs it: its
+     * target stands past foundation_arena, in a chunk that may not be loaded yet.
      */
     private static void whenReachable(GameTestHelper helper, ServerPlayer player, Runnable then, Zombie... zombies) {
         helper.startSequence().thenWaitUntil(() -> {
@@ -91,7 +101,7 @@ public final class CelestialPeakSpearGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_manual")
+    @GameTest(template = "spear_arena", batch = "spear_manual")
     public static void theManualTeachesTheArtWhoseTechniquesNeedASpear(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         MartialData data = MartialService.data(player);
@@ -107,60 +117,56 @@ public final class CelestialPeakSpearGameTests {
         end(helper, player);
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_dragon", timeoutTicks = 100)
+    @GameTest(template = "spear_arena", batch = "spear_dragon", timeoutTicks = 60)
     public static void piercingDragonLungesThroughEveryoneInItsLine(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie near = dummy(helper, player, 0, 2.0), far = dummy(helper, player, 0, 3.6);
-        whenReachable(helper, player, () -> {
-            helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "Piercing Dragon was not cast");
-            tickFor(helper, player, 30);
-            helper.runAfterDelay(32, () -> {
-                helper.assertTrue(near.getHealth() < 200 && far.getHealth() < 200, "The lunge did not go through both: " + near.getHealth() + ", " + far.getHealth());
-                // How far it carries is the client's (a player moves himself): the spear tour measures it, about 4 blocks.
-                helper.assertTrue(QiService.getQi(player) <= 100 - MartialArts.PIERCING_DRAGON.qiCost() + 1, "No Qi spent");
-                end(helper, player, near, far);
-            });
-        }, near, far);
+        helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "Piercing Dragon was not cast");
+        tickFor(helper, player, 30);
+        helper.runAfterDelay(32, () -> {
+            helper.assertTrue(near.getHealth() < 200 && far.getHealth() < 200, "The lunge did not go through both: " + near.getHealth() + ", " + far.getHealth());
+            // How far it carries is the client's (a player moves himself): the spear tour measures it, about 4 blocks.
+            helper.assertTrue(QiService.getQi(player) <= 100 - MartialArts.PIERCING_DRAGON.qiCost() + 1, "No Qi spent");
+            end(helper, player, near, far);
+        });
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_plum", timeoutTicks = 100)
+    @GameTest(template = "spear_arena", batch = "spear_plum", timeoutTicks = 60)
     public static void plumBlossomThrustsStrikeAgainAndAgain(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         MartialService.unlock(player, MartialArts.PLUM_BLOSSOM_THRUSTS);
         MartialService.assign(player, 1, MartialArts.PLUM_BLOSSOM_THRUSTS.id());
         Zombie zombie = dummy(helper, player, 0, 2.6);
-        whenReachable(helper, player, () -> {
-            helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Plum Blossom Thrusts was not cast");
-            float[] after = new float[2];
-            tickFor(helper, player, 40);
-            helper.runAfterDelay(6, () -> after[0] = zombie.getHealth());
-            helper.runAfterDelay(30, () -> {
-                helper.assertTrue(zombie.getHealth() < after[0] && after[0] < 200, "The thrusts did not strike more than once: " + after[0] + " then " + zombie.getHealth());
-                end(helper, player, zombie);
-            });
-        }, zombie);
+        helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Plum Blossom Thrusts was not cast");
+        float[] after = new float[2];
+        tickFor(helper, player, 40);
+        helper.runAfterDelay(6, () -> after[0] = zombie.getHealth());
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(zombie.getHealth() < after[0] && after[0] < 200, "The thrusts did not strike more than once: " + after[0] + " then " + zombie.getHealth());
+            end(helper, player, zombie);
+        });
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_sweep", timeoutTicks = 100)
+    @GameTest(template = "spear_arena", batch = "spear_sweep", timeoutTicks = 60)
     public static void theSweepKnocksDownEveryoneAllRound(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         MartialService.unlock(player, MartialArts.THOUSAND_SOLDIER_SWEEP);
         MartialService.assign(player, 2, MartialArts.THOUSAND_SOLDIER_SWEEP.id());
         Zombie front = dummy(helper, player, 0, 2.5), back = dummy(helper, player, 0, -2.5), side = dummy(helper, player, 2.5, 0);
-        whenReachable(helper, player, () -> {
-            helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "The sweep was not cast");
-            tickFor(helper, player, 30);
-            helper.runAfterDelay(30, () -> {
-                helper.assertTrue(front.getHealth() < 200 && back.getHealth() < 200 && side.getHealth() < 200,
-                        "The sweep missed someone: " + front.getHealth() + ", " + back.getHealth() + ", " + side.getHealth());
-                end(helper, player, front, back, side);
-            });
-        }, front, back, side);
+        helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "The sweep was not cast");
+        tickFor(helper, player, 30);
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(front.getHealth() < 200 && back.getHealth() < 200 && side.getHealth() < 200,
+                    "The sweep missed someone: " + front.getHealth() + ", " + back.getHealth() + ", " + side.getHealth());
+            end(helper, player, front, back, side);
+        });
     }
 
     @GameTest(template = "foundation_arena", batch = "spear_reach", timeoutTicks = 260)
     public static void aThrustAtThePointStrikesHarderThanUpClose(GameTestHelper helper) {
-        ServerPlayer player = adept(helper);
+        // Still where it was, in foundation_arena: on the server a player is not carried through the thrust, which reaches
+        // 3.6 blocks only by the rounding of the player's position to floats, so it does not fit the spear arena yet.
+        ServerPlayer player = adept(helper, new BlockPos(2, 1, 2));
         Zombie atPoint = dummy(helper, player, 0, 3.6);
         helper.assertTrue(CelestialPeakSpear.atReach(player, atPoint), "3.6 blocks out is not at the point");
         float[] dealt = new float[2];
