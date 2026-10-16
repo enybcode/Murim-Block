@@ -57,12 +57,10 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 - **Force** : un boss au-dessus du Bandit Chief et de Sensei Yun, par exemple **400 PV**, des coups à 10-16 dégâts,
   **tous parables** ; une seconde phase sous la moitié de sa vie (plus rapide, la charge plus souvent). Barre de boss
   pourpre et or.
-- **Butin** (choix d'Enzo) : **le coffre du chef** de la grande salle s'ouvre à sa mort ; **un art martial** (un art des
-  poings à créer, par exemple « Poing écrase-montagne », lâché à coup sûr comme le manuel de Sensei Yun) ;
+- **Butin** (choix d'Enzo) : **le coffre du chef** de la grande salle s'ouvre à sa mort ; **un art martial**, le [Poing Brise-Montagne](../combat/styles/mountain-shattering-fist.md) (zone et destruction, ses propres mouvements ; lâché à coup sûr comme le manuel de Sensei Yun) ;
   **du Qi max** à la première victoire (par exemple +40, plus que Sensei Yun).
 
 ## Questions pour Enzo
 
 - Son nom (Bandit Warlord ? un nom chinois ?) et ses couleurs (pourpre et or, ou plus sombre) ?
-- L'art martial qu'il lâche : un nouvel art des poings à concevoir (à partir de ses mouvements), ou le Poing Long ?
 - Sa vie et ses dégâts : plus dur que Sensei Yun ?
