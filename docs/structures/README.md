@@ -1,11 +1,11 @@
 # Structures Murim
 
-
 ## Prévu : un grand camp de bandits (16/10/2026)
 
 Maquettes voxel d'un fort de rondins de 85 blocs de diamètre pour trente bandits : palissade et fossé, porte gardée, quatre tours de guet, grande salle du chef, place du grand feu, dortoirs et tentes, butin, cages, enclos, cercle d'entraînement, avec son plan numéroté : [bandit-camp.md](bandit-camp.md). Rien n'est construit en jeu.
 
 ![Le grand camp de bandits, maquette](images/bandit-camp/overview.jpg)
+
 ## Prévu : la capitale de l'Alliance orthodoxe (15/10/2026)
 
 Maquettes voxel d'une capitale immense sur trois niveaux (ville basse habitée, cité intérieure sur un plateau, Grande Salle au sommet d'une aiguille de 164 blocs), avec son plan numéroté, ses habitants et cinq secrets : [alliance-capital.md](alliance-capital.md). Rien n'est construit en jeu.
