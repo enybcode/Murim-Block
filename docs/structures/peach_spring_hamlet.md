@@ -1,10 +1,5 @@
 # Hameau de la Source aux Fleurs de Pêcher
 
-![Vue aérienne : les maisons de terre autour du pré, les champs, les pêchers](images/sites/peach_spring_hamlet-a.jpg)
-![Vue de l'autre côté](images/sites/peach_spring_hamlet-b.jpg)
-![En arrivant](images/sites/peach_spring_hamlet-ground.jpg)
-![Un homme-crabe et son crabe dans une maison abandonnée](images/sites/peach_spring_hamlet-crab-man.jpg)
-
 | Fiche | |
 |---|---|
 | Nom en jeu (id) | Peach Spring Hamlet (`murimblock:peach_spring_hamlet`) |

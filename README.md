@@ -25,8 +25,6 @@ Sept biomes apportent leurs paysages, leur flore et leurs matériaux :
 Ils s'accompagnent de nouveaux arbres, plantes, roches et sols. Un premier lieu,
 le **Cloud Cliff Sanctuary**, complète ce travail sur le monde.
 
-![Les paysages de Murimblock](docs/biomes/images/biomes-en-jeu.jpg)
-
 ## Affronter Les Créatures
 
 - **Armored Crab** : un crabe cuirassé aux deux pinces animées, présent près de l'eau.

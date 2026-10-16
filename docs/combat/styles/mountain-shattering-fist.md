@@ -154,8 +154,6 @@ cassés **reviennent après 15 secondes** (son choix). Code : `martial/MountainS
 (celles du Seigneur à taille d'homme), icônes `scripts/worldgen/TechniqueIcons.java` (« nuit de pierre »), rouleau
 `scripts/worldgen/ScrollTexture.java`.
 
-![Les icônes : passif, poing, brise-terre, charge, brise-ciel, ultime](images/mountain-fist-icons.png)
-
 | | Qi | Recharge | En jeu |
 |---|---|---|---|
 | **Earthshaker** (passif) | — | — | 30 % de l'attaque à tous à 1,5 bloc de la cible ; mains nues 3× plus rapides sur pierre et bois |
@@ -173,11 +171,6 @@ Condensation** ; le Seigneur des bandits le lâche **toujours**. Rien ne casse d
 le Seigneur est tombé), ni coffre, ni bedrock ; rien n'est lâché.
 
 Filmé en vrai client (`gradlew -PgameTests runMountainFistTour`) :
-
-![Passif](images/mountain-fist-passive.gif) ![Poing écrase-montagne](images/mountain-fist-crusher.gif)
-![Brise-terre](images/mountain-fist-earth_breaker.gif) ![Charge du taureau](images/mountain-fist-bull_charge.gif)
-![Brise-ciel](images/mountain-fist-sky_breaker.gif) ![De l'air](images/mountain-fist-dive.gif)
-![L'ultime](images/mountain-fist-ultimate.gif) ![Le sol revient (15 s)](images/mountain-fist-ground_returns.gif)
 
 **Vérifié** : GameTests `MountainShatteringFistGameTests` (rouleau et royaume, mains nues, cône et mur brisé,
 brise-terre tout autour et cratère qui revient, secret qui projette, atterrissage de l'ultime), `BanditWarlordGameTests`

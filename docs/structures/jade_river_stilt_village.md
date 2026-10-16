@@ -1,10 +1,5 @@
 # Village sur pilotis de la rivière de Jade
 
-![Vue aérienne en jeu](images/sites/jade_river_stilt_village-a.jpg)
-![L'autre côté du village](images/sites/jade_river_stilt_village-b.jpg)
-![En arrivant par la porte du sud](images/sites/jade_river_stilt_village-ground.jpg)
-![Le cuisinier chez lui](images/sites/jade_river_stilt_village-villager.jpg)
-
 | Fiche | |
 |---|---|
 | Nom en jeu (id) | Jade River Stilt Village (`murimblock:jade_river_stilt_village`) |

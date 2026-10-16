@@ -12,8 +12,6 @@
 > images et GIF de cette fiche (`docs/mobs/images/warlord-*`). Il est fait sur le squelette humain d'Epic Fight, comme le
 > Bandit Chief : la maquette passera telle quelle dans le jeu.
 
-![Le Seigneur des bandits](images/warlord-three.png) ![De face](images/warlord-front.png)
-
 ## L'allure
 
 - **Une montagne de muscles**, dessinée **deux fois la taille d'un homme** en jeu (environ 3,6 blocs de haut) : un
@@ -24,10 +22,6 @@
   lamelles pourpres, d'immenses **épaulières évasées de laque pourpre** bordées d'or.
 - **Les bras** : énormes et nus, des brassards de fer, **les poings bandés de tissu blanc**. Il n'a pas d'arme.
 - Une **ceinture d'étoffe rouge** nouée devant, un pantalon sombre et ample, des bottes ferrées.
-
-![Sa taille, à côté d'un bandit](images/warlord-size.png)
-
-![Le visage](images/warlord-face.png) ![De dos](images/warlord-back.png)
 
 ## Ses mouvements
 
@@ -42,20 +36,10 @@
 | **Charge du taureau** (`bull_charge`) | 1,6 s | L'épaule baissée, une course de quatre blocs, l'impact | Pour rattraper un joueur qui recule ; renverse |
 | **Brise-ciel** (`sky_breaker`) | 1,15 s | Accroupi bas, un uppercut qui monte en se dressant sur la pointe des pieds | Projette la cible en l'air |
 
-![La chute](images/warlord-sky_fall.gif) ![Le rugissement](images/warlord-roar.gif) ![Poing écrase-montagne](images/warlord-mountain_crusher.gif)
-
-![Brise-terre](images/warlord-earth_breaker.gif) ![Brise-ciel](images/warlord-sky_breaker.gif)
-
-![Charge du taureau, de profil](images/warlord-bull_charge-side.gif) ![Repos](images/warlord-idle.gif) ![Marche](images/warlord-walk.gif)
-
-Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](images/warlord-earth_breaker-side.gif),
-[brise-ciel](images/warlord-sky_breaker-side.gif).
+Profils : poing, brise-terre,
+brise-ciel.
 
 ## En jeu (16/10/2026, « reprends le boss »)
-
-![Sa chute, filmée en jeu](images/warlord-entrance.gif)
-
-![Il descend, vu d'en haut](images/warlord-game-fall.jpg) ![Il se relève et rugit](images/warlord-game-roar.jpg)
 
 - **`murimblock:bandit_warlord`** (`BanditWarlordEntity`, `BanditWarlordPatch`, `BanditWarlordAnimations`,
   `client/BanditWarlordRenderer`) : son modèle 3D et ses mouvements sortent de `bandit-warlord-3d.cjs` (maillage
@@ -94,7 +78,6 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
   ([la chute et le cratère](../structures/bandit-camp.md#la-chute-et-le-cratère-maquette-du-1610-à-valider)).
   C'est l'ultime de son art. Il ne revient pas : un camp libéré le reste.
 
-![Sa chute sur le camp](../structures/images/bandit-camp/fall.jpg)
 - **Force** : un boss au-dessus du Bandit Chief et de Sensei Yun, par exemple **400 PV**, des coups à 10-16 dégâts,
   **tous parables** ; une seconde phase sous la moitié de sa vie (plus rapide, la charge plus souvent). Barre de boss
   pourpre et or.
@@ -113,8 +96,6 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 > [`art/structures/warlord-sky-arena/warlord_sky_arena.schem`](../../art/structures/warlord-sky-arena/README.md)
 > (WorldEdit Sponge v3, blocs vanilla), généré par `node scripts/worldgen/warlord-sky-arena.cjs`.
 
-![Le météore creusé au-dessus de la mer de nuages](images/warlord-sky-arena/overview.jpg)
-
 - **Un météore flottant** d'environ **170 blocs de large** et 150 de haut, en basalte noir et roche brûlée, veiné de
   lave qui rougeoie ; dessous, un cône rugueux d'où pendent des coulées de roche en fusion. Des blocs arrachés par la
   chute dérivent autour. Très loin dessous, une mer de nuages.
@@ -125,12 +106,6 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
   rayonnent sur le sol.
 - **Autour du sol**, 12 braseros de bronze. **Sur le bord**, 34 pics de roche, certains penchés vers l'extérieur, et
   6 grandes bannières pourpre et or du Seigneur.
-
-![Depuis le bord](images/warlord-sky-arena/rim.jpg)
-![Sur le sol de combat, à hauteur de joueur](images/warlord-sky-arena/floor.jpg)
-
-![Plan : 1 la cicatrice, 2 le sol de combat, 3 un brasero, 4 les parois de la cuvette, 5 les pics et les bannières du bord](images/warlord-sky-arena/plan.jpg)
-![Dessous](images/warlord-sky-arena/below.jpg)
 
 **Propositions pour le jeu (à décider)** :
 - **Comment on y monte** : sous la moitié de sa vie, il rugit, frappe le fond du cratère d'un Brise-ciel, et la
@@ -148,9 +123,6 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 > touchent le sol » ; « vraiment un mec musclé, pas juste des gros blocs » (sa référence : de grands volumes, les muscles
 > peints) ; « fais son propre squelette ». Son art en seconde phase : le **Poing du Majin**, attaque par attaque.
 
-![Le colosse, de trois quarts](images/warlord-avatar-three.png) ![De face](images/warlord-avatar-front.png)
-![À côté de la première phase](images/warlord-avatar-beside.png)
-
 - **Le colosse** : ses jambes à lui (pantalon sombre, bottes ferrées), doublées, et à la place du haut un colosse de Qi
   doré jailli de sa ceinture : le double de son haut du corps, les muscles peints en dégradés d'or (pectoraux, abdominaux,
   côtes, dos), une petite tête enfoncée entre les trapèzes, la gueule ouverte sur ses crocs, les cheveux d'un Super
@@ -158,8 +130,6 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 - **Son propre squelette** : les articulations du squelette humain, déplacées à ses proportions (hanches, genoux au
   milieu des jambes, poitrine, cou sur les trapèzes, épaules dans les deltoïdes, coudes, poings) ; les noms et les axes ne
   changent pas, ses poses se lisent comme celles du Seigneur. `scripts/animation/warlord-avatar-3d.cjs`.
-
-![Repos](images/warlord-avatar-idle.gif) ![Marche](images/warlord-avatar-walk.gif) ![Marche, de profil](images/warlord-avatar-walk-side.gif)
 
 ### La cinématique de transformation (30 s)
 
@@ -171,18 +141,16 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 
 | Plan | Temps | Ce qu'on voit | Maquette |
 |---|---|---|---|
-| 1 | 0 – 2 s | Sa vie tombe à zéro : **tout le monde est figé** (le temps ralentit, les couleurs pâlissent). Lui, à genoux, vaincu, la tête basse. Caméra basse. | [transformation](images/warlord-transform.gif) |
+| 1 | 0 – 2 s | Sa vie tombe à zéro : **tout le monde est figé** (le temps ralentit, les couleurs pâlissent). Lui, à genoux, vaincu, la tête basse. Caméra basse. | transformation |
 | 2 | 2 – 4 s | D'un coup, il lève le poing et **frappe le sol** : onde de choc, fissures dorées dans le fond du cratère, la caméra tremble. | idem |
 | 3 | 4 – 6 s | Debout, il **se frappe la tête** de ses deux poings, trois fois ; gros plan sur son visage, un éclair à chaque coup, des battements de cœur. | idem |
 | 4 | 6 – 10 s | **Comme Hulk** : il se cambre en hurlant, les bras jetés en arrière, son corps **gonfle**, sa cuirasse éclate (des plaques volent), une lumière dorée fuit des fissures de sa peau ; la caméra tourne autour de lui. | idem |
 | 5 | 10 – 12 s | **Éclair blanc et or** : le colosse jaillit de lui (le modèle change). | — |
-| 6 | 12 – 16 s | Le colosse **rugit**, les bras écartés, puis **se frappe le torse comme un gorille**, huit coups, un anneau de choc à chacun. | [éveil](images/warlord-avatar-awaken.gif), [torse](images/warlord-avatar-chest_beat.gif) |
+| 6 | 12 – 16 s | Le colosse **rugit**, les bras écartés, puis **se frappe le torse comme un gorille**, huit coups, un anneau de choc à chacun. | éveil, torse |
 | 7 | 16 – 19 s | **L'aura dorée** s'allume : des colonnes de lumière d'or montent autour de lui, ses cheveux flambent ; **le sol tremble**, les fissures courent dans tout le cratère. | — |
 | 8 | 19 – 23 s | **Le sol se soulève** : plan large depuis l'extérieur du camp, le cratère s'arrache de la terre avec tout le monde dessus, des rochers en tombent. | — |
-| 9 | 23 – 27 s | **Gros plan sur l'île qui monte** : la caméra la suit de près dans la montée, à travers les nuages ; elle devient le **météore** de basalte veiné de lave et perce au-dessus de la mer de nuages. | ![](images/warlord-sky-arena/rising.png) |
-| 10 | 27 – 30 s | Vue d'en haut sur la cuvette du météore, le colosse au centre ; **« SON OF THE DEMON »** s'écrit en grand au-dessus de sa barre de vie ; le combat commence. | ![](images/warlord-title-card.png) |
-
-![Le début de la transformation](images/warlord-transform.gif) ![Le gorille](images/warlord-avatar-chest_beat.gif)
+| 9 | 23 – 27 s | **Gros plan sur l'île qui monte** : la caméra la suit de près dans la montée, à travers les nuages ; elle devient le **météore** de basalte veiné de lave et perce au-dessus de la mer de nuages. |  |
+| 10 | 27 – 30 s | Vue d'en haut sur la cuvette du météore, le colosse au centre ; **« SON OF THE DEMON »** s'écrit en grand au-dessus de sa barre de vie ; le combat commence. |  |
 
 **En jeu (proposition)** : la montée est une illusion de caméra. Le météore est construit dans le ciel au-dessus du camp
 (vers y 230) pendant les plans 1 à 7 (réparti sur les ticks, comme le cratère) ; pendant le plan 9, quand la caméra

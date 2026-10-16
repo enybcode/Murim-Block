@@ -13,8 +13,6 @@
 > Scripts : `node scripts/animation/tiger-model.cjs` (modèle et texture), `node scripts/animation/tiger-animations.cjs`
 > (animations et GIF, Blockbench isolé), `node scripts/concepts/tiger-preview.cjs` (images fixes).
 
-![Le tigre](images/tiger-three.png)
-
 ## Le modèle
 
 25 cubes à un texel par pixel, comme les mobs de Minecraft ; environ 4,4 blocs du museau au bout de la queue, le dos à
@@ -24,8 +22,6 @@ serrées en escalier qui se fourchent, pattes baguées, ventre, poitrail, museau
 
 ## En jeu
 
-![Le tigre en jeu, au repos](images/tiger-ingame-idle.gif) ![Le déchirement en jeu](images/tiger-ingame-maul.gif)
-
 - **Où** : uniquement dans la **région du centre** de la carte Murim (n'importe quel biome Murim), au sol à ciel
   ouvert, **de jour comme de nuit** ; par un ou deux ; jamais en Paisible (`TigerEntity.checkTigerSpawnRules`,
   `neoforge/biome_modifier/tiger_spawns.json`, poids 25). Un œuf d'apparition dans l'onglet Murimblock.
@@ -34,8 +30,6 @@ serrées en escalier qui se fourchent, pattes baguées, ventre, poitrail, museau
   de 3,5 à 7 blocs, s'il voit sa proie, le **bond** (il est vraiment projeté en avant, recharge 8 s). Coups parables.
 - **Butin** : **sa peau** (Tiger Pelt) et **ses griffes** (Tiger Claw), **20 % chacune**, indépendamment
   (`loot_table/entities/tiger.json`) ; 5 points d'expérience.
-
-![Peau et griffe de tigre](images/tiger-items.png)
 
 Les icônes (16 × 16, `scripts/animation/tiger-item-icons.cjs`) : la peau étalée comme un tapis vue de dessus (tête au
 museau blanc et nez rose, pattes écartées, dos rayé, queue) ; une grande griffe d'ivoire recourbée, sa racine sombre,
@@ -70,13 +64,7 @@ Toutes parables avec la garde Murim, comme celles des bandits. Dégâts à parti
 | **Bond** (`pounce`) | 1,6 s | Il s'accroupit, bondit en avant pattes tendues et gueule ouverte, retombe sur les pattes avant | 10 | De 4 à 7 blocs, pour fondre sur sa cible ; recharge 8 s |
 | **Déchirement** (`maul`) | 1,8 s | Il se ramasse, se cabre en rugissant, la patte haute, et l'abat | 12 et recul | Rare ; lent, donc facile à voir venir et à parer |
 
-![Coup de griffe](images/tiger-swipe.gif) ![Morsure](images/tiger-bite.gif)
-
-![Double griffe](images/tiger-double_swipe.gif) ![Bond, de profil](images/tiger-pounce-side.gif)
-
-![Déchirement](images/tiger-maul.gif)
-
-Aussi : repos ([GIF](images/tiger-idle.gif)) et marche ([GIF](images/tiger-walk.gif), [profil](images/tiger-walk-side.gif)).
+Aussi : repos (GIF) et marche (GIF, profil).
 
 ## Questions pour Enzo
 

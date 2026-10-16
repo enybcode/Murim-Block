@@ -1,10 +1,5 @@
 # Temple taoïste de la Mer de Bambous brumeuse
 
-![Vue aérienne : les trois terrasses](images/sites/misty_bamboo_temple-a.jpg)
-![Vue de l'arrière](images/sites/misty_bamboo_temple-b.jpg)
-![Devant la porte de la montagne](images/sites/misty_bamboo_temple-ground.jpg)
-![Sensei Yun dans la salle des Trois Purs](images/sites/misty_bamboo_temple-sensei.jpg)
-
 | Fiche | |
 |---|---|
 | Nom en jeu (id) | Misty Bamboo Temple (`murimblock:misty_bamboo_temple`) |

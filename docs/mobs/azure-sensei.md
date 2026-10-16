@@ -5,8 +5,6 @@ taoïste de la Mer de Bambous brumeuse (`misty_bamboo_temple`, fiche `docs/struc
 Hall des Trois Purs, entre l'autel et les coussins, face aux portes. Aussi par œuf (`Sensei Yun Spawn Egg`) ou
 `/summon murimblock:azure_sensei`.
 
-![Sensei Yun en jeu](images/sensei-ingame.png)
-
 ## Allure
 
 Modèle 3D sur le squelette biped d'Epic Fight (`scripts/animation/sensei-3d.cjs`, 63 pièces) :
@@ -68,8 +66,6 @@ en tête de nuage (ruyi) à saphir, longue houppe azur à perle de jade blanc. I
   l'avant-bras et la houppe avec. Décalée, la poignée est dans le poing, le pommeau dépasse derrière la manche et la
   houppe pend librement (`checkHold()` l'affiche à chaque génération). En combat, les coups M1 reprennent la tenue
   standard : la poignée y est sous la manche.
-
-![La garde et la houppe derrière le poing](images/sensei-ingame-hilt.png)
 
 ## Fichiers
 

@@ -8,8 +8,6 @@ Il lâchera le rouleau de l'art du crabe, et se battra avec ses techniques, quan
 à choisir avec Enzo). Son allure suit le concept retenu, stade 3 « Roi crabe »
 (`scripts/concepts/crab-art-pixel.cjs`, `docs/combat/styles/images/crab-pixel-*`).
 
-![De face](images/crab_king-front.png) ![De dos](images/crab_king-back.png)
-
 ## Allure
 
 Deux fois plus grand qu'un homme (15/10, demande d'Enzo) : 4 blocs de haut pour le corps, la carapace et ses pointes
