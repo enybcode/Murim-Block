@@ -184,11 +184,35 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 
 ![Le début de la transformation](images/warlord-transform.gif) ![Le gorille](images/warlord-avatar-chest_beat.gif)
 
-**En jeu (proposition)** : la montée est une illusion de caméra. Le météore est construit dans le ciel au-dessus du camp
-(vers y 230) pendant les plans 1 à 7 (réparti sur les ticks, comme le cratère) ; pendant le plan 9, quand la caméra
-traverse les nuages, les joueurs et le colosse sont portés dans sa cuvette ; le cratère du camp, en bas, reste tel quel.
-Pendant les 30 s, personne ne bouge ni ne prend de coups. Le titre « Son of the Demon », petit, remplace son nom au-dessus
-de la barre de boss pour toute la seconde phase (Enzo : sans « Bandit Warlord », bien plus petit).
+**En jeu (validé par Enzo le 16/10, en place)** : `WarlordTransformation` (serveur, 600 ticks) et
+`client/TransformationCinematic` (les 10 plans), `TransformationPayload`.
+
+- Un coup qui devrait le tuer lance la transformation à la place (`BanditWarlordEntity.die`). Seuls /kill et le vide
+  le tuent vraiment. Pendant 30 s, les joueurs à 64 blocs ne bougent plus et ne prennent pas de coups. Lui non plus :
+  il n'a plus de cible et sa barre disparaît.
+- Animation `warlord_transform` (10 s). Le rendu le fait **gonfler jusqu'à 1,6 fois** pendant le cri, et une lumière dorée sort de lui.
+- **Les sons**, tous de Minecraft, superposés et graves :
+  - figé : battement de cœur, balise qui s'éteint ;
+  - sol frappé : explosion, enclume ;
+  - tête frappée, trois fois : enclume, battement de cœur ;
+  - **le cri terrifiant** : ravageur, warden, dragon de l'End et wither en couches, des battements qui accélèrent ;
+  - armure qui éclate : objet brisé et explosion ;
+  - éclair : tonnerre, foudre, balise ;
+  - rugissement du colosse ;
+  - huit coups sur le torse : choc du warden et enclume ;
+  - aura : balise, souffle de blaze, pas lourds ;
+  - terre arrachée : explosions, deepslate, émergence du warden, rochers projetés ;
+  - **vent de la montée** : élytres, côté client ;
+  - titre : dragon et apparition du wither.
+- **Le colosse** (`SonOfTheDemonEntity`, 500 PV, armure 14, ~7,6 blocs) apparaît à l'éclair, plan 5, sur son propre
+  squelette (`ColossusAnimations`), puis s'éveille et se frappe le torse.
+- **L'arène** (le `.schem` de la session armes, `data/murimblock/schematics/warlord_sky_arena.schem`, `SkyArena`) est
+  posée au-dessus du centre du camp, le sol de combat à y 250 : 1 475 785 blocs, 8 000 par tick, donc environ 9 s.
+- Au tick 500, pendant que la caméra traverse les nuages, les joueurs sont posés en cercle à 22 blocs du colosse, face à
+  lui, avec Chute lente. Au tick 540, sa barre apparaît, titrée « Son of the Demon ». Au tick 600, le combat commence.
+- Le rouleau du Poing Brise-Montagne et la récompense de boss passent au Fils du Démon : butin `son_of_the_demon`,
+  premier triomphe +60 Qi Max.
+- Tests : `SonOfTheDemonGameTests`. Film : `gradlew -PgameTests runTransformTour`.
 
 ## Questions pour Enzo
 

@@ -333,10 +333,36 @@ const ANIMS = { idle, walk, roar, mountain_crusher, earth_breaker, bull_charge, 
 const dive = [{ t: 0, pose: { ...DIVE(HIP), Arm_L: [['x', 160], ['z', -30]] } }, { t: 0.4, pose: { ...DIVE(HIP), Arm_L: [['x', 140], ['z', -40]] } },
   { t: 0.8, pose: { ...DIVE(HIP), Arm_L: [['x', 160], ['z', -30]] } }];
 const land = sky_fall.filter(k => k.t >= 0.52).map(k => ({ t: Math.round((k.t - 0.52) * 1000) / 1000, pose: k.pose }));
+/**
+ * In game (WarlordTransformation), 14.3 s: the head struck, then his heart's shot (Enzo, 16/10/2026: "a shot on his heart
+ * that stops, turns yellow and beats again"), 4.3 s: he freezes, hunched, a hand clawing at his chest; its last red beats
+ * jolt him, it stops (he sags, still), then at each golden beat he jerks upright a little more; then the scream, as
+ * before, lasting to the flash at 14.3 s (WarlordTransformation.SWAP).
+ */
+const CLUTCH = (k, sag = 0) => ({ ...REST(), Torso: [['x', 22 + sag - 6 * k]], Chest: [['x', 8 + sag / 2]], Head: [['x', 30 + sag - 14 * k]],
+  Arm_R: [['x', 72], ['y', 38]], Hand_R: [['x', 64]], Arm_L: [['x', 18 + sag], ['z', -8]], Hand_L: [['x', 20]],
+  Thigh_R: [['x', -6 - sag / 2]], Leg_R: [['x', 10 + sag]], Thigh_L: [['x', -6 - sag / 2]], Leg_L: [['x', 10 + sag]] });
+const HEART_AT = 5.0, HEART_LEN = 4.3;
+const GAME_TRANSFORM = [
+  ...transform.filter(k => k.t <= 4.6),
+  { t: 4.85, pose: CLUTCH(0) },
+  // Its last red beats (WarlordTransformation.HEART_BEATS: 104, 116, 130 ticks), each a jolt.
+  ...[5.2, 5.8, 6.5].flatMap(b => [{ t: b, pose: CLUTCH(0.6) }, { t: b + 0.15, pose: CLUTCH(0) }]),
+  // It stops (142): he sags, still, until it turns to gold (158).
+  { t: 7.1, pose: CLUTCH(0, 8) }, { t: 7.9, pose: CLUTCH(0, 9) },
+  // The golden beats (168, 174, 180): he jerks up, more each time.
+  { t: 8.4, pose: CLUTCH(1.0, 4) }, { t: 8.55, pose: CLUTCH(0.4, 4) }, { t: 8.7, pose: CLUTCH(1.4, 0) }, { t: 8.85, pose: CLUTCH(0.8, 0) },
+  { t: 9.0, pose: CLUTCH(2.0, -4) },
+  ...transform.filter(k => k.t >= 5.0 && k.t < 8.0).map(k => ({ t: Math.round((k.t + HEART_LEN) * 1000) / 1000, pose: k.pose })),
+  ...[8.0, 8.4, 8.8, 9.2, 9.6].map((t, i) => ({ t: t + HEART_LEN, pose: SCREAM([6, -7, 7, -8, 8][i]) })),
+  { t: 10.0 + HEART_LEN, pose: SCREAM(0) },
+];
+
 /** The game's animations: name in game, keys. */
 const GAME = { warlord_idle: idle, warlord_walk: walk, warlord_roar: roar, warlord_crusher: mountain_crusher,
   warlord_earth_breaker: earth_breaker, warlord_bull_charge: bull_charge, warlord_sky_breaker: sky_breaker,
-  warlord_dive: dive, warlord_land: land, warlord_collapse: collapse, warlord_leap: leap, warlord_leap_land: leap_land };
+  warlord_dive: dive, warlord_land: land, warlord_collapse: collapse, warlord_leap: leap, warlord_leap_land: leap_land,
+  warlord_transform: GAME_TRANSFORM };
 const LOOPS = { idle: 'loop', walk: 'loop' };
 
 // ---------------------------------------------------------------- the project

@@ -41,8 +41,16 @@ public final class BanditWarlordRenderer extends HumanoidMobRenderer<BanditWarlo
         super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 1.3F);
     }
 
+    /** His skin tearing as he transforms: three stages, golden light through ever wider cracks (WarlordTransformation.TEARS). */
+    static final ResourceLocation[] TEARS = {
+            ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/bandit_warlord_tear_1.png"),
+            ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/bandit_warlord_tear_2.png"),
+            ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/bandit_warlord_tear_3.png")};
+
     @Override public ResourceLocation getTextureLocation(BanditWarlordEntity warlord) {
-        return TEXTURE;
+        int t = warlord.transformTicks(), stage = 0;
+        for (int tear : com.murimblock.world.structure.site.WarlordTransformation.TEARS) if (t >= tear) stage++;
+        return stage == 0 ? TEXTURE : TEARS[stage - 1];
     }
 
     @SubscribeEvent
@@ -57,6 +65,14 @@ public final class BanditWarlordRenderer extends HumanoidMobRenderer<BanditWarlo
         }
     }
 
+    /** His body swelling while he screams (WarlordTransformation: from the scream to the flash), like Hulk: up to 1.6 times. */
+    static float swell(float ticks) {
+        int from = com.murimblock.world.structure.site.WarlordTransformation.SCREAM, to = com.murimblock.world.structure.site.WarlordTransformation.SWAP;
+        if (ticks < from) return 1;
+        float k = Math.min(1, (ticks - from) / (to - from));
+        return 1 + 0.6F * k * k;
+    }
+
     /** Epic Fight's humanoid renderer on his mesh, scaled up about his feet. */
     static final class Patched extends PHumanoidRenderer<BanditWarlordEntity, BanditWarlordPatch, PlayerModel<BanditWarlordEntity>, BanditWarlordRenderer, HumanoidMesh> {
         Patched(EntityRendererProvider.Context context, EntityType<?> type) {
@@ -67,13 +83,17 @@ public final class BanditWarlordRenderer extends HumanoidMobRenderer<BanditWarlo
         public void render(BanditWarlordEntity warlord, BanditWarlordPatch patch, BanditWarlordRenderer renderer, MultiBufferSource buffers,
                            PoseStack poseStack, int light, float partialTicks) {
             IdlePhase.desync(warlord, patch, BanditWarlordAnimations.IDLE);
+            // His transformation: from the scream on, golden light leaks out of him (WarlordTransformation.SCREAM).
+            int t = warlord.transformTicks();
+            if (t >= com.murimblock.world.structure.site.WarlordTransformation.SCREAM) light = net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
             super.render(warlord, patch, renderer, buffers, poseStack, light, partialTicks);
         }
 
         @Override
         public void mulPoseStack(PoseStack poseStack, Armature armature, BanditWarlordEntity warlord, BanditWarlordPatch patch, float partialTicks) {
             super.mulPoseStack(poseStack, armature, warlord, patch, partialTicks);
-            poseStack.scale(SCALE, SCALE, SCALE);
+            float k = SCALE * swell(warlord.transformTicks() < 0 ? -1 : warlord.transformTicks() + partialTicks);
+            poseStack.scale(k, k, k);
         }
     }
 }

@@ -274,6 +274,16 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: the same, then a killing blow: his transformation into the Son of the Demon and the arena in the sky (see WarlordTour).
+        transformTour {
+            client()
+            gameDirectory = project.file('build/transform-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            systemProperty 'murimblock.transformTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a film of the Mountain-Shattering Fist's techniques in a real client (see MountainFistTour).
         mountainFistTour {
             client()

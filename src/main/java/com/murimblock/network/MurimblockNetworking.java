@@ -58,5 +58,7 @@ public final class MurimblockNetworking {
         });
         registrar.playToClient(WarlordEntrancePayload.TYPE, WarlordEntrancePayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.WarlordCinematic.start(payload.plaza(), payload.drum()));
+        registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }
 }

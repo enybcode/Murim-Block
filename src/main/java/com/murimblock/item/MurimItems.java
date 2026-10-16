@@ -44,6 +44,9 @@ public final class MurimItems {
      */
     public static final DeferredItem<Item> TIGER_PELT = ITEMS.register("tiger_pelt", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<Item> TIGER_CLAW = ITEMS.register("tiger_claw", () -> new Item(new Item.Properties()));
+    /** The Bandit Warlord's heart, a block of flesh, and the same turned to gold: seen in his transformation's film (client/TransformationCinematic). */
+    public static final DeferredItem<Item> DEMON_HEART = ITEMS.register("demon_heart", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GOLDEN_DEMON_HEART = ITEMS.register("golden_demon_heart", () -> new Item(new Item.Properties().rarity(net.minecraft.world.item.Rarity.EPIC)));
 
     /**
      * The mountain bandits' sabre: a broad single-edged blade widening toward a clipped point, a brass guard, a grip
@@ -93,6 +96,8 @@ public final class MurimItems {
     /** The warlord's crimson lacquer and black iron. */
     public static final DeferredItem<DeferredSpawnEggItem> BANDIT_WARLORD_SPAWN_EGG = ITEMS.register("bandit_warlord_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_WARLORD, 0x9C1F1A, 0x2E3036, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> SON_OF_THE_DEMON_SPAWN_EGG = ITEMS.register("son_of_the_demon_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.SON_OF_THE_DEMON, 0xE8B53A, 0x2E3036, new Item.Properties()));
 
     /** Ash-grey robe and the red of the bandits' headbands. */
     public static final DeferredItem<DeferredSpawnEggItem> MOUNTAIN_BANDIT_SPAWN_EGG = ITEMS.register("mountain_bandit_spawn_egg",
@@ -280,6 +285,7 @@ public final class MurimItems {
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
                         output.accept(BANDIT_WARLORD_SPAWN_EGG.get());
+                        output.accept(SON_OF_THE_DEMON_SPAWN_EGG.get());
                         output.accept(CRAB_KING_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(ALLIANCE_SPEAR.get());

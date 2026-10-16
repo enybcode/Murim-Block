@@ -126,6 +126,10 @@ public final class QiRewardManager {
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_warlord"))) {
             return new RewardTarget(entityTypeId, baseReward, 150, entityTypeId, null, originMultiplier);
         }
+        // The Son of the Demon, the Warlord's second phase: the true victory over him.
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "son_of_the_demon"))) {
+            return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null, originMultiplier);
+        }
         // Sensei Yun, the Azure Cloud's master: the first victory over him counts (and gives its Qi Max).
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) {
             return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null, originMultiplier);
@@ -152,6 +156,9 @@ public final class QiRewardManager {
         }
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_warlord"))) {
             return new RewardTarget(entityTypeId, baseReward, 150, entityTypeId, null);
+        }
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "son_of_the_demon"))) {
+            return new RewardTarget(entityTypeId, baseReward, 250, entityTypeId, null);
         }
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) {
             return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null);
@@ -181,6 +188,7 @@ public final class QiRewardManager {
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "mountain_bandit"))) return 4;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_chief"))) return 20;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "bandit_warlord"))) return 40;
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "son_of_the_demon"))) return 60;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) return 30;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_king"))) return 30;
         return FIXED_REWARDS.getOrDefault(type, 1);
