@@ -137,6 +137,55 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 - **Le sol de combat** pourrait se fissurer de plus en plus à chaque Brise-terre (les fissures s'élargissent), jusqu'à
   la fin du combat.
 
+## Seconde phase : le Fils du Démon (maquette du 16/10, à valider)
+
+> Demandes d'Enzo : « une deuxième phase : on coupe tout le haut, il n'y a que ses jambes, et à la place, ça » (un géant
+> doré dressé derrière un gardien) ; des cheveux « plus Super Saiyan » ; « le double de son ancien corps, sans que les bras
+> touchent le sol » ; « vraiment un mec musclé, pas juste des gros blocs » (sa référence : de grands volumes, les muscles
+> peints) ; « fais son propre squelette ». Son art en seconde phase : le **Poing du Majin**, attaque par attaque.
+
+![Le colosse, de trois quarts](images/warlord-avatar-three.png) ![De face](images/warlord-avatar-front.png)
+![À côté de la première phase](images/warlord-avatar-beside.png)
+
+- **Le colosse** : ses jambes à lui (pantalon sombre, bottes ferrées), doublées, et à la place du haut un colosse de Qi
+  doré jailli de sa ceinture : le double de son haut du corps, les muscles peints en dégradés d'or (pectoraux, abdominaux,
+  côtes, dos), une petite tête enfoncée entre les trapèzes, la gueule ouverte sur ses crocs, les cheveux d'un Super
+  Saiyan ; les poings pendent à ses hanches. Environ **7 blocs** de haut en jeu (la première phase : 3,9).
+- **Son propre squelette** : les articulations du squelette humain, déplacées à ses proportions (hanches, genoux au
+  milieu des jambes, poitrine, cou sur les trapèzes, épaules dans les deltoïdes, coudes, poings) ; les noms et les axes ne
+  changent pas, ses poses se lisent comme celles du Seigneur. `scripts/animation/warlord-avatar-3d.cjs`.
+
+![Repos](images/warlord-avatar-idle.gif) ![Marche](images/warlord-avatar-walk.gif) ![Marche, de profil](images/warlord-avatar-walk-side.gif)
+
+### La cinématique de transformation (30 s)
+
+> « Quand il va mourir, tout le monde va être stun, et d'un seul coup il va frapper le sol avant de se frapper la tête et
+> se transformer de la même façon que Hulk ; une cinématique de 30 secondes. Une fois transformé il va se mettre à crier
+> et se frapper le torse comme un gorille, puis il aura une aura dorée, et le sol va se soulever et donner l'arène. Un
+> gros plan de l'île qui monte et qui arrive au-dessus des nuages, puis le combat commence, avec marqué en gros *le fils
+> du démon*, au-dessus de sa barre de vie : c'est son titre de la phase deux. »
+
+| Plan | Temps | Ce qu'on voit | Maquette |
+|---|---|---|---|
+| 1 | 0 – 2 s | Sa vie tombe à zéro : **tout le monde est figé** (le temps ralentit, les couleurs pâlissent). Lui, à genoux, vaincu, la tête basse. Caméra basse. | [transformation](images/warlord-transform.gif) |
+| 2 | 2 – 4 s | D'un coup, il lève le poing et **frappe le sol** : onde de choc, fissures dorées dans le fond du cratère, la caméra tremble. | idem |
+| 3 | 4 – 6 s | Debout, il **se frappe la tête** de ses deux poings, trois fois ; gros plan sur son visage, un éclair à chaque coup, des battements de cœur. | idem |
+| 4 | 6 – 10 s | **Comme Hulk** : il se cambre en hurlant, les bras jetés en arrière, son corps **gonfle**, sa cuirasse éclate (des plaques volent), une lumière dorée fuit des fissures de sa peau ; la caméra tourne autour de lui. | idem |
+| 5 | 10 – 12 s | **Éclair blanc et or** : le colosse jaillit de lui (le modèle change). | — |
+| 6 | 12 – 16 s | Le colosse **rugit**, les bras écartés, puis **se frappe le torse comme un gorille**, huit coups, un anneau de choc à chacun. | [éveil](images/warlord-avatar-awaken.gif), [torse](images/warlord-avatar-chest_beat.gif) |
+| 7 | 16 – 19 s | **L'aura dorée** s'allume : des colonnes de lumière d'or montent autour de lui, ses cheveux flambent ; **le sol tremble**, les fissures courent dans tout le cratère. | — |
+| 8 | 19 – 23 s | **Le sol se soulève** : plan large depuis l'extérieur du camp, le cratère s'arrache de la terre avec tout le monde dessus, des rochers en tombent. | — |
+| 9 | 23 – 27 s | **Gros plan sur l'île qui monte** : la caméra la suit de près dans la montée, à travers les nuages ; elle devient le **météore** de basalte veiné de lave et perce au-dessus de la mer de nuages. | ![](images/warlord-sky-arena/rising.png) |
+| 10 | 27 – 30 s | Vue d'en haut sur la cuvette du météore, le colosse au centre ; **« SON OF THE DEMON »** s'écrit en grand au-dessus de sa barre de vie ; le combat commence. | ![](images/warlord-title-card.png) |
+
+![Le début de la transformation](images/warlord-transform.gif) ![Le gorille](images/warlord-avatar-chest_beat.gif)
+
+**En jeu (proposition)** : la montée est une illusion de caméra. Le météore est construit dans le ciel au-dessus du camp
+(vers y 230) pendant les plans 1 à 7 (réparti sur les ticks, comme le cratère) ; pendant le plan 9, quand la caméra
+traverse les nuages, les joueurs et le colosse sont portés dans sa cuvette ; le cratère du camp, en bas, reste tel quel.
+Pendant les 30 s, personne ne bouge ni ne prend de coups. Le titre « Son of the Demon » remplace son nom sur la barre de
+boss pour toute la seconde phase.
+
 ## Questions pour Enzo
 
 - Son nom (Bandit Warlord ? un nom chinois ?) et ses couleurs (pourpre et or, ou plus sombre) ?

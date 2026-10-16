@@ -302,7 +302,32 @@ const leap_land = [
   { t: 1.1, pose: REST() },
 ];
 
-const ANIMS = { idle, walk, roar, mountain_crusher, earth_breaker, bull_charge, sky_breaker, sky_fall, collapse, leap, leap_land };
+/**
+ * The transformation's start (Enzo, 16/10/2026: "when he dies everyone is stunned, and all at once he strikes the ground,
+ * then strikes his own head, and transforms like Hulk"): down on his knees, beaten, still; the fist raised and driven into
+ * the ground; up, both fists beaten against his own head three times; then thrown back, arms flung out, roaring, shaking,
+ * his body swelling (a scale on the root, TRANSFORM_SWELL) until the colossus bursts out of him. 8 s.
+ */
+const BEATEN = { ...LANDED(-14), Head: [['x', 46]], Arm_R: [['x', 12], ['y', -10]], Hand_R: [['x', 14]], Arm_L: [['x', 12], ['y', 10]], Hand_L: [['x', 14]] };
+const HEAD_HIT = (k) => ({ ...REST(), Torso: [['x', -12]], Chest: [['x', -6]], Head: [['x', 22 - 6 * k]],
+  Arm_R: [['x', 158 - 18 * k], ['y', 22]], Hand_R: [['x', 112 - 20 * k]], Arm_L: [['x', 158 - 18 * k], ['y', -22]], Hand_L: [['x', 112 - 20 * k]] });
+const SCREAM = (shake) => ({ Root: { pos: [0, 0, HIP + 0.02] }, Torso: [['x', 18 + shake], ['z', shake]], Chest: [['x', 14]], Head: [['x', -40], ['z', -shake]],
+  Arm_R: [['y', -64], ['x', 12 + shake]], Hand_R: [['x', 34]], Arm_L: [['y', 64], ['x', 12 - shake]], Hand_L: [['x', 34]],
+  Thigh_R: [['y', -16]], Leg_R: [['x', -8]], Thigh_L: [['y', 16]], Leg_L: [['x', -8]] });
+const transform = [
+  { t: 0, pose: BEATEN }, { t: 1.2, pose: BEATEN },
+  { t: 1.6, pose: { ...BEATEN, Arm_R: [['x', 172], ['y', -10]], Hand_R: [['x', 60]], Head: [['x', 10]] } },
+  { t: 1.85, pose: LANDED(-12) }, { t: 2.6, pose: LANDED(-8) },
+  { t: 3.2, pose: { ...REST(), Torso: [['x', -16]], Head: [['x', 20]] } },
+  { t: 3.45, pose: HEAD_HIT(0) }, { t: 3.65, pose: HEAD_HIT(1) }, { t: 3.85, pose: HEAD_HIT(0) }, { t: 4.05, pose: HEAD_HIT(1) },
+  { t: 4.25, pose: HEAD_HIT(0) }, { t: 4.6, pose: HEAD_HIT(1) },
+  { t: 5.0, pose: SCREAM(0) }, { t: 5.4, pose: SCREAM(4) }, { t: 5.8, pose: SCREAM(-4) }, { t: 6.2, pose: SCREAM(5) },
+  { t: 6.6, pose: SCREAM(-5) }, { t: 7.0, pose: SCREAM(6) }, { t: 7.4, pose: SCREAM(-6) }, { t: 8.0, pose: SCREAM(0) },
+];
+/** The swelling during the scream: the whole body grows (Root scale) before the colossus bursts out. */
+const TRANSFORM_SWELL = [[0, 1], [5.0, 1], [6.5, 1.25], [7.6, 1.5], [8.0, 1.6]];
+
+const ANIMS = { idle, walk, roar, mountain_crusher, earth_breaker, bull_charge, sky_breaker, sky_fall, collapse, leap, leap_land, transform };
 
 /** In game: held while he falls (the root at the hips: the entity itself falls), and from the impact on. */
 const dive = [{ t: 0, pose: { ...DIVE(HIP), Arm_L: [['x', 160], ['z', -30]] } }, { t: 0.4, pose: { ...DIVE(HIP), Arm_L: [['x', 140], ['z', -40]] } },
@@ -321,6 +346,10 @@ function buildProject() {
   const proj = kit.bbmodel('bandit_warlord', PIECES, [WARLORD], [atlas], ATLAS, 'entity');
   const groups = groupsByName(proj.outliner);
   proj.animations = Object.entries(ANIMS).map(([n, keys]) => animation(n, keys, groups, LOOPS[n] || 'once'));
+  // The transformation's swelling: a scale on the root.
+  const tr = proj.animations.find(a => a.name === 'transform');
+  const rootAnim = Object.values(tr.animators).find(a => a.name === 'Root');
+  for (const [t, k] of TRANSFORM_SWELL) rootAnim.keyframes.push({ channel: 'scale', data_points: [{ x: k, y: k, z: k }], uuid: require('crypto').randomUUID(), time: t, color: -1, interpolation: 'linear' });
   return { proj, atlas };
 }
 
@@ -362,7 +391,8 @@ const STILLS = {
 const VIEWS = { three: [[-60, 34, -66], [0, 15, -14]], side: [[-92, 22, -14], [0, 15, -14]] };
 const VIEW_OF = { bull_charge: { side: [[-150, 28, -32], [0, 15, -32]] }, sky_fall: { three: [[-96, 36, -108], [0, 34, 0]] } };
 const FILMS = { idle: ['three'], walk: ['three'], roar: ['three'], mountain_crusher: ['three', 'side'], earth_breaker: ['three', 'side'],
-  bull_charge: ['side'], sky_breaker: ['three', 'side'], sky_fall: ['three'], collapse: ['three', 'side'], leap: ['three'], leap_land: ['three'] };
+  bull_charge: ['side'], sky_breaker: ['three', 'side'], sky_fall: ['three'], collapse: ['three', 'side'], leap: ['three'], leap_land: ['three'],
+  transform: ['three'] };
 const FPS = 20;
 
 /** His size: the warlord twice as big, a Mountain Bandit (the crimson outfit) at a man's size beside him. */

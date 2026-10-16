@@ -134,6 +134,8 @@ window.SKY = (() => {
     rim: () => view([52, 44, 58], [-8, -2, -8], 62),
     floor: () => view([-22, 3.6, 26], [6, 3, -8], 70),
     below: () => view([165, -180, 140], [0, -30, 0], 46),
+    // The cinematic's close-up (Enzo, 16/10): just over the cloud sea, looking up at the meteor rising out of it.
+    rising: () => view([96, -150, 118], [0, -20, 0], 62),
     plan: () => ({ ...view([0.5, 370, 0.6], [0, 0, 0], 38),
       marks: [['1', 0, 0, 0], ['2', 30, 0, -24], ['3', Math.round(Math.cos(Math.PI / 12) * (FLAT - 2)), 4, Math.round(Math.sin(Math.PI / 12) * (FLAT - 2))],
         ['4', BOWL - 2, RISE, 0], ['5', 0, TOP, BOWL + 8]] }),

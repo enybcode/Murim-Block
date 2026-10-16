@@ -228,6 +228,17 @@ const walk = [
   { t: 1.4, pose: STEP(1, 0.04) },
 ];
 
+/**
+ * Transformed (Enzo: "he starts to scream and beat his chest like a gorilla, then a golden aura"): the arms flung wide in a
+ * roar, then both fists beaten on the chest in turn, eight blows, the head thrown back between them; a last roar. 4.4 s.
+ */
+const BEAT = (right) => ({ ...REST, Torso: [['x', 4]], Chest: [['x', 6]], Head: [['x', -20]],
+  Arm_R: right ? [['x', 72], ['y', 30]] : [['x', 30], ['y', -40]], Hand_R: [['x', right ? 96 : 40]],
+  Arm_L: right ? [['x', 30], ['y', 40]] : [['x', 72], ['y', -30]], Hand_L: [['x', right ? 40 : 96]] });
+const chest_beat = [{ t: 0, pose: ROAR }, { t: 0.5, pose: ROAR }];
+for (let i = 0; i < 8; i++) chest_beat.push({ t: 0.75 + i * 0.25, pose: BEAT(i % 2 === 0) });
+chest_beat.push({ t: 3.0, pose: { ...ROAR, Head: [['x', -34]] } }, { t: 4.0, pose: { ...ROAR, Head: [['x', -38]] } }, { t: 4.4, pose: REST });
+
 const ANIMS = {
   awaken: [
     { t: 0, pose: { ...REST, Torso: [['x', -30]], Chest: [['x', -20]], Head: [['x', 40]], Arm_R: [['x', 20], ['y', -6]], Arm_L: [['x', 20], ['y', 6]] } },
@@ -238,6 +249,7 @@ const ANIMS = {
   ],
   idle,
   walk,
+  chest_beat,
 };
 
 /**
@@ -292,7 +304,9 @@ async function film(proj) {
   save(path.join(out, 'warlord-avatar-beside.png'), await shot(bb, [-30, 34, -210], [0, 24, 0], 960, 760));
   // The awakening, the idle and the walk, filmed (the walk from the front three-quarter and from the side too).
   await load(bb, proj);
-  const films = [['awaken', 'three', 3.0, false], ['idle', 'three', 3.2, true], ['walk', 'three', 1.4, true], ['walk', 'side', 1.4, true]];
+  const films = (arg('only') ? arg('only').split(',') : ['awaken', 'idle', 'walk', 'walk-side', 'chest_beat']).map(n => ({
+    awaken: ['awaken', 'three', 3.0, false], idle: ['idle', 'three', 3.2, true], walk: ['walk', 'three', 1.4, true],
+    'walk-side': ['walk', 'side', 1.4, true], chest_beat: ['chest_beat', 'three', 4.4, false] }[n]));
   const cams = { three: [[-112, 50, -120], [0, 26, 0]], side: [[-160, 34, 0], [0, 26, 0]] };
   for (const [name, view, length, loop] of films) {
     const dir = path.join(ROOT, 'build', 'warlord-avatar', name + '-' + view);
