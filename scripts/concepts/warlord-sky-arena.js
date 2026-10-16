@@ -19,7 +19,7 @@ window.SKY = (() => {
 
   // ---- the meteor: a rock some 170 blocks across, its top hollowed into a bowl 40 deep round a fighting floor near
   // 100 across, its underside a rough cone
-  const R = 84, TOP = 46, DEPTH = 100;
+  const R = 84, TOP = 86, DEPTH = 100;
   /** The bowl's floor height at a distance from the middle: flat over the fighting floor, rising steeply to the rim. */
   const FLAT = 48, BOWL = 72, RISE = 40;
   const floorAt = r => (r < FLAT ? 0 : RISE * Math.pow((r - FLAT) / (BOWL - FLAT), 1.5));
