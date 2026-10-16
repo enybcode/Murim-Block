@@ -36,7 +36,7 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 
 *(Ancienne idée, remplacée : le boss sortait de la porte de la grande salle.)*
 
-## La chute et le cratère (maquette du 16/10, à valider)
+## La chute et le cratère (16/10, en jeu)
 
 > Demandes d'Enzo : « son spawn, il tombe du ciel, et ça change le village bandit en cratère pour le PvP ; on prépare une
 > structure qui change ; ce serait l'ultime de l'art, il commencerait par ça, un changement du terrain » ; « il tombe du
@@ -70,7 +70,15 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 
 ![Sa chute, son atterrissage et son rugissement](../mobs/images/warlord-sky_fall.gif)
 
-**En jeu (proposition)** : le camp garde son plan ; à l'impact, le serveur creuse le cratère et casse le camp autour,
+**En jeu** (`WarlordCrater`, `WarlordEntrance`, voir [la fiche du Seigneur](../mobs/bandit-warlord.md#en-jeu-16102026--reprends-le-boss)) :
+un creux de **24 blocs de rayon et 10 de profondeur** (plus petit que la maquette, pour que la grande salle et son coffre
+restent debout au bord), un bourrelet de 4 blocs, les ruines jusqu'à la palissade ; jamais un coffre ou un tonneau, ni la
+bedrock, ni sous le fond du monde ; creusé à 6 000 blocs par tick. Le camp note que son seigneur est venu (une fois) ; si
+le serveur s'arrête entre le dernier mort et sa chute, il tombe au retour d'un joueur dans le camp.
+
+![Le cratère en jeu](images/bandit-camp/game-crater.jpg)
+
+*La proposition d'avant :* le camp garde son plan ; à l'impact, le serveur creuse le cratère et casse le camp autour,
 **réparti sur plusieurs ticks** comme la construction du sanctuaire (pas de gel du serveur ; la cinématique couvre ce
 temps), et note le camp comme « cratère » (une sauvegarde, pour ne plus le reconstruire ni le repeupler, et pour que
 `SiteResidents` ne lui rende pas ses bandits). Les coffres et la cache de la grande salle sont gardés. Le dessin est un

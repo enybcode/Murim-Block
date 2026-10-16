@@ -31,15 +31,23 @@ import javax.imageio.ImageIO;
  *   plum_blossom_thrusts: five spear points fanned out from one hand like a plum flower, a petal of light at each;
  *   thousand_soldier_sweep: the spear round in a full ring at the knees, dust thrown out from it;
  *   long_reach: the passive, a spear level with a gold mark at its point, 3 blocks out.
+ * And the Mountain-Shattering Fist's, "stone night": a slate night, a bronze frame, broken rock, dust and embers:
+ *   mountain_crushing_punch: a great fist driven right into a cone of rock bursting apart;
+ *   earth_breaker: two fists brought down on cracked ground, a ring of shock, stones thrown up;
+ *   bull_charge: a lowered shoulder bursting through a brick wall, bricks flying;
+ *   sky_breaker: an uppercut rising from a column of earth, a body thrown up above it (the secret; red);
+ *   heaven_falling_mountain: a fist falling like a meteor, wrapped in fire, onto a crater (the ultimate);
+ *   earthshaker: the passive, a fist on the ground, cracks running out and the shock round it.
  */
 public class TechniqueIcons {
     static final int W = 32;
     static final String[] NAMES = {"cloud_step_slash", "thousand_drizzle", "heaven_splitting_crescent", "swallow_returns", "flowing_cloud_stance",
             "tiger_step_punch", "rapid_fists", "whirlwind_kick", "inch_force", "steady_breath",
             "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance", "blood_iceberg",
-            "piercing_dragon", "plum_blossom_thrusts", "thousand_soldier_sweep", "long_reach"};
+            "piercing_dragon", "plum_blossom_thrusts", "thousand_soldier_sweep", "long_reach",
+            "mountain_crushing_punch", "earth_breaker", "bull_charge", "sky_breaker", "heaven_falling_mountain", "earthshaker"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, MOUNTAIN = 20;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -51,7 +59,8 @@ public class TechniqueIcons {
             if (i < FIST) jade(g, img, i);
             else if (i < BLOOD) ember(g, img, i - FIST);
             else if (i < SPEAR) blood(g, img, i - BLOOD);
-            else peak(g, img, i - SPEAR);
+            else if (i < MOUNTAIN) peak(g, img, i - SPEAR);
+            else stone(g, img, i - MOUNTAIN);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -337,6 +346,114 @@ public class TechniqueIcons {
         p.quadTo(x, y + r * 1.3, x - r, y);
         p.quadTo(x - r * 1.1, y - r * 0.6, x, y - r * 2.4);
         g.fill(p);
+    }
+
+    // ------------------------------------------------------------ E: stone night, the Mountain-Shattering Fist
+
+    static final Color BRONZE = c(196, 140, 72), SLATE = c(96, 98, 104), SLATE_LIGHT = c(150, 150, 156), SLATE_DARK = c(52, 54, 60),
+            EARTH = c(124, 88, 58), EMBER = c(255, 150, 60), FIRE = c(255, 214, 110), WRAP = c(232, 222, 200), BRICK = c(150, 70, 52);
+
+    static void stoneBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 15.5) / 22.0;
+            img.setRGB(x, y, c((int) (22 + 24 * (1 - d)), (int) (22 + 22 * (1 - d)), (int) (26 + 22 * (1 - d))).getRGB());
+        }
+        g.setColor(BRONZE); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(70, 44, 26)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A rock fragment: a small irregular quad round (x, y), size r, lit on top. */
+    static void rock(Graphics2D g, BufferedImage img, double x, double y, double r) {
+        Path2D p = new Path2D.Double();
+        p.moveTo(x - r, y); p.lineTo(x - r * 0.3, y - r); p.lineTo(x + r, y - r * 0.4); p.lineTo(x + r * 0.5, y + r * 0.8); p.closePath();
+        g.setColor(SLATE); g.fill(p);
+        px(img, (int) Math.round(x - r * 0.3), (int) Math.round(y - r * 0.6), SLATE_LIGHT);
+    }
+
+    /** Cracks in the ground from (x, y): jagged dark lines out to the given ends. */
+    static void cracks(Graphics2D g, double x, double y, double[][] ends) {
+        for (double[] e : ends) {
+            double mx = (x + e[0]) / 2 + (e[1] - y) * 0.15, my = (y + e[1]) / 2 - (e[0] - x) * 0.15;
+            line(g, x, y, mx, my, 1.2f, c(16, 12, 10));
+            line(g, mx, my, e[0], e[1], 0.9f, c(16, 12, 10));
+            line(g, mx, my + 0.6, e[0], e[1] + 0.6, 0.5f, EMBER);
+        }
+    }
+
+    /** A fist wrapped in white cloth (the warlord's), as fist() but bandaged across the knuckles. */
+    static void wrappedFist(Graphics2D g, BufferedImage img, double x, double y, double s, int dir) {
+        fist(g, img, x, y, s, dir);
+        for (int k = 0; k < 3; k++) {
+            double yy = y - s * 0.3 + k * s * 0.3;
+            line(g, x - s * 0.5, yy, x + s * 0.5, yy + dir * 0.5, 1f, WRAP);
+        }
+    }
+
+    static void stone(Graphics2D g, BufferedImage img, int i) {
+        stoneBack(img, g);
+        switch (i) {
+            case 0 -> { // Mountain-Crushing Punch: the fist driven right into a cone of rock bursting apart.
+                g.setColor(c(80, 70, 64));
+                Path2D cone = new Path2D.Double();
+                cone.moveTo(16, 16); cone.lineTo(30, 5); cone.lineTo(30, 27); cone.closePath();
+                g.fill(cone);
+                for (int k = 0; k < 4; k++) line(g, 17, 16, 30, 7 + k * 6, 0.8f, k % 2 == 0 ? EMBER : AMBER_DIM);
+                rock(g, img, 26, 8, 2.2); rock(g, img, 28, 17, 2.6); rock(g, img, 24, 25, 2.0); rock(g, img, 21, 12, 1.4);
+                wrappedFist(g, img, 10, 16, 8, 1);
+                burst(g, 16, 16, 3, FIRE);
+            }
+            case 1 -> { // Earth Breaker: two fists down on cracked ground, a ring of shock, stones thrown up.
+                g.setColor(EARTH); g.fillRect(2, 22, 28, 8);
+                cracks(g, 16, 23, new double[][]{{3, 27}, {8, 30}, {24, 30}, {29, 26}, {16, 30}});
+                g.setColor(AMBER_DIM); g.setStroke(new BasicStroke(1.2f)); g.draw(new Ellipse2D.Double(3, 18, 26, 9));
+                g.setColor(FIRE); g.setStroke(new BasicStroke(0.8f)); g.draw(new Arc2D.Double(3, 18, 26, 9, 200, 140, Arc2D.OPEN));
+                wrappedFist(g, img, 9, 14, 7, 1);
+                wrappedFist(g, img, 23, 14, 7, -1);
+                rock(g, img, 5, 9, 1.8); rock(g, img, 27, 8, 2.0); rock(g, img, 16, 4, 1.5);
+            }
+            case 2 -> { // Bull Charge: a lowered shoulder bursting through a brick wall, bricks flying.
+                for (int row = 0; row < 6; row++) for (int col = 0; col < 2; col++) {
+                    int bx = 22 + col * 5 - (row % 2) * 2, by = 4 + row * 4;
+                    if (row >= 2 && row <= 3) continue;
+                    g.setColor(BRICK); g.fillRect(bx, by, 4, 3);
+                }
+                for (double[] b : new double[][]{{28, 13}, {25, 18}, {30, 20}, {27, 10}}) { g.setColor(BRICK); g.fill(new Rectangle2D.Double(b[0] - 1.5, b[1] - 1, 3, 2)); }
+                for (int k = 0; k < 3; k++) taper(g, 2, 10 + k * 5, 8, 11 + k * 5, 14, 13 + k * 3, 0.3, 2.2, k == 1 ? AMBER : AMBER_DIM);
+                // The shoulder: a crimson pauldron, gold rim, the head down behind it.
+                g.setColor(c(156, 31, 26)); g.fill(new Ellipse2D.Double(11, 9, 12, 11));
+                g.setColor(c(214, 168, 60)); g.setStroke(new BasicStroke(1f)); g.draw(new Arc2D.Double(11, 9, 12, 11, -60, 120, Arc2D.OPEN));
+                g.setColor(SKIN); g.fill(new Ellipse2D.Double(8, 6, 6, 6));
+                burst(g, 22, 15, 3.5, FIRE);
+            }
+            case 3 -> { // Sky Breaker: an uppercut rising from a column of earth, a body thrown up above it.
+                g.setColor(EARTH); g.fillRect(2, 26, 28, 4);
+                g.setColor(c(110, 78, 52)); g.fill(new Rectangle2D.Double(11, 16, 9, 11));
+                for (int k = 0; k < 3; k++) rock(g, img, 9 + k * 7, 15 - k % 2 * 3, 1.6);
+                wrappedFist(g, img, 15, 12, 7, 1);
+                line(g, 15, 18, 15, 22, 1f, AMBER_DIM);
+                // The body flung high, small, and the red streaks of the secret.
+                g.setColor(c(156, 31, 26)); g.fill(new Ellipse2D.Double(21, 2, 4, 4)); g.fill(new RoundRectangle2D.Double(20, 5, 6, 5, 2, 2));
+                for (int k = 0; k < 3; k++) line(g, 19 + k * 3, 11, 21 + k * 3, 7, 1f, RED);
+            }
+            case 4 -> { // Heaven-Falling Mountain: a fist falling like a meteor, wrapped in fire, onto a crater.
+                g.setColor(EARTH); g.fillRect(2, 25, 28, 5);
+                g.setColor(c(36, 24, 18)); g.fill(new Arc2D.Double(7, 21, 18, 9, 180, 180, Arc2D.CHORD));
+                for (int k = 0; k < 4; k++) taper(g, 26 - k * 2, 2, 22, 7, 17, 14, 0.3, 4.0 - k * 0.6, k % 2 == 0 ? EMBER : FIRE);
+                disc(g, 15, 16, 6, c(255, 120, 40, 200));
+                wrappedFist(g, img, 15, 16, 8, 1);
+                for (double[] q : new double[][]{{5, 22}, {27, 21}, {9, 19}, {24, 18}}) rock(g, img, q[0], q[1], 1.4);
+                burst(g, 16, 25, 3, FIRE);
+            }
+            default -> { // Earthshaker: a fist on the ground, cracks running out, the shock round it.
+                g.setColor(EARTH); g.fillRect(2, 21, 28, 9);
+                cracks(g, 16, 22, new double[][]{{2, 26}, {6, 30}, {26, 30}, {30, 24}, {13, 30}, {20, 30}});
+                for (int k = 0; k < 3; k++) {
+                    g.setColor(k == 0 ? FIRE : AMBER_DIM); g.setStroke(new BasicStroke(0.9f));
+                    g.draw(new Arc2D.Double(16 - 5 - k * 4, 16 - 3 - k * 2, 10 + k * 8, 8 + k * 4, 0, 180, Arc2D.OPEN));
+                }
+                wrappedFist(g, img, 16, 15, 8, 1);
+            }
+        }
     }
 
     // ------------------------------------------------------------ D: peak night, the Celestial Peak Spear

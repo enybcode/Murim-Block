@@ -135,6 +135,7 @@ public final class MurimAnimations {
         buildSanguineArt(builder);
         buildCelestialPeakSpear(builder);
         buildBanditChief(builder);
+        BanditWarlordAnimations.build(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);

@@ -1,10 +1,10 @@
-# Le Seigneur des bandits — maquette (proposition à valider par Enzo)
+# Le Seigneur des bandits (Bandit Warlord)
 
 > Demande d'Enzo du 16/10/2026 : le boss du grand camp de bandits ([bandit-camp.md](../structures/bandit-camp.md)),
 > « inspiré de Nappa, une montagne de muscles qui se bat avec ses poings » ; un nouveau boss ; il lâche le coffre du
 > chef, un art martial et du Qi max ; une maquette d'abord.
 >
-> **Statut : maquette seulement, rien en jeu.** Un seigneur des bandits à nous, dans l'esprit Murim, pas une copie du
+> **Statut : en jeu depuis le 16/10/2026** (voir « En jeu » ci-dessous). Un seigneur des bandits à nous, dans l'esprit Murim, pas une copie du
 > personnage. Nom provisoire : **Bandit Warlord** (Seigneur des bandits), à choisir par Enzo.
 >
 > Fichiers : `node scripts/animation/bandit-warlord-3d.cjs` (Blockbench isolé, `--port=`) écrit le projet
@@ -51,7 +51,42 @@
 Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](images/warlord-earth_breaker-side.gif),
 [brise-ciel](images/warlord-sky_breaker-side.gif).
 
-## Proposition pour le jeu
+## En jeu (16/10/2026, « reprends le boss »)
+
+![Sa chute, filmée en jeu](images/warlord-entrance.gif)
+
+![Il descend, vu d'en haut](images/warlord-game-fall.jpg) ![Il se relève et rugit](images/warlord-game-roar.jpg)
+
+- **`murimblock:bandit_warlord`** (`BanditWarlordEntity`, `BanditWarlordPatch`, `BanditWarlordAnimations`,
+  `client/BanditWarlordRenderer`) : son modèle 3D et ses mouvements sortent de `bandit-warlord-3d.cjs` (maillage
+  `entity/bandit_warlord`, animations `biped/murim/warlord_*`), dessiné deux fois la taille d'un homme (3,9 blocs).
+  Œuf « Bandit Warlord Spawn Egg » et `/summon` (pas de cratère alors).
+- **Force** : 400 PV, armure 12 (ténacité 4), attaque 12, presque pas de recul, ne brûle pas, ne disparaît jamais.
+  Barre de boss **pourpre**. Sous la moitié de sa vie, une fois : il rugit et va 25 % plus vite.
+- **Ses coups**, tous parables, ceux du Poing Brise-Montagne : Poing écrase-montagne (×1,0, renvoie, jusqu'à 4 blocs),
+  Brise-terre (×1,3 et une onde de choc de 5,5 blocs autour de lui, ×0,7, qui projette en l'air ; recharge 8 s), Charge du
+  taureau (×1,1, renverse, de 4 à 10 blocs ; recharge 10 s), Brise-ciel (×1,4, la cible projetée à sept blocs de haut ;
+  recharge 12 s).
+- **Son entrée** (`WarlordEntrance`) : au 35e mort du camp, le tambour bat trois fois (0,5 s, 1,1 s, 1,7 s), puis il
+  tombe de 70 blocs au-dessus de la place (2,5 s), en **météore** : du feu autour de lui, une traînée de flammes et de
+  fumée ; il tombe environ 3 s. Intouchable pendant la chute et l'atterrissage. À l'impact : explosion, flammes, poussière,
+  tonnerre ; tout ce qui est à 10 blocs est **projeté** (sans dégâts : on ne pouvait pas l'éviter) ; il atterrit poing au
+  sol, se relève et rugit (2,8 s), puis le combat commence. Le **cratère** se creuse à l'impact.
+- **La cinématique** (`client/WarlordCinematic`, protocole réseau 20), pour les joueurs du camp, environ 9 s, sans
+  bouger ni être touchés (Résistance V et Chute lente) : le tambour de près, la caméra qui monte vers le ciel, un point
+  rouge qui grossit, puis **la caméra descend avec lui, juste au-dessus de son épaule, le camp qui fonce vers lui**
+  (Enzo : « un vrai gros plan, vu d'en haut, comme la météorite de One Punch Man »), le flash blanc et la secousse de
+  l'impact vus du bord, puis lui en contre-plongée qui se relève et rugit, son nom en grand : « Bandit Warlord — Lord of
+  the Mountain Bandits ».
+- **Butin** : 2 à 4 yuanbao d'or, 12 à 20 taels d'argent, une pilule de percée (tué par un joueur), de la viande ; le
+  coffre du chef reste dans la grande salle (le cratère ne casse aucun coffre). **+40 Qi Max** à la première victoire
+  (récompense de Qi de boss, 150). Le rouleau du Poing Brise-Montagne viendra avec l'art (pas encore fait).
+- **Vérifié** : GameTests `BanditWarlordGameTests` (boss à lui, chute intouchable et impact qui projette, onde de choc,
+  cratère qui garde les coffres, chute d'un camp notée une fois) et `BanditCampCountGameTests` ; visite en vrai client
+  `gradlew -PgameTests runWarlordTour` (camp construit sur un plateau, entrée filmée, cratère, chaque mouvement :
+  `build/warlord-tour-run/screenshots`). **Pas encore vu** : un vrai combat à la main, ni à deux joueurs.
+
+## Proposition pour le jeu (la maquette)
 
 - **Apparition** (16/10, demandes d'Enzo) : le camp compte ses 30 bandits ; au dernier mort, le tambour de guerre
   résonne trois fois et **il tombe du ciel comme un météore de feu**, **en cinématique** pour les joueurs du camp :

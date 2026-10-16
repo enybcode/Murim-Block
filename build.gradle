@@ -247,6 +247,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a film of the Bandit Warlord's entrance (the cinematic, the meteor, the crater) and his moves in a real client (see WarlordTour).
+        warlordTour {
+            client()
+            gameDirectory = project.file('build/warlord-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a mugshot of every Murim mob for the wiki (see MugshotTour).
         mugshotTour {
             client()
