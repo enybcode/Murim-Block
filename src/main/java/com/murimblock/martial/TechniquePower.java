@@ -24,6 +24,8 @@ public final class TechniquePower {
      * bare hands (1 + the realm's 4, +20 %: 6) then strike like a netherite blade (6 + 4 = 10, then the Qi's x1.6 at 3 000).
      */
     public static final double BLOOD_TRAINING = 4;
+    /** What a hand hardened on stone adds to the Mountain-Shattering Fist's techniques (an art of Qi Condensation). */
+    public static final double MOUNTAIN_TRAINING = 4;
     /** The technique's damage grows by this share for each doubling of Qi Max above 100. */
     public static final double QI_SCALING = 0.12;
 
@@ -47,7 +49,8 @@ public final class TechniquePower {
     /** All a technique of this art multiplies the player's attack by. */
     public static double factor(ServerPlayer player, net.minecraft.resources.ResourceLocation art) {
         boolean bare = player.getMainHandItem().isEmpty();
-        double training = art.equals(MartialArts.LONG_FIST) ? FIST_TRAINING : art.equals(MartialArts.SANGUINE_ART) ? BLOOD_TRAINING : 0;
+        double training = art.equals(MartialArts.LONG_FIST) ? FIST_TRAINING : art.equals(MartialArts.SANGUINE_ART) ? BLOOD_TRAINING
+                : art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_TRAINING : 0;
         return qiFactor(QiService.getQiMax(player)) * fistFactor(player.getAttributeValue(Attributes.ATTACK_DAMAGE), bare && training > 0, training);
     }
 

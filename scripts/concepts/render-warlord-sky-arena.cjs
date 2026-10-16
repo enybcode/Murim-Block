@@ -8,7 +8,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const arg = n => (process.argv.find(a => a.startsWith(`--${n}=`)) || '').split('=')[1];
 const OUT = path.resolve(arg('out') || path.join(ROOT, 'docs', 'mobs', 'images', 'warlord-sky-arena'));
 const PORT = Number(arg('port') || 9232);
-const ALL = ['overview', 'rim', 'floor', 'below', 'plan'];
+const ALL = ['overview', 'rim', 'floor', 'below', 'plan', 'rising'];
 const ONLY = arg('only') ? arg('only').split(',') : ALL;
 
 /** Runs in the page: draws a numbered badge at each mark ([label, fx, fy], fractions of the picture, from ST.render). */

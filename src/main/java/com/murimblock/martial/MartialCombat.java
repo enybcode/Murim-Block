@@ -201,6 +201,11 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.LONG_FIST, credit, LongFist.isStrike(animation), false));
             return;
         }
+        credit = MountainShatteringFist.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MOUNTAIN_SHATTERING_FIST, credit, MountainShatteringFist.isStrike(animation), false));
+            return;
+        }
         credit = SanguineArt.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
@@ -266,7 +271,9 @@ public final class MartialCombat {
         boolean fist = swing.art.equals(MartialArts.LONG_FIST);
         boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
         boolean spear = swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR);
+        boolean mountain = swing.art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST);
         if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
+        else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
         else if (fist) LongFist.onHit(player, target, animation, enemy);
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
@@ -275,7 +282,8 @@ public final class MartialCombat {
         long now = player.level().getGameTime();
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
-        if (fist ? LongFist.knocksDown(animation) : spear ? CelestialPeakSpear.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
+        if (fist ? LongFist.knocksDown(animation) : spear ? CelestialPeakSpear.knocksDown(animation)
+                : mountain ? MountainShatteringFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
@@ -631,6 +639,7 @@ public final class MartialCombat {
         keepAloft(player);
         AzureCloudSword.tickAim(player, now);
         TravellerStaff.tick(player);
+        MountainShatteringFist.tick(player);
         SanguineArt.tick(player);
         BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
@@ -697,6 +706,7 @@ public final class MartialCombat {
         LongFist.forget(id);
         SanguineArt.forget(id);
         TravellerStaff.forget(id);
+        MountainShatteringFist.forget(id);
     }
 
     public static void clearForTests() {
@@ -717,5 +727,6 @@ public final class MartialCombat {
         SanguineArt.forget(null);
         BloodIceberg.forget(null);
         TravellerStaff.forget(null);
+        MountainShatteringFist.forget(null);
     }
 }

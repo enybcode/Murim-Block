@@ -197,6 +197,37 @@ public final class MartialArts {
     /** Its passive keeps Epic Fight's strikes; the third of a chain strikes twice as hard. */
     public static final Passive THIRD_RESONANCE = new Passive(id("third_resonance"), List.of(), List.of());
 
+    // ---------------------------------------------------------------- the Mountain-Shattering Fist (docs/combat/styles/mountain-shattering-fist.md)
+
+    /**
+     * The Bandit Warlord's art (Enzo, 16/10/2026: "a lot of area damage and destruction of the elements"): bare hands,
+     * slow and heavy, striking all round and breaking the ground (it comes back: combat.ShatteredGround). Learnt from Qi
+     * Condensation.
+     */
+    public static final ResourceLocation MOUNTAIN_SHATTERING_FIST = id("mountain_shattering_fist");
+    public static final com.murimblock.cultivation.CultivationRealm MOUNTAIN_FIST_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    public static final Technique MOUNTAIN_CRUSHING_PUNCH = new Technique(id("mountain_crushing_punch"), MOUNTAIN_SHATTERING_FIST, 40, 160);
+    public static final Technique EARTH_BREAKER = new Technique(id("earth_breaker"), MOUNTAIN_SHATTERING_FIST, 60, 280);
+    public static final Technique BULL_CHARGE = new Technique(id("bull_charge"), MOUNTAIN_SHATTERING_FIST, 50, 240);
+    /** The ultimate: up into the sky and down like a meteor, a crater where it lands; five minutes to recover. */
+    public static final Technique HEAVEN_FALLING_MOUNTAIN = new Technique(id("heaven_falling_mountain"), MOUNTAIN_SHATTERING_FIST, 200, 6000);
+    /** The secret: Mountain-Crushing Punch cast crouching, an uppercut that throws its target to the sky (costs what it costs). */
+    public static final Technique SKY_BREAKER = new Technique(id("sky_breaker"), MOUNTAIN_SHATTERING_FIST, 0, 0, true);
+    /** Its passive keeps Epic Fight's bare-hand strikes; each that lands shakes the ground round its target. */
+    public static final Passive EARTHSHAKER = new Passive(id("earthshaker"), List.of(), List.of());
+    public static final String SHATTER_THE_STONE_BLOCKS = "shatter_the_stone.blocks";
+    public static final String SHAKE_THE_EARTH_GROUPS = "shake_the_earth.groups";
+    public static final String HEAVENS_WEIGHT_BLOCKS = "heavens_weight.blocks";
+    public static final Quest SHATTER_THE_STONE = new Quest("shatter_the_stone", EARTH_BREAKER.id(),
+            List.of(new QuestStep(SHATTER_THE_STONE_BLOCKS, 200)));
+    public static final Quest SHAKE_THE_EARTH = new Quest("shake_the_earth", BULL_CHARGE.id(),
+            List.of(new QuestStep(SHAKE_THE_EARTH_GROUPS, 10)));
+    public static final Quest HEAVENS_WEIGHT = new Quest("heavens_weight", HEAVEN_FALLING_MOUNTAIN.id(),
+            List.of(new QuestStep(HEAVENS_WEIGHT_BLOCKS, 1000)));
+    public static final Evolution MOUNTAIN_SPLITTING_PUNCH = new Evolution(MOUNTAIN_CRUSHING_PUNCH.id(), 30, "evolution.murimblock.mountain_splitting_punch");
+    public static final Evolution EARTHQUAKE = new Evolution(EARTH_BREAKER.id(), 60, "evolution.murimblock.earthquake");
+    public static final Evolution STAMPEDE = new Evolution(BULL_CHARGE.id(), 90, "evolution.murimblock.stampede");
+
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     /**
@@ -230,7 +261,7 @@ public final class MartialArts {
 
     /** The realm an art's manual asks of its reader, if any. */
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
-        return art.equals(SANGUINE_ART) ? SANGUINE_REALM : null;
+        return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -247,6 +278,8 @@ public final class MartialArts {
                 LONG_REACH, List.of(FIRST_LINE, HOLD_THE_DISTANCE), List.of(SOARING_DRAGON, PLUM_RAIN, TEN_THOUSAND_SWEEP)));
         // No quests, secret nor evolutions defined yet: the scroll teaches all three techniques.
         add(new Art(TRAVELLER_STAFF, List.of(VERTICAL_STRIKE, POINT_FLURRY, SPINNING_RAMPART), THIRD_RESONANCE, List.of(), List.of()));
+        add(new Art(MOUNTAIN_SHATTERING_FIST, List.of(MOUNTAIN_CRUSHING_PUNCH, EARTH_BREAKER, BULL_CHARGE, HEAVEN_FALLING_MOUNTAIN, SKY_BREAKER),
+                EARTHSHAKER, List.of(SHATTER_THE_STONE, SHAKE_THE_EARTH, HEAVENS_WEIGHT), List.of(MOUNTAIN_SPLITTING_PUNCH, EARTHQUAKE, STAMPEDE)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }

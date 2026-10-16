@@ -40,6 +40,8 @@ public final class Murimblock {
     public static final String MOD_ID = "murimblock";
 
     public Murimblock(IEventBus modEventBus, ModContainer modContainer) {
+        // The game rule murimDestruction: whether Murim blows break the ground.
+        com.murimblock.combat.ShatteredGround.init();
         modContainer.registerConfig(ModConfig.Type.CLIENT, HudSize.SPEC);
         MurimEntities.register(modEventBus);
         // Blocks first: they add their block items to MurimItems before its registry is attached.

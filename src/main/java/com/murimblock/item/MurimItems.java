@@ -90,6 +90,9 @@ public final class MurimItems {
             () -> new DeferredSpawnEggItem(MurimEntities.CRAB_KING, 0x6E1A20, 0x55361F, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> BANDIT_CHIEF_SPAWN_EGG = ITEMS.register("bandit_chief_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_CHIEF, 0xD07A28, 0x2A1A14, new Item.Properties()));
+    /** The warlord's crimson lacquer and black iron. */
+    public static final DeferredItem<DeferredSpawnEggItem> BANDIT_WARLORD_SPAWN_EGG = ITEMS.register("bandit_warlord_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_WARLORD, 0x9C1F1A, 0x2E3036, new Item.Properties()));
 
     /** Ash-grey robe and the red of the bandits' headbands. */
     public static final DeferredItem<DeferredSpawnEggItem> MOUNTAIN_BANDIT_SPAWN_EGG = ITEMS.register("mountain_bandit_spawn_egg",
@@ -248,6 +251,9 @@ public final class MurimItems {
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
 
     /** Scroll of the first art of the fist: read, it teaches the Long Fist and is used up. Where it is found is still to decide. */
+    /** The Bandit Warlord's scroll: read (from Qi Condensation), it teaches the Mountain-Shattering Fist and is used up. */
+    public static final DeferredItem<MartialManualItem> MOUNTAIN_SHATTERING_FIST_SCROLL = ITEMS.register("mountain_shattering_fist_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.MOUNTAIN_SHATTERING_FIST));
     public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), MartialArts.LONG_FIST));
 
@@ -275,6 +281,7 @@ public final class MurimItems {
                         output.accept(MOUNTAIN_BANDIT_SPAWN_EGG.get());
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
+                        output.accept(BANDIT_WARLORD_SPAWN_EGG.get());
                         output.accept(CRAB_KING_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(ALLIANCE_SPEAR.get());
@@ -313,6 +320,7 @@ public final class MurimItems {
                         pendants().forEach(pendant -> output.accept(pendant.get()));
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
+                        output.accept(MOUNTAIN_SHATTERING_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());

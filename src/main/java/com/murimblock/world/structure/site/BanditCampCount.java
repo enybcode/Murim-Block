@@ -38,7 +38,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 /**
  * The count of a bandit camp's garrison, its thirty bandits and five Bandit Chiefs (Enzo, 16/10/2026): inside the camp,
  * a bar at the top of the screen, like a boss's life, that fills each time one of them is killed; when all are dead, the camp is cleared and its boss
- * comes (the Bandit Warlord, falling from the sky: docs/mobs/bandit-warlord.md; until he exists, the camp falls silent).
+ * comes: the Bandit Warlord falls from the sky (WarlordEntrance, docs/mobs/bandit-warlord.md).
  * <p>Each of them is marked with his camp (its centre) when it places him, and counted once when he dies, wherever
  * he dies. A camp placed before the count (its bandits unmarked) is looked at the first time a player comes in, once its
  * residents are there: those still at home are marked, the missing ones counted as dead. Saved per world.
@@ -58,6 +58,8 @@ public final class BanditCampCount extends SavedData {
     private final Map<Long, Integer> kills = new HashMap<>();
     /** The camps looked at (their bandits marked). */
     private final Set<Long> surveyed = new HashSet<>();
+    /** The camps whose warlord has fallen (he comes once). */
+    private final Set<Long> warlords = new HashSet<>();
     /** The bars on show, per level and camp; not saved. */
     private static final Map<ResourceKey<Level>, Map<Long, ServerBossEvent>> BARS = new HashMap<>();
 
@@ -113,7 +115,7 @@ public final class BanditCampCount extends SavedData {
         if (now >= BanditCamp.GARRISON) fallSilent(level, camp);
     }
 
-    /** The garrison is dead: the bar goes, the players in the camp hear it. Here the Bandit Warlord will fall. */
+    /** The garrison is dead: the bar goes, the players in the camp hear it, and the Bandit Warlord falls (WarlordEntrance). */
     private static void fallSilent(ServerLevel level, long camp) {
         BlockPos centre = BlockPos.of(camp);
         ServerBossEvent bar = bars(level).remove(camp);
@@ -122,6 +124,7 @@ public final class BanditCampCount extends SavedData {
             player.displayClientMessage(Component.translatable("message.murimblock.bandit_camp.cleared"), true);
             player.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.HOSTILE, 1, 0.8f);
         }
+        if (!get(level).warlords.contains(camp)) WarlordEntrance.begin(level, camp);
     }
 
     // ---------------------------------------------------------------- the bar
@@ -137,6 +140,8 @@ public final class BanditCampCount extends SavedData {
             if (!start.isValid() || centre == null || !inside(player, centre)) continue;
             long camp = camp(centre.getX(), centre.getZ());
             survey(level, start, camp);
+            // A camp cleared whose warlord never came (the server stopped before he fell): he comes now.
+            if (cleared(level, camp) && !get(level).warlords.contains(camp)) WarlordEntrance.begin(level, camp);
             if (get(level).surveyed.contains(camp) && !cleared(level, camp)) here = camp;
             break;
         }
@@ -186,6 +191,17 @@ public final class BanditCampCount extends SavedData {
         count(level, camp, BanditCamp.GARRISON - n);
     }
 
+    /** Whether this camp's warlord has fallen. */
+    public static boolean warlordCame(ServerLevel level, long camp) {
+        return get(level).warlords.contains(camp);
+    }
+
+    static void markWarlord(ServerLevel level, long camp) {
+        BanditCampCount data = get(level);
+        data.warlords.add(camp);
+        data.setDirty();
+    }
+
     private static Map<Long, ServerBossEvent> bars(ServerLevel level) {
         return BARS.computeIfAbsent(level.dimension(), k -> new HashMap<>());
     }
@@ -220,6 +236,7 @@ public final class BanditCampCount extends SavedData {
         BanditCampCount data = get(level);
         data.kills.remove(camp);
         data.surveyed.remove(camp);
+        data.warlords.remove(camp);
         data.setDirty();
         ServerBossEvent bar = bars(level).remove(camp);
         if (bar != null) bar.removeAllPlayers();
@@ -231,11 +248,13 @@ public final class BanditCampCount extends SavedData {
         ListTag camps = new ListTag();
         Set<Long> all = new HashSet<>(kills.keySet());
         all.addAll(surveyed);
+        all.addAll(warlords);
         for (long camp : all) {
             CompoundTag c = new CompoundTag();
             c.putLong("Camp", camp);
             c.putInt("Killed", kills.getOrDefault(camp, 0));
             c.putBoolean("Surveyed", surveyed.contains(camp));
+            c.putBoolean("Warlord", warlords.contains(camp));
             camps.add(c);
         }
         tag.put("camps", camps);
@@ -249,6 +268,7 @@ public final class BanditCampCount extends SavedData {
             long camp = c.getLong("Camp");
             if (c.getInt("Killed") > 0) data.kills.put(camp, c.getInt("Killed"));
             if (c.getBoolean("Surveyed")) data.surveyed.add(camp);
+            if (c.getBoolean("Warlord")) data.warlords.add(camp);
         }
         return data;
     }

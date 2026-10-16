@@ -14,6 +14,14 @@
 //   bull_charge          the shoulder lowered, a rush of four blocks, the impact;
 //   sky_breaker          crouched low, an uppercut that throws the target up.
 //   sky_fall             his entrance and the art's ultimate: down out of the sky, a landing fist-first, up into the roar.
+//   collapse             Mountain Collapse: the right fist raised high, driven into the ground ahead from one knee (a
+//                        fissure runs out from it in game, breaking the ground);
+//   leap, leap_land      Thousand-Jin Drop: a crouch and a leap high toward his foe, falling fist first; the landing
+//                        (a crater and a shockwave in game).
+// In game (16/10/2026, Enzo: "reprends le boss"): the mesh assets/murimblock/animmodels/entity/bandit_warlord.json, its
+// atlas textures/entity/bandit_warlord.png, and his moves as Epic Fight animations biped/murim/warlord_* (pose.cjs
+// writeSmooth); the fall split in two for the game: warlord_dive (held while he falls, a loop) and warlord_land (from the
+// impact: the landing, up, the roar).
 // Usage: node scripts/animation/bandit-warlord-3d.cjs [--port=9236] [--film=false]
 const fs = require('fs');
 const path = require('path');
@@ -21,6 +29,7 @@ const { execFileSync } = require('child_process');
 const kit = require('./mesh-kit.cjs');
 const { isSide, all, rim } = kit;
 const { animation, groupsByName } = require('./blockbench-rig.cjs');
+const { writeSmooth } = require('./pose.cjs');
 
 const ROOT = path.join(__dirname, '..', '..');
 const ATLAS = 128;
@@ -53,10 +62,10 @@ piece('Head', 'head', 'head', [-4, 24, -4], [4, 32, 4], (f, u, v, w, h) => {
   if (front === 3 && (v === 3 || v === 4)) return 's';         // the ear
   return v < 2 ? 'H' : 'S';
 });
-piece('Head', 'head', 'moustache_r', [2.2, 22.6, -4.25], [3.4, 25.2, -3.95], (f, u, v) => (v % 3 === 2 ? 'a' : 'A'));
-piece('Head', 'head', 'moustache_l', [-3.4, 22.6, -4.25], [-2.2, 25.2, -3.95], (f, u, v) => (v % 3 === 2 ? 'a' : 'A'));
-piece('Head', 'head', 'brow_ridge', [-3.6, 28.6, -4.4], [3.6, 29.4, -3.8], (f, u) => (f === 'north' && (u === 3 || u === 4) ? 's' : 'A'));
-piece('Head', 'head', 'ear_ring', [-4.6, 25.0, -0.6], [-4.0, 26.4, 0.6], (f, u, v) => ((u + v) % 2 ? 'g' : 'G'));
+piece('Head', 'hat', 'moustache_r', [2.2, 22.6, -4.25], [3.4, 25.2, -3.95], (f, u, v) => (v % 3 === 2 ? 'a' : 'A'));
+piece('Head', 'hat', 'moustache_l', [-3.4, 22.6, -4.25], [-2.2, 25.2, -3.95], (f, u, v) => (v % 3 === 2 ? 'a' : 'A'));
+piece('Head', 'hat', 'brow_ridge', [-3.6, 28.6, -4.4], [3.6, 29.4, -3.8], (f, u) => (f === 'north' && (u === 3 || u === 4) ? 's' : 'A'));
+piece('Head', 'hat', 'ear_ring', [-4.6, 25.0, -0.6], [-4.0, 26.4, 0.6], (f, u, v) => ((u + v) % 2 ? 'g' : 'G'));
 
 // ---- neck and trunk: the bull neck, the cuirass with its bear face, the crimson lamellae, the sash
 piece('Chest', 'torso', 'traps', [-6.2, 22.8, -2.6], [6.2, 25.8, 3.2], rim(muscle));
@@ -263,7 +272,71 @@ const sky_fall = [
   { t: 3.3, pose: REST() },
 ];
 
-const ANIMS = { idle, walk, roar, mountain_crusher, earth_breaker, bull_charge, sky_breaker, sky_fall };
+/** Mountain Collapse: up on his toes, the right fist raised high behind his head; then down on one knee, the fist driven into the ground ahead. */
+const collapse = [
+  { t: 0, pose: REST() },
+  { t: 0.45, pose: { Root: { pos: [0, 0, HIP + 0.04] }, Torso: [['x', 14], ['z', -16]], Chest: [['x', 6]], Head: [['x', -16], ['z', 14]],
+    Arm_R: [['x', 176], ['y', -10]], Hand_R: [['x', 50]], Arm_L: [['x', 40], ['y', 30]], Hand_L: [['x', 60]],
+    Thigh_R: [['y', -10]], Leg_R: [], Thigh_L: [['x', 20], ['y', 10]], Leg_L: [['x', -10]] } },
+  { t: 0.55, pose: { Root: { pos: [0, 0, HIP + 0.05] }, Torso: [['x', 16], ['z', -18]], Chest: [['x', 8]], Head: [['x', -18], ['z', 14]],
+    Arm_R: [['x', 182], ['y', -10]], Hand_R: [['x', 56]], Arm_L: [['x', 40], ['y', 30]], Hand_L: [['x', 60]],
+    Thigh_R: [['y', -10]], Leg_R: [], Thigh_L: [['x', 20], ['y', 10]], Leg_L: [['x', -10]] } },
+  { t: 0.7, pose: LANDED(-8) },
+  { t: 0.8, pose: LANDED(2) },
+  { t: 1.3, pose: LANDED(0) },
+  { t: 1.8, pose: REST() },
+];
+/** Thousand-Jin Drop: a deep crouch, then up and over in the dive (the entity itself leaps: the root stays at the hips). */
+const leap = [
+  { t: 0, pose: REST() },
+  { t: 0.3, pose: { ...CROUCH, Arm_R: [['x', -40], ['y', -16]], Hand_R: [['x', 40]], Arm_L: [['x', -40], ['y', 16]], Hand_L: [['x', 40]] } },
+  { t: 0.45, pose: { ...DIVE(HIP), Arm_R: [['x', 150], ['z', 30]], Hand_R: [['x', 30]] } },
+  { t: 0.9, pose: DIVE(HIP) },
+  { t: 2.4, pose: DIVE(HIP) },
+];
+/** The landing of the drop: down fist first, the knee giving, then up. */
+const leap_land = [
+  { t: 0, pose: LANDED(-8) },
+  { t: 0.12, pose: LANDED(2) },
+  { t: 0.6, pose: LANDED(0) },
+  { t: 1.1, pose: REST() },
+];
+
+/**
+ * The transformation's start (Enzo, 16/10/2026: "when he dies everyone is stunned, and all at once he strikes the ground,
+ * then strikes his own head, and transforms like Hulk"): down on his knees, beaten, still; the fist raised and driven into
+ * the ground; up, both fists beaten against his own head three times; then thrown back, arms flung out, roaring, shaking,
+ * his body swelling (a scale on the root, TRANSFORM_SWELL) until the colossus bursts out of him. 8 s.
+ */
+const BEATEN = { ...LANDED(-14), Head: [['x', 46]], Arm_R: [['x', 12], ['y', -10]], Hand_R: [['x', 14]], Arm_L: [['x', 12], ['y', 10]], Hand_L: [['x', 14]] };
+const HEAD_HIT = (k) => ({ ...REST(), Torso: [['x', -12]], Chest: [['x', -6]], Head: [['x', 22 - 6 * k]],
+  Arm_R: [['x', 158 - 18 * k], ['y', 22]], Hand_R: [['x', 112 - 20 * k]], Arm_L: [['x', 158 - 18 * k], ['y', -22]], Hand_L: [['x', 112 - 20 * k]] });
+const SCREAM = (shake) => ({ Root: { pos: [0, 0, HIP + 0.02] }, Torso: [['x', 18 + shake], ['z', shake]], Chest: [['x', 14]], Head: [['x', -40], ['z', -shake]],
+  Arm_R: [['y', -64], ['x', 12 + shake]], Hand_R: [['x', 34]], Arm_L: [['y', 64], ['x', 12 - shake]], Hand_L: [['x', 34]],
+  Thigh_R: [['y', -16]], Leg_R: [['x', -8]], Thigh_L: [['y', 16]], Leg_L: [['x', -8]] });
+const transform = [
+  { t: 0, pose: BEATEN }, { t: 1.2, pose: BEATEN },
+  { t: 1.6, pose: { ...BEATEN, Arm_R: [['x', 172], ['y', -10]], Hand_R: [['x', 60]], Head: [['x', 10]] } },
+  { t: 1.85, pose: LANDED(-12) }, { t: 2.6, pose: LANDED(-8) },
+  { t: 3.2, pose: { ...REST(), Torso: [['x', -16]], Head: [['x', 20]] } },
+  { t: 3.45, pose: HEAD_HIT(0) }, { t: 3.65, pose: HEAD_HIT(1) }, { t: 3.85, pose: HEAD_HIT(0) }, { t: 4.05, pose: HEAD_HIT(1) },
+  { t: 4.25, pose: HEAD_HIT(0) }, { t: 4.6, pose: HEAD_HIT(1) },
+  { t: 5.0, pose: SCREAM(0) }, { t: 5.4, pose: SCREAM(4) }, { t: 5.8, pose: SCREAM(-4) }, { t: 6.2, pose: SCREAM(5) },
+  { t: 6.6, pose: SCREAM(-5) }, { t: 7.0, pose: SCREAM(6) }, { t: 7.4, pose: SCREAM(-6) }, { t: 8.0, pose: SCREAM(0) },
+];
+/** The swelling during the scream: the whole body grows (Root scale) before the colossus bursts out. */
+const TRANSFORM_SWELL = [[0, 1], [5.0, 1], [6.5, 1.25], [7.6, 1.5], [8.0, 1.6]];
+
+const ANIMS = { idle, walk, roar, mountain_crusher, earth_breaker, bull_charge, sky_breaker, sky_fall, collapse, leap, leap_land, transform };
+
+/** In game: held while he falls (the root at the hips: the entity itself falls), and from the impact on. */
+const dive = [{ t: 0, pose: { ...DIVE(HIP), Arm_L: [['x', 160], ['z', -30]] } }, { t: 0.4, pose: { ...DIVE(HIP), Arm_L: [['x', 140], ['z', -40]] } },
+  { t: 0.8, pose: { ...DIVE(HIP), Arm_L: [['x', 160], ['z', -30]] } }];
+const land = sky_fall.filter(k => k.t >= 0.52).map(k => ({ t: Math.round((k.t - 0.52) * 1000) / 1000, pose: k.pose }));
+/** The game's animations: name in game, keys. */
+const GAME = { warlord_idle: idle, warlord_walk: walk, warlord_roar: roar, warlord_crusher: mountain_crusher,
+  warlord_earth_breaker: earth_breaker, warlord_bull_charge: bull_charge, warlord_sky_breaker: sky_breaker,
+  warlord_dive: dive, warlord_land: land, warlord_collapse: collapse, warlord_leap: leap, warlord_leap_land: leap_land };
 const LOOPS = { idle: 'loop', walk: 'loop' };
 
 // ---------------------------------------------------------------- the project
@@ -273,6 +346,10 @@ function buildProject() {
   const proj = kit.bbmodel('bandit_warlord', PIECES, [WARLORD], [atlas], ATLAS, 'entity');
   const groups = groupsByName(proj.outliner);
   proj.animations = Object.entries(ANIMS).map(([n, keys]) => animation(n, keys, groups, LOOPS[n] || 'once'));
+  // The transformation's swelling: a scale on the root.
+  const tr = proj.animations.find(a => a.name === 'transform');
+  const rootAnim = Object.values(tr.animators).find(a => a.name === 'Root');
+  for (const [t, k] of TRANSFORM_SWELL) rootAnim.keyframes.push({ channel: 'scale', data_points: [{ x: k, y: k, z: k }], uuid: require('crypto').randomUUID(), time: t, color: -1, interpolation: 'linear' });
   return { proj, atlas };
 }
 
@@ -314,7 +391,8 @@ const STILLS = {
 const VIEWS = { three: [[-60, 34, -66], [0, 15, -14]], side: [[-92, 22, -14], [0, 15, -14]] };
 const VIEW_OF = { bull_charge: { side: [[-150, 28, -32], [0, 15, -32]] }, sky_fall: { three: [[-96, 36, -108], [0, 34, 0]] } };
 const FILMS = { idle: ['three'], walk: ['three'], roar: ['three'], mountain_crusher: ['three', 'side'], earth_breaker: ['three', 'side'],
-  bull_charge: ['side'], sky_breaker: ['three', 'side'], sky_fall: ['three'] };
+  bull_charge: ['side'], sky_breaker: ['three', 'side'], sky_fall: ['three'], collapse: ['three', 'side'], leap: ['three'], leap_land: ['three'],
+  transform: ['three'] };
 const FPS = 20;
 
 /** His size: the warlord twice as big, a Mountain Bandit (the crimson outfit) at a man's size beside him. */
@@ -365,8 +443,13 @@ if (require.main === module) {
   fs.writeFileSync(path.join(art, 'bandit_warlord', 'warlord.png'), atlas);
   fs.writeFileSync(path.join(art, 'bandit_warlord.bbmodel'), JSON.stringify(proj, null, 1));
   console.log('wrote the Bandit Warlord:', PIECES.length, 'pieces,', proj.animations.length, 'animations');
+  // The game's files.
+  const assets = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock');
+  fs.writeFileSync(path.join(assets, 'textures', 'entity', 'bandit_warlord.png'), atlas);
+  fs.writeFileSync(path.join(assets, 'animmodels', 'entity', 'bandit_warlord.json'), JSON.stringify(kit.mesh(PIECES, ATLAS)));
+  for (const [name, keys] of Object.entries(GAME)) writeSmooth(name, keys);
   if (arg('only')) { const only = arg('only').split(','); for (const k of Object.keys(FILMS)) if (!only.includes(k)) delete FILMS[k]; }
   if (arg('film') !== 'false') film(proj, atlas).catch(e => { console.error(e); process.exit(1); });
 }
 
-module.exports = { PIECES, WARLORD, ANIMS };
+module.exports = { PIECES, WARLORD, ANIMS, REST, LANDED, DIVE, CROUCH, FLEX, HIP, connect, load, shot, save };
