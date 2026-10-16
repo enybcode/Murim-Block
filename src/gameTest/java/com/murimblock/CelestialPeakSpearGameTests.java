@@ -26,7 +26,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import yesman.epicfight.gameasset.Animations;
 
 import static com.murimblock.testing.GameTestPlayers.cleanup;
 import static com.murimblock.testing.GameTestPlayers.player;
@@ -77,16 +76,6 @@ public final class CelestialPeakSpearGameTests {
         zombie.setHealth(200);
         zombie.moveTo(player.getX() + dx, player.getY(), player.getZ() + dz, 180, 0);
         return zombie;
-    }
-
-    /**
-     * Runs {@code then} once the player's level finds every zombie where it was moved. Only the reach test needs it: its
-     * target stands past foundation_arena, in a chunk that may not be loaded yet.
-     */
-    private static void whenReachable(GameTestHelper helper, ServerPlayer player, Runnable then, Zombie... zombies) {
-        helper.startSequence().thenWaitUntil(() -> {
-            for (Zombie z : zombies) helper.assertTrue(player.level().getEntities(player, z.getBoundingBox()).contains(z), "A zombie is not reachable yet");
-        }).thenExecute(then);
     }
 
     private static void tickFor(GameTestHelper helper, ServerPlayer player, int ticks) {
@@ -162,34 +151,22 @@ public final class CelestialPeakSpearGameTests {
         });
     }
 
-    @GameTest(template = "foundation_arena", batch = "spear_reach", timeoutTicks = 260)
+    @GameTest(template = "spear_arena", batch = "spear_reach", timeoutTicks = 60)
     public static void aThrustAtThePointStrikesHarderThanUpClose(GameTestHelper helper) {
-        // Still where it was, in foundation_arena: on the server a player is not carried through the thrust, which reaches
-        // 3.6 blocks only by the rounding of the player's position to floats, so it does not fit the spear arena yet.
-        ServerPlayer player = adept(helper, new BlockPos(2, 1, 2));
-        Zombie atPoint = dummy(helper, player, 0, 3.6);
+        // One Piercing Dragon through a zombie up close and one at the point: the same hit, Long Reach the only difference.
+        // Its path really runs 4.6 blocks ahead on the server. Epic Fight's M1 thrust ends 2.3 blocks ahead of the body
+        // (the client carries the body forward with it), so it never lands 3 blocks out on its own.
+        ServerPlayer player = adept(helper);
+        Zombie upClose = dummy(helper, player, 0, 2.0), atPoint = dummy(helper, player, 0, 3.6);
         helper.assertTrue(CelestialPeakSpear.atReach(player, atPoint), "3.6 blocks out is not at the point");
-        float[] dealt = new float[2];
-        // Each thrust with the swing fully charged (a blow too soon after the last is weaker in Minecraft).
-        tickFor(helper, player, 240);
-        whenReachable(helper, player, () -> {
-            helper.runAfterDelay(30, () -> EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F));
-            helper.runAfterDelay(60, () -> {
-                dealt[0] = 200 - atPoint.getHealth();
-                atPoint.discard();
-                EpicFightBridge.patch(player).playAnimationSynchronized(yesman.epicfight.gameasset.Animations.BIPED_IDLE, 0.0F);
-                Zombie upClose = dummy(helper, player, 0, 1.4);
-                helper.assertTrue(!CelestialPeakSpear.atReach(player, upClose), "1.4 blocks out is at the point");
-                whenReachable(helper, player, () -> {
-                    helper.runAfterDelay(30, () -> EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F));
-                    helper.runAfterDelay(60, () -> {
-                        dealt[1] = 200 - upClose.getHealth();
-                        helper.assertTrue(dealt[0] > 0 && dealt[1] > 0, "A thrust missed: at the point " + dealt[0] + ", up close " + dealt[1]);
-                        helper.assertTrue(dealt[0] > dealt[1] * 1.1, "Long Reach did not strike harder at the point: " + dealt[0] + " against " + dealt[1]);
-                        end(helper, player, upClose);
-                    });
-                }, upClose);
-            });
-        }, atPoint);
+        helper.assertTrue(!CelestialPeakSpear.atReach(player, upClose), "2.0 blocks out is at the point");
+        helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "Piercing Dragon was not cast");
+        tickFor(helper, player, 30);
+        helper.runAfterDelay(32, () -> {
+            float near = 200 - upClose.getHealth(), far = 200 - atPoint.getHealth();
+            helper.assertTrue(near > 0 && far > 0, "The lunge missed: up close " + near + ", at the point " + far);
+            helper.assertTrue(far > near * 1.1, "Long Reach did not strike harder at the point: " + far + " against " + near);
+            end(helper, player, upClose, atPoint);
+        });
     }
 }
