@@ -26,11 +26,56 @@ passant : il faut l'assiéger ou s'y glisser, avec **trente bandits** à l'inté
 1. On arrive devant un camp plein : **trente bandits** à leurs postes. Le siège du chef, dans la grande salle, est
    **vide**.
 2. Il faut les tuer **tous**. (À l'écran, une petite barre « Bandits : 18 / 30 » pourrait suivre le compte.)
-3. Au dernier mort, le **tambour de guerre** devant la grande salle résonne trois fois, de la fumée sort de la porte,
-   et le **boss** en sort : deux fois la taille d'un homme, en armure rouge et or, une couronne d'or, un grand dao.
-4. Le boss vaincu, le camp est **libéré** : il ne se repeuple plus, et le butin de la grande salle s'ouvre.
+3. Au dernier mort, le **tambour de guerre** devant la grande salle résonne trois fois, puis le
+   [Seigneur des bandits](../mobs/bandit-warlord.md) **tombe du ciel comme un météore**, enveloppé de feu, une traînée de
+   flammes et de fumée derrière lui, droit sur la place ; **une cinématique** le montre.
+4. **L'impact change le camp pour de bon** (demande d'Enzo du 16/10 : « une structure qui change ») : voir ci-dessous.
+5. Le boss vaincu, le camp est **libéré** : il ne se repeuple plus, et le butin de la grande salle s'ouvre.
 
-![Le boss sort de la grande salle](images/bandit-camp/boss.jpg)
+*(Ancienne idée, remplacée : le boss sortait de la porte de la grande salle.)*
+
+## La chute et le cratère (maquette du 16/10, à valider)
+
+> Demandes d'Enzo : « son spawn, il tombe du ciel, et ça change le village bandit en cratère pour le PvP ; on prépare une
+> structure qui change ; ce serait l'ultime de l'art, il commencerait par ça, un changement du terrain » ; « il tombe du
+> ciel comme une météorite avec du feu, et il y aura une cinématique quand il spawn ».
+
+![Il tombe du ciel en météore sur le camp vidé](images/bandit-camp/fall.jpg)
+
+- **La chute** est l'**ultime du [Poing Brise-Montagne](../combat/styles/mountain-shattering-fist.md)** : le boss ouvre
+  le combat avec elle. Il atterrit poing en avant, un genou à terre, puis se relève et rugit.
+- **La cinématique** (demande d'Enzo) : au dernier bandit mort, **tous les joueurs dans le camp** la voient
+  (comme le finish, `FinishCinematic`), environ 8 secondes, sans pouvoir être frappés :
+  1. le tambour de guerre en gros plan, trois coups, la caméra tremble ;
+  2. la caméra monte vers le ciel : un point rouge grossit, **un météore de feu**, le Seigneur dedans, pieds en avant ;
+  3. il traverse le ciel vers la place, la caméra le suit ; un cercle de fissures rougeoyantes s'ouvre au sol ;
+  4. **l'impact** : flash blanc (lumière Photon), onde de choc, le camp vole en éclats, le cratère se creuse ;
+  5. la poussière retombe, il est au fond, un genou à terre, poing dans la roche ; il se relève et rugit, son nom
+     s'écrit en grand (« Bandit Warlord ») et la barre de boss apparaît ; la caméra revient au joueur, le combat commence.
+  Un joueur qui arrive après ne la voit pas : le cratère est déjà là.
+- **Le cratère** : au point d'impact, un creux d'environ **60 blocs de diamètre et 15 de profondeur**, en cuvette ; au
+  fond, de la roche brisée et brûlée, puis du gravier et de la terre en remontant ; un **bourrelet** de terre et de
+  débris de deux ou trois blocs tout autour.
+- **Le camp en ruine** : tout ce qui était dans le cratère disparaît (place, feu, tentes, une partie des maisons) ;
+  autour, plus on est près, plus c'est détruit (toits soufflés, murs tombés) ; la palissade éclate vers l'extérieur,
+  des rondins couchés au-delà ; de la fumée et quelques braises.
+- **Il reste** : c'est le terrain du combat contre le boss, puis **une arène de PvP pour de bon** : le cratère ne se
+  rebouche pas, le camp ne se repeuple pas. La grande salle (avec le coffre du chef) est au bord, abîmée mais debout.
+
+![Le cratère, le boss au fond](images/bandit-camp/crater.jpg)
+
+![Du bord, en regardant au fond](images/bandit-camp/crater_rim.jpg)
+
+![Sa chute, son atterrissage et son rugissement](../mobs/images/warlord-sky_fall.gif)
+
+**En jeu (proposition)** : le camp garde son plan ; à l'impact, le serveur creuse le cratère et casse le camp autour,
+**réparti sur plusieurs ticks** comme la construction du sanctuaire (pas de gel du serveur ; la cinématique couvre ce
+temps), et note le camp comme « cratère » (une sauvegarde, pour ne plus le reconstruire ni le repeupler, et pour que
+`SiteResidents` ne lui rende pas ses bandits). Les coffres et la cache de la grande salle sont gardés. Le dessin est un
+motif fixe tiré de la position du camp (le même cratère pour tous les joueurs). Fichier de la maquette :
+`scripts/concepts/bandit-camp.js` (`crater`, `falling`), vues `fall`, `crater`, `crater_rim`.
+
+![Le boss sort de la grande salle (ancienne idée)](images/bandit-camp/boss.jpg)
 
 Le boss n'existe pas encore : un **nouveau mob** à créer (modèle, attaques, barre de boss), plus fort que le Bandit
 Chief ; ou, pour commencer, le Bandit Chief lui-même avec plus de vie. En jeu, le camp compte ses bandits encore en
@@ -135,6 +180,11 @@ tentes et les dortoirs.
   dalles d'épicéa, peaux en laine marron et terre cuite, fossé et chemins de boue, feu de camp, chaudron, bambou.
 
 ## Questions pour Enzo
+
+- Le cratère : la taille proposée (60 blocs de large, 15 de profondeur) convient-elle ? La grande salle et le coffre du
+  chef restent-ils debout au bord ?
+- La cinématique : 8 secondes, vue par tous les joueurs du camp ; trop longue ? Peut-on la passer ?
+- Dans l'arène de PvP, un joueur mis à terre (K.O.) y est-il traité comme ailleurs, ou faut-il des règles d'arène ?
 
 - Un seul camp par région (cinq dans le monde), ou un par région tous les quelques milliers de blocs ?
 - Le boss : un nouveau mob à créer (nom, arme, attaques), ou le Bandit Chief renforcé pour commencer ? Que lâche-t-il ?

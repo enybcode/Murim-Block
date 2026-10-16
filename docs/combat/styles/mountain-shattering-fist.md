@@ -84,6 +84,23 @@ Accroupi, un uppercut qui monte jusqu'au ciel : la cible est **projetée à 8 bl
 terre** jaillit sous elle et retombe en débris. Il se découvre après avoir **mis à terre 10 ennemis avec le
 Brise-terre** (indice : « Strike the earth hard enough and the sky will follow »). Qi 90, recharge 30 s.
 
+## L'ultime : « Heaven-Falling Mountain » (Montagne tombée du ciel)
+
+> Demandes d'Enzo du 16/10 : la chute du ciel du Seigneur des bandits, son entrée, est l'ultime de cet art ; un
+> **changement du terrain** ; il tombe comme une météorite, avec du feu.
+
+Le joueur **bondit droit dans le ciel** (une trentaine de blocs), reste un instant suspendu, puis **retombe comme un
+météore** sur un point visé (jusqu'à 12 blocs de côté), enveloppé de feu, une traînée de flammes derrière lui, et
+atterrit poing au sol. Au sol, un cercle de fissures rougeoyantes annonce l'impact pendant la montée.
+
+- **Dégâts** : ×3,0 au centre (3 blocs), ×1,5 jusqu'à 8 blocs ; tous projetés en arrière et renversés ; brûlure 3 s.
+- **Le terrain change** : un **cratère de 8 blocs de rayon et 4 de profondeur** (le boss, à sa taille, en creuse un de
+  30 et 15 : tout le camp). Mêmes règles de destruction que le reste de l'art.
+- **Débloqué** à 100 de maîtrise, après le secret. Qi 200, **recharge 5 minutes**. Pendant la montée, le joueur ne peut
+  pas être touché en mêlée, mais peut l'être par les flèches.
+- **Animation** : `sky_fall` (sa chute et son atterrissage), une montée à créer. Pas de cinématique pour le joueur
+  (seulement pour l'entrée du boss).
+
 ## Le finish : « Mountain Burial » (Ensevelissement)
 
 Sur un joueur à terre (B) : le vainqueur l'enfonce dans le sol de trois coups de poing, un cratère s'ouvre, des
@@ -116,8 +133,9 @@ C'est le cœur de l'art, et ce qui demande le plus de règles :
 
 Ses attaques sont celles de l'art, à sa taille (deux fois celle d'un homme) : le Poing écrase-montagne de près, le
 Brise-terre quand il est entouré, la Charge du taureau pour rattraper un joueur qui recule, le Brise-ciel en seconde
-phase. Tout s'annonce et se pare. **Ses coups cassent aussi le décor** de la cour du camp, mais pas les bâtiments
-(la règle des sites).
+phase. **Il ouvre le combat par l'ultime**, en cinématique : il tombe du ciel en météore sur le camp, qui devient un
+cratère pour de bon ([../../structures/bandit-camp.md](../../structures/bandit-camp.md)). Tout s'annonce et se pare. **Ses coups cassent aussi le décor** de la cour du camp, mais pas les bâtiments
+(la règle des sites), sauf sa chute d'entrée, qui creuse le camp une fois pour toutes.
 
 ## À décider avec Enzo
 
@@ -126,3 +144,4 @@ phase. Tout s'annonce et se pare. **Ses coups cassent aussi le décor** de la co
 2. **Ce que les blocs cassés donnent** : rien, un sur dix, ou tout ?
 3. **Le royaume** : à partir de Qi Condensation, ou plus tard ?
 4. Cet art s'ajoute-t-il aux 12 de la bêta (un 13e, « libre »), ou en remplace-t-il un ?
+5. L'ultime chez le joueur : un cratère de 8 blocs, recharge 5 minutes, débloqué à 100 de maîtrise ; trop fort, ou pas assez ?

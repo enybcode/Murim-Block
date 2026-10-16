@@ -8,7 +8,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const arg = n => (process.argv.find(a => a.startsWith(`--${n}=`)) || '').split('=')[1];
 const OUT = path.resolve(arg('out') || path.join(ROOT, 'docs', 'structures', 'images', 'bandit-camp'));
 const PORT = Number(arg('port') || 9232);
-const ALL = ['overview', 'gate', 'plaza', 'plan', 'boss', 'north', 'west', 'south', 'east'];
+const ALL = ['overview', 'gate', 'plaza', 'plan', 'boss', 'north', 'west', 'south', 'east', 'fall', 'crater', 'crater_rim'];
 const ONLY = arg('only') ? arg('only').split(',') : ALL;
 
 /** Runs in the page: draws a numbered badge at each mark ([label, fx, fy], fractions of the picture, from ST.render). */

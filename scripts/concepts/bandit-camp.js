@@ -209,6 +209,85 @@ window.CAMP = (() => {
     S.fill(x - 2, y + 2, z - 2, x - 2, y + 2, z - 4, 'iron');
   }
 
+  // ---------------------------------------------------------------- the crater
+  /**
+   * The camp after the Warlord's fall (the Mountain-Shattering Fist's ultimate): where he lands, in the plaza, a crater
+   * RC blocks across its rim and DEPTH deep, its floor of broken rock; everything that stood inside it gone; a raised rim
+   * of thrown earth and rubble; round it the camp in ruins, the nearer the more broken (roofs blown off, walls down,
+   * tents flattened), the palisade burst outward on the side facing the crater; embers and dust. The arena of the fight
+   * (and of PvP after).
+   */
+  const RC = 30, DEPTH = 15;
+  function crater(r) {
+    const floor = d => Math.round(P - DEPTH * (1 - (d / RC) ** 2));
+    for (let x = -R - 6; x <= R + 6; x++) for (let z = -R - 6; z <= R + 6; z++) {
+      const d = Math.hypot(x, z);
+      if (d < RC) {
+        // Inside: everything above the new floor gone, the floor of broken rock and scorched earth.
+        const h = floor(d);
+        for (let y = h + 1; y <= P + 30; y++) S.set(x, y, z, null);
+        // The deeper, the darker and more broken: scorched rock at the heart, earth up the slopes.
+        const deep = 1 - d / RC;
+        for (let y = h - 3; y <= h; y++) S.set(x, y, z, y < h ? 'stone' : deep > 0.75 ? (r() < 0.6 ? 'robe_black' : 'stone') : deep > 0.4 ? (r() < 0.5 ? 'stone' : 'gravel') : (r() < 0.6 ? 'dirt' : 'mud'));
+        if (d > 3 && d < 9 && r() < 0.06) S.set(x, h + 1, z, 'fire');
+      } else if (d < RC + 4) {
+        // The rim: thrown earth and rubble, raised two or three blocks.
+        const up = Math.round(3 * (1 - (d - RC) / 4) + r() * 1.2);
+        for (let y = P + 1; y <= P + up; y++) S.set(x, y, z, r() < 0.5 ? 'dirt' : r() < 0.6 ? 'stone' : 'gravel');
+        for (let y = P + up + 1; y <= P + 30; y++) if (S.get(x, y, z) && r() < 0.85) S.set(x, y, z, null);
+      } else if (d <= R + 2) {
+        // The ruins round it: the nearer, the more blown away, the high parts first.
+        const blast = Math.max(0.35, 1 - (d - RC - 4) / (R + 2 - RC - 4));
+        for (let y = P + 1; y <= P + 30; y++) {
+          if (!S.get(x, y, z)) continue;
+          const high = (y - P) / 12;
+          if (r() < blast * (0.55 + high)) S.set(x, y, z, null);
+        }
+        if (r() < 0.04 * (1 + blast)) S.blob(x, P + 1, z, 1, 1, 1, r() < 0.5 ? 'stone' : 'dirt', 0.3, r);
+        if (r() < 0.006 * (1 + 2 * blast)) S.set(x, P + 1, z, 'fire');
+      }
+    }
+    // The palisade burst outward on the plaza's side: logs thrown flat beyond it.
+    for (let k = 0; k < 40; k++) {
+      const a = r() * Math.PI * 2, d = R + 3 + r() * 9, x = Math.round(Math.sin(a) * d), z = Math.round(Math.cos(a) * d);
+      const len = 3 + Math.floor(r() * 4), along = r() < 0.5;
+      for (let i = 0; i < len; i++) S.set(along ? x + i : x, P + 1, along ? z : z + i, 'log');
+    }
+    // Rubble thrown out across the rim, dust still hanging over the hollow.
+    for (let k = 0; k < 70; k++) {
+      const a = r() * Math.PI * 2, d = RC + r() * 20, x = Math.round(Math.sin(a) * d), z = Math.round(Math.cos(a) * d);
+      S.blob(x, P + 1, z, 1, 1, 1, r() < 0.6 ? 'stone' : 'dirt', 0.4, r);
+    }
+    for (let k = 0; k < 90; k++) {
+      const a = r() * Math.PI * 2, d = r() * RC * 0.9;
+      S.blob(Math.round(Math.sin(a) * d), floor(d) + 3 + Math.floor(r() * 10), Math.round(Math.cos(a) * d), 1, 1, 1, 'smoke', 0.5, r);
+    }
+    return floor(0);
+  }
+
+  /**
+   * The Warlord falling like a meteor: wrapped in a shell of fire from the feet up, a thick tail of flame turning to
+   * smoke behind him, sparks thrown off.
+   */
+  function falling(x, y, z) {
+    const r = S.seeded(7);
+    // The fire shell under and round him (he comes down feet first), leaving his head and shoulders seen.
+    for (let dx = -5; dx <= 5; dx++) for (let dz = -5; dz <= 5; dz++) for (let dy = -4; dy <= 9; dy++) {
+      const d = Math.hypot(dx, dz * 1.0, (dy - 3) * 0.8);
+      if (d > 4.2 && d < 5.6 && dy < 1 && dz < 1 && r() < 0.75) S.set(x + dx, y + dy, z + dz, 'fire');
+    }
+    for (let dx = -3; dx <= 3; dx++) for (let dz = -3; dz <= 3; dz++) for (let dy = -6; dy <= -3; dy++)
+      if (Math.hypot(dx, dz, dy + 3) < 3.6) S.set(x + dx, y + dy, z + dz, 'fire');
+    boss(x, y, z);
+    // The tail: wide and burning near him, thinning to smoke high up.
+    for (let k = 1; k < 44; k++) {
+      const w = Math.max(1, Math.round(4.5 - k / 12));
+      S.blob(x + Math.round(Math.sin(k * 0.7) * 0.8), y + 4 + k, z - 5 - Math.round(k * 0.6), w, 1, w, k < 14 ? 'fire' : 'smoke', 0.4, r);
+    }
+    // Sparks.
+    for (let k = 0; k < 40; k++) S.set(x + Math.round((r() - 0.5) * 18), y + Math.round(r() * 24), z + Math.round((r() - 0.5) * 18), 'fire');
+  }
+
   // ---------------------------------------------------------------- views
   const SKY = '#C3D2DE';
   function overview() { build(); return { view: { unclamped: true, position: [96, 74, 118], target: [0, 4, 0], fov: 52 }, sky: SKY, fog: [300, 800] }; }
@@ -226,6 +305,19 @@ window.CAMP = (() => {
     return { view: { unclamped: true, position: [0, 150, 70], target: [0, 4, 2], fov: 58 }, sky: SKY, fog: [500, 1100], marks, men: n };
   }
 
-  return { overview, gate, plaza, plan, boss: bossView, north: regionView('north'), west: regionView('west'), south: regionView('south'), east: regionView('east'), men: () => build() };
+  /** The fall: the camp emptied, the Warlord coming down out of the sky onto the plaza. */
+  function fall() { build(); for (let x = -R; x <= R; x++) for (let z = -R; z <= R; z++) for (let y = P + 1; y <= P + 16; y++) {
+      const v = S.get(x, y, z); if (v === 'robe_black' || v === 'robe_blue' || v === 'robe_white' || v === 'skin' || v === 'hair' || v === 'robe_red') S.set(x, y, z, null); }
+    falling(0, P + 40, 4);
+    // Where he will land: the plaza's ground already cracking, glowing.
+    for (let a = 0; a < 6.28; a += 0.4) for (let k = 2; k < 9; k++) S.set(Math.round(Math.sin(a + k * 0.2) * k), P, Math.round(Math.cos(a + k * 0.2) * k), 'fire');
+    return { view: { unclamped: true, position: [52, 30, 70], target: [0, 26, 0], fov: 62 }, sky: SKY, fog: [300, 800] }; }
+  /** After the fall: the crater, the Warlord standing at its heart. */
+  function craterView() { build(); const r = S.seeded(99); const h = crater(r); boss(0, h, 0);
+    return { view: { unclamped: true, position: [96, 74, 118], target: [0, 0, 0], fov: 52 }, sky: SKY, fog: [300, 800] }; }
+  /** From the rim, looking down at him. */
+  function craterRim() { build(); const r = S.seeded(99); const h = crater(r); boss(0, h, 0);
+    return { view: { unclamped: true, position: [-6, 22, 40], target: [0, h + 4, 0], fov: 60 }, sky: SKY, fog: [220, 650] }; }
+  return { overview, gate, plaza, plan, boss: bossView, fall, crater: craterView, crater_rim: craterRim, north: regionView('north'), west: regionView('west'), south: regionView('south'), east: regionView('east'), men: () => build() };
 })();
 true;

@@ -35,13 +35,14 @@
 |---|---|---|---|
 | **Repos** | 3 s | Il respire, roule des épaules, tourne la tête | — |
 | **Marche** | 1,2 s | Lourde, le tronc qui roule, les bras qui balancent | — |
-| **L'entrée** (`roar`) | 2,6 s | Accroupi dans la porte de la grande salle, il se lève, frappe ses poings l'un contre l'autre et rugit, les bras levés | Quand il sort, une fois les 30 bandits morts ; le tambour résonne, la barre de boss apparaît |
+| **La chute** (`sky_fall`) | 3,3 s | Il tombe du ciel en météore, genoux remontés, atterrit poing au sol un genou à terre, se relève et rugit | Son entrée, en cinématique, une fois les 30 bandits morts, et l'ultime de son art : l'impact creuse le camp en cratère |
+| **Le rugissement** (`roar`) | 2,6 s | Accroupi, il se lève, frappe ses poings l'un contre l'autre et rugit, les bras levés | En seconde phase |
 | **Poing écrase-montagne** (`mountain_crusher`) | 1,1 s | Un direct du droit : il arme, fait un pas et enfonce le poing | Attaque de base, gros recul |
 | **Brise-terre** (`earth_breaker`) | 1,7 s | Les deux poings levés au-dessus de la tête, abattus au sol | Onde de choc autour de lui (comme le saut du Bandit Chief) |
 | **Charge du taureau** (`bull_charge`) | 1,6 s | L'épaule baissée, une course de quatre blocs, l'impact | Pour rattraper un joueur qui recule ; renverse |
 | **Brise-ciel** (`sky_breaker`) | 1,15 s | Accroupi bas, un uppercut qui monte en se dressant sur la pointe des pieds | Projette la cible en l'air |
 
-![L'entrée](images/warlord-roar.gif) ![Poing écrase-montagne](images/warlord-mountain_crusher.gif)
+![La chute](images/warlord-sky_fall.gif) ![Le rugissement](images/warlord-roar.gif) ![Poing écrase-montagne](images/warlord-mountain_crusher.gif)
 
 ![Brise-terre](images/warlord-earth_breaker.gif) ![Brise-ciel](images/warlord-sky_breaker.gif)
 
@@ -52,8 +53,13 @@ Profils : [poing](images/warlord-mountain_crusher-side.gif), [brise-terre](image
 
 ## Proposition pour le jeu
 
-- **Apparition** : le camp compte ses 30 bandits ; au dernier mort, le tambour de guerre devant la grande salle résonne
-  trois fois, de la fumée sort de la porte et il en sort avec son entrée. Il ne revient pas : un camp libéré le reste.
+- **Apparition** (16/10, demandes d'Enzo) : le camp compte ses 30 bandits ; au dernier mort, le tambour de guerre
+  résonne trois fois et **il tombe du ciel comme un météore de feu**, **en cinématique** pour les joueurs du camp :
+  l'impact **change le camp en cratère** pour de bon, une arène de PvP ensuite
+  ([la chute et le cratère](../structures/bandit-camp.md#la-chute-et-le-cratère-maquette-du-1610-à-valider)).
+  C'est l'ultime de son art. Il ne revient pas : un camp libéré le reste.
+
+![Sa chute sur le camp](../structures/images/bandit-camp/fall.jpg)
 - **Force** : un boss au-dessus du Bandit Chief et de Sensei Yun, par exemple **400 PV**, des coups à 10-16 dégâts,
   **tous parables** ; une seconde phase sous la moitié de sa vie (plus rapide, la charge plus souvent). Barre de boss
   pourpre et or.

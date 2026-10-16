@@ -13,6 +13,7 @@
 //   earth_breaker        both fists raised over his head and brought down on the ground (a shockwave in game);
 //   bull_charge          the shoulder lowered, a rush of four blocks, the impact;
 //   sky_breaker          crouched low, an uppercut that throws the target up.
+//   sky_fall             his entrance and the art's ultimate: down out of the sky, a landing fist-first, up into the roar.
 // Usage: node scripts/animation/bandit-warlord-3d.cjs [--port=9236] [--film=false]
 const fs = require('fs');
 const path = require('path');
@@ -233,7 +234,36 @@ const sky_breaker = [
   { t: 1.15, pose: REST(0.5) },
 ];
 
-const ANIMS = { idle, walk, roar, mountain_crusher, earth_breaker, bull_charge, sky_breaker };
+/** Coming down: the knees drawn up, the right fist cocked under him, the left arm thrown up. */
+const DIVE = z => ({
+  Root: { pos: [0, 0, z] },
+  Torso: [['x', -20]], Chest: [['x', -6]], Head: [['x', 30]],
+  Arm_R: [['x', -30], ['y', -14]], Hand_R: [['x', 110]], Arm_L: [['x', 150], ['z', -30]], Hand_L: [['x', 20]],
+  Thigh_R: [['x', 70], ['y', -14]], Leg_R: [['x', -100]], Thigh_L: [['x', 40], ['y', 14]], Leg_L: [['x', -110]],
+});
+/** The landing: the left knee down, the right foot planted, the right fist driven into the ground, the left arm out. */
+const LANDED = (lean = 0) => ({
+  Root: { pos: [0, 0, 0.42] },
+  Torso: [['x', -44 + lean]], Chest: [['x', -8]], Head: [['x', 40 - lean]],
+  Arm_R: [['x', 50], ['y', -6]], Hand_R: [['x', 0]], Arm_L: [['x', 20], ['y', 60]], Hand_L: [['x', 30]],
+  Thigh_R: [['x', 92], ['y', -12]], Leg_R: [['x', -96]], Thigh_L: [['x', -6], ['y', 12]], Leg_L: [['x', -104]],
+});
+const sky_fall = [
+  { t: 0, pose: DIVE(4.2) },
+  { t: 0.3, pose: DIVE(2.2) },
+  { t: 0.45, pose: DIVE(0.9) },
+  // The impact (the crater opens here in game).
+  { t: 0.52, pose: LANDED(-6) },
+  { t: 0.6, pose: LANDED(2) },
+  { t: 1.3, pose: LANDED(0) },
+  // Up out of the dust, slowly, then the roar.
+  { t: 1.8, pose: { ...REST(), Torso: [['x', -14]], Head: [['x', 10]] } },
+  { t: 2.2, pose: FLEX },
+  { t: 2.9, pose: { ...FLEX, Head: [['x', -30]] } },
+  { t: 3.3, pose: REST() },
+];
+
+const ANIMS = { idle, walk, roar, mountain_crusher, earth_breaker, bull_charge, sky_breaker, sky_fall };
 const LOOPS = { idle: 'loop', walk: 'loop' };
 
 // ---------------------------------------------------------------- the project
@@ -282,9 +312,9 @@ const STILLS = {
   back: [[44, 30, 52], [0, 17, 0], 640, 720], face: [[-8, 30, -22], [0, 27, 0], 640, 560],
 };
 const VIEWS = { three: [[-60, 34, -66], [0, 15, -14]], side: [[-92, 22, -14], [0, 15, -14]] };
-const VIEW_OF = { bull_charge: { side: [[-150, 28, -32], [0, 15, -32]] } };
+const VIEW_OF = { bull_charge: { side: [[-150, 28, -32], [0, 15, -32]] }, sky_fall: { three: [[-96, 36, -108], [0, 34, 0]] } };
 const FILMS = { idle: ['three'], walk: ['three'], roar: ['three'], mountain_crusher: ['three', 'side'], earth_breaker: ['three', 'side'],
-  bull_charge: ['side'], sky_breaker: ['three', 'side'] };
+  bull_charge: ['side'], sky_breaker: ['three', 'side'], sky_fall: ['three'] };
 const FPS = 20;
 
 /** His size: the warlord twice as big, a Mountain Bandit (the crimson outfit) at a man's size beside him. */
@@ -335,6 +365,7 @@ if (require.main === module) {
   fs.writeFileSync(path.join(art, 'bandit_warlord', 'warlord.png'), atlas);
   fs.writeFileSync(path.join(art, 'bandit_warlord.bbmodel'), JSON.stringify(proj, null, 1));
   console.log('wrote the Bandit Warlord:', PIECES.length, 'pieces,', proj.animations.length, 'animations');
+  if (arg('only')) { const only = arg('only').split(','); for (const k of Object.keys(FILMS)) if (!only.includes(k)) delete FILMS[k]; }
   if (arg('film') !== 'false') film(proj, atlas).catch(e => { console.error(e); process.exit(1); });
 }
 
