@@ -28,7 +28,7 @@ import static com.murimblock.testing.GameTestPlayers.player;
 /**
  * The Crab King, the crab art's boss: a boss four blocks tall on the biped skeleton with his own idle, heavy walk and
  * pincer attacks, a boss bar, never despawning, breathing under water; under half his health he roars and calls two
- * armoured crabs, once; his slam's shockwave hurts whoever is near; his grab catches, holds and slams down.
+ * armoured crabs, once; his slam's shockwave hurts whoever is near; his grab catches between the jaws, holds, squeezes and throws.
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -39,6 +39,23 @@ public final class CrabKingGameTests {
         CrabKingEntity king = MurimEntities.CRAB_KING.get().spawn(helper.getLevel(), helper.absolutePos(at), MobSpawnType.COMMAND);
         helper.assertTrue(king != null, "No Crab King spawned");
         return king;
+    }
+
+    /** He faces +z for the whole test: nothing turns him (a still mob turns its body after its head). */
+    private static void pinFacing(GameTestHelper helper, CrabKingEntity king) {
+        helper.onEachTick(() -> {
+            king.setYRot(0);
+            king.yRotO = 0;
+            king.yBodyRot = 0;
+            king.yBodyRotO = 0;
+            king.setYHeadRot(0);
+        });
+    }
+
+    /** A body put where his jaws shut, its middle on them. */
+    private static void onJaws(CrabKingEntity king, net.minecraft.world.entity.LivingEntity e) {
+        net.minecraft.world.phys.Vec3 at = king.catchPoint().subtract(0, e.getBbHeight() / 2, 0);
+        e.moveTo(at.x, Math.max(at.y, king.getY()), at.z, 180, 0);
     }
 
     @GameTest(template = "foundation_arena", batch = "crab_king_boss")
@@ -91,6 +108,7 @@ public final class CrabKingGameTests {
         king.setNoAi(true);
         king.setYRot(0);
         king.yBodyRot = 0;
+        pinFacing(helper, king);
         Zombie near = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 2));
         near.setNoAi(true);
         float health = near.getHealth();
@@ -102,32 +120,43 @@ public final class CrabKingGameTests {
     }
 
     /**
-     * The grab played as in a fight: the pincer shuts on a zombie before him, holds it up off the ground, then slams it
-     * down before him, hurt.
+     * The grab played as in a fight: the pincer shuts on a zombie before him, holds it up off the ground, squeezes it,
+     * then throws it: it flies, lands, hurt.
      */
-    @GameTest(template = "foundation_arena", batch = "crab_king_grab", timeoutTicks = 140)
+    @GameTest(template = "foundation_arena", batch = "crab_king_grab", timeoutTicks = 200)
     public static void theGrabCatchesHoldsAndSlamsDown(GameTestHelper helper) {
         for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
         CrabKingEntity king = king(helper, new BlockPos(2, 1, 0));
         king.setNoAi(true);
         king.setYRot(0);
         king.yBodyRot = 0;
+        pinFacing(helper, king);
         // His right is -x when he faces +z: the pincer catches before him, a little to that side.
         Zombie caught = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 2));
-        caught.setNoAi(true);
+        net.minecraft.world.phys.Vec3 jaws = king.catchPoint().subtract(0, caught.getBbHeight() / 2, 0);
+        caught.moveTo(jaws.x, Math.max(jaws.y, king.getY()), jaws.z, 180, 0);
+        // Left its AI: a mob without it does not move, even thrown.
         caught.setBaby(false);
         float health = caught.getHealth();
         double ground = caught.getY();
         helper.runAfterDelay(2, () -> EpicFightCapabilities.getEntityPatch(king, LivingEntityPatch.class).playAnimationSynchronized(CrabKingAnimations.GRAB, 0));
+        // Kept on his jaws until they shut on it (its AI left on so it flies when thrown).
+        helper.onEachTick(() -> { if (helper.getTick() <= 16 && king.held() == null) onJaws(king, caught); });
         // The pincer shuts 0.55 s in (11 ticks), the hold lifts it in 0.35 s.
         helper.runAfterDelay(26, () -> {
             helper.assertTrue(king.held() == caught, "He let go too soon");
             helper.assertTrue(caught.getY() > ground + 1.5, "The zombie is not lifted: " + (caught.getY() - ground));
         });
-        helper.runAfterDelay(80, () -> {
-            helper.assertTrue(king.held() == null, "He still holds the zombie after the slam");
+        // Thrown 2.45 s into the hold (49 ticks after the catch).
+        boolean[] flew = {false};
+        helper.onEachTick(() -> flew[0] |= king.isFlying(caught));
+        helper.runAfterDelay(160, () -> {
+            helper.assertTrue(king.held() == null, "He still holds the zombie after the throw");
+            helper.assertTrue(flew[0], "The zombie was never thrown");
+            helper.assertTrue(!king.isFlying(caught), "The zombie never landed");
             helper.assertTrue(caught.getHealth() < health, "The grab did not hurt the zombie");
-            helper.assertTrue(Math.abs(caught.getY() - ground) < 0.6, "The zombie is not back on the ground: " + (caught.getY() - ground));
+            // Thrown against the arena's walls, it may land on their edge: on the ground, wherever it fell.
+            helper.assertTrue(caught.onGround(), "The zombie is not back on the ground");
             caught.discard();
             king.discard();
             helper.succeed();
@@ -136,20 +165,24 @@ public final class CrabKingGameTests {
 
     /**
      * A player in his pincer can do nothing: hindered (no attack, item, technique or meditation), pinned in Epic Fight
-     * (no move, turn, attack, skill, item, switch), an attack of theirs cancelled; free again once slammed down.
+     * (no move, turn, attack, skill, item, switch), an attack of theirs cancelled; still so while thrown; free once landed
+     * (a mock player is not moved by the server: its flight ends on the five-second limit).
      */
-    @GameTest(template = "foundation_arena", batch = "crab_king_held", timeoutTicks = 140)
+    @GameTest(template = "foundation_arena", batch = "crab_king_held", timeoutTicks = 220)
     public static void aPlayerInHisPincerCanDoNothing(GameTestHelper helper) {
         for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
         CrabKingEntity king = king(helper, new BlockPos(2, 1, 0));
         king.setNoAi(true);
         king.setYRot(0);
         king.yBodyRot = 0;
+        pinFacing(helper, king);
         ServerPlayer player = player(helper);
-        net.minecraft.world.phys.Vec3 at = net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(1, 1, 2)));
-        player.moveTo(at.x, at.y, at.z, 180, 0);
+        // Where his jaws shut, whatever the arena did to him.
+        net.minecraft.world.phys.Vec3 at = king.catchPoint().subtract(0, player.getBbHeight() / 2, 0);
+        player.moveTo(at.x, Math.max(at.y, king.getY()), at.z, 180, 0);
         helper.runAfterDelay(2, () -> {
-            helper.assertTrue(king.catchBefore(helper.getLevel()) && king.held() == player, "The pincer did not catch the player");
+            onJaws(king, player);
+            helper.assertTrue(king.catchBefore(helper.getLevel()) && king.held() == player, "The pincer did not catch the player: jaws at " + king.catchPoint() + ", player at " + player.position() + ", king at " + king.position() + " facing " + king.yBodyRot);
             helper.assertTrue(CrabKingEntity.isHeld(player), "The player is not counted held");
             helper.assertTrue(com.murimblock.combat.knockdown.KnockdownService.isHindered(player), "A held player is not hindered");
         });
@@ -167,9 +200,10 @@ public final class CrabKingGameTests {
             net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(attack);
             helper.assertTrue(attack.isCanceled(), "A held player's attack on the king went through");
         });
-        helper.runAfterDelay(90, () -> {
-            helper.assertTrue(king.held() == null && !CrabKingEntity.isHeld(player), "The player is still held after the slam");
-            helper.assertTrue(!com.murimblock.combat.knockdown.KnockdownService.isHindered(player), "The player is still hindered after the slam");
+        helper.runAfterDelay(40, () -> helper.assertTrue(CrabKingEntity.isHeld(player), "He let the player go before the throw"));
+        helper.runAfterDelay(200, () -> {
+            helper.assertTrue(king.held() == null && !CrabKingEntity.isHeld(player), "The player is still held after the throw");
+            helper.assertTrue(!com.murimblock.combat.knockdown.KnockdownService.isHindered(player), "The player is still hindered after landing");
             king.discard();
             cleanup(player);
             helper.succeed();
@@ -183,15 +217,49 @@ public final class CrabKingGameTests {
         king.setNoAi(true);
         king.setYRot(0);
         king.yBodyRot = 0;
+        pinFacing(helper, king);
         ServerPlayer player = player(helper);
-        net.minecraft.world.phys.Vec3 at = net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(1, 1, 2)));
-        player.moveTo(at.x, at.y, at.z, 180, 0);
-        helper.runAfterDelay(2, () -> helper.assertTrue(king.catchBefore(helper.getLevel()), "The pincer did not catch the player"));
+        // Where his jaws shut, whatever the arena did to him.
+        net.minecraft.world.phys.Vec3 at = king.catchPoint().subtract(0, player.getBbHeight() / 2, 0);
+        player.moveTo(at.x, Math.max(at.y, king.getY()), at.z, 180, 0);
+        helper.runAfterDelay(2, () -> onJaws(king, player));
+        helper.runAfterDelay(3, () -> helper.assertTrue(king.catchBefore(helper.getLevel()), "The pincer did not catch the player: jaws at " + king.catchPoint() + ", player at " + player.position() + ", king at " + king.position() + " facing " + king.yBodyRot));
         helper.runAfterDelay(6, () -> king.kill());
         helper.runAfterDelay(8, () -> {
             helper.assertTrue(!CrabKingEntity.isHeld(player) && !com.murimblock.combat.knockdown.KnockdownService.isHindered(player),
                     "The player stays held by a dead king");
             cleanup(player);
+            helper.succeed();
+        });
+    }
+
+    /** Thrown into a stone wall, a zombie knocks a crater into it; it is hurt and lands. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_crater", timeoutTicks = 200)
+    public static void thrownIntoAWallItLeavesACrater(GameTestHelper helper) {
+        helper.getLevel().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(true, helper.getLevel().getServer());
+        for (int x = 0; x < 5; x++) for (int z = 0; z < 5; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        // A wall of stone across the far side, three high.
+        for (int x = 0; x < 5; x++) for (int y = 1; y <= 3; y++) helper.setBlock(new BlockPos(x, y, 4), Blocks.STONE);
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 0));
+        king.setNoAi(true);
+        king.setYRot(0);
+        king.yBodyRot = 0;
+        pinFacing(helper, king);
+        Zombie caught = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 2));
+        net.minecraft.world.phys.Vec3 jaws = king.catchPoint().subtract(0, caught.getBbHeight() / 2, 0);
+        caught.moveTo(jaws.x, Math.max(jaws.y, king.getY()), jaws.z, 180, 0);
+        // Left its AI: a mob without it does not move, even thrown.
+        caught.setBaby(false);
+        float health = caught.getHealth();
+        helper.runAfterDelay(2, () -> onJaws(king, caught));
+        helper.runAfterDelay(3, () -> helper.assertTrue(king.catchBefore(helper.getLevel()), "The pincer did not catch the zombie: jaws at " + king.catchPoint() + ", zombie at " + caught.position() + ", king at " + king.position() + " facing " + king.yBodyRot));
+        helper.runAfterDelay(150, () -> {
+            int stone = 0;
+            for (int x = 0; x < 5; x++) for (int y = 1; y <= 3; y++) if (helper.getBlockState(new BlockPos(x, y, 4)).is(Blocks.STONE)) stone++;
+            helper.assertTrue(stone < 15, "The wall has no crater: all its 15 blocks stand");
+            helper.assertTrue(!king.isFlying(caught) && caught.getHealth() < health, "The zombie did not land hurt");
+            caught.discard();
+            king.discard();
             helper.succeed();
         });
     }
@@ -203,6 +271,7 @@ public final class CrabKingGameTests {
         king.setNoAi(true);
         king.setYRot(0);
         king.yBodyRot = 0;
+        pinFacing(helper, king);
         helper.assertTrue(!king.catchBefore(helper.getLevel()) && king.held() == null, "The pincer caught something with no one before him");
         king.discard();
         helper.succeed();

@@ -36,15 +36,32 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
   - **Écrasement** (`crab_king_slam`, ×1,5, met à terre) : les deux pinces levées très haut, puis abattues au sol devant
     lui ; à 0,74 s, onde de choc de 4,6 blocs autour du point d'impact (0,6 × l'attaque, projette, épargne ses crabes).
     Un seul coup : qui vient de prendre ou de parer les pinces n'est pas touché par l'onde. Recharge 8 s.
-- **Prise dans la grosse pince** (15/10, demande d'Enzo ; `crab_king_grab` puis `crab_king_grab_hold`, 1,5 à 5 blocs,
-  recharge 11 s) : il arme la pince droite grande ouverte et se fend ; à 0,55 s elle se referme sur ce qui est devant lui
-  (0,3 × l'attaque). Ce qu'elle attrape est soulevé haut devant lui, serré trois fois (0,25 × l'attaque chaque fois),
-  levé au-dessus de sa tête puis abattu au sol devant lui à 1,62 s de la prise (0,8 × l'attaque, mis à terre). Une garde
-  normale ne l'arrête pas ; une **parade parfaite** au moment où la pince se ferme la fait rater ; on peut l'esquiver.
-  **Tenu, un joueur ne peut rien faire** (16/10, demande d'Enzo) : ni bouger, ni tourner, ni attaquer, parer, rouler,
-  utiliser une compétence, un objet ou une technique Murim, ni méditer, ni changer d'objet en main ; il se débat
-  (`crab_king_held` : bras plaqués, jambes qui battent, tête renversée). Il reste libre de regarder autour de lui.
-  Interrompu (étourdi, tué, déchargé), il lâche ce qu'il tient : sa victime est libérée par un court étourdissement. Pas de boîte d'Epic Fight : la prise est celle de `CrabKingEntity`.
+- **Prise dans la grosse pince** (15 et 16/10, demandes d'Enzo ; `crab_king_grab` puis `crab_king_grab_hold`, 1,5 à 5
+  blocs, recharge 11 s) : il arme la pince droite grande ouverte et se fend ; à 0,55 s elle se referme sur ce qui est
+  devant lui (0,3 × l'attaque). Une garde normale ne l'arrête pas ; une **parade parfaite** au moment où la pince se
+  ferme la fait rater ; on peut l'esquiver. Ce qu'elle attrape est tenu **entre les mâchoires** : son milieu suit, image
+  par image, le point à mi-chemin des milieux des deux doigts, calculé depuis les poses mêmes de l'animation
+  (`crab-king-moves.cjs` écrit `CrabKingGrip.java`), tourné vers lui. Sur l'horloge de la prise :
+  - 0 à 0,5 s : soulevé devant son visage ;
+  - jusqu'à 0,8 s : ramené près de son visage, les mâchoires desserrées un peu ;
+  - 0,85, 1,25 et 1,6 s : serré (0,25 × l'attaque chaque fois), le dernier le plus long ;
+  - à partir de 1,85 s : le bras armé par-dessus son épaule ; à 2,45 s, **jeté au loin** (0,5 × l'attaque), à huit
+    blocs environ ;
+  - à l'atterrissage : 0,4 × l'attaque, mis à terre, et un **impact comme une explosion** (poussière, souffle, fumée,
+    bruit d'explosion). **Contre un mur, un cratère** de 1,7 bloc de rayon, au bord irrégulier, sans butin (ni les blocs
+    incassables, ni si la règle `mobGriefing` est coupée).
+  La victime a ses animations (`crab_king_victim` sur la même horloge : se débat en montant, se fige, écrasée à chaque
+  serrage, molle entre, fouettée par l'armé ; `crab_king_thrown` en vol : bat des bras et des jambes).
+  **Attrapé, un joueur ne peut rien faire jusqu'à l'atterrissage** (16/10) : ni bouger, ni tourner, ni attaquer, parer,
+  rouler, utiliser une compétence, un objet ou une technique Murim, ni méditer, ni changer d'objet en main.
+  **Il le vit comme un film** (`client/GrabCinematic`, sans message réseau : il suit l'animation de la victime) : la
+  caméra juste à côté de sa tête, du côté opposé au bras du roi ; soulevé, il regarde ses pieds, le sol qui s'éloigne et
+  les mâchoires, puis le visage du roi ; une lente poussée sur ce visage, l'angle qui se resserre, des battements de
+  cœur ; les mâchoires qui se ferment sur lui avant le serrage ; chaque serrage secoue l'image, la resserre et rougit les
+  bords ; plan large qui bascule à l'armé ; en vol, derrière lui, en tournoyant, le roi qui s'éloigne ; l'impact secoue
+  l'image, puis il retrouve sa vue. Bandes de cinéma, pas d'interface.
+  Interrompu (étourdi, tué, déchargé), le roi lâche ce qu'il tient : sa victime est libérée par un court étourdissement.
+  Pas de boîte d'Epic Fight : la prise est celle de `CrabKingEntity`.
 - **Rage** : sous la moitié de sa vie, une seule fois (sauvegardé), il rugit (`crab_king_roar`) et deux crabes cuirassés
   sortent du sol à ses côtés, sur sa cible.
 - Un crabe : il respire sous l'eau (tag `minecraft:can_breathe_under_water`) et va plus vite dans l'eau.
@@ -70,8 +87,10 @@ par texel (deux texels par pixel), tournés dans tous les sens pour que rien ne 
 ## Vérification
 
 - `CrabKingGameTests` : boss à lui (patch, idle, marche lourde, 4 blocs de haut, 260 PV, armure, ne disparaît pas,
-  respire sous l'eau, barre de boss) ; rage (deux crabes, rugissement, une fois) ; onde de choc ; la prise (attrape,
-  soulève, abat au sol, blesse), la prise dans le vide, un joueur tenu qui ne peut rien faire (entravé, verrous
-  d'Epic Fight, technique refusée, attaque annulée) et libéré après l'abattage ou à la mort du boss ; il se bat avec ses pinces et touche.
+  respire sous l'eau, barre de boss) ; rage (deux crabes, rugissement, une fois) ; onde de choc ; la prise (attrape entre
+  les mâchoires, soulève, jette, la victime atterrit blessée), le cratère dans un mur de pierre, la prise dans le vide,
+  un joueur tenu qui ne peut rien faire (entravé, verrous d'Epic Fight, technique refusée, attaque annulée) jusqu'à
+  l'atterrissage, et libéré à la mort du boss ; il se bat avec ses pinces et touche.
 - En vrai client : `MURIM_TOUR_ONLY=king gradlew -PgameTests runWeaponTour` (debout de chaque côté, idle, marche, ses trois
-  attaques, sa prise sur un zombie, son rugissement, sa mort).
+  attaques, sa prise sur un zombie du désert jeté dans un mur (cratère), la même vue par le joueur attrapé (`king-grab-pov` :
+  le joueur de la caméra lui-même, en survie, protégé des dégâts), son rugissement, sa mort).

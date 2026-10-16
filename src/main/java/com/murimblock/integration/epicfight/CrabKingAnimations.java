@@ -33,11 +33,13 @@ public final class CrabKingAnimations {
     public static AnimationAccessor<ActionAnimation> ROAR, GRAB, GRAB_HOLD;
     /** Played on whoever the pincer holds: pinned, kicking; nothing else can be done meanwhile. */
     public static AnimationAccessor<StaticAnimation> HELD;
+    /** On the victim: the hold on its clock (struggling, frozen, crushed, whipped back), then flailing as it flies. */
+    public static AnimationAccessor<StaticAnimation> VICTIM, THROWN;
 
     /** When the slam's pincers meet the ground (seconds into it): the shockwave then. */
     public static final float SLAM_IMPACT = 0.74F;
     /** When the grab's pincer snaps shut (seconds into it), and when the hold's slam lets go (seconds into the hold). */
-    public static final float GRAB_CATCH = 0.55F, GRAB_RELEASE = 1.62F;
+    public static final float GRAB_CATCH = 0.55F, GRAB_RELEASE = 2.45F;
 
     private static final OBBCollider SWEEP_BOX = new OBBCollider(3.7D, 1.3D, 2.4D, 0.0D, 1.7D, -2.9D);
     private static final OBBCollider SNAP_BOX = new OBBCollider(1.9D, 1.3D, 2.5D, 0.0D, 1.9D, -3.6D);
@@ -51,8 +53,8 @@ public final class CrabKingAnimations {
      * lets go (his slam's knock-down, or a short stun if he is broken off).
      */
     private static final class Pinned extends StaticAnimation {
-        Pinned(AnimationAccessor<? extends StaticAnimation> accessor) {
-            super(0.08F, true, accessor, Armatures.BIPED);
+        Pinned(AnimationAccessor<? extends StaticAnimation> accessor, boolean loop) {
+            super(0.08F, loop, accessor, Armatures.BIPED);
             this.stateSpectrumBlueprint.clear().newTimePair(0.0F, Float.MAX_VALUE)
                     .addState(EntityState.MOVEMENT_LOCKED, true)
                     .addState(EntityState.TURNING_LOCKED, true)
@@ -93,6 +95,8 @@ public final class CrabKingAnimations {
         WALK = builder.nextAccessor("biped/murim/crab_king_walk", a -> new StaticAnimation(0.2F, true, a, Armatures.BIPED));
         GRAB = builder.nextAccessor("biped/murim/crab_king_grab", a -> new ActionAnimation(0.12F, a, Armatures.BIPED));
         GRAB_HOLD = builder.nextAccessor("biped/murim/crab_king_grab_hold", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
-        HELD = builder.nextAccessor("biped/murim/crab_king_held", a -> new Pinned(a));
+        HELD = builder.nextAccessor("biped/murim/crab_king_held", a -> new Pinned(a, true));
+        VICTIM = builder.nextAccessor("biped/murim/crab_king_victim", a -> new Pinned(a, false));
+        THROWN = builder.nextAccessor("biped/murim/crab_king_thrown", a -> new Pinned(a, true));
     }
 }

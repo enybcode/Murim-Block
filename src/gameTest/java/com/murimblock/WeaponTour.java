@@ -292,7 +292,9 @@ public final class WeaponTour {
             king("slam", side, CrabKingAnimations.SLAM, null, 30, 1);
             king("roar", side, CrabKingAnimations.ROAR, null, 20, 2);
         }
-        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("grab", side, CrabKingAnimations.GRAB, null, 34, 2);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("grab", side, CrabKingAnimations.GRAB, null, 46, 2);
+        // The grab lived from inside: the camera's own player caught (client/GrabCinematic films it).
+        king("grab-pov", Side.FRONT, CrabKingAnimations.GRAB, null, 56, 2);
         king("death", Side.FRONT_RIGHT, Animations.BIPED_DEATH, null, 14, 2);
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) axe("idle", side, -1, LivingMotions.IDLE, 1, 1);
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) axe("walk", side, -1, LivingMotions.WALK, 16, 2);
@@ -438,7 +440,8 @@ public final class WeaponTour {
         int at = ticks - takeStart;
         LivingEntity seen = seen(mc, t.actor());
         // The camera follows the actor: the cuts carry it forward, the player walks.
-        if (seen != null && at > 2) look(mc, seen.getX(), seen.getY(), seen.getZ(), t.side());
+        // In the grab lived from inside, the camera is the caught player's own (the server moves it).
+        if (seen != null && at > 2 && !t.name().equals(POV)) look(mc, seen.getX(), seen.getY(), seen.getZ(), t.side());
         boolean moving = t.motion() == LivingMotions.WALK || t.motion() == LivingMotions.CHASE || t.motion() == LivingMotions.RUN;
         if (moving && isMob(t.actor()) && seen != null) {
             // On the spot: the client is told the bandit walks (Epic Fight's client animator picks the walk or the run from it).
@@ -471,10 +474,25 @@ public final class WeaponTour {
         }
     }
 
+    /** The take in which the camera's own player is caught by the Crab King. */
+    private static final String POV = "king-grab-pov";
+
     /** The camera on the take's side of its actor (a new one, facing +Z, when asked). */
     private static void begin(MinecraftServer server, Take t, boolean fresh) {
         ServerLevel level = server.overworld();
+        // Back to watching after the grab lived from inside.
+        ServerPlayer me = self(server);
+        if (me.gameMode.getGameModeForPlayer() != GameType.SPECTATOR) {
+            me.setGameMode(GameType.SPECTATOR);
+            me.removeAllEffects();
+        }
         zoom = t.actor() == Actor.KING ? 2.4 : 1;
+        // A stone wall across his throw for the grab's takes (he knocks a crater into it), gone for the others.
+        boolean wall = t.name().startsWith("king-grab");
+        for (int x = -5; x <= 5; x++) for (int y = 0; y < 6; y++) {
+            net.minecraft.core.BlockPos p = net.minecraft.core.BlockPos.containing(baseX + x, baseY + y, baseZ + 7);
+            level.setBlockAndUpdate(p, wall ? net.minecraft.world.level.block.Blocks.STONE.defaultBlockState() : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        }
         if (victim != null) {
             victim.discard();
             victim = null;
@@ -504,7 +522,7 @@ public final class WeaponTour {
             }
             // Running is chasing: Epic Fight runs an aggressive mob that moves.
             bandit.setAggressive(t.motion() == LivingMotions.CHASE);
-            if (t.name().startsWith("king-grab")) {
+            if (t.name().equals("king-grab")) {
                 // Something for the pincer to catch, before him and a little to his right (-x as he faces +z): a husk, which does
                 // not burn in the sun.
                 victim = net.minecraft.world.entity.EntityType.HUSK.create(level);
@@ -512,7 +530,7 @@ public final class WeaponTour {
                 victim.setBaby(false);
                 victim.setPersistenceRequired();
                 level.addFreshEntity(victim);
-                victim.setNoAi(true);
+                // With its AI: a mob without it does not move, so it would not fly when thrown.
             }
         } else {
             if (fresh) {
@@ -558,6 +576,13 @@ public final class WeaponTour {
         double y = t.name().endsWith("-air") && !isMob(t.actor()) ? baseY + 1.4 : baseY;
         if (s == Side.TOP) self(server).teleportTo(level, baseX, y + 4.6 * zoom - 1.62, baseZ + 0.01, s.yaw, 90);
         else self(server).teleportTo(level, baseX + s.dx * DISTANCE * zoom, y + EYE * zoom - 1.62, baseZ + s.dz * DISTANCE * zoom, s.yaw, 6);
+        if (t.name().equals(POV)) {
+            // The camera's player in survival before the pincer (CrabKingGrip.CATCH: his right and ahead), unhurt.
+            me.setGameMode(GameType.SURVIVAL);
+            me.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 400, 4, false, false));
+            me.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 400, 4, false, false));
+            me.teleportTo(level, baseX - 0.85, baseY, baseZ + 2.4, 180, -10);
+        }
     }
 
     /** On the server: the take's animation, for the axe the M1 of its chain the take names. */
