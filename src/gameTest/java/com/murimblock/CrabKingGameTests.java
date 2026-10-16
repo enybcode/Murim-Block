@@ -391,6 +391,30 @@ public final class CrabKingGameTests {
         });
     }
 
+    /** In his lair, his mist fills the whole cavern: thick by its far wall, from the floor up to its vault. */
+    @GameTest(template = "foundation_arena", batch = "crab_king_mist_lair", timeoutTicks = 80)
+    public static void inHisLairHisMistFillsTheWholeArena(GameTestHelper helper) {
+        CrabKingEntity king = king(helper, new BlockPos(2, 1, 2));
+        king.setNoAi(true);
+        BlockPos home = helper.absolutePos(new BlockPos(0, 0, 0));
+        king.setLair(home);
+        helper.runAfterDelay(2, () -> king.breatheMist(helper.getLevel()));
+        helper.runAfterDelay(2 + com.murimblock.mob.CrabMistEntity.FADE + 2, () -> {
+            var mists = helper.getLevel().getEntitiesOfClass(com.murimblock.mob.CrabMistEntity.class, new net.minecraft.world.phys.AABB(home).inflate(4));
+            helper.assertTrue(mists.size() == 1, "No mist on his lair: " + mists.size());
+            var mist = mists.get(0);
+            int r = com.murimblock.world.structure.CrabLairBuilder.RADIUS;
+            var c = net.minecraft.world.phys.Vec3.atBottomCenterOf(home);
+            helper.assertTrue(mist.densityAt(c.add(r - 4, 1, 0), 0) > 0.9F, "Thin by the far wall: " + mist.densityAt(c.add(r - 4, 1, 0), 0));
+            helper.assertTrue(mist.densityAt(c.add(0, 1, -(r - 4)), 0) > 0.9F, "Thin by the other wall");
+            helper.assertTrue(mist.densityAt(c.add(0, 30, 0), 0) > 0.9F, "Thin up under the vault");
+            helper.assertTrue(mist.densityAt(c.add(r + 6, 1, 0), 0) == 0, "It spills out of the cavern");
+            mists.forEach(net.minecraft.world.entity.Entity::discard);
+            king.discard();
+            helper.succeed();
+        });
+    }
+
     /** Gone into his mist, he is seen again when it thins out. */
     @GameTest(template = "foundation_arena", batch = "crab_king_mist_ends", timeoutTicks = 260)
     public static void heIsSeenAgainWhenHisMistThins(GameTestHelper helper) {

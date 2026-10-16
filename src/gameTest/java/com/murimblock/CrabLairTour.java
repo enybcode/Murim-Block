@@ -142,7 +142,18 @@ public final class CrabLairTour {
             case 240 -> server.execute(() -> check(server.overworld().getEntitiesOfClass(CrabKingEntity.class,
                     new AABB(cx - 50, floor - 2, cz - 50, cx + 50, floor + 50, cz + 50)).size() == 1, "the Crab King waits in his lair"));
             case 250 -> capture(mc, "06-the-king.png");
-            case 256 -> finish(mc);
+            // His mist fills the whole arena (CrabKingEntity.breatheMist): seen by the far wall, on the junk, high up.
+            case 252 -> server.execute(() -> server.overworld().getEntitiesOfClass(CrabKingEntity.class,
+                    new AABB(cx - 50, floor - 2, cz - 50, cx + 50, floor + 50, cz + 50)).forEach(king -> king.breatheMist(server.overworld())));
+            case 254 -> look(server, -34, 2.6, -14, 0, 3, 0);
+            case 300 -> server.execute(() -> check(server.overworld().getEntitiesOfClass(com.murimblock.mob.CrabMistEntity.class,
+                    new AABB(cx - 4, floor - 2, cz - 4, cx + 4, floor + 4, cz + 4)).stream().anyMatch(m -> m.radius() > 40), "his mist fills the cavern"));
+            case 310 -> capture(mc, "07-mist-by-the-far-wall.png");
+            case 312 -> look(server, -2, 22, 34, -10, 10, -14);
+            case 340 -> capture(mc, "08-mist-over-the-junk.png");
+            case 342 -> look(server, 22, 2.6, 26, -14, 12, -10);
+            case 370 -> capture(mc, "09-mist-on-the-floor.png");
+            case 376 -> finish(mc);
             default -> { }
         }
     }

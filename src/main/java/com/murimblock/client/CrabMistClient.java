@@ -35,7 +35,7 @@ public final class CrabMistClient {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return 0;
         float k = 0;
-        for (CrabMistEntity mist : mc.level.getEntitiesOfClass(CrabMistEntity.class, mc.player.getBoundingBox().inflate(CrabMistEntity.RADIUS + 2)))
+        for (CrabMistEntity mist : mc.level.getEntitiesOfClass(CrabMistEntity.class, mc.player.getBoundingBox().inflate(CrabMistEntity.MAX_RADIUS + 2)))
             k = Math.max(k, mist.densityAt(eye, partial));
         return k;
     }

@@ -107,6 +107,8 @@ public class CrabKingEntity extends Monster {
     /** The mist: whether the one now playing has burst out, whether he is gone into it, the mist he is hidden in. */
     private boolean misted, hidden;
     @Nullable private CrabMistEntity mist;
+    /** His lair (the middle of its floor), once known: his mist fills it all (CrabLairBuilder, CrabLairPlacement). */
+    @Nullable private BlockPos lair;
     /** Ticks to his next heavy step while he walks. */
     private int stepIn;
 
@@ -246,11 +248,20 @@ public class CrabKingEntity extends Monster {
         }
     }
 
-    /** The mist bursts out of him: a thick cloud round him (CrabMistEntity), with a great sigh. */
+    /**
+     * The mist bursts out of him, with a great sigh: in his lair, it fills the whole cavern (Enzo, 16/10: "it must be in
+     * the whole arena"); elsewhere, a thick cloud round him (CrabMistEntity).
+     */
     public void breatheMist(ServerLevel server) {
         if (mist != null && !mist.isRemoved()) mist.discard();
         mist = new CrabMistEntity(MurimEntities.CRAB_MIST.get(), server);
-        mist.moveTo(getX(), getY(), getZ(), 0, 0);
+        BlockPos home = inLair(server);
+        if (home == null) mist.moveTo(getX(), getY(), getZ(), 0, 0);
+        else {
+            mist.moveTo(home.getX() + 0.5, home.getY() + 1, home.getZ() + 0.5, 0, 0);
+            mist.setSize(com.murimblock.world.structure.CrabLairBuilder.RADIUS + 2,
+                    com.murimblock.world.structure.CrabLairBuilder.CENTRE_Y + com.murimblock.world.structure.CrabLairBuilder.RISE + 2);
+        }
         server.addFreshEntity(mist);
         server.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 2, getZ(), 80, 2.5, 1.5, 2.5, 0.12);
         server.playSound(null, getX(), getY(), getZ(), SoundEvents.ELDER_GUARDIAN_AMBIENT, SoundSource.HOSTILE, 1.4F, 0.5F);
@@ -272,6 +283,27 @@ public class CrabKingEntity extends Monster {
         server.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 2, getZ(), 50, 1.2, 1.6, 1.2, 0.15);
         server.sendParticles(ParticleTypes.SPLASH, getX(), getY() + 2, getZ(), 40, 1.0, 1.4, 1.0, 0.2);
         server.playSound(null, getX(), getY(), getZ(), SoundEvents.TURTLE_AMBIENT_LAND, SoundSource.HOSTILE, 1.6F, 0.4F);
+    }
+
+    /** His lair, if he is in it now: the middle of its floor; else null. */
+    @Nullable private BlockPos inLair(ServerLevel server) {
+        if (lair == null && server.dimension() == Level.OVERWORLD) {
+            // A king from before his lair was remembered: his world's lair, if he stands in it.
+            BlockPos found = com.murimblock.world.structure.CrabLairPlacement.get(server).centre();
+            if (found != null && within(found)) lair = found;
+        }
+        return lair != null && within(lair) ? lair : null;
+    }
+
+    private boolean within(BlockPos home) {
+        double dx = getX() - (home.getX() + 0.5), dz = getZ() - (home.getZ() + 0.5);
+        return dx * dx + dz * dz <= Math.pow(com.murimblock.world.structure.CrabLairBuilder.RADIUS + 2, 2)
+                && Math.abs(getY() - home.getY()) < com.murimblock.world.structure.CrabLairBuilder.RISE;
+    }
+
+    /** His lair (the middle of its floor): there, his mist fills it all. */
+    public void setLair(@Nullable BlockPos lair) {
+        this.lair = lair;
     }
 
     /** Whether he is gone into his mist now. */
@@ -641,11 +673,13 @@ public class CrabKingEntity extends Monster {
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("Enraged", enraged);
+        if (lair != null) tag.putLong("Lair", lair.asLong());
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         enraged = tag.getBoolean("Enraged");
+        lair = tag.contains("Lair") ? BlockPos.of(tag.getLong("Lair")) : null;
         // The mist is never saved: loaded, he is seen.
         setInvisible(false);
         if (hasCustomName()) bossBar.setName(getDisplayName());
