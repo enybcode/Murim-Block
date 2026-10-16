@@ -37,22 +37,27 @@ Demande d'Enzo : « pour l'instant tu le laisses en forme humaine dans la premi�
 
 ![Dans la salle du sanctuaire](images/golden-dragon/game-sanctuary.png)
 
-- **Entité**  (), nommée **The Golden Dragon** ; œuf « Golden Dragon Spawn Egg ».
-- **Modèle** sur le squelette humain d'Epic Fight, comme Sensei Yun ( : maillage , texture, projet Blockbench) :
+- **Entité** `murimblock:golden_dragon_sage` (`GoldenDragonSageEntity`), nommée **The Golden Dragon** ; œuf « Golden Dragon Spawn Egg ».
+- **Modèle** sur le squelette humain d'Epic Fight, comme Sensei Yun (`scripts/animation/golden-dragon-sage-3d.cjs` : maillage
+  `animmodels/entity/golden_dragon_sage`, texture, projet Blockbench) :
   - couronne d'or sur un chignon piqué de jade, longs cheveux blancs ;
   - grande barbe blanche, yeux jade lumineux ;
   - robe jade profond bordée d'or blanc, un dragon d'or brodé dans le dos, col de fourrure blanche ;
   - ceinture or blanc à fermoir d'or, pendentif de jade blanc.
-- **Où** : dans la salle principale du **Sanctuaire de la Falaise des Nuages**, sur le tapis rouge devant l'autel, face aux portes ().
-  - Placé une seule fois par monde (, sauvegardé) : à la fin de la construction d'un nouveau sanctuaire.
+- **Où** : dans la salle principale du **Sanctuaire de la Falaise des Nuages**, sur le tapis rouge devant l'autel, face
+  aux portes (`SanctuaryBuilder.sageSeat`).
+  - Placé une seule fois par monde (`SanctuaryPlacement.placeSage`, sauvegardé) : à la fin de la construction d'un
+    nouveau sanctuaire.
   - Pour un sanctuaire construit avant, il est placé la première fois qu'un joueur s'approche à moins de 96 blocs.
 - **Comportement pour l'instant** :
-  - assis en lotus (la méditation des joueurs) ; aucun dégât ne le touche (sauf ) ; on ne peut pas le pousser ; il ne quitte pas sa place ;
+  - assis en lotus (la méditation des joueurs) ;
+  - aucun dégât ne le touche (sauf `/kill`), on ne peut pas le pousser et il ne quitte pas sa place ;
   - il se tourne vers un joueur qui approche et revient face aux portes quand il est seul ;
-  - clic droit : une de quatre phrases, à tour de rôle ( à ), à faire relire par la session « lore ».
+  - clic droit : une de quatre phrases, à tour de rôle (`message.murimblock.golden_dragon_sage.0` à `.3`), à faire
+    relire par la session « lore ».
 - **Vérifié** :
-  - GameTests  (invulnérable, immobile, placé une seule fois sur sa place) ;
-  - tour  (en monde neuf, présent à sa place, photo ).
+  - GameTests `GoldenDragonSageGameTests` (invulnérable, immobile, placé une seule fois sur sa place) ;
+  - tour `runBiomeTour` (en monde neuf, présent à sa place, photo `sanctuary-sage.png`).
 
 ## À décider
 
