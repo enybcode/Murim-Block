@@ -96,6 +96,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the Crab King's lair, the Root Well (see CrabLairTour).
+        crabLairTour {
+            client()
+            gameDirectory = project.file('build/crab-lair-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.crabLairTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client check of the whole fight against the Peak Captain on his leitai (see PeakCaptainFightTour).
         peakCaptainFightTour {
             client()
@@ -416,6 +425,22 @@ tasks.named('runSiteTour').configure {
     doLast {
         def report = siteTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Site tour failed; see build/site-tour-run/site-tour-report.txt')
+    }
+}
+
+def crabLairTourSave = layout.buildDirectory.dir('crab-lair-tour-run/saves/murim-crab-lair')
+def crabLairTourReport = layout.buildDirectory.file('crab-lair-tour-run/crab-lair-tour-report.txt')
+def crabLairTourShots = layout.buildDirectory.dir('crab-lair-tour-run/screenshots')
+tasks.named('runCrabLairTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only crab lair tour.')
+        crabLairTourSave.get().asFile.deleteDir()
+        crabLairTourShots.get().asFile.deleteDir()
+        crabLairTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = crabLairTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Crab lair tour failed; see build/crab-lair-tour-run/crab-lair-tour-report.txt')
     }
 }
 

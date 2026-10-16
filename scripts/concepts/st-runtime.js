@@ -31,6 +31,10 @@ window.ST = (() => {
     // A bandit camp's: tent hides, raw logs, trodden mud, red rags.
     hide: ['#9A7A55', 'plaster'], hide_dark: ['#6B5038', 'plaster'], log: ['#6B4B2E', 'plank'], log_end: ['#B08A5A', 'noise'],
     mud: ['#6E5A44', 'noise'], rag: ['#8E2E26', 'noise'], iron: ['#5A5C60', 'brick'],
+    // The swamp cave of the Crab King (crab-cave.js).
+    swamp_mud: ['#4B3A2C', 'noise'], mud_dark: ['#36291F', 'noise'], swamp_water: ['#55663A', 'water', 0.86], deepslate: ['#4A4A52', 'noise'],
+    mangrove: ['#6E3B2E', 'noise'], moss: ['#4F6B33', 'noise'], glow_lichen: ['#B6E07A', 'glow'], sail: ['#C9B48A', 'plaster'],
+    shell: ['#A0402C', 'noise'], shell_dark: ['#6A2A20', 'noise'], bone: ['#E2DCC8', 'noise'], beam: ['#E8F2C8', 'plaster', 0.22],
   };
   const textures = {};
   function tex(name) {
