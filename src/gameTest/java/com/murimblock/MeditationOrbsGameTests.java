@@ -89,21 +89,25 @@ public final class MeditationOrbsGameTests {
     }
 
     /** Drawn in, it flies to the chest and is absorbed; left alone, it fades when the meditation ends. */
-    @GameTest(template = "foundation_arena", batch = "meditation_orbs", timeoutTicks = 80)
+    @GameTest(template = "foundation_arena", batch = "meditation_orbs", timeoutTicks = 120)
     public static void aDrawnMoteFliesInAndTheOthersFadeWhenTheMeditationEnds(GameTestHelper helper) {
         ServerPlayer player = seated(helper);
         QiService.setQi(player, 50);
         QiMoteEntity drawn = MeditationOrbs.spawn(player, false), left = MeditationOrbs.spawn(player, false);
         helper.assertTrue(MeditationOrbs.draw(player, drawn.getId()), "Not drawn in");
-        helper.runAfterDelay(40, () -> {
-            helper.assertTrue(drawn.isRemoved() && QiService.getQi(player) > 50, "The drawn mote did not fly in");
-            helper.assertTrue(!left.isRemoved(), "The other faded while the meditation lasts");
-            MeditationService.stop(player, false);
-        });
-        helper.runAfterDelay(46, () -> {
-            helper.assertTrue(left.isRemoved(), "A mote stayed after the meditation");
-            end(helper, player);
-        });
+        // Waited for, not timed: a fresh entity may begin ticking a few ticks late.
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(drawn.isRemoved() && QiService.getQi(player) > 50, "The drawn mote did not fly in"))
+                .thenExecute(() -> {
+                    helper.assertTrue(!left.isRemoved(), "The other faded while the meditation lasts");
+                    MeditationService.stop(player, false);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(left.isRemoved(), "A mote stayed after the meditation"))
+                .thenExecute(() -> {
+                    MeditationService.forget(player);
+                    cleanup(player);
+                })
+                .thenSucceed();
     }
 
     /** Seated three seconds, the first mote forms; then one every 3.5 s. */
