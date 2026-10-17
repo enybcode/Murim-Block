@@ -104,7 +104,7 @@ validée le 17/10 (« parfait »), icônes des livres refaites en pixel art à s
   emblème doré poing, cloche, bâton, lance, épée, montagne, étoile ou soleil) : lu, il s'ouvre en livre de 3 pages (l'art, qui le garde
   et comment l'obtenir, le chemin) et écrit dans le chat la direction et la distance du lieu le plus proche : avant-poste
   de l'Alliance (Poing Long, Bâton : marchand), arène de l'Alliance (capitaine), temple de la Mer de Bambous (Sensei Yun ; le moine de la Cloche d'Or),
-  grand camp de bandits (Seigneur de guerre, puis Fils du Démon : Poing Brise-Montagne et Poing du Majin), sommet du Pic Cueille-Étoiles (Sept Étoiles). N'enseigne rien, jamais
+  grand camp de bandits (le Seigneur de guerre puis le Fils du Démon, qui porte les rouleaux du Poing Brise-Montagne et du Poing du Majin), sommet du Pic Cueille-Étoiles (Sept Étoiles). N'enseigne rien, jamais
   consommé ; recharge de 5 s.
 - Les pages (`guide.murimblock.*`) sont à faire relire par la session « lore ».
 - **Vérifié** : GameTests `SageShopGameTests` (tous les arts sauf le Sanguinaire ont leur guide, prix croissants avec la
