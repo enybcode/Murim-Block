@@ -46,12 +46,15 @@ public final class SkyArena {
         final ServerLevel level;
         final Schematic schem;
         final BlockPos paste;
+        /** Taking the arena away (its blocks to air) rather than placing it. */
+        final boolean remove;
         int index;
 
-        Job(ServerLevel level, Schematic schem, BlockPos paste) {
+        Job(ServerLevel level, Schematic schem, BlockPos paste, boolean remove) {
             this.level = level;
             this.schem = schem;
             this.paste = paste;
+            this.remove = remove;
         }
 
         boolean done() { return index >= schem.cells.length; }
@@ -102,14 +105,25 @@ public final class SkyArena {
         return new Schematic(w, h, l, offset, palette, cells);
     }
 
-    /** Off in the server GameTests that only follow the film: a million and a half blocks would slow the tests after it. */
+    /** Off in the server GameTests that only follow the film or the collapse: a million and a half blocks would slow the tests after them. */
     public static boolean enabled = true;
 
     /** Begins placing the arena with its paste point at (x, PASTE_Y, z); false if no schematic. */
     public static boolean place(ServerLevel level, int x, int z) {
         Schematic schem = enabled ? schematic(level) : null;
         if (schem == null) return false;
-        JOBS.add(new Job(level, schem, new BlockPos(x, Math.min(PASTE_Y, level.getMaxBuildHeight() - 1 - schem.height - schem.offset[1]), z)));
+        JOBS.add(new Job(level, schem, new BlockPos(x, Math.min(PASTE_Y, level.getMaxBuildHeight() - 1 - schem.height - schem.offset[1]), z), false));
+        return true;
+    }
+
+    /**
+     * Begins taking away the arena whose floor's middle is {@code middle} (its paste point), as fast as it was placed:
+     * every block it placed back to air (ArenaCollapse, after the Son of the Demon's death).
+     */
+    public static boolean remove(ServerLevel level, BlockPos middle) {
+        Schematic schem = enabled ? schematic(level) : null;
+        if (schem == null) return false;
+        JOBS.add(new Job(level, schem, middle, true));
         return true;
     }
 
@@ -143,7 +157,7 @@ public final class SkyArena {
             int x = i % s.width, z = (i / s.width) % s.length, y = i / (s.width * s.length);
             p.set(job.paste.getX() + s.offset[0] + x, job.paste.getY() + s.offset[1] + y, job.paste.getZ() + s.offset[2] + z);
             job.level.getChunk(p.getX() >> 4, p.getZ() >> 4);
-            job.level.setBlock(p, state, 2 | 16);
+            job.level.setBlock(p, job.remove ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : state, 2 | 16);
             placed++;
         }
         if (job.done()) JOBS.remove(job);

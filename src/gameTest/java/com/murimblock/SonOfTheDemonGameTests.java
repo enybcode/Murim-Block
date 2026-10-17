@@ -5,6 +5,9 @@ import com.murimblock.integration.epicfight.SonOfTheDemonPatch;
 import com.murimblock.mob.BanditWarlordEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.mob.SonOfTheDemonEntity;
+import com.murimblock.mob.majin.MajinFist;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Pig;
 import com.murimblock.world.structure.site.SkyArena;
 import com.murimblock.world.structure.site.WarlordTransformation;
 import net.minecraft.core.BlockPos;
@@ -122,6 +125,90 @@ public final class SonOfTheDemonGameTests {
         BlockPos middle = SkyArena.floorMiddle(helper.getLevel(), 0, 0);
         helper.assertTrue(middle.getY() + 56 < helper.getLevel().getMaxBuildHeight(), "The arena would reach above the world: floor at " + middle.getY());
         helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "son_of_the_demon")
+    public static void hisFightingIsBuiltFromTheMajinFist(GameTestHelper helper) {
+        helper.assertFalse(MajinFist.MOVES.isEmpty(), "The Majin Fist has no blow");
+        for (MajinFist.Move move : MajinFist.MOVES) {
+            helper.assertTrue(move.animation().get() != null, move.id() + " has no animation");
+            helper.assertTrue(move.minRange() < move.maxRange() && move.cooldown() > 0 && move.weight() > 0, move.id() + " is not set up");
+            helper.assertTrue(MajinFist.moveOf(move.animation().get()) == move, move.id() + " is not found by its animation");
+            for (int b = 1; b < move.beats().size(); b++)
+                helper.assertTrue(move.beats().get(b).at() >= move.beats().get(b - 1).at(), move.id() + "'s beats are out of order");
+        }
+        helper.assertTrue(MajinFist.behaviors() != null, "His fighting could not be built");
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "son_of_the_demon")
+    public static void aMajinBlastHurtsAndThrowsBack(GameTestHelper helper) {
+        SonOfTheDemonEntity s = MurimEntities.SON_OF_THE_DEMON.get().spawn(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)), MobSpawnType.COMMAND);
+        helper.assertTrue(s != null, "No Son of the Demon spawned");
+        s.setNoAi(true);
+        Pig pig = helper.spawn(EntityType.PIG, new BlockPos(5, 1, 2));
+        pig.setNoAi(true);
+        float health = pig.getHealth();
+        var struck = MajinFist.blast(s, helper.getLevel(), s.position(), 6, 0.5F, 0.6);
+        helper.assertTrue(struck.contains(pig) && pig.getHealth() < health, "The blast did not strike the pig beside him");
+        helper.assertTrue(pig.getDeltaMovement().y > 0.1, "The blast did not throw the pig up");
+        s.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "son_of_the_demon_arena", timeoutTicks = 60)
+    public static void whoFallsOffTheArenaIsBroughtBack(GameTestHelper helper) {
+        SonOfTheDemonEntity s = MurimEntities.SON_OF_THE_DEMON.get().spawn(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)), MobSpawnType.COMMAND);
+        helper.assertTrue(s != null, "No Son of the Demon spawned");
+        s.setNoAi(true);
+        // An arena whose floor stands 30 blocks over the test: the player, here, has fallen off it.
+        BlockPos floor = helper.absolutePos(new BlockPos(2, 31, 2));
+        for (int x = -50; x <= 50; x++) for (int z = -50; z <= 50; z++)
+            helper.getLevel().setBlock(floor.offset(x, -1, z), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+        s.setArena(floor);
+        ServerPlayer player = player(helper);
+        player.teleportTo(helper.getLevel(), floor.getX() + 10.5, floor.getY() - 30, floor.getZ() + 0.5, 0, 0);
+        float health = player.getHealth();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(player.getY() >= floor.getY() - 1, "The fallen player was not brought back (y " + player.getY() + ")");
+            helper.assertTrue(player.getHealth() < health, "Falling off cost nothing");
+            for (int x = -50; x <= 50; x++) for (int z = -50; z <= 50; z++)
+                helper.getLevel().setBlock(floor.offset(x, -1, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+            s.discard();
+            cleanup(player);
+        });
+    }
+
+    @GameTest(template = "foundation_arena", batch = "son_of_the_demon_collapse", timeoutTicks = com.murimblock.world.structure.site.ArenaCollapse.DOWN + 60)
+    public static void hisDeathTakesTheArenaAndSetsEveryoneDown(GameTestHelper helper) {
+        // The arena without its blocks (SkyArena.enabled): a small floor 30 blocks up stands for it.
+        SkyArena.enabled = false;
+        BlockPos floor = helper.absolutePos(new BlockPos(2, 31, 2));
+        for (int x = -3; x <= 3; x++) for (int z = -3; z <= 3; z++)
+            helper.getLevel().setBlock(floor.offset(x, -1, z), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+        SonOfTheDemonEntity s = MurimEntities.SON_OF_THE_DEMON.get().spawn(helper.getLevel(), floor, MobSpawnType.COMMAND);
+        helper.assertTrue(s != null, "No Son of the Demon spawned");
+        s.setNoAi(true);
+        s.setArena(floor);
+        ServerPlayer player = player(helper);
+        player.teleportTo(helper.getLevel(), floor.getX() + 2.5, floor.getY(), floor.getZ() + 0.5, 0, 0);
+        var loot = new net.minecraft.world.entity.item.ItemEntity(helper.getLevel(), floor.getX() + 1.5, floor.getY(), floor.getZ() + 1.5,
+                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_INGOT));
+        loot.setPickUpDelay(400);
+        helper.getLevel().addFreshEntity(loot);
+        s.hurt(helper.getLevel().damageSources().playerAttack(player), 100_000);
+        helper.assertTrue(com.murimblock.world.structure.site.ArenaCollapse.collapsing(), "His death did not begin the arena's collapse");
+        helper.runAfterDelay(com.murimblock.world.structure.site.ArenaCollapse.DOWN + 10, () -> {
+            helper.assertTrue(player.getY() < floor.getY() - 5, "The player was not set down below the arena (y " + player.getY() + ")");
+            helper.assertTrue(player.hasEffect(net.minecraft.world.effect.MobEffects.SLOW_FALLING), "The player was set down without slow falling");
+            helper.assertTrue(loot.isAlive() && loot.getY() < floor.getY() - 5, "His loot was left on the arena");
+            for (int x = -3; x <= 3; x++) for (int z = -3; z <= 3; z++)
+                helper.getLevel().setBlock(floor.offset(x, -1, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+            loot.discard();
+            cleanup(player);
+            SkyArena.enabled = true;
+            helper.succeed();
+        });
     }
 
     private static int cell(SkyArena.Schematic s, int x, int y, int z) {

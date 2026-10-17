@@ -142,6 +142,12 @@ public final class ShatteredGround extends SavedData {
     }
 
     /** How many blocks wait to come back (tests). */
+    /** Forgets the broken blocks in {@code space} (it is going: they would come back in mid-air). */
+    public static void forget(ServerLevel level, net.minecraft.world.phys.AABB space) {
+        ShatteredGround data = get(level);
+        if (data.broken.keySet().removeIf(p -> space.contains(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5))) data.setDirty();
+    }
+
     public static int waiting(ServerLevel level) {
         return get(level).broken.size();
     }

@@ -314,6 +314,7 @@ public final class WarlordTransformation {
             BlockPos at = f.arena ? f.arenaMiddle : g;
             Vec3 m = Vec3.atBottomCenterOf(at);
             f.colossus.teleportTo(level, m.x, m.y, m.z, java.util.Set.of(), f.facing, 0);
+            if (f.arena) f.colossus.setArena(at);
             f.colossus.setYBodyRot(f.facing);
             f.colossus.setYHeadRot(f.facing);
             play(f.colossus, ColossusAnimations.LAND);
@@ -441,7 +442,7 @@ public final class WarlordTransformation {
      * {@code a} (any angle if r0 is 0): rock under it (no lava, magma or fire) for {@code half} blocks round, air for
      * nine blocks above. Falls back on {@code from}.
      */
-    static BlockPos firm(ServerLevel level, BlockPos from, int r0, int r1, double a, int half) {
+    public static BlockPos firm(ServerLevel level, BlockPos from, int r0, int r1, double a, int half) {
         for (int r = r0; r <= r1; r++) {
             int steps = r == 0 ? 1 : Math.max(8, r * 6);
             for (int k = 0; k < steps; k++) {

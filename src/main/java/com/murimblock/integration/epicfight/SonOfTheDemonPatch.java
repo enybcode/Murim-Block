@@ -12,29 +12,22 @@ import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.world.capabilities.entitypatch.Factions;
 import yesman.epicfight.world.capabilities.entitypatch.HumanoidMobPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.entity.ai.goal.CombatBehaviors;
 
 /**
  * Epic Fight side of the Son of the Demon: a humanoid on his own armature (ColossusAnimations.ARMATURE), his fists his
- * weapons (a fist for Epic Fight), his own idle and walk. One blow for now, the heavy straight right, within 6 blocks;
- * the Majin Fist's techniques join it as Enzo gives them. Nothing while the transformation plays (he cannot target).
+ * weapons (a fist for Epic Fight), his own idle and walk. His blows are the Majin Fist's (mob/majin/MajinFist.MOVES), each
+ * within its range, its cooldown and its share of his life. Nothing while the transformation plays (he cannot target).
  */
 public class SonOfTheDemonPatch extends HumanoidMobPatch<SonOfTheDemonEntity> {
     public SonOfTheDemonPatch(SonOfTheDemonEntity entity) {
         super(entity, Factions.NEUTRAL);
     }
 
-    private static CombatBehaviors.Builder<HumanoidMobPatch<?>> fists() {
-        return CombatBehaviors.<HumanoidMobPatch<?>>builder()
-                .newBehaviorSeries(CombatBehaviors.BehaviorSeries.<HumanoidMobPatch<?>>builder().weight(10.0F).cooldown(30).canBeInterrupted(false).looping(false)
-                        .nextBehavior(CombatBehaviors.Behavior.<HumanoidMobPatch<?>>builder()
-                                .animationBehavior(ColossusAnimations.PUNCH).withinDistance(0.0D, 6.0D)));
-    }
 
     @Override
     protected void setWeaponMotions() {
         super.setWeaponMotions();
-        weaponAttackMotions.put(CapabilityItem.WeaponCategories.FIST, ImmutableMap.of(CapabilityItem.Styles.COMMON, fists()));
+        weaponAttackMotions.put(CapabilityItem.WeaponCategories.FIST, ImmutableMap.of(CapabilityItem.Styles.COMMON, com.murimblock.mob.majin.MajinFist.behaviors()));
         weaponLivingMotions.put(CapabilityItem.WeaponCategories.FIST, ImmutableMap.of(CapabilityItem.Styles.COMMON, Set.of(
                 Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.IDLE, ColossusAnimations.IDLE),
                 Pair.<LivingMotion, AnimationAccessor<? extends StaticAnimation>>of(LivingMotions.WALK, ColossusAnimations.WALK),

@@ -56,6 +56,10 @@ public class SonOfTheDemonEntity extends Monster {
     private final ServerBossEvent bossBar = new ServerBossEvent(title(), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.NOTCHED_10);
     /** The camp he was born in (its centre, BlockPos.asLong), if any. */
     @Nullable private Long camp;
+    /** The middle of the arena in the sky he fights in (where he landed), if any: who falls off it is brought back. */
+    @Nullable private net.minecraft.core.BlockPos arena;
+    /** The Majin Fist's move he is playing and its beats run. */
+    private final com.murimblock.mob.majin.MajinFist.State art = new com.murimblock.mob.majin.MajinFist.State();
 
     public SonOfTheDemonEntity(EntityType<? extends SonOfTheDemonEntity> type, Level level) {
         super(type, level);
@@ -130,6 +134,45 @@ public class SonOfTheDemonEntity extends Monster {
         this.camp = camp;
     }
 
+    public void setArena(@Nullable net.minecraft.core.BlockPos arena) {
+        this.arena = arena;
+    }
+
+    @Nullable public net.minecraft.core.BlockPos arena() {
+        return arena;
+    }
+
+    /** His death takes the arena in the sky with it (ArenaCollapse): everyone and his loot are set down below first. */
+    @Override public void die(DamageSource source) {
+        super.die(source);
+        if (level() instanceof ServerLevel server && arena != null && isDeadOrDying()) com.murimblock.world.structure.site.ArenaCollapse.begin(server, arena);
+    }
+
+    /** How far below the arena's floor a fall counts as falling off it (blocks). */
+    public static final int FALLEN = 24;
+    /** What falling off the arena costs (health), before being brought back onto its floor. */
+    public static final float FALL_COST = 6;
+
+    /**
+     * Whoever falls off the arena in the sky (some {@link #FALLEN} blocks below its floor, near it) is brought back onto its
+     * floor, on firm rock near its rim, at a cost of {@link #FALL_COST} health; and so is he.
+     */
+    private void keepInArena(ServerLevel server) {
+        if (arena == null || tickCount % 5 != 0) return;
+        int floor = arena.getY();
+        for (ServerPlayer p : server.players()) {
+            double dx = p.getX() - arena.getX() - 0.5, dz = p.getZ() - arena.getZ() - 0.5;
+            if (dx * dx + dz * dz > 160 * 160 || p.getY() > floor - FALLEN || p.isSpectator()) continue;
+            net.minecraft.core.BlockPos back = com.murimblock.world.structure.site.WarlordTransformation.firm(server, arena, 30, 44, Math.atan2(dx, dz), 0);
+            p.teleportTo(server, back.getX() + 0.5, back.getY(), back.getZ() + 0.5, p.getYRot(), p.getXRot());
+            p.fallDistance = 0;
+            p.hurt(damageSources().fellOutOfWorld(), FALL_COST);
+            server.playSound(null, back, SoundEvents.ENDER_DRAGON_FLAP, net.minecraft.sounds.SoundSource.HOSTILE, 1.5F, 0.6F);
+            server.sendParticles(ParticleTypes.CLOUD, back.getX() + 0.5, back.getY() + 0.5, back.getZ() + 0.5, 30, 0.6, 0.6, 0.6, 0.05);
+        }
+        if (getY() < floor - 10) teleportTo(arena.getX() + 0.5, floor, arena.getZ() + 0.5);
+    }
+
     @Override public void setTarget(@Nullable LivingEntity target) {
         super.setTarget(awakening() ? null : target);
     }
@@ -141,6 +184,10 @@ public class SonOfTheDemonEntity extends Monster {
     /** His golden aura: Qi rising round his body, sparks at his fists and hair. */
     @Override public void tick() {
         super.tick();
+        if (level() instanceof ServerLevel server && !awakening()) {
+            com.murimblock.mob.majin.MajinFist.tick(this, server, art);
+            keepInArena(server);
+        }
         // While the film plays his body faces where he faces, on every side (the film frames him by it).
         if (awakening()) { yBodyRot = yBodyRotO = getYRot(); yHeadRot = yHeadRotO = getYRot(); }
         if (!(level() instanceof ServerLevel server) || tickCount % 2 != 0) return;
@@ -178,6 +225,7 @@ public class SonOfTheDemonEntity extends Monster {
         super.addAdditionalSaveData(tag);
         if (awakening()) tag.putBoolean("Awakening", true);
         if (camp != null) tag.putLong("Camp", camp);
+        if (arena != null) tag.putLong("Arena", arena.asLong());
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
@@ -185,6 +233,7 @@ public class SonOfTheDemonEntity extends Monster {
         // A film cut off by a stop does not resume: he wakes ready to fight.
         setAwakening(false);
         camp = tag.contains("Camp") ? tag.getLong("Camp") : null;
+        arena = tag.contains("Arena") ? net.minecraft.core.BlockPos.of(tag.getLong("Arena")) : null;
     }
 
     // A voice from the depths: the warden's and the ravager's, low.
