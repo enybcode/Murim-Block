@@ -132,3 +132,7 @@ Un art de départ : **sobre**, sauf le corps qui change. Pendant la forme, une l
 
 Chiffres retenus : Golden Bell 15 Qi + 4/s (3/s évoluée), recharge 12 s à la sortie ; Iron Rebound 12 Qi / 8 s (4 s si
 rien n'a frappé) ; Rooted Mountain 18 Qi / 16 s ; Bell Toll trouvé au 20e coup reçu dans la forme. Protocole réseau 24.
+
+### En images (vrai client, au crépuscule)
+
+![La forme (la cloche descend), Iron Rebound, le coup renvoyé, Rooted Mountain, la dernière cloche](images/golden-bell-tour.png)
