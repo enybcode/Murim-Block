@@ -88,6 +88,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the Star-Plucking Peak, the world's highest point (see StarPeakTour).
+        starPeakTour {
+            client()
+            gameDirectory = project.file('build/star-peak-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.starPeakTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client tour of the six Murim sites, found with /locate in a fresh world (see SiteTour).
         siteTour {
             client()
@@ -160,6 +169,14 @@ neoForge {
             gameDirectory = project.file('build/thunder-saber-pose-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.thunderSaberPoseTour', 'true'
+            disableIdeRun()
+        }
+        // The Golden Bell: the gold, iron and stone bodies, the bell and its light (GoldenBellTour).
+        goldenBellTour {
+            client()
+            gameDirectory = project.file('build/golden-bell-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.goldenBellTour', 'true'
             disableIdeRun()
         }
         // The Blood Soldiers and the Blood Lacquer, on them and on the player (SoldierLookTour).

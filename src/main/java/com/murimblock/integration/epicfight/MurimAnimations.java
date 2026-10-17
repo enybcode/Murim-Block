@@ -140,6 +140,7 @@ public final class MurimAnimations {
         buildMountainFist(builder);
         buildSevenStars(builder);
         buildThunderSaber(builder);
+        buildGoldenBell(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);
@@ -192,6 +193,18 @@ public final class MurimAnimations {
         SSS_POLARIS = builder.nextAccessor("biped/murim/sss_polaris", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
         SSS_ARRAY = builder.nextAccessor("biped/murim/sss_array", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
         FINISH_SEVEN_STARS = builder.nextAccessor("biped/murim/sss_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Golden Bell (scripts/animation/golden-bell-art.cjs)
+
+    /** The Golden Bell's moves: poses only (martial/GoldenBell does the rest). The form, Iron Rebound, Rooted Mountain, Last Bell. */
+    public static AnimationAccessor<ActionAnimation> GB_FORM, GB_REBOUND, GB_ROOTED, FINISH_LAST_BELL;
+
+    private static void buildGoldenBell(AnimationBuilder builder) {
+        GB_FORM = builder.nextAccessor("biped/murim/gb_form", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        GB_REBOUND = builder.nextAccessor("biped/murim/gb_rebound", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        GB_ROOTED = builder.nextAccessor("biped/murim/gb_rooted", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        FINISH_LAST_BELL = builder.nextAccessor("biped/murim/gb_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     // ---------------------------------------------------------------- the Mountain-Shattering Fist (scripts/animation/mountain-fist.cjs)

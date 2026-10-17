@@ -43,11 +43,34 @@ Demande d'Enzo : « pour l'instant tu le laisses en forme humaine dans la premi�
   - assis en lotus (la méditation des joueurs) ;
   - aucun dégât ne le touche (sauf `/kill`), on ne peut pas le pousser et il ne quitte pas sa place ;
   - il se tourne vers un joueur qui approche et revient face aux portes quand il est seul ;
-  - clic droit : une de quatre phrases, à tour de rôle (`message.murimblock.golden_dragon_sage.0` à `.3`), à faire
-    relire par la session « lore ».
+  - clic droit : ses dialogues (ci-dessous).
 - **Vérifié** :
   - GameTests `GoldenDragonSageGameTests` (invulnérable, immobile, placé une seule fois sur sa place) ;
   - tour `runBiomeTour` (en monde neuf, présent à sa place, photo `sanctuary-sage.png`).
+
+## Dialogues et talismans de passage (17/10/2026)
+
+Demande d'Enzo : « qu'il ait plusieurs dialogues et qu'il propose de créer des objets consommables à l'unité pour
+changer de dimension, qui coûteraient très cher » ; destinations Nether, End et retour au Murim, retour inclus,
+**32 yuanbao d'or** l'objet.
+
+- **Dialogues** (`GoldenDragonSageDialogue`, pages de `DialogueService` comme le vieux maître du monde intérieur) :
+  - premières paroles à la première rencontre, puis une salutation du jour (trois, une par jour) ;
+  - menu : qui il est (et la rumeur du dragon d'or), ce lieu, comment devenir plus fort (deux pages), les autres
+    mondes, adieu ;
+  - les autres mondes mènent à son offre : un talisman pour le Nether, l'End ou le Murim, 32 yuanbao d'or chacun.
+    Sans assez d'or, il refuse ; le prix est vérifié et pris côté serveur.
+  - Les textes (`dialogue.murimblock.golden_dragon_sage.*`) sont à faire relire par la session « lore ».
+- **Talismans de passage** (`CrossingTalismanItem`) : `nether_crossing_talisman`, `end_crossing_talisman`,
+  `murim_crossing_talisman` (rareté épique, empilables par 16 ; icônes `scripts/animation/crossing-talismans.cjs` :
+  bandes de papier taoïstes, rouge et or, noire et violet, pâle et jade).
+  - Tenu 3 secondes, il emmène dans son monde et retient l'endroit exact d'où l'on part (il brille alors) ; tenu à
+    nouveau, il y ramène, puis tombe en cendres. Dans son propre monde, sans avoir servi, il ne fait rien.
+  - Arrivées : le Nether à la position divisée par 8, sur un sol sûr (sinon une petite plateforme d'obsidienne) ; l'End
+    sur sa plateforme d'obsidienne d'arrivée ; le Murim au lit ou à l'ancre du joueur s'il en a un dans l'Overworld,
+    sinon au point d'apparition du monde.
+- **Vérifié** : GameTests `CrossingTalismanGameTests` (dialogue jusqu'à l'achat, refus sans or, prix pris sur deux
+  piles ; aller au Nether sur un sol sûr, retour au point exact, talisman en cendres). Pas encore de tour en vrai client.
 
 ## À décider
 

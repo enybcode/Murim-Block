@@ -120,6 +120,8 @@ public final class MeditationService {
         player.setSprinting(false);
         lock(player, true);
         if (now % 20 == 0) condense(player, 20);
+        // On the Star-Plucking Peak's summit, three minutes give the Seven Stars Sword (from Qi Liquidation).
+        com.murimblock.world.structure.StarPeakPlacement.meditating(player, seatedFor(player));
     }
 
     /** `ticks` of meditation with a full reserve: the Qi condenses into Qi Max (nothing at the bottleneck). */

@@ -88,6 +88,9 @@ public final class ArmoredCrabEpicFight {
             // The Alliance Merchant: the same skeleton, his own model, no fighting.
             event.registerEntityPatch(MurimEntities.ALLIANCE_MERCHANT.get(), AllianceMerchantPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.ALLIANCE_MERCHANT.get(), Armatures.BIPED);
+            // The Golden Bell monk: the same skeleton, his own model, his bare fists.
+            event.registerEntityPatch(MurimEntities.GOLDEN_BELL_MONK.get(), GoldenBellMonkPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.GOLDEN_BELL_MONK.get(), Armatures.BIPED);
             event.registerEntityPatch(MurimEntities.GOLDEN_DRAGON_SAGE.get(), GoldenDragonSagePatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.GOLDEN_DRAGON_SAGE.get(), Armatures.BIPED);
             // The Captain of the Peak Guard: the same skeleton, his own model, his armour and spear.

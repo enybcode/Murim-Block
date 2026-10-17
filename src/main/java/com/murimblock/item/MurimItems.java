@@ -170,11 +170,24 @@ public final class MurimItems {
     public static final DeferredItem<Item> COPPER_CASH = ITEMS.register("copper_cash", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> CASH_STRING = ITEMS.register("cash_string", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SILVER_TAEL = ITEMS.register("silver_tael", () -> new Item(new Item.Properties()));
+    /**
+     * The crossing talismans the Golden Dragon in human form makes for 32 gold yuanbao (mob/GoldenDragonSageDialogue): one
+     * way to the Nether, the End or the Murim (the overworld) and back, then they crumble (CrossingTalismanItem).
+     */
+    public static final DeferredItem<CrossingTalismanItem> NETHER_TALISMAN = ITEMS.register("nether_crossing_talisman",
+            () -> new CrossingTalismanItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), net.minecraft.world.level.Level.NETHER));
+    public static final DeferredItem<CrossingTalismanItem> END_TALISMAN = ITEMS.register("end_crossing_talisman",
+            () -> new CrossingTalismanItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), net.minecraft.world.level.Level.END));
+    public static final DeferredItem<CrossingTalismanItem> MURIM_TALISMAN = ITEMS.register("murim_crossing_talisman",
+            () -> new CrossingTalismanItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), net.minecraft.world.level.Level.OVERWORLD));
     public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_DRAGON_SAGE, 0x1F7A58, 0xF0C24A, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
+    /** The Golden Bell monk's egg: saffron and brown, his robe and sash. */
+    public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_BELL_MONK_SPAWN_EGG = ITEMS.register("golden_bell_monk_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_BELL_MONK, 0xE2861F, 0x6B4226, new Item.Properties()));
     /** The Alliance's soldiers' eggs, in azure, each with its own second colour. */
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_SPEAR_GUARD_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_SPEAR_GUARD, 0xB4BAC0);
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_SWORD_DISCIPLE, 0xEBE6D8);
@@ -316,7 +329,11 @@ public final class MurimItems {
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
+                        output.accept(GOLDEN_BELL_MONK_SPAWN_EGG.get());
                         output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
+                        output.accept(NETHER_TALISMAN.get());
+                        output.accept(END_TALISMAN.get());
+                        output.accept(MURIM_TALISMAN.get());
                         output.accept(ALLIANCE_SPEAR_GUARD_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG.get());
                         output.accept(ALLIANCE_ARCHER_SPAWN_EGG.get());

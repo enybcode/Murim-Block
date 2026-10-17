@@ -64,6 +64,12 @@ import javax.imageio.ImageIO;
  *   thunder_sovereign: a figure struck by a great bolt, lightning all round it (the ultimate);
  *   heaven_answers: a seam of light in the sky, a bolt down onto a parried blade (the secret; one red point);
  *   rolling_drums: the passive, three bronze drums, the last lit violet.
+ * And the Golden Bell's, "temple dawn": a warm umber dusk, a gold frame, a monk's figure and his bell in gold:
+ *   golden_bell: a monk in gold, palms joined, a bell of light over him;
+ *   iron_rebound: an iron palm thrust out, a blow bouncing off it, sparks;
+ *   rooted_mountain: a figure of stone in a deep stance, cracks in the ground round its feet;
+ *   bell_toll: the bell ringing, its waves going out, a figure knocked flat (the secret; one red point);
+ *   bell_palms: the passive (none): two open palms, plain.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -74,9 +80,10 @@ public class TechniqueIcons {
             "vertical_strike", "point_flurry", "spinning_rampart", "third_resonance",
             "mountain_crushing_punch", "earth_breaker", "bull_charge", "sky_breaker", "heaven_falling_mountain", "earthshaker",
             "shooting_star", "dipper_steps", "orbiting_stars", "constellation_link", "falling_star_rain", "seven_stars_array", "polaris_riposte", "star_marks",
-            "thunder_descends", "rolling_thunder", "heavens_drum", "severing_flash", "nine_heavens_wrath", "thunder_sovereign", "heaven_answers", "rolling_drums"};
+            "thunder_descends", "rolling_thunder", "heavens_drum", "severing_flash", "nine_heavens_wrath", "thunder_sovereign", "heaven_answers", "rolling_drums",
+            "golden_bell", "iron_rebound", "rooted_mountain", "bell_toll", "bell_palms"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -92,7 +99,8 @@ public class TechniqueIcons {
             else if (i < MOUNTAIN) road(g, img, i - STAFF);
             else if (i < STARS) stone(g, img, i - MOUNTAIN);
             else if (i < THUNDER) stars(g, img, i - STARS);
-            else thunder(g, img, i - THUNDER);
+            else if (i < BELL) thunder(g, img, i - THUNDER);
+            else bell(g, img, i - BELL);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -977,6 +985,79 @@ public class TechniqueIcons {
                     g.setColor(k == 2 ? c(242, 201, 76) : STORM_BRONZE); g.fillRect(x, y, 8, 2);
                 }
                 bolt(g, 25, 2, 23, 11, 61, 0.5f);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ the Golden Bell: temple dawn
+
+    static final Color GOLD_LIGHT = c(255, 214, 110), GOLD_DEEP = c(200, 140, 40), MONK = c(46, 30, 22), IRON_GREY = c(150, 158, 170), STONE = c(132, 124, 112);
+
+    static void templeBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 15.5) / 22.0;
+            img.setRGB(x, y, c((int) (34 + 30 * (1 - d)), (int) (22 + 18 * (1 - d)), (int) (14 + 8 * (1 - d))).getRGB());
+        }
+        g.setColor(GOLD_DEEP); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(80, 56, 24)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A monk standing: round head, robe widening to the feet. */
+    static void monk(Graphics2D g, double x, double y, Color col) {
+        g.setColor(col);
+        g.fill(new Ellipse2D.Double(x - 2.5, y - 11, 5, 5));
+        Path2D robe = new Path2D.Double();
+        robe.moveTo(x - 3, y - 6); robe.lineTo(x + 3, y - 6); robe.lineTo(x + 5, y + 6); robe.lineTo(x - 5, y + 6); robe.closePath();
+        g.fill(robe);
+    }
+
+    /** A bell outline over (x, y): dome, waist, flared lip. */
+    static void bellShape(Graphics2D g, double x, double y, double s, Color col, float w) {
+        Path2D b = new Path2D.Double();
+        b.moveTo(x - 2 * s, y - 9 * s);
+        b.curveTo(x - 2 * s, y - 11.5 * s, x + 2 * s, y - 11.5 * s, x + 2 * s, y - 9 * s);
+        b.curveTo(x + 2.6 * s, y - 4 * s, x + 3 * s, y - 1 * s, x + 5 * s, y);
+        b.lineTo(x - 5 * s, y);
+        b.curveTo(x - 3 * s, y - 1 * s, x - 2.6 * s, y - 4 * s, x - 2 * s, y - 9 * s);
+        g.setColor(col); g.setStroke(new BasicStroke(w)); g.draw(b);
+    }
+
+    static void bell(Graphics2D g, BufferedImage img, int i) {
+        templeBack(img, g);
+        switch (i) {
+            case 0 -> { // Golden Bell: a monk in gold, palms joined, a bell of light over him.
+                monk(g, 16, 22, GOLD_DEEP);
+                disc(g, 16, 12, 2.4, GOLD_LIGHT);
+                line(g, 14, 18, 18, 18, 1.2f, GOLD_LIGHT);
+                bellShape(g, 16, 28, 2.3, GOLD_LIGHT, 1.2f);
+                px(img, 16, 3, c(255, 250, 220));
+            }
+            case 1 -> { // Iron Rebound: an iron palm thrust out, a blow bouncing off it, sparks.
+                g.setColor(IRON_GREY); g.fill(new RoundRectangle2D.Double(5, 12, 10, 8, 3, 3));
+                for (int k = 0; k < 4; k++) line(g, 15, 13 + k * 2, 18, 13 + k * 2, 1.4f, IRON_GREY);
+                line(g, 28, 8, 19, 15, 1.4f, c(200, 90, 70));
+                line(g, 19, 17, 27, 26, 1.4f, GOLD_LIGHT);
+                for (int[] q : new int[][]{{21, 12}, {23, 16}, {21, 20}, {24, 19}}) px(img, q[0], q[1], c(255, 240, 200));
+            }
+            case 2 -> { // Rooted Mountain: a figure of stone in a deep stance, cracks round its feet.
+                g.setColor(STONE);
+                g.fill(new Ellipse2D.Double(13.5, 6, 5, 5));
+                g.fill(new RoundRectangle2D.Double(11, 11, 10, 8, 3, 3));
+                line(g, 12, 19, 7, 26, 2.4f, STONE); line(g, 20, 19, 25, 26, 2.4f, STONE);
+                line(g, 3, 27, 29, 27, 1f, c(90, 70, 50));
+                for (double[] q : new double[][]{{7, 27, 3, 30}, {25, 27, 29, 30}, {16, 27, 15, 30}}) line(g, q[0], q[1], q[2], q[3], 1f, c(60, 44, 30));
+            }
+            case 3 -> { // Bell Toll: the bell ringing, its waves, a figure knocked flat.
+                bellShape(g, 11, 22, 1.6, GOLD_LIGHT, 1.2f);
+                for (int k = 0; k < 3; k++) { g.setColor(GOLD_DEEP); g.setStroke(new BasicStroke(1f)); g.draw(new Arc2D.Double(8 - k * 3, 8 - k * 3, 12 + k * 6, 16 + k * 6, -40, 80, Arc2D.OPEN)); }
+                g.setColor(MONK); g.fill(new RoundRectangle2D.Double(19, 25, 10, 3, 2, 2)); g.fill(new Ellipse2D.Double(26, 23, 4, 4));
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // No passive: two open palms.
+                for (int sx : new int[] {10, 22}) {
+                    g.setColor(c(214, 170, 120)); g.fill(new RoundRectangle2D.Double(sx - 4, 12, 8, 10, 3, 3));
+                    for (int k = 0; k < 4; k++) line(g, sx - 3 + k * 2, 12, sx - 3 + k * 2, 8, 1.4f, c(214, 170, 120));
+                }
             }
         }
     }
