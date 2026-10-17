@@ -190,6 +190,7 @@ public final class MurimItems {
     public static final DeferredItem<MartialGuideItem> CELESTIAL_PEAK_SPEAR_GUIDE = guide("celestial_peak_spear", com.murimblock.martial.MartialArts.CELESTIAL_PEAK_SPEAR, "alliance_arena");
     public static final DeferredItem<MartialGuideItem> AZURE_CLOUD_SWORD_GUIDE = guide("azure_cloud_sword", com.murimblock.martial.MartialArts.AZURE_CLOUD_SWORD, "misty_bamboo_temple");
     public static final DeferredItem<MartialGuideItem> MOUNTAIN_SHATTERING_FIST_GUIDE = guide("mountain_shattering_fist", com.murimblock.martial.MartialArts.MOUNTAIN_SHATTERING_FIST, "bandit_camp");
+    public static final DeferredItem<MartialGuideItem> MAJIN_FIST_GUIDE = guide("majin_fist", com.murimblock.martial.MartialArts.MAJIN_FIST, "bandit_camp");
     public static final DeferredItem<MartialGuideItem> SEVEN_STARS_SWORD_GUIDE = guide("seven_stars_sword", com.murimblock.martial.MartialArts.SEVEN_STARS_SWORD, null);
 
     private static DeferredItem<MartialGuideItem> guide(String art, net.minecraft.resources.ResourceLocation id, @org.jetbrains.annotations.Nullable String place) {
@@ -199,7 +200,7 @@ public final class MurimItems {
     /** Every martial guide, in the Golden Dragon's order (easiest first). */
     public static java.util.List<DeferredItem<MartialGuideItem>> guides() {
         return java.util.List.of(LONG_FIST_GUIDE, GOLDEN_BELL_GUIDE, TRAVELLER_STAFF_GUIDE, CELESTIAL_PEAK_SPEAR_GUIDE, AZURE_CLOUD_SWORD_GUIDE,
-                MOUNTAIN_SHATTERING_FIST_GUIDE, SEVEN_STARS_SWORD_GUIDE);
+                MOUNTAIN_SHATTERING_FIST_GUIDE, SEVEN_STARS_SWORD_GUIDE, MAJIN_FIST_GUIDE);
     }
     public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",

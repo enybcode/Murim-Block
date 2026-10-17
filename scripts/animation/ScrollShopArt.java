@@ -236,9 +236,10 @@ public class ScrollShopArt {
         {"..#..", "..#..", "..#..", ".###.", "..#.."},   // a sword
         {".....", "..#..", ".###.", "##.##", "#####"},   // a mountain
         {"..#..", ".###.", "#####", ".###.", ".#.#."},   // a star
-        {"..#..", ".###.", ".###.", "#####", "..#.."}};  // a bell
-    static final String[] ARTS = {"long_fist", "traveller_staff", "celestial_peak_spear", "azure_cloud_sword", "mountain_shattering_fist", "seven_stars_sword", "golden_bell"};
-    static final int[] COVERS = {0xb02a22, 0x7a4a22, 0x2a5aa0, 0x2f78c8, 0x5a3a20, 0x232a5a, 0xb0561c};
+        {"..#..", ".###.", ".###.", "#####", "..#.."},   // a bell
+        {"#.#.#", ".###.", "#####", ".###.", "#.#.#"}};  // a sun
+    static final String[] ARTS = {"long_fist", "traveller_staff", "celestial_peak_spear", "azure_cloud_sword", "mountain_shattering_fist", "seven_stars_sword", "golden_bell", "majin_fist"};
+    static final int[] COVERS = {0xb02a22, 0x7a4a22, 0x2a5aa0, 0x2f78c8, 0x5a3a20, 0x232a5a, 0xb0561c, 0x5a1e6a};
 
     static void guides() throws Exception {
         for (int i = 0; i < ARTS.length; i++) {

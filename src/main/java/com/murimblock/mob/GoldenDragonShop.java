@@ -51,6 +51,7 @@ public final class GoldenDragonShop {
                     guide(MurimItems.AZURE_CLOUD_SWORD_GUIDE, 3, 10),
                     guide(MurimItems.MOUNTAIN_SHATTERING_FIST_GUIDE, 4, 16),
                     guide(MurimItems.SEVEN_STARS_SWORD_GUIDE, 4, 20),
+                    guide(MurimItems.MAJIN_FIST_GUIDE, 4, 20),
                     new Ware(() -> new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()), Component.translatable("art.murimblock.sanguine_art"), 0, 4, false),
                     talisman(MurimItems.NETHER_TALISMAN),
                     talisman(MurimItems.END_TALISMAN),
