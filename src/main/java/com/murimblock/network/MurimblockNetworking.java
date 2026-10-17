@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 26: the Golden Dragon's scroll of wares (unrolled for a player, a ware bought).
      * 25: the Purple Heaven Thunder Saber (its drums, the electrified, its lightning).
      * 24: the Golden Bell (the body's matter shown to everyone round, the bell's ring, a blow sent back).
      * 23: the Seven Stars Sword (its stars shown over their targets, a constellation bursting, its techniques' effects).
@@ -15,7 +16,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "25";
+    private static final String NETWORK_VERSION = "26";
 
     private MurimblockNetworking() {
     }
@@ -29,6 +30,10 @@ public final class MurimblockNetworking {
         registrar.playToClient(DialoguePayloads.Page.TYPE, DialoguePayloads.Page.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.DialogueScreen.open(payload));
         registrar.playToServer(DialoguePayloads.Choose.TYPE, DialoguePayloads.Choose.STREAM_CODEC, DialoguePayloads.Choose::handle);
+        // The Golden Dragon's scroll of wares: unrolled, a ware bought.
+        registrar.playToClient(ScrollShopPayloads.Open.TYPE, ScrollShopPayloads.Open.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.ScrollShopScreen.open(payload));
+        registrar.playToServer(ScrollShopPayloads.Buy.TYPE, ScrollShopPayloads.Buy.STREAM_CODEC, ScrollShopPayloads.Buy::handle);
         registrar.playToClient(CultivationPayloads.SenseReadings.TYPE, CultivationPayloads.SenseReadings.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.QiSenseClient.readings(payload));
         registrar.playToClient(CultivationPayloads.Breakthrough.TYPE, CultivationPayloads.Breakthrough.STREAM_CODEC,

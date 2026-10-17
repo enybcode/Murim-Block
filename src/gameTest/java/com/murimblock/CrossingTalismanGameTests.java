@@ -5,6 +5,7 @@ import com.murimblock.item.CrossingTalismanItem;
 import com.murimblock.item.MurimItems;
 import com.murimblock.mob.GoldenDragonSageDialogue;
 import com.murimblock.mob.GoldenDragonSageEntity;
+import com.murimblock.mob.GoldenDragonShop;
 import com.murimblock.mob.MurimEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -23,7 +24,7 @@ import static com.murimblock.testing.GameTestPlayers.cleanup;
 import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
- * The Golden Dragon in human form talks and makes crossing talismans for 32 gold yuanbao; a talisman carries its
+ * The Golden Dragon in human form talks and sells crossing talismans on his scroll for 32 gold yuanbao; a talisman carries its
  * bearer to its world, remembers where they stood, carries them back, and crumbles (Enzo, 17/10/2026).
  */
 @GameTestHolder(Murimblock.MOD_ID)
@@ -37,7 +38,7 @@ public final class CrossingTalismanGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "sage_dialogue")
-    public static void theSageTalksAndSellsATalismanForThirtyTwoYuanbao(GameTestHelper helper) {
+    public static void theSageTalksThenUnrollsHisScrollAndSellsATalismanForThirtyTwoYuanbao(GameTestHelper helper) {
         GoldenDragonSageEntity sage = MurimEntities.GOLDEN_DRAGON_SAGE.get().spawn(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)), MobSpawnType.COMMAND);
         ServerPlayer p = player(helper);
         try {
@@ -45,22 +46,23 @@ public final class CrossingTalismanGameTests {
             p.getInventory().clearContent();
             sage.interact(p, InteractionHand.MAIN_HAND);
             helper.assertTrue(lastKey(p).endsWith("golden_dragon_sage.first"), "No first words: " + lastKey(p));
-            for (String step : new String[]{"who", "dragon", "back", "path", "more_path", "back", "worlds", "make", "nether"}) {
+            for (String step : new String[]{"who", "dragon", "back", "path", "more_path", "back", "worlds", "make", "wares"}) {
                 DialogueService.choose(p, sage.getId(), step);
             }
-            helper.assertTrue(lastKey(p).endsWith("offer.nether"), "Not the Nether offer: " + lastKey(p));
-            DialogueService.choose(p, sage.getId(), "pay_nether");
-            helper.assertTrue(lastKey(p).endsWith("poor") && p.getInventory().countItem(MurimItems.NETHER_TALISMAN.get()) == 0, "Made without being paid");
+            int nether = -1;
+            for (int i = 0; i < GoldenDragonShop.wares().size(); i++) if (GoldenDragonShop.wares().get(i).item().get().is(MurimItems.NETHER_TALISMAN.get())) nether = i;
+            helper.assertTrue(GoldenDragonShop.buy(p, sage.getId(), nether) == GoldenDragonShop.Result.POOR
+                    && p.getInventory().countItem(MurimItems.NETHER_TALISMAN.get()) == 0, "Made without being paid");
             // Paid: 32 yuanbao (in two stacks) go, the talisman comes.
             p.getInventory().add(new ItemStack(MurimItems.GOLD_YUANBAO.get(), 20));
             p.getInventory().add(new ItemStack(MurimItems.GOLD_YUANBAO.get(), 20));
-            for (String step : new String[]{"back", "worlds", "make", "nether", "pay_nether"}) DialogueService.choose(p, sage.getId(), step);
-            helper.assertTrue(lastKey(p).endsWith("made.nether"), "Not made: " + lastKey(p));
+            helper.assertTrue(GoldenDragonShop.buy(p, sage.getId(), nether) == GoldenDragonShop.Result.SOLD, "Not sold");
             helper.assertTrue(p.getInventory().countItem(MurimItems.NETHER_TALISMAN.get()) == 1, "No talisman given");
             helper.assertTrue(p.getInventory().countItem(MurimItems.GOLD_YUANBAO.get()) == 40 - GoldenDragonSageDialogue.PRICE,
                     "Wrong price taken: " + p.getInventory().countItem(MurimItems.GOLD_YUANBAO.get()) + " left");
         } finally {
             sage.discard();
+            GoldenDragonShop.close(p);
             cleanup(p);
         }
         helper.succeed();
