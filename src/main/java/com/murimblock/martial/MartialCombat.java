@@ -209,6 +209,11 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MOUNTAIN_SHATTERING_FIST, credit, MountainShatteringFist.isStrike(animation), false));
             return;
         }
+        credit = MajinFistArt.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MAJIN_FIST, credit, MajinFistArt.isStrike(animation), false));
+            return;
+        }
         credit = SanguineArt.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
@@ -273,6 +278,8 @@ public final class MartialCombat {
         if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) factor *= SevenStarsSword.factorBefore(player, event.getTarget());
         // Rolling Drums: an electrified body, the secret's riposte, take more.
         if (swing.art.equals(MartialArts.THUNDER_SABER)) factor *= ThunderSaber.factorBefore(player, event.getTarget());
+        // Pride of the Sun: a strike by day under the sky lands harder.
+        if (swing.art.equals(MartialArts.MAJIN_FIST)) factor *= MajinFistArt.factorBefore(player, swing.animation);
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -296,6 +303,7 @@ public final class MartialCombat {
         boolean mountain = swing.art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST);
         if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
         else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.MAJIN_FIST)) MajinFistArt.onHit(player, target, animation, enemy);
         else if (fist) LongFist.onHit(player, target, animation, enemy);
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
@@ -664,6 +672,7 @@ public final class MartialCombat {
         AzureCloudSword.tickAim(player, now);
         TravellerStaff.tick(player);
         MountainShatteringFist.tick(player);
+        MajinFistArt.tick(player);
         SevenStarsSword.tick(player);
         ThunderSaber.tick(player);
         GoldenBell.tick(player);
@@ -763,6 +772,7 @@ public final class MartialCombat {
         SanguineArt.forget(id);
         TravellerStaff.forget(id);
         MountainShatteringFist.forget(id);
+        MajinFistArt.forget(id);
         SevenStarsSword.forget(id);
         ThunderSaber.forget(id);
         GoldenBell.forget(id);
@@ -787,6 +797,7 @@ public final class MartialCombat {
         BloodIceberg.forget(null);
         TravellerStaff.forget(null);
         MountainShatteringFist.forget(null);
+        MajinFistArt.forget(null);
         SevenStarsSword.forget(null);
         ThunderSaber.forget(null);
         GoldenBell.forget(null);

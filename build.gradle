@@ -388,6 +388,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a film of the Majin Fist in a player's hands (see MajinArtTour).
+        majinArtTour {
+            client()
+            gameDirectory = project.file('build/majin-art-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.majinArtTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a film of the Mountain-Shattering Fist's techniques in a real client (see MountainFistTour).
         mountainFistTour {
             client()

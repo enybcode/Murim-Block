@@ -70,6 +70,16 @@ import javax.imageio.ImageIO;
  *   rooted_mountain: a figure of stone in a deep stance, cracks in the ground round its feet;
  *   bell_toll: the bell ringing, its waves going out, a figure knocked flat (the secret; one red point);
  *   bell_palms: the passive (none): two open palms, plain.
+ * And the Majin Fist's, "high noon": a deep crimson sky burning to gold at its heart, a gold frame, every move in the
+ * white and gold of the sun (the Son of the Demon's art, after Escanor):
+ *   sunfire_fist: a golden fist driven right, a burst of flame and light before it;
+ *   pride_flare: an open palm thrust out, a wave of flame running low across the ground;
+ *   cruel_sun: a small sun blazing over a raised palm, its rays round it;
+ *   noon_judgment: three golden circles on the ground and three pillars of light falling into them;
+ *   midday_meteor: a body falling fist first onto a crater, a ring of fire running out from it;
+ *   the_one: a great sun filling the square, a small dark figure before it, arms flung wide (the ultimate);
+ *   grand_noon: a column of white sunlight from the top of the square onto a fist (the secret; one red point);
+ *   pride_of_the_sun: the passive, a fist wrapped in flame under a small sun.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -81,9 +91,10 @@ public class TechniqueIcons {
             "mountain_crushing_punch", "earth_breaker", "bull_charge", "sky_breaker", "heaven_falling_mountain", "earthshaker",
             "shooting_star", "dipper_steps", "orbiting_stars", "constellation_link", "falling_star_rain", "seven_stars_array", "polaris_riposte", "star_marks",
             "thunder_descends", "rolling_thunder", "heavens_drum", "severing_flash", "nine_heavens_wrath", "thunder_sovereign", "heaven_answers", "rolling_drums",
-            "golden_bell", "iron_rebound", "rooted_mountain", "bell_toll", "bell_palms"};
+            "golden_bell", "iron_rebound", "rooted_mountain", "bell_toll", "bell_palms",
+            "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -100,7 +111,8 @@ public class TechniqueIcons {
             else if (i < STARS) stone(g, img, i - MOUNTAIN);
             else if (i < THUNDER) stars(g, img, i - STARS);
             else if (i < BELL) thunder(g, img, i - THUNDER);
-            else bell(g, img, i - BELL);
+            else if (i < SUN) bell(g, img, i - BELL);
+            else sun(g, img, i - SUN);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -1058,6 +1070,107 @@ public class TechniqueIcons {
                     g.setColor(c(214, 170, 120)); g.fill(new RoundRectangle2D.Double(sx - 4, 12, 8, 10, 3, 3));
                     for (int k = 0; k < 4; k++) line(g, sx - 3 + k * 2, 12, sx - 3 + k * 2, 8, 1.4f, c(214, 170, 120));
                 }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ the Majin Fist: "high noon"
+
+    static final Color SUN_WHITE = c(255, 250, 225), SUN_GOLD = c(255, 200, 70), SUN_DEEP = c(230, 120, 30), SUN_GLOW = c(255, 210, 90, 120);
+
+    static void sunBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.min(1, Math.hypot(x - 15.5, y - 13) / 21.0);
+            int r = (int) (70 + 120 * (1 - d)), gr = (int) (14 + 70 * (1 - d) * (1 - d)), b = (int) (12 + 10 * (1 - d));
+            img.setRGB(x, y, c(r, gr, b).getRGB());
+        }
+        g.setColor(c(230, 180, 60)); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(100, 40, 16)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A sun: a soft glow, a gold disc, a white heart, rays. */
+    static void sunDisc(Graphics2D g, double x, double y, double r, int rays) {
+        disc(g, x, y, r * 1.8, c(255, 190, 70, 70));
+        for (int k = 0; k < rays; k++) {
+            double a = Math.PI * 2 * k / rays;
+            line(g, x + Math.cos(a) * r * 1.1, y + Math.sin(a) * r * 1.1, x + Math.cos(a) * r * 1.7, y + Math.sin(a) * r * 1.7, 1f, SUN_GOLD);
+        }
+        disc(g, x, y, r, SUN_GOLD);
+        disc(g, x - r * 0.15, y - r * 0.15, r * 0.6, SUN_WHITE);
+    }
+
+    /** A golden fist (the colossus's skin). */
+    static void goldFist(Graphics2D g, BufferedImage img, double x, double y, double s, int dir) {
+        g.setColor(c(206, 150, 50)); g.fill(new RoundRectangle2D.Double(x - s / 2, y - s / 2, s, s * 0.9, 3, 3));
+        g.setColor(c(250, 210, 110)); g.fill(new RoundRectangle2D.Double(x - s / 2 + 1, y - s / 2 + 1, s - 2, 2, 2, 2));
+        for (int k = 1; k < 4; k++) line(g, x - s / 2 + k * s / 4, y - s / 2 + 1, x - s / 2 + k * s / 4, y, 0.6f, c(140, 90, 26));
+        g.setColor(c(206, 150, 50)); g.fill(new Rectangle2D.Double(dir > 0 ? x - s / 2 - s * 0.6 : x + s / 2, y - s * 0.25, s * 0.6, s * 0.5));
+    }
+
+    static void sun(Graphics2D g, BufferedImage img, int i) {
+        sunBack(img, g);
+        switch (i) {
+            case 0 -> { // Sunfire Fist: a golden fist driven right, a burst of flame and light before it.
+                for (int k = 0; k < 3; k++) taper(g, 3, 13 + k * 3, 8, 14 + k * 2, 12, 16, 0.3, 1.6, k == 1 ? SUN_GOLD : SUN_DEEP);
+                disc(g, 23, 16, 8, c(255, 170, 50, 110));
+                burst(g, 23, 16, 6, SUN_GOLD);
+                disc(g, 23, 16, 3, SUN_WHITE);
+                goldFist(g, img, 15, 16, 8, 1);
+            }
+            case 1 -> { // Pride Flare: an open palm thrust out, a wave of flame running low across the ground.
+                g.setColor(c(60, 20, 10)); g.fillRect(2, 25, 28, 5);
+                for (int k = 0; k < 6; k++) {
+                    double x = 10 + k * 3.6, h = 4 + Math.sin(k * 1.3) * 2 + k * 0.4;
+                    taper(g, x, 26, x + 1, 26 - h * 0.6, x + 2, 26 - h, 2.6, 0.3, k % 2 == 0 ? SUN_DEEP : SUN_GOLD);
+                }
+                line(g, 9, 25, 30, 25, 1f, SUN_WHITE);
+                g.setColor(c(206, 150, 50)); g.fill(new RoundRectangle2D.Double(3, 10, 6, 10, 2, 2));
+                for (int k = 0; k < 4; k++) g.fill(new RoundRectangle2D.Double(8, 10 + k * 2.5, 4, 2, 1, 1));
+                disc(g, 10, 15, 3, SUN_GLOW);
+            }
+            case 2 -> { // Cruel Sun: a small sun blazing over a raised palm.
+                sunDisc(g, 16, 10, 5.5, 12);
+                g.setColor(c(206, 150, 50)); g.fill(new RoundRectangle2D.Double(13, 19, 6, 11, 2, 2));
+                for (int k = 0; k < 4; k++) g.fill(new RoundRectangle2D.Double(12 + k * 2, 16, 1.6, 4, 1, 1));
+            }
+            case 3 -> { // Noon Judgment: three golden circles, three pillars of light falling into them.
+                double[][] at = {{7, 25}, {16, 27}, {25, 24}};
+                for (double[] q : at) {
+                    g.setColor(SUN_GOLD); g.setStroke(new BasicStroke(1f)); g.draw(new Ellipse2D.Double(q[0] - 4, q[1] - 1.5, 8, 3));
+                    g.setColor(c(255, 230, 150, 150)); g.fill(new Rectangle2D.Double(q[0] - 1.5, 2, 3, q[1] - 2));
+                    line(g, q[0], 2, q[0], q[1], 0.8f, SUN_WHITE);
+                    disc(g, q[0], q[1], 2, SUN_WHITE);
+                }
+            }
+            case 4 -> { // Midday Meteor: falling fist first onto a crater, a ring of fire.
+                g.setColor(c(60, 20, 10)); g.fillRect(2, 25, 28, 5);
+                g.setColor(c(30, 10, 6)); g.fill(new Arc2D.Double(9, 22, 14, 7, 180, 180, Arc2D.CHORD));
+                g.setColor(SUN_DEEP); g.setStroke(new BasicStroke(1.2f)); g.draw(new Ellipse2D.Double(3, 23, 26, 6));
+                for (int k = 0; k < 3; k++) taper(g, 8 + k * 2, 2, 12, 8, 15, 14, 0.3, 3.5 - k, k % 2 == 0 ? SUN_GOLD : SUN_DEEP);
+                disc(g, 16, 16, 5, SUN_GLOW);
+                goldFist(g, img, 16, 17, 7, -1);
+            }
+            case 5 -> { // The One: a great sun filling the square, a dark figure before it, arms flung wide.
+                sunDisc(g, 16, 13, 10, 16);
+                g.setColor(c(30, 12, 6));
+                g.fill(new Ellipse2D.Double(14, 17, 4, 4));
+                g.fill(new RoundRectangle2D.Double(13.5, 20.5, 5, 7, 2, 2));
+                line(g, 14, 22, 8, 18, 1.4f, c(30, 12, 6));
+                line(g, 18, 22, 24, 18, 1.4f, c(30, 12, 6));
+                line(g, 15, 27, 14, 30, 1.4f, c(30, 12, 6));
+                line(g, 17, 27, 18, 30, 1.4f, c(30, 12, 6));
+            }
+            case 6 -> { // Grand Noon: a column of white sunlight onto a fist (the secret).
+                g.setColor(c(255, 240, 190, 170)); g.fill(new Rectangle2D.Double(11, 2, 10, 20));
+                g.setColor(SUN_WHITE); g.fill(new Rectangle2D.Double(14, 2, 4, 20));
+                sunDisc(g, 16, 4, 3, 8);
+                goldFist(g, img, 16, 23, 7, 1);
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Pride of the Sun: a fist wrapped in flame under a small sun.
+                sunDisc(g, 23, 8, 3.5, 10);
+                for (int k = 0; k < 5; k++) taper(g, 10 + k * 2.5, 26, 9 + k * 2.5, 18, 12 + k * 2, 11 + (k % 2) * 2, 2.4, 0.3, k % 2 == 0 ? SUN_DEEP : SUN_GOLD);
+                goldFist(g, img, 14, 21, 9, 1);
             }
         }
     }

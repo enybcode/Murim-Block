@@ -285,6 +285,9 @@ public final class MurimItems {
 
     /** Scroll of the first art of the fist: read, it teaches the Long Fist and is used up. Where it is found is still to decide. */
     /** The Bandit Warlord's scroll: read (from Qi Condensation), it teaches the Mountain-Shattering Fist and is used up. */
+    /** The Majin Fist's scroll: the Son of the Demon's art, always his to drop (loot_table/entities/son_of_the_demon). */
+    public static final DeferredItem<MartialManualItem> MAJIN_FIST_SCROLL = ITEMS.register("majin_fist_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC).fireResistant(), MartialArts.MAJIN_FIST));
     public static final DeferredItem<MartialManualItem> MOUNTAIN_SHATTERING_FIST_SCROLL = ITEMS.register("mountain_shattering_fist_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.MOUNTAIN_SHATTERING_FIST));
     public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
@@ -363,6 +366,7 @@ public final class MurimItems {
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
                         output.accept(MOUNTAIN_SHATTERING_FIST_SCROLL.get());
+                        output.accept(MAJIN_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());

@@ -73,6 +73,7 @@ public final class KnockdownService {
                 case FinishCinematicPayload.MOUNTAIN_BURIAL -> com.murimblock.martial.MountainShatteringFist.FINISH_HIT_TICK;
                 case FinishCinematicPayload.SEVEN_STARS -> com.murimblock.martial.SevenStarsMoves.FINISH_HIT_TICK;
                 case FinishCinematicPayload.THUNDER_SABER -> com.murimblock.martial.ThunderSaberMoves.FINISH_HIT_TICK;
+                case FinishCinematicPayload.NOON_SENTENCE -> com.murimblock.martial.MajinFistArt.FINISH_HIT_TICK;
                 case FinishCinematicPayload.LAST_BELL -> com.murimblock.martial.GoldenBell.FINISH_HIT_TICK;
                 default -> FINISH_HIT_TICK;
             };
@@ -231,6 +232,7 @@ public final class KnockdownService {
                 : AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
                 : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST
                 : com.murimblock.martial.MountainShatteringFist.finishes(executor) ? FinishCinematicPayload.MOUNTAIN_BURIAL
+                : com.murimblock.martial.MajinFistArt.finishes(executor) ? FinishCinematicPayload.NOON_SENTENCE
                 : com.murimblock.martial.SevenStarsMoves.finishes(executor) ? FinishCinematicPayload.SEVEN_STARS
                 : com.murimblock.martial.ThunderSaberMoves.finishes(executor) ? FinishCinematicPayload.THUNDER_SABER
                 : com.murimblock.martial.GoldenBell.finishes(executor) ? FinishCinematicPayload.LAST_BELL : FinishCinematicPayload.GENERIC;
@@ -243,6 +245,7 @@ public final class KnockdownService {
             case FinishCinematicPayload.MOUNTAIN_BURIAL -> MurimAnimations.FINISH_MOUNTAIN_BURIAL;
             case FinishCinematicPayload.SEVEN_STARS -> MurimAnimations.FINISH_SEVEN_STARS;
             case FinishCinematicPayload.THUNDER_SABER -> MurimAnimations.FINISH_THUNDER_SABER;
+            case FinishCinematicPayload.NOON_SENTENCE -> MurimAnimations.FINISH_MAJIN;
             case FinishCinematicPayload.LAST_BELL -> MurimAnimations.FINISH_LAST_BELL;
             default -> MurimAnimations.FINISH_GENERIC;
         }, 0.0F);
@@ -271,6 +274,7 @@ public final class KnockdownService {
             if (entry.getValue().finish == FinishCinematicPayload.MOUNTAIN_BURIAL) com.murimblock.martial.MountainShatteringFist.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.SEVEN_STARS) com.murimblock.martial.SevenStarsMoves.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.THUNDER_SABER) com.murimblock.martial.ThunderSaberMoves.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.NOON_SENTENCE) com.murimblock.martial.MajinFistArt.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.LAST_BELL) com.murimblock.martial.GoldenBell.finishTick(executor, victim, elapsed);
             if (elapsed < entry.getValue().hitTick()) continue;
             // The blow lands: the finish is over (the animation plays out on its own).

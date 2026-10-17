@@ -74,7 +74,7 @@ public final class MajinFist {
     public static final float HEAT_DAMAGE = 1, HEAT_DAMAGE_ONE = 2;
     /** His strength towards noon: a twentieth more every 30 s of the fight, up to three tenths. */
     public static final int NOON_STEP = 600;
-    public static final double NOON_GAIN = 0.05, NOON_MAX = 0.3;
+    public static final double NOON_GAIN = 0.04, NOON_MAX = 0.2;
     /** The One: at what share of his life; how long he rises (untouchable); how long it lasts; how the great sun falls. */
     public static final float ONE_AT = 0.35F;
     public static final int ONE_RISE = 60, ONE_LENGTH = 560, ONE_FALL = 80;
@@ -566,7 +566,7 @@ public final class MajinFist {
             Vec3 middle = arena != null ? Vec3.atBottomCenterOf(arena) : him.position();
             if (sun != null && sun.isAlive()) {
                 sun.setSize(17F);
-                sun.hurl(middle, 6, ONE_FALL, ONE_REACH, 2.2F);
+                sun.hurl(middle, 6, ONE_FALL, ONE_REACH, 1.6F);
             }
             level.playSound(null, middle.x, middle.y, middle.z, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 10, 0.4F);
             for (int k = 0; k < ONE_FALL; k += 4) {
@@ -599,7 +599,7 @@ public final class MajinFist {
         }
         if (attack != null) {
             attack.removeModifier(ONE_STRENGTH);
-            if (on) attack.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(ONE_STRENGTH, 0.25,
+            if (on) attack.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(ONE_STRENGTH, 0.2,
                     net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
         }
     }

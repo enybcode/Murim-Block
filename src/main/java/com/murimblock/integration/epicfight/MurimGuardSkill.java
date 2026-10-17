@@ -74,10 +74,12 @@ public class MurimGuardSkill extends ParryingSkill {
         return GuardSkill.createGuardBuilder(MurimGuardSkill::new)
                 .addGuardMotion(WeaponCategories.FIST, (item, player) -> SanguineArt.guardsBareHanded(player.getOriginal()) ? MurimAnimations.SANGUINE_GUARD_HIT
                         : LongFist.guardsBareHanded(player.getOriginal()) || com.murimblock.martial.MountainShatteringFist.guardsBareHanded(player.getOriginal())
+                        || com.murimblock.martial.MajinFistArt.guardsBareHanded(player.getOriginal())
                         || com.murimblock.martial.GoldenBell.guardsBareHanded(player.getOriginal())
                         ? MurimAnimations.LONG_FIST_GUARD_HIT : null)
                 .addAdvancedGuardMotion(WeaponCategories.FIST, (item, player) -> LongFist.guardsBareHanded(player.getOriginal())
                         || com.murimblock.martial.MountainShatteringFist.guardsBareHanded(player.getOriginal())
+                        || com.murimblock.martial.MajinFistArt.guardsBareHanded(player.getOriginal())
                         || com.murimblock.martial.GoldenBell.guardsBareHanded(player.getOriginal())
                         ? List.of(MurimAnimations.LONG_FIST_GUARD_HIT) : SanguineArt.guardsBareHanded(player.getOriginal()) ? List.of(MurimAnimations.SANGUINE_GUARD_HIT) : null)
                 .addAdvancedGuardMotion(WeaponCategories.SWORD, (item, player) -> item.getStyle(player) == Styles.ONE_HAND

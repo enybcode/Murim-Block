@@ -26,9 +26,11 @@ public record FinishCinematicPayload(boolean start, int executorId, int victimId
     /** Extinguished Stars, the Seven Stars Sword's: seven thrusts, seven stars lit and put out at 1.9 s. */
     public static final int SEVEN_STARS = 5;
     /** The Last Thunderclap, the Purple Heaven Thunder Saber's: a bolt on the raised saber, the blow at 1.3 s. */
-    public static final int THUNDER_SABER = 7;
+    public static final int THUNDER_SABER = 8;
     /** Last Bell, the Golden Bell's: the palm on the chest, three rings of the bell, the last at 1.6 s. */
     public static final int LAST_BELL = 6;
+    /** Noon Sentence, the Majin Fist's: a sun raised over the body at 0.6 s, brought down on it at 1.6 s. */
+    public static final int NOON_SENTENCE = 7;
 
     public static final CustomPacketPayload.Type<FinishCinematicPayload> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "finish_cinematic"));

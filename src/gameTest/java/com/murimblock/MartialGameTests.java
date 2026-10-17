@@ -120,6 +120,7 @@ public final class MartialGameTests {
             run.accept("martial forget celestial_peak_spear");
             run.accept("martial forget traveller_staff");
             run.accept("martial forget mountain_shattering_fist");
+            run.accept("martial forget majin_fist");
             run.accept("martial forget seven_stars_sword");
             run.accept("martial forget thunder_saber");
             run.accept("martial forget golden_bell");

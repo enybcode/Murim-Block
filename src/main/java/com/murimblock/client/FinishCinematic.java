@@ -52,6 +52,8 @@ public final class FinishCinematic {
     static final Timing SEVEN_STARS = new Timing(2.6F, 0.35F, 1.9F, 2.1F);
     /** The Last Thunderclap: the saber raised until 0.7 s, the bolt on it, the blow at 1.3 s. */
     static final Timing THUNDER_SABER = new Timing(2.4F, 0.7F, 1.3F, 1.8F);
+    /** Noon Sentence: the palm raised until 0.6 s, the sun brought down at 1.6 s. */
+    static final Timing NOON_SENTENCE = new Timing(2.6F, 0.6F, 1.6F, 2.0F);
     /** Last Bell: the palm laid on at 0.5 s, the third ring at 1.6 s. */
     static final Timing LAST_BELL = new Timing(2.4F, 0.5F, 1.6F, 1.9F);
     /**
@@ -104,6 +106,7 @@ public final class FinishCinematic {
                 : finish == FinishCinematicPayload.MOUNTAIN_BURIAL ? MOUNTAIN_BURIAL
                 : finish == FinishCinematicPayload.SEVEN_STARS ? SEVEN_STARS
                 : finish == FinishCinematicPayload.THUNDER_SABER ? THUNDER_SABER
+                : finish == FinishCinematicPayload.NOON_SENTENCE ? NOON_SENTENCE
                 : finish == FinishCinematicPayload.LAST_BELL ? LAST_BELL
                 : finish == FinishCinematicPayload.SCARLET_BLOOM ? SCARLET_BLOOM : GENERIC;
         scarletOrigin = v.position();

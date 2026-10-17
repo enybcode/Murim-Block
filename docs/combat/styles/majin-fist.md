@@ -67,6 +67,71 @@ local seulement. Film : `gradlew -PgameTests runMajinTour`.
 
 Tous les coups se parent avec la garde Murim.
 
+## Équilibrage du boss (17/10/2026, Enzo : « possible au milieu de partie, pas de one-shot »)
+
+Réglé pour un joueur de Condensation du Qi, soit environ 28 PV et une armure de fer :
+
+| Valeur | Avant | Après |
+|---|---|---|
+| Vie | 500 | 420 |
+| Armure, ténacité | 14, 6 | 10, 4 |
+| Attaque | 16 | 9 |
+| Grand soleil de The One | 2,2 × attaque | 1,6 × attaque |
+| Force de The One | +25 % | +20 % |
+| « Vers Midi » | +5 % toutes les 30 s, jusqu'à 30 % | +4 %, jusqu'à 20 % |
+| Royaume de cultivation | Liquéfaction | Condensation pic |
+
+**Jamais d'un coup** (`MajinGuard`) :
+- un de ses coups sur un joueur prend au plus 35 % de sa vie totale, avant l'armure ;
+- tous ses coups sur 3 s prennent au plus 60 % ;
+- sa chaleur (Ardeur du Soleil) n'est pas comptée, elle est lente.
+
+## L'art du joueur : Poing du Majin (17/10/2026)
+
+Enzo : « crée-moi un art martial avec ces techniques ; c'est lui qui le drop quand on le tue ».
+- Le **rouleau du Poing du Majin** tombe toujours du Fils du Démon (`loot_table/entities/son_of_the_demon`), avec celui
+  du Poing Brise-Montagne.
+- L'art est **haut niveau** : il s'apprend à partir de la **Liquéfaction du Qi**, à mains nues.
+- Il reprend les mouvements du colosse à taille humaine (`scripts/animation/majin-fist.cjs`).
+- Les coups sont portés côté serveur (`martial/MajinFistArt`), et les soleils sont les mêmes que ceux du boss, avec leur
+  lumière Photon.
+- GIF dans `images/majin-art/`, en local. Film : `gradlew -PgameTests runMajinArtTour`.
+
+| Technique | Qi | Recharge | Effet |
+|---|---|---|---|
+| **Poing Solaire** | 50 | 7 s | le direct ; explosion de flammes devant le poing, 2,5 blocs, 1,2 × attaque, brûle |
+| **Flamme de l'Orgueil** | 70 | 12 s | une vague de feu court au sol sur 15 blocs, 4 de large, 0,8 × attaque |
+| **Soleil Cruel** | 90 | 18 s | un soleil grossit au-dessus de la paume, puis est lancé là où l'on regarde (24 blocs) : explosion de 3,5 blocs, 1,8 × attaque, cratère |
+| **Jugement de Midi** | 100 | 20 s | cercles d'or sous jusqu'à 5 ennemis (16 blocs), puis piliers de lumière : 1,5 × attaque |
+| **Météore de Midi** | 90 | 16 s | bond jusqu'à 14 blocs : cratère, explosion de 4 blocs (1,8 ×), puis anneau de feu (0,7 ×) |
+| **The One** (ultime) | 250 | 5 min | un soleil naît au-dessus de soi. Pendant 20 s : +30 % de vitesse, +25 % de force, Résistance, immunité au feu, et les ennemis à moins de 6 blocs brûlent. À la fin, le soleil tombe là où l'on regarde : 7 blocs, 3 × attaque |
+| **Grand Midi** (secret) | — | — | Poing Solaire lancé accroupi sous le soleil de midi, en jeu entre 11 h et 13 h : un pilier de soleil s'abat sur l'ennemi devant soi (3 × attaque) |
+
+**Passif, Orgueil du Soleil** : les coups à mains nues d'Epic Fight enflamment leur cible 2 s, et frappent 15 % plus
+fort de jour, sous le ciel.
+
+**Quêtes** :
+
+| Quête | Condition | Débloque |
+|---|---|---|
+| Embrasement | enflammer 30 ennemis avec ses coups | Flamme de l'Orgueil |
+| Flamme qui se propage | toucher 25 ennemis avec la Flamme | Soleil Cruel |
+| Colère du Soleil | toucher 15 ennemis avec un Soleil Cruel | Jugement de Midi |
+| Grand Midi | toucher 15 ennemis avec le Jugement | Météore de Midi |
+| Orgueil incarné | tuer 50 ennemis en feu | The One |
+
+**Évolutions** :
+- à 30, Poing Solaire devient **Solar Fist**, deux fois plus large ;
+- à 60, Flamme de l'Orgueil devient **Inferno Flare**, plus longue et plus large ;
+- à 90, Soleil Cruel devient **Twin Suns** : deux soleils.
+
+**Finition** : la **Sentence de Midi**, un soleil levé au-dessus du corps puis abattu sur lui.
+
+**Icônes** : famille « plein midi » dans `scripts/worldgen/TechniqueIcons.java`. **Rouleau** : soie pourpre, or et
+lumière blanche (`ScrollTexture.java`).
+
+Tests : `MajinFistArtGameTests` (le rouleau, chaque technique, The One, le butin du boss, pas de one-shot).
+
 ## Tests
 
 - `SonOfTheDemonGameTests` :
