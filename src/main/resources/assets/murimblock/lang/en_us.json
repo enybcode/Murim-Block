@@ -239,6 +239,12 @@
   "guide.murimblock.majin_fist.page.0": "MAJIN FIST\n\nThe Son of the Demon's fist: the pride of the noon sun. Blows that burn, suns that fall, and The One.\n\nDifficulty: four drops of ink. Read only from Qi Liquidation.",
   "guide.murimblock.majin_fist.page.1": "WHERE IT IS KEPT\n\nThe Son of the Demon always carries its scroll. He is what the Bandit Warlord becomes when beaten, in the crater of a great Bandit Camp.\n\nClear the camp, beat the Warlord, then him.",
   "guide.murimblock.majin_fist.page.2": "THE WAY\n\nHold this guide and read it: it writes in your mind the way to the nearest Bandit Camp, and how far.\n\nDo not fight him at noon.",
+  "item.murimblock.thunder_saber_guide": "Guide: Purple Heaven Thunder Saber",
+  "guide.murimblock.thunder_saber.target": "A lightning rod under the storm",
+  "guide.murimblock.thunder_saber.way": "The guide shows no road: wait for a thunderstorm, and stand beside a copper lightning rod under the open sky, a greatsword in hand. Only one who has reached Qi Crystallization is answered.",
+  "guide.murimblock.thunder_saber.page.0": "PURPLE HEAVEN THUNDER SABER\n\nA greatsword in both hands: heavy blows beat thunder drums, and the drums call the purple lightning. Thunder Descends, Rolling Thunder, Heaven's Drum, Severing Flash, Nine Heavens' Wrath.\n\nDifficulty: four drops of ink. Read from Qi Condensation.",
+  "guide.murimblock.thunder_saber.page.1": "WHERE IT IS KEPT\n\nNo one keeps it. The sky gives it, once, to one who has reached Qi Crystallization.\n\nThunder does not ask. It answers.",
+  "guide.murimblock.thunder_saber.page.2": "THE WAY\n\nWait for a thunderstorm. Stand beside a copper lightning rod under the open sky, a greatsword in hand, and do not move.\n\nThe bolt will not burn you.",
   "item.murimblock.alliance_spear_guard_spawn_egg": "Alliance Spear Guard Spawn Egg",
   "item.murimblock.alliance_sword_disciple_spawn_egg": "Alliance Sword Disciple Spawn Egg",
   "item.murimblock.alliance_archer_spawn_egg": "Alliance Archer Spawn Egg",
@@ -814,5 +820,8 @@
   "evolution.murimblock.ancient_mountain": "Ancient Mountain",
   "entity.murimblock.golden_bell_monk": "Golden Bell Monk",
   "item.murimblock.golden_bell_monk_spawn_egg": "Golden Bell Monk Spawn Egg",
-  "biome.murimblock.wulingyuan_pillars": "Wulingyuan Stone Forest"
+  "biome.murimblock.wulingyuan_pillars": "Wulingyuan Stone Forest",
+  "message.murimblock.thunder_calling.gathers": "The storm turns toward you. Hold your blade high...",
+  "message.murimblock.thunder_calling.silent": "The storm passes you by. It answers only from %s.",
+  "message.murimblock.thunder_calling.gift": "The purple lightning runs through you without burning. Thunder does not ask: it answers. You received the Purple Heaven Thunder Saber Manual."
 }

@@ -168,7 +168,19 @@ public final class ThunderSaberTour {
             if (ticks == 540) server.execute(() -> ThunderSaber.strikeForTests(player(server), row.get(0), false));
             if (ticks >= 540 && ticks <= 548 && ticks % 2 == 0) capture(mc, String.format("16-sovereign-strike-%02d.png", ticks - 540));
             if (ticks >= 664 && ticks <= 690 && ticks % 2 == 0) capture(mc, String.format("17-sovereign-end-%02d.png", ticks - 664));
-            if (ticks == 710) {
+            // ---- The storm's gift: a real thunderstorm, a lightning rod, the saber held up at Qi Crystallization.
+            if (ticks == 720) server.execute(() -> {
+                var level = server.overworld();
+                level.setWeatherParameters(0, 6000, true, true);
+                level.setBlockAndUpdate(new BlockPos(1, -60, 2), Blocks.LIGHTNING_ROD.defaultBlockState());
+                lineUp(server, new double[][] {{-6.0, 9.0}, {-7.0, 10.0}, {-8.0, 9.0}});
+                prepare(server, 0.5, 2.5, -20, 0);
+                com.murimblock.cultivation.CultivationService.setCultivation(player(server), com.murimblock.cultivation.CultivationRealm.QI_CRYSTALLIZATION, com.murimblock.cultivation.CultivationStage.EARLY);
+            });
+            if (ticks == 722) place(4.5, -58.4, -1.5, 45, 4);
+            if (ticks >= 850 && ticks <= 1010 && ticks % 3 == 0) capture(mc, String.format("18-calling-%03d.png", ticks - 850));
+            if (ticks == 1015) casts.put("storm-gift", String.valueOf(com.murimblock.martial.ThunderCalling.given(player(server))));
+            if (ticks == 1030) {
                 Files.writeString(mc.gameDirectory.toPath().resolve("thunder-saber-tour-report.txt"), "PASSED; casts=" + casts
                         + "; electrified shown=" + com.murimblock.client.ThunderSaberFx.electrifiedShown() + "\n");
                 finished = true;

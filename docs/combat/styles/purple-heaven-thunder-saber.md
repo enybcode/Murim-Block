@@ -1,8 +1,8 @@
 # Le Sabre du Tonnerre du Ciel Pourpre (紫霄雷刀, *Zǐxiāo Léidāo*)
 
 > **État : en jeu sur `test` depuis le 17/10/2026** (validé sur le principe par Enzo : « c'est validé, implémente ça au jeu »,
-> avec une arme « plus massive »). Le manuel et le Zhanmadao sont dans l'onglet créatif tant que leur source n'est pas
-> décidée. Code : `martial/ThunderSaber`, `martial/ThunderSaberMoves`, `client/ThunderSaberFx` ; animations
+> avec une arme « plus massive »). Le manuel est **donné par la foudre** (voir « Le manuel »). Le Zhanmadao **se craftera** :
+> sa recette reste à choisir par Enzo ; d'ici là il est dans l'onglet créatif. Code : `martial/ThunderSaber`, `martial/ThunderSaberMoves`, `client/ThunderSaberFx` ; animations
 > `scripts/animation/thunder-saber-art.cjs` ; tests `ThunderSaberGameTests` ; tour `gradlew -PgameTests runThunderSaberTour`.
 > Demande d'Enzo :
 > - « un nouvel art martial du même niveau que Shooting Star, même qualité graphique » ;
@@ -36,7 +36,14 @@ grandes percées. Cet art est celui d'un sabreur qui a survécu à la sienne et 
 
 - **« Purple Heaven Thunder Saber Manual »** (Manuel du Sabre du Tonnerre du Ciel Pourpre) : un livret de bronze sombre, frappé du motif du tonnerre (雷纹, les spirales carrées des bronzes antiques), avec un éclair d'or au dos.
 - Lu, il est consommé. Le style apparaît dans l'onglet Techniques avec son passif et sa première technique.
-- **Où le trouver : à décider avec Enzo** (voir la fin du document).
+- **Où le trouver** (décidé par Enzo le 17/10/2026 : « frappé par la foudre, au Qi Crystallization, avec un pôle de cuivre
+  et une grosse arme en main ») : pendant un **vrai orage**, à ciel ouvert, un joueur au stade **Qi Crystallization** ou
+  au-delà se tient à **2 blocs au plus d'un paratonnerre** (le bloc de cuivre de Minecraft, lui aussi à ciel ouvert), **une
+  grande épée en main** (n'importe laquelle pour Epic Fight). L'orage se tourne vers lui ; après **6 secondes**, un éclair
+  frappe le paratonnerre et le traverse **sans le blesser**, et le ciel lui donne le manuel, **une seule fois** par joueur
+  (`martial/ThunderCalling`). En dessous du royaume, un message dit que l'orage passe sans répondre.
+- Le manuel se lit à partir de Qi Condensation (règle commune des arts intermédiaires), mais on ne l'obtient qu'à Qi
+  Crystallization.
 
 ## L'arme : le Zhanmadao du Ciel Pourpre (*Purple Heaven Zhanmadao*)
 
@@ -267,12 +274,9 @@ Il se joue sur un joueur à terre (B).
 - **Le code :** l'art dans `MartialArts`, les tambours (sauvegardés, synchronisés), l'électrisé (un effet), l'hyperarmure, les quêtes.
 - **Les vérifications :** des tests serveur (dégâts, tambours, parades : tout doit être parable sauf les éclairs de l'ultime), et un tour client filmé, comme `runTravellerStaffTour`.
 
-## À décider avec Enzo
+## Décisions et ce qui reste à décider
 
-1. **Le nom :** « Purple Heaven Thunder Saber » (Sabre du Tonnerre du Ciel Pourpre) ?
-2. **Où trouver le manuel :**
-   - un nouveau mob neutre à battre en duel, comme l'épéiste errant des Sept Étoiles : par exemple un **sabreur errant** qui n'apparaît que **pendant les orages**, sur les hauts sommets ;
-   - ou le marchand de l'Alliance ;
-   - ou les coffres des sites.
-3. **Où trouver le Zhanmadao :** avec le manuel, ou à part, plus rare ?
-4. **La foudre pourpre** te va-t-elle, ou préfères-tu une foudre bleu-blanc classique ?
+1. ~~Le nom~~ : gardé.
+2. ~~Où trouver le manuel~~ : donné par la foudre (voir « Le manuel »), 17/10/2026.
+3. **Le Zhanmadao** : il se craftera ; **sa recette reste à choisir par Enzo**.
+4. ~~La foudre pourpre~~ : gardée.

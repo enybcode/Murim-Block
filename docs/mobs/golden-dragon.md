@@ -96,15 +96,16 @@ validée le 17/10 (« parfait »), icônes des livres refaites en pixel art à s
 | Guide : Mountain-Shattering Fist | 4 | 16 |
 | Guide : Seven Stars Sword | 4 | 20 |
 | Guide : Majin Fist | 4 | 20 |
+| Guide : Purple Heaven Thunder Saber | 4 | 24 |
 | Sanguine Art | — | « Not yet written » (personne ne garde cet art : pas en vente) |
-| Purple Heaven Thunder Saber | — | « Not yet written » (source à décider) |
 | Talismans Nether, End, Murim | — | 32 chacun |
 
 - **Guides** (`item/MartialGuideItem`, `<art>_guide`, icônes 16×16 en pixel art : livre fermé de la couleur de l'art,
-  emblème doré poing, cloche, bâton, lance, épée, montagne, étoile ou soleil) : lu, il s'ouvre en livre de 3 pages (l'art, qui le garde
+  emblème doré poing, cloche, bâton, lance, épée, montagne, étoile, soleil ou éclair) : lu, il s'ouvre en livre de 3 pages (l'art, qui le garde
   et comment l'obtenir, le chemin) et écrit dans le chat la direction et la distance du lieu le plus proche : avant-poste
   de l'Alliance (Poing Long, Bâton : marchand), arène de l'Alliance (capitaine), temple de la Mer de Bambous (Sensei Yun ; le moine de la Cloche d'Or),
-  grand camp de bandits (le Seigneur de guerre puis le Fils du Démon, qui porte les rouleaux du Poing Brise-Montagne et du Poing du Majin), sommet du Pic Cueille-Étoiles (Sept Étoiles). N'enseigne rien, jamais
+  grand camp de bandits (le Seigneur de guerre puis le Fils du Démon, qui porte les rouleaux du Poing Brise-Montagne et du Poing du Majin), sommet du Pic Cueille-Étoiles (Sept Étoiles). Le guide du Sabre du Tonnerre ne mène à aucun lieu (le manuel est
+  donné par la foudre, à un paratonnerre sous l'orage, dès Qi Crystallization) : il écrit les conditions à la place. N'enseigne rien, jamais
   consommé ; recharge de 5 s.
 - Les pages (`guide.murimblock.*`) sont à faire relire par la session « lore ».
 - **Vérifié** : GameTests `SageShopGameTests` (tous les arts sauf le Sanguinaire ont leur guide, prix croissants avec la
