@@ -220,6 +220,12 @@ public final class WarlordCinematic {
 
     // ---------------------------------------------------------------- a film, not a game screen
 
+    /** No block, water or fire over the screen: the camera is not where the player stands. */
+    @SubscribeEvent
+    public static void onScreenEffect(net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent event) {
+        if (camera != null) event.setCanceled(true);
+    }
+
     @SubscribeEvent
     public static void onRenderHand(RenderHandEvent event) {
         if (camera != null) event.setCanceled(true);

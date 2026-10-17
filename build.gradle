@@ -71,6 +71,14 @@ neoForge {
             disableIdeRun()
         }
 
+        banditEcologyTour {
+            client()
+            gameDirectory = project.file('build/bandit-ecology-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.banditEcologyTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client tour of the Murim biomes in a fresh normal world (see BiomeTour).
         biomeTour {
             client()
@@ -313,6 +321,37 @@ neoForge {
             gameDirectory = project.file('build/warlord-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.warlordTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: the same, then a killing blow: his transformation into the Son of the Demon and the arena in the sky (see WarlordTour).
+        transformTour {
+            client()
+            gameDirectory = project.file('build/transform-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            systemProperty 'murimblock.transformTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: the transformation recorded as a video (smooth frames at a slowed tick rate, and its sounds
+        // logged for the soundtrack): build/transform-video-run/video, then scripts/animation/make-video.cjs (see WarlordTour).
+        transformVideo {
+            client()
+            gameDirectory = project.file('build/transform-video-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            systemProperty 'murimblock.transformTour', 'true'
+            systemProperty 'murimblock.videoTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a film of the Majin Fist, the Son of the Demon's six skills, in the real sky arena (see MajinTour).
+        majinTour {
+            client()
+            gameDirectory = project.file('build/majin-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.majinTour', 'true'
             disableIdeRun()
         }
 

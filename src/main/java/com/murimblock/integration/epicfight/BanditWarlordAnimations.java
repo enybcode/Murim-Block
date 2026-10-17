@@ -37,6 +37,8 @@ public final class BanditWarlordAnimations {
     public static AnimationAccessor<StaticAnimation> IDLE, WALK, DIVE;
     public static AnimationAccessor<AttackAnimation> CRUSHER, EARTH_BREAKER, BULL_CHARGE, SKY_BREAKER;
     public static AnimationAccessor<ActionAnimation> ROAR, LAND, COLLAPSE, LEAP_LAND;
+    /** His transformation into the Son of the Demon, 10 s to the flash (WarlordTransformation). */
+    public static AnimationAccessor<ActionAnimation> TRANSFORM;
     /** In the air: nothing else may start, but he is not held still (he flies). */
     public static AnimationAccessor<StaticAnimation> LEAP;
     /** When the Collapse's fist meets the ground, and when the Drop leaves it (seconds into them). */
@@ -87,6 +89,7 @@ public final class BanditWarlordAnimations {
         ROAR = builder.nextAccessor("biped/murim/warlord_roar", a -> new ActionAnimation(0.15F, a, Armatures.BIPED));
         LAND = builder.nextAccessor("biped/murim/warlord_land", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
         COLLAPSE = builder.nextAccessor("biped/murim/warlord_collapse", a -> new ActionAnimation(0.15F, a, Armatures.BIPED));
+        TRANSFORM = builder.nextAccessor("biped/murim/warlord_transform", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
         LEAP = builder.nextAccessor("biped/murim/warlord_leap", Airborne::new);
         LEAP_LAND = builder.nextAccessor("biped/murim/warlord_leap_land", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
         // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact.

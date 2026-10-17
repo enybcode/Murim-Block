@@ -81,10 +81,14 @@ public class BanditWarlordEntity extends Monster {
     public static final float LEAP_DAMAGE = 1.0F;
 
     private static final EntityDataAccessor<Boolean> METEOR = SynchedEntityData.defineId(BanditWarlordEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Ticks into his transformation (WarlordTransformation), -1 before: seen by the clients, who swell and light him. */
+    private static final EntityDataAccessor<Integer> TRANSFORM = SynchedEntityData.defineId(BanditWarlordEntity.class, EntityDataSerializers.INT);
 
     private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.NOTCHED_10);
     /** The camp he falls on (its centre, BlockPos.asLong), if any: its crater opens where he lands. */
     @Nullable private Long camp;
+    /** The camp he fell on, kept after his landing: the Son of the Demon's arena rises over it. */
+    @Nullable private Long home;
     /** Ticks left of the landing, meanwhile untouchable and still. */
     private int landing;
     private boolean enraged, shockwaveSent, launched;
@@ -136,6 +140,7 @@ public class BanditWarlordEntity extends Monster {
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(METEOR, false);
+        builder.define(TRANSFORM, -1);
     }
 
     // ---------------------------------------------------------------- the fall
@@ -146,6 +151,7 @@ public class BanditWarlordEntity extends Monster {
      */
     public void fallFromSky(@Nullable Long camp) {
         this.camp = camp;
+        this.home = camp;
         entityData.set(METEOR, true);
         setTarget(null);
         setDeltaMovement(0, -0.5, 0);
@@ -158,7 +164,55 @@ public class BanditWarlordEntity extends Monster {
 
     /** Whether he is falling or landing: untouchable, still. */
     public boolean isArriving() {
-        return isMeteor() || landing > 0;
+        return isMeteor() || landing > 0 || transforming();
+    }
+
+    // ---------------------------------------------------------------- his transformation
+
+    /** The camp he fell on (its centre, BlockPos.asLong), or null (an egg, /summon). */
+    @Nullable public Long camp() {
+        return home;
+    }
+
+    /** Whether he is becoming the Son of the Demon (untouchable, still, his bar gone). */
+    public boolean transforming() {
+        return entityData.get(TRANSFORM) >= 0;
+    }
+
+    /** Ticks into his transformation, -1 before. */
+    public int transformTicks() {
+        return entityData.get(TRANSFORM);
+    }
+
+    public void setTransformTicks(int ticks) {
+        entityData.set(TRANSFORM, ticks);
+    }
+
+    /** The film begins: no foe, no blow, no bar; the Son of the Demon takes his place at its flash. */
+    public void beginTransformation() {
+        entityData.set(TRANSFORM, 0);
+        // Still while the film plays: no looking about, no step; only the film moves him.
+        setNoAi(true);
+        setHealth(1);
+        setTarget(null);
+        getNavigation().stop();
+        setDeltaMovement(Vec3.ZERO);
+        bossBar.setVisible(false);
+        fissureAt = -1;
+        airborne = -1;
+    }
+
+    /**
+     * A blow that would kill him begins his transformation instead (WarlordTransformation): his death is the Son of the
+     * Demon's. Only /kill and the void (what pierces invulnerability) end him here.
+     */
+    @Override public void die(DamageSource source) {
+        if (level() instanceof ServerLevel server && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            if (!transforming()) com.murimblock.world.structure.site.WarlordTransformation.begin(server, this);
+            setHealth(1);
+            return;
+        }
+        super.die(source);
     }
 
     @Override public boolean isInvulnerableTo(DamageSource source) {
@@ -180,6 +234,8 @@ public class BanditWarlordEntity extends Monster {
 
     @Override public void tick() {
         super.tick();
+        // While the film plays his body faces where he faces, on every side (the film frames him by it).
+        if (transforming()) { yBodyRot = yBodyRotO = getYRot(); yHeadRot = yHeadRotO = getYRot(); }
         if (!(level() instanceof ServerLevel server)) return;
         if (isMeteor()) meteorTick(server);
         else if (landing > 0) landing--;
@@ -482,6 +538,8 @@ public class BanditWarlordEntity extends Monster {
         super.addAdditionalSaveData(tag);
         if (isMeteor()) tag.putBoolean("Meteor", true);
         if (camp != null) tag.putLong("Camp", camp);
+        if (home != null) tag.putLong("Home", home);
+        if (transforming()) tag.putBoolean("Transforming", true);
         if (landing > 0) tag.putInt("Landing", landing);
         if (enraged) tag.putBoolean("Enraged", true);
     }
@@ -490,6 +548,9 @@ public class BanditWarlordEntity extends Monster {
         super.readAdditionalSaveData(tag);
         entityData.set(METEOR, tag.getBoolean("Meteor"));
         camp = tag.contains("Camp") ? tag.getLong("Camp") : null;
+        home = tag.contains("Home") ? tag.getLong("Home") : null;
+        // A film cut off by a stop does not resume: he wakes, one blow from his transformation.
+        if (tag.getBoolean("Transforming")) setNoAi(false);
         landing = tag.getInt("Landing");
         enraged = tag.getBoolean("Enraged");
         if (enraged) quicken();

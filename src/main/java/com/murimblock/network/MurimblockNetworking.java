@@ -68,5 +68,10 @@ public final class MurimblockNetworking {
         });
         registrar.playToClient(WarlordEntrancePayload.TYPE, WarlordEntrancePayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.WarlordCinematic.start(payload.plaza(), payload.drum()));
+        // A Majin Fist impact's flash of sunlight (a Photon light).
+        registrar.playToClient(SunFlashPayload.TYPE, SunFlashPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.CruelSunRenderer.flash(payload));
+        registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }
 }

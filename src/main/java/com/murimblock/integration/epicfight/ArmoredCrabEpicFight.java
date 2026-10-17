@@ -73,6 +73,9 @@ public final class ArmoredCrabEpicFight {
             // Their warlord: the same skeleton, drawn twice as large, his fists his weapons.
             event.registerEntityPatch(MurimEntities.BANDIT_WARLORD.get(), BanditWarlordPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_WARLORD.get(), Armatures.BIPED);
+            // The Son of the Demon: his own armature, a humanoid's joints where his colossal body bends.
+            event.registerEntityPatch(MurimEntities.SON_OF_THE_DEMON.get(), SonOfTheDemonPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.SON_OF_THE_DEMON.get(), ColossusAnimations.ARMATURE);
             // The Crab King: the biped skeleton too, drawn larger, his pincers on its arms.
             event.registerEntityPatch(MurimEntities.CRAB_KING.get(), CrabKingPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.CRAB_KING.get(), Armatures.BIPED);

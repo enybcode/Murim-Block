@@ -49,6 +49,14 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<BanditWarlordEntity>> BANDIT_WARLORD =
             TYPES.register("bandit_warlord", () -> EntityType.Builder.of(BanditWarlordEntity::new, MobCategory.MONSTER)
                     .sized(1.3F, 3.9F).eyeHeight(3.3F).fireImmune().clientTrackingRange(12).build("murimblock:bandit_warlord"));
+    /** The Son of the Demon, the Warlord's second phase: his legs and a golden colossus some seven blocks tall (his box too). Born of the transformation only. */
+    public static final DeferredHolder<EntityType<?>, EntityType<SonOfTheDemonEntity>> SON_OF_THE_DEMON =
+            TYPES.register("son_of_the_demon", () -> EntityType.Builder.of(SonOfTheDemonEntity::new, MobCategory.MONSTER)
+                    .sized(2.6F, 7.6F).eyeHeight(6.4F).fireImmune().clientTrackingRange(16).build("murimblock:son_of_the_demon"));
+    /** A sun of the Majin Fist: the Cruel Sun, the great sun of The One (mob/majin/CruelSunEntity). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.mob.majin.CruelSunEntity>> CRUEL_SUN =
+            TYPES.register("cruel_sun", () -> EntityType.Builder.<com.murimblock.mob.majin.CruelSunEntity>of(com.murimblock.mob.majin.CruelSunEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F).clientTrackingRange(16).updateInterval(1).noSave().fireImmune().build("murimblock:cruel_sun"));
     /** The Crab King, the crab art's boss: drawn twice a man's size, four blocks tall (his box too). Never spawned naturally. */
     public static final DeferredHolder<EntityType<?>, EntityType<CrabKingEntity>> CRAB_KING =
             TYPES.register("crab_king", () -> EntityType.Builder.of(CrabKingEntity::new, MobCategory.MONSTER)
@@ -140,6 +148,7 @@ public final class MurimEntities {
         event.put(TIGER.get(), EpicFightMobSupport.creatureAttributes(TigerEntity.createTigerAttributes()).build());
         event.put(BANDIT_CHIEF.get(), BanditChiefEntity.createChiefAttributes().build());
         event.put(BANDIT_WARLORD.get(), BanditWarlordEntity.createWarlordAttributes().build());
+        event.put(SON_OF_THE_DEMON.get(), SonOfTheDemonEntity.createAttributes().build());
         event.put(CRAB_KING.get(), CrabKingEntity.createCrabKingAttributes().build());
         event.put(HEART_DEMON.get(), com.murimblock.cultivation.inner.HeartDemonEntity.createAttributes().build());
         event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
@@ -157,9 +166,9 @@ public final class MurimEntities {
         // Same biomes, about seven times rarer: data/murimblock/neoforge/biome_modifier/crab_man_spawns.json.
         event.register(CRAB_MAN.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 CrabManEntity::checkCrabManSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        // As the zombie: on the ground, in the dark (data/murimblock/neoforge/biome_modifier/mountain_bandit_spawns.json).
+        // Surface brigands: ordinary ground checks, rarer in daylight (see SpawnPolicy).
         event.register(MOUNTAIN_BANDIT.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+                com.murimblock.world.SpawnPolicy::checkBanditSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         // On open ground in the centre of the map, day and night (data/murimblock/neoforge/biome_modifier/tiger_spawns.json).
         event.register(TIGER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 TigerEntity::checkTigerSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);

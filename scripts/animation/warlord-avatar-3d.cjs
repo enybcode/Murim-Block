@@ -331,4 +331,4 @@ if (require.main === module) {
   if (arg('film') !== 'false') film(proj).catch(e => { console.error(e); process.exit(1); });
 }
 
-module.exports = { PIECES, AVATAR, ANIMS };
+module.exports = { PIECES, AVATAR, ANIMS, SKELETON, REST, ROAR, HIP };
