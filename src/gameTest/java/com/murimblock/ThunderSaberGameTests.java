@@ -311,4 +311,32 @@ public final class ThunderSaberGameTests {
             });
         }, z);
     }
+    // ---------------------------------------------------------------- the storm's gift
+
+    /**
+     * Under a thunderstorm, by a lightning rod open to the sky, a greatsword in hand: at Qi Crystallization the storm gives
+     * the manual after its 6 s, once; below the realm, or without the rod, nothing.
+     */
+    @GameTest(template = "spear_arena", batch = "thunder_calling", timeoutTicks = 520)
+    public static void theStormGivesTheManualByARodAtQiCrystallization(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        com.murimblock.martial.ThunderCalling.resetForTests(player);
+        com.murimblock.martial.ThunderCalling.stormForTests = true;
+        int manuals = player.getInventory().countItem(ThunderSaberItems.MANUAL.get());
+        com.murimblock.cultivation.CultivationService.setCultivation(player, com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION, com.murimblock.cultivation.CultivationStage.EARLY);
+        tickFor(helper, player, 460);
+        // Without a rod: nothing.
+        helper.runAfterDelay(140, () -> helper.assertTrue(!com.murimblock.martial.ThunderCalling.given(player), "Given without a rod"));
+        // A rod beside the player, but below the realm: nothing.
+        helper.runAfterDelay(141, () -> helper.setBlock(CENTRE.east(), net.minecraft.world.level.block.Blocks.LIGHTNING_ROD));
+        helper.runAfterDelay(290, () -> helper.assertTrue(!com.murimblock.martial.ThunderCalling.given(player), "Given below Qi Crystallization"));
+        helper.runAfterDelay(291, () -> com.murimblock.cultivation.CultivationService.setCultivation(player, com.murimblock.cultivation.CultivationRealm.QI_CRYSTALLIZATION, com.murimblock.cultivation.CultivationStage.EARLY));
+        helper.runAfterDelay(291 + com.murimblock.martial.ThunderCalling.CALL_TICKS + 15, () -> {
+            boolean given = com.murimblock.martial.ThunderCalling.given(player);
+            int now = player.getInventory().countItem(ThunderSaberItems.MANUAL.get());
+            com.murimblock.martial.ThunderCalling.stormForTests = false;
+            helper.assertTrue(given && now == manuals + 1, "The storm did not give the manual: " + given + ", " + now);
+            end(helper, player);
+        });
+    }
 }

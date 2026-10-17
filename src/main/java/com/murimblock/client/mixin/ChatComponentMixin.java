@@ -8,16 +8,17 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 /**
  * The chat sits 40 pixels above the bottom of the screen, just over the hotbar. With a larger or smaller HUD size it
- * moves with the bottom HUD, so it never covers the combat bar or the Qi bar; its clicks follow it.
+ * moves with the bottom HUD, so it never covers the combat bar or the Qi bar; its clicks follow it. Optional: a chat mod
+ * (Essential's) that redraws the chat keeps its own place rather than crashing the game.
  */
 @Mixin(ChatComponent.class)
 public abstract class ChatComponentMixin {
-    @ModifyConstant(method = "render", constant = @Constant(intValue = 40))
+    @ModifyConstant(method = "render", constant = @Constant(intValue = 40), require = 0)
     private int murimblock$drawAboveHud(int margin) {
         return HudScale.chatMargin(margin);
     }
 
-    @ModifyConstant(method = {"screenToChatY", "handleChatQueueClicked"}, constant = @Constant(doubleValue = 40.0))
+    @ModifyConstant(method = {"screenToChatY", "handleChatQueueClicked"}, constant = @Constant(doubleValue = 40.0), require = 0)
     private double murimblock$clickAboveHud(double margin) {
         return HudScale.chatMargin((int) margin);
     }

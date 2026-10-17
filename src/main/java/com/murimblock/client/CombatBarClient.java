@@ -7,6 +7,7 @@ import com.murimblock.martial.MartialArts;
 import com.murimblock.martial.MartialData;
 import com.murimblock.martial.MartialService;
 import com.murimblock.network.TechniquePayloads;
+import com.murimblock.qi.QiService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,12 +28,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * The combat bar on the client (docs/combat/STYLES.md, "La barre de combat"): in combat mode, the keys 1 to 0 (the nine
  * hotbar keys and Murim's tenth, & é " ' ( - è _ ç à on AZERTY) cast the techniques of the bar instead of changing the
- * held item; and the bar takes the hotbar's place at the bottom of the screen, with each technique's cooldown. The server decides everything.
+ * held item; and the bar takes the hotbar's place at the bottom of the screen: the dantian (the Qi, the weapon in hand) between
+ * five techniques on each side, with their cooldowns. The server decides everything.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CombatBarClient {
-    private static final ResourceLocation HOTBAR = ResourceLocation.withDefaultNamespace("hud/hotbar");
-    private static final ResourceLocation OFFHAND_LEFT = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left");
     /** Client game time at which each technique is ready again, and how long its cooldown was (for the fill). */
     private static final Map<ResourceLocation, long[]> COOLDOWNS = new HashMap<>();
     /** Client game time until which a riposte is open (after a perfect parry with Flowing Cloud Stance). */
@@ -160,78 +160,139 @@ public final class CombatBarClient {
     /** In combat mode the item hotbar gives way to the combat bar, drawn in its place. */
     @SubscribeEvent
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
-        Minecraft mc = Minecraft.getInstance();
+        if (VanillaGuiLayers.HOTBAR.equals(event.getName()) && shown(Minecraft.getInstance())) event.setCanceled(true);
+    }
+
+    /** Whether the combat bar takes the hotbar's place now. Not over a finish's film (FinishCinematic hides the whole interface). */
+    static boolean shown(Minecraft mc) {
         LocalPlayer player = mc.player;
-        // Not over a finish's film (FinishCinematic hides the whole interface).
-        if (FinishCinematic.active() || WarlordCinematic.active() || TransformationCinematic.active()) return;
-        if (player == null || player.isSpectator() || !inCombat(player) || !VanillaGuiLayers.HOTBAR.equals(event.getName())) return;
-        event.setCanceled(true);
-        // F1 (hidden interface) hides it, like the hotbar it replaces.
-        if (!mc.options.hideGui) render(event.getGuiGraphics(), mc, player);
+        if (FinishCinematic.active() || WarlordCinematic.active() || TransformationCinematic.active()) return false;
+        return player != null && !player.isSpectator() && inCombat(player);
     }
 
     /**
-     * The combat bar where the hotbar was: Minecraft's hotbar frame widened to ten slots (the first eight slots of its
-     * sprite, then its last two and its edge), each slot showing its technique, its cooldown and its key; the held weapon
-     * in a small slot on the left, like the offhand slot.
+     * The combat bar's own HUD layer, above the hotbar (MurimHudLayers): drawn there rather than inside the hotbar's
+     * event, so a mod that hides or redraws the hotbar (Essential, a HUD mod) never takes it away. F1 hides it.
      */
+    public static void renderLayer(GuiGraphics g) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!mc.options.hideGui && shown(mc)) render(g, mc, mc.player);
+    }
+
+    // The dantian design (17/10/2026, Enzo's choice "C"): in the middle a round dantian holding the weapon in hand, filled
+    // with Qi like a vessel; five techniques on each side. Ink wells, the key small at the bottom right of each like an
+    // item count, a cooldown darkening the well from the top with its seconds over it.
+    static final int SLOT = 16, PITCH = 18, RADIUS = 13, GAP = 4;
+    private static final int RIM = 0xFF24211E, RING = 0xFFC9A74B, RING_LIGHT = 0xFFF0D68A, VOID = 0xFF182838,
+            QI = 0xFF238DD4, QI_LIGHT = 0xFF73C2F2, QI_DARK = 0xFF15598A, WELL = 0xE6342F2A, WELL_EDGE = 0xF024211E,
+            KEY = 0xFFF0E6CC, KEY_EMPTY = 0xFF5A5148, HELD_EDGE = 0xFFC9A74B;
+
+    /** The left of a slot's well, slots 0-4 left of the dantian and 5-9 right of it. */
+    static int slotX(int centre, int slot) {
+        int outer = RADIUS + 2;
+        return slot < 5 ? centre - outer - GAP - (5 - slot) * PITCH + 1 : centre + outer + GAP + (slot - 5) * PITCH + 1;
+    }
+
+    /** The key shown on a slot: its digit for a number key whatever the keyboard (not "&" on AZERTY), else its first letter. */
+    public static String keyLabel(Minecraft mc, int slot) {
+        KeyMapping mapping = slotKey(mc, slot);
+        com.mojang.blaze3d.platform.InputConstants.Key key = mapping.getKey();
+        int code = key.getValue();
+        if (key.getType() == com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM) {
+            if (code >= org.lwjgl.glfw.GLFW.GLFW_KEY_0 && code <= org.lwjgl.glfw.GLFW.GLFW_KEY_9) return String.valueOf((char) code);
+            if (code >= org.lwjgl.glfw.GLFW.GLFW_KEY_KP_0 && code <= org.lwjgl.glfw.GLFW.GLFW_KEY_KP_9) return String.valueOf(code - org.lwjgl.glfw.GLFW.GLFW_KEY_KP_0);
+        }
+        String name = mapping.getTranslatedKeyMessage().getString();
+        return name.isEmpty() ? "" : name.substring(0, 1).toUpperCase(java.util.Locale.ROOT);
+    }
+
+    /** The combat bar where the hotbar was: the dantian in the middle, five techniques on each side. */
     static void render(GuiGraphics g, Minecraft mc, LocalPlayer player) {
         MartialData data = MartialService.data(player);
-        int width = 202, x0 = (g.guiWidth() - width) / 2, y = g.guiHeight() - 22;
-        g.blitSprite(HOTBAR, 182, 22, 0, 0, x0, y, 161, 22);
-        g.blitSprite(HOTBAR, 182, 22, 141, 0, x0 + 161, y, 41, 22);
-        // A riposte is open: a gold frame pulsing around the bar, and its name above it.
+        int centre = g.guiWidth() / 2, bottom = g.guiHeight();
+        int y = bottom - 20, cy = bottom - 15;
+        int leftEdge = slotX(centre, 0) - 2, rightEdge = slotX(centre, 9) + SLOT + 1;
+        // A riposte is open: a gold line pulsing under and over the bar, and its name on its right.
         if (riposteOpen() && mc.level != null) {
             int gold = (mc.level.getGameTime() / 3) % 2 == 0 ? 0xFFE8C25A : 0xFFB8902F;
-            g.fill(x0 - 1, y - 1, x0 + width + 1, y, gold);
-            g.fill(x0 - 1, y + 22, x0 + width + 1, y + 23, gold);
-            g.fill(x0 - 1, y, x0, y + 22, gold);
-            g.fill(x0 + width, y, x0 + width + 1, y + 22, gold);
-            // On the right of the bar (above it are the Qi bar and the level).
-            g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), x0 + width + 6, y + 7, 0xFFE8C25A, true);
+            g.fill(leftEdge, y - 3, rightEdge, y - 2, gold);
+            g.fill(leftEdge, y + SLOT + 2, rightEdge, y + SLOT + 3, gold);
+            g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), rightEdge + 6, y + 4, 0xFFE8C25A, true);
         }
-        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) bloodDrops(g, mc, player, x0 - 52, y - 2);
-        if (data.mainArt().filter(MartialArts.THUNDER_SABER::equals).isPresent()) thunderDrums(g, mc, player, x0 - 58, y + 6);
-        // The weapon in hand.
-        g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);
-        g.renderItem(player.getMainHandItem(), x0 - 26, y + 3);
-        g.renderItemDecorations(mc.font, player.getMainHandItem(), x0 - 26, y + 3);
+        if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) bloodDrops(g, mc, player, leftEdge - 52, y - 2);
+        if (data.mainArt().filter(MartialArts.THUNDER_SABER::equals).isPresent()) thunderDrums(g, mc, player, leftEdge - 30, y + 3);
         for (int i = 0; i < MartialData.BAR_SLOTS; i++) {
-            int x = x0 + 3 + i * 20;
+            int x = slotX(centre, i);
             Optional<ResourceLocation> id = data.slot(i);
             MartialArts.Technique technique = id.map(MartialArts::technique).orElse(null);
+            g.fill(x - 1, y - 1, x + SLOT + 1, y + SLOT + 1, HELD[i] >= 0 ? HELD_EDGE : WELL_EDGE);
+            g.fill(x, y, x + SLOT, y + SLOT, WELL);
             if (technique != null) {
-                TechniqueIcons.draw(g, technique, x, y + 3, 16);
+                TechniqueIcons.draw(g, technique, x, y, SLOT);
                 // Hanging at the top of the crescent: its slot glows, pulsing azure, "Slam" beside the bar.
                 if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && slamReady() && mc.level != null) {
                     float pulse = 0.5F + 0.5F * net.minecraft.util.Mth.sin((mc.level.getGameTime() + mc.getTimer().getGameTimeDeltaPartialTick(false)) * 0.9F);
                     int alpha = (int) (110 + 120 * pulse);
-                    g.fill(x, y + 3, x + 16, y + 19, ((alpha / 3) << 24) | 0x8FD3FF);
+                    g.fill(x, y, x + SLOT, y + SLOT, ((alpha / 3) << 24) | 0x8FD3FF);
                     int frame = (alpha << 24) | 0xA8E0FF;
-                    g.fill(x - 2, y + 1, x + 18, y + 2, frame);
-                    g.fill(x - 2, y + 20, x + 18, y + 21, frame);
-                    g.fill(x - 2, y + 2, x - 1, y + 20, frame);
-                    g.fill(x + 17, y + 2, x + 18, y + 20, frame);
-                    g.drawString(mc.font, Component.translatable("technique.murimblock.slam_ready"), x0 + width + 6, y - 4, 0xFFA8E0FF, true);
+                    g.fill(x - 2, y - 2, x + SLOT + 2, y - 1, frame);
+                    g.fill(x - 2, y + SLOT + 1, x + SLOT + 2, y + SLOT + 2, frame);
+                    g.fill(x - 2, y - 1, x - 1, y + SLOT + 1, frame);
+                    g.fill(x + SLOT + 1, y - 1, x + SLOT + 2, y + SLOT + 1, frame);
+                    g.drawString(mc.font, Component.translatable("technique.murimblock.slam_ready"), rightEdge + 6, y - 6, 0xFFA8E0FF, true);
                 }
                 long[] cd = COOLDOWNS.get(technique.id());
                 if (cd != null && mc.level != null) {
                     long left = cd[0] - mc.level.getGameTime();
                     if (left > 0) {
-                        int h = (int) Math.ceil(16 * (double) left / Math.max(1, cd[1]));
-                        g.fill(x, y + 19 - h, x + 16, y + 19, 0xB0000000);
+                        // Ink from the top, as much as is left; the seconds over it.
+                        int h = (int) Math.ceil(SLOT * (double) left / Math.max(1, cd[1]));
+                        g.fill(x, y, x + SLOT, y + h, 0xC0141210);
+                        String secs = String.valueOf((left + 19) / 20);
+                        g.pose().pushPose();
+                        g.pose().translate(0, 0, 200);
+                        g.drawString(mc.font, secs, x + (SLOT - mc.font.width(secs)) / 2 + 1, y + 4, 0xFFF0E6CC, true);
+                        g.pose().popPose();
                     }
                 }
             }
-            // The slot's key, small, in the top left corner.
-            String key = slotKey(mc, i).getTranslatedKeyMessage().getString();
-            String label = key.length() > 1 ? key.substring(0, 1) : key;
+            // The key, at the bottom right like an item count.
+            String key = keyLabel(mc, i);
             g.pose().pushPose();
-            g.pose().translate(x - 1, y + 2, 200);
-            g.pose().scale(0.5F, 0.5F, 1);
-            g.drawString(mc.font, label, 0, 0, 0xFFE8DCB8, true);
+            g.pose().translate(0, 0, 200);
+            g.drawString(mc.font, key, x + SLOT + 1 - mc.font.width(key), y + SLOT - 7, technique == null ? KEY_EMPTY : KEY, true);
             g.pose().popPose();
         }
+        dantian(g, centre, cy, QiService.getQi(player), QiService.getQiMax(player));
+        // The weapon in hand, in the dantian.
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 50);
+        g.renderItem(player.getMainHandItem(), centre - 8, cy - 8);
+        g.renderItemDecorations(mc.font, player.getMainHandItem(), centre - 8, cy - 8);
+        g.pose().popPose();
+    }
+
+    /** The dantian: a dark rim, a gold ring, inside it the Qi as a level of blue, its surface lit. */
+    static void dantian(GuiGraphics g, int cx, int cy, double qi, double qiMax) {
+        double ratio = qiMax <= 0 || !Double.isFinite(qi) ? 0 : Math.clamp(qi / qiMax, 0, 1);
+        int level = cy + RADIUS - (int) Math.round(2 * RADIUS * ratio);
+        for (int dy = -RADIUS - 2; dy <= RADIUS + 1; dy++) {
+            double row = dy + 0.5;
+            int outer = half(RADIUS + 2, row), ring = half(RADIUS + 1, row), inner = half(RADIUS, row);
+            int y = cy + dy;
+            if (outer > 0) g.fill(cx - outer, y, cx + outer, y + 1, RIM);
+            if (ring > 0) g.fill(cx - ring, y, cx + ring, y + 1, dy < -RADIUS + 3 ? RING_LIGHT : RING);
+            if (inner > 0) {
+                int colour = y < level ? VOID : y == level ? QI_LIGHT : y >= cy + RADIUS - 2 ? QI_DARK : QI;
+                g.fill(cx - inner, y, cx + inner, y + 1, colour);
+            }
+        }
+    }
+
+    /** Half the width of a disc of radius r at this row's height above or below its centre (whole pixels). */
+    private static int half(double r, double row) {
+        double w = r * r - row * row;
+        return w <= 0 ? 0 : (int) Math.round(Math.sqrt(w));
     }
 
     /**

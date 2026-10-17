@@ -114,22 +114,22 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     private Vec3 followOffset=Vec3.ZERO;
 
     public BloodCrystalEntity(EntityType<? extends BloodCrystalEntity> type,Level level) { super(type,level); noPhysics=true; }
-    public static BloodCrystalEntity attached(ServerPlayer owner,byte state,int slot) {
+    public static BloodCrystalEntity attached(LivingEntity owner,byte state,int slot) {
         var crystal=new BloodCrystalEntity(MurimEntities.BLOOD_CRYSTAL.get(),owner.level());
         crystal.setOwner(owner); crystal.entityData.set(OWNER_ID,owner.getId());
         crystal.entityData.set(STATE,state); crystal.entityData.set(SLOT,Math.clamp(slot,0,9));
-        crystal.follow(owner); owner.serverLevel().addFreshEntity(crystal);
+        crystal.follow(owner); ((net.minecraft.server.level.ServerLevel)owner.level()).addFreshEntity(crystal);
         return crystal;
     }
     /**
      * Scarlet Tear's blood sword, forming in its owner's hand (drawn at the hand's joint, BloodCrystalOverlay), swung,
      * then thrown point first (SanguineArt): it explodes where it lands.
      */
-    public static BloodCrystalEntity sword(ServerPlayer owner) {
+    public static BloodCrystalEntity sword(LivingEntity owner) {
         var sword=new BloodCrystalEntity(MurimEntities.BLOOD_CRYSTAL.get(),owner.level());
         sword.setOwner(owner); sword.entityData.set(OWNER_ID,owner.getId()); sword.entityData.set(SWORD,true);
         sword.entityData.set(STATE,CHARGING); sword.entityData.set(SCALE,1F);
-        sword.follow(owner); owner.serverLevel().addFreshEntity(sword);
+        sword.follow(owner); ((net.minecraft.server.level.ServerLevel)owner.level()).addFreshEntity(sword);
         return sword;
     }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
@@ -209,7 +209,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     public void launch(float unit,boolean barrage) {
         if (state()==FLYING||broken()||isRemoved()) return;
         this.unit=Math.max(.5F,unit); entityData.set(BARRAGE,barrage);
-        Entity owner=getOwner(); if (!(owner instanceof ServerPlayer player)) { discard();return; }
+        Entity owner=getOwner(); if (!(owner instanceof LivingEntity player) || !player.isAlive()) { discard();return; }
         if (!barrage) follow(player);
         Vec3 eye=player.getEyePosition(), end=eye.add(player.getViewVector(1).scale(24));
         HitResult wall=level().clip(new ClipContext(eye,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,player));
@@ -217,6 +217,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         EntityHitResult target=ProjectileUtil.getEntityHitResult(player,eye,end,player.getBoundingBox().expandTowards(end.subtract(eye)).inflate(1),
                 e -> e instanceof LivingEntity && e!=player && e.isAlive() && e.isPickable() && !e.isSpectator() && !e.isAlliedTo(player),eye.distanceToSqr(end));
         if (target!=null) end=target.getEntity().position().add(0,target.getEntity().getBbHeight()*.6,0);
+        if (player instanceof net.minecraft.world.entity.Mob mob && mob.getTarget()!=null) end=mob.getTarget().getBoundingBox().getCenter();
         Vec3 from=centre();
         Vec3 velocity=barrage?direction(from,end,player).scale(SPEED)
                 :aim(from,end,sword()?1.15:BloodCrystalCharge.speed(points()),gravity(),player);
@@ -227,7 +228,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         else playSound(SoundEvents.AMETHYST_BLOCK_RESONATE,great()?1.4F:.7F,great()?.6F:1.4F);
     }
     private double gravity() { return sword()?.02:BloodCrystalCharge.gravity(points()); }
-    private static Vec3 direction(Vec3 from,Vec3 to,Player player) {
+    private static Vec3 direction(Vec3 from,Vec3 to,LivingEntity player) {
         Vec3 d=to.subtract(from);
         return d.lengthSqr()<.001?player.getViewVector(1):d.normalize();
     }
@@ -235,7 +236,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
      * Velocity that reaches `to` at `speed` blocks/tick horizontally under drag 0.99 and `gravity`: ticks to cover
      * the distance, then the vertical speed found by bisection (as the crab man aims his water ball).
      */
-    public static Vec3 aim(Vec3 from,Vec3 to,double speed,double gravity,Player player) {
+    public static Vec3 aim(Vec3 from,Vec3 to,double speed,double gravity,LivingEntity player) {
         double dx=to.x-from.x, dz=to.z-from.z, dy=to.y-from.y, d=Math.sqrt(dx*dx+dz*dz);
         if (d<.5) return direction(from,to,player).scale(speed);
         double k=1-.01*d/speed, ticks=k>.05?Math.log(k)/Math.log(.99):60;
@@ -255,13 +256,14 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
             double[] pivot=SOCKETS[slot()];
             float yaw=owner instanceof LivingEntity living?living.yBodyRot:owner.getYRot();
             Vec3 forward=Vec3.directionFromRotation(0,yaw),right=new Vec3(-forward.z,0,forward.x);
-            setPos(owner.position().add(right.scale(-pivot[0]/16)).add(forward.scale(-pivot[2]/16)).add(0,pivot[1]/16,0));
+            double size=owner instanceof com.murimblock.mob.ScarletGuardianEntity?2.2:1;
+            setPos(owner.position().add(right.scale(-pivot[0]/16*size)).add(forward.scale(-pivot[2]/16*size)).add(0,pivot[1]/16*size,0));
             setYRot(yaw);
         } else {
             // Held above the head, lying point forward like a spear: its middle rests on the raised hand, lifted by
             // its own thickness so a great one floats over the thrower.
             Vec3 look=Vec3.directionFromRotation(0,owner.getYRot());
-            Vec3 hand=owner instanceof Player player ? SanguineArt.handPosition(player,1)
+            Vec3 hand=owner instanceof com.murimblock.mob.ScarletGuardianEntity guardian ? guardian.handPosition(1) : owner instanceof Player player ? SanguineArt.handPosition(player,1)
                     : owner.position().add(new Vec3(-look.z,0,look.x).scale(.35)).add(0,2.1,0);
             placeCentre(hand.add(0,.28*crystalScale(),0));
             setYRot(owner.getYRot());
@@ -280,6 +282,11 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         if (state()!=FLYING) {
             if (owner!=null) follow(owner);
             if (level().isClientSide) return;
+            if (owner instanceof com.murimblock.mob.ScarletGuardianEntity guardian) {
+                if (!guardian.isAlive() || guardian.level()!=level() || !guardian.ownsCrystal(this)) {discard();return;}
+                if (state()==PENDING && pendingTicks--<=0) launch(unit,true);
+                return;
+            }
             if (!(owner instanceof ServerPlayer p) || !p.isAlive() || p.level()!=level()) { discard();return; }
             // The form's crystals stay out of combat until it ends; the rest needs the fight.
             if (state()!=ORBIT && (KnockdownService.isDowned(p) || !CombatService.isInCombatMode(p) || !SanguineArt.bareHanded(p))) { discard();return; }
@@ -343,17 +350,17 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
     }
     @Override protected boolean canHitEntity(Entity target) {
         return super.canHitEntity(target) && target instanceof LivingEntity && target!=getOwner()
-                && target.isAlive() && !target.isSpectator() && !(getOwner()!=null&&target.isAlliedTo(getOwner()));
+                && target.isAlive() && !target.isSpectator() && !(getOwner()!=null&&(target.isAlliedTo(getOwner())||getOwner().isAlliedTo(target)));
     }
     @Override protected void onHitEntity(EntityHitResult result) {
         if (level().isClientSide||state()!=FLYING) return;
         Entity hit=result.getEntity();
         Vec3 dir=horizontal();
-        if (hit instanceof LivingEntity target && getOwner() instanceof ServerPlayer player) {
+        if (hit instanceof LivingEntity target && getOwner() instanceof LivingEntity player) {
             float before=target.getHealth();
             boolean hurt=target.hurt(source(player),unit*(float)(barrage()?1:sword()?SWORD_SHARE:BloodCrystalCharge.share(points())));
             if (hurt && target.getHealth()<before && !MurimGuardSkill.parriedThisTick(target) && !MurimGuardSkill.guardedThisTick(target)) {
-                SanguineArt.projectileHit(player,target,technique());landed=true;
+                if (player instanceof ServerPlayer serverPlayer) SanguineArt.projectileHit(serverPlayer,target,technique());landed=true;
             }
         }
         // The crystal breaks against the front of the body, at chest height, and its pieces follow it as they fall.
@@ -375,7 +382,7 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
         // Walls and ceilings: the model's -Z points into the surface, its pieces burst back off it.
         else breakAt(SHATTER_WALL,face.getAxis().isHorizontal()?yawOf(normal.scale(-1)):yawOf(horizontal()),centre);
     }
-    private DamageSource source(ServerPlayer player) {
+    private DamageSource source(LivingEntity player) {
         return new DamageSource(level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DAMAGE_TYPE),this,player);
     }
     private void breakAt(byte kind,float yaw,@Nullable Vec3 centre) {
@@ -392,21 +399,21 @@ public final class BloodCrystalEntity extends Projectile implements GeoEntity {
      */
     private void explode(Vec3 centre,@Nullable Entity struck) {
         breakAt(EXPLODE,yawOf(horizontal()),centre);
-        if (!(getOwner() instanceof ServerPlayer player)) return;
+        if (!(getOwner() instanceof LivingEntity player)) return;
         try { explodeOn(player,centre,struck); }
-        finally { if (sword()&&landed) SanguineArt.swordLanded(player); }
+        finally { if (sword()&&landed && player instanceof ServerPlayer serverPlayer) SanguineArt.swordLanded(serverPlayer); }
     }
-    private void explodeOn(ServerPlayer player,Vec3 centre,@Nullable Entity struck) {
+    private void explodeOn(LivingEntity player,Vec3 centre,@Nullable Entity struck) {
         double radius=sword()?SWORD_RADIUS:BloodCrystalCharge.EXPLOSION_RADIUS;
         level().playSound(null,centre.x,centre.y,centre.z,SoundEvents.GENERIC_EXPLODE.value(),SoundSource.PLAYERS,sword()?1.2F:1.6F,sword()?1.05F:.85F);
         for (LivingEntity target:level().getEntitiesOfClass(LivingEntity.class,new net.minecraft.world.phys.AABB(centre,centre).inflate(radius))) {
-            if (target==player||target==struck||target.isAlliedTo(player)||!target.isAlive()||target.isSpectator()) continue;
+            if (target==player||target==struck||(target.isAlliedTo(player)||player.isAlliedTo(target))||!target.isAlive()||target.isSpectator()) continue;
             if (!(target instanceof Enemy||target instanceof Player||target instanceof net.minecraft.world.entity.Mob)) continue;
             double distance=target.position().add(0,target.getBbHeight()/2,0).distanceTo(centre);
             double share=sword()?(distance>radius?0:SWORD_EXPLOSION_SHARE*(1-.5*distance/radius)):BloodCrystalCharge.explosionShare(distance);
             if (share<=0) continue;
             float before=target.getHealth();
-            if (target.hurt(source(player),unit*(float)share) && target.getHealth()<before) {SanguineArt.projectileHit(player,target,technique());landed=true;}
+            if (target.hurt(source(player),unit*(float)share) && target.getHealth()<before) {if (player instanceof ServerPlayer serverPlayer) SanguineArt.projectileHit(serverPlayer,target,technique());landed=true;}
             Vec3 away=target.position().subtract(centre).multiply(1,0,1);
             if (away.lengthSqr()<1.0E-4) away=horizontal();
             double push=.9*(1-distance/radius)*Math.max(0,1-target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));

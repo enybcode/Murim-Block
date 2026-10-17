@@ -137,6 +137,9 @@ public final class MurimEntities {
                 .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:" + kind.id));
     }
 
+    public static final DeferredHolder<EntityType<?>, EntityType<ScarletGuardianEntity>> SCARLET_GUARDIAN =
+            TYPES.register("scarlet_guardian", () -> EntityType.Builder.of(ScarletGuardianEntity::new, MobCategory.MONSTER)
+                    .sized(1.35F, 4.1F).eyeHeight(3.65F).clientTrackingRange(12).build("murimblock:scarlet_guardian"));
     private MurimEntities() { }
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -158,6 +161,7 @@ public final class MurimEntities {
         event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
         event.put(AZURE_SENSEI.get(), AzureSenseiEntity.createSenseiAttributes().build());
         event.put(ALLIANCE_MERCHANT.get(), AllianceMerchantEntity.createMerchantAttributes().build());
+        event.put(SCARLET_GUARDIAN.get(), ScarletGuardianEntity.attributes().build());
         event.put(GOLDEN_BELL_MONK.get(), GoldenBellMonkEntity.createMonkAttributes().build());
         event.put(GOLDEN_DRAGON_SAGE.get(), GoldenDragonSageEntity.createSageAttributes().build());
         event.put(PEAK_CAPTAIN.get(), PeakCaptainEntity.createCaptainAttributes().build());

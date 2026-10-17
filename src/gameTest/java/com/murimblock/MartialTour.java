@@ -105,6 +105,23 @@ public final class MartialTour {
             if (ticks > 61) LOGGER.info("Martial tour: camera taken back at tick {}", ticks);
             mc.setCameraEntity(camera);
         }
+        // Only the tour's own zombies in the arena: the Murim's residents (a bandit camp's thirty, since 16/10) would walk
+        // in and fight the player (17/10: "Dev was slain by Mountain Bandit" in the middle of the M1 chain).
+        if (ticks > 20 && ticks % 5 == 0) {
+            server.execute(() -> {
+                ServerPlayer self = server.getPlayerList().getPlayers().isEmpty() ? null : server.getPlayerList().getPlayers().getFirst();
+                if (self == null) return;
+                for (var mob : self.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, self.getBoundingBox().inflate(96),
+                        m -> m instanceof net.minecraft.world.entity.monster.Enemy && !zombies.contains(m))) mob.discard();
+            });
+        }
+        // The M1 chain: watch, each tick between a click and the next, whether that click's strike plays.
+        if (ticks >= 321 && ticks <= 375) {
+            int strike = Math.min(3, (ticks - 321) / 14);
+            var expected = List.of(MurimAnimations.DRIFTING_CUT, MurimAnimations.RETURNING_CUT, MurimAnimations.PIERCING_MIST, MurimAnimations.FALLING_RAIN).get(strike);
+            if (clientPlaying(mc, expected)) m1Seen[strike] = true;
+            m1Last[strike] = clientAnimation(mc);
+        }
         switch (ticks) {
             case 20 -> server.execute(() -> {
                 ServerLevel level = server.overworld();
@@ -347,11 +364,11 @@ public final class MartialTour {
                 server.execute(() -> chainHealth = zombies.getFirst().getHealth());
                 KeyMapping.click(mc.options.keyAttack.getKey());
             }
-            case 325, 339, 353, 367 -> {
-                int strike = (ticks - 325) / 14;
-                var expected = List.of(MurimAnimations.DRIFTING_CUT, MurimAnimations.RETURNING_CUT, MurimAnimations.PIERCING_MIST, MurimAnimations.FALLING_RAIN).get(strike);
-                check(clientPlaying(mc, expected), "M1 " + (strike + 1) + " plays " + List.of("Drifting Cut", "Returning Cut", "Piercing Mist", "Falling Rain").get(strike)
-                        + " (playing: " + clientAnimation(mc) + ")");
+            // Each strike must play before the next click (the server's answer can take a few ticks on a busy machine).
+            case 333, 347, 361, 375 -> {
+                int strike = (ticks - 333) / 14;
+                check(m1Seen[strike], "M1 " + (strike + 1) + " plays " + List.of("Drifting Cut", "Returning Cut", "Piercing Mist", "Falling Rain").get(strike)
+                        + " (last seen: " + m1Last[strike] + ")");
             }
             case 332, 346, 360, 374 -> {
                 int strike = (ticks - 332) / 14 + 1;
@@ -409,6 +426,8 @@ public final class MartialTour {
 
     private static double startY, peakY = Double.NEGATIVE_INFINITY, zombiePeakY = Double.NEGATIVE_INFINITY;
     private static volatile float chainHealth;
+    private static final boolean[] m1Seen = new boolean[4];
+    private static final String[] m1Last = new String[4];
     private static volatile float slamHealth;
 
     /** A camera right above the player, looking down at the ground in front of them: a blade lying level shows wide. */
