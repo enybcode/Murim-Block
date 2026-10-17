@@ -336,6 +336,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a film of the Majin Fist, the Son of the Demon's six skills, in the real sky arena (see MajinTour).
+        majinTour {
+            client()
+            gameDirectory = project.file('build/majin-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.majinTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a film of the Mountain-Shattering Fist's techniques in a real client (see MountainFistTour).
         mountainFistTour {
             client()

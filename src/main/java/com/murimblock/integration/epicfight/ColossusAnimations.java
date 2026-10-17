@@ -31,6 +31,8 @@ public final class ColossusAnimations {
     /** The film's end: he grabs the viewer, leaps, flies (a loop), throws him, lands (WarlordTransformation). */
     public static AnimationAccessor<ActionAnimation> SMASH, GRAB, LEAP, THROW, LAND;
     public static AnimationAccessor<StaticAnimation> FLY, DIVE;
+    /** The Majin Fist, the Pride of the Sun: the flare, the Cruel Sun's conjuring, the Noon Judgment, The One. */
+    public static AnimationAccessor<ActionAnimation> FLARE, CONJURE, JUDGMENT, THE_ONE;
     public static AnimationAccessor<AttackAnimation> PUNCH;
     /** The chest beat's eight blows (seconds into it). */
     public static final float[] BEATS = {0.75F, 1.0F, 1.25F, 1.5F, 1.75F, 2.0F, 2.25F, 2.5F};
@@ -51,6 +53,10 @@ public final class ColossusAnimations {
         LEAP = builder.nextAccessor("colossus/leap", a -> new ActionAnimation(0.1F, a, ARMATURE));
         FLY = builder.nextAccessor("colossus/fly", a -> new StaticAnimation(0.15F, true, a, ARMATURE));
         DIVE = builder.nextAccessor("colossus/dive", a -> new StaticAnimation(0.1F, true, a, ARMATURE));
+        FLARE = builder.nextAccessor("colossus/flare", a -> new ActionAnimation(0.1F, a, ARMATURE));
+        CONJURE = builder.nextAccessor("colossus/conjure", a -> new ActionAnimation(0.1F, a, ARMATURE));
+        JUDGMENT = builder.nextAccessor("colossus/judgment", a -> new ActionAnimation(0.1F, a, ARMATURE));
+        THE_ONE = builder.nextAccessor("colossus/the_one", a -> new ActionAnimation(0.1F, a, ARMATURE));
         THROW = builder.nextAccessor("colossus/throw", a -> new ActionAnimation(0.1F, a, ARMATURE));
         LAND = builder.nextAccessor("colossus/land", a -> new ActionAnimation(0.02F, a, ARMATURE));
         PUNCH = builder.nextAccessor("colossus/punch", a -> {

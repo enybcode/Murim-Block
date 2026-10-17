@@ -11,7 +11,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "21";
+    private static final String NETWORK_VERSION = "22";
 
     private MurimblockNetworking() {
     }
@@ -58,6 +58,9 @@ public final class MurimblockNetworking {
         });
         registrar.playToClient(WarlordEntrancePayload.TYPE, WarlordEntrancePayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.WarlordCinematic.start(payload.plaza(), payload.drum()));
+        // A Majin Fist impact's flash of sunlight (a Photon light).
+        registrar.playToClient(SunFlashPayload.TYPE, SunFlashPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.CruelSunRenderer.flash(payload));
         registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }

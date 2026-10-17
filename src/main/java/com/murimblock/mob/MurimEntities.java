@@ -53,6 +53,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<SonOfTheDemonEntity>> SON_OF_THE_DEMON =
             TYPES.register("son_of_the_demon", () -> EntityType.Builder.of(SonOfTheDemonEntity::new, MobCategory.MONSTER)
                     .sized(2.6F, 7.6F).eyeHeight(6.4F).fireImmune().clientTrackingRange(16).build("murimblock:son_of_the_demon"));
+    /** A sun of the Majin Fist: the Cruel Sun, the great sun of The One (mob/majin/CruelSunEntity). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.mob.majin.CruelSunEntity>> CRUEL_SUN =
+            TYPES.register("cruel_sun", () -> EntityType.Builder.<com.murimblock.mob.majin.CruelSunEntity>of(com.murimblock.mob.majin.CruelSunEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F).clientTrackingRange(16).updateInterval(1).noSave().fireImmune().build("murimblock:cruel_sun"));
     /** The Crab King, the crab art's boss: drawn twice a man's size, four blocks tall (his box too). Never spawned naturally. */
     public static final DeferredHolder<EntityType<?>, EntityType<CrabKingEntity>> CRAB_KING =
             TYPES.register("crab_king", () -> EntityType.Builder.of(CrabKingEntity::new, MobCategory.MONSTER)

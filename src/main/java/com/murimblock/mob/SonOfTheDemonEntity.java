@@ -46,6 +46,10 @@ import org.joml.Vector3f;
  */
 public class SonOfTheDemonEntity extends Monster {
     private static final EntityDataAccessor<Boolean> AWAKENING = SynchedEntityData.defineId(SonOfTheDemonEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Ticks into The One (MajinFist), 0 when not: seen by the clients (the sky turned gold, its title). */
+    private static final EntityDataAccessor<Integer> THE_ONE = SynchedEntityData.defineId(SonOfTheDemonEntity.class, EntityDataSerializers.INT);
+    /** Whether The One has come (once a fight). */
+    private boolean theOneUsed;
     private static final DustParticleOptions GOLD = new DustParticleOptions(new Vector3f(1.0F, 0.82F, 0.25F), 2.0F);
 
     /** His title over the boss bar (Enzo: small, alone, no "Bandit Warlord"). */
@@ -89,6 +93,7 @@ public class SonOfTheDemonEntity extends Monster {
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(AWAKENING, false);
+        builder.define(THE_ONE, 0);
     }
 
     @Override @Nullable
@@ -124,6 +129,34 @@ public class SonOfTheDemonEntity extends Monster {
     /** His bar shown before the fight begins (the film's last shot: his title over it). */
     public void revealBar() {
         bossBar.setVisible(true);
+    }
+
+    public com.murimblock.mob.majin.MajinFist.State art() {
+        return art;
+    }
+
+    public int theOneTicks() {
+        return entityData.get(THE_ONE);
+    }
+
+    public boolean theOneUsed() {
+        return theOneUsed;
+    }
+
+    public void beginTheOne() {
+        theOneUsed = true;
+        entityData.set(THE_ONE, 1);
+        getNavigation().stop();
+    }
+
+    public int advanceTheOne() {
+        int t = theOneTicks() + 1;
+        entityData.set(THE_ONE, t);
+        return t;
+    }
+
+    public void endTheOne() {
+        entityData.set(THE_ONE, 0);
     }
 
     public boolean awakening() {
@@ -178,7 +211,9 @@ public class SonOfTheDemonEntity extends Monster {
     }
 
     @Override public boolean isInvulnerableTo(DamageSource source) {
-        return awakening() && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY) || super.isInvulnerableTo(source);
+        // Untouchable while the film plays and while he rises into The One.
+        boolean rising = theOneTicks() > 0 && theOneTicks() < com.murimblock.mob.majin.MajinFist.ONE_RISE;
+        return (awakening() || rising) && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY) || super.isInvulnerableTo(source);
     }
 
     /** His golden aura: Qi rising round his body, sparks at his fists and hair. */
@@ -226,6 +261,7 @@ public class SonOfTheDemonEntity extends Monster {
         if (awakening()) tag.putBoolean("Awakening", true);
         if (camp != null) tag.putLong("Camp", camp);
         if (arena != null) tag.putLong("Arena", arena.asLong());
+        if (theOneUsed) tag.putBoolean("TheOneUsed", true);
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
@@ -234,6 +270,7 @@ public class SonOfTheDemonEntity extends Monster {
         setAwakening(false);
         camp = tag.contains("Camp") ? tag.getLong("Camp") : null;
         arena = tag.contains("Arena") ? net.minecraft.core.BlockPos.of(tag.getLong("Arena")) : null;
+        theOneUsed = tag.getBoolean("TheOneUsed");
     }
 
     // A voice from the depths: the warden's and the ravager's, low.
