@@ -19,7 +19,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * The Golden Dragon's wares, shown on a hanging scroll (client/ScrollShopScreen), Enzo, 17/10/2026: a guide to every
  * martial art that can be won, priced by its difficulty, and the crossing talismans, 32 gold yuanbao each. The arts no
- * one in the Murim keeps yet (the Sanguine Art, the Thunder Saber) are on the scroll but not for sale. The price is checked and taken
+ * one in the Murim keeps yet (the Sanguine Art) are on the scroll but not for sale. The price is checked and taken
  * here, on the server; only a scroll the player has open, from a seller still near, sells.
  */
 public final class GoldenDragonShop {
@@ -58,8 +58,8 @@ public final class GoldenDragonShop {
                     guide(MurimItems.MOUNTAIN_SHATTERING_FIST_GUIDE, 4, 16),
                     guide(MurimItems.SEVEN_STARS_SWORD_GUIDE, 4, 20),
                     guide(MurimItems.MAJIN_FIST_GUIDE, 4, 20),
+                    guide(MurimItems.THUNDER_SABER_GUIDE, 4, 24),
                     unwritten(MurimItems.SANGUINE_ART_SCROLL),
-                    unwritten(com.murimblock.martial.ThunderSaberItems.MANUAL),
                     talisman(MurimItems.NETHER_TALISMAN),
                     talisman(MurimItems.END_TALISMAN),
                     talisman(MurimItems.MURIM_TALISMAN));

@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
  * A guide to a martial art, sold by the Golden Dragon in human form (mob/GoldenDragonShop): read, it opens as a book
  * that tells of the art, who keeps it and how it is won; and it writes in the chat the way to its keeper, the
  * direction and the distance to the nearest place of its kind (the Star-Plucking Peak's summit for the Seven Stars).
+ * An art given by no place (the Thunder Saber, given by a storm) has a guide that writes how it is won instead.
  * Unlike a manual, it teaches nothing and is never used up.
  */
 public class MartialGuideItem extends Item {
@@ -32,13 +33,21 @@ public class MartialGuideItem extends Item {
     public static final int PAGES = 3;
 
     private final ResourceLocation art;
-    /** The place it leads to; null: the Star-Plucking Peak's summit. */
-    @Nullable private final ResourceKey<Structure> place;
+    /** A guide that leads to the Star-Plucking Peak's summit. */
+    public static final String STAR_PEAK = "star_peak";
+    /** A guide that leads to no place: it writes how its art is won. */
+    public static final String NOWHERE = "nowhere";
 
-    public MartialGuideItem(Properties properties, ResourceLocation art, @Nullable String place) {
+    /** The structure it leads to; null: the Star-Plucking Peak's summit, or nowhere. */
+    @Nullable private final ResourceKey<Structure> place;
+    private final boolean nowhere;
+
+    /** {@code place}: a structure of the mod, STAR_PEAK or NOWHERE. */
+    public MartialGuideItem(Properties properties, ResourceLocation art, String place) {
         super(properties);
         this.art = art;
-        this.place = place == null ? null : ResourceKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, place));
+        this.nowhere = NOWHERE.equals(place);
+        this.place = nowhere || STAR_PEAK.equals(place) ? null : ResourceKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, place));
     }
 
     public ResourceLocation art() { return art; }
@@ -59,7 +68,7 @@ public class MartialGuideItem extends Item {
 
     /** Where it leads from here, or null when nothing is within reach (or outside the Overworld). */
     @Nullable public BlockPos lead(ServerLevel level, BlockPos from) {
-        if (level.dimension() != Level.OVERWORLD) return null;
+        if (level.dimension() != Level.OVERWORLD || nowhere) return null;
         if (place != null) return LocatorPendantItem.locate(level, place, from);
         return StarPeakPlacement.get(level).summit();
     }
@@ -74,7 +83,10 @@ public class MartialGuideItem extends Item {
             com.murimblock.client.GuideBookClient.open(pages());
             return InteractionResultHolder.success(stack);
         }
-        if (level.dimension() != Level.OVERWORLD) {
+        if (nowhere) {
+            player.sendSystemMessage(Component.translatable(key() + ".way"));
+            level.playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
+        } else if (level.dimension() != Level.OVERWORLD) {
             player.sendSystemMessage(Component.translatable("item.murimblock.martial_guide.other_world"));
         } else {
             BlockPos to = lead((ServerLevel) level, player.blockPosition());
