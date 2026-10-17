@@ -55,7 +55,7 @@ public final class ScarletGuardianRenderer extends HumanoidMobRenderer<ScarletGu
         @Override protected void renderLayer(ScarletGuardianPatch patch,ScarletGuardianEntity entity,Anchor original,PoseStack stack,
                 MultiBufferSource buffers,int light,OpenMatrix4f[] poses,float age,float yaw,float pitch,float partial) {
             var mc=Minecraft.getInstance();var armature=patch.getArmature();
-            for(var e:mc.level.entitiesForRendering()) {
+            for(var e:com.murimblock.client.ClientEntityIndex.of(com.murimblock.martial.BloodCrystalEntity.class)) {
                 if(!(e instanceof BloodCrystalEntity sword)||!sword.sword()||sword.state()!=BloodCrystalEntity.CHARGING||sword.visualOwner()!=entity)continue;
                 stack.pushPose();try {
                     var hand=poses[armature.searchJointByName("Tool_R").getId()];

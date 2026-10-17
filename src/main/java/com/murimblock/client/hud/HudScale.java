@@ -23,7 +23,8 @@ public final class HudScale {
             VanillaGuiLayers.HOTBAR, VanillaGuiLayers.JUMP_METER, VanillaGuiLayers.EXPERIENCE_BAR,
             VanillaGuiLayers.PLAYER_HEALTH, VanillaGuiLayers.ARMOR_LEVEL, VanillaGuiLayers.FOOD_LEVEL,
             VanillaGuiLayers.VEHICLE_HEALTH, VanillaGuiLayers.AIR_LEVEL, VanillaGuiLayers.EXPERIENCE_LEVEL,
-            VanillaGuiLayers.SELECTED_ITEM_NAME, VanillaGuiLayers.SPECTATOR_TOOLTIP, VanillaGuiLayers.OVERLAY_MESSAGE
+            VanillaGuiLayers.SELECTED_ITEM_NAME, VanillaGuiLayers.SPECTATOR_TOOLTIP, VanillaGuiLayers.OVERLAY_MESSAGE,
+            MurimHudLayers.COMBAT_BAR, MurimHudLayers.QI_BAR
     );
     /** Whether the current layer's pose was pushed, to pop it once whether the layer was drawn or cancelled. */
     private static boolean pushed;

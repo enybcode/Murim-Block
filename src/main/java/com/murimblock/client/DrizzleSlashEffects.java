@@ -134,6 +134,13 @@ public final class DrizzleSlashEffects {
     /** How many times this client was told of delayed cuts on each body (entity id), for the multiplayer check. */
     private static final Map<Integer, Integer> DELAYED_CUTS_SEEN = new HashMap<>();
 
+    /** Leaving a world: what was seen there is forgotten (entity ids are reused in the next). */
+    @SubscribeEvent
+    public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        DELAYED_CUTS_SEEN.clear();
+        LAST.clear();
+    }
+
     /** How many times this client saw the flurry's delayed cuts open on this body. */
     public static int delayedCutsSeenOn(int entityId) {
         return DELAYED_CUTS_SEEN.getOrDefault(entityId, 0);

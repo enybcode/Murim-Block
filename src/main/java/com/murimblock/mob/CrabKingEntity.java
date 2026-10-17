@@ -459,6 +459,8 @@ public class CrabKingEntity extends Monster {
      * against the king himself, so a king killed, unloaded or broken off never leaves anyone stuck.
      */
     public static boolean isHeld(Player player) {
+        // The server's: a client (the host's shares this map) must never read or clear it.
+        if (player.level().isClientSide) return false;
         var ref = HOLDERS.get(player.getUUID());
         CrabKingEntity king = ref == null ? null : ref.get();
         if (king != null && king.isAlive() && !king.isRemoved() && (king.held == player || king.thrown.containsKey(player))) return true;

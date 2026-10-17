@@ -101,37 +101,70 @@ public final class GoldenBellSkins {
 
     // ---------------------------------------------------------------- the skin
 
-    /** The skin this player shows: theirs, or theirs recoloured to their body's matter. */
+    /** When a skin could not be recoloured yet (not loaded): not tried again before a second has passed. */
+    private static final Map<String, Long> WAITING = new HashMap<>();
+    private static int made;
+
+    /**
+     * The skin this player shows: theirs, or theirs recoloured to their body's matter. Only for the player in the world
+     * with that id: a preview of a player (another mod's wardrobe, emotes) keeps its own skin.
+     */
     public static PlayerSkin skinFor(AbstractClientPlayer player, PlayerSkin own) {
         Integer matter = MATTER.get(player.getId());
-        if (matter == null || matter == GoldenBell.SKIN_NONE) return own;
+        if (matter == null || matter == GoldenBell.SKIN_NONE || own == null) return own;
+        if (player.level() == null || player.level().getEntity(player.getId()) != player) return own;
         ResourceLocation made = made(own.texture(), matter);
         return made == null ? own : new PlayerSkin(made, own.textureUrl(), own.capeTexture(), own.elytraTexture(), own.model(), own.secure());
     }
 
     private static ResourceLocation made(ResourceLocation skin, int matter) {
         String key = skin + "#" + matter;
-        if (MADE.containsKey(key)) return MADE.get(key);
+        ResourceLocation done = MADE.get(key);
+        if (done != null) return done;
         if (!RenderSystem.isOnRenderThread()) return null;
+        long now = net.minecraft.Util.getMillis();
+        Long waited = WAITING.get(key);
+        if (waited != null && now - waited < 1000) return null;
+        WAITING.put(key, now);
         Minecraft mc = Minecraft.getInstance();
-        AbstractTexture tex = mc.getTextureManager().getTexture(skin);
-        ResourceLocation out = null;
+        // Never register a texture under the skin's name: if it is not there yet (a skin still downloading, another
+        // mod's skin made later), wait for it.
+        AbstractTexture missing = net.minecraft.client.renderer.texture.MissingTextureAtlasSprite.getTexture();
+        AbstractTexture tex = mc.getTextureManager().getTexture(skin, missing);
+        if (tex == null || tex == missing) return null;
+        NativeImage img = null;
         try {
-            int id = tex.getId();
-            RenderSystem.bindTexture(id);
+            RenderSystem.bindTexture(tex.getId());
             int w = org.lwjgl.opengl.GL11.glGetTexLevelParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D, 0, org.lwjgl.opengl.GL11.GL_TEXTURE_WIDTH);
             int h = org.lwjgl.opengl.GL11.glGetTexLevelParameteri(org.lwjgl.opengl.GL11.GL_TEXTURE_2D, 0, org.lwjgl.opengl.GL11.GL_TEXTURE_HEIGHT);
-            if (w <= 0 || h <= 0) return null;
-            NativeImage img = new NativeImage(w, h, false);
+            if (w <= 0 || h <= 0 || w > 1024 || h > 1024) return null;
+            img = new NativeImage(w, h, false);
             img.downloadTexture(0, false);
             recolour(img, matter);
-            out = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "golden_bell_skin/" + Integer.toHexString(key.hashCode()));
+            ResourceLocation out = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "golden_bell_skin/" + (made++));
             mc.getTextureManager().register(out, new DynamicTexture(img));
+            img = null;
+            MADE.put(key, out);
+            WAITING.remove(key);
+            return out;
         } catch (Exception e) {
             com.mojang.logging.LogUtils.getLogger().warn("Golden Bell: could not recolour the skin {}", skin, e);
+            return null;
+        } finally {
+            if (img != null) img.close();
         }
-        MADE.put(key, out);
-        return out;
+    }
+
+    /** Leaving a world: the recoloured skins are let go, and what was known of the players there. */
+    @SubscribeEvent
+    public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        Minecraft mc = Minecraft.getInstance();
+        for (ResourceLocation texture : MADE.values()) mc.getTextureManager().release(texture);
+        MADE.clear();
+        WAITING.clear();
+        MATTER.clear();
+        FORM.clear();
+        BELLS.clear();
     }
 
     /** Whether a colour (0..255) is skin: warm, a little saturated, not too dark (hair and leather mostly are). */

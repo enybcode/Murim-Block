@@ -54,7 +54,7 @@ public final class EpicFightBridge {
             if (!(event.getEntityPatch().getOriginal() instanceof Player player)) return;
             if (KnockdownService.isDowned(player) || (player instanceof ServerPlayer sp && MurimGuardSkill.guardedThisTick(sp))) event.cancel();
             // The Purple Heaven Thunder Saber: unshaken while it swings and while its techniques play.
-            if (com.murimblock.martial.ThunderSaber.unshaken(player)) event.cancel();
+            if (player instanceof ServerPlayer && com.murimblock.martial.ThunderSaber.unshaken(player)) event.cancel();
         }, "murimblock:knockdown_no_stun", 100);
         // A normal parry lets half the damage through.
         EpicFightEventHooks.Entity.TAKE_DAMAGE_PRE.registerEvent(event -> {

@@ -160,14 +160,23 @@ public final class CombatBarClient {
     /** In combat mode the item hotbar gives way to the combat bar, drawn in its place. */
     @SubscribeEvent
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
-        Minecraft mc = Minecraft.getInstance();
+        if (VanillaGuiLayers.HOTBAR.equals(event.getName()) && shown(Minecraft.getInstance())) event.setCanceled(true);
+    }
+
+    /** Whether the combat bar takes the hotbar's place now. Not over a finish's film (FinishCinematic hides the whole interface). */
+    static boolean shown(Minecraft mc) {
         LocalPlayer player = mc.player;
-        // Not over a finish's film (FinishCinematic hides the whole interface).
-        if (FinishCinematic.active() || WarlordCinematic.active() || TransformationCinematic.active()) return;
-        if (player == null || player.isSpectator() || !inCombat(player) || !VanillaGuiLayers.HOTBAR.equals(event.getName())) return;
-        event.setCanceled(true);
-        // F1 (hidden interface) hides it, like the hotbar it replaces.
-        if (!mc.options.hideGui) render(event.getGuiGraphics(), mc, player);
+        if (FinishCinematic.active() || WarlordCinematic.active() || TransformationCinematic.active()) return false;
+        return player != null && !player.isSpectator() && inCombat(player);
+    }
+
+    /**
+     * The combat bar's own HUD layer, above the hotbar (MurimHudLayers): drawn there rather than inside the hotbar's
+     * event, so a mod that hides or redraws the hotbar (Essential, a HUD mod) never takes it away. F1 hides it.
+     */
+    public static void renderLayer(GuiGraphics g) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!mc.options.hideGui && shown(mc)) render(g, mc, mc.player);
     }
 
     // The dantian design (17/10/2026, Enzo's choice "C"): in the middle a round dantian holding the weapon in hand, filled

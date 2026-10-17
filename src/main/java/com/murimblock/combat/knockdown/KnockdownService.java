@@ -123,10 +123,13 @@ public final class KnockdownService {
 
     /**
      * Whether the player may fight, use items or skills: not while down, carried, carrying or finishing someone, nor
-     * while the Crab King holds them in his pincer.
+     * while the Crab King holds them in his pincer. On a client only what is synced counts (down, carrying): the
+     * executions and the pincer live on the server, and in a world hosted for friends the host's client shares its JVM.
      */
     public static boolean isHindered(Player player) {
-        return isDowned(player) || isCarrying(player) || isExecuting(player) || com.murimblock.mob.CrabKingEntity.isHeld(player);
+        if (isDowned(player) || isCarrying(player)) return true;
+        if (player.level().isClientSide) return false;
+        return isExecuting(player) || com.murimblock.mob.CrabKingEntity.isHeld(player);
     }
 
     // ---------------------------------------------------------------- knock-down and recovery

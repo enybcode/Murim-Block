@@ -114,6 +114,12 @@ public final class KnockdownClient {
     /** Players whose death animation is, for now, to stay lying (by entity id). */
     private static final java.util.Set<Integer> LYING_DEATH = new java.util.HashSet<>();
 
+    /** Leaving a world: its players' ids mean nothing in the next. */
+    @SubscribeEvent
+    public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        LYING_DEATH.clear();
+    }
+
     /**
      * A downed player who is executed dies where they lie: while down, their death "animation" is the downed pose,
      * instead of Epic Fight's death that first lifts the body to its knees.
