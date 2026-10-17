@@ -116,7 +116,8 @@ public final class ScarletGuardianGameTests {
             {var pos=at.offset(x,-1,z);floor.put(pos,h.getLevel().getBlockState(pos));h.getLevel().setBlockAndUpdate(pos,Blocks.STONE.defaultBlockState());}
         var boss=MurimEntities.SCARLET_GUARDIAN.get().create(h.getLevel());boss.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,0,0);
         var target=EntityType.ZOMBIE.create(h.getLevel());target.moveTo(boss.getX(),boss.getY(),boss.getZ()+distance,180,0);
-        target.setNoAi(true);target.setNoGravity(true);target.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);target.setHealth(1000);
+        target.setNoAi(true);target.setNoGravity(true);target.setPersistenceRequired();
+        target.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);target.setHealth(1000);
         target.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
         target.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.LEATHER_HELMET));
         h.getLevel().addFreshEntity(boss);h.getLevel().addFreshEntity(target);
@@ -155,8 +156,20 @@ public final class ScarletGuardianGameTests {
     }
     @GameTest(template="foundation_arena",batch="scarlet_guardian_sword",timeoutTicks=150)
     public static void guardianSwordUsesEngineHitsAndThrows(GameTestHelper h) {
+        // Keep a connected player far from this spawn-area fixture: NoAI must not allow vanilla
+        // distance-based despawning of the combat dummy (other GameTests can have remote players).
+        var observer=com.murimblock.testing.GameTestPlayers.player(h);
+        h.testInfo.addListener(new net.minecraft.gametest.framework.GameTestListener(){
+            private void clear(){com.murimblock.testing.GameTestPlayers.cleanup(observer);}
+            public void testStructureLoaded(net.minecraft.gametest.framework.GameTestInfo t){}
+            public void testPassed(net.minecraft.gametest.framework.GameTestInfo t,net.minecraft.gametest.framework.GameTestRunner r){clear();}
+            public void testFailed(net.minecraft.gametest.framework.GameTestInfo t,net.minecraft.gametest.framework.GameTestRunner r){clear();}
+            public void testAddedForRerun(net.minecraft.gametest.framework.GameTestInfo a,net.minecraft.gametest.framework.GameTestInfo b,net.minecraft.gametest.framework.GameTestRunner r){}
+        });
         var p=pair(h,3);p.boss.setTarget(p.target);
-        h.runAfterDelay(12,()->h.assertTrue(p.boss.currentArt()==Art.SWORD,"AI did not summon Scarlet Tear"));
+        h.runAfterDelay(5,()->h.assertTrue(p.target.isAlive()&&!p.target.isRemoved(),"NoAI combat dummy despawned because another test player was far away"));
+        h.runAfterDelay(12,()->h.assertTrue(p.boss.currentArt()==Art.SWORD,
+                "AI did not summon Scarlet Tear: ticks="+p.boss.tickCount+", art="+p.boss.currentArt()+", targetAlive="+p.target.isAlive()));
         h.runAfterDelay(68,()->h.assertTrue(p.target.getHealth()<1000,"Epic Fight sword cuts missed a nearby enemy"));
         h.runAfterDelay(98,()->{
             boolean thrown=h.getLevel().getEntitiesOfClass(BloodCrystalEntity.class,p.boss.getBoundingBox().inflate(30)).stream()
