@@ -1,0 +1,8 @@
+{
+  "type": "murimblock:site",
+  "plan": "alliance_arena",
+  "biomes": "#murimblock:has_structure/alliance_arena",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

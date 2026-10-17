@@ -43,6 +43,12 @@ public final class SiteStructure extends Structure {
         int x = chunk.getMiddleBlockX(), z = chunk.getMiddleBlockZ();
         Site site = plan.site();
         if (!site.allowedAt(x, z)) { count("place"); return Optional.empty(); }
+        // At least SiteSpacing.GAP blocks from every other structure (the rarer one keeps its place).
+        if (SiteSpacing.crowded(context.registryAccess(), context.seed(), context.biomeSource(), context.randomState().sampler(),
+                context.chunkGenerator().getSeaLevel(), chunk, site.reach(), SiteSpacing.setOf(context.registryAccess(), this))) {
+            count("crowded");
+            return Optional.empty();
+        }
         // The biome first: it is cheap, and /locate asks every cell of the grid.
         int sea = context.chunkGenerator().getSeaLevel(), r0 = site.reach();
         for (int dx = -r0; dx <= r0; dx += r0) for (int dz = -r0; dz <= r0; dz += r0) {

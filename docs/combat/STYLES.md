@@ -175,7 +175,7 @@ Pendant les 2 secondes du film, l'interface et les noms sont masqués et des ban
 
 ## Prototype proposé (première tranche)
 
-Le premier style est détaillé dans [styles/azure-cloud-sword.md](styles/azure-cloud-sword.md). Le premier art du poing, à mains nues : [styles/long-fist.md](styles/long-fist.md).
+Le premier style est détaillé dans [styles/azure-cloud-sword.md](styles/azure-cloud-sword.md). Le premier art du poing, à mains nues : [styles/long-fist.md](styles/long-fist.md). Le premier art du bâton, à deux mains : [styles/traveller-staff.md](styles/traveller-staff.md). Un art intermédiaire à la grande arme à deux mains, proposé le 17/10/2026 : [styles/purple-heaven-thunder-saber.md](styles/purple-heaven-thunder-saber.md).
 
 **Un seul style, à l'épée**, par exemple « L'Art de l'Épée, volume I » :
 

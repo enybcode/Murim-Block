@@ -10,8 +10,6 @@
 > Maquettes : `node scripts/concepts/render-capital.cjs` (Blockbench isolé sur le port 9232), scène dans
 > `scripts/concepts/capital.js`. 1 voxel = 1 bloc.
 
-![Vue d'ensemble](images/alliance-capital/overview.jpg)
-
 ## L'idée
 
 Une capitale sur **trois niveaux**, que l'on découvre en montant :
@@ -25,8 +23,6 @@ Une capitale sur **trois niveaux**, que l'on découvre en montant :
 **Couleurs.** Celles du drapeau de l'Alliance : tuiles azur et ornements or, colonnes rouges, murs blancs, granite pâle.
 
 ## Le plan
-
-![Plan numéroté](images/alliance-capital/plan.jpg)
 
 | N° | Lieu | Ce qu'on y fait | Qui y vit |
 |---|---|---|---|
@@ -63,21 +59,13 @@ Une capitale sur **trois niveaux**, que l'on découvre en montant :
 
 **La ville basse** : le marché sur l'avenue, les maisons à cour, l'auberge aux lanternes, la porte sud.
 
-![La ville basse](images/alliance-capital/town.jpg)
-
 **La cité intérieure** : la muraille rouge au bord de la falaise, le grand escalier, les cours d'entraînement, la Salle du Mérite.
 
-![La cité intérieure](images/alliance-capital/inner.jpg)
-
 **Le sommet** : la Grande Salle, la tour-bibliothèque, la tour de la cloche, l'arène, les ponts de chaînes.
-
-![Le sommet](images/alliance-capital/summit.jpg)
 
 ## Les secrets
 
 Le pic de la Grande Salle coupé en deux (sa moitié est retirée) :
-
-![Les secrets, en coupe](images/alliance-capital/secrets.jpg)
 
 | | Secret | Comment on le trouve | Ce qu'il y a |
 |---|---|---|---|

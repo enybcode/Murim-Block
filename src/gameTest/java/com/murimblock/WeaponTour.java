@@ -3,9 +3,9 @@ package com.murimblock;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import com.murimblock.combat.CombatService;
+import com.murimblock.integration.epicfight.CrabKingAnimations;
 import com.murimblock.integration.epicfight.EpicFightBridge;
 import com.murimblock.integration.epicfight.EpicFightCombatDefaults;
-import com.murimblock.integration.epicfight.MountainBanditPatch;
 import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.item.MurimItems;
 import com.murimblock.martial.MartialArts;
@@ -74,7 +74,9 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
  *   <li>the same player in the Bandit Chief's armour (its four pieces, Epic Fight's armour meshes): standing, walking,
  *   running and the axe's first two M1s.</li>
  * </ul>
- * MURIM_TOUR_ONLY=bandit, =axe or =armour films one of them. The camera follows the actor (the cuts carry it forward), and
+ * The Crab King too (a mob, the camera farther back): standing, his heavy walk, his three attacks, his grab (a husk
+ * before him to catch), his pincers from the deep, his roar and his death.
+ * MURIM_TOUR_ONLY=bandit, =king, =axe or =armour films one of them. The camera follows the actor (the cuts carry it forward), and
  * Epic Fight's red outline of the aimed-at entity is turned off. Frames go to
  * build/weapon-tour-run/screenshots/&lt;take&gt;/&lt;side&gt;/, the report to weapon-tour-report.txt.
  */
@@ -92,7 +94,12 @@ public final class WeaponTour {
 
     /** Who is filmed. */
     /** Who is filmed: the bandit, the player with the great axe, the same player in the Bandit Chief's armour too. */
-    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD, STAFF, GALLERY }
+    private enum Actor { BANDIT, AXE, ARMOUR, SPEAR, JIAN, JIAN_AZURE, SHIELD, STAFF, GALLERY, KING }
+
+    /** The actors that are mobs (filmed as they are, not a player holding a weapon): the bandit, the Crab King. */
+    private static boolean isMob(Actor actor) {
+        return actor == Actor.BANDIT || actor == Actor.KING;
+    }
 
     /** Where the camera stands, the actor facing +Z (its right hand toward -X). */
     private enum Side {
@@ -127,12 +134,20 @@ public final class WeaponTour {
     private static final List<String> report = new ArrayList<>();
     private static boolean creating, finished, failed;
     private static int ticks;
-    private static volatile MountainBanditEntity bandit;
+    private static volatile net.minecraft.world.entity.Mob bandit;
+    /** How much farther and higher the camera stands for this actor (the Crab King is twice a man). */
+    private static double zoom = 1;
+    /** Who the Crab King's grab catches in its takes: a husk before his great pincer. */
+    private static volatile net.minecraft.world.entity.monster.Husk victim;
     private static volatile ServerPlayer wielder;
     /** What the server last asked the actor to play (the same accessor on both sides of an integrated server). */
     private static volatile AnimationAccessor<? extends StaticAnimation> asked;
     private static double baseX, baseY, baseZ;
     private static int take = -1, takeStart, settle;
+
+    private static void king(String name, Side side, AnimationAccessor<? extends StaticAnimation> played, LivingMotion motion, int frames, int every) {
+        TAKES.add(new Take("king-" + name, Actor.KING, side, played, -1, motion, frames, every));
+    }
 
     private static void bandit(String name, Side side, AnimationAccessor<? extends StaticAnimation> played, LivingMotion motion, int frames, int every) {
         TAKES.add(new Take("bandit-" + name, Actor.BANDIT, side, played, -1, motion, frames, every));
@@ -235,6 +250,7 @@ public final class WeaponTour {
     private static Item weaponOf(Actor actor) {
         return switch (actor) {
             case BANDIT -> MurimItems.BANDIT_DAO.get();
+            case KING -> net.minecraft.world.item.Items.AIR;
             case SPEAR -> MurimItems.ALLIANCE_SPEAR.get();
             case JIAN, JIAN_AZURE, SHIELD -> MurimItems.SNOW_PLUM_JIAN.get();
             case STAFF -> addonStaff();
@@ -266,6 +282,26 @@ public final class WeaponTour {
             bandit("death", side, Animations.BIPED_DEATH, null, 14, 2);
         }
         // A player with the great axe: standing, walking, running, then each M1 of its chain.
+        // The Crab King: standing from each side, his loop, his walk, his attacks and roar, his death.
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT, Side.TOP)) king("idle", side, null, LivingMotions.IDLE, 1, 1);
+        king("idle-loop", Side.FRONT_RIGHT, null, LivingMotions.IDLE, 25, 4);
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) king("walk", side, null, LivingMotions.WALK, 16, 2);
+        for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT)) {
+            king("sweep", side, CrabKingAnimations.SWEEP, null, 22, 1);
+            king("snap", side, CrabKingAnimations.SNAP, null, 26, 1);
+            king("slam", side, CrabKingAnimations.SLAM, null, 30, 1);
+            king("roar", side, CrabKingAnimations.ROAR, null, 20, 2);
+        }
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("grab", side, CrabKingAnimations.GRAB, null, 46, 2);
+        // The grab lived from inside: the camera's own player caught (client/GrabCinematic films it).
+        king("grab-pov", Side.FRONT, CrabKingAnimations.GRAB, null, 56, 2);
+        // The pincers from the deep, on a husk before him.
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.LEFT)) king("burrow", side, CrabKingAnimations.BURROW, null, 60, 2);
+        // His mist: he breathes it and is gone into it (seen from outside it, then from within).
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.FRONT)) king("mist", side, CrabKingAnimations.MIST, null, 40, 2);
+        // His water ball, on a husk before him (wide).
+        for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT)) king("water-ball", side, CrabKingAnimations.WATER_BALL, null, 50, 2);
+        king("death", Side.FRONT_RIGHT, Animations.BIPED_DEATH, null, 14, 2);
         for (Side side : List.of(Side.FRONT, Side.FRONT_RIGHT, Side.RIGHT, Side.BACK, Side.LEFT)) axe("idle", side, -1, LivingMotions.IDLE, 1, 1);
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) axe("walk", side, -1, LivingMotions.WALK, 16, 2);
         for (Side side : List.of(Side.FRONT_RIGHT, Side.RIGHT, Side.FRONT)) axe("run", side, -1, LivingMotions.RUN, 12, 2);
@@ -324,14 +360,14 @@ public final class WeaponTour {
         listGallery();
         String only = System.getenv("MURIM_TOUR_ONLY");
         if (only != null && !only.isBlank()) TAKES.removeIf(t -> !t.actor().name().toLowerCase().startsWith(only.trim().toLowerCase()));
-        check(TAKES.stream().filter(t -> t.actor() == Actor.BANDIT).allMatch(t -> t.motion() != null || t.played() != null), "every bandit take has its animation");
+        check(TAKES.stream().filter(t -> isMob(t.actor())).allMatch(t -> t.motion() != null || t.played() != null), "every bandit take has its animation");
     }
 
     private WeaponTour() { }
 
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
-        if (!Boolean.getBoolean("murimblock.weaponTour")) return;
+        if (!Boolean.getBoolean("murimblock.weaponTour") || SkyArenaTour.wanted()) return;
         Minecraft mc = Minecraft.getInstance();
         mc.options.pauseOnLostFocus = false;
         if (mc.screen instanceof PauseScreen) mc.setScreen(null);
@@ -391,6 +427,7 @@ public final class WeaponTour {
             if (take == TAKES.size()) {
                 server.execute(() -> {
                     if (bandit != null) bandit.discard();
+                    if (victim != null) victim.discard();
                     if (wielder != null) server.getPlayerList().remove(wielder);
                 });
                 finish(mc);
@@ -400,7 +437,7 @@ public final class WeaponTour {
             if (t.actor() == Actor.GALLERY) galleryItem = GALLERY_ITEMS.get(t);
             Take before = take == 0 ? null : TAKES.get(take - 1);
             // A new actor when it changes and after each death; otherwise the same one, back on its spot.
-            boolean fresh = before == null || before.actor() != t.actor() || before.name().equals("bandit-death");
+            boolean fresh = before == null || before.actor() != t.actor() || before.name().endsWith("-death");
             settle = fresh ? FRESH : SETTLE;
             server.execute(() -> begin(server, t, fresh));
             return;
@@ -409,13 +446,14 @@ public final class WeaponTour {
         int at = ticks - takeStart;
         LivingEntity seen = seen(mc, t.actor());
         // The camera follows the actor: the cuts carry it forward, the player walks.
-        if (seen != null && at > 2) look(mc, seen.getX(), seen.getY(), seen.getZ(), t.side());
+        // In the grab lived from inside, the camera is the caught player's own (the server moves it).
+        if (seen != null && at > 2 && !t.name().equals(POV)) look(mc, seen.getX(), seen.getY(), seen.getZ(), t.side());
         boolean moving = t.motion() == LivingMotions.WALK || t.motion() == LivingMotions.CHASE || t.motion() == LivingMotions.RUN;
-        if (moving && t.actor() == Actor.BANDIT && seen != null) {
+        if (moving && isMob(t.actor()) && seen != null) {
             // On the spot: the client is told the bandit walks (Epic Fight's client animator picks the walk or the run from it).
             seen.walkAnimation.setSpeed(t.motion() == LivingMotions.CHASE ? 0.95F : 0.55F);
         }
-        if (t.actor() != Actor.BANDIT && seen != null) {
+        if (!isMob(t.actor()) && seen != null) {
             // Epic Fight walks a player from the movement keys its own client sends; this one has none: forward, held
             // while it walks or runs, released otherwise.
             PlayerPatch<?> remote = EpicFightCapabilities.getEntityPatch(seen, PlayerPatch.class);
@@ -424,7 +462,7 @@ public final class WeaponTour {
                 remote.dz = moving && at > 2 ? 1 : 0;
             }
         }
-        if (moving && t.actor() != Actor.BANDIT && at > 2) {
+        if (moving && !isMob(t.actor()) && at > 2) {
             double step = t.motion() == LivingMotions.RUN ? SPRINT_SPEED : WALK_SPEED;
             server.execute(() -> {
                 wielder.moveTo(wielder.getX(), baseY, wielder.getZ() + step, 0, 0);
@@ -442,18 +480,44 @@ public final class WeaponTour {
         }
     }
 
+    /** The take in which the camera's own player is caught by the Crab King. */
+    private static final String POV = "king-grab-pov";
+
     /** The camera on the take's side of its actor (a new one, facing +Z, when asked). */
     private static void begin(MinecraftServer server, Take t, boolean fresh) {
         ServerLevel level = server.overworld();
-        if (t.actor() == Actor.BANDIT) {
+        // Back to watching after the grab lived from inside.
+        ServerPlayer me = self(server);
+        if (me.gameMode.getGameModeForPlayer() != GameType.SPECTATOR) {
+            me.setGameMode(GameType.SPECTATOR);
+            me.removeAllEffects();
+        }
+        // Farther still for the pincers from the deep: him, his target and the two giant pincers in the frame.
+        // Outside his mist (11 blocks round him) for its wide take.
+        zoom = t.name().startsWith("king-burrow") || t.name().startsWith("king-water-ball") || t.name().equals("king-mist") && t.side() == Side.FRONT_RIGHT ? 4.6 : t.actor() == Actor.KING ? 2.4 : 1;
+        // A stone wall across his throw for the grab's takes (he knocks a crater into it), gone for the others.
+        boolean wall = t.name().startsWith("king-grab");
+        for (int x = -5; x <= 5; x++) for (int y = 0; y < 6; y++) {
+            net.minecraft.core.BlockPos p = net.minecraft.core.BlockPos.containing(baseX + x, baseY + y, baseZ + 7);
+            level.setBlockAndUpdate(p, wall ? net.minecraft.world.level.block.Blocks.STONE.defaultBlockState() : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        }
+        if (victim != null) {
+            victim.discard();
+            victim = null;
+        }
+        if (isMob(t.actor())) {
             if (fresh) {
                 if (bandit != null) bandit.discard();
-                bandit = MurimEntities.MOUNTAIN_BANDIT.get().create(level);
+                if (t.actor() == Actor.KING) bandit = MurimEntities.CRAB_KING.get().create(level);
+                else {
+                    MountainBanditEntity b = MurimEntities.MOUNTAIN_BANDIT.get().create(level);
+                    b.setVariant(1);
+                    b.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.BANDIT_DAO.get()));
+                    bandit = b;
+                }
                 bandit.moveTo(baseX, baseY, baseZ, 0, 0);
                 bandit.setYBodyRot(0);
                 bandit.setYHeadRot(0);
-                bandit.setVariant(1);
-                bandit.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(MurimItems.BANDIT_DAO.get()));
                 bandit.setPersistenceRequired();
                 level.addFreshEntity(bandit);
                 bandit.setNoAi(true);
@@ -464,8 +528,32 @@ public final class WeaponTour {
                 bandit.setYBodyRot(0);
                 bandit.setYHeadRot(0);
             }
+            // Out of his mist for any other take.
+            if (bandit instanceof com.murimblock.mob.CrabKingEntity king && !t.name().startsWith("king-mist")) king.reveal(level);
+            // And no mist left over from the last take.
+            if (!t.name().startsWith("king-mist")) level.getEntitiesOfClass(com.murimblock.mob.CrabMistEntity.class, bandit.getBoundingBox().inflate(80)).forEach(net.minecraft.world.entity.Entity::discard);
             // Running is chasing: Epic Fight runs an aggressive mob that moves.
             bandit.setAggressive(t.motion() == LivingMotions.CHASE);
+            if (t.name().startsWith("king-burrow") || t.name().startsWith("king-water-ball")) {
+                // A husk eight blocks before him, his target: the two pincers come before it (CrabKingEntity.callPincers).
+                victim = net.minecraft.world.entity.EntityType.HUSK.create(level);
+                victim.moveTo(baseX, baseY, baseZ + com.murimblock.mob.CrabKingEntity.PINCER_AHEAD, 180, 0);
+                victim.setPersistenceRequired();
+                level.addFreshEntity(victim);
+                victim.setNoAi(true);
+                // His target: the pincers come before it, on either side.
+                bandit.setTarget(victim);
+            }
+            if (t.name().equals("king-grab")) {
+                // Something for the pincer to catch, before him and a little to his right (-x as he faces +z): a husk, which does
+                // not burn in the sun.
+                victim = net.minecraft.world.entity.EntityType.HUSK.create(level);
+                victim.moveTo(baseX - 0.75, baseY, baseZ + 2.6, 180, 0);
+                victim.setBaby(false);
+                victim.setPersistenceRequired();
+                level.addFreshEntity(victim);
+                // With its AI: a mob without it does not move, so it would not fly when thrown.
+            }
         } else {
             if (fresh) {
                 if (bandit != null) {
@@ -493,7 +581,7 @@ public final class WeaponTour {
             }
             if (fresh || t.actor() == Actor.GALLERY && t.name().endsWith("-idle")) report.add("info   " + weaponOf(t.actor()) + " in a player's hand: " + describe(EpicFightBridge.patch(wielder)));
             // The air attack from a little above the ground (a player on a mock connection stays where it is put).
-            double lift = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? 1.4 : 0;
+            double lift = t.name().endsWith("-air") && !isMob(t.actor()) ? 1.4 : 0;
             wielder.moveTo(baseX, baseY + lift, baseZ, 0, 0);
             wielder.setYHeadRot(0);
             wielder.setYBodyRot(0);
@@ -507,16 +595,29 @@ public final class WeaponTour {
             wielder.setItemSlot(EquipmentSlot.FEET, armoured ? new ItemStack(MurimItems.CHIEF_FUR_BOOTS.get()) : ItemStack.EMPTY);
         }
         Side s = t.side();
-        double y = t.name().endsWith("-air") && t.actor() != Actor.BANDIT ? baseY + 1.4 : baseY;
-        if (s == Side.TOP) self(server).teleportTo(level, baseX, y + 4.6 - 1.62, baseZ + 0.01, s.yaw, 90);
-        else self(server).teleportTo(level, baseX + s.dx * DISTANCE, y + EYE - 1.62, baseZ + s.dz * DISTANCE, s.yaw, 6);
+        double y = t.name().endsWith("-air") && !isMob(t.actor()) ? baseY + 1.4 : baseY;
+        if (s == Side.TOP) self(server).teleportTo(level, baseX, y + 4.6 * zoom - 1.62, baseZ + 0.01, s.yaw, 90);
+        else self(server).teleportTo(level, baseX + s.dx * DISTANCE * zoom, y + EYE * zoom - 1.62, baseZ + s.dz * DISTANCE * zoom, s.yaw, 6);
+        if (t.name().startsWith("king-mist")) {
+            // A spectator sees what is invisible: in creative, the camera sees him go into his mist.
+            me.setGameMode(GameType.CREATIVE);
+            me.getAbilities().flying = true;
+            me.onUpdateAbilities();
+        }
+        if (t.name().equals(POV)) {
+            // The camera's player in survival before the pincer (CrabKingGrip.CATCH: his right and ahead), unhurt.
+            me.setGameMode(GameType.SURVIVAL);
+            me.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 400, 4, false, false));
+            me.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 400, 4, false, false));
+            me.teleportTo(level, baseX - 0.85, baseY, baseZ + 2.4, 180, -10);
+        }
     }
 
     /** On the server: the take's animation, for the axe the M1 of its chain the take names. */
     private static void play(Take t) {
-        if (t.actor() == Actor.BANDIT) {
+        if (isMob(t.actor())) {
             asked = t.played();
-            EpicFightCapabilities.getEntityPatch(bandit, MountainBanditPatch.class).playAnimationSynchronized(t.played(), 0);
+            EpicFightCapabilities.getEntityPatch(bandit, LivingEntityPatch.class).playAnimationSynchronized(t.played(), 0);
         } else {
             PlayerPatch<?> patch = EpicFightBridge.patch(wielder);
             if (t.combo() == GUARD) {
@@ -582,7 +683,7 @@ public final class WeaponTour {
             LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
             LivingMotion motion = patch == null ? null : patch.getCurrentLivingMotion();
             check(motion == t.motion(), what + ": living motion " + motion);
-            if (t.actor() != Actor.BANDIT && t.motion() != LivingMotions.IDLE) {
+            if (!isMob(t.actor()) && t.motion() != LivingMotions.IDLE) {
                 report.add(String.format("info   %s: z from %.2f, server %.2f, client %.2f", what, baseZ, wielder.getZ(), seen.getZ()));
             }
         }
@@ -617,7 +718,7 @@ public final class WeaponTour {
         LivingEntity seen = seen(mc, t.actor());
         LivingEntityPatch<?> patch = seen == null ? null : EpicFightCapabilities.getEntityPatch(seen, LivingEntityPatch.class);
         var animation = asked;
-        if (animation == null && t.actor() != Actor.BANDIT) return;
+        if (animation == null && !isMob(t.actor())) return;
         boolean playing = patch != null && animation != null && patch.getAnimator().isPlaying(animation);
         if (!second) playingOnFirstFrame = playing;
         else check(playingOnFirstFrame || playing, t.name() + " from " + t.side().name().toLowerCase() + ": the client plays "
@@ -628,14 +729,14 @@ public final class WeaponTour {
 
     /** The client's copy of the actor. */
     private static LivingEntity seen(Minecraft mc, Actor actor) {
-        LivingEntity server = actor == Actor.BANDIT ? bandit : wielder;
+        LivingEntity server = isMob(actor) ? bandit : wielder;
         return server == null || mc.level == null ? null : mc.level.getEntity(server.getId()) instanceof LivingEntity e ? e : null;
     }
 
     /** The local camera on the take's side of the actor standing at (x, y, z). */
     private static void look(Minecraft mc, double x, double y, double z, Side s) {
-        if (s == Side.TOP) mc.player.moveTo(x, y + 4.6 - 1.62, z + 0.01, s.yaw, 90);
-        else mc.player.moveTo(x + s.dx * DISTANCE, y + EYE - 1.62, z + s.dz * DISTANCE, s.yaw, 6);
+        if (s == Side.TOP) mc.player.moveTo(x, y + 4.6 * zoom - 1.62, z + 0.01, s.yaw, 90);
+        else mc.player.moveTo(x + s.dx * DISTANCE * zoom, y + EYE * zoom - 1.62, z + s.dz * DISTANCE * zoom, s.yaw, 6);
     }
 
     private static ServerPlayer self(MinecraftServer server) {

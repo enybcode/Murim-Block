@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 
 /**
  * The Murim map with the real noise (docs/biomes/murim-map.md): the "normal" world preset puts it on the overworld,
- * and over the whole map (a sample every 400 blocks, two seeds) every land block of the bubble has a Murim biome of
+ * and over the whole map (a sample every 100 blocks, two seeds) every land block of the bubble has a Murim biome of
  * its own region, the ring is deep ocean and the world beyond is vanilla. It also draws the map: murim-map-<seed>.png
  * in the GameTest server's folder (build/game-test-run).
  */
@@ -41,23 +41,24 @@ import org.slf4j.Logger;
 @PrefixGameTestTemplate(false)
 public final class MurimMapGameTests {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int HALF = 90_000, STEP = 400;
+    private static final int HALF = MurimMap.RADIUS + MurimMap.RING + 2_000, STEP = 100;
 
     private MurimMapGameTests() { }
 
     private static final Map<MurimMap.Region, Set<ResourceKey<Biome>>> REGION_BIOMES = Map.of(
-            MurimMap.Region.CENTER, Set.of(MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.PEACH_BLOSSOM_VALLEY),
+            MurimMap.Region.CENTER, Set.of(MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.PEACH_BLOSSOM_VALLEY, MurimBiomes.WULINGYUAN_PILLARS),
             MurimMap.Region.NORTH, Set.of(MurimBiomes.KUNLUN_GLACIERS, MurimBiomes.TIANSHAN_SNOWFIELDS),
             MurimMap.Region.WEST, Set.of(MurimBiomes.HEXI_FRONTIER_DESERT, MurimBiomes.LOESS_PLATEAU),
             MurimMap.Region.SOUTH, Set.of(MurimBiomes.JADE_KARST_FOREST, MurimBiomes.SHU_BAMBOO_SEA, MurimBiomes.CAMPHOR_HILLS),
             MurimMap.Region.EAST, Set.of(MurimBiomes.JIANGNAN_WATERLANDS, MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.CAMPHOR_HILLS));
 
-    private static final Map<ResourceKey<Biome>, Integer> COLOURS = Map.of(
-            MurimBiomes.CLOUD_SEA_PEAKS, 0xB8BEC4, MurimBiomes.PEACH_BLOSSOM_VALLEY, 0xE8A0B8,
-            MurimBiomes.KUNLUN_GLACIERS, 0x9ED8F0, MurimBiomes.TIANSHAN_SNOWFIELDS, 0xF2F6FA,
-            MurimBiomes.HEXI_FRONTIER_DESERT, 0xE2C27A, MurimBiomes.LOESS_PLATEAU, 0xB8904A,
-            MurimBiomes.JADE_KARST_FOREST, 0x2E7A3A, MurimBiomes.SHU_BAMBOO_SEA, 0x7EC24A,
-            MurimBiomes.JIANGNAN_WATERLANDS, 0x4AA89A, MurimBiomes.CAMPHOR_HILLS, 0x3F6E35);
+    private static final Map<ResourceKey<Biome>, Integer> COLOURS = Map.ofEntries(
+            Map.entry(MurimBiomes.CLOUD_SEA_PEAKS, 0xB8BEC4), Map.entry(MurimBiomes.PEACH_BLOSSOM_VALLEY, 0xE8A0B8),
+            Map.entry(MurimBiomes.KUNLUN_GLACIERS, 0x9ED8F0), Map.entry(MurimBiomes.TIANSHAN_SNOWFIELDS, 0xF2F6FA),
+            Map.entry(MurimBiomes.HEXI_FRONTIER_DESERT, 0xE2C27A), Map.entry(MurimBiomes.LOESS_PLATEAU, 0xB8904A),
+            Map.entry(MurimBiomes.JADE_KARST_FOREST, 0x2E7A3A), Map.entry(MurimBiomes.SHU_BAMBOO_SEA, 0x7EC24A),
+            Map.entry(MurimBiomes.JIANGNAN_WATERLANDS, 0x4AA89A), Map.entry(MurimBiomes.CAMPHOR_HILLS, 0x3F6E35),
+            Map.entry(MurimBiomes.WULINGYUAN_PILLARS, 0x8A7A5A));
 
     @GameTest(template = "foundation_arena", batch = "murim_map_preset")
     public static void theNormalWorldPresetPutsTheMurimMapOnTheOverworld(GameTestHelper helper) {
@@ -78,7 +79,7 @@ public final class MurimMapGameTests {
     }
 
     /**
-     * The north's ranges: the ground's height over the whole north (a point every 1 000 blocks), with the real terrain
+     * The north's ranges: the ground's height over the whole north (a point every 250 blocks), with the real terrain
      * noise. Immense (the highest well above vanilla's usual peaks) without ever reaching the world's ceiling.
      */
     @GameTest(template = "foundation_arena", batch = "murim_map_heights", timeoutTicks = 2000)
@@ -94,7 +95,7 @@ public final class MurimMapGameTests {
         var heightAccessor = net.minecraft.world.level.LevelHeightAccessor.create(-64, 384);
         int highest = 0, count = 0, above200 = 0;
         long sum = 0;
-        for (int x = -60_000; x <= 60_000; x += 1_000) for (int z = -72_000; z <= -25_000; z += 1_000) {
+        for (int x = -19_000; x <= 19_000; x += 250) for (int z = -19_000; z <= 19_000; z += 250) {
             if (MurimMap.region(x, z) != MurimMap.Region.NORTH) continue;
             int h = generator.getBaseHeight(x, z, net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, heightAccessor, state);
             highest = Math.max(highest, h);
@@ -138,12 +139,12 @@ public final class MurimMapGameTests {
                     wrong++;
                     if (firstWrong == null) firstWrong = key.location() + " in the " + region + " at " + x + ", " + z;
                 }
-            } else if (reach < MurimMap.RADIUS - 3_000 && !sea && !b.is(BiomeTags.IS_BEACH) && !b.is(BiomeTags.IS_RIVER)
+            } else if (reach < MurimMap.RADIUS - MurimMap.EDGE - 200 && !sea && !b.is(BiomeTags.IS_BEACH) && !b.is(BiomeTags.IS_RIVER)
                     && !b.is(net.minecraft.world.level.biome.Biomes.DRIPSTONE_CAVES) && !b.is(net.minecraft.world.level.biome.Biomes.LUSH_CAVES)
                     && !b.is(net.minecraft.world.level.biome.Biomes.DEEP_DARK)) {
                 insideVanillaLand++;
             }
-            if (reach > MurimMap.RADIUS + 2_500 && reach < MurimMap.RADIUS + MurimMap.RING - 2_500 && !sea) ringLand++;
+            if (reach > MurimMap.RADIUS + MurimMap.EDGE + 200 && reach < MurimMap.RADIUS + MurimMap.RING - MurimMap.EDGE - 200 && !sea) ringLand++;
             int colour = COLOURS.getOrDefault(key, sea ? (b.is(BiomeTags.IS_DEEP_OCEAN) ? 0x1A3A6A : 0x2E5C9A) : 0x6E7A68);
             map.setRGB(px, pz, colour);
         }
@@ -158,8 +159,14 @@ public final class MurimMapGameTests {
         helper.assertTrue(ringLand == 0, "Land in the ocean ring: " + ringLand + " samples");
         // Inside the bubble only Murim land (vanilla keeps the caves, its rivers become Murim: none of its land biomes).
         helper.assertTrue(insideVanillaLand == 0, "Vanilla land inside the bubble: " + insideVanillaLand + " samples " + tally);
-        for (MurimMap.Region r : MurimMap.Region.values())
-            helper.assertTrue(murimByRegion.getOrDefault(r, 0) > 500, "The " + r + " has almost no land: " + murimByRegion);
+        // The five regions hold about the same land: each between a seventh and a quarter of it.
+        int land = murimByRegion.values().stream().mapToInt(Integer::intValue).sum();
+        LOGGER.info("Murim map {}: layout turned {} degrees, quarters {}, land by region {}", seed, Math.round(Math.toDegrees(MurimMap.layout().turn())),
+                java.util.Arrays.toString(MurimMap.layout().quarters()), murimByRegion);
+        for (MurimMap.Region r : MurimMap.Region.values()) {
+            int n = murimByRegion.getOrDefault(r, 0);
+            helper.assertTrue(n > land / 7 && n < land / 4, "The " + r + " holds " + n + " of " + land + " samples of land: " + murimByRegion);
+        }
         for (ResourceKey<Biome> b : MurimBiomes.ALL)
             helper.assertTrue(tally.getOrDefault(b.location().getPath(), 0) > 50, "Hardly any " + b.location() + " on the map: " + tally);
     }

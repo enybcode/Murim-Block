@@ -15,7 +15,7 @@ import net.neoforged.neoforge.event.level.LevelEvent;
  */
 public final class MurimSpawn {
     /** How far from the centre the spawn may be drawn, and the highest ground it may stand on. */
-    public static final int REACH = 60_000, HIGHEST = 140;
+    public static final int REACH = MurimMap.RADIUS * 3 / 5, HIGHEST = 140;
     private static final int TRIES = 200;
 
     private MurimSpawn() {

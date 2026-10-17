@@ -10,10 +10,10 @@ La jauge est plafonnée à 20 (15/10/2026, demande d'Enzo ; 10 avant). Un M1 qui
 
 | Case initiale | Technique | Qi | Recharge | Action |
 |---|---|---:|---:|---|
-| 1 | Blood Crystal | 18 | 160 ticks | Maintenir pour charger un cristal à la main droite, relâcher pour lancer. Charge minimum 12 ticks, maximum 30 ticks. Lancement 6 ticks après le geste ; portée 24 blocs, vitesse 0,9 bloc/tick, dégâts ×1,2 de l'attaque. Aucun soin. |
-| 2 | Scarlet Tear | 24 | 200 ticks | Arc frontal Epic Fight, dégâts ×1,5, stun long. Ajoute 3 points à la jauge sur un contact valide. |
-| 3 | Blood Crystal Form | 200 | 80 ticks | Jauge pleine requise. Consomme la jauge et active la surcouche finale avec **30 % de réduction des dégâts reçus** (15 % avant le 15/10/2026, demande d'Enzo), fixe et globale. |
-| 4 | Crystal Barrage | 18 | 120 ticks | Lance tous les cristaux gagnés aux M1, un tous les 2 ticks après un geste de 6 ticks. Chaque projectile inflige ×0,45 de l'attaque : davantage de cristaux donne davantage de dégâts cumulés. |
+| 1 | Blood Crystal | 150 | 160 ticks | Maintenir pour charger un cristal à la main droite, relâcher pour lancer. Charge minimum 12 ticks, maximum 30 ticks. Lancement 6 ticks après le geste ; portée 24 blocs, vitesse 0,9 bloc/tick, dégâts ×1,2 de l'attaque. Aucun soin. |
+| 2 | Scarlet Tear | 225 | 200 ticks | Arc frontal Epic Fight, dégâts ×1,5, stun long. Ajoute 3 points à la jauge sur un contact valide. |
+| 3 | Blood Crystal Form | 300 | 80 ticks | Jauge pleine requise. Consomme la jauge et active la surcouche finale avec **30 % de réduction des dégâts reçus** (15 % avant le 15/10/2026, demande d'Enzo), fixe et globale. |
+| 4 | Crystal Barrage | 180 | 120 ticks | Lance tous les cristaux gagnés aux M1, un tous les 2 ticks après un geste de 6 ticks. Chaque projectile inflige ×0,45 de l'attaque : davantage de cristaux donne davantage de dégâts cumulés. |
 
 Dans la forme, les M1 réussis ajoutent un cristal dorsal, jusqu'à 10. Scarlet Tear ne génère pas de cristaux dorsaux. La salve consomme immédiatement les cristaux gagnés ; **la forme et la protection restent actives**. Les M1 suivants peuvent regagner des cristaux. Les pointes fixes de la surcouche restent visibles à zéro cristal gagné.
 
@@ -110,7 +110,7 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 
 ## Blood Iceberg, la dernière technique (15/10/2026, demande d'Enzo)
 
-- **5e technique** (`blood_iceberg`, 40 Qi, **recharge 9 min** = 10 800 ticks) ; quête « Crimson Peak » : tenir trois Blood Crystal Forms jusqu'à leur fin (`crimson_peak.forms`). Icône dans `TechniqueIcons.java` (une montagne de cristal, une silhouette au sommet).
+- **5e technique** (`blood_iceberg`, 750 Qi, **recharge 9 min** = 10 800 ticks) ; quête « Crimson Peak » : tenir trois Blood Crystal Forms jusqu'à leur fin (`crimson_peak.forms`). Icône dans `TechniqueIcons.java` (une montagne de cristal, une silhouette au sommet).
 - **Animation** (`sanguine_iceberg`, 1,7 s) : un genou presque à terre, les deux paumes frappent le sol (0,3 s), puis le joueur se redresse avec la montagne, bras levés, et se tient au sommet bras ouverts.
 - **La montagne** (`BloodIceberg`) : 30 × 30 blocs (un carré arrondi), sommet à 9 blocs au-dessus des pieds, flancs irréguliers et 12 flèches de cristal (+3 à +7,5) autour du sommet, plate au milieu pour s'y tenir ; elle comble la pente jusqu'à 12 blocs sous les pieds. Elle monte du sol en 1 s (6 ticks après le cast), couche par couche, et **porte en haut** le joueur et tout ce qui se trouve dessus (`lift`). Elle ne remplit que l'air et ce qu'un bloc peut remplacer (herbe, fleurs, neige) : elle ne casse jamais un bloc ; l'herbe et les fleurs remplacées ne reviennent pas.
 - **Les blocs** (`SanguineBlocks`) : `blood_crystal_block` et `blood_crystal_vein` (veines lumineuses, lumière 9, 12 % des blocs et le haut des flèches) ; textures en facettes de cristal générées par `scripts/animation/blood-iceberg-blocks.cjs`. Aucun objet, aucun butin. Chaque bloc programme sa disparition (tick planifié, sauvegardé avec le chunk) : **au bout de 60 s, la montagne s'effrite du haut vers le bas** en quelques secondes, et rien ne reste même si le serveur s'arrête avant.
@@ -138,11 +138,41 @@ L'épée de sang, dans le style du cristal (même texture) : pommeau, poignée, 
 
 ## Art de haut niveau (15/10/2026)
 
-Le parchemin n'enseigne qu'à partir de **Qi Crystallization** ; coûts en Qi (100, 150, 200, 120, 500), main durcie par le sang (+4) et parts retouchées : voir `docs/combat/technique-balance.md`. Icône de Blood Iceberg redessinée en temple (mur de briques, flèches d'or et lanternes, sang qui coule).
+Le parchemin n'enseigne qu'à partir de **Qi Crystallization** ; coûts en Qi (150, 225, 300, 180, 750 : une fois et demie ceux du premier ajustement, 15/10/2026), main durcie par le sang (+4) et parts retouchées : voir `docs/combat/technique-balance.md`. Icône de Blood Iceberg redessinée en temple (mur de briques, flèches d'or et lanternes, sang qui coule).
 
 ### Les règles du temple (15/10/2026, demande d'Enzo)
 
-- **Incassable** : la pierre du temple ne se casse ni à la main, ni aux explosions (résistance 3 600 000), ni aux pistons ; elle ne part qu'à la fin de ses 60 s (ou en créatif).
+- **Incassable** : la pierre du temple ne se casse ni à la main, ni aux explosions (résistance 3 600 000), ni aux pistons ; elle ne part qu'à la fin de ses 60 s (ou en créatif). Durée confirmée par Enzo le 15/10/2026 : le temple tient 60 s, la technique se recharge en 9 min.
 - **Rien ne se construit dedans** : tant qu'il tient, aucun bloc ne se pose et aucun seau ne se vide dans son emprise (45 × 45, du dessous jusqu'au-dessus des flèches) (`BloodIceberg.inArena`, `BlockEvent.EntityPlaceEvent`, `RightClickBlock` d'un seau).
 - **Si son lanceur meurt, il s'effondre aussitôt** : le sang d'abord, puis la pierre du haut vers le bas en une demi-seconde (`BloodIceberg.collapse`, `collapseTick` sur `ServerTickEvent`).
 - Test : `theTempleIsUnbreakableClosedToBuildingAndFallsWithItsCaster`.
+
+## Le finish : Floraison écarlate — *Scarlet Bloom* (15/10/2026, demande d'Enzo)
+
+D'après le film de référence d'Enzo. B sur un joueur au sol (K.O.), pour qui a l'art sanguin en art principal **et
+toutes ses techniques débloquées** (`martial/ScarletBloom`, `ScarletBloom.finishes`). 7,8 s, vu par les deux joueurs
+comme un film à caméra mobile (`client/FinishCinematic.placeScarlet`), et par tous ceux qui sont autour :
+
+1. 0 s : l'exécuteur plonge la main dans le sol (`scripts/animation/scarlet-bloom.cjs`, clip `scarlet_bloom`).
+2. 0,7 s : un anneau de grands pics de cristal jaillit, un pic géant sous le corps, des blocs du sol volent ; la victime
+   est **emportée** à 9 blocs de haut, renversée en arrière et se débattant (clip `scarlet_bloom_flung` ; plus la pose de
+   K.O. pendant ce temps, la tête ne suit plus le regard).
+3. 2 s : dix cristaux quittent le dos de l'exécuteur, prennent place autour du corps et tissent une **cage** de rayons
+   de cristal ; le corps y pend, écartelé.
+4. 3,5 s : la cage se referme lentement en tournant, **en noir et blanc** pour les deux joueurs (post-effet
+   `shaders/post/scarlet_monochrome.json`) ; le corps se recroqueville.
+5. 5 s : l'exécuteur serre le poing : **exécution**. Une fleur de cristal s'ouvre, la cage éclate et **le corps éclate
+   avec elle**, au ralenti : tête, torse, bras et jambes (dans la peau du joueur) s'écartent parmi des giclées de sang
+   et de gros éclats ; 5,6 s : le temps repart, tout est projeté.
+6. 5 à 9 s : **pluie de sang** autour du cratère ; les morceaux du corps retombent et restent dans des flaques de sang ;
+   6,1 s : un cratère de grands cristaux se dresse.
+
+Tout est fait de modèles (Enzo ne voulait pas de particules) : `ScarletPieceEntity`, rendue par
+`client/ScarletPieceRenderer` (cristaux `geo/scarlet_spike|rod|shard|bloom` dans le style des cristaux de sang, sang
+`geo/scarlet_blood|puddle` et sa texture, blocs du sol, membres du modèle de joueur avec sa peau ; script
+`scripts/animation/scarlet-bloom-models.cjs`). Rien n'est construit ni sauvegardé ; tout disparaît 11,5 s après le début,
+ou tout de suite si le finish est interrompu (le corps est alors reposé au sol). Protocole réseau 19.
+
+Vérifications : `ScarletBloomGameTests` (réservé aux maîtres de l'art ; le corps monte, éclate en six morceaux, est
+exécuté, crédit à l'exécuteur ; tout est retiré à la fin ; interrompu, le corps est reposé vivant) ; film en vrai client :
+`gradlew -PgameTests runScarletBloomTour` (vue de l'exécuteur, vue d'un témoin).

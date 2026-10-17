@@ -61,6 +61,8 @@ public final class MartialCombat {
     public static final int COMBO_GAP_TICKS = 30;
     /** Damage lost per hit already in the combo, and the least a hit still deals. */
     public static final float COMBO_DECAY = 0.08F, COMBO_FLOOR = 0.4F;
+    /** Third Resonance (the Traveller's Staff Art's passive): the third strike of a chain deals twice its damage. */
+    public static final float THIRD_RESONANCE_FACTOR = 2.0F;
     /** Hits before the knock-down for a combo to count as complete (quest). */
     public static final int COMPLETE_COMBO_HITS = 3;
     /** Thousand-Li Cloud Step: a second dash within this many ticks of the first is free. */
@@ -117,6 +119,9 @@ public final class MartialCombat {
     public static void onPerfectParry(ServerPlayer player, Entity attacker) {
         if (isEnemy(attacker, player)) MartialProgress.count(player, MartialArts.PATIENT_BLADE_PARRIES, 1);
         if (LongFist.stanceActive(player)) QiService.addQi(player, LongFist.PARRY_QI);
+        SevenStarsSword.onPerfectParry(player, attacker);
+        ThunderSaber.onPerfectParry(player, attacker);
+        GoldenBell.onPerfectParry(player, attacker);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -199,9 +204,46 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.LONG_FIST, credit, LongFist.isStrike(animation), false));
             return;
         }
+        credit = MountainShatteringFist.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MOUNTAIN_SHATTERING_FIST, credit, MountainShatteringFist.isStrike(animation), false));
+            return;
+        }
+        credit = MajinFistArt.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MAJIN_FIST, credit, MajinFistArt.isStrike(animation), false));
+            return;
+        }
         credit = SanguineArt.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
+            return;
+        }
+        credit = TravellerStaff.creditOf(player, animation);
+        if (credit != null) {
+            boolean strike = TravellerStaff.isStrike(animation);
+            if (strike) TravellerStaff.strikeBegan(player);
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.TRAVELLER_STAFF, credit, strike, false));
+            return;
+        }
+        credit = ThunderSaber.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.THUNDER_SABER, credit, true, false));
+            return;
+        }
+        credit = GoldenBell.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.GOLDEN_BELL, credit, true, false));
+            return;
+        }
+        credit = SevenStarsSword.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SEVEN_STARS_SWORD, credit, true, false));
+            return;
+        }
+        credit = CelestialPeakSpear.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CELESTIAL_PEAK_SPEAR, credit, CelestialPeakSpear.isStrike(animation), false));
             return;
         }
         SWINGS.remove(player.getUUID());
@@ -226,6 +268,18 @@ public final class MartialCombat {
         float factor = comboFactor(prior);
         // A technique (not a strike) strikes as its weapon and its Qi allow (TechniquePower).
         if (!swing.strike) factor *= (float) TechniquePower.factor(player, swing.art);
+        // Long Reach: a spear hit at the point strikes a fifth harder.
+        if (swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR) && CelestialPeakSpear.reaches(player) && CelestialPeakSpear.atReach(player, event.getTarget()))
+            factor *= CelestialPeakSpear.REACH_BONUS;
+        // Third Resonance: the third strike of a chain strikes twice as hard (not the techniques).
+        if (swing.art.equals(MartialArts.TRAVELLER_STAFF) && swing.strike && TravellerStaff.thirdOfChain(player))
+            factor *= THIRD_RESONANCE_FACTOR;
+        // Star Marks: the blow on a full constellation bursts it, harder.
+        if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) factor *= SevenStarsSword.factorBefore(player, event.getTarget());
+        // Rolling Drums: an electrified body, the secret's riposte, take more.
+        if (swing.art.equals(MartialArts.THUNDER_SABER)) factor *= ThunderSaber.factorBefore(player, event.getTarget());
+        // Pride of the Sun: a strike by day under the sky lands harder.
+        if (swing.art.equals(MartialArts.MAJIN_FIST)) factor *= MajinFistArt.factorBefore(player, swing.animation);
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -245,14 +299,23 @@ public final class MartialCombat {
         boolean enemy = isEnemy(target, player);
         boolean fist = swing.art.equals(MartialArts.LONG_FIST);
         boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
-        if (fist) LongFist.onHit(player, target, animation, enemy);
+        boolean spear = swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR);
+        boolean mountain = swing.art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST);
+        if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
+        else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.MAJIN_FIST)) MajinFistArt.onHit(player, target, animation, enemy);
+        else if (fist) LongFist.onHit(player, target, animation, enemy);
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
+        else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) SevenStarsSword.onHit(player, target);
+        else if (swing.art.equals(MartialArts.THUNDER_SABER)) ThunderSaber.onHit(player, target);
         else AzureCloudSword.onHit(player, target, animation, swing.riposte);
         // The combo: a knock-down ends it, and counts as complete after enough hits.
         long now = player.level().getGameTime();
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
-        if (fist ? LongFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
+        if (fist ? LongFist.knocksDown(animation) : spear ? CelestialPeakSpear.knocksDown(animation)
+                : mountain ? MountainShatteringFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
@@ -262,6 +325,10 @@ public final class MartialCombat {
         MartialArts.Art art = MartialArts.art(swing.art);
         if (swing.credit.equals(MartialArts.CLOUD_STEP_SLASH.id()) && swing.struck.add(target.getUUID()))
             MartialProgress.count(player, MartialArts.PATIENT_BLADE_DASH_HITS, 1);
+        // Piercing Dragon's lunge (not the dive) counts each enemy it passes through for First Line.
+        if ((animation == MurimAnimations.CELESTIAL_PIERCING_DRAGON || animation == MurimAnimations.CELESTIAL_PIERCING_DRAGON_LONG)
+                && swing.struck.add(target.getUUID()))
+            MartialProgress.count(player, MartialArts.FIRST_LINE_DRAGON_HITS, 1);
         // Tiger Step Punch's bound (not the secret, nor the dive) counts each enemy it strikes for First Steps.
         if ((animation == MurimAnimations.TIGER_STEP_PUNCH
                 || animation == MurimAnimations.TIGER_STEP_PUNCH_LONG) && swing.struck.add(target.getUUID()))
@@ -603,6 +670,12 @@ public final class MartialCombat {
         tickSlams(player, now);
         keepAloft(player);
         AzureCloudSword.tickAim(player, now);
+        TravellerStaff.tick(player);
+        MountainShatteringFist.tick(player);
+        MajinFistArt.tick(player);
+        SevenStarsSword.tick(player);
+        ThunderSaber.tick(player);
+        GoldenBell.tick(player);
         SanguineArt.tick(player);
         BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
@@ -636,6 +709,39 @@ public final class MartialCombat {
                     && BloodIceberg.inArena(event.getLevel(), event.getPos().relative(event.getFace() == null ? net.minecraft.core.Direction.UP : event.getFace()))) event.setCanceled(true);
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
+        // The Seven Stars Sword: a player of the art hurt loses stars; stars go out on their own; newcomers see them.
+        // The Purple Heaven Thunder Saber: unshaken (no push), Heaven's Drum stopping blows, the electrified forgotten.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(ThunderSaber::onDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaber::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaberMoves::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaberMoves::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaberMoves::onProjectileImpact);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) ->
+                ThunderSaber.serverTick(event.getServer()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) ThunderSaber.startTracking(event.getTarget(), watcher);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SevenStarsSword::onDamage);
+        // The Golden Bell: its form lessens the blows, Iron Rebound sends them back, the mountain holds and strikes nobody.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onProjectileImpact);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(GoldenBell::onAttack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) GoldenBell.startTracking(event.getTarget(), watcher);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onProjectileImpact);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) ->
+                SevenStarsSword.serverTick(event.getServer()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) SevenStarsSword.startTracking(event.getTarget(), watcher);
+        });
+        // The Spinning Rampart stops what comes from the front before anything else sees it (Epic Fight's stun included).
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onProjectileImpact);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {
             if (!event.enabled()) SanguineArt.leftCombat(event.getEntity().getUUID());
@@ -664,6 +770,12 @@ public final class MartialCombat {
         AzureCloudSword.forgetAim(id);
         LongFist.forget(id);
         SanguineArt.forget(id);
+        TravellerStaff.forget(id);
+        MountainShatteringFist.forget(id);
+        MajinFistArt.forget(id);
+        SevenStarsSword.forget(id);
+        ThunderSaber.forget(id);
+        GoldenBell.forget(id);
     }
 
     public static void clearForTests() {
@@ -683,5 +795,11 @@ public final class MartialCombat {
         LongFist.forget(null);
         SanguineArt.forget(null);
         BloodIceberg.forget(null);
+        TravellerStaff.forget(null);
+        MountainShatteringFist.forget(null);
+        MajinFistArt.forget(null);
+        SevenStarsSword.forget(null);
+        ThunderSaber.forget(null);
+        GoldenBell.forget(null);
     }
 }

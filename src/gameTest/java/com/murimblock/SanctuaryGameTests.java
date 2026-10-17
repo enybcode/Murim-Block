@@ -153,28 +153,36 @@ public final class SanctuaryGameTests {
         }
     }
 
+    /**
+     * The sect's token is no longer given at the first login: the Alliance merchant sells it, once per restock, for a
+     * stack of taels and 32 gold yuanbao; its needle points to the sanctuary.
+     */
     @GameTest(template = "foundation_arena", batch = "sanctuary_token")
-    public static void everyPlayerGetsATokenThatPointsToTheSanctuary(GameTestHelper helper) {
+    public static void theTokenIsBoughtDearAndPointsToTheSanctuary(GameTestHelper helper) {
         ServerLevel overworld = helper.getLevel().getServer().overworld();
         SanctuaryPlacement data = SanctuaryPlacement.get(overworld);
         // Flat test world: no sanctuary was built on start.
         helper.assertTrue(data.centre() == null, "A sanctuary was built in a flat world");
         data.record(new BlockPos(1200, 90, -800), new BlockPos(1200, 91, -784), 160);
         var player = player(helper);
-        // The test helper puts a sword in the first slot after login: replay the first login on a clean inventory.
+        helper.assertTrue(player.getInventory().countItem(MurimItems.SECT_TOKEN.get()) == 0, "A new player was given the sect's token");
+        var offer = com.murimblock.mob.AllianceMerchantEntity.wares().stream().filter(o -> o.getResult().is(MurimItems.SECT_TOKEN.get())).findFirst();
+        helper.assertTrue(offer.isPresent(), "The Alliance merchant does not sell the sect's token");
+        var sold = offer.get();
+        helper.assertTrue(sold.getBaseCostA().is(MurimItems.SILVER_TAEL.get()) && sold.getBaseCostA().getCount() == com.murimblock.mob.AllianceMerchantEntity.SECT_TOKEN_TAELS
+                && sold.getCostB().is(MurimItems.GOLD_YUANBAO.get()) && sold.getCostB().getCount() == com.murimblock.mob.AllianceMerchantEntity.SECT_TOKEN_YUANBAO
+                && sold.getMaxUses() == 1, "The token's price is not a stack of taels and 32 gold yuanbao, once: " + sold.getBaseCostA() + " + " + sold.getCostB());
         player.getInventory().clearContent();
-        player.getPersistentData().remove("murimblock_sect_token_received");
-        SectTokenItem.onPlayerLoggedIn(new PlayerEvent.PlayerLoggedInEvent(player));
-        SectTokenItem.onPlayerLoggedIn(new PlayerEvent.PlayerLoggedInEvent(player));
-        int tokens = player.getInventory().countItem(MurimItems.SECT_TOKEN.get());
-        ItemStack token = null;
-        for (ItemStack stack : player.getInventory().items) if (stack.is(MurimItems.SECT_TOKEN.get())) token = stack;
-        ItemStack held = token;
+        // Inventory.add moves the stack into a slot (the one passed is emptied): tick the one in the inventory.
+        player.getInventory().add(sold.getResult().copy());
+        ItemStack found = ItemStack.EMPTY;
+        for (ItemStack stack : player.getInventory().items) if (stack.is(MurimItems.SECT_TOKEN.get())) found = stack;
+        ItemStack held = found;
+        helper.assertTrue(!held.isEmpty(), "The bought token is not in the inventory");
         // The needle refreshes once a second: tick the token for a little over a second of game time.
-        for (int t = 1; t <= 25; t++) helper.runAfterDelay(t, () -> { if (held != null) held.inventoryTick(overworld, player, 0, true); });
+        for (int t = 1; t <= 25; t++) helper.runAfterDelay(t, () -> held.inventoryTick(overworld, player, 0, true));
         helper.runAfterDelay(26, () -> {
             try {
-                helper.assertTrue(held != null && tokens == 1, "Expected exactly one token on first login, got " + tokens);
                 var tracker = held.get(DataComponents.LODESTONE_TRACKER);
                 helper.assertTrue(tracker != null && tracker.target().isPresent() && tracker.target().get().pos().equals(new BlockPos(1200, 160, -800)),
                         "Token needle not on the sanctuary: " + tracker);

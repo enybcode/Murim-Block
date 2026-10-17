@@ -58,6 +58,8 @@ neoForge {
             sourceSet = sourceSets.gameTest
             gameDirectory = project.file('build/game-test-run')
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // -PgameTestFilter=sevenstars,bloodsoldier: only the tests whose name or batch holds one of the words (GameTestFilter).
+            systemProperty 'murimblock.gameTestFilter', (project.findProperty('gameTestFilter') ?: '').toString()
             disableIdeRun()
         }
 
@@ -69,12 +71,29 @@ neoForge {
             disableIdeRun()
         }
 
+        banditEcologyTour {
+            client()
+            gameDirectory = project.file('build/bandit-ecology-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.banditEcologyTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client tour of the Murim biomes in a fresh normal world (see BiomeTour).
         biomeTour {
             client()
             gameDirectory = project.file('build/biome-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.biomeTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the Star-Plucking Peak, the world's highest point (see StarPeakTour).
+        starPeakTour {
+            client()
+            gameDirectory = project.file('build/star-peak-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.starPeakTour', 'true'
             disableIdeRun()
         }
 
@@ -93,6 +112,124 @@ neoForge {
             gameDirectory = project.file('build/knockdown-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.knockdownTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client film of the Traveller's Staff Art's animations (see StaffTour).
+        staffTour {
+            client()
+            gameDirectory = project.file('build/staff-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.staffTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client checks of the Blood Sect (com.murimblock.bloodsect): the blood cloud step, the dao's
+        // M1, the cultists' looks (BloodCloudStepTour, BloodDaoM1Tour, CultistLookTour).
+        bloodCloudStepTour {
+            client()
+            gameDirectory = project.file('build/blood-cloud-step-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.cloudStepTour', 'true'
+            disableIdeRun()
+        }
+        bloodDaoM1Tour {
+            client()
+            gameDirectory = project.file('build/blood-dao-m1-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.daoM1Tour', 'true'
+            disableIdeRun()
+        }
+        cultistLookTour {
+            client()
+            gameDirectory = project.file('build/cultist-look-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.cultistLookTour', 'true'
+            disableIdeRun()
+        }
+        // The Seven Stars Sword, one piece at a time (SevenStarsTour).
+        sevenStarsTour {
+            client()
+            gameDirectory = project.file('build/seven-stars-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.sevenStarsTour', 'true'
+            disableIdeRun()
+        }
+        // The Purple Heaven Thunder Saber, every technique (ThunderSaberTour).
+        thunderSaberTour {
+            client()
+            gameDirectory = project.file('build/thunder-saber-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.thunderSaberTour', 'true'
+            disableIdeRun()
+        }
+        // The Purple Heaven Thunder Saber's player animations alone (ThunderSaberPoseTour).
+        thunderSaberPoseTour {
+            client()
+            gameDirectory = project.file('build/thunder-saber-pose-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.thunderSaberPoseTour', 'true'
+            disableIdeRun()
+        }
+        // The Golden Bell: the gold, iron and stone bodies, the bell and its light (GoldenBellTour).
+        goldenBellTour {
+            client()
+            gameDirectory = project.file('build/golden-bell-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.goldenBellTour', 'true'
+            disableIdeRun()
+        }
+        // The Blood Soldiers and the Blood Lacquer, on them and on the player (SoldierLookTour).
+        soldierLookTour {
+            client()
+            gameDirectory = project.file('build/soldier-look-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'bloodsect.soldierLookTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the Traveller's Staff Art in play (see TravellerStaffTour).
+        travellerStaffTour {
+            client()
+            gameDirectory = project.file('build/traveller-staff-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.travellerStaffTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the Crab King's lair, the Root Well (see CrabLairTour).
+        crabLairTour {
+            client()
+            gameDirectory = project.file('build/crab-lair-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.crabLairTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the whole fight against the Peak Captain on his leitai (see PeakCaptainFightTour).
+        peakCaptainFightTour {
+            client()
+            gameDirectory = project.file('build/peak-captain-fight-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.peakCaptainFightTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the Captain of the Peak Guard and his swinging cloth (see PeakCaptainTour).
+        peakCaptainTour {
+            client()
+            gameDirectory = project.file('build/peak-captain-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.peakCaptainTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client film of Scarlet Bloom, the Sanguine Art's finish (see ScarletBloomTour).
+        scarletBloomTour {
+            client()
+            gameDirectory = project.file('build/scarlet-bloom-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.scarletBloomTour', 'true'
             disableIdeRun()
         }
 
@@ -140,6 +277,33 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client check of the Celestial Peak Spear (see SpearTour).
+        spearTour {
+            client()
+            gameDirectory = project.file('build/spear-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.spearTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the Murim knives (see KnifeTour).
+        knifeTour {
+            client()
+            gameDirectory = project.file('build/knife-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.knifeTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: film of the weapons' swing trails (see TrailTour).
+        trailTour {
+            client()
+            gameDirectory = project.file('build/trail-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.trailTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: filming of a duel with Sensei Yun (see SenseiDuel; clip by scripts/showcase/make-clip.cjs).
         senseiDuel {
             client()
@@ -172,6 +336,73 @@ neoForge {
             gameDirectory = project.file('build/weapon-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.weaponTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a film of the tiger standing, walking, attacking and dying in a real client (see TigerTour).
+        tigerTour {
+            client()
+            gameDirectory = project.file('build/tiger-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.tigerTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a film of the Bandit Warlord's entrance (the cinematic, the meteor, the crater) and his moves in a real client (see WarlordTour).
+        warlordTour {
+            client()
+            gameDirectory = project.file('build/warlord-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: the same, then a killing blow: his transformation into the Son of the Demon and the arena in the sky (see WarlordTour).
+        transformTour {
+            client()
+            gameDirectory = project.file('build/transform-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            systemProperty 'murimblock.transformTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: the transformation recorded as a video (smooth frames at a slowed tick rate, and its sounds
+        // logged for the soundtrack): build/transform-video-run/video, then scripts/animation/make-video.cjs (see WarlordTour).
+        transformVideo {
+            client()
+            gameDirectory = project.file('build/transform-video-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.warlordTour', 'true'
+            systemProperty 'murimblock.transformTour', 'true'
+            systemProperty 'murimblock.videoTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a film of the Majin Fist, the Son of the Demon's six skills, in the real sky arena (see MajinTour).
+        majinTour {
+            client()
+            gameDirectory = project.file('build/majin-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.majinTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a film of the Majin Fist in a player's hands (see MajinArtTour).
+        majinArtTour {
+            client()
+            gameDirectory = project.file('build/majin-art-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.majinArtTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a film of the Mountain-Shattering Fist's techniques in a real client (see MountainFistTour).
+        mountainFistTour {
+            client()
+            gameDirectory = project.file('build/mountain-fist-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.mountainFistTour', 'true'
             disableIdeRun()
         }
 
@@ -365,6 +596,102 @@ tasks.named('runSiteTour').configure {
     }
 }
 
+def staffTourSave = layout.buildDirectory.dir('staff-tour-run/saves/murim-staff')
+def staffTourReport = layout.buildDirectory.file('staff-tour-run/staff-tour-report.txt')
+def staffTourShots = layout.buildDirectory.dir('staff-tour-run/screenshots')
+tasks.named('runStaffTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only staff tour.')
+        staffTourSave.get().asFile.deleteDir()
+        staffTourShots.get().asFile.deleteDir()
+        staffTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = staffTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Staff tour failed; see build/staff-tour-run/staff-tour-report.txt')
+    }
+}
+
+def travellerStaffTourSave = layout.buildDirectory.dir('traveller-staff-tour-run/saves/murim-traveller-staff')
+def travellerStaffTourReport = layout.buildDirectory.file('traveller-staff-tour-run/traveller-staff-tour-report.txt')
+def travellerStaffTourShots = layout.buildDirectory.dir('traveller-staff-tour-run/screenshots')
+tasks.named('runTravellerStaffTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException("Use -PgameTests for the development-only Traveller's Staff tour.")
+        travellerStaffTourSave.get().asFile.deleteDir()
+        travellerStaffTourShots.get().asFile.deleteDir()
+        travellerStaffTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = travellerStaffTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException("Traveller's Staff tour failed; see build/traveller-staff-tour-run/traveller-staff-tour-report.txt")
+    }
+}
+
+def crabLairTourSave = layout.buildDirectory.dir('crab-lair-tour-run/saves/murim-crab-lair')
+def crabLairTourReport = layout.buildDirectory.file('crab-lair-tour-run/crab-lair-tour-report.txt')
+def crabLairTourShots = layout.buildDirectory.dir('crab-lair-tour-run/screenshots')
+tasks.named('runCrabLairTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only crab lair tour.')
+        crabLairTourSave.get().asFile.deleteDir()
+        crabLairTourShots.get().asFile.deleteDir()
+        crabLairTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = crabLairTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Crab lair tour failed; see build/crab-lair-tour-run/crab-lair-tour-report.txt')
+    }
+}
+
+def peakCaptainFightTourSave = layout.buildDirectory.dir('peak-captain-fight-tour-run/saves/murim-peak-captain-fight')
+def peakCaptainFightTourReport = layout.buildDirectory.file('peak-captain-fight-tour-run/peak-captain-fight-tour-report.txt')
+def peakCaptainFightTourShots = layout.buildDirectory.dir('peak-captain-fight-tour-run/screenshots')
+tasks.named('runPeakCaptainFightTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Peak Captain fight tour.')
+        peakCaptainFightTourSave.get().asFile.deleteDir()
+        peakCaptainFightTourShots.get().asFile.deleteDir()
+        peakCaptainFightTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = peakCaptainFightTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Peak Captain fight tour failed; see build/peak-captain-fight-tour-run/peak-captain-fight-tour-report.txt')
+    }
+}
+
+def peakCaptainTourSave = layout.buildDirectory.dir('peak-captain-tour-run/saves/murim-peak-captain')
+def peakCaptainTourReport = layout.buildDirectory.file('peak-captain-tour-run/peak-captain-tour-report.txt')
+def peakCaptainTourShots = layout.buildDirectory.dir('peak-captain-tour-run/screenshots')
+tasks.named('runPeakCaptainTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Peak Captain tour.')
+        peakCaptainTourSave.get().asFile.deleteDir()
+        peakCaptainTourShots.get().asFile.deleteDir()
+        peakCaptainTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = peakCaptainTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Peak Captain tour failed; see build/peak-captain-tour-run/peak-captain-tour-report.txt')
+    }
+}
+
+def scarletBloomTourSave = layout.buildDirectory.dir('scarlet-bloom-tour-run/saves/murim-scarlet-bloom')
+def scarletBloomTourReport = layout.buildDirectory.file('scarlet-bloom-tour-run/scarlet-bloom-tour-report.txt')
+def scarletBloomTourShots = layout.buildDirectory.dir('scarlet-bloom-tour-run/screenshots')
+tasks.named('runScarletBloomTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Scarlet Bloom tour.')
+        scarletBloomTourSave.get().asFile.deleteDir()
+        scarletBloomTourShots.get().asFile.deleteDir()
+        scarletBloomTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = scarletBloomTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Scarlet Bloom tour failed; see build/scarlet-bloom-tour-run/scarlet-bloom-tour-report.txt')
+    }
+}
+
 def knockdownTourSave = layout.buildDirectory.dir('knockdown-tour-run/saves/murim-knockdown')
 def knockdownTourReport = layout.buildDirectory.file('knockdown-tour-run/knockdown-tour-report.txt')
 def knockdownTourShots = layout.buildDirectory.dir('knockdown-tour-run/screenshots')
@@ -458,6 +785,46 @@ tasks.named('runLongFistTour').configure {
     doLast {
         def report = longFistTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Long Fist tour failed; see build/long-fist-tour-run/long-fist-tour-report.txt')
+    }
+}
+
+def trailTourSave = layout.buildDirectory.dir('trail-tour-run/saves/murim-trail')
+def trailTourShots = layout.buildDirectory.dir('trail-tour-run/screenshots')
+tasks.named('runTrailTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only trail tour.')
+        trailTourSave.get().asFile.deleteDir()
+        trailTourShots.get().asFile.deleteDir()
+    }
+}
+def knifeTourSave = layout.buildDirectory.dir('knife-tour-run/saves/murim-knife')
+def knifeTourReport = layout.buildDirectory.file('knife-tour-run/knife-tour-report.txt')
+def knifeTourShots = layout.buildDirectory.dir('knife-tour-run/screenshots')
+tasks.named('runKnifeTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only knife tour.')
+        knifeTourSave.get().asFile.deleteDir()
+        knifeTourShots.get().asFile.deleteDir()
+        knifeTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = knifeTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Knife tour failed; see build/knife-tour-run/knife-tour-report.txt')
+    }
+}
+def spearTourSave = layout.buildDirectory.dir('spear-tour-run/saves/murim-spear')
+def spearTourReport = layout.buildDirectory.file('spear-tour-run/spear-tour-report.txt')
+def spearTourShots = layout.buildDirectory.dir('spear-tour-run/screenshots')
+tasks.named('runSpearTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only spear tour.')
+        spearTourSave.get().asFile.deleteDir()
+        spearTourShots.get().asFile.deleteDir()
+        spearTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = spearTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Spear tour failed; see build/spear-tour-run/spear-tour-report.txt')
     }
 }
 

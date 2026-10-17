@@ -22,7 +22,8 @@ import net.minecraft.world.level.biome.Climate;
  * biome of its region, picked by the same climate noise vanilla reads, so the patches follow the relief (the
  * mountainous biomes where the erosion is low). Caves, beaches and the sea stay vanilla's.
  * <ul>
- *   <li>centre: cloud-sea peaks on the mountains, the peach blossom valley elsewhere;</li>
+ *   <li>centre: cloud-sea peaks on the mountains, the Wulingyuan stone forest where it is humid, the peach blossom valley
+ *   elsewhere;</li>
  *   <li>north: the Kunlun glaciers on the immense ranges raised there (MurimMap.uplift) and the other mountains, the
  *   Tianshan snowfields elsewhere;</li>
  *   <li>west: the frontier desert where it is dry, the loess plateau elsewhere;</li>
@@ -43,6 +44,8 @@ public final class MurimBiomeSource extends BiomeSource {
     static final double KUNLUN_UPLIFT = MurimMap.UPLIFT * (MurimMap.PLATEAU + 0.33 * (1 - MurimMap.PLATEAU));
     /** Above this share of their height, the east's hills are camphor country. */
     static final double EAST_HILLS = 0.32;
+    /** Above this humidity, the centre's land below the mountains is the Wulingyuan stone forest. */
+    static final float WULINGYUAN_HUMIDITY = 0.1F;
 
     private final BiomeSource vanilla;
     private final HolderSet<Biome> biomes;
@@ -94,7 +97,8 @@ public final class MurimBiomeSource extends BiomeSource {
     /** The Murim biome of a region for a given erosion (low: mountains) and humidity. */
     public static ResourceKey<Biome> pick(MurimMap.Region region, float erosion, float humidity) {
         return switch (region) {
-            case CENTER -> erosion < MOUNTAINS ? MurimBiomes.CLOUD_SEA_PEAKS : MurimBiomes.PEACH_BLOSSOM_VALLEY;
+            case CENTER -> erosion < MOUNTAINS ? MurimBiomes.CLOUD_SEA_PEAKS
+                    : humidity > WULINGYUAN_HUMIDITY ? MurimBiomes.WULINGYUAN_PILLARS : MurimBiomes.PEACH_BLOSSOM_VALLEY;
             case NORTH -> erosion < MOUNTAINS ? MurimBiomes.KUNLUN_GLACIERS : MurimBiomes.TIANSHAN_SNOWFIELDS;
             case WEST -> humidity < -0.1F ? MurimBiomes.HEXI_FRONTIER_DESERT : MurimBiomes.LOESS_PLATEAU;
             // The south: the karst where it is humid, the plains of the camphor country on the gentler land, the bamboo

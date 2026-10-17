@@ -133,10 +133,155 @@ public final class MurimAnimations {
         buildAzureCloudSword(builder);
         buildLongFist(builder);
         buildSanguineArt(builder);
+        buildCelestialPeakSpear(builder);
         buildBanditChief(builder);
+        BanditWarlordAnimations.build(builder);
+        ColossusAnimations.build(builder);
+        buildMountainFist(builder);
+        buildMajinFist(builder);
+        buildSevenStars(builder);
+        buildThunderSaber(builder);
+        buildGoldenBell(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
+        buildSkyDrop(builder);
+        buildStaffArt(builder);
         SectWeaponAnimations.build(builder);
+        CrabKingAnimations.build(builder);
+    }
+
+    // ---------------------------------------------------------------- the Purple Heaven Thunder Saber (scripts/animation/thunder-saber-art.cjs)
+
+    /**
+     * The Purple Heaven Thunder Saber's moves, a greatsword in both hands: poses only, no hit box (martial/ThunderSaberMoves
+     * deals the blows and moves the body on the server, at the times its clips reach them). Thunder Descends, Rolling
+     * Thunder (two turns, three evolved), Heaven's Drum planted then struck, Severing Flash's charge then its cut, Nine
+     * Heavens' Wrath, the ultimate Thunder Sovereign's Descent, the finish The Last Thunderclap.
+     */
+    public static AnimationAccessor<ActionAnimation> TS_DESCENDS, TS_ROLLING, TS_ROLLING_LONG, TS_DRUM_PLANT, TS_DRUM_STRIKE,
+            TS_FLASH_CHARGE, TS_FLASH_CUT, TS_WRATH, TS_SOVEREIGN, FINISH_THUNDER_SABER;
+
+    private static void buildThunderSaber(AnimationBuilder builder) {
+        TS_DESCENDS = builder.nextAccessor("biped/murim/ts_descends", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        TS_ROLLING = builder.nextAccessor("biped/murim/ts_rolling", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        TS_ROLLING_LONG = builder.nextAccessor("biped/murim/ts_rolling_long", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        TS_DRUM_PLANT = builder.nextAccessor("biped/murim/ts_drum_plant", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        TS_DRUM_STRIKE = builder.nextAccessor("biped/murim/ts_drum_strike", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        TS_FLASH_CHARGE = builder.nextAccessor("biped/murim/ts_flash_charge", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        TS_FLASH_CUT = builder.nextAccessor("biped/murim/ts_flash_cut", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        TS_WRATH = builder.nextAccessor("biped/murim/ts_wrath", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        TS_SOVEREIGN = builder.nextAccessor("biped/murim/ts_sovereign", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        FINISH_THUNDER_SABER = builder.nextAccessor("biped/murim/ts_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Seven Stars Sword (scripts/animation/seven-stars-art.cjs)
+
+    /**
+     * The Seven Stars Sword's moves, a florett in hand: poses only, no hit box (martial/SevenStarsSword deals the blows and
+     * moves the body on the server, at the times below). Shooting Star, one bound of Dipper Steps, Orbiting Stars,
+     * Constellation Link, Falling Star Rain, the secret Polaris Riposte, the ultimate Seven Stars Sword Array, the finish
+     * Extinguished Stars.
+     */
+    public static AnimationAccessor<ActionAnimation> SSS_SHOOTING_STAR, SSS_DIPPER_THRUST, SSS_ORBIT, SSS_LINK, SSS_RAIN, SSS_POLARIS,
+            SSS_ARRAY, FINISH_SEVEN_STARS;
+
+    private static void buildSevenStars(AnimationBuilder builder) {
+        SSS_SHOOTING_STAR = builder.nextAccessor("biped/murim/sss_shooting_star", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        SSS_DIPPER_THRUST = builder.nextAccessor("biped/murim/sss_dipper_thrust", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        SSS_ORBIT = builder.nextAccessor("biped/murim/sss_orbit", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SSS_LINK = builder.nextAccessor("biped/murim/sss_link", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SSS_RAIN = builder.nextAccessor("biped/murim/sss_rain", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SSS_POLARIS = builder.nextAccessor("biped/murim/sss_polaris", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        SSS_ARRAY = builder.nextAccessor("biped/murim/sss_array", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        FINISH_SEVEN_STARS = builder.nextAccessor("biped/murim/sss_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Majin Fist (scripts/animation/majin-fist.cjs)
+
+    /**
+     * The Majin Fist's moves, bare-handed: the Son of the Demon's own at a man's size; poses only, no hit box
+     * (martial/MajinFistArt deals the blows on the server, at the times below). Sunfire Fist, Pride Flare, Cruel Sun, Noon
+     * Judgment, Midday Meteor's spring, The One, the finish Noon Sentence; the dive is held while the body falls.
+     */
+    public static AnimationAccessor<ActionAnimation> MJF_SUNFIRE, MJF_FLARE, MJF_CONJURE, MJF_JUDGMENT, MJF_LEAP, MJF_THE_ONE, FINISH_MAJIN;
+    public static AnimationAccessor<StaticAnimation> MJF_DIVE;
+    /** Seconds into them: the fist's burst, the flare's wave, the sun hurled, the pillars, off the ground. */
+    public static final float MJF_SUNFIRE_IMPACT = 0.48F, MJF_FLARE_AT = 0.7F, MJF_HURL_AT = 1.6F, MJF_PILLARS_AT = 1.6F, MJF_SPRING_AT = 0.7F;
+
+    private static void buildMajinFist(AnimationBuilder builder) {
+        MJF_SUNFIRE = builder.nextAccessor("biped/murim/mjf_sunfire", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        MJF_FLARE = builder.nextAccessor("biped/murim/mjf_flare", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        MJF_CONJURE = builder.nextAccessor("biped/murim/mjf_conjure", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        MJF_JUDGMENT = builder.nextAccessor("biped/murim/mjf_judgment", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        MJF_LEAP = builder.nextAccessor("biped/murim/mjf_leap", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        MJF_THE_ONE = builder.nextAccessor("biped/murim/mjf_the_one", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        FINISH_MAJIN = builder.nextAccessor("biped/murim/mjf_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MJF_DIVE = builder.nextAccessor("biped/murim/mjf_dive", BanditWarlordAnimations.Airborne::new);
+    }
+
+    // ---------------------------------------------------------------- the Golden Bell (scripts/animation/golden-bell-art.cjs)
+
+    /** The Golden Bell's moves: poses only (martial/GoldenBell does the rest). The form, Iron Rebound, Rooted Mountain, Last Bell. */
+    public static AnimationAccessor<ActionAnimation> GB_FORM, GB_REBOUND, GB_ROOTED, FINISH_LAST_BELL;
+
+    private static void buildGoldenBell(AnimationBuilder builder) {
+        GB_FORM = builder.nextAccessor("biped/murim/gb_form", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        GB_REBOUND = builder.nextAccessor("biped/murim/gb_rebound", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        GB_ROOTED = builder.nextAccessor("biped/murim/gb_rooted", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        FINISH_LAST_BELL = builder.nextAccessor("biped/murim/gb_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Mountain-Shattering Fist (scripts/animation/mountain-fist.cjs)
+
+    /** Mountain-Crushing Punch, Earth Breaker, Bull Charge and the secret Sky Breaker: the Bandit Warlord's own, at a man's size. */
+    public static AnimationAccessor<AttackAnimation> MSF_CRUSHER, MSF_EARTH_BREAKER, MSF_BULL_CHARGE, MSF_SKY_BREAKER;
+    /** Held while the body falls (a technique from the air, the ultimate's dive) and while it rises (the ultimate). */
+    public static AnimationAccessor<StaticAnimation> MSF_FALLING_FIST, MSF_ASCEND;
+    /** The landing of a dive; the finish, Mountain Burial. */
+    public static AnimationAccessor<ActionAnimation> MSF_LAND, FINISH_MOUNTAIN_BURIAL;
+    /** When the punch is through, the fists meet the ground (seconds into them): what breaks the ground then. */
+    public static final float MSF_CRUSHER_IMPACT = 0.45F, MSF_EARTH_IMPACT = 0.78F, MSF_SKY_IMPACT = 0.5F;
+    /** The charge runs from this time to that (seconds). */
+    public static final float MSF_CHARGE_FROM = 0.45F, MSF_CHARGE_TO = 1.05F;
+
+    /** The punch's fist: straight ahead, to some three blocks. */
+    private static final OBBCollider MSF_FIST = new OBBCollider(0.8D, 0.8D, 1.4D, 0.0D, 1.1D, -1.6D);
+    /** The fists on the ground: a shock all round, five blocks. */
+    private static final OBBCollider MSF_QUAKE = new OBBCollider(5.0D, 1.2D, 5.0D, 0.0D, 0.8D, 0.0D);
+    /** The shoulder ahead of the body all along the rush. */
+    private static final OBBCollider MSF_SHOULDER = new OBBCollider(0.9D, 1.0D, 0.9D, 0.0D, 1.0D, -1.0D);
+    /** The uppercut, rising before the body. */
+    private static final OBBCollider MSF_UPPERCUT = new OBBCollider(0.8D, 1.2D, 1.0D, 0.0D, 1.2D, -1.1D);
+
+    private static void buildMountainFist(AnimationBuilder builder) {
+        // transition, antic, preDelay, contact, recovery: the hit lands between preDelay and contact.
+        MSF_CRUSHER = builder.nextAccessor("biped/murim/msf_crusher", a -> technique(new AttackAnimation(0.08F, 0.3F, 0.4F, 0.56F, 0.9F,
+                MSF_FIST, root(), a, Armatures.BIPED), 1.6F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(3.0F))
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_EARTH_BREAKER = builder.nextAccessor("biped/murim/msf_earth_breaker", a -> technique(new AttackAnimation(0.08F, 0.6F, 0.72F, 0.86F, 1.4F,
+                MSF_QUAKE, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(10))
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_BULL_CHARGE = builder.nextAccessor("biped/murim/msf_bull_charge", a -> technique(new AttackAnimation(0.08F, 0.35F, MSF_CHARGE_FROM, MSF_CHARGE_TO, 1.3F,
+                MSF_SHOULDER, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(8))
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_SKY_BREAKER = builder.nextAccessor("biped/murim/msf_sky_breaker", a -> technique(new AttackAnimation(0.08F, 0.35F, 0.42F, 0.6F, 0.95F,
+                MSF_UPPERCUT, root(), a, Armatures.BIPED), 2.0F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        MSF_FALLING_FIST = builder.nextAccessor("biped/murim/msf_falling_fist", BanditWarlordAnimations.Airborne::new);
+        MSF_ASCEND = builder.nextAccessor("biped/murim/msf_ascend", BanditWarlordAnimations.Airborne::new);
+        MSF_LAND = builder.nextAccessor("biped/murim/msf_land", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+        FINISH_MOUNTAIN_BURIAL = builder.nextAccessor("biped/murim/msf_burial", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     // ---------------------------------------------------------------- the Long Fist (scripts/animation/long-fist.cjs)
@@ -154,6 +299,10 @@ public final class MurimAnimations {
     public static AnimationAccessor<AttackAnimation> INCH_FORCE;
     /** The finish, Final Palm. */
     public static AnimationAccessor<ActionAnimation> FINISH_LONG_FIST;
+    /** Scarlet Bloom, the Sanguine Art's finish (martial/ScarletBloom, scripts/animation/scarlet-bloom.cjs). */
+    public static AnimationAccessor<ActionAnimation> FINISH_SCARLET_BLOOM;
+    /** Scarlet Bloom's victim, thrown into the sky: flailing, spread, curled (scripts/animation/scarlet-bloom.cjs). */
+    public static AnimationAccessor<ActionAnimation> SCARLET_BLOOM_FLUNG;
 
     /** Rapid Fists' punches land every RAPID_FIST_GAP from RAPID_FIST_GAP on; the last one 0.24 s after the last of them. */
     public static final float RAPID_FIST_GAP = 0.1F, RAPID_FIST_LAST = 0.24F;
@@ -256,6 +405,104 @@ public final class MurimAnimations {
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
                 .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get()));
         FINISH_LONG_FIST = builder.nextAccessor("biped/murim/final_palm", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        FINISH_SCARLET_BLOOM = builder.nextAccessor("biped/murim/scarlet_bloom", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        SCARLET_BLOOM_FLUNG = builder.nextAccessor("biped/murim/scarlet_bloom_flung", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Celestial Peak Spear (scripts/animation/celestial-spear.cjs)
+
+    /**
+     * The Celestial Peak Spear's techniques, also for the Peak Captain: Piercing Dragon (the lunge, its long one, the dive),
+     * Plum Blossom Thrusts (five, eight, the air ones), Sweep of a Thousand Soldiers (one turn, two, the landing).
+     */
+    public static AnimationAccessor<DashAttackAnimation> CELESTIAL_PIERCING_DRAGON, CELESTIAL_PIERCING_DRAGON_LONG, CELESTIAL_PIERCING_DIVE;
+    public static AnimationAccessor<AttackAnimation> CELESTIAL_PLUM_BLOSSOM, CELESTIAL_PLUM_RAIN, CELESTIAL_PLUM_AIR;
+    public static AnimationAccessor<AttackAnimation> CELESTIAL_THOUSAND_SWEEP, CELESTIAL_TEN_THOUSAND_SWEEP, CELESTIAL_SWEEP_LANDING;
+    /** When each quick thrust lands (s), and the last (celestial-spear.cjs, its timings). */
+    static final float[] PLUM_THRUSTS = {0.1F, 0.2F, 0.3F, 0.4F, 0.5F}, RAIN_THRUSTS = {0.085F, 0.17F, 0.255F, 0.34F, 0.425F, 0.51F, 0.595F, 0.68F};
+    static final float PLUM_LAST = 0.7F, RAIN_LAST = 0.88F;
+    /** The lunge's path: a long box along the spear, the point 2 blocks ahead of the body (4 and 6 blocks flown). */
+    private static final OBBCollider DRAGON_PATH = new OBBCollider(0.6D, 0.7D, 2.4D, 0.0D, 1.1D, -2.2D);
+    private static final OBBCollider DRAGON_PATH_LONG = new OBBCollider(0.6D, 0.7D, 3.2D, 0.0D, 1.1D, -3.0D);
+    private static final OBBCollider DRAGON_DIVE = new OBBCollider(0.9D, 1.4D, 1.4D, 0.0D, 0.2D, -1.6D);
+    /** A thrust: a narrow box out to the spear's point, 3.5 blocks ahead. */
+    private static final OBBCollider THRUST_BOX = new OBBCollider(0.7D, 0.7D, 1.6D, 0.0D, 1.2D, -1.9D);
+    private static final OBBCollider SHAFT_BOX = new OBBCollider(0.9D, 1.2D, 1.2D, 0.0D, 0.4D, -1.4D);
+    /** The sweep: a ring 3.5 blocks round at the knees (4 evolved); the landing's wave 3 blocks round. */
+    private static final OBBCollider SWEEP_RING = new OBBCollider(3.5D, 0.7D, 3.5D, 0.0D, 0.5D, 0.0D);
+    private static final OBBCollider SWEEP_RING_GREAT = new OBBCollider(4.0D, 0.8D, 4.0D, 0.0D, 0.5D, 0.0D);
+    private static final OBBCollider SWEEP_LANDING_RING = new OBBCollider(3.0D, 0.7D, 3.0D, 0.0D, 0.4D, 0.0D);
+
+    private static void buildCelestialPeakSpear(AnimationBuilder builder) {
+        // The lunge: the point out ahead from 0.16 s (the body flying) to 0.44 s; it goes through all in its line.
+        CELESTIAL_PIERCING_DRAGON = builder.nextAccessor("biped/murim/celestial_piercing_dragon", a -> dragon(a, DRAGON_PATH));
+        CELESTIAL_PIERCING_DRAGON_LONG = builder.nextAccessor("biped/murim/celestial_piercing_dragon_long", a -> dragon(a, DRAGON_PATH_LONG));
+        CELESTIAL_PIERCING_DIVE = builder.nextAccessor("biped/murim/celestial_piercing_dive", a -> technique(new DashAttackAnimation(0.06F, 0.16F, 0.22F, 0.42F, 0.7F, DRAGON_DIVE, root(), a, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(2))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true)
+                .addProperty(ActionAnimationProperty.MOVE_VERTICAL, true));
+        CELESTIAL_PLUM_BLOSSOM = builder.nextAccessor("biped/murim/celestial_plum_blossom", a -> plum(a, PLUM_THRUSTS, PLUM_LAST));
+        CELESTIAL_PLUM_RAIN = builder.nextAccessor("biped/murim/celestial_plum_rain", a -> plum(a, RAIN_THRUSTS, RAIN_LAST));
+        CELESTIAL_PLUM_AIR = builder.nextAccessor("biped/murim/celestial_plum_air", a -> {
+            float[] thrusts = {0.1F, 0.2F, 0.3F};
+            Phase[] phases = new Phase[thrusts.length + 1];
+            float start = 0.0F;
+            for (int i = 0; i < thrusts.length; i++) {
+                float t = thrusts[i];
+                phases[i] = new Phase(start, t - 0.04F, t - 0.02F, t + 0.03F, t + 0.04F, t + 0.05F, root(), THRUST_BOX)
+                        .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                        .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                        .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
+                start = t + 0.05F;
+            }
+            phases[thrusts.length] = new Phase(start, 0.46F, 0.48F, 0.6F, 0.85F, Float.MAX_VALUE, root(), SHAFT_BOX)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get());
+            return new AttackAnimation(0.05F, a, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
+        });
+        // The sweep: the spear goes round at the knees from 0.26 s through the turn(s), knocking down all it meets.
+        CELESTIAL_THOUSAND_SWEEP = builder.nextAccessor("biped/murim/celestial_thousand_sweep", a -> technique(new AttackAnimation(0.06F, 0.2F, 0.26F, 0.6F, 1.0F, SWEEP_RING, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(7))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        CELESTIAL_TEN_THOUSAND_SWEEP = builder.nextAccessor("biped/murim/celestial_ten_thousand_sweep", a -> technique(new AttackAnimation(0.06F, 0.2F, 0.26F, 0.92F, 1.32F, SWEEP_RING_GREAT, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(9))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        CELESTIAL_SWEEP_LANDING = builder.nextAccessor("biped/murim/celestial_sweep_landing", a -> technique(new AttackAnimation(0.04F, 0.14F, 0.18F, 0.32F, 0.62F, SWEEP_LANDING_RING, root(), a, Armatures.BIPED), 0.8F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(7))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+    }
+
+    private static DashAttackAnimation dragon(AnimationAccessor<? extends DashAttackAnimation> accessor, OBBCollider path) {
+        return technique(new DashAttackAnimation(0.06F, 0.12F, 0.16F, 0.44F, 0.78F, path, root(), accessor, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(5))
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true);
+    }
+
+    /** Plum Blossom Thrusts: one phase per quick thrust (light, holds the target), then the last (pushes 2 blocks). */
+    private static AttackAnimation plum(AnimationAccessor<? extends AttackAnimation> accessor, float[] thrusts, float last) {
+        Phase[] phases = new Phase[thrusts.length + 1];
+        float start = 0.0F;
+        for (int i = 0; i < thrusts.length; i++) {
+            float t = thrusts[i];
+            phases[i] = new Phase(start, t - 0.04F, t - 0.02F, t + 0.03F, t + 0.04F, t + 0.05F, root(), THRUST_BOX)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
+            start = t + 0.05F;
+        }
+        phases[thrusts.length] = new Phase(start, last - 0.04F, last - 0.02F, last + 0.1F, last + 0.36F, Float.MAX_VALUE, root(), THRUST_BOX)
+                .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.8F))
+                .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(2.5F))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get());
+        return new AttackAnimation(0.06F, accessor, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
     }
 
     private static DashAttackAnimation tigerStep(AnimationAccessor<? extends DashAttackAnimation> accessor, OBBCollider path) {
@@ -312,6 +559,63 @@ public final class MurimAnimations {
      */
     public static AnimationAccessor<StaticAnimation> SENSEI_IDLE;
     public static AnimationAccessor<MovementAnimation> SENSEI_WALK;
+
+    /**
+     * The Alliance's reinforcements dropping from the sky (scripts/animation/sky-drop.cjs; the Peak Captain's summons):
+     * the fall, a loop, and the landing in a deep crouch, once, then up into guard.
+     */
+    public static AnimationAccessor<StaticAnimation> ALLIANCE_SKY_FALL;
+    public static AnimationAccessor<ActionAnimation> ALLIANCE_SKY_LANDING;
+
+    // ---------------------------------------------------------------- the Traveller's Staff Art (scripts/animation/staff-art.cjs)
+
+    /**
+     * The Traveller's Staff Art's techniques, played 1.5 times faster than the design sheet's times (staff-art.cjs, its
+     * timings): the Vertical Strike (0.67 s), the Flurry of Points (0.8 s), the Spinning Rampart's start, loop and end.
+     */
+    public static AnimationAccessor<AttackAnimation> STAFF_VERTICAL_STRIKE, STAFF_POINT_FLURRY;
+    public static AnimationAccessor<ActionAnimation> STAFF_RAMPART_START, STAFF_RAMPART_END;
+    public static AnimationAccessor<StaticAnimation> STAFF_RAMPART_LOOP;
+    /** When the strike's top end lands, and each thrust's point (s, as played). */
+    public static final float STAFF_STRIKE_CONTACT = 0.3F;
+    static final float[] STAFF_THRUSTS = {0.1467F, 0.2533F, 0.36F, 0.4667F, 0.5867F};
+    /** The strike: narrow, 2.5 blocks out before the player, from the chest down. */
+    private static final OBBCollider STAFF_STRIKE_BOX = new OBBCollider(0.45D, 0.9D, 1.2D, 0.0D, 1.0D, -1.4D);
+    /** A thrust: a narrow corridor 3 blocks out at chest height. */
+    private static final OBBCollider STAFF_THRUST_BOX = new OBBCollider(0.5D, 0.7D, 1.5D, 0.0D, 1.0D, -1.6D);
+
+    private static void buildStaffArt(AnimationBuilder builder) {
+        // One hit, the first met (x1.5 of the technique's base), from the top of the swing down to just past the contact.
+        STAFF_VERTICAL_STRIKE = builder.nextAccessor("biped/murim/staff_vertical_strike", a -> technique(new AttackAnimation(0.06F,
+                STAFF_STRIKE_CONTACT - 0.1F, STAFF_STRIKE_CONTACT - 0.06F, STAFF_STRIKE_CONTACT + 0.05F, 0.56F, STAFF_STRIKE_BOX, root(), a, Armatures.BIPED), 1.5F)
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.SHORT)
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        // Five thrusts: four at x0.3 that hold the target, the last at x0.6 with a little push (x1.8 in all). Each strikes
+        // over 0.07 s round its contact, more than a server tick (a shorter window may fall between two ticks).
+        STAFF_POINT_FLURRY = builder.nextAccessor("biped/murim/staff_point_flurry", a -> {
+            Phase[] phases = new Phase[STAFF_THRUSTS.length];
+            float start = 0.0F;
+            for (int i = 0; i < STAFF_THRUSTS.length; i++) {
+                float t = STAFF_THRUSTS[i];
+                boolean last = i == STAFF_THRUSTS.length - 1;
+                phases[i] = new Phase(start, t - 0.045F, t - 0.035F, t + 0.035F, last ? 0.7F : t + 0.04F, last ? Float.MAX_VALUE : t + 0.045F, root(), STAFF_THRUST_BOX)
+                        .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(last ? 0.6F : 0.3F))
+                        .addProperty(AttackPhaseProperty.STUN_TYPE, last ? StunType.SHORT : StunType.HOLD)
+                        .addProperty(AttackPhaseProperty.SWING_SOUND, last ? EpicFightSounds.WHOOSH_BIG.get() : EpicFightSounds.WHOOSH_SHARP.get());
+                if (last) phases[i].addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(1.5F));
+                start = t + 0.045F;
+            }
+            return new AttackAnimation(0.06F, a, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
+        });
+        STAFF_RAMPART_START = builder.nextAccessor("biped/murim/staff_rampart_start", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        STAFF_RAMPART_LOOP = builder.nextAccessor("biped/murim/staff_rampart_loop", a -> new StaticAnimation(0.02F, true, a, Armatures.BIPED));
+        STAFF_RAMPART_END = builder.nextAccessor("biped/murim/staff_rampart_end", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+    }
+
+    private static void buildSkyDrop(AnimationBuilder builder) {
+        ALLIANCE_SKY_FALL = builder.nextAccessor("biped/murim/alliance_sky_fall", a -> new StaticAnimation(0.1F, true, a, Armatures.BIPED));
+        ALLIANCE_SKY_LANDING = builder.nextAccessor("biped/murim/alliance_sky_landing", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+    }
 
     private static void buildAzureSensei(AnimationBuilder builder) {
         SENSEI_IDLE = builder.nextAccessor("biped/murim/sensei_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));
@@ -497,7 +801,9 @@ public final class MurimAnimations {
         FIST_GUARD,
         /** Seated in the lotus, meditating. */
         MEDITATE,
-        SANGUINE_GUARD;
+        SANGUINE_GUARD,
+        /** The Traveller's Staff spun before the chest (the Spinning Rampart held). */
+        STAFF_RAMPART;
 
         final int id;
 

@@ -117,6 +117,13 @@ public final class MartialGameTests {
             helper.assertTrue(!MartialService.data(player).knowsArt(MartialArts.AZURE_CLOUD_SWORD), "forget an art");
             run.accept("martial forget long_fist");
             run.accept("martial forget sanguine_art");
+            run.accept("martial forget celestial_peak_spear");
+            run.accept("martial forget traveller_staff");
+            run.accept("martial forget mountain_shattering_fist");
+            run.accept("martial forget majin_fist");
+            run.accept("martial forget seven_stars_sword");
+            run.accept("martial forget thunder_saber");
+            run.accept("martial forget golden_bell");
             helper.assertTrue(MartialService.data(player).equals(MartialData.EMPTY), "forgetting the art left something: " + MartialService.data(player));
             run.accept("martial learn azure_cloud_sword");
             data = MartialService.data(player);

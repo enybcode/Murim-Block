@@ -55,6 +55,7 @@ public final class ArmoredCrabEpicFight {
         modBus.addListener(AnimationRegistryEvent.class, event -> event.newBuilder(Murimblock.MOD_ID, builder -> {
             buildAnimations(builder);
             CrabManEpicFight.buildAnimations(builder);
+            TigerEpicFight.buildAnimations(builder);
             MurimAnimations.buildAnimations(builder);
         }));
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
@@ -62,12 +63,22 @@ public final class ArmoredCrabEpicFight {
             // Runs once on the main thread during common setup; the mapping is not cleared on reload.
             Armatures.registerEntityTypeArmature(MurimEntities.ARMORED_CRAB.get(), ARMATURE);
             CrabManEpicFight.registerPatch(event);
+            TigerEpicFight.registerPatch(event);
             // The bandit: a humanoid on the engine's own biped skeleton.
             event.registerEntityPatch(MurimEntities.MOUNTAIN_BANDIT.get(), MountainBanditPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.MOUNTAIN_BANDIT.get(), Armatures.BIPED);
             // Their chief: the same skeleton, drawn larger.
             event.registerEntityPatch(MurimEntities.BANDIT_CHIEF.get(), BanditChiefPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_CHIEF.get(), Armatures.BIPED);
+            // Their warlord: the same skeleton, drawn twice as large, his fists his weapons.
+            event.registerEntityPatch(MurimEntities.BANDIT_WARLORD.get(), BanditWarlordPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.BANDIT_WARLORD.get(), Armatures.BIPED);
+            // The Son of the Demon: his own armature, a humanoid's joints where his colossal body bends.
+            event.registerEntityPatch(MurimEntities.SON_OF_THE_DEMON.get(), SonOfTheDemonPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.SON_OF_THE_DEMON.get(), ColossusAnimations.ARMATURE);
+            // The Crab King: the biped skeleton too, drawn larger, his pincers on its arms.
+            event.registerEntityPatch(MurimEntities.CRAB_KING.get(), CrabKingPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.CRAB_KING.get(), Armatures.BIPED);
             // The Heart Demon: a copy of its owner, on the player's own skeleton.
             event.registerEntityPatch(MurimEntities.HEART_DEMON.get(), HeartDemonPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.HEART_DEMON.get(), Armatures.BIPED);
@@ -77,6 +88,14 @@ public final class ArmoredCrabEpicFight {
             // The Alliance Merchant: the same skeleton, his own model, no fighting.
             event.registerEntityPatch(MurimEntities.ALLIANCE_MERCHANT.get(), AllianceMerchantPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.ALLIANCE_MERCHANT.get(), Armatures.BIPED);
+            // The Golden Bell monk: the same skeleton, his own model, his bare fists.
+            event.registerEntityPatch(MurimEntities.GOLDEN_BELL_MONK.get(), GoldenBellMonkPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.GOLDEN_BELL_MONK.get(), Armatures.BIPED);
+            event.registerEntityPatch(MurimEntities.GOLDEN_DRAGON_SAGE.get(), GoldenDragonSagePatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.GOLDEN_DRAGON_SAGE.get(), Armatures.BIPED);
+            // The Captain of the Peak Guard: the same skeleton, his own model, his armour and spear.
+            event.registerEntityPatch(MurimEntities.PEAK_CAPTAIN.get(), PeakCaptainPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.PEAK_CAPTAIN.get(), Armatures.BIPED);
             // The Alliance's soldiers: the same skeleton, their own model, each with his weapon.
             for (var soldier : MurimEntities.ALLIANCE_SOLDIERS) {
                 event.registerEntityPatch(soldier.get(), AllianceSoldierPatch::new);

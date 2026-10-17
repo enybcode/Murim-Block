@@ -301,7 +301,7 @@ public final class CloudStepEffects {
     }
 
     /** Everything drawn in one flat colour (the white texture's middle), lit full. */
-    private record Tinted(VertexConsumer out, int r, int g, int b) implements VertexConsumer {
+    record Tinted(VertexConsumer out, int r, int g, int b) implements VertexConsumer {
         @Override public VertexConsumer addVertex(float x, float y, float z) {
             out.addVertex(x, y, z);
             return this;

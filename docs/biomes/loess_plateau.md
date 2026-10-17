@@ -1,8 +1,5 @@
 # Plateau de lœss (`murimblock:loess_plateau`) — grand biome
 
-![En jeu](images/loess_plateau-a.jpg)
-![Au sol](images/loess_plateau-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.** Ce biome reprend le plateau de lœss du cours moyen du fleuve Jaune (Shaanxi, Shanxi, Gansu).
@@ -53,9 +50,6 @@
 | Citrouilles et champignons | vanilla | |
 
 ## Structures prévues
-
-![Habitations troglodytes en terrasses et cour enfoncée](images/structures-loess-a.jpg)
-![La cour enfoncée sur le plateau](images/structures-loess-b.jpg)
 
 1. **Village de yaodong à flanc de falaise** (kaoya yao).
    - Modèles réels : Lijiashan (Qikou) et Yan'an.

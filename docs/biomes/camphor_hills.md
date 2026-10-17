@@ -1,8 +1,5 @@
 # Collines aux camphriers (`murimblock:camphor_hills`) — grand biome du sud et de l'est
 
-![En jeu](images/camphor_hills-a.jpg)
-![De loin](images/camphor_hills-far.jpg)
-
 > Demande d'Enzo du 14/10/2026, d'après une capture : « du relief à l'est, avec des lisières », et « le sud peuplé de plaines » : des collines herbeuses, des bois sombres aux bords nets, de la brume dans les vallées.
 
 ## Inspiration

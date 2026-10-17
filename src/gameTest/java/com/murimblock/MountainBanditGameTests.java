@@ -51,6 +51,9 @@ public final class MountainBanditGameTests {
     private static MountainBanditEntity bandit(GameTestHelper helper, BlockPos at) {
         MountainBanditEntity bandit = MurimEntities.MOUNTAIN_BANDIT.get().spawn(helper.getLevel(), helper.absolutePos(at), MobSpawnType.COMMAND);
         helper.assertTrue(bandit != null, "No bandit spawned");
+        // Kept whatever player another test left behind: a monster despawns at once when the nearest player is more
+        // than 128 blocks away, and the test would then watch a discarded bandit.
+        bandit.setPersistenceRequired();
         return bandit;
     }
 
@@ -106,6 +109,7 @@ public final class MountainBanditGameTests {
         MountainBanditEntity bandit = bandit(helper, new BlockPos(2, 1, 1));
         Zombie target = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 3));
         target.setNoAi(true);
+        target.setPersistenceRequired();
         target.getAttribute(Attributes.MAX_HEALTH).setBaseValue(200);
         target.setHealth(200);
         // A helmet: no burning in the sun.

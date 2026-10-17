@@ -94,9 +94,20 @@ public final class CombatBarClient {
         java.util.Arrays.fill(HELD, -1);
     }
 
-    /** Whether a technique is held to aim before it goes (Cloud Step Slash: its draw stance). */
+    /** Whether a technique is held before it goes (Cloud Step Slash: its draw stance) or while it lasts (the Spinning Rampart). */
     static boolean heldToAim(Optional<ResourceLocation> technique) {
-        return technique.filter(id -> id.equals(MartialArts.CLOUD_STEP_SLASH.id()) || id.equals(MartialArts.BLOOD_CRYSTAL.id())).isPresent();
+        return technique.filter(id -> id.equals(MartialArts.CLOUD_STEP_SLASH.id()) || id.equals(MartialArts.BLOOD_CRYSTAL.id())
+                || id.equals(MartialArts.SPINNING_RAMPART.id()) || id.equals(MartialArts.HEAVENS_DRUM.id())
+                || id.equals(MartialArts.SEVERING_FLASH.id())).isPresent();
+    }
+
+    /** How long a held technique may be held before it goes (or stops) by itself. */
+    private static int maxHeld(Optional<ResourceLocation> technique) {
+        if (technique.filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent()) return MartialArts.BLOOD_CRYSTAL_MAX_CHARGE;
+        if (technique.filter(MartialArts.SPINNING_RAMPART.id()::equals).isPresent()) return MartialArts.RAMPART_MAX_TICKS;
+        if (technique.filter(MartialArts.HEAVENS_DRUM.id()::equals).isPresent()) return MartialArts.HEAVENS_DRUM_MAX_TICKS;
+        if (technique.filter(MartialArts.SEVERING_FLASH.id()::equals).isPresent()) return MartialArts.SEVERING_FLASH_MAX_CHARGE;
+        return MartialArts.CLOUD_STEP_AIM_MAX_TICKS;
     }
 
     /**
@@ -126,7 +137,7 @@ public final class CombatBarClient {
                     HELD[i] = 0;
                     FIRED[i] = false;
                     PacketDistributor.sendToServer(new TechniquePayloads.Aim(i));
-                } else if (++HELD[i] >= (data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent() ? MartialArts.BLOOD_CRYSTAL_MAX_CHARGE : MartialArts.CLOUD_STEP_AIM_MAX_TICKS) && !FIRED[i]) {
+                } else if (++HELD[i] >= maxHeld(data.slot(i)) && !FIRED[i]) {
                     FIRED[i] = true;
                     // Blood Crystal reaches its maximum on the server; a second cast would only report cooldown.
                     if (!data.slot(i).filter(MartialArts.BLOOD_CRYSTAL.id()::equals).isPresent())
@@ -151,6 +162,8 @@ public final class CombatBarClient {
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
+        // Not over a finish's film (FinishCinematic hides the whole interface).
+        if (FinishCinematic.active() || WarlordCinematic.active() || TransformationCinematic.active()) return;
         if (player == null || player.isSpectator() || !inCombat(player) || !VanillaGuiLayers.HOTBAR.equals(event.getName())) return;
         event.setCanceled(true);
         // F1 (hidden interface) hides it, like the hotbar it replaces.
@@ -178,6 +191,7 @@ public final class CombatBarClient {
             g.drawString(mc.font, Component.translatable("technique.murimblock.riposte"), x0 + width + 6, y + 7, 0xFFE8C25A, true);
         }
         if (data.mainArt().filter(MartialArts.SANGUINE_ART::equals).isPresent()) bloodDrops(g, mc, player, x0 - 52, y - 2);
+        if (data.mainArt().filter(MartialArts.THUNDER_SABER::equals).isPresent()) thunderDrums(g, mc, player, x0 - 58, y + 6);
         // The weapon in hand.
         g.blitSprite(OFFHAND_LEFT, x0 - 29, y - 1, 29, 24);
         g.renderItem(player.getMainHandItem(), x0 - 26, y + 3);
@@ -248,6 +262,25 @@ public final class CombatBarClient {
                 g.fill(dx + 1, dy + 3, dx + 2, dy + 4, col);
                 if (on) g.fill(dx, dy + 1, dx + 1, dy + 2, full ? 0xFFFFFFFF : 0xFFFF6A7C);
             }
+        }
+    }
+
+    /**
+     * The Purple Heaven Thunder Saber's drums, no text: three small bronze drums left of the weapon slot, (x, y) the top
+     * left. Each fills with violet as its beats come (three to a drum); full, its skin glows and pulses.
+     */
+    static void thunderDrums(GuiGraphics g, Minecraft mc, LocalPlayer player, int x, int y) {
+        int beats = ThunderSaberFx.beats(player.getId());
+        boolean pulse = mc.level != null && (mc.level.getGameTime() / 5) % 2 == 0;
+        for (int i = 0; i < 3; i++) {
+            int dx = x + i * 9, filled = Math.max(0, Math.min(3, beats - i * 3));
+            // The drum: a bronze body, its rims darker, its skin on top.
+            g.fill(dx, y + 1, dx + 8, y + 9, 0xFF6E5020);
+            g.fill(dx + 1, y + 2, dx + 7, y + 8, 0xFF2A2138);
+            // The violet rises in it with its beats.
+            if (filled > 0) g.fill(dx + 1, y + 8 - filled * 2, dx + 7, y + 8, filled == 3 ? (pulse ? 0xFFD9B8FF : 0xFFB58CFF) : 0xFF7A52C8);
+            g.fill(dx, y, dx + 8, y + 1, filled == 3 ? 0xFFF2C94C : 0xFFC49A3E);
+            g.fill(dx, y + 9, dx + 8, y + 10, 0xFF4A3410);
         }
     }
 

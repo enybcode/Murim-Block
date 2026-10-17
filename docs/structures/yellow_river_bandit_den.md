@@ -1,10 +1,5 @@
 # Repaire des Bandits du Fleuve Jaune
 
-![Vue aérienne : la cour enfoncée dans le plateau](images/sites/yellow_river_bandit_den-a.jpg)
-![L'autre côté, la vigie et la porte](images/sites/yellow_river_bandit_den-b.jpg)
-![La porte en haut de la rampe](images/sites/yellow_river_bandit_den-ground.jpg)
-![Le Bandit Chief dans sa grotte](images/sites/yellow_river_bandit_den-chief.jpg)
-
 | Fiche | |
 |---|---|
 | Nom en jeu (id) | Yellow River Bandit Den (`murimblock:yellow_river_bandit_den`) |

@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "murimblock:bandit_camp",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 128,
+    "separation": 48,
+    "salt": 71009
+  }
+}

@@ -6,7 +6,11 @@ import javax.imageio.ImageIO;
  * Draws the 16x16 textures of the martial arts' scrolls, each a rolled scroll lying across the slot:
  *   long_fist_scroll: pale paper, dark wooden knobs, a red cord tied round the middle, its tassel hanging, strokes of ink;
  *   sanguine_art_scroll: paper with a few stains of blood, knobs of black lacquer, a blood crystal set in the middle where the
- *   cord would be, a dark red tassel, strokes of dark red ink.
+ *   cord would be, a dark red tassel, strokes of dark red ink;
+ *   mountain_shattering_fist_scroll: thick dusty leather, knobs of black iron, a bronze band round the middle, dust stains,
+ *   strokes of black ink (the Bandit Warlord's art);
+ *   majin_fist_scroll: crimson silk with a gold sheen, knobs of gold, a band of white-hot sunlight round the middle, strokes
+ *   of gold ink (the Son of the Demon's art).
  * Usage: java scripts/worldgen/ScrollTexture.java src/main/resources/assets/murimblock/textures/item
  */
 public class ScrollTexture {
@@ -21,9 +25,17 @@ public class ScrollTexture {
     static final Look SANGUINE = new Look(0xFFF1E2D4, 0xFFDCC6B2, 0xFFB79B85, 0xFF8E6A5A, 0xFF6E2A30, 0xFF2A1416, 0xFF140809,
             0xFFFFB0BE, 0xFFE0465E, 0xFF96122A, 0xFF4A0C14, 0xFFB04050, true);
 
+    static final Look MOUNTAIN = new Look(0xFFC9A57A, 0xFFA9845A, 0xFF84633F, 0xFF5E4428, 0xFF5A5C62, 0xFF2E3036, 0xFF16171A,
+            0xFFE6B866, 0xFFB98A3E, 0xFF7A5420, 0xFF1C1612, 0xFF8E7A66, false);
+
+    static final Look MAJIN = new Look(0xFFE24A38, 0xFFB8261E, 0xFF861A14, 0xFF5C100C, 0xFFFFE08A, 0xFFE0A830, 0xFF8A5A10,
+            0xFFFFFFF0, 0xFFFFE070, 0xFFE89A20, 0xFFFFC840, 0, false);
+
     public static void main(String[] args) throws Exception {
         write(args[0], "long_fist_scroll", LONG_FIST);
         write(args[0], "sanguine_art_scroll", SANGUINE);
+        write(args[0], "mountain_shattering_fist_scroll", MOUNTAIN);
+        write(args[0], "majin_fist_scroll", MAJIN);
     }
 
     static void write(String dir, String name, Look k) throws Exception {
@@ -43,6 +55,7 @@ public class ScrollTexture {
             }
             img.setRGB(x, y, c);
         }
+        if (k == MOUNTAIN) for (int[] uv : new int[][]{{-8, 1}, {-3, 2}, {6, 2}, {8, -1}}) set(img, uv[0], uv[1], k.stain());
         if (k.crystal()) {
             // The crystal stands out of the roll: a point beyond it on each side, a glint.
             set(img, 0, -3, k.midLight());

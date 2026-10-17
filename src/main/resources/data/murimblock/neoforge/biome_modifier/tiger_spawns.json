@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#murimblock:murim_biomes",
+  "spawners": {
+    "type": "murimblock:tiger",
+    "weight": 25,
+    "minCount": 1,
+    "maxCount": 2
+  }
+}

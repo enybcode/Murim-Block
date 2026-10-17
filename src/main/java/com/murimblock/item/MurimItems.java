@@ -35,6 +35,19 @@ public final class MurimItems {
     public static final DeferredItem<DeferredSpawnEggItem> CRAB_MAN_SPAWN_EGG = ITEMS.register("crab_man_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.CRAB_MAN, 0x087C8B, 0xE7D1A1, new Item.Properties()));
 
+    /** Orange and the near-black of its stripes. */
+    public static final DeferredItem<DeferredSpawnEggItem> TIGER_SPAWN_EGG = ITEMS.register("tiger_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.TIGER, 0xE39A35, 0x22273A, new Item.Properties()));
+    /**
+     * What the tiger leaves, one time in five each (loot_table/entities/tiger.json): its striped pelt and its claws.
+     * Icons from scripts/animation/tiger-item-icons.cjs.
+     */
+    public static final DeferredItem<Item> TIGER_PELT = ITEMS.register("tiger_pelt", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<Item> TIGER_CLAW = ITEMS.register("tiger_claw", () -> new Item(new Item.Properties()));
+    /** The Bandit Warlord's heart, a block of flesh, and the same turned to gold: seen in his transformation's film (client/TransformationCinematic). */
+    public static final DeferredItem<Item> DEMON_HEART = ITEMS.register("demon_heart", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GOLDEN_DEMON_HEART = ITEMS.register("golden_demon_heart", () -> new Item(new Item.Properties().rarity(net.minecraft.world.item.Rarity.EPIC)));
+
     /**
      * The mountain bandits' sabre: a broad single-edged blade widening toward a clipped point, a brass guard, a grip
      * wrapped in red cloth. A sword for Epic Fight (data/murimblock/capabilities/weapons/bandit_dao.json), between stone
@@ -76,8 +89,15 @@ public final class MurimItems {
     }
 
     /** Tiger orange and the dark of his vest. */
+    public static final DeferredItem<DeferredSpawnEggItem> CRAB_KING_SPAWN_EGG = ITEMS.register("crab_king_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.CRAB_KING, 0x6E1A20, 0x55361F, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> BANDIT_CHIEF_SPAWN_EGG = ITEMS.register("bandit_chief_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_CHIEF, 0xD07A28, 0x2A1A14, new Item.Properties()));
+    /** The warlord's crimson lacquer and black iron. */
+    public static final DeferredItem<DeferredSpawnEggItem> BANDIT_WARLORD_SPAWN_EGG = ITEMS.register("bandit_warlord_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.BANDIT_WARLORD, 0x9C1F1A, 0x2E3036, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> SON_OF_THE_DEMON_SPAWN_EGG = ITEMS.register("son_of_the_demon_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.SON_OF_THE_DEMON, 0xE8B53A, 0x2E3036, new Item.Properties()));
 
     /** Ash-grey robe and the red of the bandits' headbands. */
     public static final DeferredItem<DeferredSpawnEggItem> MOUNTAIN_BANDIT_SPAWN_EGG = ITEMS.register("mountain_bandit_spawn_egg",
@@ -103,6 +123,18 @@ public final class MurimItems {
             () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.4F))));
 
     /**
+     * Two Murim knives, daggers for Epic Fight (data/murimblock/capabilities/weapons: its own dagger moveset, quick
+     * stabs and slashes, two of them dual-wielded), not thrown; sold by the Alliance merchant, rarely found (3 %) in a
+     * site's barrel (chests/murim_cache): the Bishou (匕首), a straight double-edged dagger, black cord and a
+     * jade pommel, 4 damage; the Flying Knife (飞刀), a thin leaf blade, a steel ring and a red cloth, lighter and quicker,
+     * 3 damage. Models from scripts/animation/murim-knives-model.cjs (Enzo's choice, 15/10/2026).
+     */
+    public static final DeferredItem<SwordItem> BISHOU = ITEMS.register("bishou",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 1, -2.0F))));
+    public static final DeferredItem<SwordItem> FLYING_KNIFE = ITEMS.register("flying_knife",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.IRON, 0, -1.6F))));
+
+    /**
      * The Orthodox Alliance's Rattan Shield (藤牌): rattan coiled into a deep dome, a medallion with the Alliance flag on
      * top, a blue cord bound round the edge. A shield (Epic Fight gives every shield its guard and parry), lighter than
      * the vanilla one. Model from scripts/animation/rattan-shield-model.cjs, held through item_skins/rattan_shield.json.
@@ -123,12 +155,39 @@ public final class MurimItems {
             () -> new ShieldItem(new Item.Properties().durability(280)));
 
     /**
-     * A silver tael (银两), a small boat-shaped ingot: the Murim's money. Bandits, their chief, crab men and Sensei Yun
-     * leave some (their loot tables), and the Alliance Merchant trades in them (mob/AllianceMerchantEntity).
+     * The Murim's money, as in ancient China (docs/items/currency.md), four kinds, each worth nine of the one below and
+     * changed at a crafting table (nine into one, one back into nine):
+     * <ul>
+     *   <li>the copper cash (铜钱), the round bronze coin with its square hole, small change: bandits and crab men carry a
+     *   few;</li>
+     *   <li>the string of cash (一串钱), nine coins on a red cord;</li>
+     *   <li>the silver tael (银两), a small boat-shaped ingot, the money of trade: the Alliance Merchant's prices, the
+     *   bosses' and the soldiers' loot;</li>
+     *   <li>the gold yuanbao (金元宝), the great gold ingot, for fortunes (the sect's token at the merchant).</li>
+     * </ul>
+     * Icons from scripts/animation/currency-icons.cjs and silver-tael-icon.cjs.
      */
+    public static final DeferredItem<Item> COPPER_CASH = ITEMS.register("copper_cash", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CASH_STRING = ITEMS.register("cash_string", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SILVER_TAEL = ITEMS.register("silver_tael", () -> new Item(new Item.Properties()));
+    /**
+     * The crossing talismans the Golden Dragon in human form makes for 32 gold yuanbao (mob/GoldenDragonSageDialogue): one
+     * way to the Nether, the End or the Murim (the overworld) and back, then they crumble (CrossingTalismanItem).
+     */
+    public static final DeferredItem<CrossingTalismanItem> NETHER_TALISMAN = ITEMS.register("nether_crossing_talisman",
+            () -> new CrossingTalismanItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), net.minecraft.world.level.Level.NETHER));
+    public static final DeferredItem<CrossingTalismanItem> END_TALISMAN = ITEMS.register("end_crossing_talisman",
+            () -> new CrossingTalismanItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), net.minecraft.world.level.Level.END));
+    public static final DeferredItem<CrossingTalismanItem> MURIM_TALISMAN = ITEMS.register("murim_crossing_talisman",
+            () -> new CrossingTalismanItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), net.minecraft.world.level.Level.OVERWORLD));
+    public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_DRAGON_SAGE, 0x1F7A58, 0xF0C24A, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
+    /** The Golden Bell monk's egg: saffron and brown, his robe and sash. */
+    public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_BELL_MONK_SPAWN_EGG = ITEMS.register("golden_bell_monk_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_BELL_MONK, 0xE2861F, 0x6B4226, new Item.Properties()));
     /** The Alliance's soldiers' eggs, in azure, each with its own second colour. */
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_SPEAR_GUARD_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_SPEAR_GUARD, 0xB4BAC0);
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG = soldierEgg(MurimEntities.ALLIANCE_SWORD_DISCIPLE, 0xEBE6D8);
@@ -141,6 +200,57 @@ public final class MurimItems {
         return ITEMS.register(type.getId().getPath() + "_spawn_egg", () -> new DeferredSpawnEggItem(type, 0x2B5FA8, spots, new Item.Properties()));
     }
 
+    /**
+     * The Captain of the Peak Guard's spear, the Crimson Dragon Spear: a gold-edged leaf blade, a gold dragon's head for
+     * its socket, a cross bar set with two cyan gems, a great red mane, a red lacquered shaft banded in gold. A spear for
+     * Epic Fight (data/murimblock/capabilities/weapons/crimson_dragon_spear.json), stronger than the soldiers': 7 damage.
+     * He leaves it now and then (loot_table/entities/peak_captain.json). Model from scripts/animation/crimson-dragon-spear-model.cjs.
+     */
+    /**
+     * The Traveller's Staff (行者棍), the Traveller's Staff Art's weapon (Enzo's design sheet, 16/10/2026): a plain staff of
+     * pale ash, two blocks long, iron ferrules, a red cord at its middle. A spear for Epic Fight
+     * (data/murimblock/capabilities/weapons/traveller_staff.json), held at its middle; the art's animations slide it
+     * through the hands (scripts/animation/staff-art.cjs). Model from scripts/animation/traveller-staff-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> TRAVELLER_STAFF = ITEMS.register("traveller_staff",
+            () -> new SwordItem(Tiers.WOOD, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.WOOD, 3, -2.6F))));
+    public static final DeferredItem<SwordItem> CRIMSON_DRAGON_SPEAR = ITEMS.register("crimson_dragon_spear",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.8F))));
+
+    /**
+     * The Peak Guard's armour, the captain's, on a man's build: a plumed iron helm with cheek guards and a neck curtain,
+     * a cuirass of gold-laced lamellae with a mirror plate and lion pauldrons, lamellar tassets with knee guards, greaves
+     * (MurimArmorMaterials.PEAK_GUARD). He wears it all and drops one piece every time (loot_table/entities/peak_captain.json).
+     */
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_HELM = peakGuardArmour("peak_guard_helm", ArmorItem.Type.HELMET);
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_LAMELLAR = peakGuardArmour("peak_guard_lamellar", ArmorItem.Type.CHESTPLATE);
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_TASSETS = peakGuardArmour("peak_guard_tassets", ArmorItem.Type.LEGGINGS);
+    public static final DeferredItem<ArmorItem> PEAK_GUARD_GREAVES = peakGuardArmour("peak_guard_greaves", ArmorItem.Type.BOOTS);
+
+    private static DeferredItem<ArmorItem> peakGuardArmour(String id, ArmorItem.Type type) {
+        return ITEMS.register(id, () -> new ArmorItem(MurimArmorMaterials.PEAK_GUARD, type, new Item.Properties()
+                .rarity(Rarity.RARE).durability(type.getDurability(MurimArmorMaterials.PEAK_GUARD_DURABILITY))));
+    }
+
+    /**
+     * The Blood Lacquer, the Blood Sect's soldiers' armour (MurimArmorMaterials.BLOOD_LACQUER): an iron face guard with
+     * fangs, a cuirass of blood-red lacquered plates with flaring pauldrons and bracers, tassets with knee guards,
+     * greaves. A soldier wears it all and may drop any piece (com.murimblock.bloodsect.ninja.BloodSoldier).
+     */
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_MASK = bloodLacquer("blood_lacquer_mask", ArmorItem.Type.HELMET);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_CUIRASS = bloodLacquer("blood_lacquer_cuirass", ArmorItem.Type.CHESTPLATE);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_TASSETS = bloodLacquer("blood_lacquer_tassets", ArmorItem.Type.LEGGINGS);
+    public static final DeferredItem<ArmorItem> BLOOD_LACQUER_GREAVES = bloodLacquer("blood_lacquer_greaves", ArmorItem.Type.BOOTS);
+
+    private static DeferredItem<ArmorItem> bloodLacquer(String id, ArmorItem.Type type) {
+        return ITEMS.register(id, () -> new ArmorItem(MurimArmorMaterials.BLOOD_LACQUER, type, new Item.Properties()
+                .rarity(Rarity.UNCOMMON).durability(type.getDurability(MurimArmorMaterials.BLOOD_LACQUER_DURABILITY))));
+    }
+
+    /** The azure of his coat and the gold of his armour. */
+    public static final DeferredItem<DeferredSpawnEggItem> PEAK_CAPTAIN_SPAWN_EGG = ITEMS.register("peak_captain_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.PEAK_CAPTAIN, 0x2B5FA8, 0xE9C46A, new Item.Properties()));
+
     /** The azure of his robe and the white of his beard. */
     public static final DeferredItem<DeferredSpawnEggItem> AZURE_SENSEI_SPAWN_EGG = ITEMS.register("azure_sensei_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.AZURE_SENSEI, 0x2F6FC0, 0xEFEBE4, new Item.Properties()));
@@ -149,11 +259,37 @@ public final class MurimItems {
     public static final DeferredItem<SectTokenItem> SECT_TOKEN = ITEMS.register("sect_token",
             () -> new SectTokenItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 
+    /**
+     * Locator pendants, sold dear by the Alliance Merchant: like the sect token, a needle that points to the nearest
+     * structure of one kind. Only the structures that matter have one (Enzo, 15/10): those with a boss, or with people
+     * who give quests (none yet). Each looks like where it leads
+     * (scripts/worldgen/PendantTextures.java).
+     */
+    public static final DeferredItem<LocatorPendantItem> BAMBOO_TEMPLE_PENDANT = pendant("misty_bamboo_temple");
+    public static final DeferredItem<LocatorPendantItem> BANDIT_DEN_PENDANT = pendant("yellow_river_bandit_den");
+    public static final DeferredItem<LocatorPendantItem> ALLIANCE_ARENA_PENDANT = pendant("alliance_arena");
+
+    private static DeferredItem<LocatorPendantItem> pendant(String structure) {
+        return ITEMS.register(structure + "_pendant",
+                () -> new LocatorPendantItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), structure));
+    }
+
+    /** Every locator pendant, in the merchant's order. */
+    public static java.util.List<DeferredItem<LocatorPendantItem>> pendants() {
+        return java.util.List.of(BAMBOO_TEMPLE_PENDANT, BANDIT_DEN_PENDANT, ALLIANCE_ARENA_PENDANT);
+    }
+
     /** Manual of the Cloud Cliff sect's art: read, it teaches the Azure Cloud Sword Art and is used up. */
     public static final DeferredItem<MartialManualItem> AZURE_CLOUD_SWORD_MANUAL = ITEMS.register("azure_cloud_sword_manual",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.AZURE_CLOUD_SWORD));
 
     /** Scroll of the first art of the fist: read, it teaches the Long Fist and is used up. Where it is found is still to decide. */
+    /** The Bandit Warlord's scroll: read (from Qi Condensation), it teaches the Mountain-Shattering Fist and is used up. */
+    /** The Majin Fist's scroll: the Son of the Demon's art, always his to drop (loot_table/entities/son_of_the_demon). */
+    public static final DeferredItem<MartialManualItem> MAJIN_FIST_SCROLL = ITEMS.register("majin_fist_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC).fireResistant(), MartialArts.MAJIN_FIST));
+    public static final DeferredItem<MartialManualItem> MOUNTAIN_SHATTERING_FIST_SCROLL = ITEMS.register("mountain_shattering_fist_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.MOUNTAIN_SHATTERING_FIST));
     public static final DeferredItem<MartialManualItem> LONG_FIST_SCROLL = ITEMS.register("long_fist_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), MartialArts.LONG_FIST));
 
@@ -175,12 +311,20 @@ public final class MurimItems {
                     .displayItems((parameters, output) -> {
                         output.accept(ARMORED_CRAB_SPAWN_EGG.get());
                         output.accept(CRAB_MAN_SPAWN_EGG.get());
+                        output.accept(TIGER_SPAWN_EGG.get());
+                        output.accept(TIGER_PELT.get());
+                        output.accept(TIGER_CLAW.get());
                         output.accept(MOUNTAIN_BANDIT_SPAWN_EGG.get());
                         output.accept(BANDIT_DAO.get());
                         output.accept(BANDIT_CHIEF_SPAWN_EGG.get());
+                        output.accept(BANDIT_WARLORD_SPAWN_EGG.get());
+                        output.accept(SON_OF_THE_DEMON_SPAWN_EGG.get());
+                        output.accept(CRAB_KING_SPAWN_EGG.get());
                         output.accept(CHIEF_GREAT_AXE.get());
                         output.accept(ALLIANCE_SPEAR.get());
                         output.accept(SNOW_PLUM_JIAN.get());
+                        output.accept(BISHOU.get());
+                        output.accept(FLYING_KNIFE.get());
                         output.accept(RATTAN_SHIELD.get());
                         output.accept(IRON_FAN.get());
                         output.accept(CHAIN_WHIP.get());
@@ -188,20 +332,41 @@ public final class MurimItems {
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
+                        output.accept(GOLDEN_BELL_MONK_SPAWN_EGG.get());
+                        output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
+                        output.accept(NETHER_TALISMAN.get());
+                        output.accept(END_TALISMAN.get());
+                        output.accept(MURIM_TALISMAN.get());
                         output.accept(ALLIANCE_SPEAR_GUARD_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SWORD_DISCIPLE_SPAWN_EGG.get());
                         output.accept(ALLIANCE_ARCHER_SPAWN_EGG.get());
                         output.accept(ALLIANCE_WARRIOR_MONK_SPAWN_EGG.get());
                         output.accept(ALLIANCE_SERGEANT_SPAWN_EGG.get());
+                        output.accept(COPPER_CASH.get());
+                        output.accept(CASH_STRING.get());
                         output.accept(SILVER_TAEL.get());
+                        output.accept(GOLD_YUANBAO.get());
                         output.accept(CHIEF_BROW_BAND.get());
                         output.accept(CHIEF_LAMELLAR_VEST.get());
                         output.accept(CHIEF_TASSETS.get());
                         output.accept(CHIEF_FUR_BOOTS.get());
+                        output.accept(PEAK_CAPTAIN_SPAWN_EGG.get());
+                        output.accept(CRIMSON_DRAGON_SPEAR.get());
+                        output.accept(PEAK_GUARD_HELM.get());
+                        output.accept(PEAK_GUARD_LAMELLAR.get());
+                        output.accept(PEAK_GUARD_TASSETS.get());
+                        output.accept(PEAK_GUARD_GREAVES.get());
+                        output.accept(BLOOD_LACQUER_MASK.get());
+                        output.accept(BLOOD_LACQUER_CUIRASS.get());
+                        output.accept(BLOOD_LACQUER_TASSETS.get());
+                        output.accept(BLOOD_LACQUER_GREAVES.get());
                         MurimBlocks.buildingOrder().forEach(block -> output.accept(block.get()));
                         output.accept(SECT_TOKEN.get());
+                        pendants().forEach(pendant -> output.accept(pendant.get()));
                         output.accept(AZURE_CLOUD_SWORD_MANUAL.get());
                         output.accept(LONG_FIST_SCROLL.get());
+                        output.accept(MOUNTAIN_SHATTERING_FIST_SCROLL.get());
+                        output.accept(MAJIN_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());

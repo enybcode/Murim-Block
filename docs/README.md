@@ -8,11 +8,13 @@
 - [Clear Manuscript](gui/TAB_LAYOUT.md): current GUI, not the V4 reference.
 - [Qi rewards](QI_REWARDS.md): balance and temporary anti-farm history.
 - [Qi and cultivation](cultivation/qi-cultivation.md): meditation, aura, breakthroughs, the inner world and the Heart Demon, Qi Sense, elixirs, realm bonuses (14 October, on test).
-- [Murim map](biomes/murim-map.md): the 150 000-block Murim bubble with fixed regions, its ocean ring, the two northern biomes (14 October, on test).
+- [Murim map](biomes/murim-map.md): the 40 000-block Murim bubble (150 000 until 16 October) with fixed regions, its ocean ring, the two northern biomes (14 October, on test).
 - [Technique balance](combat/technique-balance.md): technique damage by weapon and by Qi Max, and no combo that kills at once (14 October, on test).
 - [Armored crab](ARMORED_CRAB_DELIVERY.md): integrated assets, behavior and local verification.
 - [Bandit Chief](mobs/bandit-chief.md): the bandits' mini-boss, his great axe and attacks.
+- [Bandit ecology](mobs/bandit-ecology.md): surface bandits, faction hostility, art scroll drops and spawn protection for structures and WorldEdit bases.
 - [Sensei Yun](mobs/azure-sensei.md): the Azure Cloud Sect's master in the Misty Bamboo Temple, his sword and his manual.
+- [Crab King](mobs/crab-king.md): the crab art's boss, an infected martial artist with long pincers; waits in a structure to come.
 - [Alliance Merchant](mobs/alliance-merchant.md): the Orthodox Alliance's merchant, his trades and the silver taels.
 - [Alliance soldiers](mobs/alliance-soldiers.md): the five kinds of Alliance soldier, their weapons and the outpost garrison.
 - [Addon API](ADDON_API.md) and [addon guide](ADDON_GUIDE.md): supported contracts.
@@ -22,6 +24,8 @@
 - [Murim factions](factions/README.md): proposal for the beta: Orthodox Alliance (centre) and Heavenly Demon Cult (desert), 12 arts, bosses, mobs (15 October, awaiting Enzo).
 
 ## Development And Delivery
+
+- [The Blood Sect](mobs/blood-ninja.md): the Blood Ninja and its cultists, the blood dao, dark blood (Colleuhu95's Blood Sect Decor, merged into the mod on 16/10/2026), and the [underground WorldEdit base](../art/structures/blood-cult/README.md).
 
 - [Point de reprise et installation sur un autre PC](../l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md): état courant, derniers échanges Claude, dépendances et suite.
 - [Local publication, 13 October](DELIVERY_2026_10_13.md): combat/techniques changes, current checks and remaining validation.

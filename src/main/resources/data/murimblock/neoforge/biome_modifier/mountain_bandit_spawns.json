@@ -1,6 +1,6 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#murimblock:murim_biomes",
+  "biomes": "#murimblock:spawns_mountain_bandit",
   "spawners": {
     "type": "murimblock:mountain_bandit",
     "weight": 95,

@@ -66,13 +66,57 @@ public final class SiteGameTests {
     @GameTest(template = "foundation_arena", batch = "site_alliance_outpost", timeoutTicks = 900)
     public static void allianceOutpostIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.ALLIANCE_OUTPOST, "alliance_outpost", 6400, Rotation.CLOCKWISE_180, GROUND); }
 
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp", timeoutTicks = 1200)
+    public static void banditCampIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", 7600, Rotation.CLOCKWISE_90, GROUND); }
+
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_north", timeoutTicks = 1200)
+    public static void theNorthsBanditCampIsDarkWoodUnderSnow(GameTestHelper helper) { regionalCamp(helper, "north", Blocks.DARK_OAK_LOG); }
+
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_west", timeoutTicks = 1200)
+    public static void theWestsBanditCampIsRammedEarth(GameTestHelper helper) { regionalCamp(helper, "west", Blocks.PACKED_MUD); }
+
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_south", timeoutTicks = 1200)
+    public static void theSouthsBanditCampIsBamboo(GameTestHelper helper) { regionalCamp(helper, "south", Blocks.BAMBOO_BLOCK); }
+
+    @GameTest(template = "foundation_arena", batch = "site_bandit_camp_east", timeoutTicks = 1200)
+    public static void theEastsBanditCampHasAMoat(GameTestHelper helper) { regionalCamp(helper, "east", Blocks.SPRUCE_LOG); }
+
+    /**
+     * A bandit camp in the heart of an outer region (rotation none: local north is world north): the whole site's checks
+     * and thirty bandits, and its palisade (local 0, -42) of that region's stuff; in the north snow on its tips, in the
+     * east water in its ditch, elsewhere none.
+     */
+    private static void regionalCamp(GameTestHelper helper, String region, Block wall) {
+        // The heart of that region in the test world's layout (the regions are dealt anew in each world), on a grid of 16.
+        int[] heart = com.murimblock.world.map.MurimMap.heart(com.murimblock.world.map.MurimMap.Region.valueOf(region.toUpperCase(java.util.Locale.ROOT)), 0.75);
+        int x = heart[0] & ~15 | 8, z = heart[1] & ~15 | 8;
+        check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", x, z, Rotation.NONE, level -> {
+            BlockPos post = new BlockPos(x, GROUND + 2, z - 42);
+            helper.assertTrue(level.getBlockState(post).is(wall), region + " camp's palisade is " + level.getBlockState(post));
+            boolean snow = false;
+            for (int y = GROUND + 6; y <= GROUND + 9; y++) snow |= level.getBlockState(post.atY(y)).is(Blocks.SNOW);
+            helper.assertTrue(snow == region.equals("north"), region + " camp: snow on the palisade " + snow);
+            boolean water = level.getBlockState(new BlockPos(x, GROUND - 1, z - 45)).is(Blocks.WATER);
+            helper.assertTrue(water == region.equals("east"), region + " camp: water in the ditch " + water);
+        }, GROUND);
+    }
+
+    @GameTest(template = "foundation_arena", batch = "site_alliance_arena", timeoutTicks = 1200)
+    public static void allianceArenaIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.ALLIANCE_ARENA, "alliance_arena", 6900, Rotation.COUNTERCLOCKWISE_90, GROUND); }
+
     private static void check(GameTestHelper helper, SitePlan plan, String structure, int x, Rotation rotation, int... levels) {
+        check(helper, plan, structure, x, Z, rotation, null, levels);
+    }
+
+    /** As above, the site's centre at (x, z); {@code whole}, if given, looks at the site once it is built whole. */
+    private static void check(GameTestHelper helper, SitePlan plan, String structure, int x, int z, Rotation rotation,
+                              java.util.function.Consumer<ServerLevel> whole, int... levels) {
         ServerLevel level = helper.getLevel();
-        BoundingBox box = SitePiece.wholeBox(plan, x, Z, rotation, levels).inflatedBy(3);
+        BoundingBox box = SitePiece.wholeBox(plan, x, z, rotation, levels).inflatedBy(3);
         int y0 = GROUND - 14, y1 = box.maxY() + 8;
         for (int cx = box.minX() >> 4; cx <= box.maxX() >> 4; cx++) for (int cz = box.minZ() >> 4; cz <= box.maxZ() >> 4; cz++) level.setChunkForced(cx, cz, true);
         // Forced chunks take a few ticks to load their entities: build once they all have (the residents must be seen).
-        whenLoaded(helper, level, box, 0, () -> run(helper, level, plan, structure, x, rotation, box, y0, y1, levels));
+        whenLoaded(helper, level, box, 0, () -> run(helper, level, plan, structure, x, z, rotation, whole, box, y0, y1, levels));
     }
 
     /** Runs {@code then} once every chunk under {@code box} has its entities loaded (looked at every 5 ticks, 20 s at most). */
@@ -83,15 +127,16 @@ public final class SiteGameTests {
         });
     }
 
-    private static void run(GameTestHelper helper, ServerLevel level, SitePlan plan, String structure, int x, Rotation rotation,
-                            BoundingBox box, int y0, int y1, int[] levels) {
-        long seed = 0x5EEDL + x;
+    private static void run(GameTestHelper helper, ServerLevel level, SitePlan plan, String structure, int x, int Z, Rotation rotation,
+                            java.util.function.Consumer<ServerLevel> lookAt, BoundingBox box, int y0, int y1, int[] levels) {
+        long seed = 0x5EEDL + x + Z;
         try {
             residents(level, box).forEach(m -> m.discard()); // left by an earlier run of this persistent test world
             // Whole, as the tests and checks see it.
             ground(level, box, y0, y1);
             SitePiece.Built built = SitePiece.buildWhole(level, plan, x, Z, rotation, seed, levels);
             List<Canvas.Check> checks = built.checks();
+            if (lookAt != null) lookAt.accept(level);
             List<String> problems = SiteChecks.verify(level, checks);
             long whole = fingerprint(level, box, y0, y1);
             int blocks = count(level, box, y0, y1);
@@ -118,7 +163,9 @@ public final class SiteGameTests {
                 if (!level.getBlockState(BlockPos.containing(m.getX(), m.getY() - 0.1, m.getZ())).blocksMotion()) misplaced.add(who + " stands on nothing");
                 if (!m.isPersistenceRequired()) misplaced.add(who + " may despawn");
                 if (m instanceof Villager v && (!inRoom || v.getVillagerData().getProfession() == VillagerProfession.NONE)) misplaced.add(who + " is not at home with a trade");
-                if (m instanceof BanditChiefEntity && !inRoom) misplaced.add(who + " is not in his cave");
+                if (m instanceof BanditChiefEntity && plan == SitePlan.BANDIT_DEN && !inRoom) misplaced.add(who + " is not in his cave");
+                if (plan == SitePlan.BANDIT_CAMP && com.murimblock.world.structure.site.BanditCampCount.campOf(m).orElse(0) != com.murimblock.world.structure.site.BanditCampCount.camp(x, Z))
+                    misplaced.add(who + " is not counted in his camp's garrison");
             }
             spawned.forEach(m -> m.discard());
             // Chunk by chunk, each part only in the chunks its box touches, in reverse order.
@@ -179,11 +226,13 @@ public final class SiteGameTests {
         return switch (plan) {
             case STILT_VILLAGE -> Map.of("minecraft:villager", 3);
             case BANDIT_DEN -> Map.of("murimblock:bandit_chief", 1, "murimblock:mountain_bandit", 4);
-            case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1);
+            case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1, "murimblock:golden_bell_monk", 1);
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
-            case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2, "murimblock:alliance_spear_guard", 2,
+            case BANDIT_CAMP -> Map.of("murimblock:mountain_bandit", 30, "murimblock:bandit_chief", 5);
+            case ALLIANCE_ARENA -> Map.of("murimblock:peak_captain", 1, "murimblock:alliance_merchant", 1, "murimblock:alliance_spear_guard", 2, "murimblock:alliance_sword_disciple", 2);
+            case ALLIANCE_OUTPOST -> Map.of("minecraft:villager", 4, "minecraft:horse", 2, "murimblock:alliance_merchant", 1, "murimblock:alliance_spear_guard", 2,
                     "murimblock:alliance_sword_disciple", 2, "murimblock:alliance_archer", 1, "murimblock:alliance_sergeant", 1, "murimblock:alliance_warrior_monk", 1);
             default -> Map.of();
         };
@@ -199,7 +248,8 @@ public final class SiteGameTests {
     private static List<Mob> residents(ServerLevel level, BoundingBox box) {
         return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8, 48, 8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity
                 || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity
-                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity);
+                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity
+                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.GoldenBellMonkEntity);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */

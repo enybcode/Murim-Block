@@ -52,7 +52,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.slf4j.Logger;
 
 /**
- * Development-only tour of the seven Murim sites in a real client (gradlew -PgameTests runSiteTour): a fresh normal
+ * Development-only tour of the Murim sites (the bandit camp in each region) in a real client (gradlew -PgameTests runSiteTour): a fresh normal
  * world; for each site, the real /locate structure command, then a visit to what it found: the generated site must
  * pass its checks (roofs closed, nothing grown inside, floors carried), and three photos are taken
  * (build/site-tour-run/screenshots). Writes site-tour-report.txt and quits.
@@ -62,13 +62,29 @@ public final class SiteTour {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final long SEED = 20261012L;
     static final String[] SITES = {"jade_river_stilt_village", "yellow_river_bandit_den", "jade_gate_beacon_post",
-            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet", "alliance_outpost"};
+            "misty_bamboo_temple", "lotus_moon_garden", "peach_spring_hamlet", "alliance_outpost", "alliance_arena", "bandit_camp",
+            "bandit_camp@north", "bandit_camp@west", "bandit_camp@south", "bandit_camp@east"};
+    /** A site looked for from somewhere else than the world's centre: "id@region", /locate from the heart of that region. */
+    static String structureId(String name) {
+        return name.split("@")[0];
+    }
+
+    static Vec3 searchFrom(String name) {
+        String region = name.contains("@") ? name.split("@")[1] : "";
+        if (region.isEmpty()) return new Vec3(0.5, 100, 0.5);
+        // The heart of that region in this world's layout.
+        int[] heart = com.murimblock.world.map.MurimMap.heart(com.murimblock.world.map.MurimMap.Region.valueOf(region.toUpperCase(java.util.Locale.ROOT)), 0.75);
+        return new Vec3(heart[0] + 0.5, 100, heart[1] + 0.5);
+    }
     private static final Pattern AT = Pattern.compile("\\[(-?\\d+), ~, (-?\\d+)\\]");
     private static boolean creating, finished, failed;
     private static int ticks, index = -1, step;
     private static volatile boolean done;
     private static volatile Site site;
     private static volatile String subject = "resident";
+    /** The put-back check's answer ("" done, else what was found; null not yet), and how many times it waited. */
+    private static volatile String putBack;
+    private static int putBackWaits;
     private static final List<String> report = new ArrayList<>();
 
     /** What the server found for the current site. */
@@ -130,8 +146,10 @@ public final class SiteTour {
                     mc.getSingleplayerServer().execute(() -> {
                         List<Mob> residents = residents(mc, s);
                         Map<String, Integer> found = new TreeMap<>();
-                        for (Mob m : residents) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
                         Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
+                        residents = residents.stream().filter(m -> expected.containsKey(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString())
+                                || !(m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse)).toList();
+                        for (Mob m : residents) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
                         String line = name + ": residents " + found + ", expected " + expected + " " + residents.stream().map(m -> m.getName().getString()
                                 + (m instanceof Villager v ? " (" + v.getVillagerData().getProfession() + ")" : "") + " at " + m.blockPosition().toShortString()).toList();
                         report.add(line);
@@ -151,17 +169,34 @@ public final class SiteTour {
                         com.murimblock.world.structure.site.SiteResidents.forgetForTests(mc.getSingleplayerServer().overworld(), site.origin());
                     });
                 }
+                // The residents put back: SiteResidents waits for every chunk of the site, which can take a while on a
+                // busy server; looked at every 10 ticks, for up to 30 s.
                 case 350 -> {
                     if (SiteGameTests.expectedResidents(planOf(name)).isEmpty()) return;
+                    putBack = null;
                     mc.getSingleplayerServer().execute(() -> {
                         Map<String, Integer> found = new TreeMap<>();
-                        for (Mob m : residents(mc, site)) found.merge(BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString(), 1, Integer::sum);
                         Map<String, Integer> expected = SiteGameTests.expectedResidents(planOf(name));
-                        String line = name + ": residents put back in an emptied site " + found + ", expected " + expected;
-                        report.add(line);
-                        LOGGER.info("Site tour: {}", line);
-                        if (!found.equals(expected)) failed = true;
+                        for (Mob m : residents(mc, site)) {
+                            String type = BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString();
+                            if (expected.containsKey(type) || !(m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse)) found.merge(type, 1, Integer::sum);
+                        }
+                        putBack = found.equals(expected) ? "" : found.toString();
+                        if (found.equals(expected) || putBackWaits >= 60) {
+                            String line = name + ": residents put back in an emptied site " + found + ", expected " + expected
+                                    + (putBackWaits > 0 ? " (after " + putBackWaits * 10 + " ticks)" : "");
+                            report.add(line);
+                            LOGGER.info("Site tour: {}", line);
+                            if (!found.equals(expected)) failed = true;
+                            putBack = "";
+                        }
                     });
+                }
+                case 351 -> {
+                    String p = putBack;
+                    if (p == null) { step = 350; return; }
+                    if (!p.isEmpty()) { putBackWaits++; step = 340; return; }
+                    putBackWaits = 0;
                 }
                 case 360 -> capture(mc, name + "-ground.png");
                 // A resident at home (the chief before his throne, a householder of the village, the sensei before his altar).
@@ -172,7 +207,7 @@ public final class SiteTour {
                         if (residents.isEmpty()) return;
                         // From the corner of the resident's own room farthest from them, at eye height.
                         Mob v = residents.get(0);
-                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : v instanceof com.murimblock.mob.AllianceSoldierEntity ? "soldier" : "chief";
+                        subject = v instanceof Villager ? "villager" : v instanceof AzureSenseiEntity ? "sensei" : v instanceof CrabManEntity ? "crab-man" : v instanceof MountainBanditEntity ? "bandit" : v instanceof com.murimblock.mob.AllianceSoldierEntity ? "soldier" : v instanceof com.murimblock.mob.PeakCaptainEntity ? "captain" : v instanceof com.murimblock.mob.AllianceMerchantEntity ? "merchant" : "chief";
                         Vec3 eye = v.getEyePosition();
                         BoundingBox room = site.rooms().stream().filter(r -> r.isInside(v.blockPosition())).findFirst()
                                 .orElse(site.rooms().stream().min(java.util.Comparator.comparingDouble(r -> r.getCenter().distSqr(v.blockPosition()))).orElseThrow());
@@ -213,11 +248,11 @@ public final class SiteTour {
             @Override public boolean acceptsFailure() { return true; }
             @Override public boolean shouldInformAdmins() { return false; }
         };
-        CommandSourceStack source = new CommandSourceStack(capture, new Vec3(0.5, 100, 0.5), Vec2.ZERO, level, 4, "SiteTour", Component.literal("SiteTour"), server, null);
+        CommandSourceStack source = new CommandSourceStack(capture, searchFrom(name), Vec2.ZERO, level, 4, "SiteTour", Component.literal("SiteTour"), server, null);
         long start = System.currentTimeMillis();
-        server.getCommands().performPrefixedCommand(source, "locate structure " + Murimblock.MOD_ID + ":" + name);
+        server.getCommands().performPrefixedCommand(source, "locate structure " + Murimblock.MOD_ID + ":" + structureId(name));
         String answer = messages.isEmpty() ? "(no answer)" : messages.get(0).getString();
-        var located = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, name));
+        var located = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, structureId(name)));
         String plan = located instanceof com.murimblock.world.structure.site.SiteStructure ss ? ss.plan().getSerializedName() : "?";
         StringBuilder stats = new StringBuilder();
         com.murimblock.world.structure.site.SiteStructure.STATS.forEach((k, v) -> { if (k.startsWith(plan + " ")) stats.append(k.substring(plan.length() + 1)).append('=').append(v.get()).append(' '); });
@@ -227,9 +262,17 @@ public final class SiteTour {
         if (!m.find()) { fail(name + ": /locate failed: " + answer + " (places tried: " + stats + ")"); return; }
         int x = Integer.parseInt(m.group(1)), z = Integer.parseInt(m.group(2));
         String line = name + ": /locate -> " + answer + " (" + (System.currentTimeMillis() - start) + " ms; places tried: " + stats + ")";
+        // Its locator pendant, sold by the Alliance Merchant, must point to the same place as /locate.
+        var pendant = com.murimblock.item.MurimItems.pendants().stream().map(p -> p.get())
+                .filter(p -> p.structure().location().getPath().equals(name)).findFirst().orElse(null);
+        if (pendant != null) {
+            var aimed = com.murimblock.item.LocatorPendantItem.locate(level, pendant.structure(), BlockPos.containing(0.5, 100, 0.5));
+            if (aimed == null || aimed.getX() != x || aimed.getZ() != z) { fail(name + ": its pendant points to " + aimed + ", /locate to " + x + ", " + z); return; }
+            line += "; pendant agrees";
+        }
         // Generate the site and its surroundings, then find the start the command pointed at.
         for (int cx = (x >> 4) - 3; cx <= (x >> 4) + 3; cx++) for (int cz = (z >> 4) - 3; cz <= (z >> 4) + 3; cz++) level.getChunk(cx, cz);
-        var structure = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, name));
+        var structure = level.registryAccess().registryOrThrow(Registries.STRUCTURE).get(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, structureId(name)));
         StructureStart start2 = level.getChunk(x >> 4, z >> 4).getStartForStructure(structure);
         if (start2 == null || !start2.isValid()) { fail(line + "; no structure start in that chunk"); return; }
         List<Canvas.Check> checks = new ArrayList<>();
@@ -245,7 +288,10 @@ public final class SiteTour {
         LOGGER.info("Site tour: {}", line);
         boolean rightBiome = expectedBiome(name).equals("*")
                 ? level.getBiome(first.origin()).is(net.minecraft.tags.TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes")))
-                        && com.murimblock.world.map.MurimMap.centreOrFrontier(first.origin().getX(), first.origin().getZ(), 1500)
+                        && (!name.equals("alliance_arena") || com.murimblock.world.map.MurimMap.centreOrFrontier(first.origin().getX(), first.origin().getZ(), 1500))
+                        // A bandit camp looked for from a region's heart: in that region (the nearest to the centre may lie anywhere).
+                        && (!name.contains("@") || com.murimblock.world.map.MurimMap.region(first.origin().getX(), first.origin().getZ())
+                                .name().equalsIgnoreCase(name.split("@")[1]))
                 : biome.equals(expectedBiome(name));
         if (!problems.isEmpty() || !rightBiome) failed = true;
         Direction front = first.rotation().rotate(Direction.SOUTH);
@@ -261,13 +307,15 @@ public final class SiteTour {
     }
 
     static SitePlan planOf(String name) {
-        return switch (name) {
+        return switch (structureId(name)) {
             case "jade_river_stilt_village" -> SitePlan.STILT_VILLAGE;
             case "yellow_river_bandit_den" -> SitePlan.BANDIT_DEN;
             case "jade_gate_beacon_post" -> SitePlan.BEACON_POST;
             case "misty_bamboo_temple" -> SitePlan.BAMBOO_TEMPLE;
             case "lotus_moon_garden" -> SitePlan.LOTUS_GARDEN;
             case "alliance_outpost" -> SitePlan.ALLIANCE_OUTPOST;
+            case "alliance_arena" -> SitePlan.ALLIANCE_ARENA;
+            case "bandit_camp" -> SitePlan.BANDIT_CAMP;
             default -> SitePlan.PEACH_HAMLET;
         };
     }
@@ -276,18 +324,19 @@ public final class SiteTour {
     private static List<Mob> residents(Minecraft mc, Site s) {
         return mc.getSingleplayerServer().overworld().getEntitiesOfClass(Mob.class, net.minecraft.world.phys.AABB.of(s.box()).inflate(4, 16, 4), // down into pits and caves
                         m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity || m instanceof AzureSenseiEntity || m instanceof CrabManEntity
-                                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity).stream()
+                                || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity
+                                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.AllianceMerchantEntity).stream()
                 .sorted(java.util.Comparator.<Mob>comparingInt(m -> m instanceof BanditChiefEntity ? 0 : 1).thenComparing(m -> m.getName().getString())).toList();
     }
 
     static String expectedBiome(String name) {
-        return switch (name) {
+        return switch (structureId(name)) {
             case "jade_river_stilt_village" -> "jade_karst_forest";
             case "yellow_river_bandit_den" -> "loess_plateau";
             case "jade_gate_beacon_post" -> "hexi_frontier_desert";
             case "misty_bamboo_temple" -> "shu_bamboo_sea";
             case "lotus_moon_garden" -> "jiangnan_waterlands";
-            case "alliance_outpost" -> "*"; // any Murim biome, in the centre or on a frontier
+            case "alliance_outpost", "alliance_arena", "bandit_camp" -> "*"; // any Murim biome (the arena in the centre or on a frontier)
             default -> "peach_blossom_valley";
         };
     }

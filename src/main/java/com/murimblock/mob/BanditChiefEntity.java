@@ -120,6 +120,8 @@ public class BanditChiefEntity extends Monster {
     @Override protected void customServerAiStep() {
         super.customServerAiStep();
         bossBar.setProgress(getHealth() / getMaxHealth());
+        // His bar shows once he fights (a target, or a wound): five of them in a bandit camp would fill the screen.
+        bossBar.setVisible(getTarget() != null || getHealth() < getMaxHealth());
         // With a target, he is aggressive: the clients see it (his face frowns, MobFaces).
         setAggressive(getTarget() != null);
     }

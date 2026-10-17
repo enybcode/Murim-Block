@@ -52,6 +52,8 @@ public final class SanctuaryPlacement extends SavedData {
     @Nullable private BlockPos centre;
     @Nullable private BlockPos foot;
     private int top;
+    /** Whether the Golden Dragon in human form was placed in the main hall (once; he never comes back if removed). */
+    private boolean sagePlaced;
 
     public static final SavedData.Factory<SanctuaryPlacement> FACTORY = new SavedData.Factory<>(SanctuaryPlacement::new, SanctuaryPlacement::load);
 
@@ -78,7 +80,29 @@ public final class SanctuaryPlacement extends SavedData {
         centre = null;
         foot = null;
         top = 0;
+        sagePlaced = false;
         setDirty();
+    }
+
+    public boolean sagePlaced() { return sagePlaced; }
+
+    /**
+     * Places the Golden Dragon in human form on his seat before the altar (SanctuaryBuilder.sageSeat), once per world:
+     * right after a new sanctuary is built, or the first time a player comes near one built before he existed (its
+     * chunk and entities loaded). Returns whether he was placed now.
+     */
+    public static boolean placeSage(ServerLevel overworld) {
+        SanctuaryPlacement data = get(overworld);
+        if (data.centre == null || data.sagePlaced) return false;
+        BlockPos seat = SanctuaryBuilder.sageSeat(data.centre, data.top);
+        if (!overworld.areEntitiesLoaded(ChunkPos.asLong(seat))) return false;
+        // One already there (an older world where someone summoned him): only note it.
+        if (overworld.getEntitiesOfClass(com.murimblock.mob.GoldenDragonSageEntity.class, new net.minecraft.world.phys.AABB(seat).inflate(24)).isEmpty())
+            com.murimblock.world.structure.site.Canvas.place(overworld, com.murimblock.mob.MurimEntities.GOLDEN_DRAGON_SAGE.get(), seat, 0.0F, sage -> { });
+        data.sagePlaced = true;
+        data.setDirty();
+        LOGGER.info("The Golden Dragon in human form waits in the Cloud Cliff Sanctuary at {}", seat);
+        return true;
     }
 
     /** For tests and commands: record a sanctuary built elsewhere. */
@@ -108,6 +132,13 @@ public final class SanctuaryPlacement extends SavedData {
     }
 
     public static void onServerTick(ServerTickEvent.Post event) {
+        // A sanctuary built before the Golden Dragon existed: he takes his seat when a player first comes near.
+        if (event.getServer().getTickCount() % 40 == 0) {
+            ServerLevel overworld = event.getServer().overworld();
+            SanctuaryPlacement data = get(overworld);
+            if (data.centre != null && !data.sagePlaced && job == null
+                    && overworld.players().stream().anyMatch(p -> near(overworld, p.blockPosition(), 96))) placeSage(overworld);
+        }
         Job current = job;
         if (current == null || current.level.getServer() != event.getServer()) return;
         long start = System.nanoTime();
@@ -168,6 +199,7 @@ public final class SanctuaryPlacement extends SavedData {
             forceChunks(false);
             BlockPos foot = builder.foot();
             data.record(new BlockPos(site.getX(), builder.top() - SanctuaryBuilder.HEIGHT, site.getZ()), foot, builder.top());
+            placeSage(level);
             LOGGER.info("Cloud Cliff Sanctuary built at {} (top y {}), road foot {}: {} ms in all, {} build ticks, longest tick {} ms, {} biome samples",
                     data.centre, builder.top(), foot, (System.nanoTime() - started) / 1_000_000L, buildTicks, longestTick / 1_000_000L, search.samples());
             return false;
@@ -223,17 +255,22 @@ public final class SanctuaryPlacement extends SavedData {
      * ring; the nearest sample whose 7x7 neighbourhood is mostly peaks. Falls back to the nearest Murim biome sample,
      * then the spawn. Each grid cell is sampled once (cached), and the search stops and resumes between ticks.
      */
+    /** How far the sanctuary reaches from its centre, its gangway and path included (for SiteSpacing). */
+    static final int REACH = 48;
+
     static final class SiteSearch {
         static final int STEP = 32, RINGS = SEARCH_RADIUS / STEP;
         private final BiomeSource source;
         private final Climate.Sampler sampler;
         private final BlockPos spawn;
+        private final ServerLevel level;
         private final Map<Long, Holder<Biome>> cache = new HashMap<>();
         private int ring;
         @Nullable private BlockPos murim;
         private double murimDist = Double.MAX_VALUE;
 
         SiteSearch(ServerLevel level, BlockPos spawn) {
+            this.level = level;
             this.source = level.getChunkSource().getGenerator().getBiomeSource();
             this.sampler = level.getChunkSource().randomState().sampler();
             this.spawn = spawn;
@@ -265,6 +302,9 @@ public final class SanctuaryPlacement extends SavedData {
                     int inside = 0;
                     for (int a = -3; a <= 3; a++) for (int b = -3; b <= 3; b++) if (biome(i + a, j + b).is(MurimBiomes.CLOUD_SEA_PEAKS)) inside++;
                     if (inside < 30) continue;
+                    // At least SiteSpacing.GAP blocks from any Murim site (its spire, foot and gangway within REACH).
+                    BlockPos p = at(i, j);
+                    if (com.murimblock.world.structure.site.SiteSpacing.crowded(level, p.getX(), p.getZ(), REACH)) continue;
                     if (d < bestDist) { bestDist = d; best = at(i, j); }
                 }
                 ring++;
@@ -282,6 +322,7 @@ public final class SanctuaryPlacement extends SavedData {
             tag.put("centre", NbtUtils.writeBlockPos(centre));
             tag.put("foot", NbtUtils.writeBlockPos(foot));
             tag.putInt("top", top);
+            tag.putBoolean("sage", sagePlaced);
         }
         return tag;
     }
@@ -291,6 +332,7 @@ public final class SanctuaryPlacement extends SavedData {
         NbtUtils.readBlockPos(tag, "centre").ifPresent(p -> data.centre = p);
         NbtUtils.readBlockPos(tag, "foot").ifPresent(p -> data.foot = p);
         data.top = tag.getInt("top");
+        data.sagePlaced = tag.getBoolean("sage");
         return data;
     }
 }

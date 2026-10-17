@@ -5,12 +5,17 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 25: the Purple Heaven Thunder Saber (its drums, the electrified, its lightning).
+     * 24: the Golden Bell (the body's matter shown to everyone round, the bell's ring, a blow sent back).
+     * 23: the Seven Stars Sword (its stars shown over their targets, a constellation bursting, its techniques' effects).
+     * 22: the Son of the Demon's transformation film.
+     * 20: the Traveller's Staff Art (the Spinning Rampart's spin shown to everyone around).
      * 18: synchronized blood crystal combat state and projectile entity.
      * 17: conversations (the old master's dialogue, its pages and answers).
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "18";
+    private static final String NETWORK_VERSION = "25";
 
     private MurimblockNetworking() {
     }
@@ -47,10 +52,38 @@ public final class MurimblockNetworking {
                 (payload, context) -> com.murimblock.client.CombatBarClient.slamReady(payload.ticks()));
         registrar.playToClient(TechniquePayloads.DelayedCuts.TYPE, TechniquePayloads.DelayedCuts.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.DrizzleSlashEffects.delayedCuts(payload.attackerId(), payload.targetId()));
+        // The Spinning Rampart spun or stopped: its loop shown on everyone's screen.
+        registrar.playToClient(StaffSpinPayload.TYPE, StaffSpinPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.StaffClient.spin(payload.entityId(), payload.spinning()));
+        // The Seven Stars Sword: the stars on a target, a constellation burst.
+        registrar.playToClient(SevenStarsPayloads.Marks.TYPE, SevenStarsPayloads.Marks.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.SevenStarsFx.marks(payload.entityId(), payload.owner(), payload.count()));
+        registrar.playToClient(SevenStarsPayloads.Burst.TYPE, SevenStarsPayloads.Burst.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.SevenStarsFx.burst(payload.entityId()));
+        registrar.playToClient(GoldenBellPayload.TYPE, GoldenBellPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.GoldenBellSkins.receive(payload.entityId(), payload.skin(), payload.form()));
+        registrar.playToClient(SevenStarsPayloads.Fx.TYPE, SevenStarsPayloads.Fx.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.SevenStarsFx.fx(payload));
+        registrar.playToClient(SevenStarsPayloads.Streak.TYPE, SevenStarsPayloads.Streak.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.SevenStarsFx.streak(payload.playerId(), payload.from(), payload.to(), payload.hits()));
+        // The Purple Heaven Thunder Saber: a player's drums, an electrified body, the lightning of its techniques.
+        registrar.playToClient(ThunderSaberPayloads.Drums.TYPE, ThunderSaberPayloads.Drums.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.ThunderSaberFx.drums(payload.entityId(), payload.beats()));
+        registrar.playToClient(ThunderSaberPayloads.Electrified.TYPE, ThunderSaberPayloads.Electrified.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.ThunderSaberFx.electrified(payload.entityId(), payload.ticks()));
+        registrar.playToClient(ThunderSaberPayloads.Fx.TYPE, ThunderSaberPayloads.Fx.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.ThunderSaberFx.fx(payload));
         // Client only: only ever sent to clients, so the client classes are never loaded on a dedicated server.
         registrar.playToClient(FinishCinematicPayload.TYPE, FinishCinematicPayload.STREAM_CODEC, (payload, context) -> {
             if (payload.start()) com.murimblock.client.FinishCinematic.start(payload.executorId(), payload.victimId(), payload.finish());
             else com.murimblock.client.FinishCinematic.stop();
         });
+        registrar.playToClient(WarlordEntrancePayload.TYPE, WarlordEntrancePayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.WarlordCinematic.start(payload.plaza(), payload.drum()));
+        // A Majin Fist impact's flash of sunlight (a Photon light).
+        registrar.playToClient(SunFlashPayload.TYPE, SunFlashPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.CruelSunRenderer.flash(payload));
+        registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }
 }

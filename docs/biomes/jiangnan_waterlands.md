@@ -1,7 +1,5 @@
 # Pays des eaux du Jiangnan (`murimblock:jiangnan_waterlands`) — biome moyen
 
-![En jeu : étangs couverts de lotus](images/jiangnan_waterlands-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.** C'est le delta plat du bas Yangtsé, à quelques mètres au-dessus de la mer.
@@ -47,9 +45,6 @@
 | Canne à sucre | vanilla | Roseaux des berges. |
 
 ## Structures prévues
-
-![Rue de canal : maisons blanches à murs en tête de cheval, ponts et lanternes](images/structures-jiangnan-a.jpg)
-![Étang de lotus, pavillon et saules derrière les maisons](images/structures-jiangnan-b.jpg)
 
 1. **Rue d'une ville d'eau, le long d'un canal.**
    - Modèles réels : Zhouzhuang (les ponts jumeaux) et Tongli.

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "murim_money",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "murimblock:cash_string"
+    }
+  },
+  "result": {
+    "id": "murimblock:silver_tael",
+    "count": 1
+  }
+}

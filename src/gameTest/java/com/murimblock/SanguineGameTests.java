@@ -130,7 +130,7 @@ public final class SanguineGameTests {
         });
         h.runAfterDelay(65,()->{
             h.assertTrue(z.getHealth()<500,"Thrown crystal missed: "+z.getHealth());
-            h.assertTrue(p.getHealth()==10,"Crystal healed its caster");h.assertTrue(QiService.getQi(p)>=900&&QiService.getQi(p)<903,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z);
+            h.assertTrue(p.getHealth()==10,"Crystal healed its caster");h.assertTrue(QiService.getQi(p)>=850&&QiService.getQi(p)<853,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z);
         });
     }
     private static BloodCrystalEntity held(GameTestHelper h,ServerPlayer p) {
@@ -172,7 +172,7 @@ public final class SanguineGameTests {
             h.assertTrue(z.getHealth()<near.getHealth(),"The body struck took less than the one beside: "+z.getHealth()+" / "+near.getHealth());
             for(int dx=-2;dx<=2;dx++)for(int dz=0;dz<=10;dz++)
                 h.assertTrue(h.getLevel().getBlockState(BlockPos.containing(p.getX()+dx,119,8.5+dz)).is(Blocks.STONE),"The explosion broke a block");
-            h.assertTrue(QiService.getQi(p)>=900&&QiService.getQi(p)<903,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
+            h.assertTrue(QiService.getQi(p)>=850&&QiService.getQi(p)<853,"Wrong Qi cost: "+QiService.getQi(p));end(h,p,z,near);
         });
     }
     @GameTest(template="foundation_arena",batch="scarlet_sword",timeoutTicks=150)
@@ -393,9 +393,23 @@ public final class SanguineGameTests {
         com.murimblock.cultivation.CultivationService.setCultivation(p,com.murimblock.cultivation.CultivationRealm.QI_LIQUIDATION,com.murimblock.cultivation.CultivationStage.PEAK);
         scroll.use(p.level(),p,InteractionHand.MAIN_HAND);
         h.assertTrue(!MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Learnt the Sanguine Art below Qi Crystallization");
+        h.assertTrue(scroll.getCount()==1,"The scroll was used up by a player too weak for it");
+        // They are told they are too weak: the art, the realm it needs, the realm they are at.
+        var told=com.murimblock.martial.MartialManualItem.tooWeak(MartialArts.art(MartialArts.SANGUINE_ART),MartialArts.SANGUINE_REALM,com.murimblock.cultivation.CultivationRealm.QI_LIQUIDATION);
+        h.assertTrue(told.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents c&&c.getKey().equals("art.murimblock.too_weak")
+                &&c.getArgs().length==3&&String.valueOf(c.getArgs()[2]).contains("Qi Liquidation"),"The refusal does not say they are too weak: "+told);
         com.murimblock.cultivation.CultivationService.setCultivation(p,MartialArts.SANGUINE_REALM,com.murimblock.cultivation.CultivationStage.EARLY);
         scroll.use(p.level(),p,InteractionHand.MAIN_HAND);
         h.assertTrue(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Could not learn the Sanguine Art at Qi Crystallization");
+        com.murimblock.cultivation.CultivationService.resetCultivation(p);cleanup(p);h.succeed();
+    }
+    /** Any realm above Qi Crystallization learns it too. */
+    @GameTest(template="foundation_arena",batch="sanguine_realm_above",timeoutTicks=20)
+    public static void aHigherRealmLearnsTheSanguineArtToo(GameTestHelper h) {
+        var p=player(h);
+        com.murimblock.cultivation.CultivationService.setCultivation(p,com.murimblock.cultivation.CultivationRealm.CORE_FORMATION,com.murimblock.cultivation.CultivationStage.EARLY);
+        new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()).use(p.level(),p,InteractionHand.MAIN_HAND);
+        h.assertTrue(MartialService.data(p).knowsArt(MartialArts.SANGUINE_ART),"Core Formation could not learn the Sanguine Art");
         com.murimblock.cultivation.CultivationService.resetCultivation(p);cleanup(p);h.succeed();
     }
     @GameTest(template="iceberg_arena",batch="blood_iceberg_rules",timeoutTicks=200)

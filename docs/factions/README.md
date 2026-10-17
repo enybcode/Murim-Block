@@ -67,7 +67,7 @@ Répartition proposée : 5 orthodoxes, 5 démoniaques, 2 libres (trouvables part
 | 1 | Azure Cloud Sword | Orthodoxe | Épée | Pas et coupes aériennes, précision | ✅ fait |
 | 2 | Golden Bell Palm | Orthodoxe | Mains nues | Moine : paumes lourdes, corps d'airain, encaisser | à faire |
 | 3 | Pine Wind Staff | Orthodoxe | Bâton | Allonge, balayages, contrôle de foule | à faire |
-| 4 | Celestial Peak Spear | Orthodoxe | Lance | Charges, percées à longue portée | à faire |
+| 4 | Celestial Peak Spear | Orthodoxe | Lance | Charges, percées à longue portée | proposé ([fiche](../combat/styles/celestial-peak-spear.md)) |
 | 5 | Moon Lotus Fan | Orthodoxe | Éventail de fer | Rafales de vent, soutien, soin léger | à faire |
 | 6 | Sanguine Art (Blood Crystal) | Démoniaque | Mains nues | Cristaux de sang, forme cristalline | ✅ fait (Colleuhu95) |
 | 7 | Heavenly Demon Saber | Démoniaque | Sabre (dao) | Puissance brute, art du chef du Culte | à faire |

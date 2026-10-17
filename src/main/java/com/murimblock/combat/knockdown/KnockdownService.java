@@ -69,6 +69,12 @@ public final class KnockdownService {
             return switch (finish) {
                 case FinishCinematicPayload.AZURE_CLOUD -> AzureCloudSword.FINISH_HIT_TICK;
                 case FinishCinematicPayload.LONG_FIST -> LongFist.FINISH_HIT_TICK;
+                case FinishCinematicPayload.SCARLET_BLOOM -> com.murimblock.martial.ScarletBloom.HIT_TICK;
+                case FinishCinematicPayload.MOUNTAIN_BURIAL -> com.murimblock.martial.MountainShatteringFist.FINISH_HIT_TICK;
+                case FinishCinematicPayload.SEVEN_STARS -> com.murimblock.martial.SevenStarsMoves.FINISH_HIT_TICK;
+                case FinishCinematicPayload.THUNDER_SABER -> com.murimblock.martial.ThunderSaberMoves.FINISH_HIT_TICK;
+                case FinishCinematicPayload.NOON_SENTENCE -> com.murimblock.martial.MajinFistArt.FINISH_HIT_TICK;
+                case FinishCinematicPayload.LAST_BELL -> com.murimblock.martial.GoldenBell.FINISH_HIT_TICK;
                 default -> FINISH_HIT_TICK;
             };
         }
@@ -115,9 +121,12 @@ public final class KnockdownService {
         return false;
     }
 
-    /** Whether the player may fight, use items or skills: not while down, carried, carrying or finishing someone. */
+    /**
+     * Whether the player may fight, use items or skills: not while down, carried, carrying or finishing someone, nor
+     * while the Crab King holds them in his pincer.
+     */
     public static boolean isHindered(Player player) {
-        return isDowned(player) || isCarrying(player) || isExecuting(player);
+        return isDowned(player) || isCarrying(player) || isExecuting(player) || com.murimblock.mob.CrabKingEntity.isHeld(player);
     }
 
     // ---------------------------------------------------------------- knock-down and recovery
@@ -162,7 +171,8 @@ public final class KnockdownService {
     public static void tick(ServerPlayer player) {
         KnockdownData data = data(player);
         if (data.downed()) {
-            player.setForcedPose(Pose.SWIMMING);
+            // Swept into the sky by Scarlet Bloom, the body is shown in its own animation, not lying down.
+            player.setForcedPose(com.murimblock.martial.ScarletBloom.sweeps(player) ? null : Pose.SWIMMING);
             applyModifiers(player);
             if (isBeingExecuted(player)) add(player.getAttribute(Attributes.MOVEMENT_SPEED), HELD, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             else remove(player.getAttribute(Attributes.MOVEMENT_SPEED), HELD);
@@ -218,15 +228,28 @@ public final class KnockdownService {
      */
     public static boolean execute(ServerPlayer executor, ServerPlayer target) {
         if (!canActOn(executor, target) || isCarried(target) || isBeingExecuted(target)) return false;
-        int finish = AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
-                : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST : FinishCinematicPayload.GENERIC;
+        int finish = com.murimblock.martial.ScarletBloom.finishes(executor) ? FinishCinematicPayload.SCARLET_BLOOM
+                : AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
+                : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST
+                : com.murimblock.martial.MountainShatteringFist.finishes(executor) ? FinishCinematicPayload.MOUNTAIN_BURIAL
+                : com.murimblock.martial.MajinFistArt.finishes(executor) ? FinishCinematicPayload.NOON_SENTENCE
+                : com.murimblock.martial.SevenStarsMoves.finishes(executor) ? FinishCinematicPayload.SEVEN_STARS
+                : com.murimblock.martial.ThunderSaberMoves.finishes(executor) ? FinishCinematicPayload.THUNDER_SABER
+                : com.murimblock.martial.GoldenBell.finishes(executor) ? FinishCinematicPayload.LAST_BELL : FinishCinematicPayload.GENERIC;
         EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount(), finish));
         PlayerPatch<?> patch = EpicFightBridge.patch(executor);
         if (patch != null) patch.playAnimationSynchronized(switch (finish) {
             case FinishCinematicPayload.AZURE_CLOUD -> MurimAnimations.FINISH_AZURE;
             case FinishCinematicPayload.LONG_FIST -> MurimAnimations.FINISH_LONG_FIST;
+            case FinishCinematicPayload.SCARLET_BLOOM -> MurimAnimations.FINISH_SCARLET_BLOOM;
+            case FinishCinematicPayload.MOUNTAIN_BURIAL -> MurimAnimations.FINISH_MOUNTAIN_BURIAL;
+            case FinishCinematicPayload.SEVEN_STARS -> MurimAnimations.FINISH_SEVEN_STARS;
+            case FinishCinematicPayload.THUNDER_SABER -> MurimAnimations.FINISH_THUNDER_SABER;
+            case FinishCinematicPayload.NOON_SENTENCE -> MurimAnimations.FINISH_MAJIN;
+            case FinishCinematicPayload.LAST_BELL -> MurimAnimations.FINISH_LAST_BELL;
             default -> MurimAnimations.FINISH_GENERIC;
         }, 0.0F);
+        if (finish == FinishCinematicPayload.SCARLET_BLOOM) com.murimblock.martial.ScarletBloom.start(executor, target);
         cinematic(true, executor, target, finish);
         return true;
     }
@@ -237,11 +260,22 @@ public final class KnockdownService {
         for (Map.Entry<UUID, Execution> entry : List.copyOf(EXECUTIONS.entrySet())) {
             ServerPlayer executor = server.getPlayerList().getPlayer(entry.getKey());
             ServerPlayer victim = server.getPlayerList().getPlayer(entry.getValue().victim);
-            if (executor == null || victim == null || !executor.isAlive() || !isDowned(victim)
-                    || executor.distanceTo(victim) > ACTION_REACH + 1) { EXECUTIONS.remove(entry.getKey()); continue; }
+            // Scarlet Bloom throws the body into the sky: only how far it is across the ground counts.
+            double apart = executor == null || victim == null ? 0 : entry.getValue().finish == FinishCinematicPayload.SCARLET_BLOOM
+                    ? Math.hypot(executor.getX() - victim.getX(), executor.getZ() - victim.getZ()) : executor.distanceTo(victim);
+            if (executor == null || victim == null || !executor.isAlive() || !isDowned(victim) || apart > ACTION_REACH + 1) {
+                EXECUTIONS.remove(entry.getKey());
+                com.murimblock.martial.ScarletBloom.abort(entry.getKey(), server);
+                continue;
+            }
             int elapsed = server.getTickCount() - entry.getValue().started;
             if (entry.getValue().finish == FinishCinematicPayload.AZURE_CLOUD) AzureCloudSword.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.LONG_FIST) LongFist.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.MOUNTAIN_BURIAL) com.murimblock.martial.MountainShatteringFist.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.SEVEN_STARS) com.murimblock.martial.SevenStarsMoves.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.THUNDER_SABER) com.murimblock.martial.ThunderSaberMoves.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.NOON_SENTENCE) com.murimblock.martial.MajinFistArt.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.LAST_BELL) com.murimblock.martial.GoldenBell.finishTick(executor, victim, elapsed);
             if (elapsed < entry.getValue().hitTick()) continue;
             // The blow lands: the finish is over (the animation plays out on its own).
             EXECUTIONS.remove(entry.getKey());
@@ -280,6 +314,7 @@ public final class KnockdownService {
         Execution e = EXECUTIONS.get(executor.getUUID());
         if (e != null && executor instanceof ServerPlayer ex && ex.server.getTickCount() - e.started < e.hitTick()) {
             EXECUTIONS.remove(executor.getUUID());
+            com.murimblock.martial.ScarletBloom.abort(executor.getUUID(), ex.server);
             ServerPlayer victim = ex.server.getPlayerList().getPlayer(e.victim);
             if (victim != null) cinematic(false, ex, victim);
         }
@@ -300,10 +335,12 @@ public final class KnockdownService {
         // A finish broken off by a departure: the other player's film stops too (a finish that lands is not broken off).
         Execution own = EXECUTIONS.remove(player.getUUID());
         if (own != null && player.server.getPlayerList().getPlayer(own.victim) instanceof ServerPlayer v && isDowned(v)) cinematic(false, player, v);
+        if (own != null) com.murimblock.martial.ScarletBloom.abort(player.getUUID(), player.server);
         EXECUTIONS.entrySet().removeIf(entry -> {
             if (!entry.getValue().victim.equals(player.getUUID())) return false;
             ServerPlayer ex = player.server.getPlayerList().getPlayer(entry.getKey());
             if (ex != null && !player.isDeadOrDying()) cinematic(false, ex, player);
+            if (!player.isDeadOrDying()) com.murimblock.martial.ScarletBloom.abort(entry.getKey(), player.server);
             return true;
         });
         if (isCarrying(player)) release(player);

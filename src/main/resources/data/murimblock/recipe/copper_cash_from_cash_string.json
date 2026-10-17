@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "murim_money",
+  "ingredients": [
+    {
+      "item": "murimblock:cash_string"
+    }
+  ],
+  "result": {
+    "id": "murimblock:copper_cash",
+    "count": 9
+  }
+}

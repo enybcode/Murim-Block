@@ -3,6 +3,7 @@
 //
 //   (isolated Blockbench: Blockbench.exe --remote-debugging-port=9232 --user-data-dir=<empty profile>)
 //   node scripts/animation/blockbench-render.cjs <project.bbmodel> <out dir> [--fps=20] [--only=a,b] [--port=9232]
+//   --bg=101830 sets the background colour (a night sky for effects).
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -39,6 +40,22 @@ const VIEWS = {
   // Wide, for a dash (the character runs 5 blocks, 80 pixels, toward -z): from its right, and three-quarter ahead.
   wide: { position: [140, 34, -40], target: [0, 12, -40] },
   wide_front: { position: [115, 52, -150], target: [0, 12, -46] },
+  // Farther back and higher, for a tall model (a boss with something over its head): its three-quarter front, its side,
+  // its three-quarter back.
+  tall_front: { position: [-38, 34, -54], target: [0, 19, -2] },
+  tall_side: { position: [68, 24, -2], target: [0, 19, -2] },
+  tall_back: { position: [38, 34, 54], target: [0, 19, 2] },
+  // Close on the chest and the head, for checking textures.
+  close_front: { position: [-14, 26, -30], target: [0, 22, -2] },
+  close_back: { position: [14, 26, 30], target: [0, 22, 2] },
+  // Wide and high, for a scene of effects round a figure (scripts/concepts/seven-stars-mock.cjs).
+  scene: { position: [-95, 70, -120], target: [0, 26, 0] },
+  scene_top: { position: [-30, 150, -70], target: [0, 10, 0] },
+  scene_close: { position: [-42, 46, -58], target: [0, 30, 0] },
+  // A weapon standing upright, its middle about y 9 (scripts/animation/seven-stars-florett.cjs).
+  item: { position: [-34, 16, -52], target: [0, 9, 0] },
+  item_flat: { position: [0.01, 9, -62], target: [0, 9, 0] },
+  item_hilt: { position: [-12, 6, -16], target: [0, 0, 0] },
 };
 
 (async () => {
@@ -68,7 +85,7 @@ const VIEWS = {
             p.loadAnglePreset({ position: ${JSON.stringify(spec.position)}, target: ${JSON.stringify(spec.target)}, projection: 'perspective', fov: 40 });
             p.camera.lookAt(...${JSON.stringify(spec.target)});
             const bg = Canvas.scene.background;
-            Canvas.scene.background = new THREE.Color('#C9D6DE');
+            Canvas.scene.background = new THREE.Color('${arg('bg') ? '#' + arg('bg') : '#C9D6DE'}');
             const grid = Canvas.scene.children.filter(o => o.type === 'Group' && o.visible && /grid/i.test(o.name || ''));
             return await new Promise(res => p.screenshot({ crop: false }, data => { Canvas.scene.background = bg; res(data); }));
           })()`);

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "murimblock:alliance_spear_guard", "murimblock:alliance_sword_disciple", "murimblock:alliance_archer",
+    "murimblock:alliance_warrior_monk", "murimblock:alliance_sergeant", "murimblock:peak_captain",
+    "murimblock:azure_sensei", "murimblock:blood_ninja", "murimblock:blood_soldier"
+  ]
+}

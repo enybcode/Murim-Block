@@ -2,15 +2,9 @@
 
 Dix biomes inspirés des vrais paysages chinois tels qu'ils étaient à l'époque impériale (des Tang aux Ming), avant les déforestations, les barrages et les villes modernes : sept du premier jet, et depuis le 14/10/2026 les deux neiges du nord (Tianshan et Kunlun) et les collines aux camphriers du sud et de l'est.
 
-**Depuis le 14/10/2026, ils ne se mélangent plus au monde vanilla : ils forment la [carte Murim](murim-map.md)**, une bulle de 150 000 × 150 000 blocs aux régions fixes (centre, nord, ouest, sud, est), entourée de 10 000 blocs d'océan, puis le monde vanilla.
-
-![La carte Murim](images/murim-map-1.png)
+**Depuis le 14/10/2026, ils ne se mélangent plus au monde vanilla : ils forment la [carte Murim](murim-map.md)**, une bulle de 40 000 × 150 000 blocs aux régions fixes (centre, nord, ouest, sud, est), entourée de 10 000 blocs d'océan, puis le monde vanilla.
 
 Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangshan, un site pour chacun des six autres) : voir [les structures Murim](../structures/README.md). Chaque fiche de biome décrit aussi, en maquettes voxel, d'autres structures prévues pour la suite.
-
-![Les sept biomes en jeu](images/biomes-en-jeu.jpg)
-
-![Les 72 textures du mod](images/blocs.png)
 
 ## Refonte du 14 octobre : le rendu « comme Minecraft »
 
@@ -28,8 +22,6 @@ Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangsh
 - **Végétation par taches** (`noise_threshold_count`) : bosquets et clairières au lieu d'un semis uniforme.
 - **Sols.** Lœss nu sur la plus grande partie du plateau, sable et pavages de gravier du Gobi dans le désert, mousse et terre racinaire sur les pentes de la bambouseraie.
 
-![Maquettes des structures prévues](images/structures-prevues.jpg)
-
 | Biome (id) | Taille | Inspiration réelle | Fiche |
 |---|---|---|---|
 | Forêt des pics de jade (`jade_karst_forest`) | Grand | Karst à tours de Guilin et Yangshuo, rivière Li | [jade_karst_forest.md](jade_karst_forest.md) |
@@ -39,6 +31,7 @@ Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangsh
 | Mer de bambous de Shu (`shu_bamboo_sea`) | Moyen | Mer de bambous de Shunan, montagnes des pandas (Sichuan) | [shu_bamboo_sea.md](shu_bamboo_sea.md) |
 | Pays des eaux du Jiangnan (`jiangnan_waterlands`) | Moyen | Lac Tai, lac de l'Ouest, villes d'eau du bas Yangtsé | [jiangnan_waterlands.md](jiangnan_waterlands.md) |
 | Vallée des fleurs de pêcher (`peach_blossom_valley`) | Moyen | La Source aux fleurs de pêcher de Tao Yuanming, piliers de grès de Wulingyuan | [peach_blossom_valley.md](peach_blossom_valley.md) |
+| Forêt de pierre de Wulingyuan (`wulingyuan_pillars`) | Centre | Les milliers de piliers de grès de Zhangjiajie, sommets verts, gorges et brume | [wulingyuan_pillars.md](wulingyuan_pillars.md) |
 | Champs de neige du Tianshan (`tianshan_snowfields`) | Grand (nord) | Versant nord du Tianshan : forêts d'épicéas de Schrenk, prairies, lotus des neiges | [tianshan_snowfields.md](tianshan_snowfields.md) |
 | Glaciers du Kunlun (`kunlun_glaciers`) | Grand (nord, montagnes) | Kunlun : roche, glace, jade blanc de Hotan dans les torrents | [kunlun_glaciers.md](kunlun_glaciers.md) |
 | Collines aux camphriers (`camphor_hills`) | Grand (sud, est) | Collines du Jiangxi, du Hunan et de la Huizhou : camphriers sacrés, bosquets fengshui, astragale | [camphor_hills.md](camphor_hills.md) |

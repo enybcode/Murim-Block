@@ -36,6 +36,11 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * drag and gravity, launched at 0.8 block/tick), then a burst that depends on what it hit: the floor, a wall or a
  * body (it then follows that body while the water runs down it). Big ball: 4 damage, Slowness I 3 s and a small
  * push; the small followers: 1 damage, Slowness I 2 s, a third of the push.
+ * <p>The Crab King's (Enzo, 16/10: "the blue crab's water ball, but much bigger"; CrabKingEntity): the same ball, swollen
+ * between his raised pincers to {@link CrabKingEntity#ORB_SCALE} times its size, four lesser ones round it. Struck
+ * straight on, {@link #KING_HIT} of his attack; the giant also bursts all round where it lands ({@link #BLAST} blocks:
+ * {@link #KING_BLAST} of his attack, thrown away, Slowness II 4 s); a lesser one {@link #KING_LESSER}. A parry turns
+ * it as any blow.
  */
 public final class WaterBallEntity extends ThrowableProjectile implements GeoEntity {
     public static final byte CHARGING = 0, FLYING = 1, SPLASH_GROUND = 2, SPLASH_WALL = 3, SPLASH_ENTITY = 4;
@@ -51,6 +56,9 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
     static final int MAX_CHARGE_TICKS = 40;
     // Claw position of the crab man at the release, from the animated model (mouthPoint, 87.5 % scale), in blocks.
     static final double CLAW_UP = 1.31, CLAW_FORWARD = 0.93, CLAW_RIGHT = 0.45, ORBIT = 0.44;
+    /** The Crab King's: shares of his attack struck straight on by the giant, by its blast, by a lesser one; the blast's reach. */
+    public static final float KING_HIT = 1.1F, KING_BLAST = 0.7F, KING_LESSER = 0.3F;
+    public static final double BLAST = 4.5;
 
     private static final EntityDataAccessor<Byte> STATE = SynchedEntityData.defineId(WaterBallEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(WaterBallEntity.class, EntityDataSerializers.FLOAT);
@@ -95,6 +103,8 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
     }
 
     public byte state() { return entityData.get(STATE); }
+    /** Swells or shrinks it (the Crab King's, as it forms). */
+    public void setBallScale(float scale) { entityData.set(SCALE, scale); }
     public float ballScale() { return entityData.get(SCALE); }
     public float splashYaw() { return entityData.get(SPLASH_YAW); }
     public boolean isBig() { return entityData.get(ORBIT_SLOT) == 0; }
@@ -136,7 +146,7 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
                 hasImpulse = true;
                 pendingVelocity = null;
                 entityData.set(STATE, FLYING);
-            } else if (stateTicks > MAX_CHARGE_TICKS && !level().isClientSide) {
+            } else if (stateTicks > (owner instanceof CrabKingEntity ? MAX_CHARGE_TICKS + 20 : MAX_CHARGE_TICKS) && !level().isClientSide) {
                 splash(SPLASH_GROUND, getYRot(), null);
             }
             return;
@@ -154,6 +164,13 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
 
     /** In the claw, a little in front of the crab man; the small ones circle the big one (a turn per second). */
     void followClaw(Entity owner) {
+        if (owner instanceof CrabKingEntity king) {
+            // Over his head, between his raised pincers.
+            Vec3 at = king.orbPoint(entityData.get(ORBIT_SLOT), stateTicks);
+            setPos(at.x, at.y - getBbHeight() / 2, at.z);
+            setDeltaMovement(Vec3.ZERO);
+            return;
+        }
         float yaw = owner instanceof LivingEntity living ? living.yBodyRot : owner.getYRot();
         double rad = Math.toRadians(yaw);
         Vec3 forward = new Vec3(-Math.sin(rad), 0, Math.cos(rad));
@@ -175,7 +192,8 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
         Vec3 from = position().add(0, getBbHeight() / 2, 0);
         Vec3 velocity;
         if (target != null) {
-            Vec3 to = target.position().add(0, target.getBbHeight() * 0.6, 0);
+            // At its chest; a ball wider than that, at its feet plus its own half height (it would hit the ground first).
+            Vec3 to = target.position().add(0, Math.max(target.getBbHeight() * 0.6, getBbHeight() / 2), 0);
             velocity = aim(from, to, speed);
         } else {
             float yaw = owner != null ? owner.getYRot() : getYRot();
@@ -219,7 +237,8 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
 
     @Override protected boolean canHitEntity(Entity target) {
         // Never its thrower's side: the crab man and his armored crabs.
-        if (target instanceof WaterBallEntity || target instanceof CrabManEntity || target instanceof ArmoredCrabEntity) return false;
+        if (target instanceof WaterBallEntity || target instanceof CrabManEntity || target instanceof ArmoredCrabEntity
+                || target instanceof CrabKingEntity || target instanceof CrabPincerEntity) return false;
         return state() == FLYING && super.canHitEntity(target);
     }
 
@@ -229,7 +248,8 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
         Vec3 dir = horizontalDirection();
         Entity owner = getOwner();
         boolean big = isBig();
-        target.hurt(damageSources().mobProjectile(this, owner instanceof LivingEntity living ? living : null), big ? 4.0F : 1.0F);
+        float damage = owner instanceof CrabKingEntity king ? (float) king.getAttributeValue(Attributes.ATTACK_DAMAGE) * (big ? KING_HIT : KING_LESSER) : big ? 4.0F : 1.0F;
+        target.hurt(damageSources().mobProjectile(this, owner instanceof LivingEntity living ? living : null), damage);
         // A ball caught on a perfect parry only splashes on the blade; on a normal parry it does not slow and pushes half.
         boolean parried = target instanceof LivingEntity l && MurimGuardSkill.parriedThisTick(l);
         boolean guarded = target instanceof LivingEntity l && MurimGuardSkill.guardedThisTick(l);
@@ -252,6 +272,7 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
                 .subtract(dir.scale(9.5 / 16 * s));
         splash(SPLASH_ENTITY, yawOf(dir), target);
         placeCentre(centre);
+        kingBlast(centre, target);
         followed = target;
         followOffset = position().subtract(target.position());
     }
@@ -264,12 +285,39 @@ public final class WaterBallEntity extends ThrowableProjectile implements GeoEnt
         if (face == Direction.UP) {
             splash(SPLASH_GROUND, yawOf(horizontalDirection()), null);
             placeCentre(result.getLocation().add(0, r, 0));
+            kingBlast(result.getLocation(), null);
         } else {
             // Walls and ceilings: the water clings, spreads and runs down. Model -Z points into the surface.
             Vec3 normal = face.getAxis().isHorizontal() ? Vec3.atLowerCornerOf(face.getNormal()) : horizontalDirection().scale(-1);
             splash(SPLASH_WALL, yawOf(normal.scale(-1)), null);
             placeCentre(result.getLocation().add(normal.scale(r)));
+            kingBlast(result.getLocation(), null);
         }
+    }
+
+    /**
+     * The Crab King's giant bursts all round where it lands: whoever is within {@link #BLAST} blocks (but what it struck
+     * straight on, and the king's side) is struck, thrown away from it and slowed; a parry turns it as any blow.
+     */
+    private void kingBlast(Vec3 at, @Nullable Entity struck) {
+        if (!(getOwner() instanceof CrabKingEntity king) || !isBig() || !(level() instanceof net.minecraft.server.level.ServerLevel server)) return;
+        float damage = (float) king.getAttributeValue(Attributes.ATTACK_DAMAGE) * KING_BLAST;
+        for (LivingEntity victim : server.getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(at, at).inflate(BLAST),
+                e -> e != struck && e.isAlive() && !(e instanceof CrabKingEntity || e instanceof CrabManEntity || e instanceof ArmoredCrabEntity) && e.distanceToSqr(at) <= BLAST * BLAST)) {
+            victim.invulnerableTime = 0;
+            boolean hurt = victim.hurt(damageSources().mobProjectile(this, king), damage);
+            victim.clearFire();
+            if (!hurt || MurimGuardSkill.parriedThisTick(victim)) continue;
+            boolean guarded = MurimGuardSkill.guardedThisTick(victim);
+            if (!guarded) victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 1), king);
+            Vec3 away = victim.position().subtract(at).multiply(1, 0, 1);
+            away = away.lengthSqr() < 1e-4 ? horizontalDirection() : away.normalize();
+            double push = 1.1 * Math.max(0, 1 - victim.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)) * (guarded ? 0.5 : 1);
+            victim.push(away.x * push, 0.35 * push, away.z * push);
+            victim.hurtMarked = true;
+        }
+        server.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.GENERIC_SPLASH, net.minecraft.sounds.SoundSource.HOSTILE, 3.0F, 0.5F);
+        server.playSound(null, at.x, at.y, at.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(), net.minecraft.sounds.SoundSource.HOSTILE, 1.2F, 1.4F);
     }
 
     private void splash(byte kind, float yaw, @Nullable Entity target) {

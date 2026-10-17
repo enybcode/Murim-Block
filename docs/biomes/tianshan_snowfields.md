@@ -1,8 +1,5 @@
 # Champs de neige du Tianshan (`murimblock:tianshan_snowfields`) — grand biome du nord
 
-![En jeu](images/tianshan_snowfields-a.jpg)
-![Au sol](images/tianshan_snowfields-ground.jpg)
-
 ## Inspiration
 
 **Le paysage réel.** Le Tianshan, les « monts Célestes », barre le Xinjiang d'ouest en est. Le Xinjiang Tianshan est inscrit au patrimoine mondial de l'UNESCO depuis 2013 (quatre zones : Tomur, Kalajun-Kuerdening, Bayinbukuke, Bogda ; 606 833 ha).

@@ -80,6 +80,7 @@ public final class BiomeTour {
         SIGNATURE.put(MurimBiomes.CLOUD_SEA_PEAKS, s -> s.is(MurimBlocks.PALE_GRANITE.get()) || s.is(MurimBlocks.HUANGSHAN_PINE.log().get()));
         SIGNATURE.put(MurimBiomes.SHU_BAMBOO_SEA, s -> s.is(MurimBlocks.MOSO_BAMBOO.get()));
         SIGNATURE.put(MurimBiomes.JIANGNAN_WATERLANDS, s -> s.is(MurimBlocks.WILLOW.log().get()) || s.is(MurimBlocks.LOTUS_PAD.get()) || s.is(MurimBlocks.WILD_RICE.get()));
+        SIGNATURE.put(MurimBiomes.WULINGYUAN_PILLARS, s -> s.is(net.minecraft.world.level.block.Blocks.CALCITE) || s.is(net.minecraft.world.level.block.Blocks.DIORITE));
         SIGNATURE.put(MurimBiomes.PEACH_BLOSSOM_VALLEY, s -> s.is(MurimBlocks.PEACH.log().get()) || s.is(MurimBlocks.PILLAR_SANDSTONE.get()));
         SIGNATURE.put(MurimBiomes.TIANSHAN_SNOWFIELDS, s -> s.is(MurimBlocks.TIANSHAN_SPRUCE.log().get()) || s.is(MurimBlocks.KUNLUN_SEDGE.get())
                 || s.is(MurimBlocks.SNOW_LOTUS.get()) || s.is(net.minecraft.world.level.block.Blocks.SNOW_BLOCK));
@@ -91,13 +92,15 @@ public final class BiomeTour {
 
     /** Where to look for a biome on the Murim map: the heart of its region (the centre's own at the origin). */
     static BlockPos regionHeart(ResourceKey<Biome> biome) {
-        int far = 45_000;
-        if (biome == MurimBiomes.TIANSHAN_SNOWFIELDS || biome == MurimBiomes.KUNLUN_GLACIERS) return new BlockPos(0, 80, -far);
-        if (biome == MurimBiomes.HEXI_FRONTIER_DESERT || biome == MurimBiomes.LOESS_PLATEAU) return new BlockPos(-far, 80, 0);
-        if (biome == MurimBiomes.JADE_KARST_FOREST || biome == MurimBiomes.SHU_BAMBOO_SEA) return new BlockPos(0, 80, far);
-        if (biome == MurimBiomes.JIANGNAN_WATERLANDS) return new BlockPos(far, 80, 0);
-        if (biome == MurimBiomes.CAMPHOR_HILLS) return new BlockPos(far, 80, 0);
-        return new BlockPos(0, 80, 0);
+        com.murimblock.world.map.MurimMap.Region region =
+                biome == MurimBiomes.TIANSHAN_SNOWFIELDS || biome == MurimBiomes.KUNLUN_GLACIERS ? com.murimblock.world.map.MurimMap.Region.NORTH
+                : biome == MurimBiomes.HEXI_FRONTIER_DESERT || biome == MurimBiomes.LOESS_PLATEAU ? com.murimblock.world.map.MurimMap.Region.WEST
+                : biome == MurimBiomes.JADE_KARST_FOREST || biome == MurimBiomes.SHU_BAMBOO_SEA ? com.murimblock.world.map.MurimMap.Region.SOUTH
+                : biome == MurimBiomes.JIANGNAN_WATERLANDS || biome == MurimBiomes.CAMPHOR_HILLS ? com.murimblock.world.map.MurimMap.Region.EAST
+                : com.murimblock.world.map.MurimMap.Region.CENTER;
+        // The heart of the region in this world's layout (the regions are dealt anew in each world).
+        int[] heart = com.murimblock.world.map.MurimMap.heart(region, 0.75);
+        return new BlockPos(heart[0], 80, heart[1]);
     }
 
     /** After the biomes: the bubble's coast and its ocean ring, seen from the shore looking out. */
@@ -139,13 +142,19 @@ public final class BiomeTour {
                 });
             }
             if (ticks < 60) return;
+            // MURIM_BIOME_ONLY=<name>: that one biome only, no sanctuary, no coast.
+            String only = System.getenv("MURIM_BIOME_ONLY");
+            if (only != null && sanctuaryStep >= 0) sanctuaryStep = -1;
             if (sanctuaryStep >= 0) { sanctuary(mc); return; }
             List<ResourceKey<Biome>> biomes = new ArrayList<>(SIGNATURE.keySet());
-            if (index >= biomes.size()) { coast(mc); return; }
+            if (only != null) biomes.removeIf(b -> !b.location().getPath().equals(only));
+            if (index >= biomes.size()) { if (only != null) finish(mc); else coast(mc); return; }
             if (index < 0) { index = 0; stepTicks = 0; }
             ResourceKey<Biome> biome = biomes.get(index);
             String name = biome.location().getPath();
             stepTicks++;
+            // The stone forest: its own views, over the pillars' tops and up from a gorge.
+            if (biome == MurimBiomes.WULINGYUAN_PILLARS && stepTicks >= 162) { stoneForest(mc, name); return; }
             switch (stepTicks) {
                 case 1 -> { searchDone = false; scanDone = false; found = null; mc.getSingleplayerServer().execute(() -> {
                     ServerLevel level = mc.getSingleplayerServer().overworld();
@@ -311,7 +320,19 @@ public final class BiomeTour {
                 double ox = pavilion.getX() - c.getX(), oz = pavilion.getZ() - c.getZ(), d = Math.hypot(ox, oz);
                 lookAbs(mc, pavilion.getX() + 0.5 + ox / d * 9 - oz / d * 4, pavilion.getY() + 1, pavilion.getZ() + 0.5 + oz / d * 9 + ox / d * 4,
                         pavilion.getX() + 0.5, pavilion.getY() - 1, pavilion.getZ() + 0.5); }
-            case 620 -> { capture(mc, "sanctuary-pavilion.png"); sanctuaryStep = -1; }
+            case 620 -> capture(mc, "sanctuary-pavilion.png");
+            // The Golden Dragon in human form, seated before the altar of the main hall, seen from near the doors.
+            case 621 -> server.execute(() -> {
+                ServerLevel level = server.overworld();
+                BlockPos seat = com.murimblock.world.structure.SanctuaryBuilder.sageSeat(sanctuaryData.centre(), sanctuaryData.top());
+                var sages = level.getEntitiesOfClass(com.murimblock.mob.GoldenDragonSageEntity.class, new net.minecraft.world.phys.AABB(seat).inflate(3));
+                String line = "golden dragon sage: " + sages.size() + " at " + sages.stream().map(e -> e.blockPosition().toShortString()).toList() + ", seat " + seat.toShortString();
+                report.add(line);
+                LOGGER.info("Biome tour: {}", line);
+                if (sages.size() != 1) failed = true;
+            });
+            case 622 -> look(mc, 2.5, 4.6, -5.5, 0, 4.2, -11);
+            case 680 -> { capture(mc, "sanctuary-sage.png"); sanctuaryStep = -1; }
             default -> { }
         }
     }
@@ -338,15 +359,15 @@ public final class BiomeTour {
     private static void coast(Minecraft mc) throws Exception {
         coastTicks++;
         var server = mc.getSingleplayerServer();
-        int shore = com.murimblock.world.map.MurimMap.RADIUS - 1_500;
+        int shore = com.murimblock.world.map.MurimMap.RADIUS - 400;
         switch (coastTicks) {
             case 1 -> server.execute(() -> {
                 ServerLevel level = server.overworld();
                 var source = level.getChunkSource().getGenerator().getBiomeSource();
                 var sampler = level.getChunkSource().randomState().sampler();
                 java.util.function.IntFunction<String> at = x -> source.getNoiseBiome(x >> 2, 200 >> 2, 0, sampler).unwrapKey().map(k -> k.location().toString()).orElse("?");
-                String ring = at.apply(com.murimblock.world.map.MurimMap.RADIUS + 5_000), beyond = at.apply(com.murimblock.world.map.MurimMap.RADIUS + 20_000);
-                String line = "coast: " + at.apply(shore - 3_000) + " inland, " + ring + " in the ring, " + beyond + " beyond it";
+                String ring = at.apply(com.murimblock.world.map.MurimMap.RADIUS + com.murimblock.world.map.MurimMap.RING / 2), beyond = at.apply(com.murimblock.world.map.MurimMap.RADIUS + com.murimblock.world.map.MurimMap.RING + 6_000);
+                String line = "coast: " + at.apply(shore - 1_000) + " inland, " + ring + " in the ring, " + beyond + " beyond it";
                 report.add(line);
                 LOGGER.info("Biome tour: {}", line);
                 if (!ring.contains("ocean")) failed = true;
@@ -480,6 +501,44 @@ public final class BiomeTour {
         double y = Math.max(ground, level.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) x, (int) z)) + 70;
         float pitch = (float) Math.toDegrees(Math.atan2(y - ground - 10, 170));
         teleport(mc, x, y, z, 180, pitch);
+    }
+
+    /** A gorge of the stone forest near the found point: open ground with pillars close round it. */
+    private static volatile BlockPos gorge;
+
+    private static void stoneForest(Minecraft mc, String name) throws Exception {
+        var server = mc.getSingleplayerServer();
+        int top = 168;
+        switch (stepTicks) {
+            case 162 -> server.execute(() -> {
+                ServerLevel level = server.overworld();
+                BlockPos best = null;
+                int bestScore = -1;
+                for (int dx = -40; dx <= 40; dx += 2) for (int dz = -40; dz <= 40; dz += 2) {
+                    int x = found.getX() + dx, z = found.getZ() + dz;
+                    int here = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                    if (here > 120) continue;
+                    int walls = 0;
+                    for (int k = 0; k < 8; k++) {
+                        double a = k * Math.PI / 4;
+                        for (int d = 3; d <= 9; d++) if (level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x + (int) Math.round(Math.cos(a) * d), z + (int) Math.round(Math.sin(a) * d)) > 140) { walls++; break; }
+                    }
+                    if (walls > bestScore) { bestScore = walls; best = new BlockPos(x, here, z); }
+                }
+                gorge = best;
+                report.add(name + ": gorge at " + (best == null ? "none" : best.toShortString()) + ", walled on " + bestScore + " of 8 sides");
+                teleport(mc, found.getX() + 0.5, top + 16, found.getZ() - 40.5, 0, 14);
+            });
+            case 400 -> capture(mc, name + "-tops.png");
+            case 401 -> server.execute(() -> teleport(mc, found.getX() - 50.5, top + 9, found.getZ() + 0.5, -90, 6));
+            case 600 -> capture(mc, name + "-tops-2.png");
+            case 601 -> server.execute(() -> { if (gorge != null) teleport(mc, gorge.getX() + 0.5, gorge.getY() + 2, gorge.getZ() + 0.5, 30, -58); });
+            case 800 -> capture(mc, name + "-gorge-up.png");
+            case 801 -> server.execute(() -> { if (gorge != null) teleport(mc, gorge.getX() + 0.5, gorge.getY() + 3, gorge.getZ() + 0.5, 120, -22); });
+            case 960 -> capture(mc, name + "-gorge.png");
+            case 961 -> { index++; stepTicks = 0; }
+            default -> { }
+        }
     }
 
     private static void teleport(Minecraft mc, double x, double y, double z, float yaw, float pitch) {

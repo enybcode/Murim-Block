@@ -8,7 +8,8 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 /**
  * What each technique does, through Epic Fight: the technique plays its attack animation, whose own colliders deal the
  * damage (no second damage loop). Checks that do not depend on the technique are in {@link MartialService#castSlot};
- * each art's techniques and their variants are in its own class ({@link AzureCloudSword}, {@link LongFist}).
+ * each art's techniques and their variants are in its own class ({@link AzureCloudSword}, {@link LongFist},
+ * {@link TravellerStaff}...).
  */
 final class Techniques {
     private Techniques() {
@@ -19,6 +20,13 @@ final class Techniques {
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.holdsSword(player);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.bareHanded(player);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.bareHanded(player);
+        if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.holdsSpear(player);
+        if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.holdsStaff(player);
+        if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.bareHanded(player);
+        if (technique.art().equals(MartialArts.SEVEN_STARS_SWORD)) return SevenStarsSword.holdsFlorett(player);
+        if (technique.art().equals(MartialArts.THUNDER_SABER)) return ThunderSaber.holdsSaber(player);
+        if (technique.art().equals(MartialArts.MAJIN_FIST)) return MajinFistArt.bareHanded(player);
+        if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.bareHanded(player);
         return true;
     }
 
@@ -30,10 +38,18 @@ final class Techniques {
         PlayerPatch<?> patch = EpicFightBridge.patch(player);
         if (patch == null) return false;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
-        if (patch.getEntityState().inaction() && !(counter && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)) return false;
+        if (patch.getEntityState().inaction() && !(counter && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)
+                && !(technique == MartialArts.SEVERING_FLASH && ThunderSaberMoves.charging(player))) return false;
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.perform(player, patch, technique, riposte);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) return CelestialPeakSpear.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.SEVEN_STARS_SWORD)) return SevenStarsSword.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.THUNDER_SABER)) return ThunderSaberMoves.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.MAJIN_FIST)) return MajinFistArt.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.perform(player, patch, technique);
         return false;
     }
 }

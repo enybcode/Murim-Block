@@ -36,13 +36,36 @@ Il vend (prix en taëls) :
 |---|---|---|
 | Azure Peak Spear | 24 | 2 |
 | Snow Plum Jian | 24 | 2 |
+| Bishou | 16 | 2 |
+| Flying Knife | 12 | 2 |
 | Rattan Shield | 12 | 2 |
 | Qi Gathering Pill | 6 | 8 |
 | Realm Breaking Pill | 32 | 2 |
 | Potion de soin | 4 | 6 |
 | Pomme dorée | 8 | 4 |
-| 4 pains | 1 | 16 |
+| 4 pains | 1 ligature de pièces (String of Cash) | 16 |
 | Long Fist Scroll (art libre) | 40 | 1 |
+| **Sect Token** (jeton de jade, pointe vers le sanctuaire ; plus donné à la connexion, Enzo 16/10) | **64 taels + 32 lingots d'or (Gold Yuanbao)** | 1 |
+| Misty Bamboo Daoist Temple Pendant | 128 (64 + 64) | 1 |
+| Yellow River Bandit Den Pendant | 128 (64 + 64) | 1 |
+| Alliance Arena Pendant | 128 (64 + 64) | 1 |
+
+### Les pendentifs (demande d'Enzo du 15/10)
+
+- **Leur rôle.** Ce sont, après le Jeton de la Secte, les marchandises les plus chères du marchand. Comme le Jeton de la Secte, chaque pendentif a une aiguille, mais elle pointe vers la structure **de son type la plus proche** (`LocatorPendantItem`).
+- **Leurs structures.** Seules les structures importantes ont un pendentif : celles qui ont un boss, ou des PNJ à quêtes (aucune pour l'instant). Aujourd'hui :
+  - le temple de la Mer de Bambous (Sensei Yun) ;
+  - le repaire des bandits du Fleuve Jaune (le Chef Bandit) ;
+  - l'arène de l'Alliance (le capitaine de la Garde du Pic).
+- **Leur dessin rappelle le lieu** (`scripts/worldgen/PendantTextures.java`, 32 positions d'aiguille chacun, comme une boussole) :
+  - **Temple** : un disque de jade cerclé de bambou à nœuds, un nuage azur gravé, une houppe azur, et une aiguille en petite épée (l'Azure Cloud de Sensei Yun).
+  - **Repaire** : un disque de bronze terni rivé de fer, au cordon de cuir, et une aiguille en hache (la grande hache du Chef).
+  - **Arène** : un disque émaillé azur cerclé d'or pâle, frappé des trois pics de l'Alliance, une houppe dorée, et une aiguille en pointe de lance (le capitaine).
+- **L'usage :**
+  - Clic droit : il cherche, puis donne la direction et la distance. Il dit aussi quand on est arrivé, ou qu'aucune structure n'est à portée. Recharge de 5 s.
+  - L'aiguille se met à jour seule, mais une recherche lointaine coûte une à deux secondes au serveur. Il ne recherche donc de lui-même qu'après un trajet de 2 000 blocs, au plus une fois par minute.
+  - Il ne fonctionne qu'à la surface (Overworld).
+- **Une nouvelle structure importante** (boss ou PNJ à quêtes) reçoit son pendentif dans `MurimItems.pendants()`, `PendantTextures` et `pendant-models.cjs`. Sa structure doit aussi avoir un nom (`structure.murimblock.<id>`).
 
 Il achète (contre des taëls) :
 
@@ -73,5 +96,7 @@ seulement (+ Butin) :
 ## Vérifications
 
 `AllianceMerchantGameTests` : échanges tous en taëls, lance à 24 et dao racheté 3 ; clic droit ouvre l'écran, achat
-réel de la lance avec 24 taëls, un coup ferme l'échange ; butin du marchand et taëls des bandits. Portrait en vrai client :
+réel de la lance avec 24 taëls, un coup ferme l'échange ; butin du marchand et taëls des bandits ; chaque pendentif vendu
+128 taëls, achat réel d'un pendentif avec deux piles, et un pendentif sans structure à portée le dit sans pointer nulle
+part. En vrai client, `runSiteTour` vérifie que chaque pendentif pointe au même endroit que `/locate`. Portrait en vrai client :
 `gradlew -PgameTests runMugshotTour` (`alliance-merchant-front.png`, `-side.png`).

@@ -39,9 +39,12 @@ public class MartialManualItem extends Item {
         if (definition == null) return InteractionResultHolder.fail(stack);
         // A high art's manual is a closed book below its realm.
         var realm = MartialArts.requiredRealm(art);
-        if (realm != null && com.murimblock.cultivation.CultivationService.getRealm(player).ordinal() < realm.ordinal()) {
-            player.displayClientMessage(Component.translatable("art.murimblock.realm_required", Component.translatable(definition.translationKey()),
-                    Component.literal(realm.displayName())), true);
+        var current = com.murimblock.cultivation.CultivationService.getRealm(player);
+        if (realm != null && current.ordinal() < realm.ordinal()) {
+            // Too weak: told plainly in the chat (what it needs, where they stand), a word over the hotbar, a dull sound.
+            player.sendSystemMessage(tooWeak(definition, realm, current));
+            player.displayClientMessage(Component.translatable("art.murimblock.too_weak.short").withStyle(net.minecraft.ChatFormatting.RED), true);
+            level.playSound(null, player.blockPosition(), SoundEvents.BOOK_PUT, SoundSource.PLAYERS, 1.0F, 0.6F);
             return InteractionResultHolder.fail(stack);
         }
         if (player instanceof ServerPlayer serverPlayer && MartialService.learn(serverPlayer, definition)) {
@@ -51,6 +54,12 @@ public class MartialManualItem extends Item {
             player.displayClientMessage(Component.translatable("art.murimblock.already_known", Component.translatable(definition.translationKey())), true);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+    }
+
+    /** What a player too weak for a high art is told: the art, the realm it needs, the realm they are at. */
+    public static Component tooWeak(MartialArts.Art definition, com.murimblock.cultivation.CultivationRealm required, com.murimblock.cultivation.CultivationRealm current) {
+        return Component.translatable("art.murimblock.too_weak", Component.translatable(definition.translationKey()),
+                Component.literal(required.displayName()), Component.literal(current.displayName())).withStyle(net.minecraft.ChatFormatting.RED);
     }
 
     @Override

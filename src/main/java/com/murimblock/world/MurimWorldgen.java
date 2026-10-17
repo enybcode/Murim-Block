@@ -48,6 +48,8 @@ public final class MurimWorldgen {
     public static final DeferredHolder<Feature<?>, com.murimblock.world.feature.CamphorTreeFeature> CAMPHOR_TREE =
             FEATURES.register("camphor_tree", com.murimblock.world.feature.CamphorTreeFeature::new);
     public static final DeferredHolder<Feature<?>, WaterlandsFeature> WATERLANDS = FEATURES.register("waterlands", WaterlandsFeature::new);
+    public static final DeferredHolder<Feature<?>, com.murimblock.world.feature.PillarForestFeature> PILLAR_FOREST =
+            FEATURES.register("pillar_forest", com.murimblock.world.feature.PillarForestFeature::new);
     public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES =
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Murimblock.MOD_ID);
     /** The Cloud Cliff Sanctuary (built by SanctuaryPlacement; registered so /locate structure knows it). */

@@ -40,12 +40,20 @@ public final class Murimblock {
     public static final String MOD_ID = "murimblock";
 
     public Murimblock(IEventBus modEventBus, ModContainer modContainer) {
+        // The game rule murimDestruction: whether Murim blows break the ground.
+        com.murimblock.combat.ShatteredGround.init();
         modContainer.registerConfig(ModConfig.Type.CLIENT, HudSize.SPEC);
         MurimEntities.register(modEventBus);
         // Blocks first: they add their block items to MurimItems before its registry is attached.
         MurimBlocks.register(modEventBus);
         com.murimblock.martial.SanguineBlocks.register(modEventBus);
         com.murimblock.martial.SanguineItems.register(modEventBus);
+        com.murimblock.martial.CelestialPeakItems.register(modEventBus);
+        com.murimblock.martial.TravellerStaffItems.register(modEventBus);
+        com.murimblock.martial.SevenStarsItems.register(modEventBus);
+        com.murimblock.martial.ThunderSaberItems.register(modEventBus);
+        com.murimblock.martial.GoldenBellItems.register(modEventBus);
+        com.murimblock.bloodsect.BloodSect.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);
         ArmoredCrabEpicFight.register(modEventBus);
@@ -61,6 +69,8 @@ public final class Murimblock {
         MartialService.register(modEventBus);
         com.murimblock.martial.BloodCrystalAttachments.register(modEventBus);
         com.murimblock.martial.SanguineParticles.register(modEventBus);
+        com.murimblock.martial.SevenStarsParticles.register(modEventBus);
+        com.murimblock.martial.ThunderSaberParticles.register(modEventBus);
         MurimAnimations.registerMotions();
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
         EpicFightBridge.registerHooks();
@@ -85,7 +95,14 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerStarted);
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerTick);
         NeoForge.EVENT_BUS.addListener(SanctuaryPlacement::onServerStopping);
-        NeoForge.EVENT_BUS.addListener(SectTokenItem::onPlayerLoggedIn);
+        // The Crab King's lair, unique and secret, under a Jiangnan Waterlands (built after the sanctuary).
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerTick);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStopping);
+        // The Star-Plucking Peak, the world's highest point, deep in the north (built after them): the Seven Stars Sword.
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.StarPeakPlacement::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.StarPeakPlacement::onServerTick);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.StarPeakPlacement::onServerStopping);
         // Knock-down in PvP: K.O. instead of death, carry (V) or execute (B).
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, KnockdownEvents::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, KnockdownEvents::onDeath);

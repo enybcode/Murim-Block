@@ -1,0 +1,23 @@
+{
+  "trail": {
+    "color": [
+      165,
+      175,
+      195
+    ],
+    "begin_pos": [
+      0,
+      0,
+      -0.1
+    ],
+    "end_pos": [
+      0,
+      0,
+      -0.85
+    ],
+    "lifetime": 5,
+    "interpolations": 20,
+    "texture_path": "murimblock:textures/particle/murim_trail.png",
+    "particle_type": "epicfight:swing_trail"
+  }
+}

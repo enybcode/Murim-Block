@@ -44,9 +44,9 @@ public final class NatureGameTests {
     public static void theMurimBiomesLoadWithTheirTags(GameTestHelper helper) {
         var biomes = helper.getLevel().registryAccess().registryOrThrow(Registries.BIOME);
         TagKey<Biome> murim = TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "murim_biomes"));
-        // Seven of the first slice, the two snows of the north and the camphor hills (14/10/2026); where they grow is the
-        // Murim map's.
-        helper.assertTrue(MurimBiomes.ALL.size() == 10, "Expected ten Murim biomes");
+        // Seven of the first slice, the two snows of the north and the camphor hills (14/10/2026), the Wulingyuan stone
+        // forest (17/10/2026); where they grow is the Murim map's.
+        helper.assertTrue(MurimBiomes.ALL.size() == 11, "Expected eleven Murim biomes");
         for (ResourceKey<Biome> key : MurimBiomes.ALL) {
             var holder = biomes.getHolder(key);
             helper.assertTrue(holder.isPresent(), "Biome not loaded: " + key.location());
@@ -59,6 +59,7 @@ public final class NatureGameTests {
         // a technique's passing blocks, is not nature: no item, no drop).
         long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)
                 && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
+                && com.murimblock.bloodsect.BloodSect.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
                 && MurimBlocks.buildingOrder().stream().noneMatch(b -> b.getId().equals(k))).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
         // The building blocks (the main tab's) are checked the same way.
