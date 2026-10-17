@@ -27,21 +27,24 @@ const ARMS_GUESS = { Arm_R: [['x', 60], ['y', 0], ['z', 10]], Hand_R: [['x', 40]
 /** Turned `deg` round the vertical: the whole body (the spins). */
 const spin = (deg, pose) => ({ ...pose, Root: { ...pose.Root, rot: [['z', deg]] } });
 
-/** Ready: feet apart, the saber slanting up across the body, its point high on the right, the edge out front. */
+/**
+ * Ready, as Epic Fight's own greatsword stance (so a clip ends where the idle takes over): feet apart, the right foot back,
+ * both hands at the chest on the right, the saber resting up and back over the right shoulder, its edge out front.
+ */
 const GUARD = () => hold(
-  { Root: { pos: [0, 0, HIP - 0.06] }, Torso: [['z', -10]], Chest: [['x', -6], ['z', -4]], ...look(-14), ...LEGS_WIDE },
-  [0.06, 0.36, 0.3], [0.45, 0.4, 0.8], [0.2, 1, 0], { Arm_R: [['x', 40], ['y', -10], ['z', 20]], Hand_R: [['x', 50]], Tool_R: [['x', -10], ['y', 0], ['z', 0]], Arm_L: [['x', 50], ['y', 20], ['z', -10]], Hand_L: [['x', 50]] });
+  { Root: { pos: [0, 0, HIP - 0.06] }, Torso: [['z', -14]], Chest: [['x', -4], ['z', -6]], ...look(-16), ...LEGS_WIDE },
+  [0.08, 0.3, 0.25], [0.55, -0.15, 0.82], [0, 1, 0], { Arm_R: [['x', 40], ['y', -10], ['z', 20]], Hand_R: [['x', 50]], Tool_R: [['x', -10], ['y', 0], ['z', 0]], Arm_L: [['x', 50], ['y', 20], ['z', -10]], Hand_L: [['x', 50]] });
 
 /** Crouched to leap: low, the saber held back and down on the right, its edge up. */
 const CROUCH = () => hold(
-  { Root: { pos: [0, 0, HIP - 0.26] }, Torso: [['x', -12]], Chest: [['x', 4]], ...look(0, -6),
-    Thigh_R: [['x', 50]], Leg_R: [['x', -90]], Thigh_L: [['x', 40]], Leg_L: [['x', -80]] },
+  { Root: { pos: [0, 0, HIP - 0.34] }, Torso: [['x', -22], ['z', -10]], Chest: [['x', 6]], ...look(-6, -12),
+    Thigh_R: [['x', 64]], Leg_R: [['x', -112]], Thigh_L: [['x', 52]], Leg_L: [['x', -96]] },
   [0.22, 0.15, 0.3], [0.3, -0.75, -0.6], [0, 0, 1], { Arm_R: [['x', 30], ['y', -10], ['z', 30]], Hand_R: [['x', 30]], Tool_R: [['x', -50], ['y', 0], ['z', 0]], Arm_L: [['x', 60], ['y', 10], ['z', -30]], Hand_L: [['x', 40]] });
 
 /** Raised: both hands up at the brow, the saber upright over the head and tipped back, its edge out front. */
-const RAISED = (z = 0.02, back = -0.25, legs = { Thigh_R: [['x', -14]], Leg_R: [['x', -10]], Thigh_L: [['x', 16]], Leg_L: [['x', -8]] }) => hold(
+const RAISED = (z = 0.02, back = -0.25, legs = { Thigh_R: [['x', -14]], Leg_R: [['x', -10]], Thigh_L: [['x', 16]], Leg_L: [['x', -8]] }, clear = true) => hold(
   { Root: { pos: [0, 0, HIP + z] }, Torso: [['x', 4]], Chest: [['x', 4]], ...look(0, -12), ...legs },
-  [0.05, 0.38, 0.9], [0.1, back, 0.96], [0, 1, 0], { Arm_R: [['x', 150], ['y', 0], ['z', 10]], Hand_R: [['x', 25]], Tool_R: [['x', -45], ['y', 0], ['z', 0]], Arm_L: [['x', 145], ['y', 10], ['z', -10]], Hand_L: [['x', 30]] });
+  [0.05, 0.38 + back * 0.4, 0.9 + Math.max(0, -back - 0.3) * 0.35], [0.1, back, 0.96], [0, 1, 0], { Arm_R: [['x', 160], ['y', 0], ['z', 10]], Hand_R: [['x', 35]], Tool_R: [['x', -45], ['y', 0], ['z', 0]], Arm_L: [['x', 155], ['y', 10], ['z', -10]], Hand_L: [['x', 40]] }, { clear });
 
 /** The cut has landed: both hands low in front, the saber's point at the ground ahead, the edge down. */
 const CHOP = (z = -0.24, legs = { Thigh_R: [['x', 64]], Leg_R: [['x', -78]], Thigh_L: [['x', -24]], Leg_L: [['x', -46]] }) => hold(
@@ -67,14 +70,19 @@ const SWEEP = (yaw, trunk, { y = 0, lead = 'R', ahead = 0, low = 0 } = {}) => ho
     Arm_L: [['x', 70], ['y', 10], ['z', (yaw - trunk) * 0.8]], Hand_L: [['x', 30]] });
 
 /** The saber held level straight out in front, arms out, the edge to the left: the turns of Rolling Thunder. */
-const LEVEL = () => hold(
-  { Root: { pos: [0, 0, HIP - 0.12] }, Torso: [['x', -4]], Chest: [['x', -6]], ...look(0, 4), ...LEGS_WIDE },
-  [0.02, 0.5, 0.36], [0.35, 1, -0.02], [-1, 0.3, 0], { Arm_R: [['x', 85], ['y', 0], ['z', 10]], Hand_R: [['x', 10]], Tool_R: [['x', -88], ['y', 90], ['z', 0]], Arm_L: [['x', 80], ['y', 10], ['z', -10]], Hand_L: [['x', 20]] });
+const LEVEL = (bob = 0) => hold(
+  { Root: { pos: [0, 0, HIP - 0.2 + bob] }, Torso: [['x', -12], ['z', -10]], Chest: [['x', -6], ['z', -6]], ...look(10, 6),
+    Thigh_R: [['x', 40], ['y', -14]], Leg_R: [['x', -52]], Thigh_L: [['x', -10], ['y', 16]], Leg_L: [['x', -40]] },
+  [0.2, 0.4, 0.32], yawed([0, 1, -0.12], -70), [0, 1, 0.1], { Arm_R: [['x', 85], ['y', 0], ['z', 10]], Hand_R: [['x', 10]], Tool_R: [['x', -88], ['y', 90], ['z', 0]], Arm_L: [['x', 80], ['y', 10], ['z', -10]], Hand_L: [['x', 20]] });
 
 /** Planted: the saber point down before the feet, both hands high on its grip, the body a little low. */
-const PLANT = (z = -0.08, pitch = 6) => hold(
-  { Root: { pos: [0, 0, HIP + z] }, Torso: [['x', -6]], Chest: [['x', -4]], ...look(0, pitch), ...LEGS_WIDE },
-  [0.02, 0.42, 0.5], [0, 0.18, -1], [0, 1, 0], { Arm_R: [['x', 60], ['y', 0], ['z', 10]], Hand_R: [['x', 50]], Tool_R: [['x', -120], ['y', 0], ['z', 0]], Arm_L: [['x', 55], ['y', 10], ['z', -10]], Hand_L: [['x', 50]] });
+const PLANT = (z = -0.1, pitch = 6, palm = 0) => hold(
+  { Root: { pos: [0, 0, HIP + z] }, Torso: [['x', -4], ['z', 8]], Chest: [['x', -4], ['z', 6]], ...look(10, pitch),
+    Thigh_R: [['x', 22], ['y', -14]], Leg_R: [['x', -30]], Thigh_L: [['x', -6], ['y', 14]], Leg_L: [['x', -26]],
+    // The left palm out ahead at the height of the chest, pushed further when the drum is struck.
+    Arm_L: [['x', 82 + palm * 8], ['y', -4], ['z', -10]], Hand_L: [['x', 8 - palm * 8]] },
+  [0.3, 0.2, 0.26], [0.32, 0.55, -0.78], [0, 1, 0], { Arm_R: [['x', 40], ['y', 0], ['z', 30]], Hand_R: [['x', 40]], Tool_R: [['x', -120], ['y', 0], ['z', 0]] },
+  { twoHands: false });
 
 /** The saber raised straight to the sky, both hands above the head, the body stretched. */
 const SKY = (z = 0.03) => hold(
@@ -88,7 +96,8 @@ const LANDED = { Thigh_R: [['x', 70]], Leg_R: [['x', -95]], Thigh_L: [['x', -10]
 function turning(t0, turns, quarter) {
   const keys = [];
   const level = LEVEL();
-  for (let q = 0; q <= turns * 4; q++) keys.push({ t: t0 + q * quarter, pose: spin(q * 90, level) });
+  const low = LEVEL(-0.06);
+  for (let q = 0; q <= turns * 4; q++) keys.push({ t: t0 + q * quarter, pose: spin(q * 90, q % 2 ? low : level) });
   return keys;
 }
 
@@ -97,8 +106,8 @@ const ts_descends = [
   { t: 0, pose: GUARD() },
   { t: 0.18, pose: CROUCH() },
   // In the leap: the saber over the head, knees drawn up.
-  { t: 0.34, pose: RAISED(0.06, -0.2, TUCKED) },
-  { t: 0.6, pose: RAISED(0.06, -0.45, TUCKED) },
+  { t: 0.34, pose: RAISED(0.06, -0.45, TUCKED, false) },
+  { t: 0.6, pose: RAISED(0.08, -0.85, TUCKED, false) },
   // Down where it lands, at 0.7 s.
   { t: 0.7, pose: CHOP(-0.3, LANDED) },
   { t: 0.95, pose: CHOP(-0.32, LANDED) },
@@ -129,13 +138,23 @@ const ts_drum_plant = [
 begin();
 const ts_drum_strike = [
   { t: 0, pose: PLANT() },
-  { t: 0.07, pose: PLANT(-0.2, 14) },
-  { t: 0.3, pose: PLANT(-0.12, 8) },
+  { t: 0.07, pose: PLANT(-0.22, 14, 1) },
+  { t: 0.3, pose: PLANT(-0.16, 8, 1) },
   { t: 0.65, pose: GUARD() },
 ];
 
 begin();
-const CHARGE = () => SWEEP(-100, -55, { ahead: -40, low: 0.12 });
+const CHARGE = () => hold(
+  { Root: { pos: [0, 0, HIP - 0.3] }, Torso: [['x', -14], ['z', -42]], Chest: [['x', -6], ['z', -20]], ...look(-58, 4),
+    Thigh_L: [['x', 72], ['y', 10]], Leg_L: [['x', -88]], Thigh_R: [['x', -24], ['y', -16]], Leg_R: [['x', -50]] },
+  [0.34, -0.02, 0.14], [0.45, -0.82, -0.36], [-0.9, 0.3, 0.2],
+  { Arm_R: [['x', 30], ['y', -10], ['z', 40]], Hand_R: [['x', 30]], Tool_R: [['x', -60], ['y', 0], ['z', 0]], Arm_L: [['x', 40], ['y', 10], ['z', 20]], Hand_L: [['x', 40]] });
+/** The cut's end: lunged on the right foot, the body turned far left, the saber out level to the left and behind. */
+const CUT_END = (hold2 = 0) => hold(
+  { Root: { pos: [0, 0.3, HIP - 0.24 - hold2 * 0.02] }, Torso: [['x', -10], ['z', 52]], Chest: [['x', -8], ['z', 24]], ...look(30, 6),
+    Thigh_R: [['x', 74], ['y', -8]], Leg_R: [['x', -86]], Thigh_L: [['x', -30], ['y', 12]], Leg_L: [['x', -44]] },
+  [-0.22, 0.42, 0.32], yawed([0, 1, -0.06], 96), yawed([-1, 0, 0], 96),
+  { Arm_R: [['x', 80], ['y', 0], ['z', 60]], Hand_R: [['x', 14]], Tool_R: [['x', -88], ['y', 90], ['z', 0]], Arm_L: [['x', 70], ['y', 10], ['z', 50]], Hand_L: [['x', 30]] });
 const ts_flash_charge = [
   { t: 0, pose: GUARD() },
   { t: 0.25, pose: CHARGE() },
@@ -145,9 +164,9 @@ const ts_flash_charge = [
 begin();
 const ts_flash_cut = [
   { t: 0, pose: CHARGE() },
-  { t: 0.08, pose: SWEEP(12, 10, { y: 0.2, ahead: 28 }) },
-  { t: 0.16, pose: SWEEP(100, 66, { y: 0.25, lead: 'L', ahead: 35 }) },
-  { t: 0.42, pose: SWEEP(106, 70, { y: 0.25, lead: 'L', ahead: 35 }) },
+  { t: 0.08, pose: SWEEP(10, 8, { y: 0.2, ahead: 24, low: 0.1 }) },
+  { t: 0.16, pose: CUT_END() },
+  { t: 0.45, pose: CUT_END(1) },
   { t: 0.75, pose: GUARD() },
 ];
 
