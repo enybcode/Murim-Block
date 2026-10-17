@@ -25,6 +25,7 @@ public final class MurimblockNetworking {
         PayloadRegistrar registrar = event.registrar(NETWORK_VERSION);
         // Cultivation: meditation (and the inner world), Qi Sense, breakthroughs shown.
         registrar.playToServer(CultivationPayloads.Meditate.TYPE, CultivationPayloads.Meditate.STREAM_CODEC, CultivationPayloads.Meditate::handle);
+        registrar.playToServer(CultivationPayloads.Absorb.TYPE, CultivationPayloads.Absorb.STREAM_CODEC, CultivationPayloads.Absorb::handle);
         registrar.playToServer(CultivationPayloads.Sense.TYPE, CultivationPayloads.Sense.STREAM_CODEC, CultivationPayloads.Sense::handle);
         // Conversations: a page shown, an answer chosen.
         registrar.playToClient(DialoguePayloads.Page.TYPE, DialoguePayloads.Page.STREAM_CODEC,

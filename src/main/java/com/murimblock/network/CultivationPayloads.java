@@ -40,6 +40,18 @@ public final class CultivationPayloads {
         }
     }
 
+    /** Client: its cultivator's gaze rests on a mote of Qi round their meditation (MeditationOrbs): draw it in. */
+    public record Absorb(int entityId) implements CustomPacketPayload {
+        public static final Type<Absorb> TYPE = new Type<>(id("absorb_mote"));
+        public static final StreamCodec<ByteBuf, Absorb> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(Absorb::new, Absorb::entityId);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(Absorb payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player) com.murimblock.cultivation.MeditationOrbs.draw(player, payload.entityId);
+        }
+    }
+
     /** Client: the Qi Sense key held down (true) or let go. */
     public record Sense(boolean active) implements CustomPacketPayload {
         public static final Type<Sense> TYPE = new Type<>(id("qi_sense"));

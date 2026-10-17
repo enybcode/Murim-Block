@@ -124,6 +124,24 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the meditation's aura, by art and by Qi (see AuraTour).
+        auraTour {
+            client()
+            gameDirectory = project.file('build/aura-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.auraTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the motes of Qi round a meditation (see MeditationOrbsTour).
+        meditationOrbsTour {
+            client()
+            gameDirectory = project.file('build/meditation-orbs-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.meditationOrbsTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client tour of the six Murim sites, found with /locate in a fresh world (see SiteTour).
         siteTour {
             client()

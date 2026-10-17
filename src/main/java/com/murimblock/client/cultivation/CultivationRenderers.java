@@ -224,14 +224,17 @@ public final class CultivationRenderers {
         @Override
         public void render(QiMoteEntity mote, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
             float t = mote.tickCount + partial;
-            float size = 0.32F + Mth.sin(t * 0.25F) * 0.06F;
+            boolean golden = mote.kind() == QiMoteEntity.GOLDEN, focus = mote.getId() == MeditationClient.focusedMote();
+            float size = (0.32F + Mth.sin(t * 0.25F) * 0.06F) * (golden ? 1.45F : 1) * (focus ? 1.5F : 1) * Math.min(1, t / 12F);
             pose.pushPose();
             pose.translate(0, 0.25 + Mth.sin(t * 0.1F) * 0.12, 0);
             pose.mulPose(entityRenderDispatcher.cameraOrientation());
             pose.scale(size, size, size);
             VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucentEmissive(MOTE));
             Matrix4f m = pose.last().pose();
-            quad(vc, m, pose.last(), 0.75F, 0.92F, 1.0F);
+            if (golden) quad(vc, m, pose.last(), 1.0F, 0.84F, 0.42F);
+            else if (focus) quad(vc, m, pose.last(), 0.92F, 0.98F, 1.0F);
+            else quad(vc, m, pose.last(), 0.75F, 0.92F, 1.0F);
             pose.popPose();
             super.render(mote, yaw, partial, pose, buffers, light);
         }

@@ -120,6 +120,8 @@ public final class MeditationService {
         player.setSprinting(false);
         lock(player, true);
         if (now % 20 == 0) condense(player, 20);
+        // The Qi of the place gathers round the body, as motes to draw in with one's gaze.
+        MeditationOrbs.tick(player, seatedFor(player));
         // On the Star-Plucking Peak's summit, three minutes give the Seven Stars Sword (from Qi Liquidation).
         com.murimblock.world.structure.StarPeakPlacement.meditating(player, seatedFor(player));
     }
@@ -159,17 +161,43 @@ public final class MeditationService {
         return max <= 0 ? 0 : (float) Math.min(1, QiService.getQi(player) / max);
     }
 
-    /** Tells the clients that see this player how full their reserve is and their main style, when it changed. */
+    /**
+     * Tells the clients that see this player how full their reserve is, their main style, the art their aura shows and
+     * how much Qi they hold, when it changed (the Qi by a twentieth at least).
+     */
     public static void refreshAura(ServerPlayer player) {
         AuraState now = aura(player);
         float fill = fill(player);
-        var art = MartialService.data(player).mainArt();
+        var data = MartialService.data(player);
+        var art = data.mainArt();
+        var auraArt = auraArt(data);
+        float qi = (float) QiService.getQi(player);
         boolean meditating = SEATED.containsKey(player.getUUID());
         int place = CultivationService.placeOf(player).ordinal();
         if (now.meditating() != meditating || Math.abs(now.fill() - fill) >= FILL_STEP || (fill >= 1 && now.fill() < 1)
-                || !Objects.equals(now.mainArt(), art) || now.place() != place) {
-            setAura(player, new AuraState(meditating, fill, art, place));
+                || !Objects.equals(now.mainArt(), art) || now.place() != place || !Objects.equals(now.auraArt(), auraArt)
+                || Math.abs(qi - now.qi()) > Math.max(1, now.qi() * 0.05)) {
+            setAura(player, new AuraState(meditating, fill, art, place, auraArt, qi));
         }
+    }
+
+    /**
+     * The art an aura shows (Enzo, 17/10/2026: "par rapport à la mastery"): of the arts one knows, the one mastered best
+     * (MartialData.styleMastery); on a tie, the main style; none known, none.
+     */
+    public static java.util.Optional<net.minecraft.resources.ResourceLocation> auraArt(com.murimblock.martial.MartialData data) {
+        net.minecraft.resources.ResourceLocation best = null;
+        int bestMastery = -1;
+        for (var id : data.arts()) {
+            var art = com.murimblock.martial.MartialArts.art(id);
+            if (art == null) continue;
+            int m = data.styleMastery(art);
+            if (m > bestMastery || m == bestMastery && data.mainArt().filter(id::equals).isPresent()) {
+                best = id;
+                bestMastery = m;
+            }
+        }
+        return java.util.Optional.ofNullable(best);
     }
 
     private static void setAura(ServerPlayer player, AuraState state) {
