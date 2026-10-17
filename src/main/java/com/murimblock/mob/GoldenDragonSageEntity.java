@@ -4,7 +4,6 @@ import com.murimblock.integration.epicfight.EpicFightMobSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -24,13 +23,11 @@ import org.jetbrains.annotations.Nullable;
 /**
  * The Golden Dragon in human form (docs/mobs/golden-dragon.md): "the one above all". For now (Enzo, 16/10/2026) he only
  * waits in the Cloud Cliff Sanctuary's main hall, seated in meditation before the altar (SanctuaryPlacement places him):
- * he cannot be hurt, does not move, turns to a player who comes near and speaks a few words when spoken to. His dragon
+ * he cannot be hurt, does not move, turns to a player who comes near; spoken to, he talks (GoldenDragonSageDialogue)
+ * and makes crossing talismans to the other worlds. His dragon
  * form, his fight and what he gives are still to come.
  */
-public class GoldenDragonSageEntity extends PathfinderMob {
-    /** His words, chosen in turn: message.murimblock.golden_dragon_sage.0, .1, ... */
-    public static final int WORDS = 4;
-    private int said;
+public class GoldenDragonSageEntity extends PathfinderMob implements com.murimblock.dialogue.DialogueService.Speaker {
     /** The way he faces when nobody is near: set where he is placed (toward the hall's doors in the sanctuary). */
     private float facing;
 
@@ -66,10 +63,13 @@ public class GoldenDragonSageEntity extends PathfinderMob {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
         if (!level().isClientSide) {
             getLookControl().setLookAt(player, 30, 30);
-            player.sendSystemMessage(Component.translatable("message.murimblock.golden_dragon_sage." + said));
-            said = (said + 1) % WORDS;
+            if (player instanceof net.minecraft.server.level.ServerPlayer sp) GoldenDragonSageDialogue.greet(sp, this);
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
+    }
+
+    @Override public void choose(net.minecraft.server.level.ServerPlayer player, String option) {
+        GoldenDragonSageDialogue.choose(player, this, option);
     }
 
     @Override @Nullable
@@ -88,14 +88,12 @@ public class GoldenDragonSageEntity extends PathfinderMob {
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (hasRestriction()) tag.put("Home", NbtUtils.writeBlockPos(getRestrictCenter()));
-        tag.putInt("Said", said);
         tag.putFloat("Facing", facing);
     }
 
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         NbtUtils.readBlockPos(tag, "Home").ifPresent(home -> restrictTo(home, 2));
-        said = tag.getInt("Said") % WORDS;
         facing = tag.getFloat("Facing");
     }
 
