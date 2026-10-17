@@ -266,6 +266,32 @@ public final class MartialArts {
     public static final Evolution FULL_DIPPER = new Evolution(DIPPER_STEPS.id(), 60, "evolution.murimblock.full_dipper");
     public static final Evolution METEOR_SHOWER = new Evolution(FALLING_STAR_RAIN.id(), 90, "evolution.murimblock.meteor_shower");
 
+    // ---------------------------------------------------------------- the Golden Bell (docs/combat/styles/golden-bell.md)
+
+    /**
+     * A starter art of bare hands, all defence (Enzo, 17/10/2026): no passive; a golden form one keeps (the body gold), in
+     * which the two other techniques change. Its manual is sold by the Golden Bell monk.
+     */
+    public static final ResourceLocation GOLDEN_BELL = id("golden_bell");
+    /** The form: 15 Qi to go in, then 4 a second (GoldenBell); its 12 s cooldown runs from its end. */
+    public static final Technique GOLDEN_BELL_FORM = new Technique(id("golden_bell"), GOLDEN_BELL, 15, 240);
+    public static final Technique IRON_REBOUND = new Technique(id("iron_rebound"), GOLDEN_BELL, 12, 160);
+    /** Its 16 s cooldown runs from its end. */
+    public static final Technique ROOTED_MOUNTAIN = new Technique(id("rooted_mountain"), GOLDEN_BELL, 18, 320);
+    /** The secret: a perfect parry in the form rings the bell at once and knocks the attacker down. */
+    public static final Technique BELL_TOLL = new Technique(id("bell_toll"), GOLDEN_BELL, 0, 0, true);
+    /** No passive: Epic Fight's own bare-hand strikes (the palms), nothing more. */
+    public static final Passive BELL_PALMS = new Passive(id("bell_palms"), List.of(), List.of());
+    public static final String TAKE_THE_BLOW_BLOWS = "take_the_blow.blows";
+    public static final String RETURN_IT_BLOWS = "return_it.blows";
+    /** Not a quest: blows taken in the form until Bell Toll is found. */
+    public static final String BELL_TOLL_BLOWS = "bell_toll.blows";
+    public static final Quest TAKE_THE_BLOW = new Quest("take_the_blow", IRON_REBOUND.id(), List.of(new QuestStep(TAKE_THE_BLOW_BLOWS, 50)));
+    public static final Quest RETURN_IT = new Quest("return_it", ROOTED_MOUNTAIN.id(), List.of(new QuestStep(RETURN_IT_BLOWS, 10)));
+    public static final Evolution STEADFAST_BELL = new Evolution(GOLDEN_BELL_FORM.id(), 30, "evolution.murimblock.steadfast_bell");
+    public static final Evolution MIRROR_IRON = new Evolution(IRON_REBOUND.id(), 60, "evolution.murimblock.mirror_iron");
+    public static final Evolution ANCIENT_MOUNTAIN = new Evolution(ROOTED_MOUNTAIN.id(), 90, "evolution.murimblock.ancient_mountain");
+
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     /**
@@ -321,6 +347,8 @@ public final class MartialArts {
                 EARTHSHAKER, List.of(SHATTER_THE_STONE, SHAKE_THE_EARTH, HEAVENS_WEIGHT), List.of(MOUNTAIN_SPLITTING_PUNCH, EARTHQUAKE, STAMPEDE)));
         add(new Art(SEVEN_STARS_SWORD, List.of(SHOOTING_STAR, DIPPER_STEPS, ORBITING_STARS, CONSTELLATION_LINK, FALLING_STAR_RAIN, SEVEN_STARS_ARRAY, POLARIS_RIPOSTE),
                 STAR_MARKS, List.of(SEVEN_POINTS, WALK_THE_DIPPER, UNBROKEN_ORBIT, BIND_THE_SKY, SEVEN_SWORDS), List.of(TWIN_COMETS, FULL_DIPPER, METEOR_SHOWER)));
+        add(new Art(GOLDEN_BELL, List.of(GOLDEN_BELL_FORM, IRON_REBOUND, ROOTED_MOUNTAIN, BELL_TOLL), BELL_PALMS,
+                List.of(TAKE_THE_BLOW, RETURN_IT), List.of(STEADFAST_BELL, MIRROR_IRON, ANCIENT_MOUNTAIN)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }

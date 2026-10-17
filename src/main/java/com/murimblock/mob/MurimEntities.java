@@ -69,6 +69,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<AllianceMerchantEntity>> ALLIANCE_MERCHANT =
             TYPES.register("alliance_merchant", () -> EntityType.Builder.of(AllianceMerchantEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:alliance_merchant"));
+    /** The Golden Bell monk, who sells the Golden Bell's sutra: a man's size, placed in the Misty Bamboo Temple (or an egg, /summon). */
+    public static final DeferredHolder<EntityType<?>, EntityType<GoldenBellMonkEntity>> GOLDEN_BELL_MONK =
+            TYPES.register("golden_bell_monk", () -> EntityType.Builder.of(GoldenBellMonkEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:golden_bell_monk"));
     /** The Golden Dragon in human form, who waits in the Cloud Cliff Sanctuary: a man's size, placed there (or an egg, /summon). */
     public static final DeferredHolder<EntityType<?>, EntityType<GoldenDragonSageEntity>> GOLDEN_DRAGON_SAGE =
             TYPES.register("golden_dragon_sage", () -> EntityType.Builder.of(GoldenDragonSageEntity::new, MobCategory.CREATURE)
@@ -154,6 +158,7 @@ public final class MurimEntities {
         event.put(REMNANT_SOUL.get(), com.murimblock.cultivation.inner.RemnantSoulEntity.createAttributes().build());
         event.put(AZURE_SENSEI.get(), AzureSenseiEntity.createSenseiAttributes().build());
         event.put(ALLIANCE_MERCHANT.get(), AllianceMerchantEntity.createMerchantAttributes().build());
+        event.put(GOLDEN_BELL_MONK.get(), GoldenBellMonkEntity.createMonkAttributes().build());
         event.put(GOLDEN_DRAGON_SAGE.get(), GoldenDragonSageEntity.createSageAttributes().build());
         event.put(PEAK_CAPTAIN.get(), PeakCaptainEntity.createCaptainAttributes().build());
         for (AllianceSoldierEntity.Kind kind : AllianceSoldierEntity.Kind.values())

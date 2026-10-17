@@ -51,6 +51,7 @@ public final class Murimblock {
         com.murimblock.martial.CelestialPeakItems.register(modEventBus);
         com.murimblock.martial.TravellerStaffItems.register(modEventBus);
         com.murimblock.martial.SevenStarsItems.register(modEventBus);
+        com.murimblock.martial.GoldenBellItems.register(modEventBus);
         com.murimblock.bloodsect.BloodSect.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);

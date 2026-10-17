@@ -24,6 +24,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.holdsStaff(player);
         if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.bareHanded(player);
         if (technique.art().equals(MartialArts.SEVEN_STARS_SWORD)) return SevenStarsSword.holdsFlorett(player);
+        if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.bareHanded(player);
         return true;
     }
 
@@ -43,6 +44,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.SEVEN_STARS_SWORD)) return SevenStarsSword.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.perform(player, patch, technique);
         return false;
     }
 }

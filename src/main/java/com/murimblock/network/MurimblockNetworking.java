@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 24: the Golden Bell (the body's matter shown to everyone round, the bell's ring, a blow sent back).
      * 23: the Seven Stars Sword (its stars shown over their targets, a constellation bursting, its techniques' effects).
      * 22: the Son of the Demon's transformation film.
      * 20: the Traveller's Staff Art (the Spinning Rampart's spin shown to everyone around).
@@ -13,7 +14,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "23";
+    private static final String NETWORK_VERSION = "24";
 
     private MurimblockNetworking() {
     }
@@ -58,6 +59,8 @@ public final class MurimblockNetworking {
                 (payload, context) -> com.murimblock.client.SevenStarsFx.marks(payload.entityId(), payload.owner(), payload.count()));
         registrar.playToClient(SevenStarsPayloads.Burst.TYPE, SevenStarsPayloads.Burst.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.SevenStarsFx.burst(payload.entityId()));
+        registrar.playToClient(GoldenBellPayload.TYPE, GoldenBellPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.GoldenBellSkins.receive(payload.entityId(), payload.skin(), payload.form()));
         registrar.playToClient(SevenStarsPayloads.Fx.TYPE, SevenStarsPayloads.Fx.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.SevenStarsFx.fx(payload));
         registrar.playToClient(SevenStarsPayloads.Streak.TYPE, SevenStarsPayloads.Streak.STREAM_CODEC,

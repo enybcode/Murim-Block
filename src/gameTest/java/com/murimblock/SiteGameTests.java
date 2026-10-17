@@ -226,7 +226,7 @@ public final class SiteGameTests {
         return switch (plan) {
             case STILT_VILLAGE -> Map.of("minecraft:villager", 3);
             case BANDIT_DEN -> Map.of("murimblock:bandit_chief", 1, "murimblock:mountain_bandit", 4);
-            case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1);
+            case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1, "murimblock:golden_bell_monk", 1);
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
@@ -249,7 +249,7 @@ public final class SiteGameTests {
         return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8, 48, 8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity
                 || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity
                 || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity
-                || m instanceof com.murimblock.mob.PeakCaptainEntity);
+                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.GoldenBellMonkEntity);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */
