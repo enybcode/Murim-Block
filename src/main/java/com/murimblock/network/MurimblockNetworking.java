@@ -16,7 +16,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "27";
+    private static final String NETWORK_VERSION = "28";
 
     private MurimblockNetworking() {
     }
