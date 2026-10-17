@@ -211,6 +211,26 @@ public final class SonOfTheDemonGameTests {
         });
     }
 
+    @GameTest(template = "foundation_arena", batch = "son_of_the_demon", timeoutTicks = 40)
+    public static void theOneComesOnceAtAThirdOfHisLife(GameTestHelper helper) {
+        SonOfTheDemonEntity s = MurimEntities.SON_OF_THE_DEMON.get().spawn(helper.getLevel(), helper.absolutePos(new BlockPos(2, 1, 2)), MobSpawnType.COMMAND);
+        helper.assertTrue(s != null, "No Son of the Demon spawned");
+        s.setNoAi(true);
+        helper.runAfterDelay(3, () -> {
+            helper.assertTrue(s.theOneTicks() == 0, "The One came at full life");
+            s.setHealth(s.getMaxHealth() * 0.3F);
+        });
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(s.theOneUsed() && s.theOneTicks() > 0, "The One did not come at a third of his life");
+            float health = s.getHealth();
+            s.hurt(helper.getLevel().damageSources().generic(), 50);
+            helper.assertTrue(s.getHealth() == health, "He was hurt while rising into The One");
+            s.discard();
+            helper.getLevel().getEntitiesOfClass(com.murimblock.mob.majin.CruelSunEntity.class, new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(40)).forEach(e -> e.discard());
+            helper.succeed();
+        });
+    }
+
     private static int cell(SkyArena.Schematic s, int x, int y, int z) {
         int[] o = s.offset();
         return s.cells()[(x - o[0]) + (z - o[2]) * s.width() + (y - o[1]) * s.width() * s.length()];

@@ -1,0 +1,10 @@
+{
+  "attributes": {
+    "common": {
+      "impact": 1,
+      "armor_negation": 8,
+      "max_strikes": 3
+    }
+  },
+  "type": "epicfight_dd:florett"
+}

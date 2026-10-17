@@ -44,6 +44,16 @@ import javax.imageio.ImageIO;
  *   sky_breaker: an uppercut rising from a column of earth, a body thrown up above it (the secret; red);
  *   heaven_falling_mountain: a fist falling like a meteor, wrapped in fire, onto a crater (the ultimate);
  *   earthshaker: the passive, a fist on the ground, cracks running out and the shock round it.
+ * And the Seven Stars Sword's, "star night": a night-blue sky with faint stars, a silver frame, the florett in steel and
+ * every move in white and pale blue starlight:
+ *   shooting_star: a long streak of light across the square, a comet's head at its end, a cross where it cut;
+ *   dipper_steps: three star sigils round a dark figure, joined by a line, the florett thrust at it from behind;
+ *   orbiting_stars: a dark figure, seven stars in a ring round its chest, one flaring where it stops a blow;
+ *   constellation_link: the florett raised, lines of light from its point to three stars, and between them;
+ *   falling_star_rain: stars falling in long tails onto a circle on the ground;
+ *   seven_stars_array: seven swords of light in a ring, their points on a figure held in the middle (the ultimate);
+ *   polaris_riposte: a great pole star over a florett thrust (the secret; one red point);
+ *   star_marks: the passive, the Big Dipper's seven stars joined, the brightest pulsing.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -52,9 +62,10 @@ public class TechniqueIcons {
             "bloodbane_drain", "scarlet_tear", "devourer_of_worlds", "crystal_barrage", "crimson_stance", "blood_iceberg",
             "piercing_dragon", "plum_blossom_thrusts", "thousand_soldier_sweep", "long_reach",
             "vertical_strike", "point_flurry", "spinning_rampart", "third_resonance",
-            "mountain_crushing_punch", "earth_breaker", "bull_charge", "sky_breaker", "heaven_falling_mountain", "earthshaker"};
+            "mountain_crushing_punch", "earth_breaker", "bull_charge", "sky_breaker", "heaven_falling_mountain", "earthshaker",
+            "shooting_star", "dipper_steps", "orbiting_stars", "constellation_link", "falling_star_rain", "seven_stars_array", "polaris_riposte", "star_marks"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -68,7 +79,8 @@ public class TechniqueIcons {
             else if (i < SPEAR) blood(g, img, i - BLOOD);
             else if (i < STAFF) peak(g, img, i - SPEAR);
             else if (i < MOUNTAIN) road(g, img, i - STAFF);
-            else stone(g, img, i - MOUNTAIN);
+            else if (i < STARS) stone(g, img, i - MOUNTAIN);
+            else stars(g, img, i - STARS);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -733,4 +745,115 @@ public class TechniqueIcons {
         px(img, 7, 16, eye);
     }
 
+
+    // ------------------------------------------------------------ the Seven Stars Sword: star night
+
+    static final Color STARLIGHT = c(236, 244, 255), STAR_BLUE = c(150, 196, 255), STAR_DIM = c(84, 116, 190), SILVER = c(196, 206, 224),
+            NIGHT_FIGURE = c(10, 14, 32);
+    static final double[][] DIPPER = {{-2.2, 0.1}, {-1.2, 0.35}, {-0.4, 0.4}, {0.4, 0.4}, {1.9, 1.0}, {2.0, -0.1}, {0.8, -0.6}};
+    static final int[][] DIPPER_LINES = {{0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {6, 3}};
+
+    static void starBack(BufferedImage img, Graphics2D g) {
+        java.util.Random r = new java.util.Random(7);
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 15.5) / 22.0;
+            img.setRGB(x, y, c((int) (8 + 12 * (1 - d)), (int) (12 + 18 * (1 - d)), (int) (30 + 42 * (1 - d))).getRGB());
+        }
+        for (int k = 0; k < 14; k++) px(img, 2 + r.nextInt(28), 2 + r.nextInt(28), c(70, 90, 140));
+        g.setColor(SILVER); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(46, 56, 96)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A four-pointed star at (x, y), arms of length r, a white heart. */
+    static void star(BufferedImage img, Graphics2D g, double x, double y, double r, Color col) {
+        line(g, x - r, y, x + r, y, 1f, col);
+        line(g, x, y - r, x, y + r, 1f, col);
+        if (r >= 3) { line(g, x - r * 0.45, y - r * 0.45, x + r * 0.45, y + r * 0.45, 1f, STAR_DIM); line(g, x - r * 0.45, y + r * 0.45, x + r * 0.45, y - r * 0.45, 1f, STAR_DIM); }
+        px(img, (int) Math.round(x), (int) Math.round(y), STARLIGHT);
+    }
+
+    /** A florett from its pommel (x0, y0) to its point (x1, y1): a thin steel blade, a star guard, a blue grip. */
+    static void florett(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+        double gx = x0 + ux * 5, gy = y0 + uy * 5;
+        line(g, x0, y0, gx, gy, 1.6f, c(34, 48, 96));
+        line(g, gx, gy, x1, y1, 1.2f, SILVER);
+        line(g, gx + ux, gy + uy, x1 - ux, y1 - uy, 0.5f, STARLIGHT);
+        line(g, gx - uy * 3, gy + ux * 3, gx + uy * 3, gy - ux * 3, 1.4f, SILVER);
+        px(img, (int) Math.round(gx), (int) Math.round(gy), c(70, 110, 220));
+        px(img, (int) Math.round(x0), (int) Math.round(y0), STARLIGHT);
+    }
+
+    static void figure(Graphics2D g, double x, double y) {
+        g.setColor(NIGHT_FIGURE);
+        g.fill(new Ellipse2D.Double(x - 2.5, y - 9, 5, 5));
+        g.fill(new RoundRectangle2D.Double(x - 3.5, y - 4, 7, 10, 3, 3));
+    }
+
+    static void stars(Graphics2D g, BufferedImage img, int i) {
+        starBack(img, g);
+        switch (i) {
+            case 0 -> { // Shooting Star: a long streak across, the comet's head at its end, a cross where it cut.
+                taper(g, 2, 24, 14, 18, 27, 10, 0.4, 2.6, STAR_DIM);
+                taper(g, 6, 22, 16, 16, 27, 10, 0.2, 1.2, STAR_BLUE);
+                line(g, 14, 19, 27, 10, 0.6f, STARLIGHT);
+                star(img, g, 27, 10, 4, STARLIGHT);
+                star(img, g, 15, 18, 2, STAR_BLUE);
+            }
+            case 1 -> { // Dipper Steps: three sigils round a figure, joined, the florett thrust at it from behind.
+                double[][] at = {{6, 26}, {16, 28}, {26, 25}};
+                for (int k = 0; k < 3; k++) {
+                    g.setColor(STAR_DIM); g.draw(new Ellipse2D.Double(at[k][0] - 3, at[k][1] - 1.5, 6, 3));
+                    px(img, (int) at[k][0], (int) at[k][1], STARLIGHT);
+                    if (k > 0) line(g, at[k - 1][0], at[k - 1][1], at[k][0], at[k][1], 0.6f, STAR_BLUE);
+                }
+                figure(g, 16, 18);
+                florett(g, img, 29, 10, 19, 15);
+                star(img, g, 18, 15, 3, STARLIGHT);
+            }
+            case 2 -> { // Orbiting Stars: seven stars in a ring round a figure, one flaring.
+                figure(g, 16, 20);
+                g.setColor(STAR_DIM); g.draw(new Ellipse2D.Double(4, 13, 24, 9));
+                for (int k = 0; k < 7; k++) {
+                    double a = k * Math.PI * 2 / 7 + 0.4;
+                    star(img, g, 16 + Math.cos(a) * 12, 17.5 + Math.sin(a) * 4.5, k == 0 ? 3.5 : 1.5, k == 0 ? STARLIGHT : STAR_BLUE);
+                }
+                line(g, 28, 18, 31, 15, 1f, c(200, 80, 70));
+            }
+            case 3 -> { // Constellation Link: the florett raised, lines to three stars and between them.
+                florett(g, img, 6, 29, 9, 12);
+                double[][] st = {{18, 6}, {26, 12}, {22, 22}};
+                for (double[] q : st) line(g, 9, 12, q[0], q[1], 0.7f, STAR_BLUE);
+                line(g, 18, 6, 26, 12, 0.6f, STARLIGHT); line(g, 26, 12, 22, 22, 0.6f, STARLIGHT);
+                for (double[] q : st) star(img, g, q[0], q[1], 3, STARLIGHT);
+                star(img, g, 9, 12, 2, STARLIGHT);
+            }
+            case 4 -> { // Falling Star Rain: stars falling in tails onto a circle.
+                g.setColor(STAR_BLUE); g.draw(new Ellipse2D.Double(4, 23, 24, 6));
+                g.setColor(STAR_DIM); g.draw(new Ellipse2D.Double(7, 24.5, 18, 3));
+                double[][] f = {{10, 22}, {18, 15}, {24, 24}, {14, 8}};
+                for (double[] q : f) { taper(g, q[0] - 7, q[1] - 9, q[0] - 3, q[1] - 4, q[0], q[1], 0.3, 1.6, STAR_BLUE); star(img, g, q[0], q[1], 2, STARLIGHT); }
+            }
+            case 5 -> { // Seven Stars Sword Array: seven swords of light in a ring, points on a figure.
+                figure(g, 16, 20);
+                for (int k = 0; k < 7; k++) {
+                    double a = k * Math.PI * 2 / 7 - Math.PI / 2;
+                    double sx = 16 + Math.cos(a) * 13, sy = 16 + Math.sin(a) * 13, ex = 16 + Math.cos(a) * 6, ey = 16 + Math.sin(a) * 6;
+                    line(g, sx, sy, ex, ey, 1.6f, STAR_DIM);
+                    line(g, sx, sy, ex, ey, 0.6f, STARLIGHT);
+                }
+                star(img, g, 16, 14, 3, STARLIGHT);
+            }
+            case 6 -> { // Polaris Riposte: a great pole star over a florett thrust.
+                florett(g, img, 3, 27, 22, 16);
+                star(img, g, 22, 9, 6, STARLIGHT);
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Star Marks: the Big Dipper, joined, the brightest pulsing.
+                double sc = 5.2, cx = 16, cy = 17;
+                for (int[] l : DIPPER_LINES) line(g, cx + DIPPER[l[0]][0] * sc, cy - DIPPER[l[0]][1] * sc, cx + DIPPER[l[1]][0] * sc, cy - DIPPER[l[1]][1] * sc, 0.6f, STAR_BLUE);
+                for (int k = 0; k < 7; k++) star(img, g, cx + DIPPER[k][0] * sc, cy - DIPPER[k][1] * sc, k == 4 ? 3.5 : 2, k == 4 ? STARLIGHT : STAR_BLUE);
+            }
+        }
+    }
 }

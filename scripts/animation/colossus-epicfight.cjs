@@ -210,10 +210,48 @@ const smash = [
   { t: 1.0, pose: HOLD },
 ];
 
+/**
+ * The Majin Fist, the Pride of the Sun (Enzo, 17/10/2026: "a high-level martial art of 6 skills inspired by Escanor"):
+ * flare, 1.2 s: drawn back, twisting, then the palm thrust straight out (its fire released at 0.7 s);
+ * conjure, 2.4 s: the right palm raised to the sky and held while a small sun grows over it (to 1.2 s), drawn back and
+ * hurled (released at 1.6 s);
+ * judgment, 1.8 s: the arm raised, pointing at the sky, held, then the fist brought down (the pillars at 1.6 s);
+ * the_one, 3.0 s: gathered in on himself, arms crossed, then flung open wide and up, head thrown back, rising.
+ */
+const FLARE_BACK = { ...REST, Root: { pos: [0, -0.2, HIP - 0.08] }, Torso: [['y', 30]], Head: [['y', -20]],
+  Arm_R: [['x', 40], ['y', -60]], Hand_R: [['x', 90]], Arm_L: [['x', 60], ['y', 20]], Hand_L: [['x', 40]],
+  Thigh_R: [['x', -15], ['y', -8]], Thigh_L: [['x', 25], ['y', 8]], Leg_L: [['x', -20]] };
+const FLARE_OUT = { ...REST, Root: { pos: [0, 0.5, HIP - 0.1] }, Torso: [['x', 10], ['y', -20]], Head: [['y', 14]],
+  Arm_R: [['x', 92], ['y', -2]], Hand_R: [['x', 0]], Arm_L: [['x', 10], ['y', 30]], Hand_L: [['x', 30]],
+  Thigh_R: [['x', -25], ['y', -8]], Thigh_L: [['x', 35], ['y', 8]], Leg_L: [['x', -30]] };
+const flare = [{ t: 0, pose: REST }, { t: 0.45, pose: FLARE_BACK }, { t: 0.7, pose: FLARE_OUT }, { t: 0.9, pose: FLARE_OUT }, { t: 1.2, pose: REST }];
+const RAISED = (k) => ({ ...REST, Torso: [['x', -6], ['z', k]], Head: [['x', -30]], Arm_R: [['x', 175], ['y', -10 + k]], Hand_R: [['x', 10]],
+  Arm_L: [['x', 30], ['y', 30]], Hand_L: [['x', 40]] });
+const conjure = [
+  { t: 0, pose: REST }, { t: 0.5, pose: RAISED(0) }, { t: 0.8, pose: RAISED(3) }, { t: 1.0, pose: RAISED(-3) }, { t: 1.2, pose: RAISED(0) },
+  { t: 1.45, pose: { ...RAISED(0), Torso: [['x', -20], ['y', 25]], Arm_R: [['x', 170], ['y', -40]], Hand_R: [['x', 60]] } },
+  { t: 1.6, pose: { ...REST, Root: { pos: [0, 0.5, HIP - 0.08] }, Torso: [['x', 30], ['y', -20]], Arm_R: [['x', 60], ['y', -6]], Hand_R: [['x', 0]],
+    Arm_L: [['x', -10], ['y', 30]], Thigh_L: [['x', 30], ['y', 8]], Leg_L: [['x', -30]] } },
+  { t: 2.4, pose: REST },
+];
+const POINT = { ...REST, Torso: [['x', -10]], Head: [['x', -40]], Arm_R: [['x', 170], ['y', -5]], Hand_R: [['x', 0]], Arm_L: [['x', 20], ['y', 20]] };
+const judgment = [
+  { t: 0, pose: REST }, { t: 0.6, pose: POINT }, { t: 1.3, pose: { ...POINT, Head: [['x', -44]] } },
+  { t: 1.6, pose: { ...REST, Torso: [['x', 25]], Head: [['x', 10]], Arm_R: [['x', 60], ['y', -10]], Hand_R: [['x', 20]] } },
+  { t: 1.8, pose: { ...REST, Torso: [['x', 22]], Head: [['x', 8]], Arm_R: [['x', 58], ['y', -10]], Hand_R: [['x', 20]] } },
+];
+const GATHER = { ...REST, Root: { pos: [0, 0, HIP - 0.15] }, Torso: [['x', 20]], Head: [['x', 25]],
+  Arm_R: [['x', 70], ['y', 50]], Hand_R: [['x', 90]], Arm_L: [['x', 70], ['y', -50]], Hand_L: [['x', 90]],
+  Thigh_R: [['x', 30], ['y', -10]], Leg_R: [['x', -50]], Thigh_L: [['x', 30], ['y', 10]], Leg_L: [['x', -50]] };
+const RADIANT = { ...REST, Root: { pos: [0, 0, HIP + 0.05] }, Torso: [['x', -15]], Chest: [['x', -10]], Head: [['x', -45]],
+  Arm_R: [['y', -70], ['x', 40]], Hand_R: [['x', 10]], Arm_L: [['y', 70], ['x', 40]], Hand_L: [['x', 10]],
+  Thigh_R: [['y', -14]], Thigh_L: [['y', 14]] };
+const the_one = [{ t: 0, pose: REST }, { t: 0.8, pose: GATHER }, { t: 1.6, pose: RADIANT }, { t: 3.0, pose: { ...RADIANT, Head: [['x', -50]] } }];
+
 const GAME = {
   idle: avatar.ANIMS.idle, walk: avatar.ANIMS.walk, awaken: avatar.ANIMS.awaken, chest_beat: avatar.ANIMS.chest_beat,
   roar: [{ t: 0, pose: REST }, { t: 0.4, pose: ROAR }, { t: 1.6, pose: { ...ROAR, Head: [['x', -34]] } }, { t: 2.0, pose: REST }],
-  punch, grab, leap, fly, throw: throwIt, land, smash, dive,
+  punch, grab, leap, fly, throw: throwIt, land, smash, dive, flare, conjure, judgment, the_one,
 };
 
 if (require.main === module) {

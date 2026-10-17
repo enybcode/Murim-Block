@@ -138,12 +138,35 @@ public final class MurimAnimations {
         BanditWarlordAnimations.build(builder);
         ColossusAnimations.build(builder);
         buildMountainFist(builder);
+        buildSevenStars(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);
         buildStaffArt(builder);
         SectWeaponAnimations.build(builder);
         CrabKingAnimations.build(builder);
+    }
+
+    // ---------------------------------------------------------------- the Seven Stars Sword (scripts/animation/seven-stars-art.cjs)
+
+    /**
+     * The Seven Stars Sword's moves, a florett in hand: poses only, no hit box (martial/SevenStarsSword deals the blows and
+     * moves the body on the server, at the times below). Shooting Star, one bound of Dipper Steps, Orbiting Stars,
+     * Constellation Link, Falling Star Rain, the secret Polaris Riposte, the ultimate Seven Stars Sword Array, the finish
+     * Extinguished Stars.
+     */
+    public static AnimationAccessor<ActionAnimation> SSS_SHOOTING_STAR, SSS_DIPPER_THRUST, SSS_ORBIT, SSS_LINK, SSS_RAIN, SSS_POLARIS,
+            SSS_ARRAY, FINISH_SEVEN_STARS;
+
+    private static void buildSevenStars(AnimationBuilder builder) {
+        SSS_SHOOTING_STAR = builder.nextAccessor("biped/murim/sss_shooting_star", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        SSS_DIPPER_THRUST = builder.nextAccessor("biped/murim/sss_dipper_thrust", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        SSS_ORBIT = builder.nextAccessor("biped/murim/sss_orbit", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SSS_LINK = builder.nextAccessor("biped/murim/sss_link", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SSS_RAIN = builder.nextAccessor("biped/murim/sss_rain", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        SSS_POLARIS = builder.nextAccessor("biped/murim/sss_polaris", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        SSS_ARRAY = builder.nextAccessor("biped/murim/sss_array", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        FINISH_SEVEN_STARS = builder.nextAccessor("biped/murim/sss_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     // ---------------------------------------------------------------- the Mountain-Shattering Fist (scripts/animation/mountain-fist.cjs)

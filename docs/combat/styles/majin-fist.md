@@ -46,11 +46,26 @@ Ajouter un coup se fait en quatre étapes :
   - le météore est ensuite retiré bloc par bloc (`SkyArena.remove`), en environ 9 s ;
   - les sols cassés pendant le combat sont oubliés, pour qu'ils ne reviennent pas flotter dans le vide.
 
-## Les coups
+## Les coups : l'Orgueil du Soleil (17/10/2026, inspiré d'Escanor)
 
-| Coup | Animation | Distance | Recharge | Effets | État |
+Enzo : « un art martial haut niveau, 6 skills inspirés d'Escanor, sers-toi de Photon, un truc qui a de la gueule ».
+Chaque impact a sa lumière Photon, et les soleils ont la leur, qui les suit. Les GIF sont dans `images/majin/`, en
+local seulement. Film : `gradlew -PgameTests runMajinTour`.
+
+| # | Technique | Distance | Recharge | Vie | Effet |
 |---|---|---|---|---|---|
-| Direct du droit (`straight_right`) | `colossus/punch` | 0 à 6 | 1,5 s | son propre collider, ×1,2 | provisoire, en attendant les coups d'Enzo |
+| 1 | **Poing Solaire** (`sunfire_fist`) | 0 à 6 | 1,2 s | toujours | le direct du droit ; à l'impact, explosion de flammes devant lui (0,35 × attaque, brûle 3 s) |
+| 2 | **Flamme de l'Orgueil** (`pride_flare`) | 5 à 18 | 9 s | toujours | paume armée qui s'illumine, puis poussée : une vague de feu solaire file au sol sur 21 blocs, 4,5 de large, avec des boules de lumière qui éclatent dessus (0,5 × attaque, brûle 4 s) |
+| 3 | **Soleil Cruel** (`cruel_sun`) | 9 à 34 | 14 s | toujours | un petit soleil grossit au-dessus de sa paume levée, puis il le lance en arc sur sa cible : grosse explosion de 5,5 blocs, cratère, feu (1,3 × attaque) |
+| 4 | **Jugement de Midi** (`noon_judgment`) | 0 à 40 | 20 s | sous 75 % | il pointe le ciel ; des cercles d'or apparaissent sous chaque joueur et autour de lui ; une seconde plus tard, des piliers de lumière s'abattent (0,8 × attaque) : il faut sortir du cercle |
+| 5 | **Météore de Midi** (`midday_meteor`) | 8 à 24 | 16 s | sous 60 % | il bondit très haut, un cercle de feu se resserre là où il va tomber ; impact, cratère, puis un anneau de feu court au sol (0,6 × attaque) : il faut le sauter |
+| 6 | **The One** | — | une fois | à 35 % | il s'élève, intouchable 3 s ; un grand soleil naît au-dessus de lui ; le ciel devient doré et le titre « THE ONE » s'affiche. Pendant 28 s, il est 30 % plus rapide, 25 % plus fort, et sa chaleur double. Puis il abat le grand soleil au centre de l'arène : 18 blocs de rayon, 2,2 × attaque. Un cercle d'or prévient 4 s avant : il faut fuir au bord ou parer |
+
+**Passifs** :
+- **Ardeur du Soleil** : sa chaleur brûle qui reste à moins de 5 blocs, 1 dégât par seconde ; 8 blocs et 2 dégâts pendant The One.
+- **Vers Midi** : sa force monte de 5 % toutes les 30 s de combat, jusqu'à 30 %, comme le soleil vers midi.
+
+Tous les coups se parent avec la garde Murim.
 
 ## Tests
 
@@ -58,4 +73,5 @@ Ajouter un coup se fait en quatre étapes :
   - le combat construit à partir de la liste ;
   - l'explosion qui blesse et projette ;
   - le retour dans l'arène après une chute ;
-  - sa mort qui pose les joueurs et le butin en bas.
+  - sa mort qui pose les joueurs et le butin en bas ;
+  - The One qui vient à 35 % de sa vie, une seule fois.
