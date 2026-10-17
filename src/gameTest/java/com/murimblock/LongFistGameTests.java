@@ -264,18 +264,34 @@ public final class LongFistGameTests {
         });
     }
 
-    @GameTest(template = "foundation_arena", batch = "long_fist_whirlwind", timeoutTicks = 40)
+    @GameTest(template = "foundation_arena", batch = "long_fist_whirlwind", timeoutTicks = 140)
     public static void whirlwindKickStrikesAllRound(GameTestHelper helper) {
         ServerPlayer player = adept(helper, 3.5);
         Zombie front = dummy(helper, player, 0, 1.5), back = dummy(helper, player, 0, -1.5), side = dummy(helper, player, 1.8, 0);
         unlock(player, MartialArts.WHIRLWIND_KICK, 2);
-        helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "Whirlwind Kick was refused");
-        helper.assertTrue(playing(player, MurimAnimations.WHIRLWIND_KICK), "Not the whirlwind");
-        tickFor(helper, player, 1, 20);
-        helper.runAfterDelay(22, () -> {
-            helper.assertTrue(front.getHealth() < 200 && back.getHealth() < 200 && side.getHealth() < 200,
-                    "The whirlwind missed someone: front " + front.getHealth() + ", back " + back.getHealth() + ", side " + side.getHealth());
-            end(helper, player, front, back, side);
+        helper.testInfo.addListener(new net.minecraft.gametest.framework.GameTestListener() {
+            public void testStructureLoaded(net.minecraft.gametest.framework.GameTestInfo t) { }
+            public void testPassed(net.minecraft.gametest.framework.GameTestInfo t, net.minecraft.gametest.framework.GameTestRunner r) { }
+            public void testFailed(net.minecraft.gametest.framework.GameTestInfo t, net.minecraft.gametest.framework.GameTestRunner r) {
+                front.discard(); back.discard(); side.discard();
+                patch(player).resetHolding(); MartialCombat.clearForTests(); cleanup(player);
+            }
+            public void testAddedForRerun(net.minecraft.gametest.framework.GameTestInfo a, net.minecraft.gametest.framework.GameTestInfo b, net.minecraft.gametest.framework.GameTestRunner r) { }
+        });
+        // moveTo can put the front dummy across a chunk boundary. Wait for its collision section,
+        // as the Thunder Saber fixtures do, before starting the actual 20-tick attack measurement.
+        helper.startSequence().thenWaitUntil(() -> {
+            for (Zombie z : List.of(front, back, side))
+                helper.assertTrue(player.level().getEntities(player, z.getBoundingBox()).contains(z), "Whirlwind dummy is not reachable yet");
+        }).thenExecute(() -> {
+            helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "Whirlwind Kick was refused");
+            helper.assertTrue(playing(player, MurimAnimations.WHIRLWIND_KICK), "Not the whirlwind");
+            tickFor(helper, player, 1, 20);
+            helper.runAfterDelay(22, () -> {
+                helper.assertTrue(front.getHealth() < 200 && back.getHealth() < 200 && side.getHealth() < 200,
+                        "The whirlwind missed someone: front " + front.getHealth() + ", back " + back.getHealth() + ", side " + side.getHealth());
+                end(helper, player, front, back, side);
+            });
         });
     }
 

@@ -19,6 +19,10 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 public abstract class SanguineSwordReachMixin {
     @Inject(method = "getColliderMatching", at = @At("HEAD"), cancellable = true)
     private void murimblock$bloodSwordReach(InteractionHand hand, CallbackInfoReturnable<Collider> result) {
+        if (hand == InteractionHand.MAIN_HAND && ((LivingEntityPatch<?>) (Object) this).getOriginal() instanceof com.murimblock.mob.ScarletGuardianEntity guardian
+                && guardian.currentArt()==com.murimblock.mob.ScarletGuardianEntity.Art.SWORD) {
+            result.setReturnValue(ColliderPreset.LONGSWORD); return;
+        }
         if (hand == InteractionHand.MAIN_HAND && ((LivingEntityPatch<?>) (Object) this).getOriginal() instanceof Player p
                 && SanguineArt.holdsSword(p)) result.setReturnValue(ColliderPreset.LONGSWORD);
     }
