@@ -22,6 +22,7 @@ public final class MurimblockCommands {
     }
 
     public static void onRegisterCommands(RegisterCommandsEvent event) {
+        SpawnProtectionCommands.register(event.getDispatcher());
         CombatCommands.register(event.getDispatcher());
         MartialCommands.register(event.getDispatcher());
         CultivationCommands.onRegisterCommands(event);

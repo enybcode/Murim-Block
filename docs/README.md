@@ -12,6 +12,7 @@
 - [Technique balance](combat/technique-balance.md): technique damage by weapon and by Qi Max, and no combo that kills at once (14 October, on test).
 - [Armored crab](ARMORED_CRAB_DELIVERY.md): integrated assets, behavior and local verification.
 - [Bandit Chief](mobs/bandit-chief.md): the bandits' mini-boss, his great axe and attacks.
+- [Bandit ecology](mobs/bandit-ecology.md): surface bandits, faction hostility, art scroll drops and spawn protection for structures and WorldEdit bases.
 - [Sensei Yun](mobs/azure-sensei.md): the Azure Cloud Sect's master in the Misty Bamboo Temple, his sword and his manual.
 - [Crab King](mobs/crab-king.md): the crab art's boss, an infected martial artist with long pincers; waits in a structure to come.
 - [Alliance Merchant](mobs/alliance-merchant.md): the Orthodox Alliance's merchant, his trades and the silver taels.

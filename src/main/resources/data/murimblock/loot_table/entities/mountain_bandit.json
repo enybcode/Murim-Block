@@ -3,6 +3,17 @@
   "pools": [
     {
       "rolls": 1,
+      "conditions": [
+        { "condition": "minecraft:killed_by_player" },
+        { "condition": "minecraft:random_chance", "chance": 0.1 }
+      ],
+      "entries": [
+        { "type": "minecraft:item", "name": "murimblock:long_fist_scroll", "weight": 1 },
+        { "type": "minecraft:item", "name": "murimblock:traveller_staff_scroll", "weight": 1 }
+      ]
+    },
+    {
+      "rolls": 1,
       "entries": [
         {
           "type": "minecraft:item",

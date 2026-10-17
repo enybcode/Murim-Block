@@ -69,17 +69,17 @@ public final class AllianceSoldierGameTests {
         helper.succeed();
     }
 
-    /** A disciple beside a player and a bandit: he attacks neither (he only answers blows). */
+    /** A disciple beside a player and a villager stays peaceful; bandit hostility has its own ecology test. */
     @GameTest(template = "foundation_arena", batch = "soldier_targets", timeoutTicks = 100)
-    public static void soldiersAttackNoOneFirst(GameTestHelper helper) {
+    public static void soldiersDoNotAttackPeacefulPeopleFirst(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         var disciple = soldier(helper, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), new BlockPos(2, 1, 1));
-        var bandit = helper.spawn(MurimEntities.MOUNTAIN_BANDIT.get(), new BlockPos(2, 1, 4));
-        bandit.setNoAi(true);
+        var villager = helper.spawn(EntityType.VILLAGER, new BlockPos(2, 1, 4));
+        villager.setNoAi(true);
         helper.runAfterDelay(60, () -> {
             helper.assertTrue(disciple.getTarget() == null && !disciple.isAngry(), "The disciple attacked first: " + disciple.getTarget());
             disciple.discard();
-            bandit.discard();
+            villager.discard();
             cleanup(player);
             helper.succeed();
         });
