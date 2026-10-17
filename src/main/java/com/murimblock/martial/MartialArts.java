@@ -266,6 +266,41 @@ public final class MartialArts {
     public static final Evolution FULL_DIPPER = new Evolution(DIPPER_STEPS.id(), 60, "evolution.murimblock.full_dipper");
     public static final Evolution METEOR_SHOWER = new Evolution(FALLING_STAR_RAIN.id(), 90, "evolution.murimblock.meteor_shower");
 
+    // ---------------------------------------------------------------- the Majin Fist (docs/combat/styles/majin-fist.md)
+
+    /**
+     * The Son of the Demon's art, the Pride of the Sun (Enzo, 17/10/2026: "make me a martial art with these techniques; he
+     * drops it when killed"): bare hands and the sun's fire, learnt from Qi Liquidation, a high art. Five techniques, an
+     * ultimate (The One), a secret (Grand Noon), its passive Pride of the Sun.
+     */
+    public static final ResourceLocation MAJIN_FIST = id("majin_fist");
+    public static final com.murimblock.cultivation.CultivationRealm MAJIN_REALM = com.murimblock.cultivation.CultivationRealm.QI_LIQUIDATION;
+    public static final Technique SUNFIRE_FIST = new Technique(id("sunfire_fist"), MAJIN_FIST, 50, 140);
+    public static final Technique PRIDE_FLARE = new Technique(id("pride_flare"), MAJIN_FIST, 70, 240);
+    public static final Technique CRUEL_SUN = new Technique(id("cruel_sun"), MAJIN_FIST, 90, 360);
+    public static final Technique NOON_JUDGMENT = new Technique(id("noon_judgment"), MAJIN_FIST, 100, 400);
+    public static final Technique MIDDAY_METEOR = new Technique(id("midday_meteor"), MAJIN_FIST, 90, 320);
+    /** The ultimate: the sun born over the body, 20 s of its strength, then brought down; five minutes to recover. */
+    public static final Technique THE_ONE = new Technique(id("the_one"), MAJIN_FIST, 250, 6000);
+    /** The secret: Sunfire Fist cast crouching under the noon sun, a pillar of sunlight on its target (costs what it costs). */
+    public static final Technique GRAND_NOON = new Technique(id("grand_noon"), MAJIN_FIST, 0, 0, true);
+    /** Its passive keeps Epic Fight's bare-hand strikes; each that lands sets its target alight, harder by day under the sky. */
+    public static final Passive PRIDE_OF_THE_SUN = new Passive(id("pride_of_the_sun"), List.of(), List.of());
+    public static final String KINDLING_BURNS = "kindling.burns";
+    public static final String SPREADING_FLAME_HITS = "spreading_flame.hits";
+    public static final String SUNS_WRATH_HITS = "suns_wrath.hits";
+    public static final String HIGH_NOON_HITS = "high_noon.hits";
+    public static final String PRIDE_INCARNATE_SLAIN = "pride_incarnate.slain";
+    public static final Quest KINDLING = new Quest("kindling", PRIDE_FLARE.id(), List.of(new QuestStep(KINDLING_BURNS, 30)));
+    public static final Quest SPREADING_FLAME = new Quest("spreading_flame", CRUEL_SUN.id(), List.of(new QuestStep(SPREADING_FLAME_HITS, 25)));
+    public static final Quest SUNS_WRATH = new Quest("suns_wrath", NOON_JUDGMENT.id(), List.of(new QuestStep(SUNS_WRATH_HITS, 15)));
+    public static final Quest HIGH_NOON = new Quest("high_noon", MIDDAY_METEOR.id(), List.of(new QuestStep(HIGH_NOON_HITS, 15)));
+    public static final Quest PRIDE_INCARNATE = new Quest("pride_incarnate", THE_ONE.id(), List.of(new QuestStep(PRIDE_INCARNATE_SLAIN, 50)));
+    /** At 30: Sunfire Fist bursts twice as wide. At 60: Pride Flare runs farther and wider. At 90: Cruel Sun is two suns. */
+    public static final Evolution SOLAR_FIST = new Evolution(SUNFIRE_FIST.id(), 30, "evolution.murimblock.solar_fist");
+    public static final Evolution INFERNO_FLARE = new Evolution(PRIDE_FLARE.id(), 60, "evolution.murimblock.inferno_flare");
+    public static final Evolution TWIN_SUNS = new Evolution(CRUEL_SUN.id(), 90, "evolution.murimblock.twin_suns");
+
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     /**
@@ -300,7 +335,7 @@ public final class MartialArts {
     /** The realm an art's manual asks of its reader, if any. */
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
-                : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : null;
+                : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : art.equals(MAJIN_FIST) ? MAJIN_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -321,6 +356,8 @@ public final class MartialArts {
                 EARTHSHAKER, List.of(SHATTER_THE_STONE, SHAKE_THE_EARTH, HEAVENS_WEIGHT), List.of(MOUNTAIN_SPLITTING_PUNCH, EARTHQUAKE, STAMPEDE)));
         add(new Art(SEVEN_STARS_SWORD, List.of(SHOOTING_STAR, DIPPER_STEPS, ORBITING_STARS, CONSTELLATION_LINK, FALLING_STAR_RAIN, SEVEN_STARS_ARRAY, POLARIS_RIPOSTE),
                 STAR_MARKS, List.of(SEVEN_POINTS, WALK_THE_DIPPER, UNBROKEN_ORBIT, BIND_THE_SKY, SEVEN_SWORDS), List.of(TWIN_COMETS, FULL_DIPPER, METEOR_SHOWER)));
+        add(new Art(MAJIN_FIST, List.of(SUNFIRE_FIST, PRIDE_FLARE, CRUEL_SUN, NOON_JUDGMENT, MIDDAY_METEOR, THE_ONE, GRAND_NOON),
+                PRIDE_OF_THE_SUN, List.of(KINDLING, SPREADING_FLAME, SUNS_WRATH, HIGH_NOON, PRIDE_INCARNATE), List.of(SOLAR_FIST, INFERNO_FLARE, TWIN_SUNS)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }

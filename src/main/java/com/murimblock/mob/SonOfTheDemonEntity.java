@@ -74,11 +74,11 @@ public class SonOfTheDemonEntity extends Monster {
 
     public static AttributeSupplier.Builder createAttributes() {
         return EpicFightMobSupport.humanoidAttributes(Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 500).add(Attributes.ARMOR, 14).add(Attributes.ARMOR_TOUGHNESS, 6)
-                .add(Attributes.ATTACK_DAMAGE, 16).add(Attributes.MOVEMENT_SPEED, 0.24).add(Attributes.FOLLOW_RANGE, 64)
+                .add(Attributes.MAX_HEALTH, 420).add(Attributes.ARMOR, 10).add(Attributes.ARMOR_TOUGHNESS, 4)
+                .add(Attributes.ATTACK_DAMAGE, 9).add(Attributes.MOVEMENT_SPEED, 0.24).add(Attributes.FOLLOW_RANGE, 64)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0).add(Attributes.STEP_HEIGHT, 1.5))
-                .add(yesman.epicfight.registry.entries.EpicFightAttributes.STUN_ARMOR, 20.0)
-                .add(yesman.epicfight.registry.entries.EpicFightAttributes.IMPACT, 3.5);
+                .add(yesman.epicfight.registry.entries.EpicFightAttributes.STUN_ARMOR, 14.0)
+                .add(yesman.epicfight.registry.entries.EpicFightAttributes.IMPACT, 3.0);
     }
 
     @Override protected void registerGoals() {

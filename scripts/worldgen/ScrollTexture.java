@@ -8,7 +8,9 @@ import javax.imageio.ImageIO;
  *   sanguine_art_scroll: paper with a few stains of blood, knobs of black lacquer, a blood crystal set in the middle where the
  *   cord would be, a dark red tassel, strokes of dark red ink;
  *   mountain_shattering_fist_scroll: thick dusty leather, knobs of black iron, a bronze band round the middle, dust stains,
- *   strokes of black ink (the Bandit Warlord's art).
+ *   strokes of black ink (the Bandit Warlord's art);
+ *   majin_fist_scroll: crimson silk with a gold sheen, knobs of gold, a band of white-hot sunlight round the middle, strokes
+ *   of gold ink (the Son of the Demon's art).
  * Usage: java scripts/worldgen/ScrollTexture.java src/main/resources/assets/murimblock/textures/item
  */
 public class ScrollTexture {
@@ -26,10 +28,14 @@ public class ScrollTexture {
     static final Look MOUNTAIN = new Look(0xFFC9A57A, 0xFFA9845A, 0xFF84633F, 0xFF5E4428, 0xFF5A5C62, 0xFF2E3036, 0xFF16171A,
             0xFFE6B866, 0xFFB98A3E, 0xFF7A5420, 0xFF1C1612, 0xFF8E7A66, false);
 
+    static final Look MAJIN = new Look(0xFFE24A38, 0xFFB8261E, 0xFF861A14, 0xFF5C100C, 0xFFFFE08A, 0xFFE0A830, 0xFF8A5A10,
+            0xFFFFFFF0, 0xFFFFE070, 0xFFE89A20, 0xFFFFC840, 0, false);
+
     public static void main(String[] args) throws Exception {
         write(args[0], "long_fist_scroll", LONG_FIST);
         write(args[0], "sanguine_art_scroll", SANGUINE);
         write(args[0], "mountain_shattering_fist_scroll", MOUNTAIN);
+        write(args[0], "majin_fist_scroll", MAJIN);
     }
 
     static void write(String dir, String name, Look k) throws Exception {

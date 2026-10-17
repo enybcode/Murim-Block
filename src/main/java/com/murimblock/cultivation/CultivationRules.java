@@ -276,7 +276,7 @@ public final class CultivationRules {
             case "murimblock:crab_man" -> new CultivationData(CultivationRealm.QI_SENSING, CultivationStage.LATE);
             case "murimblock:bandit_chief" -> new CultivationData(CultivationRealm.QI_GUIDING, CultivationStage.PEAK);
             case "murimblock:bandit_warlord" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
-            case "murimblock:son_of_the_demon" -> new CultivationData(CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
+            case "murimblock:son_of_the_demon" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
             case "murimblock:crab_king" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.LATE);
             case "minecraft:elder_guardian" -> new CultivationData(CultivationRealm.QI_LIQUIDATION, CultivationStage.MIDDLE);
             case "minecraft:warden" -> new CultivationData(CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);

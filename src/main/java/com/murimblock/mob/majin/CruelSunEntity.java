@@ -29,7 +29,8 @@ public class CruelSunEntity extends Entity {
     private int burstTicks = -1, bursting;
     private float burstTo;
 
-    @Nullable private SonOfTheDemonEntity owner;
+    /** Who holds it: the Son of the Demon, or a player of the Majin Fist (martial/MajinFistArt). */
+    @Nullable private net.minecraft.world.entity.LivingEntity owner;
     /** Held over him: how high, how far behind; the size it grows to, and in how many ticks. */
     private double heldUp, heldBack;
     private float growTo, growFrom;
@@ -75,7 +76,7 @@ public class CruelSunEntity extends Entity {
     }
 
     /** Held over {@code owner}: {@code up} blocks over his feet, {@code back} behind him, growing to {@code size} in {@code ticks}. */
-    public void hold(SonOfTheDemonEntity owner, double up, double back, float size, int ticks) {
+    public void hold(net.minecraft.world.entity.LivingEntity owner, double up, double back, float size, int ticks) {
         this.owner = owner;
         heldUp = up;
         heldBack = back;
@@ -148,7 +149,9 @@ public class CruelSunEntity extends Entity {
         setPos(at.x, at.y, at.z);
         if (tickCount % 4 == 0) level.playSound(null, getX(), getY(), getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.HOSTILE, 1.5F, 0.6F);
         if (k >= 1) {
-            if (owner != null) MajinFist.sunBurst(owner, level, to, burstRadius, burstShare, size());
+            if (owner instanceof SonOfTheDemonEntity son) MajinFist.sunBurst(son, level, to, burstRadius, burstShare, size());
+            else if (owner instanceof net.minecraft.server.level.ServerPlayer player && player.isAlive())
+                com.murimblock.martial.MajinFistArt.sunBurst(player, level, to, burstRadius, burstShare, size());
             discard();
         }
     }

@@ -54,7 +54,7 @@ public final class SonOfTheDemonGameTests {
             helper.assertTrue(idle == ColossusAnimations.IDLE, "He should stand in his own idle, not " + idle);
             var walk = patch.getAnimator().getLivingAnimation(LivingMotions.WALK, null);
             helper.assertTrue(walk == ColossusAnimations.WALK, "He should walk his own walk, not " + walk);
-            helper.assertTrue(s.getMaxHealth() == 500, "A boss of 500 health, not " + s.getMaxHealth());
+            helper.assertTrue(s.getMaxHealth() == 420, "A boss of 420 health, not " + s.getMaxHealth());
             helper.assertTrue(s.getBbHeight() > 7, "Some seven blocks tall, not " + s.getBbHeight());
             helper.assertTrue(bar, "The player near him does not see his boss bar");
             helper.succeed();
