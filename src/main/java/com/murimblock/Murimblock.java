@@ -96,6 +96,10 @@ public final class Murimblock {
         NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStarted);
         NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerTick);
         NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.CrabLairPlacement::onServerStopping);
+        // The Star-Plucking Peak, the world's highest point, deep in the north (built after them): the Seven Stars Sword.
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.StarPeakPlacement::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.StarPeakPlacement::onServerTick);
+        NeoForge.EVENT_BUS.addListener(com.murimblock.world.structure.StarPeakPlacement::onServerStopping);
         // Knock-down in PvP: K.O. instead of death, carry (V) or execute (B).
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, KnockdownEvents::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, KnockdownEvents::onDeath);

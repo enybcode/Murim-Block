@@ -679,5 +679,9 @@
   "quest.murimblock.seven_swords": "Seven Swords",
   "quest.murimblock.step.seven_swords.bursts": "Constellations burst: %s/%s",
   "evolution.murimblock.full_dipper": "Full Dipper",
-  "evolution.murimblock.meteor_shower": "Meteor Shower"
+  "evolution.murimblock.meteor_shower": "Meteor Shower",
+  "message.murimblock.star_peak.stars": "On the roof of the world, the seven stars turn above you. Stay seated",
+  "message.murimblock.star_peak.silent": "The stars stay silent: they answer no one below %s",
+  "message.murimblock.star_peak.again": "The seven stars have already answered you",
+  "message.murimblock.star_peak.gift": "The seven stars come down to you: the Seven Stars Sword Manual and its florett lie in your hands"
 }
