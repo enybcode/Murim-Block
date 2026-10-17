@@ -24,7 +24,7 @@ import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
  * The Alliance's soldiers: each kind with the Alliance's weapon of his kind (Epic Fight takes the spear for a spear, the
- * jian for a sword), none despawns; neutral as the piglins, they attack no one first, a soldier struck by a player calls
+ * jian for a sword), none despawns; neutral toward peaceful people, a soldier struck by a player calls
  * the others and they stay angry for a while; the archer shoots back; they leave a few taels.
  */
 @GameTestHolder(Murimblock.MOD_ID)
@@ -69,17 +69,23 @@ public final class AllianceSoldierGameTests {
         helper.succeed();
     }
 
-    /** A disciple beside a player and a villager stays peaceful; bandit hostility has its own ecology test. */
+    /** Peaceful people and ordinary animals remain safe; bandits and tigers have separate defence tests. */
     @GameTest(template = "foundation_arena", batch = "soldier_targets", timeoutTicks = 100)
     public static void soldiersDoNotAttackPeacefulPeopleFirst(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         var disciple = soldier(helper, MurimEntities.ALLIANCE_SWORD_DISCIPLE.get(), new BlockPos(2, 1, 1));
         var villager = helper.spawn(EntityType.VILLAGER, new BlockPos(2, 1, 4));
         villager.setNoAi(true);
+        var horse = helper.spawn(EntityType.HORSE, new BlockPos(4, 1, 2));
+        horse.setNoAi(true);
+        var cow = helper.spawn(EntityType.COW, new BlockPos(0, 1, 2));
+        cow.setNoAi(true);
         helper.runAfterDelay(60, () -> {
             helper.assertTrue(disciple.getTarget() == null && !disciple.isAngry(), "The disciple attacked first: " + disciple.getTarget());
             disciple.discard();
             villager.discard();
+            horse.discard();
+            cow.discard();
             cleanup(player);
             helper.succeed();
         });

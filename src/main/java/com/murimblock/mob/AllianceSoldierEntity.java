@@ -59,7 +59,8 @@ import java.util.function.Supplier;
  *   <li>Warrior Monk: his fists (the Long Fist's punches and kicks);</li>
  *   <li>Sergeant: the Snow Plum Jian and the Rattan Shield.</li>
  * </ul>
- * Neutral, as the zombified piglins: they attack no one first. Struck, a soldier turns on whoever struck him and calls
+ * Neutral toward peaceful people and ordinary animals; bandits and tigers are threats fought on sight.
+ * Struck, a soldier turns on whoever struck him and calls
  * every soldier near him (and again every few seconds while he sees his foe); they stay angry for 20 to 39 seconds
  * after the last blow, then forget. A monster that strikes one of them is fought the same way. They stay about where
  * they were placed and never despawn.
@@ -135,9 +136,10 @@ public class AllianceSoldierEntity extends PathfinderMob implements RangedAttack
         goalSelector.addGoal(6, stroll);
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        // Only whoever strikes them (and whoever they are still angry at), as the piglins.
+        // Retaliation takes priority; tigers are threats even before they strike a camp's defenders.
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, TigerEntity.class, 5, true, false, null));
         targetSelector.addGoal(3, new ResetUniversalAngerTargetGoal<>(this, false));
     }
 
