@@ -110,8 +110,8 @@ public final class CultivationGameTests {
         QiService.setQi(player, 100);
         MeditationService.condense(player, 1200);
         double gained = QiService.getQiMax(player) - 100;
-        // One minute in an ordinary place at Qi Sensing: 1.2 % of Qi Max.
-        helper.assertTrue(Math.abs(gained - 1.2) < 0.01, "A minute of condensation should give 1.2 Qi Max, gave " + gained);
+        // One minute in an ordinary place at Qi Sensing: 1.2 % of Qi Max, at the first realm's pace (×6).
+        helper.assertTrue(Math.abs(gained - 7.2) < 0.01, "A minute of condensation should give 7.2 Qi Max, gave " + gained);
         helper.assertTrue(CultivationService.getStage(player) == CultivationStage.MIDDLE, "The first gain is a small breakthrough");
         helper.assertTrue(CultivationService.journal(player).condensedOn(player.level().getGameTime()) == 1200, "The day's condensation not counted");
         helper.assertTrue(MeditationService.stop(player, true), "Could not get up");
@@ -139,12 +139,13 @@ public final class CultivationGameTests {
         CastResult cast = MartialService.castSlot(player, 0);
         helper.assertTrue(cast == CastResult.CAST, "Tiger Step was refused: " + cast);
         double fromTechnique = QiService.getQiMax(player) - before;
-        helper.assertTrue(Math.abs(fromTechnique - 0.5) < 1e-6, "10 Qi spent should give 0.5 Qi Max, gave " + fromTechnique);
+        // 5 % of the Qi spent, at the first realm's pace (×6).
+        helper.assertTrue(Math.abs(fromTechnique - 3.0) < 1e-6, "10 Qi spent should give 3 Qi Max, gave " + fromTechnique);
         Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 4));
         before = QiService.getQiMax(player);
         QiRewardManager.awardKillReward(player, zombie);
         double fromKill = QiService.getQiMax(player) - before;
-        helper.assertTrue(Math.abs(fromKill - 0.2) < 1e-6, "A zombie (4 Qi) should give 0.2 Qi Max, gave " + fromKill);
+        helper.assertTrue(Math.abs(fromKill - 1.2) < 1e-6, "A zombie (4 Qi) should give 1.2 Qi Max, gave " + fromKill);
         zombie.discard();
         end(helper, player);
     }
@@ -154,13 +155,17 @@ public final class CultivationGameTests {
         ServerPlayer player = cultivator(helper);
         com.murimblock.mob.AzureSenseiEntity sensei = helper.spawn(com.murimblock.mob.MurimEntities.AZURE_SENSEI.get(), new BlockPos(2, 1, 4));
         double before = QiService.getQiMax(player);
+        double share = QiRewardManager.calculateQiReward(player, sensei).finalReward() * com.murimblock.cultivation.CultivationRules.KILL_SHARE
+                * com.murimblock.cultivation.CultivationRules.growth(CultivationService.getRealm(player));
         QiRewardManager.awardKillReward(player, sensei);
         double first = QiService.getQiMax(player) - before;
-        // +30 for the first victory, and the usual 5 % of the kill's Qi on top.
-        helper.assertTrue(first >= 30 && first < 40, "The first victory over Sensei Yun should give about 30 Qi Max, gave " + first);
+        // +30 for the first victory, and the usual share of the kill's Qi on top.
+        helper.assertTrue(Math.abs(first - 30 - share) < 0.01, "The first victory over Sensei Yun should give 30 Qi Max and " + share + ", gave " + first);
         before = QiService.getQiMax(player);
+        double again = QiRewardManager.calculateQiReward(player, sensei).finalReward() * com.murimblock.cultivation.CultivationRules.KILL_SHARE
+                * com.murimblock.cultivation.CultivationRules.growth(CultivationService.getRealm(player));
         QiRewardManager.awardKillReward(player, sensei);
-        helper.assertTrue(QiService.getQiMax(player) - before < 5, "A second victory gave the first victory's Qi Max again");
+        helper.assertTrue(QiService.getQiMax(player) - before < again + 0.01, "A second victory gave the first victory's Qi Max again");
         sensei.discard();
         end(helper, player);
     }

@@ -43,7 +43,7 @@ public final class QiRewardManager {
 
         QiService.addQi(player, reward.finalReward());
         // A share of every kill also goes to Qi Max (the experience of combat); a boss's first defeat, its own share once.
-        double qiMax = reward.finalReward() * CultivationRules.KILL_SHARE;
+        double qiMax = reward.finalReward() * CultivationRules.KILL_SHARE * CultivationRules.growth(com.murimblock.cultivation.CultivationService.getRealm(player));
         if (reward.firstVictory()) qiMax += CultivationRules.firstVictoryQiMax(reward.entityTypeId().toString());
         CultivationService.gainQiMax(player, qiMax, reward.firstVictory() ? CultivationService.Source.BOSS : CultivationService.Source.KILL);
         rememberFirstVictory(player, reward);

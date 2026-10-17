@@ -54,13 +54,26 @@ public final class CultivationRules {
     }
 
     /**
+     * The pace of the realms (Enzo, 17/10/2026: a quicker start, then a climb that slows): how much faster than the
+     * first balance every gain of Qi Max through one's own effort is in each realm (meditation and its motes, techniques,
+     * kills; not pills, missions or bosses). A typical player who draws in the motes reaches Qi Guiding in half an hour,
+     * Qi Condensation in two hours, Qi Liquidation in five, Qi Crystallization in nine, Foundation Establishment in
+     * fifteen (CultivationRulesTest.simulate).
+     */
+    static final double[] GROWTH = {6, 2.2, 1.4, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5};
+
+    public static double growth(CultivationRealm realm) {
+        return GROWTH[Math.min(realm.ordinal(), GROWTH.length - 1)];
+    }
+
+    /**
      * Qi Max condensed over `ticks` of meditation with a full reserve, `condensedToday` ticks of condensation already
      * done this in-game day.
      */
     public static double condensed(double qiMax, CultivationRealm realm, Place place, int condensedToday, int ticks) {
         int full = Math.max(0, Math.min(ticks, DAILY_FULL_TICKS - condensedToday));
         double weighted = full + (ticks - full) * TIRED_FACTOR;
-        return qiMax * CONDENSATION * place.condensation * realmEfficiency(realm) * weighted / QiConstants.TICKS_PER_MINUTE;
+        return qiMax * CONDENSATION * place.condensation * realmEfficiency(realm) * growth(realm) * weighted / QiConstants.TICKS_PER_MINUTE;
     }
 
     // ---------------------------------------------------------------- Qi Max: combat, elixirs, missions

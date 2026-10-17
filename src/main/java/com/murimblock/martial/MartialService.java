@@ -212,7 +212,8 @@ public final class MartialService {
     /** Spends a technique's Qi; the meridians widen with use: a share of the Qi spent goes to Qi Max. */
     static void pay(ServerPlayer player, double cost) {
         QiService.removeQi(player, cost);
-        CultivationService.gainQiMax(player, cost * CultivationRules.TECHNIQUE_SHARE, CultivationService.Source.TECHNIQUE);
+        CultivationService.gainQiMax(player, cost * CultivationRules.TECHNIQUE_SHARE * CultivationRules.growth(CultivationService.getRealm(player)),
+                CultivationService.Source.TECHNIQUE);
     }
 
     /** A technique's cooldown from now (the Spinning Rampart's, at its end), on the server and on the player's bar. */
