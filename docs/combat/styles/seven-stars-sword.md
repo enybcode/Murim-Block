@@ -222,7 +222,7 @@ combat pose une étoile de plus, et ses incrustations s'allument une à une avec
 | Textures de lumière | `scripts/animation/seven-stars-fx-textures.cjs` | — |
 
 Chiffres retenus : Shooting Star 30 Qi / 7 s ; Dipper Steps 40 / 10 s ; Orbiting Stars 45 / 18 s ; Constellation Link 55 / 14 s ;
-Falling Star Rain 70 / 20 s ; Seven Stars Sword Array 150 / 3 min. Protocole réseau 22.
+Falling Star Rain 70 / 20 s ; Seven Stars Sword Array 150 / 3 min. Protocole réseau 23.
 
 Reste à décider : où trouver le manuel et le fleuret (pour l'instant dans l'onglet créatif et `/martial learn seven_stars_sword`).
 

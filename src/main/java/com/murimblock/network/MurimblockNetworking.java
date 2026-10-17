@@ -5,14 +5,15 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
-     * 22: the Seven Stars Sword (its stars shown over their targets, a constellation bursting).
+     * 23: the Seven Stars Sword (its stars shown over their targets, a constellation bursting, its techniques' effects).
+     * 22: the Son of the Demon's transformation film.
      * 20: the Traveller's Staff Art (the Spinning Rampart's spin shown to everyone around).
      * 18: synchronized blood crystal combat state and projectile entity.
      * 17: conversations (the old master's dialogue, its pages and answers).
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "22";
+    private static final String NETWORK_VERSION = "23";
 
     private MurimblockNetworking() {
     }
