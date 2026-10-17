@@ -262,6 +262,11 @@ public final class MartialCombat {
         if (isHeldUp(event.getTarget()) && event.getDamageSource().getStunType() == yesman.epicfight.world.damagesource.StunType.KNOCKDOWN)
             event.getDamageSource().setStunType(yesman.epicfight.world.damagesource.StunType.LONG);
         Swing swing = swing(player, event.getDamageSource().getAnimation());
+        // A fist art as main style strengthens the bare hands' plain blows (M1), not the techniques (FistPower).
+        if (swing == null || swing.strike) FistPower.boost(player).ifPresent(b -> {
+            event.getDamageSource().attachDamageModifier(ValueModifier.adder(b.extra()));
+            event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(b.factor()));
+        });
         if (swing == null) return;
         Combo c = COMBOS.get(event.getTarget().getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && player.level().getGameTime() - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
