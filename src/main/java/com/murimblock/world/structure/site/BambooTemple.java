@@ -24,7 +24,8 @@ import static com.murimblock.world.structure.kit.BuildKit.stair;
  * retaining walls. The mountain gate below; the middle court with its taiji pavement, censer and two side halls
  * (scriptures, elixirs); a covered stairway up to the Hall of the Three Pure Ones. Dark timber frames filled with white,
  * grey tiled roofs with lifted corners. One axis joins the gate, the court, the stairway and the hall. Sensei Yun, master
- * of the Azure Cloud Sect, keeps the hall (docs/mobs/azure-sensei.md).
+ * of the Azure Cloud Sect, keeps the hall (docs/mobs/azure-sensei.md); the Golden Bell monk keeps the court
+ * (docs/mobs/golden-bell-monk.md).
  */
 final class BambooTemple extends Site {
     private static final BlockState FRAME = log(Blocks.STRIPPED_DARK_OAK_LOG, Direction.Axis.Y);
@@ -138,6 +139,8 @@ final class BambooTemple extends Site {
         c.set(0, l1 + 1, -4, s(Blocks.POLISHED_BLACKSTONE_BRICKS));
         c.set(0, l1 + 2, -4, Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.SIGNAL_FIRE, false));
         for (int x : new int[]{-1, 1}) c.set(x, l1 + 1, -4, s(Blocks.POLISHED_BLACKSTONE_BRICK_WALL));
+        // The Golden Bell monk keeps the court, by the taiji on the scriptures' side, facing the stairway to the hall.
+        c.spawn(-4, l1 + 1, 7, Direction.NORTH, MurimEntities.GOLDEN_BELL_MONK.get(), monk -> { });
         sideHall(c.frame(-9, 1, Rotation.COUNTERCLOCKWISE_90), l1, true);
         sideHall(c.frame(9, 1, Rotation.CLOCKWISE_90), l1, false);
         for (int x : new int[]{-5, 5}) for (int z : new int[]{-10, 11}) lanternPost(c, x, l1 + 1, z, 2, s(Blocks.STONE_BRICK_WALL));

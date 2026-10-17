@@ -30,7 +30,9 @@ accumule, puis on les **fait éclater**. Là où le Nuage Azur est un art de **r
 
 - **« Seven Stars Sword Manual »** (Manuel de l'Épée des Sept Étoiles), un livret bleu nuit, la Grande Ourse en argent au
   dos.
-- **Proposé** : toujours lâché par un **épéiste errant**, un nouveau mob neutre à battre en duel. À confirmer par Enzo.
+- **Décidé par Enzo le 17/10/2026** : on le trouve **en méditant trois minutes au plus haut point du monde**, le sommet du
+  **pic de l'Étoile Cueillie**, une fois au stade **Qi Liquidation** ou au-delà. Les étoiles donnent le manuel **et** le
+  fleuret, une seule fois par joueur ([../../structures/star-plucking-peak.md](../../structures/star-plucking-peak.md)).
 - Lu, il est consommé ; le style apparaît dans l'onglet Techniques avec son passif et sa première technique.
 
 ## Le passif : « Star Marks » (Marques d'étoiles)
@@ -205,8 +207,8 @@ combat pose une étoile de plus, et ses incrustations s'allument une à une avec
 ## À décider avec Enzo
 
 1. Le nom : « Seven Stars Sword » ?
-2. Où trouver le manuel : un épéiste errant à battre (proposé), le marchand de l'Alliance, ou les coffres des sites ?
-3. Où trouver le Fleuret des Sept Étoiles : avec le manuel (lâché par l'épéiste errant), ou à part, plus rare ?
+2. ~~Où trouver le manuel et le fleuret~~ : décidé le 17/10 : en méditant trois minutes au sommet du pic de l'Étoile
+   Cueillie, au stade Qi Liquidation (voir « Le manuel »).
 
 ## Ce qui est en jeu (17/10/2026)
 
@@ -224,7 +226,8 @@ combat pose une étoile de plus, et ses incrustations s'allument une à une avec
 Chiffres retenus : Shooting Star 30 Qi / 7 s ; Dipper Steps 40 / 10 s ; Orbiting Stars 45 / 18 s ; Constellation Link 55 / 14 s ;
 Falling Star Rain 70 / 20 s ; Seven Stars Sword Array 150 / 3 min. Protocole réseau 23.
 
-Reste à décider : où trouver le manuel et le fleuret (pour l'instant dans l'onglet créatif et `/martial learn seven_stars_sword`).
+Le manuel et le fleuret : au sommet du pic de l'Étoile Cueillie (`StarPeakPlacement`, `StarPeakGameTests`, `runStarPeakTour`) ;
+aussi dans l'onglet créatif et par `/martial learn seven_stars_sword`.
 
 ### En images (vrai client, de nuit)
 

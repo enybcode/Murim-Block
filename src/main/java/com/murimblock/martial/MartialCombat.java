@@ -120,6 +120,7 @@ public final class MartialCombat {
         if (isEnemy(attacker, player)) MartialProgress.count(player, MartialArts.PATIENT_BLADE_PARRIES, 1);
         if (LongFist.stanceActive(player)) QiService.addQi(player, LongFist.PARRY_QI);
         SevenStarsSword.onPerfectParry(player, attacker);
+        GoldenBell.onPerfectParry(player, attacker);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -207,6 +208,11 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MOUNTAIN_SHATTERING_FIST, credit, MountainShatteringFist.isStrike(animation), false));
             return;
         }
+        credit = MajinFistArt.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MAJIN_FIST, credit, MajinFistArt.isStrike(animation), false));
+            return;
+        }
         credit = SanguineArt.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SANGUINE_ART, credit, true, false));
@@ -217,6 +223,11 @@ public final class MartialCombat {
             boolean strike = TravellerStaff.isStrike(animation);
             if (strike) TravellerStaff.strikeBegan(player);
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.TRAVELLER_STAFF, credit, strike, false));
+            return;
+        }
+        credit = GoldenBell.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.GOLDEN_BELL, credit, true, false));
             return;
         }
         credit = SevenStarsSword.creditOf(player, animation);
@@ -259,6 +270,8 @@ public final class MartialCombat {
             factor *= THIRD_RESONANCE_FACTOR;
         // Star Marks: the blow on a full constellation bursts it, harder.
         if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) factor *= SevenStarsSword.factorBefore(player, event.getTarget());
+        // Pride of the Sun: a strike by day under the sky lands harder.
+        if (swing.art.equals(MartialArts.MAJIN_FIST)) factor *= MajinFistArt.factorBefore(player, swing.animation);
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -282,6 +295,7 @@ public final class MartialCombat {
         boolean mountain = swing.art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST);
         if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
         else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.MAJIN_FIST)) MajinFistArt.onHit(player, target, animation, enemy);
         else if (fist) LongFist.onHit(player, target, animation, enemy);
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
@@ -649,7 +663,9 @@ public final class MartialCombat {
         AzureCloudSword.tickAim(player, now);
         TravellerStaff.tick(player);
         MountainShatteringFist.tick(player);
+        MajinFistArt.tick(player);
         SevenStarsSword.tick(player);
+        GoldenBell.tick(player);
         SanguineArt.tick(player);
         BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
@@ -685,6 +701,14 @@ public final class MartialCombat {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
         // The Seven Stars Sword: a player of the art hurt loses stars; stars go out on their own; newcomers see them.
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SevenStarsSword::onDamage);
+        // The Golden Bell: its form lessens the blows, Iron Rebound sends them back, the mountain holds and strikes nobody.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onProjectileImpact);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(GoldenBell::onAttack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) GoldenBell.startTracking(event.getTarget(), watcher);
+        });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onIncomingDamage);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onKnockBack);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onProjectileImpact);
@@ -727,7 +751,9 @@ public final class MartialCombat {
         SanguineArt.forget(id);
         TravellerStaff.forget(id);
         MountainShatteringFist.forget(id);
+        MajinFistArt.forget(id);
         SevenStarsSword.forget(id);
+        GoldenBell.forget(id);
     }
 
     public static void clearForTests() {
@@ -749,6 +775,8 @@ public final class MartialCombat {
         BloodIceberg.forget(null);
         TravellerStaff.forget(null);
         MountainShatteringFist.forget(null);
+        MajinFistArt.forget(null);
         SevenStarsSword.forget(null);
+        GoldenBell.forget(null);
     }
 }

@@ -138,7 +138,9 @@ public final class MurimAnimations {
         BanditWarlordAnimations.build(builder);
         ColossusAnimations.build(builder);
         buildMountainFist(builder);
+        buildMajinFist(builder);
         buildSevenStars(builder);
+        buildGoldenBell(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);
@@ -167,6 +169,41 @@ public final class MurimAnimations {
         SSS_POLARIS = builder.nextAccessor("biped/murim/sss_polaris", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
         SSS_ARRAY = builder.nextAccessor("biped/murim/sss_array", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
         FINISH_SEVEN_STARS = builder.nextAccessor("biped/murim/sss_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Majin Fist (scripts/animation/majin-fist.cjs)
+
+    /**
+     * The Majin Fist's moves, bare-handed: the Son of the Demon's own at a man's size; poses only, no hit box
+     * (martial/MajinFistArt deals the blows on the server, at the times below). Sunfire Fist, Pride Flare, Cruel Sun, Noon
+     * Judgment, Midday Meteor's spring, The One, the finish Noon Sentence; the dive is held while the body falls.
+     */
+    public static AnimationAccessor<ActionAnimation> MJF_SUNFIRE, MJF_FLARE, MJF_CONJURE, MJF_JUDGMENT, MJF_LEAP, MJF_THE_ONE, FINISH_MAJIN;
+    public static AnimationAccessor<StaticAnimation> MJF_DIVE;
+    /** Seconds into them: the fist's burst, the flare's wave, the sun hurled, the pillars, off the ground. */
+    public static final float MJF_SUNFIRE_IMPACT = 0.48F, MJF_FLARE_AT = 0.7F, MJF_HURL_AT = 1.6F, MJF_PILLARS_AT = 1.6F, MJF_SPRING_AT = 0.7F;
+
+    private static void buildMajinFist(AnimationBuilder builder) {
+        MJF_SUNFIRE = builder.nextAccessor("biped/murim/mjf_sunfire", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        MJF_FLARE = builder.nextAccessor("biped/murim/mjf_flare", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        MJF_CONJURE = builder.nextAccessor("biped/murim/mjf_conjure", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        MJF_JUDGMENT = builder.nextAccessor("biped/murim/mjf_judgment", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        MJF_LEAP = builder.nextAccessor("biped/murim/mjf_leap", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        MJF_THE_ONE = builder.nextAccessor("biped/murim/mjf_the_one", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        FINISH_MAJIN = builder.nextAccessor("biped/murim/mjf_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
+        MJF_DIVE = builder.nextAccessor("biped/murim/mjf_dive", BanditWarlordAnimations.Airborne::new);
+    }
+
+    // ---------------------------------------------------------------- the Golden Bell (scripts/animation/golden-bell-art.cjs)
+
+    /** The Golden Bell's moves: poses only (martial/GoldenBell does the rest). The form, Iron Rebound, Rooted Mountain, Last Bell. */
+    public static AnimationAccessor<ActionAnimation> GB_FORM, GB_REBOUND, GB_ROOTED, FINISH_LAST_BELL;
+
+    private static void buildGoldenBell(AnimationBuilder builder) {
+        GB_FORM = builder.nextAccessor("biped/murim/gb_form", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        GB_REBOUND = builder.nextAccessor("biped/murim/gb_rebound", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        GB_ROOTED = builder.nextAccessor("biped/murim/gb_rooted", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        FINISH_LAST_BELL = builder.nextAccessor("biped/murim/gb_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     // ---------------------------------------------------------------- the Mountain-Shattering Fist (scripts/animation/mountain-fist.cjs)
