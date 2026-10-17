@@ -149,20 +149,32 @@ public final class MountainShatteringFistGameTests {
     public static void crouchingThePunchIsTheSecretSkyBreaker(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie zombie = dummy(helper, player, 0, 1.6);
-        player.setShiftKeyDown(true);
-        helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "The crouched punch was not cast");
-        player.setShiftKeyDown(false);
-        var playing = EpicFightBridge.patch(player).getAnimator().getPlayerFor(null).getRealAnimation();
-        helper.assertTrue(playing == MurimAnimations.MSF_SKY_BREAKER, "Crouched, the punch is not the Sky Breaker: " + playing);
-        helper.assertTrue(MartialService.data(player).hasTechnique(MartialArts.SKY_BREAKER.id()), "The secret was not revealed");
-        double[] highest = {zombie.getY()};
-        for (int t = 1; t <= 40; t++) helper.runAfterDelay(t, () -> highest[0] = Math.max(highest[0], zombie.getY()));
-        tickFor(helper, player, 40);
-        helper.runAfterDelay(40, () -> {
-            helper.assertTrue(zombie.getHealth() < 200, "The uppercut missed: " + zombie.getHealth());
-            // The arena's roof stops it some three blocks up; in the open it goes about eight (SKY_STEPS).
-            helper.assertTrue(highest[0] > player.getY() + 2.5, "The target was not thrown up: at most " + (highest[0] - player.getY()));
-            end(helper, player, zombie);
+        // Epic Fight translates its colliders through floats. Random GameTest coordinates millions of blocks out
+        // can make this narrow uppercut miss; use the same local contact fixture as FoundationGameTests.
+        helper.getLevel().getChunk(0, 0);
+        helper.getLevel().setChunkForced(0, 0, true);
+        player.moveTo(8.5, 70, 8.5, 0, 0);
+        zombie.moveTo(8.5, 70, 10.1, 180, 0);
+        zombie.setNoGravity(true);
+        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+        helper.startSequence().thenWaitUntil(() -> helper.assertTrue(
+                player.level().getEntities(player, zombie.getBoundingBox()).contains(zombie),
+                "The uppercut target has not reached its entity section yet")).thenExecute(() -> {
+            player.setShiftKeyDown(true);
+            helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "The crouched punch was not cast");
+            player.setShiftKeyDown(false);
+            var playing = EpicFightBridge.patch(player).getAnimator().getPlayerFor(null).getRealAnimation();
+            helper.assertTrue(playing == MurimAnimations.MSF_SKY_BREAKER, "Crouched, the punch is not the Sky Breaker: " + playing);
+            helper.assertTrue(MartialService.data(player).hasTechnique(MartialArts.SKY_BREAKER.id()), "The secret was not revealed");
+            double[] highest = {zombie.getY()};
+            for (int t = 1; t <= 40; t++) helper.runAfterDelay(t, () -> highest[0] = Math.max(highest[0], zombie.getY()));
+            tickFor(helper, player, 40);
+            helper.runAfterDelay(40, () -> {
+                helper.assertTrue(zombie.getHealth() < 200, "The uppercut missed: " + zombie.getHealth());
+                // No gravity holds the target still before contact; the real Sky Breaker must move it upwards.
+                helper.assertTrue(highest[0] > player.getY() + 2.5, "The target was not thrown up: at most " + (highest[0] - player.getY()));
+                end(helper, player, zombie);
+            });
         });
     }
 
