@@ -54,6 +54,16 @@ import javax.imageio.ImageIO;
  *   seven_stars_array: seven swords of light in a ring, their points on a figure held in the middle (the ultimate);
  *   polaris_riposte: a great pole star over a florett thrust (the secret; one red point);
  *   star_marks: the passive, the Big Dipper's seven stars joined, the brightest pulsing.
+ * And the Purple Heaven Thunder Saber's, "storm night": a bruised violet night, a bronze frame cast with the thunder
+ * pattern's corners, the zhanmadao in storm steel, every move in white and violet lightning with gold sparks:
+ *   thunder_descends: the saber brought down from above onto cracked ground, a bolt striking the same spot;
+ *   rolling_thunder: a ring of the saber's sweep round a dark figure, arcs leaping out of it;
+ *   heavens_drum: the saber planted point down inside a cage of vertical arcs, an arrow stopped on it;
+ *   severing_flash: a low level cut, a crescent of light flying off across the square;
+ *   nine_heavens_wrath: a storm cloud over a ring on the ground, bolts falling into it;
+ *   thunder_sovereign: a figure struck by a great bolt, lightning all round it (the ultimate);
+ *   heaven_answers: a seam of light in the sky, a bolt down onto a parried blade (the secret; one red point);
+ *   rolling_drums: the passive, three bronze drums, the last lit violet.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -63,9 +73,10 @@ public class TechniqueIcons {
             "piercing_dragon", "plum_blossom_thrusts", "thousand_soldier_sweep", "long_reach",
             "vertical_strike", "point_flurry", "spinning_rampart", "third_resonance",
             "mountain_crushing_punch", "earth_breaker", "bull_charge", "sky_breaker", "heaven_falling_mountain", "earthshaker",
-            "shooting_star", "dipper_steps", "orbiting_stars", "constellation_link", "falling_star_rain", "seven_stars_array", "polaris_riposte", "star_marks"};
+            "shooting_star", "dipper_steps", "orbiting_stars", "constellation_link", "falling_star_rain", "seven_stars_array", "polaris_riposte", "star_marks",
+            "thunder_descends", "rolling_thunder", "heavens_drum", "severing_flash", "nine_heavens_wrath", "thunder_sovereign", "heaven_answers", "rolling_drums"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -80,7 +91,8 @@ public class TechniqueIcons {
             else if (i < STAFF) peak(g, img, i - SPEAR);
             else if (i < MOUNTAIN) road(g, img, i - STAFF);
             else if (i < STARS) stone(g, img, i - MOUNTAIN);
-            else stars(g, img, i - STARS);
+            else if (i < THUNDER) stars(g, img, i - STARS);
+            else thunder(g, img, i - THUNDER);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -853,6 +865,118 @@ public class TechniqueIcons {
                 double sc = 5.2, cx = 16, cy = 17;
                 for (int[] l : DIPPER_LINES) line(g, cx + DIPPER[l[0]][0] * sc, cy - DIPPER[l[0]][1] * sc, cx + DIPPER[l[1]][0] * sc, cy - DIPPER[l[1]][1] * sc, 0.6f, STAR_BLUE);
                 for (int k = 0; k < 7; k++) star(img, g, cx + DIPPER[k][0] * sc, cy - DIPPER[k][1] * sc, k == 4 ? 3.5 : 2, k == 4 ? STARLIGHT : STAR_BLUE);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ storm night (the Purple Heaven Thunder Saber)
+
+    static final Color BOLT = c(250, 246, 255), BOLT_VIOLET = c(181, 140, 255), BOLT_DIM = c(96, 64, 150), STORM_BRONZE = c(196, 154, 62),
+            STORM_BRONZE_DARK = c(122, 90, 34), STORM_STEEL = c(120, 128, 146), STORM_FIGURE = c(14, 10, 24);
+
+    static void stormBack(BufferedImage img, Graphics2D g) {
+        java.util.Random r = new java.util.Random(11);
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 12) / 24.0;
+            img.setRGB(x, y, c((int) (16 + 22 * (1 - d)), (int) (10 + 12 * (1 - d)), (int) (28 + 40 * (1 - d))).getRGB());
+        }
+        for (int k = 0; k < 6; k++) px(img, 2 + r.nextInt(28), 2 + r.nextInt(14), c(70, 54, 110));
+        g.setColor(STORM_BRONZE); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(STORM_BRONZE_DARK); g.drawRect(1, 1, W - 3, W - 3);
+        // The thunder pattern's square spirals in the corners.
+        for (int[] q : new int[][] {{2, 2}, {W - 6, 2}, {2, W - 6}, {W - 6, W - 6}}) {
+            g.setColor(STORM_BRONZE);
+            g.drawLine(q[0], q[1], q[0] + 3, q[1]); g.drawLine(q[0] + 3, q[1], q[0] + 3, q[1] + 3); g.drawLine(q[0] + 3, q[1] + 3, q[0] + 1, q[1] + 3); g.drawLine(q[0] + 1, q[1] + 3, q[0] + 1, q[1] + 2);
+        }
+    }
+
+    /** A jagged bolt from (x0, y0) to (x1, y1): a white core over a violet glow. */
+    static void bolt(Graphics2D g, double x0, double y0, double x1, double y1, int seed, float w) {
+        java.util.Random r = new java.util.Random(seed);
+        int n = 5;
+        double[] xs = new double[n + 1], ys = new double[n + 1];
+        for (int i = 0; i <= n; i++) {
+            double t = (double) i / n, amp = (i == 0 || i == n) ? 0 : 2.4;
+            xs[i] = x0 + (x1 - x0) * t + (r.nextDouble() - 0.5) * 2 * amp;
+            ys[i] = y0 + (y1 - y0) * t + (r.nextDouble() - 0.5) * amp;
+        }
+        for (int i = 0; i < n; i++) line(g, xs[i], ys[i], xs[i + 1], ys[i + 1], w + 1.4f, BOLT_DIM);
+        for (int i = 0; i < n; i++) line(g, xs[i], ys[i], xs[i + 1], ys[i + 1], w + 0.6f, BOLT_VIOLET);
+        for (int i = 0; i < n; i++) line(g, xs[i], ys[i], xs[i + 1], ys[i + 1], w * 0.6f, BOLT);
+    }
+
+    /** The zhanmadao from its pommel (x0, y0) to its point (x1, y1): a broad storm-steel blade, a bronze guard, a violet grip. */
+    static void zhanmadao(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+        double gx = x0 + ux * 7, gy = y0 + uy * 7;
+        line(g, x0, y0, gx, gy, 1.8f, c(94, 58, 146));
+        taper(g, gx, gy, (gx + x1) / 2, (gy + y1) / 2, x1, y1, 3.0, 3.8, STORM_STEEL);
+        line(g, gx + ux * 2 - uy * 1.4, gy + uy * 2 + ux * 1.4, x1 - uy * 1.6, y1 + ux * 1.6, 0.8f, c(232, 238, 245));
+        line(g, gx + ux * 2, gy + uy * 2, gx + ux * 8, gy + uy * 8, 0.6f, c(242, 201, 76));
+        line(g, gx - uy * 3, gy + ux * 3, gx + uy * 3, gy - ux * 3, 1.8f, STORM_BRONZE);
+        px(img, (int) Math.round(x0), (int) Math.round(y0), STORM_BRONZE);
+    }
+
+    static void stormFigure(Graphics2D g, double x, double y) {
+        g.setColor(STORM_FIGURE);
+        g.fill(new Ellipse2D.Double(x - 2.5, y - 9, 5, 5));
+        g.fill(new RoundRectangle2D.Double(x - 3.5, y - 4, 7, 10, 3, 3));
+    }
+
+    static void thunder(Graphics2D g, BufferedImage img, int i) {
+        stormBack(img, g);
+        switch (i) {
+            case 0 -> { // Thunder Descends: the saber down onto cracked ground, a bolt on the same spot.
+                bolt(g, 20, 2, 18, 25, 3, 1.2f);
+                zhanmadao(g, img, 6, 6, 17, 25);
+                g.setColor(BOLT_VIOLET);
+                for (int k = 0; k < 6; k++) { double a = Math.PI + k * Math.PI / 5; line(g, 18, 27, 18 + Math.cos(a) * 9, 27 + Math.sin(a) * 2.5, 0.6f, BOLT_VIOLET); }
+                line(g, 4, 28, 28, 28, 1f, c(60, 44, 80));
+            }
+            case 1 -> { // Rolling Thunder: the sweep's ring round a figure, arcs leaping out.
+                stormFigure(g, 16, 20);
+                g.setColor(BOLT_VIOLET); g.setStroke(new BasicStroke(1.6f)); g.draw(new Ellipse2D.Double(3, 14, 26, 9));
+                g.setColor(BOLT); g.setStroke(new BasicStroke(0.6f)); g.draw(new Arc2D.Double(3, 14, 26, 9, 200, 140, Arc2D.OPEN));
+                bolt(g, 27, 17, 30, 6, 5, 0.6f);
+                bolt(g, 5, 18, 2, 8, 9, 0.6f);
+            }
+            case 2 -> { // Heaven's Drum: the saber planted in a cage of arcs, an arrow stopped on it.
+                for (int k = 0; k < 4; k++) bolt(g, 6 + k * 6.5, 29, 7 + k * 6, 5, 20 + k, 0.4f);
+                zhanmadao(g, img, 16, 4, 16, 28);
+                line(g, 30, 14, 24, 15, 1f, c(150, 120, 80));
+                px(img, 23, 15, BOLT);
+            }
+            case 3 -> { // Severing Flash: a low cut, a crescent flying off.
+                zhanmadao(g, img, 3, 26, 14, 21);
+                g.setColor(BOLT_VIOLET); g.setStroke(new BasicStroke(2.2f)); g.draw(new Arc2D.Double(12, 5, 18, 22, -60, 120, Arc2D.OPEN));
+                g.setColor(BOLT); g.setStroke(new BasicStroke(0.8f)); g.draw(new Arc2D.Double(12, 5, 18, 22, -50, 100, Arc2D.OPEN));
+                line(g, 6, 16, 18, 16, 0.6f, BOLT_DIM);
+            }
+            case 4 -> { // Nine Heavens' Wrath: a storm cloud, bolts into a ring on the ground.
+                g.setColor(c(50, 40, 70)); g.fill(new Ellipse2D.Double(3, 3, 26, 8)); g.setColor(c(70, 56, 96)); g.fill(new Ellipse2D.Double(7, 2, 16, 6));
+                g.setColor(BOLT_VIOLET); g.setStroke(new BasicStroke(1f)); g.draw(new Ellipse2D.Double(5, 24, 22, 6));
+                bolt(g, 10, 9, 9, 26, 31, 0.6f); bolt(g, 17, 10, 16, 27, 32, 1.0f); bolt(g, 23, 9, 23, 26, 33, 0.6f);
+            }
+            case 5 -> { // Thunder Sovereign's Descent: a figure struck by a great bolt, lightning all round it.
+                bolt(g, 16, 0, 16, 14, 41, 1.8f);
+                stormFigure(g, 16, 22);
+                bolt(g, 9, 14, 6, 26, 42, 0.4f); bolt(g, 23, 14, 26, 26, 43, 0.4f);
+                g.setColor(BOLT_VIOLET); g.draw(new Ellipse2D.Double(7, 26, 18, 4));
+            }
+            case 6 -> { // Heaven Answers: a seam in the sky, a bolt down onto a parried blade.
+                line(g, 6, 5, 26, 5, 1.6f, BOLT_VIOLET); line(g, 8, 5, 24, 5, 0.6f, BOLT);
+                bolt(g, 16, 6, 18, 20, 51, 0.9f);
+                zhanmadao(g, img, 4, 28, 24, 18);
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Rolling Drums: three bronze drums, the last lit violet.
+                for (int k = 0; k < 3; k++) {
+                    int x = 3 + k * 9, y = 12;
+                    g.setColor(STORM_BRONZE_DARK); g.fillRect(x, y, 8, 11);
+                    g.setColor(k == 2 ? BOLT_VIOLET : c(52, 40, 74)); g.fillRect(x + 1, y + 2, 6, 8);
+                    g.setColor(k == 2 ? c(242, 201, 76) : STORM_BRONZE); g.fillRect(x, y, 8, 2);
+                }
+                bolt(g, 25, 2, 23, 11, 61, 0.5f);
             }
         }
     }

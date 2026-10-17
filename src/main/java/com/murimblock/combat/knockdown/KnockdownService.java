@@ -72,6 +72,7 @@ public final class KnockdownService {
                 case FinishCinematicPayload.SCARLET_BLOOM -> com.murimblock.martial.ScarletBloom.HIT_TICK;
                 case FinishCinematicPayload.MOUNTAIN_BURIAL -> com.murimblock.martial.MountainShatteringFist.FINISH_HIT_TICK;
                 case FinishCinematicPayload.SEVEN_STARS -> com.murimblock.martial.SevenStarsMoves.FINISH_HIT_TICK;
+                case FinishCinematicPayload.THUNDER_SABER -> com.murimblock.martial.ThunderSaberMoves.FINISH_HIT_TICK;
                 default -> FINISH_HIT_TICK;
             };
         }
@@ -229,7 +230,8 @@ public final class KnockdownService {
                 : AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
                 : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST
                 : com.murimblock.martial.MountainShatteringFist.finishes(executor) ? FinishCinematicPayload.MOUNTAIN_BURIAL
-                : com.murimblock.martial.SevenStarsMoves.finishes(executor) ? FinishCinematicPayload.SEVEN_STARS : FinishCinematicPayload.GENERIC;
+                : com.murimblock.martial.SevenStarsMoves.finishes(executor) ? FinishCinematicPayload.SEVEN_STARS
+                : com.murimblock.martial.ThunderSaberMoves.finishes(executor) ? FinishCinematicPayload.THUNDER_SABER : FinishCinematicPayload.GENERIC;
         EXECUTIONS.put(executor.getUUID(), new Execution(target.getUUID(), executor.server.getTickCount(), finish));
         PlayerPatch<?> patch = EpicFightBridge.patch(executor);
         if (patch != null) patch.playAnimationSynchronized(switch (finish) {
@@ -238,6 +240,7 @@ public final class KnockdownService {
             case FinishCinematicPayload.SCARLET_BLOOM -> MurimAnimations.FINISH_SCARLET_BLOOM;
             case FinishCinematicPayload.MOUNTAIN_BURIAL -> MurimAnimations.FINISH_MOUNTAIN_BURIAL;
             case FinishCinematicPayload.SEVEN_STARS -> MurimAnimations.FINISH_SEVEN_STARS;
+            case FinishCinematicPayload.THUNDER_SABER -> MurimAnimations.FINISH_THUNDER_SABER;
             default -> MurimAnimations.FINISH_GENERIC;
         }, 0.0F);
         if (finish == FinishCinematicPayload.SCARLET_BLOOM) com.murimblock.martial.ScarletBloom.start(executor, target);
@@ -264,6 +267,7 @@ public final class KnockdownService {
             if (entry.getValue().finish == FinishCinematicPayload.LONG_FIST) LongFist.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.MOUNTAIN_BURIAL) com.murimblock.martial.MountainShatteringFist.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.SEVEN_STARS) com.murimblock.martial.SevenStarsMoves.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.THUNDER_SABER) com.murimblock.martial.ThunderSaberMoves.finishTick(executor, victim, elapsed);
             if (elapsed < entry.getValue().hitTick()) continue;
             // The blow lands: the finish is over (the animation plays out on its own).
             EXECUTIONS.remove(entry.getKey());

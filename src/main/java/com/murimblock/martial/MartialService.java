@@ -109,6 +109,11 @@ public final class MartialService {
         // Scarlet Tear's key again while its blood sword is out: the throw, free, whatever the cooldown.
         if (technique == MartialArts.SCARLET_TEAR && SanguineArt.holdsSword(player) && data(player).hasTechnique(id))
             return SanguineArt.throwSword(player) ? CastResult.CAST : CastResult.FAILED;
+        // Heaven's Drum's key let go: the pommel struck (it ended by itself just before: nothing more to say).
+        if (technique == MartialArts.HEAVENS_DRUM && data(player).hasTechnique(id)) {
+            if (ThunderSaberMoves.drumming(player)) { ThunderSaberMoves.endDrum(player, true); return CastResult.CAST; }
+            if (ThunderSaberMoves.drumJustEnded(player)) return CastResult.CAST;
+        }
         // The Spinning Rampart's key let go: it stops (it stopped by itself just before: nothing more to say).
         if (technique == MartialArts.SPINNING_RAMPART && data(player).hasTechnique(id)) {
             if (TravellerStaff.spinning(player)) { TravellerStaff.endRampart(player, true); return CastResult.CAST; }
@@ -117,10 +122,11 @@ public final class MartialService {
         CastResult check = check(player, technique);
         if (check != CastResult.CAST) return check;
         // Not let go but tapped and refused at its start: say why (check), never cast it here.
-        if (technique == MartialArts.SPINNING_RAMPART) return CastResult.FAILED;
+        if (technique == MartialArts.SPINNING_RAMPART || technique == MartialArts.HEAVENS_DRUM) return CastResult.FAILED;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
-        boolean twinComet = technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player);
+        boolean twinComet = technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player)
+                || technique == MartialArts.THUNDER_DESCENDS && cooldownLeft(player, id) > 0 && ThunderSaberMoves.recastOpen(player);
         double cost = secondStep || twinComet ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
         if (!Techniques.perform(player, technique, riposte)) return CastResult.FAILED;
         if (riposte != null) MartialCombat.consumeRiposte(player);
@@ -129,6 +135,7 @@ public final class MartialService {
             MartialCombat.takeSecondStep(player);
         } else if (twinComet) {
             SevenStarsSword.takeRecast(player);
+            ThunderSaberMoves.takeRecast(player);
         } else {
             READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, player.level().getGameTime() + technique.cooldownTicks());
             if (technique == MartialArts.CLOUD_STEP_SLASH && data(player).evolved(AzureCloudSword.art(), id)) MartialCombat.openSecondStep(player);
@@ -149,13 +156,17 @@ public final class MartialService {
         if (SanguineArt.holdsSword(player)) return CastResult.SWORD_OUT;
         // The Spinning Rampart takes the hands: no other technique while it spins.
         if (TravellerStaff.spinning(player)) return CastResult.HINDERED;
+        // Heaven's Drum takes the hands too.
+        if (ThunderSaberMoves.drumming(player)) return CastResult.HINDERED;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || MeditationService.isMeditating(player)) return CastResult.HINDERED;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
-        if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)) return CastResult.HINDERED;
+        if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)
+                && !(technique == MartialArts.SEVERING_FLASH && ThunderSaberMoves.charging(player))) return CastResult.HINDERED;
         ResourceLocation id = technique.id();
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player)
-                || technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player);
+                || technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player)
+                || technique == MartialArts.THUNDER_DESCENDS && cooldownLeft(player, id) > 0 && ThunderSaberMoves.recastOpen(player);
         if (cooldownLeft(player, id) > 0 && !secondStep) return CastResult.COOLDOWN;
         double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
         if (QiService.getQi(player) < cost) return CastResult.NO_QI;
@@ -177,6 +188,15 @@ public final class MartialService {
         MartialArts.Technique technique = id == null ? null : MartialArts.technique(id);
         if (check(player, technique) != CastResult.CAST) return false;
         if (technique == MartialArts.BLOOD_CRYSTAL) return SanguineArt.aim(player, slot);
+        // Severing Flash charges while held; its Qi is paid when it is let go (castSlot).
+        if (technique == MartialArts.SEVERING_FLASH) return ThunderSaberMoves.aimFlash(player);
+        if (technique == MartialArts.HEAVENS_DRUM) {
+            if (!ThunderSaberMoves.startDrum(player)) return false;
+            pay(player, technique.qiCost());
+            // Not again while it is held; its true cooldown starts at its end (startCooldown).
+            READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, Long.MAX_VALUE / 2);
+            return true;
+        }
         if (technique == MartialArts.SPINNING_RAMPART) {
             if (!TravellerStaff.startRampart(player)) return false;
             pay(player, technique.qiCost());

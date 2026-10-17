@@ -50,6 +50,8 @@ public final class FinishCinematic {
     static final Timing MOUNTAIN_BURIAL = new Timing(2.6F, 0.3F, 1.36F, 1.9F);
     /** Extinguished Stars: seven thrusts from 0.35 s, the stars put out at 1.9 s. */
     static final Timing SEVEN_STARS = new Timing(2.6F, 0.35F, 1.9F, 2.1F);
+    /** The Last Thunderclap: the saber raised until 0.7 s, the bolt on it, the blow at 1.3 s. */
+    static final Timing THUNDER_SABER = new Timing(2.4F, 0.7F, 1.3F, 1.8F);
     /**
      * Scarlet Bloom: its own moving camera ({@link #placeScarlet}); 7.8 s, the eruption at 0.7 s, the cage closing from
      * 3.5 s, the burst at 5.0 s (slow motion until 5.6 s), the landing at 6.1 s.
@@ -99,6 +101,7 @@ public final class FinishCinematic {
         timing = finish == FinishCinematicPayload.AZURE_CLOUD ? AZURE_CLOUD : finish == FinishCinematicPayload.LONG_FIST ? LONG_FIST
                 : finish == FinishCinematicPayload.MOUNTAIN_BURIAL ? MOUNTAIN_BURIAL
                 : finish == FinishCinematicPayload.SEVEN_STARS ? SEVEN_STARS
+                : finish == FinishCinematicPayload.THUNDER_SABER ? THUNDER_SABER
                 : finish == FinishCinematicPayload.SCARLET_BLOOM ? SCARLET_BLOOM : GENERIC;
         scarletOrigin = v.position();
         executorId = executor;

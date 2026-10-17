@@ -266,6 +266,49 @@ public final class MartialArts {
     public static final Evolution FULL_DIPPER = new Evolution(DIPPER_STEPS.id(), 60, "evolution.murimblock.full_dipper");
     public static final Evolution METEOR_SHOWER = new Evolution(FALLING_STAR_RAIN.id(), 90, "evolution.murimblock.meteor_shower");
 
+    // ---------------------------------------------------------------- the Purple Heaven Thunder Saber (docs/combat/styles/purple-heaven-thunder-saber.md)
+
+    /**
+     * A free art of the middle of the game (Enzo, 17/10/2026: "une grosse arme à deux mains"), a greatsword only, learnt
+     * from Qi Condensation: heavy blows beat thunder drums, a technique beats one to call the purple lightning. Five
+     * techniques, a secret, an ultimate.
+     */
+    public static final ResourceLocation THUNDER_SABER = id("thunder_saber");
+    public static final com.murimblock.cultivation.CultivationRealm THUNDER_SABER_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    public static final Technique THUNDER_DESCENDS = new Technique(id("thunder_descends"), THUNDER_SABER, 30, 160);
+    public static final Technique ROLLING_THUNDER = new Technique(id("rolling_thunder"), THUNDER_SABER, 40, 240);
+    /** Held: the saber planted, every blow from the front stopped, until the key is let go (3 s at most). */
+    public static final Technique HEAVENS_DRUM = new Technique(id("heavens_drum"), THUNDER_SABER, 45, 320);
+    public static final int HEAVENS_DRUM_MAX_TICKS = 60;
+    public static final double HEAVENS_DRUM_QI_PER_SECOND = 5;
+    /** Held to charge (1.5 s at most), let go to cut. */
+    public static final Technique SEVERING_FLASH = new Technique(id("severing_flash"), THUNDER_SABER, 55, 280);
+    public static final int SEVERING_FLASH_MAX_CHARGE = 30;
+    public static final Technique NINE_HEAVENS_WRATH = new Technique(id("nine_heavens_wrath"), THUNDER_SABER, 70, 440);
+    /** The ultimate: struck by the purple lightning, eight seconds of a thunder god; three minutes to recover. */
+    public static final Technique THUNDER_SOVEREIGN = new Technique(id("thunder_sovereign"), THUNDER_SABER, 150, 3600);
+    /** The secret: a saber strike right after a perfect parry, on the attacker: the sky answers with a bolt. */
+    public static final Technique HEAVEN_ANSWERS = new Technique(id("heaven_answers"), THUNDER_SABER, 0, 0, true);
+    /** Its passive keeps Epic Fight's greatsword strikes; each that lands beats a thunder drum. */
+    public static final Passive ROLLING_DRUMS = new Passive(id("rolling_drums"), List.of(), List.of());
+    public static final String FIRST_DRUM_FULL = "first_drum.full";
+    public static final String UNMOVED_HITS = "unmoved.hits";
+    public static final String DRUM_ANSWERS_BLOCKS = "drum_answers.blocks";
+    public static final String CALL_DOWN_SKY_FLASHES = "call_down_sky.flashes";
+    public static final String SOVEREIGN_BOLTS = "sovereign.bolts";
+    /** Not a quest: perfect parries in the stance until Heaven Answers is found. */
+    public static final String HEAVEN_ANSWERS_PARRIES = "heaven_answers.parries";
+    public static final Quest FIRST_DRUM = new Quest("first_drum", ROLLING_THUNDER.id(), List.of(new QuestStep(FIRST_DRUM_FULL, 20)));
+    public static final Quest UNMOVED = new Quest("unmoved", HEAVENS_DRUM.id(), List.of(new QuestStep(UNMOVED_HITS, 50)));
+    public static final Quest DRUM_ANSWERS = new Quest("drum_answers", SEVERING_FLASH.id(), List.of(new QuestStep(DRUM_ANSWERS_BLOCKS, 30)));
+    public static final Quest CALL_DOWN_SKY = new Quest("call_down_sky", NINE_HEAVENS_WRATH.id(), List.of(new QuestStep(CALL_DOWN_SKY_FLASHES, 10)));
+    public static final Quest SOVEREIGN_PATH = new Quest("sovereign_path", THUNDER_SOVEREIGN.id(), List.of(new QuestStep(SOVEREIGN_BOLTS, 100)));
+    /** At 30: Thunder Descends may leap again once, free, within 2 s, if it struck. */
+    public static final Evolution SECOND_THUNDER = new Evolution(THUNDER_DESCENDS.id(), 30, "evolution.murimblock.second_thunder");
+    /** At 60: Rolling Thunder turns three times. At 90: Nine Heavens' Wrath leaves a storm over its circle. */
+    public static final Evolution THIRD_TURN = new Evolution(ROLLING_THUNDER.id(), 60, "evolution.murimblock.third_turn");
+    public static final Evolution LINGERING_STORM = new Evolution(NINE_HEAVENS_WRATH.id(), 90, "evolution.murimblock.lingering_storm");
+
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     /**
@@ -300,7 +343,7 @@ public final class MartialArts {
     /** The realm an art's manual asks of its reader, if any. */
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
-                : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : null;
+                : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : art.equals(THUNDER_SABER) ? THUNDER_SABER_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -321,6 +364,8 @@ public final class MartialArts {
                 EARTHSHAKER, List.of(SHATTER_THE_STONE, SHAKE_THE_EARTH, HEAVENS_WEIGHT), List.of(MOUNTAIN_SPLITTING_PUNCH, EARTHQUAKE, STAMPEDE)));
         add(new Art(SEVEN_STARS_SWORD, List.of(SHOOTING_STAR, DIPPER_STEPS, ORBITING_STARS, CONSTELLATION_LINK, FALLING_STAR_RAIN, SEVEN_STARS_ARRAY, POLARIS_RIPOSTE),
                 STAR_MARKS, List.of(SEVEN_POINTS, WALK_THE_DIPPER, UNBROKEN_ORBIT, BIND_THE_SKY, SEVEN_SWORDS), List.of(TWIN_COMETS, FULL_DIPPER, METEOR_SHOWER)));
+        add(new Art(THUNDER_SABER, List.of(THUNDER_DESCENDS, ROLLING_THUNDER, HEAVENS_DRUM, SEVERING_FLASH, NINE_HEAVENS_WRATH, THUNDER_SOVEREIGN, HEAVEN_ANSWERS),
+                ROLLING_DRUMS, List.of(FIRST_DRUM, UNMOVED, DRUM_ANSWERS, CALL_DOWN_SKY, SOVEREIGN_PATH), List.of(SECOND_THUNDER, THIRD_TURN, LINGERING_STORM)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }

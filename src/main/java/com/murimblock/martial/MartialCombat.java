@@ -120,6 +120,7 @@ public final class MartialCombat {
         if (isEnemy(attacker, player)) MartialProgress.count(player, MartialArts.PATIENT_BLADE_PARRIES, 1);
         if (LongFist.stanceActive(player)) QiService.addQi(player, LongFist.PARRY_QI);
         SevenStarsSword.onPerfectParry(player, attacker);
+        ThunderSaber.onPerfectParry(player, attacker);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -219,6 +220,11 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.TRAVELLER_STAFF, credit, strike, false));
             return;
         }
+        credit = ThunderSaber.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.THUNDER_SABER, credit, true, false));
+            return;
+        }
         credit = SevenStarsSword.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SEVEN_STARS_SWORD, credit, true, false));
@@ -259,6 +265,8 @@ public final class MartialCombat {
             factor *= THIRD_RESONANCE_FACTOR;
         // Star Marks: the blow on a full constellation bursts it, harder.
         if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) factor *= SevenStarsSword.factorBefore(player, event.getTarget());
+        // Rolling Drums: an electrified body, the secret's riposte, take more.
+        if (swing.art.equals(MartialArts.THUNDER_SABER)) factor *= ThunderSaber.factorBefore(player, event.getTarget());
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -286,6 +294,7 @@ public final class MartialCombat {
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
         else if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) SevenStarsSword.onHit(player, target);
+        else if (swing.art.equals(MartialArts.THUNDER_SABER)) ThunderSaber.onHit(player, target);
         else AzureCloudSword.onHit(player, target, animation, swing.riposte);
         // The combo: a knock-down ends it, and counts as complete after enough hits.
         long now = player.level().getGameTime();
@@ -650,6 +659,7 @@ public final class MartialCombat {
         TravellerStaff.tick(player);
         MountainShatteringFist.tick(player);
         SevenStarsSword.tick(player);
+        ThunderSaber.tick(player);
         SanguineArt.tick(player);
         BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
@@ -684,6 +694,17 @@ public final class MartialCombat {
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
         // The Seven Stars Sword: a player of the art hurt loses stars; stars go out on their own; newcomers see them.
+        // The Purple Heaven Thunder Saber: unshaken (no push), Heaven's Drum stopping blows, the electrified forgotten.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(ThunderSaber::onDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaber::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaberMoves::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaberMoves::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, ThunderSaberMoves::onProjectileImpact);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) ->
+                ThunderSaber.serverTick(event.getServer()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) ThunderSaber.startTracking(event.getTarget(), watcher);
+        });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SevenStarsSword::onDamage);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onIncomingDamage);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onKnockBack);
@@ -728,6 +749,7 @@ public final class MartialCombat {
         TravellerStaff.forget(id);
         MountainShatteringFist.forget(id);
         SevenStarsSword.forget(id);
+        ThunderSaber.forget(id);
     }
 
     public static void clearForTests() {
@@ -750,5 +772,6 @@ public final class MartialCombat {
         TravellerStaff.forget(null);
         MountainShatteringFist.forget(null);
         SevenStarsSword.forget(null);
+        ThunderSaber.forget(null);
     }
 }

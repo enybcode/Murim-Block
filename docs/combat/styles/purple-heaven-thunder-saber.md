@@ -1,6 +1,10 @@
 # Le Sabre du Tonnerre du Ciel Pourpre (紫霄雷刀, *Zǐxiāo Léidāo*)
 
-> **État : proposition du 17/10/2026, pas encore implémentée.** Demande d'Enzo :
+> **État : en jeu sur `test` depuis le 17/10/2026** (validé sur le principe par Enzo : « c'est validé, implémente ça au jeu »,
+> avec une arme « plus massive »). Le manuel et le Zhanmadao sont dans l'onglet créatif tant que leur source n'est pas
+> décidée. Code : `martial/ThunderSaber`, `martial/ThunderSaberMoves`, `client/ThunderSaberFx` ; animations
+> `scripts/animation/thunder-saber-art.cjs` ; tests `ThunderSaberGameTests` ; tour `gradlew -PgameTests runThunderSaberTour`.
+> Demande d'Enzo :
 > - « un nouvel art martial du même niveau que Shooting Star, même qualité graphique » ;
 > - « une grosse arme à deux mains, la hache ou l'épée » ;
 > - « je te laisse tout gérer, l'inspi libre à toi, et l'arme tu peux la générer ».
@@ -8,7 +12,8 @@
 > C'est un art **libre** et **intermédiaire**, au même rang que l'Épée des Sept Étoiles ([seven-stars-sword.md](seven-stars-sword.md)) :
 > - il s'apprend à partir de **Qi Condensation** ;
 > - il compte **cinq techniques**, un passif, un secret, un ultime et un finish ;
-> - ses effets sont riches : modèles GeckoLib, particules à nous, lumières Photon.
+> - ses effets sont riches : éclairs, anneaux, sceau, nuage et colonne dessinés en lumière additive, particules à nous,
+>   lumières Photon (comme les Sept Étoiles).
 >
 > Les chiffres sont un premier jet, alignés sur [../technique-balance.md](../technique-balance.md). Les règles communes
 > sont dans [../STYLES.md](../STYLES.md). Les noms en jeu sont en anglais : le nom anglais d'abord, la traduction entre
@@ -57,10 +62,10 @@ grandes percées. Cet art est celui d'un sabreur qui a survécu à la sienne et 
   - Une parade parfaite donne 2 coups. Un M1 qui touche **trois ennemis** à la fois en donne 2.
   - On les voit à l'écran : trois petits tambours de bronze à côté de la barre de Qi, discrets, qui s'allument en violet.
 - **Ce qu'ils font :** chaque technique **bat automatiquement un tambour** si on en a un. Elle passe alors en **version foudre**, qui est plus forte, plus large et frappée de la foudre (voir chaque technique). Sans tambour, la technique part en version simple.
-- **Inarrêtable :** les 2ᵉ et 4ᵉ coups de l'enchaînement M1, et toutes les techniques, ont l'**hyperarmure** d'Epic Fight. On encaisse les coups sans être interrompu, mais on prend les dégâts.
+- **Inarrêtable :** chaque coup de l'enchaînement M1, et toutes les techniques, ont l'**hyperarmure** (pas de recul, pas d'étourdissement). On encaisse les coups sans être interrompu, mais on prend les dégâts.
 - **Sous l'orage :** pendant un vrai orage, et à ciel ouvert, les tambours se chargent **deux fois plus vite**.
 - **Les tambours s'éteignent** un par un après **8 s** sans toucher personne.
-- **Les M1 :** l'enchaînement de grande épée d'Epic Fight (trois coups lourds), dont le dernier libère une **petite décharge** (×0,3 à 2 blocs) si un tambour est plein.
+- **Les M1 :** l'enchaînement de grande épée d'Epic Fight (deux coups lourds, la ruée, le coup en l'air), dont le dernier de la chaîne libère une **petite décharge** (×0,3 à 2 blocs) si un tambour est plein.
 - **La garde :** la garde Murim habituelle. Une parade parfaite donne 2 coups de tambour et fait vaciller l'attaquant.
 
 ## Comment tout se complète
@@ -197,7 +202,7 @@ Chaque technique a sa version au sol et en l'air, avec ses animations Epic Fight
 
 ## L'ultime : « Thunder Sovereign's Descent » (La Descente du Souverain du Tonnerre)
 
-Il se débloque à 100 de maîtrise. Qi 150, recharge 3 minutes.
+Elle se débloque par la quête « The Sovereign's Path » (100 ennemis frappés par les éclairs). Qi 150, recharge 3 minutes.
 
 - **L'ouverture :** le joueur plante le sabre et lève une main. Une **colonne de foudre pourpre** le frappe.
 - **Pendant 8 s :**
@@ -205,7 +210,7 @@ Il se débloque à 100 de maîtrise. Qi 150, recharge 3 minutes.
   - le sabre est **enveloppé de foudre** ;
   - **chaque M1 appelle un éclair** sur sa cible (×0,4) ;
   - chaque pas laisse des étincelles.
-- **La fin :** le joueur bondit, et un **dernier éclair colossal** tombe avec lui (×2,5 sur la cible, ×1,0 à 5 blocs).
+- **La fin :** un **dernier éclair colossal** tombe sur l'ennemi le plus proche (×2,5 sur la cible, ×1,0 à 5 blocs).
 
 **Les effets :** un **halo de foudre** modélisé autour du corps, les yeux qui brillent en violet, et une lumière Photon qui suit le joueur. Le ciel s'assombrit autour de lui : un voile de nuage bas, côté client.
 

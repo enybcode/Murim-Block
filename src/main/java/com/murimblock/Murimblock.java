@@ -51,6 +51,7 @@ public final class Murimblock {
         com.murimblock.martial.CelestialPeakItems.register(modEventBus);
         com.murimblock.martial.TravellerStaffItems.register(modEventBus);
         com.murimblock.martial.SevenStarsItems.register(modEventBus);
+        com.murimblock.martial.ThunderSaberItems.register(modEventBus);
         com.murimblock.bloodsect.BloodSect.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);
@@ -68,6 +69,7 @@ public final class Murimblock {
         com.murimblock.martial.BloodCrystalAttachments.register(modEventBus);
         com.murimblock.martial.SanguineParticles.register(modEventBus);
         com.murimblock.martial.SevenStarsParticles.register(modEventBus);
+        com.murimblock.martial.ThunderSaberParticles.register(modEventBus);
         MurimAnimations.registerMotions();
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
         EpicFightBridge.registerHooks();

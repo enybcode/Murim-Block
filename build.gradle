@@ -146,6 +146,22 @@ neoForge {
             systemProperty 'murimblock.sevenStarsTour', 'true'
             disableIdeRun()
         }
+        // The Purple Heaven Thunder Saber, every technique (ThunderSaberTour).
+        thunderSaberTour {
+            client()
+            gameDirectory = project.file('build/thunder-saber-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.thunderSaberTour', 'true'
+            disableIdeRun()
+        }
+        // The Purple Heaven Thunder Saber's player animations alone (ThunderSaberPoseTour).
+        thunderSaberPoseTour {
+            client()
+            gameDirectory = project.file('build/thunder-saber-pose-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.thunderSaberPoseTour', 'true'
+            disableIdeRun()
+        }
         // The Blood Soldiers and the Blood Lacquer, on them and on the player (SoldierLookTour).
         soldierLookTour {
             client()

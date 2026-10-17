@@ -25,6 +25,8 @@ public record FinishCinematicPayload(boolean start, int executorId, int victimId
     public static final int MOUNTAIN_BURIAL = 4;
     /** Extinguished Stars, the Seven Stars Sword's: seven thrusts, seven stars lit and put out at 1.9 s. */
     public static final int SEVEN_STARS = 5;
+    /** The Last Thunderclap, the Purple Heaven Thunder Saber's: a bolt on the raised saber, the blow at 1.3 s. */
+    public static final int THUNDER_SABER = 6;
 
     public static final CustomPacketPayload.Type<FinishCinematicPayload> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "finish_cinematic"));

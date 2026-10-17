@@ -68,8 +68,8 @@ const round = (name, y0, y1, w, mat, d = w) => part(name, [8 - w / 2, y0, 8 - d 
 
 // The pommel: a little bronze drum, its skin a disc of gold.
 round('pommel_skin', -7.6, -7.3, 1.1, 'knot');
-round('pommel_drum', -7.3, -6.0, 1.6, 'bronze');
-round('pommel_rim', -6.4, -6.1, 1.8, 'bronzeDark');
+round('pommel_drum', -7.4, -6.0, 2.0, 'bronze');
+round('pommel_rim', -6.5, -6.15, 2.25, 'bronzeDark');
 // The tassel: a gold knot under the pommel, eight violet strands.
 round('tassel_knot', -8.2, -7.6, 0.7, 'knot');
 [[-0.4, 0], [0.4, 0], [0, -0.4], [0, 0.4], [-0.3, -0.3], [0.3, 0.3], [0.3, -0.3], [-0.3, 0.3]].forEach(([dx, dz], i) => {
@@ -77,25 +77,25 @@ round('tassel_knot', -8.2, -7.6, 0.7, 'knot');
   part('tassel_' + i, [8 + dx - 0.18, -8.2 - len, 8 + dz - 0.18], [8 + dx + 0.18, -8.2, 8 + dz + 0.18], 'tassel');
 });
 // The grip: long, for two hands, bound in violet cord, three bronze ferrules.
-round('grip', -6.0, 4.0, 1.05, 'cord');
-for (const [i, y] of [-6.0, -1.3, 3.5].entries()) round('ferrule_' + i, y, y + 0.5, 1.25, 'bronzeDark');
+round('grip', -6.0, 4.0, 1.3, 'cord');
+for (const [i, y] of [-6.0, -1.3, 3.5].entries()) round('ferrule_' + i, y, y + 0.5, 1.55, 'bronzeDark');
 // The guard: a round bronze disc, the thunder pattern on its faces, a violet stone on each face.
-round('guard_wide', 4.0, 4.6, 3.8, 'bronze', 2.0);
-round('guard_deep', 4.0, 4.6, 2.6, 'bronze', 3.0);
-round('guard_core', 4.0, 4.6, 3.3, 'bronze', 2.6);
-part('gem_front', [7.6, 4.05, 6.42], [8.4, 4.55, 6.52], 'gem');
-part('gem_back', [7.6, 4.05, 9.48], [8.4, 4.55, 9.58], 'gem');
+round('guard_wide', 4.0, 4.7, 5.6, 'bronze', 2.4);
+round('guard_deep', 4.0, 4.7, 3.6, 'bronze', 3.8);
+round('guard_core', 4.0, 4.7, 4.8, 'bronze', 3.2);
+part('gem_front', [7.5, 4.05, 6.02], [8.5, 4.65, 6.12], 'gem');
+part('gem_back', [7.5, 4.05, 9.88], [8.5, 4.65, 9.98], 'gem');
 // The collar at the root of the blade.
-part('collar', [6.95, 4.6, 7.55], [9.55, 5.4, 8.45], 'bronzeDark');
+part('collar', [5.6, 4.7, 7.45], [10.0, 5.6, 8.55], 'bronzeDark');
 
 // The blade: single-edged, its spine straight along +x, the edge on -x widening toward the tip, then clipped.
-const SPINE_X = 9.4, BASE_Y = 5.4, ROW = 0.75, T = 0.38;
-const WIDTHS = [2.3, 2.35, 2.4, 2.45, 2.5, 2.55, 2.6, 2.65, 2.7, 2.75, 2.8, 2.85, 2.9, 2.95, 3.0, 3.05, 3.1, 3.15, 3.2, 3.2, 3.2, 3.2];
+const SPINE_X = 9.9, BASE_Y = 5.6, ROW = 0.75, T = 0.55;
+const WIDTHS = [4.0, 4.05, 4.1, 4.15, 4.2, 4.25, 4.3, 4.35, 4.4, 4.45, 4.5, 4.55, 4.6, 4.65, 4.7, 4.75, 4.8, 4.85, 4.9, 4.9, 4.9, 4.9];
 // The clip: over the last rows the spine falls away toward the edge, so the point sits on the edge's line.
-const CLIP = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35, 0.8, 1.3, 1.85, 2.4, 2.9];
+const CLIP = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 1.2, 2.0, 2.8, 3.6, 4.4];
 WIDTHS.forEach((w, i) => {
   const y = BASE_Y + i * ROW, xs = SPINE_X - CLIP[i], xe = SPINE_X - w;
-  const e = Math.min(0.42, w * 0.25), s = i < 16 ? 0.22 : 0;
+  const e = Math.min(0.6, w * 0.25), s = i < 16 ? 0.4 : 0;
   part('blade_' + i, [xe + e, y, 8 - T / 2], [xs - s, y + ROW, 8 + T / 2], i % 2 ? 'steel' : 'steelLight');
   part('edge_' + i, [xe, y, 8 - T / 4], [xe + e, y + ROW, 8 + T / 4], 'edge');
   if (s) part('spine_' + i, [xs - s, y, 8 - T / 2 - 0.05], [xs, y + ROW, 8 + T / 2 + 0.05], 'spine');
@@ -103,11 +103,15 @@ WIDTHS.forEach((w, i) => {
 // The lightning inlaid along the fuller, on both faces: a zigzag of gold from the collar to two thirds of the blade.
 const ZIG = [0, 0.35, 0.6, 0.25, -0.1, 0.25, 0.6, 0.3, 0, 0.35, 0.65, 0.3];
 ZIG.forEach((dx, i) => {
-  const y = BASE_Y + 0.3 + i * ROW * 1.15, x = SPINE_X - 0.95 - dx;
+  const y = BASE_Y + 0.3 + i * ROW * 1.15, x = SPINE_X - 1.5 - dx * 1.4;
   for (const [side, z0, z1] of [['front', 8 - T / 2 - 0.04, 8 - T / 2], ['back', 8 + T / 2, 8 + T / 2 + 0.04]]) {
-    part(`bolt_${side}_${i}`, [x - 0.28, y, z0], [x, y + ROW * 1.2, z1], 'inlay');
+    part(`bolt_${side}_${i}`, [x - 0.4, y, z0], [x, y + ROW * 1.2, z1], 'inlay');
   }
 });
+
+// Held as the Bandit Chief's axe: its right hand at y 1, so the grip just under the guard (y 2.8) comes down to it.
+const HOLD_SHIFT = -1.8;
+for (const p of PARTS) { p.from[1] += HOLD_SHIFT; p.to[1] += HOLD_SHIFT; }
 
 const ROTATION = { angle: -45, axis: 'z', origin: [8, 8, 8] };
 
@@ -161,14 +165,45 @@ function icon() {
   return out;
 }
 
+// ---------------------------------------------------------------- the manual's icon
+
+/**
+ * The Purple Heaven Thunder Saber Manual (16 x 16): a dark bronze booklet, its cover cast with a square spiral of the
+ * thunder pattern, a gold bolt down its middle, a violet ribbon.
+ */
+const MANUAL = [
+  '................',
+  '..bbbbbbbbbbbk..',
+  '.bBBBBBBBBBBBkp.',
+  '.bBssssssssBBkp.',
+  '.bBsBBBBBBsBBkp.',
+  '.bBsBsssBBsGBkp.',
+  '.bBsBsBBBGsBBkp.',
+  '.bBsBsBBGGsBBkp.',
+  '.bBsBBBGGBsBBkp.',
+  '.bBsBBGGBBsBBkp.',
+  '.bBsBBBGBBsBBkp.',
+  '.bBssssGsssBBkp.',
+  '.bBBBBBBBBBBBkp.',
+  '.bbbbbbbbbbbbkV.',
+  '..kkkkkkkkkkkVV.',
+  '................',
+];
+const MANUAL_COLOURS = { b: '#5a4318', B: '#7a5a22', s: '#c49a3e', G: '#f2c94c', k: '#2e2210', p: '#e8e0cc', V: '#8b5cd0' };
+function manualIcon() {
+  const img = new Uint8Array(16 * 16 * 4);
+  MANUAL.forEach((row, y) => [...row].forEach((ch, x) => { if (MANUAL_COLOURS[ch]) img.set([...hex(MANUAL_COLOURS[ch]), 255], (y * 16 + x) * 4); }));
+  return img;
+}
+
 // ---------------------------------------------------------------- the game models
 
-/** In the hand: Epic Fight's greatsword transforms, as the Bandit Chief's axe; about 2.1 blocks long. */
+/** In the hand: Epic Fight's greatsword transforms, as the Bandit Chief's axe (its scale): about 2.6 blocks long. */
 const DISPLAY = {
-  thirdperson_righthand: { rotation: [0, -90, 45], translation: [0, 7.5, 0], scale: [1.25, 1.25, 1.25] },
-  thirdperson_lefthand: { rotation: [0, 90, -45], translation: [0, 7.5, 0], scale: [1.25, 1.25, 1.25] },
-  firstperson_righthand: { rotation: [0, -90, 25], translation: [1.13, 3.2, 1.13], scale: [1.05, 1.05, 1.05] },
-  firstperson_lefthand: { rotation: [0, 90, -25], translation: [1.13, 3.2, 1.13], scale: [1.05, 1.05, 1.05] },
+  thirdperson_righthand: { rotation: [0, -90, 45], translation: [0, 8.5, 0], scale: [1.3, 1.3, 1.3] },
+  thirdperson_lefthand: { rotation: [0, 90, -45], translation: [0, 8.5, 0], scale: [1.3, 1.3, 1.3] },
+  firstperson_righthand: { rotation: [0, -90, 25], translation: [1.13, 3.2, 1.13], scale: [1.1, 1.1, 1.1] },
+  firstperson_lefthand: { rotation: [0, 90, -25], translation: [1.13, 3.2, 1.13], scale: [1.1, 1.1, 1.1] },
   head: { rotation: [0, 180, 0], translation: [0, 13, 7], scale: [1, 1, 1] },
 };
 const CREDIT = `Murimblock - scripts/animation/purple-heaven-zhanmadao-model.cjs (Blockbench source: art/blockbench/${NAME}.bbmodel)`;
@@ -206,6 +241,7 @@ if (require.main === module) {
   const assets = path.join(ROOT, 'src', 'main', 'resources', 'assets', 'murimblock');
   fs.writeFileSync(path.join(assets, 'textures', 'item', `${NAME}_3d.png`), png(TEX_SIZE, TEX_SIZE, TEX));
   fs.writeFileSync(path.join(assets, 'textures', 'item', `${NAME}.png`), png(16, 16, icon()));
+  fs.writeFileSync(path.join(assets, 'textures', 'item', 'thunder_saber_manual.png'), png(16, 16, manualIcon()));
   fs.writeFileSync(path.join(assets, 'models', 'item', `${NAME}_3d.json`), JSON.stringify(model3d, null, 2) + '\n');
   fs.writeFileSync(path.join(assets, 'models', 'item', `${NAME}.json`), JSON.stringify(itemModel, null, 2) + '\n');
   fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', `${NAME}.bbmodel`), JSON.stringify(bbmodel(), null, 1));

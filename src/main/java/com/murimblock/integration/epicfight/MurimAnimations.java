@@ -139,12 +139,37 @@ public final class MurimAnimations {
         ColossusAnimations.build(builder);
         buildMountainFist(builder);
         buildSevenStars(builder);
+        buildThunderSaber(builder);
         buildMeditation(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);
         buildStaffArt(builder);
         SectWeaponAnimations.build(builder);
         CrabKingAnimations.build(builder);
+    }
+
+    // ---------------------------------------------------------------- the Purple Heaven Thunder Saber (scripts/animation/thunder-saber-art.cjs)
+
+    /**
+     * The Purple Heaven Thunder Saber's moves, a greatsword in both hands: poses only, no hit box (martial/ThunderSaberMoves
+     * deals the blows and moves the body on the server, at the times its clips reach them). Thunder Descends, Rolling
+     * Thunder (two turns, three evolved), Heaven's Drum planted then struck, Severing Flash's charge then its cut, Nine
+     * Heavens' Wrath, the ultimate Thunder Sovereign's Descent, the finish The Last Thunderclap.
+     */
+    public static AnimationAccessor<ActionAnimation> TS_DESCENDS, TS_ROLLING, TS_ROLLING_LONG, TS_DRUM_PLANT, TS_DRUM_STRIKE,
+            TS_FLASH_CHARGE, TS_FLASH_CUT, TS_WRATH, TS_SOVEREIGN, FINISH_THUNDER_SABER;
+
+    private static void buildThunderSaber(AnimationBuilder builder) {
+        TS_DESCENDS = builder.nextAccessor("biped/murim/ts_descends", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        TS_ROLLING = builder.nextAccessor("biped/murim/ts_rolling", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        TS_ROLLING_LONG = builder.nextAccessor("biped/murim/ts_rolling_long", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        TS_DRUM_PLANT = builder.nextAccessor("biped/murim/ts_drum_plant", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        TS_DRUM_STRIKE = builder.nextAccessor("biped/murim/ts_drum_strike", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        TS_FLASH_CHARGE = builder.nextAccessor("biped/murim/ts_flash_charge", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        TS_FLASH_CUT = builder.nextAccessor("biped/murim/ts_flash_cut", a -> new ActionAnimation(0.0F, a, Armatures.BIPED));
+        TS_WRATH = builder.nextAccessor("biped/murim/ts_wrath", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        TS_SOVEREIGN = builder.nextAccessor("biped/murim/ts_sovereign", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        FINISH_THUNDER_SABER = builder.nextAccessor("biped/murim/ts_finish", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     // ---------------------------------------------------------------- the Seven Stars Sword (scripts/animation/seven-stars-art.cjs)

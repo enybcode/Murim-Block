@@ -24,6 +24,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.holdsStaff(player);
         if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.bareHanded(player);
         if (technique.art().equals(MartialArts.SEVEN_STARS_SWORD)) return SevenStarsSword.holdsFlorett(player);
+        if (technique.art().equals(MartialArts.THUNDER_SABER)) return ThunderSaber.holdsSaber(player);
         return true;
     }
 
@@ -35,7 +36,8 @@ final class Techniques {
         PlayerPatch<?> patch = EpicFightBridge.patch(player);
         if (patch == null) return false;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
-        if (patch.getEntityState().inaction() && !(counter && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)) return false;
+        if (patch.getEntityState().inaction() && !(counter && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)
+                && !(technique == MartialArts.SEVERING_FLASH && ThunderSaberMoves.charging(player))) return false;
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.perform(player, patch, technique, riposte);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.perform(player, patch, technique);
@@ -43,6 +45,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.TRAVELLER_STAFF)) return TravellerStaff.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) return MountainShatteringFist.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.SEVEN_STARS_SWORD)) return SevenStarsSword.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.THUNDER_SABER)) return ThunderSaberMoves.perform(player, patch, technique);
         return false;
     }
 }
