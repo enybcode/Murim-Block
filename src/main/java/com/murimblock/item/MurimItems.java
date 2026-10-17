@@ -397,6 +397,8 @@ public final class MurimItems {
                         output.accept(SANGUINE_ART_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());
+                        // The alchemy: the pill furnace, its manual and scrolls, its pills (docs/cultivation/alchemy.md).
+                        com.murimblock.alchemy.AlchemyItems.creativeItems().forEach(item -> output.accept(item.get()));
                     })
                     .build());
 

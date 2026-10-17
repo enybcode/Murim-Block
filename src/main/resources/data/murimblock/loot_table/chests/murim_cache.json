@@ -4,26 +4,68 @@
     {
       "rolls": 1,
       "entries": [
-        { "type": "minecraft:loot_table", "value": "minecraft:chests/village/village_weaponsmith" }
+        {
+          "type": "minecraft:loot_table",
+          "value": "minecraft:chests/village/village_weaponsmith"
+        }
       ]
     },
     {
       "rolls": 1,
       "conditions": [
-        { "condition": "minecraft:random_chance", "chance": 0.4 }
+        {
+          "condition": "minecraft:random_chance",
+          "chance": 0.4
+        }
       ],
       "entries": [
-        { "type": "minecraft:item", "name": "murimblock:long_fist_scroll" }
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:long_fist_scroll"
+        }
       ]
     },
     {
       "rolls": 1,
       "conditions": [
-        { "condition": "minecraft:random_chance", "chance": 0.03 }
+        {
+          "condition": "minecraft:random_chance",
+          "chance": 0.03
+        }
       ],
       "entries": [
-        { "type": "minecraft:item", "name": "murimblock:bishou" },
-        { "type": "minecraft:item", "name": "murimblock:flying_knife" }
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:bishou"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:flying_knife"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:empty",
+          "weight": 16
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:martial_elixir_recipe",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:soul_soothing_pill_recipe",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:alchemy_manual",
+          "weight": 4
+        }
       ]
     }
   ]

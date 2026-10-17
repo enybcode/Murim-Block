@@ -45,7 +45,7 @@ function make(name, build, rarity = RARITY[name]) {
   };
   /** Back to the plant's body (or a given bone) for the boxes after. */
   const on = bn => { current = bn || 'body'; };
-  const glowOf = kind => (kind === 'glow' ? (pt, c) => '#ffffff' : null);
+  const glowOf = kind => (kind === 'glow' ? () => true : null);
   const box = (size, c, paint, axis = 'y', deg = 0, glow) => P.box(S, current, size, c, paint, axis, deg,
     glow || glowOf(bones.find(b => b.name === current).kind) || undefined);
   /** A branch from `base`, on its own bone (it sways): `len` long, tilted `deg` about `axis` (z: toward -x; x: toward +z). */

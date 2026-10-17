@@ -47,6 +47,7 @@ public final class Murimblock {
         // Blocks first: they add their block items to MurimItems before its registry is attached.
         MurimBlocks.register(modEventBus);
         com.murimblock.world.plant.MurimFlora.register(modEventBus);
+        com.murimblock.alchemy.AlchemyItems.register(modEventBus);
         com.murimblock.martial.SanguineBlocks.register(modEventBus);
         com.murimblock.martial.SanguineItems.register(modEventBus);
         com.murimblock.martial.CelestialPeakItems.register(modEventBus);

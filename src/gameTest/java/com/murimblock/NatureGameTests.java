@@ -61,7 +61,8 @@ public final class NatureGameTests {
                 && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
                 && com.murimblock.bloodsect.BloodSect.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
                 && MurimBlocks.buildingOrder().stream().noneMatch(b -> b.getId().equals(k))
-                && com.murimblock.world.plant.MurimFlora.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))).count();
+                && com.murimblock.world.plant.MurimFlora.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
+                && com.murimblock.alchemy.AlchemyItems.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
         // The plants' own blocks (docs/cultivation/plants.md): every wild one has its item in the tab; the planted crop has none.
         for (var entry : com.murimblock.world.plant.MurimFlora.BLOCKS.getEntries()) {

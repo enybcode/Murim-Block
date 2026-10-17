@@ -26,7 +26,7 @@ const q = new URLSearchParams(location.search);
 const ASSETS = q.get('assets') || '../../../src/main/resources/assets/murimblock/';
 const cols = +(q.get('cols') || 2), size = +(q.get('size') || 360);
 const frozen = q.has('t') ? +q.get('t') : null;
-const list = (q.get('plants') || 'lingzhi:default:0:Lingzhi').split(',').map(s => { const [name, colour, stage, label] = s.split(':'); return { name, colour, stage: +stage, label: label || name }; });
+const list = (q.get('plants') || 'lingzhi:default:0:Lingzhi').split(',').map(s => { const [name, colour, stage, label, anim] = s.split(':'); return { name, colour, stage: +stage, label: label || name, anim }; });
 const grid = document.getElementById('grid');
 grid.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
 
@@ -45,17 +45,18 @@ async function cell(p) {
   const div = document.createElement('div'); div.className = 'cell'; div.style.height = size + 'px';
   const label = document.createElement('span'); label.textContent = p.label; div.appendChild(label);
   grid.appendChild(div);
-  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-  renderer.setSize(size, size); renderer.setClearColor(0x9fc3e0);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
+  renderer.setSize(size, size); renderer.setClearColor(0x9fc3e0, q.has('clear') ? 0 : 1);
   div.insertBefore(renderer.domElement, label);
   const scene = new THREE.Scene();
   scene.add(new THREE.AmbientLight(0xffffff, 0.62));
   const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-0.4, 1, -0.7); scene.add(sun);
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 500);
-  camera.position.set(-17, 15, -22); camera.lookAt(0, 6.5, 0);
+  const zoom = +(q.get('zoom') || 1), ty = +(q.get('ty') || 6.5);
+  camera.position.set(-17 * zoom, ty + 8.5 * zoom, -22 * zoom); camera.lookAt(0, ty, 0);
   // The ground: a block's top.
   const ground = new THREE.Mesh(new THREE.BoxGeometry(16, 1, 16), new THREE.MeshLambertMaterial({ color: 0x5b8a3a }));
-  ground.position.y = -0.5; scene.add(ground);
+  ground.position.y = -0.5; if (!q.has('noground')) scene.add(ground);
 
   const geo = await (await fetch(`${ASSETS}geo/block/plant/${p.name}_stage${p.stage}.geo.json`)).json();
   const anims = (await (await fetch(`${ASSETS}animations/block/plant/${p.name}.animation.json`)).json()).animations;
@@ -98,7 +99,8 @@ async function cell(p) {
   }
   const start = performance.now();
   function pose(at) {
-    for (const a of Object.values(anims)) {
+    for (const [an, a] of Object.entries(anims)) {
+      if (p.anim && an !== p.anim) continue;
       const t = at % a.animation_length;
       for (const [name, ch] of Object.entries(a.bones)) {
         const b = bones[name]; if (!b) continue;

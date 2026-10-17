@@ -124,7 +124,9 @@ class Plant {
         for (const face of faces) {
           if (!face.p.glow) continue;
           for (let v = 0; v < face.h; v++) for (let u = 0; u < face.w; u++) {
-            const c = face.p.glow(face.f, u, v, face.w, face.h, outfit);
+            let c = face.p.glow(face.f, u, v, face.w, face.h, outfit);
+            // true: the texel shines in its own colour.
+            if (c === true) c = face.p.paint(face.f, u, v, face.w, face.h, outfit);
             if (c) glow.set([...hexRgb(c), 255], ((face.v + v) * this.atlas + face.u + u) * 4);
           }
         }

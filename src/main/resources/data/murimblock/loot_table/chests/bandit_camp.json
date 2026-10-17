@@ -194,6 +194,30 @@
           "name": "murimblock:long_fist_scroll"
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:empty",
+          "weight": 20
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:martial_elixir_recipe",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:soul_soothing_pill_recipe",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:alchemy_manual",
+          "weight": 2
+        }
+      ]
     }
   ]
 }

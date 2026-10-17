@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "item": "murimblock:chrysanthemum_flower"
+    },
+    {
+      "item": "murimblock:lotus_seed_pod"
+    }
+  ],
+  "result": {
+    "id": "murimblock:alchemy_manual",
+    "count": 1
+  }
+}
