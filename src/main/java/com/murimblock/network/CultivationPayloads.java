@@ -52,6 +52,18 @@ public final class CultivationPayloads {
         }
     }
 
+    /** Client: it leapt once more in the air (Qinggong): the server checks, takes the Qi, shows the gust. */
+    public record Leap() implements CustomPacketPayload {
+        public static final Type<Leap> TYPE = new Type<>(id("qinggong_leap"));
+        public static final StreamCodec<ByteBuf, Leap> STREAM_CODEC = StreamCodec.unit(new Leap());
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(Leap payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player) com.murimblock.cultivation.Qinggong.leap(player);
+        }
+    }
+
     /** Client: the Qi Sense key held down (true) or let go. */
     public record Sense(boolean active) implements CustomPacketPayload {
         public static final Type<Sense> TYPE = new Type<>(id("qi_sense"));

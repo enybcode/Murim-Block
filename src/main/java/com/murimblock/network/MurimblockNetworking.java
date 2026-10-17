@@ -16,7 +16,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "28";
+    private static final String NETWORK_VERSION = "29";
 
     private MurimblockNetworking() {
     }
@@ -26,6 +26,7 @@ public final class MurimblockNetworking {
         // Cultivation: meditation (and the inner world), Qi Sense, breakthroughs shown.
         registrar.playToServer(CultivationPayloads.Meditate.TYPE, CultivationPayloads.Meditate.STREAM_CODEC, CultivationPayloads.Meditate::handle);
         registrar.playToServer(CultivationPayloads.Absorb.TYPE, CultivationPayloads.Absorb.STREAM_CODEC, CultivationPayloads.Absorb::handle);
+        registrar.playToServer(CultivationPayloads.Leap.TYPE, CultivationPayloads.Leap.STREAM_CODEC, CultivationPayloads.Leap::handle);
         registrar.playToServer(CultivationPayloads.Sense.TYPE, CultivationPayloads.Sense.STREAM_CODEC, CultivationPayloads.Sense::handle);
         // Conversations: a page shown, an answer chosen.
         registrar.playToClient(DialoguePayloads.Page.TYPE, DialoguePayloads.Page.STREAM_CODEC,
