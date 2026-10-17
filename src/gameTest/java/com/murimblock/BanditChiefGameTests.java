@@ -149,7 +149,8 @@ public final class BanditChiefGameTests {
         parry(helper, MurimAnimations.CHIEF_SWEEP, 2.4);
     }
 
-    @GameTest(template = "foundation_arena", batch = "chief_parry_slam", timeoutTicks = 160)
+    // At 3.6 blocks from the player the chief starts at relative Z=5.1, outside foundation_arena's loaded chunks.
+    @GameTest(template = "spear_arena", batch = "chief_parry_slam", timeoutTicks = 160)
     public static void theSlamCanBeParried(GameTestHelper helper) {
         parry(helper, MurimAnimations.CHIEF_SLAM, 3.6);
     }
@@ -178,6 +179,8 @@ public final class BanditChiefGameTests {
                 chief.moveTo(player.getX(), player.getY(), player.getZ() + distance, 180, 0);
                 chief.setYHeadRot(180);
                 chief.yBodyRot = 180;
+                helper.assertTrue(helper.getBounds().contains(chief.position()),
+                        "The chief starts outside the loaded test arena: " + chief.position() + " outside " + helper.getBounds());
             }
             if (t >= 2 && t < 50) {
                 // The guard goes up two ticks before the blow, whenever it comes: a perfect parry.
