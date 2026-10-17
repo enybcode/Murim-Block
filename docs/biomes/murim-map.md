@@ -36,7 +36,7 @@ habillés selon leur région, tigre du centre, avant-postes et arène), le repai
 
 | Région | Où (disposition classique, sans monde) | Biomes (selon le relief et l'humidité) |
 |---|---|---|
-| **Centre** : montagnes et vallées sacrées | Un disque d'environ 10 000 blocs de rayon autour de l'origine | Pics de la mer de nuages sur les montagnes, vallée des fleurs de pêcher ailleurs |
+| **Centre** : montagnes et vallées sacrées | Un disque d'environ 10 000 blocs de rayon autour de l'origine | Pics de la mer de nuages sur les montagnes, forêt de pierre de Wulingyuan là où c'est humide, vallée des fleurs de pêcher ailleurs |
 | **Nord** : les neiges | Vers −z | Glaciers du Kunlun sur les montagnes, champs de neige du Tianshan ailleurs |
 | **Ouest** : les terres sèches | Vers −x | Désert du Hexi là où c'est sec, plateau de lœss ailleurs |
 | **Sud** : les terres humides et les plaines | Vers +z | Karst de jade là où c'est humide, collines aux camphriers sur les terres douces, mer de bambous sur les reliefs ; de basses collines |

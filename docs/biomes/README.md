@@ -31,6 +31,7 @@ Depuis le 14/10/2026, chaque biome a sa structure (le sanctuaire pour le Huangsh
 | Mer de bambous de Shu (`shu_bamboo_sea`) | Moyen | Mer de bambous de Shunan, montagnes des pandas (Sichuan) | [shu_bamboo_sea.md](shu_bamboo_sea.md) |
 | Pays des eaux du Jiangnan (`jiangnan_waterlands`) | Moyen | Lac Tai, lac de l'Ouest, villes d'eau du bas Yangtsé | [jiangnan_waterlands.md](jiangnan_waterlands.md) |
 | Vallée des fleurs de pêcher (`peach_blossom_valley`) | Moyen | La Source aux fleurs de pêcher de Tao Yuanming, piliers de grès de Wulingyuan | [peach_blossom_valley.md](peach_blossom_valley.md) |
+| Forêt de pierre de Wulingyuan (`wulingyuan_pillars`) | Centre | Les milliers de piliers de grès de Zhangjiajie, sommets verts, gorges et brume | [wulingyuan_pillars.md](wulingyuan_pillars.md) |
 | Champs de neige du Tianshan (`tianshan_snowfields`) | Grand (nord) | Versant nord du Tianshan : forêts d'épicéas de Schrenk, prairies, lotus des neiges | [tianshan_snowfields.md](tianshan_snowfields.md) |
 | Glaciers du Kunlun (`kunlun_glaciers`) | Grand (nord, montagnes) | Kunlun : roche, glace, jade blanc de Hotan dans les torrents | [kunlun_glaciers.md](kunlun_glaciers.md) |
 | Collines aux camphriers (`camphor_hills`) | Grand (sud, est) | Collines du Jiangxi, du Hunan et de la Huizhou : camphriers sacrés, bosquets fengshui, astragale | [camphor_hills.md](camphor_hills.md) |

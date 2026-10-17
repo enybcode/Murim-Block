@@ -47,7 +47,7 @@ const BIOME_NAMES = {
   jade_karst_forest: 'Jade Karst Forest', loess_plateau: 'Loess Plateau', hexi_frontier_desert: 'Hexi Frontier Desert',
   cloud_sea_peaks: 'Cloud Sea Peaks', shu_bamboo_sea: 'Shu Bamboo Sea', jiangnan_waterlands: 'Jiangnan Waterlands',
   peach_blossom_valley: 'Peach Blossom Valley', tianshan_snowfields: 'Tianshan Snowfields', kunlun_glaciers: 'Kunlun Glaciers',
-  camphor_hills: 'Camphor Hill Country',
+  camphor_hills: 'Camphor Hill Country', wulingyuan_pillars: 'Wulingyuan Stone Forest',
 };
 
 // ---------------------------------------------------------------- assets
@@ -357,6 +357,8 @@ CF('disk_white_jade', 'minecraft:disk', { half_height: 1, radius: uniform(1, 2),
   target: { type: 'minecraft:matching_blocks', blocks: ['minecraft:gravel', 'minecraft:sand', 'minecraft:dirt', 'minecraft:clay', id('kunlun_rock')] } });
 // Jiangnan: fields, strips and canals out of the shallow lake.
 CF('jiangnan_waterlands', id('waterlands'), { biome: id('jiangnan_waterlands'), land: 0.3 });
+// Wulingyuan (17/10/2026, after Enzo's photographs): the whole stone forest, laid out by PillarForestFeature itself.
+CF('pillar_forest', id('pillar_forest'), {});
 CF('moso_bamboo_grove', id('moso_bamboo_grove'), {});
 CF('cliff_pine', id('cliff_pine'), {});
 CF('jiangnan_pond', id('shallow_pond'), {});
@@ -452,6 +454,13 @@ PF('yardang', id('yardang'), [chance(3), inSquare, biomeFilter, away(30)]);
 PF('jiangnan_pond', id('jiangnan_pond'), [count(2), inSquare, heightmap('OCEAN_FLOOR_WG'), biomeFilter, away(8)]);
 for (const g of ['karst', 'loess', 'gobi', 'peaks', 'peach', 'kunlun']) PF(`ground_body_${g}`, id(`ground_body_${g}`), []);
 PF('jiangnan_waterlands', id('jiangnan_waterlands'), []);
+// No biome filter: it runs in every chunk that holds some of the biome and checks each pillar's own ground.
+PF('pillar_forest', id('pillar_forest'), []);
+// Its trees: a few, so the rock shows: osmanthus and flat-crowned pines on the tops and in the gorges; pines also grow from the walls.
+treeMix('trees_wulingyuan', [[id('huangshan_pine'), 0.35]], id('osmanthus'));
+PF('trees_wulingyuan', id('trees_wulingyuan'), treePlacement(weightedCount([[1, 2], [2, 2], [3, 1]]), 'huangshan_pine_sapling'));
+PF('cliff_pine_wulingyuan', id('cliff_pine'), [count(26), inSquare, { type: 'minecraft:height_range', height: { type: 'minecraft:uniform',
+  min_inclusive: { absolute: 80 }, max_inclusive: { absolute: 190 } } }, biomeFilter]);
 
 // ---------------------------------------------------------------- biomes
 const plains = JSON.parse(fs.readFileSync(path.join(__dirname, 'vanilla', 'plains_features.json'), 'utf8'));
@@ -459,14 +468,14 @@ const plains = JSON.parse(fs.readFileSync(path.join(__dirname, 'vanilla', 'plain
 const ORDER = {
   0: ['ground_body_karst', 'ground_body_loess', 'ground_body_gobi', 'ground_body_peaks', 'ground_body_peach', 'ground_body_kunlun'],
   1: ['jiangnan_waterlands', 'jiangnan_pond'],
-  2: ['karst_tower', 'granite_spire', 'sandstone_pillar', 'yardang'],
+  2: ['karst_tower', 'granite_spire', 'sandstone_pillar', 'yardang', 'pillar_forest'],
   9: ['trees_karst', 'trees_karst_giant', 'bamboo_clumps_karst', 'trees_loess', 'trees_desert_poplar', 'desert_poplar_snag',
     'trees_huangshan_pine', 'trees_tianshan_spruce', 'trees_glacier_spruce', 'trees_camphor_woods', 'trees_camphor_lone',
     'trees_camphor_ancient', 'cliff_pine', 'moso_bamboo_grove', 'trees_dove_tree', 'trees_willow', 'trees_peach',
     'patch_karst_fern', 'patch_feather_grass', 'patch_sea_buckthorn', 'patch_tamarisk', 'patch_saxaul', 'patch_cistanche',
     'patch_dead_bush', 'patch_rhododendron', 'patch_arrow_bamboo', 'patch_tree_fern', 'patch_bamboo_shoot', 'patch_wild_rice',
     'patch_lotus', 'flower_chrysanthemum', 'flower_rapeseed', 'patch_pink_petals', 'patch_grass_lush', 'patch_kunlun_sedge',
-    'patch_kunlun_sedge_sparse', 'patch_snow_lotus', 'patch_snow_lotus_glacier', 'patch_milk_vetch'],
+    'patch_kunlun_sedge_sparse', 'patch_snow_lotus', 'patch_snow_lotus_glacier', 'patch_milk_vetch', 'trees_wulingyuan', 'cliff_pine_wulingyuan'],
   // After vanilla's own ores and disks of the step: the jade.
   6: ['ore_white_jade', 'disk_white_jade'],
 };
@@ -558,10 +567,17 @@ biome('camphor_hills', { temperature: 0.8, downfall: 0.85, sky: '#9FBBD0', fog: 
   mine: ['trees_camphor_woods', 'trees_camphor_lone', 'trees_camphor_ancient', 'patch_milk_vetch', 'patch_grass_lush'],
   vanilla: ['minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal', 'minecraft:patch_pumpkin'] });
 
+// The Wulingyuan stone forest (17/10/2026): the centre's humid land, its pillars risen from the old plateau.
+biome('wulingyuan_pillars', { temperature: 0.8, downfall: 0.9, sky: '#9EBCD8', fog: '#C3D0D8', water: '#4C9A8E', waterFog: '#2F6158',
+  grass: '#6DB33F', foliage: '#4F9A36', music: 'minecraft:music.overworld.jungle',
+  creatures: [spawn('chicken', 8, 2, 4), spawn('rabbit', 4, 2, 3), spawn('parrot', 10, 1, 2)],
+  mine: ['pillar_forest', 'trees_wulingyuan', 'cliff_pine_wulingyuan', 'patch_karst_fern', 'patch_grass_lush'],
+  vanilla: ['minecraft:brown_mushroom_normal', 'minecraft:red_mushroom_normal'] });
+
 // Biome tags.
 const all = Object.keys(BIOME_NAMES).map(id);
 tag('worldgen/biome', 'murim_biomes', all, NS);
-tag('worldgen/biome', 'misty', [id('jade_karst_forest'), id('cloud_sea_peaks'), id('shu_bamboo_sea'), id('peach_blossom_valley'), id('jiangnan_waterlands')], NS);
+tag('worldgen/biome', 'misty', [id('jade_karst_forest'), id('cloud_sea_peaks'), id('shu_bamboo_sea'), id('peach_blossom_valley'), id('jiangnan_waterlands'), id('wulingyuan_pillars')], NS);
 // Armored crabs live along the karst rivers and the Jiangnan ponds too (merged into the existing tag).
 {
   const crabTag = D(NS, 'tags', 'worldgen', 'biome', 'spawns_armored_crab.json');
@@ -578,7 +594,7 @@ tag('worldgen/biome', 'spawns_snow_foxes', [id('tianshan_snowfields'), id('kunlu
 tag('worldgen/biome', 'spawns_white_rabbits', [id('tianshan_snowfields'), id('kunlun_glaciers')], 'minecraft');
 tag('worldgen/biome', 'is_plateau', [id('loess_plateau')], 'c');
 tag('worldgen/biome', 'is_jungle', [id('jade_karst_forest')], 'c');
-tag('worldgen/biome', 'is_forest', [id('shu_bamboo_sea'), id('peach_blossom_valley'), id('camphor_hills')], 'c');
+tag('worldgen/biome', 'is_forest', [id('shu_bamboo_sea'), id('peach_blossom_valley'), id('camphor_hills'), id('wulingyuan_pillars')], 'c');
 tag('worldgen/biome', 'is_wet', [id('jiangnan_waterlands'), id('jade_karst_forest'), id('shu_bamboo_sea')], 'c');
 tag('worldgen/biome', 'is_dry', [id('hexi_frontier_desert'), id('loess_plateau')], 'c');
 tag('worldgen/biome', 'is_overworld', all, 'c');

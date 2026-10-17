@@ -46,18 +46,19 @@ public final class MurimMapGameTests {
     private MurimMapGameTests() { }
 
     private static final Map<MurimMap.Region, Set<ResourceKey<Biome>>> REGION_BIOMES = Map.of(
-            MurimMap.Region.CENTER, Set.of(MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.PEACH_BLOSSOM_VALLEY),
+            MurimMap.Region.CENTER, Set.of(MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.PEACH_BLOSSOM_VALLEY, MurimBiomes.WULINGYUAN_PILLARS),
             MurimMap.Region.NORTH, Set.of(MurimBiomes.KUNLUN_GLACIERS, MurimBiomes.TIANSHAN_SNOWFIELDS),
             MurimMap.Region.WEST, Set.of(MurimBiomes.HEXI_FRONTIER_DESERT, MurimBiomes.LOESS_PLATEAU),
             MurimMap.Region.SOUTH, Set.of(MurimBiomes.JADE_KARST_FOREST, MurimBiomes.SHU_BAMBOO_SEA, MurimBiomes.CAMPHOR_HILLS),
             MurimMap.Region.EAST, Set.of(MurimBiomes.JIANGNAN_WATERLANDS, MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomes.CAMPHOR_HILLS));
 
-    private static final Map<ResourceKey<Biome>, Integer> COLOURS = Map.of(
-            MurimBiomes.CLOUD_SEA_PEAKS, 0xB8BEC4, MurimBiomes.PEACH_BLOSSOM_VALLEY, 0xE8A0B8,
-            MurimBiomes.KUNLUN_GLACIERS, 0x9ED8F0, MurimBiomes.TIANSHAN_SNOWFIELDS, 0xF2F6FA,
-            MurimBiomes.HEXI_FRONTIER_DESERT, 0xE2C27A, MurimBiomes.LOESS_PLATEAU, 0xB8904A,
-            MurimBiomes.JADE_KARST_FOREST, 0x2E7A3A, MurimBiomes.SHU_BAMBOO_SEA, 0x7EC24A,
-            MurimBiomes.JIANGNAN_WATERLANDS, 0x4AA89A, MurimBiomes.CAMPHOR_HILLS, 0x3F6E35);
+    private static final Map<ResourceKey<Biome>, Integer> COLOURS = Map.ofEntries(
+            Map.entry(MurimBiomes.CLOUD_SEA_PEAKS, 0xB8BEC4), Map.entry(MurimBiomes.PEACH_BLOSSOM_VALLEY, 0xE8A0B8),
+            Map.entry(MurimBiomes.KUNLUN_GLACIERS, 0x9ED8F0), Map.entry(MurimBiomes.TIANSHAN_SNOWFIELDS, 0xF2F6FA),
+            Map.entry(MurimBiomes.HEXI_FRONTIER_DESERT, 0xE2C27A), Map.entry(MurimBiomes.LOESS_PLATEAU, 0xB8904A),
+            Map.entry(MurimBiomes.JADE_KARST_FOREST, 0x2E7A3A), Map.entry(MurimBiomes.SHU_BAMBOO_SEA, 0x7EC24A),
+            Map.entry(MurimBiomes.JIANGNAN_WATERLANDS, 0x4AA89A), Map.entry(MurimBiomes.CAMPHOR_HILLS, 0x3F6E35),
+            Map.entry(MurimBiomes.WULINGYUAN_PILLARS, 0x8A7A5A));
 
     @GameTest(template = "foundation_arena", batch = "murim_map_preset")
     public static void theNormalWorldPresetPutsTheMurimMapOnTheOverworld(GameTestHelper helper) {

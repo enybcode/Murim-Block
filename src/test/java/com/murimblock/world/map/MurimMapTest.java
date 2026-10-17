@@ -154,6 +154,7 @@ class MurimMapTest {
         assertEquals(MurimBiomes.CAMPHOR_HILLS, MurimBiomeSource.pick(MurimMap.Region.SOUTH, 0.2F, -0.5F));
         assertEquals(MurimBiomes.CLOUD_SEA_PEAKS, MurimBiomeSource.pick(MurimMap.Region.CENTER, -0.6F, 0));
         assertEquals(MurimBiomes.PEACH_BLOSSOM_VALLEY, MurimBiomeSource.pick(MurimMap.Region.CENTER, 0.2F, 0));
+        assertEquals(MurimBiomes.WULINGYUAN_PILLARS, MurimBiomeSource.pick(MurimMap.Region.CENTER, 0.2F, 0.4F));
         assertEquals(MurimBiomes.JIANGNAN_WATERLANDS, MurimBiomeSource.pick(MurimMap.Region.EAST, 0.2F, 0));
     }
 }

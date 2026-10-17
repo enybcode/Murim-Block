@@ -33,9 +33,12 @@ public final class MurimBiomes {
     public static final ResourceKey<Biome> KUNLUN_GLACIERS = key("kunlun_glaciers");
     /** Camphor hill country (Jiangxi, Hunan, Huizhou): rolling hills, camphor woods with clean edges, milk vetch. South and east. */
     public static final ResourceKey<Biome> CAMPHOR_HILLS = key("camphor_hills");
+    /** Wulingyuan (Zhangjiajie): a forest of quartz-sandstone pillars 60 to 110 blocks tall, green-topped, misty gorges. Centre. */
+    public static final ResourceKey<Biome> WULINGYUAN_PILLARS = key("wulingyuan_pillars");
 
     public static final List<ResourceKey<Biome>> ALL = List.of(JADE_KARST_FOREST, LOESS_PLATEAU, HEXI_FRONTIER_DESERT,
-            CLOUD_SEA_PEAKS, SHU_BAMBOO_SEA, JIANGNAN_WATERLANDS, PEACH_BLOSSOM_VALLEY, TIANSHAN_SNOWFIELDS, KUNLUN_GLACIERS, CAMPHOR_HILLS);
+            CLOUD_SEA_PEAKS, SHU_BAMBOO_SEA, JIANGNAN_WATERLANDS, PEACH_BLOSSOM_VALLEY, TIANSHAN_SNOWFIELDS, KUNLUN_GLACIERS, CAMPHOR_HILLS,
+            WULINGYUAN_PILLARS);
 
     /** The Murim biomes as a tag (data/murimblock/tags/worldgen/biome/murim_biomes.json). */
     public static final net.minecraft.tags.TagKey<Biome> MURIM_TAG = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BIOME,
