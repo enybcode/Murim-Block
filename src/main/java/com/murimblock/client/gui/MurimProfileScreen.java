@@ -304,6 +304,7 @@ public final class MurimProfileScreen extends Screen {
         strikeSlots.clear();
         backButton = null;
         mainButton = null;
+        passiveSlot = null;
         MartialData data = minecraft == null || minecraft.player == null ? MartialData.EMPTY : MartialService.data(minecraft.player);
         MartialArts.Art art = openArt == null ? null : MartialArts.art(openArt);
         if (art == null || !data.knowsArt(art.id())) {
@@ -534,7 +535,14 @@ public final class MurimProfileScreen extends Screen {
         renderBar(g, data, side);
     }
 
-    /** The combat bar, two rows of five slots, its keys and its hint. */
+    /** The active passive's slot beside the combat bar, as last drawn (a click opens its page). */
+    @Nullable private Box passiveSlot;
+
+    /**
+     * The combat bar, two rows of five slots and their keys; under it, a slot apart in gold: the one passive active (the
+     * main style's) and its name, dashed when there is no main style. The hint shows when there is room, else on an empty
+     * slot under the pointer.
+     */
     private void renderBar(GuiGraphics g, MartialData data, Box side) {
         section(g, new Box(side.x(), side.y(), side.width(), 9), label("techniques.bar"));
         int slot = 16, step = 20;
@@ -547,12 +555,33 @@ public final class MurimProfileScreen extends Screen {
             if (placed != null) {
                 TechniqueIcons.draw(g, placed, left + box.x() + 1, top + box.y() + 1, slot - 2);
                 if (box.contains(pointerX, pointerY)) hoveredText = Component.translatable(placed.translationKey());
+            } else if (box.contains(pointerX, pointerY)) {
+                hoveredText = label("techniques.bar_hint");
             }
             String key = minecraft == null ? "" : CombatBarClient.keyLabel(minecraft, i);
             text(g, Component.literal(key), new Box(box.x(), box.bottom() + 1, slot, 9), MUTED, true, 1);
             barSlots.add(box);
         }
-        int hintY = by + 2 * (slot + 11);
+        // The passive: one at a time, so one slot, apart, in gold.
+        MartialArts.Passive active = data.passive().orElse(null);
+        MartialArts.Art activeArt = active == null ? null : MartialArts.artOfPassive(active.id());
+        passiveSlot = new Box(bx, by + 2 * (slot + 11) + 1, 18, 18);
+        boolean passiveHot = passiveSlot.contains(pointerX, pointerY);
+        if (active != null) {
+            fill(g, passiveSlot, passiveHot ? GOLD_LIGHT : GOLD);
+            fill(g, new Box(passiveSlot.x() + 1, passiveSlot.y() + 1, 16, 16), TRACK);
+            TechniqueIcons.draw(g, active.id(), Component.translatable(active.translationKey()), left + passiveSlot.x() + 1, top + passiveSlot.y() + 1, 16, 0xFF2F6E9E);
+        } else {
+            fill(g, passiveSlot, TRACK);
+            dashed(g, passiveSlot, passiveHot ? MUTED : PAPER_LINE);
+        }
+        Box named = new Box(passiveSlot.right() + 4, passiveSlot.y(), side.right() - passiveSlot.right() - 4, 9);
+        text(g, Component.literal(label("techniques.passive_slot").getString().toUpperCase(Locale.ROOT)), named, active != null ? GOLD : MUTED, false, 1);
+        text(g, new Box(named.x(), named.y() + 9, named.width(), 9), active == null ? label("techniques.no_passive_short") : Component.translatable(active.translationKey()), active != null ? INK : MUTED);
+        if (passiveHot || named.contains(pointerX, pointerY)) hoveredText = active == null ? label("techniques.no_passive")
+                : label("techniques.active_passive", Component.translatable(active.translationKey()),
+                        activeArt == null ? Component.empty() : Component.translatable(activeArt.translationKey()));
+        int hintY = passiveSlot.bottom() + 3;
         if (side.bottom() - hintY >= 9) text(g, label("techniques.bar_hint"), new Box(side.x(), hintY, side.width(), side.bottom() - hintY), MUTED, false, 1);
     }
 
@@ -671,6 +700,11 @@ public final class MurimProfileScreen extends Screen {
             }
             if (nextPage != null && nextPage.contains(mx, my)) {
                 libraryPage++;
+                return true;
+            }
+            if (passiveSlot != null && passiveSlot.contains(mx, my)) {
+                MartialData data = MartialService.data(minecraft.player);
+                data.passive().ifPresent(passive -> selectForTests(passive.id()));
                 return true;
             }
             if (backButton != null && backButton.contains(mx, my)) {
