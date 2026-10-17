@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "com.murimblock.client.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["EpicFightVersionNotifierMixin", "ChatComponentMixin"],
+  "client": ["EpicFightVersionNotifierMixin", "ChatComponentMixin", "PlayerSkinMixin"],
   "injectors": {"defaultRequire": 1}
 }

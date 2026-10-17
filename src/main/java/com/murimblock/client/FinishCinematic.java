@@ -52,6 +52,8 @@ public final class FinishCinematic {
     static final Timing SEVEN_STARS = new Timing(2.6F, 0.35F, 1.9F, 2.1F);
     /** Noon Sentence: the palm raised until 0.6 s, the sun brought down at 1.6 s. */
     static final Timing NOON_SENTENCE = new Timing(2.6F, 0.6F, 1.6F, 2.0F);
+    /** Last Bell: the palm laid on at 0.5 s, the third ring at 1.6 s. */
+    static final Timing LAST_BELL = new Timing(2.4F, 0.5F, 1.6F, 1.9F);
     /**
      * Scarlet Bloom: its own moving camera ({@link #placeScarlet}); 7.8 s, the eruption at 0.7 s, the cage closing from
      * 3.5 s, the burst at 5.0 s (slow motion until 5.6 s), the landing at 6.1 s.
@@ -102,6 +104,7 @@ public final class FinishCinematic {
                 : finish == FinishCinematicPayload.MOUNTAIN_BURIAL ? MOUNTAIN_BURIAL
                 : finish == FinishCinematicPayload.SEVEN_STARS ? SEVEN_STARS
                 : finish == FinishCinematicPayload.NOON_SENTENCE ? NOON_SENTENCE
+                : finish == FinishCinematicPayload.LAST_BELL ? LAST_BELL
                 : finish == FinishCinematicPayload.SCARLET_BLOOM ? SCARLET_BLOOM : GENERIC;
         scarletOrigin = v.position();
         executorId = executor;

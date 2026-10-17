@@ -109,6 +109,8 @@ public final class MartialService {
         // Scarlet Tear's key again while its blood sword is out: the throw, free, whatever the cooldown.
         if (technique == MartialArts.SCARLET_TEAR && SanguineArt.holdsSword(player) && data(player).hasTechnique(id))
             return SanguineArt.throwSword(player) ? CastResult.CAST : CastResult.FAILED;
+        // The golden form's key again while in it: it ends, free.
+        if (technique == MartialArts.GOLDEN_BELL_FORM && data(player).hasTechnique(id) && GoldenBell.leaveIfIn(player)) return CastResult.CAST;
         // The Spinning Rampart's key let go: it stops (it stopped by itself just before: nothing more to say).
         if (technique == MartialArts.SPINNING_RAMPART && data(player).hasTechnique(id)) {
             if (TravellerStaff.spinning(player)) { TravellerStaff.endRampart(player, true); return CastResult.CAST; }
@@ -212,6 +214,21 @@ public final class MartialService {
         if (at == null) return;
         ready.put(technique.id(), at - ticks);
         if (player.connection != null) PacketDistributor.sendToPlayer(player, new TechniquePayloads.Cooldown(technique.id(), cooldownLeft(player, technique.id())));
+    }
+
+    /** A technique not to be cast again until its cooldown is started at its end (startCooldown): the Golden Bell's form. */
+    static void holdCooldown(ServerPlayer player, MartialArts.Technique technique) {
+        READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(technique.id(), Long.MAX_VALUE / 2);
+    }
+
+    /** A technique ready again in at most `ticks` (a missed Iron Rebound), on the server and on the player's bar. */
+    static void reduceCooldownTo(ServerPlayer player, MartialArts.Technique technique, int ticks) {
+        Map<ResourceLocation, Long> ready = READY_AT.get(player.getUUID());
+        Long at = ready == null ? null : ready.get(technique.id());
+        long target = player.level().getGameTime() + ticks;
+        if (at == null || at <= target) return;
+        ready.put(technique.id(), target);
+        if (player.connection != null) PacketDistributor.sendToPlayer(player, new TechniquePayloads.Cooldown(technique.id(), ticks));
     }
 
     /** Places a strike of the main style's passive in one of its four M1 slots (refused if it breaks the chain's rule). */

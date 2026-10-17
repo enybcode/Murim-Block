@@ -120,6 +120,7 @@ public final class MartialCombat {
         if (isEnemy(attacker, player)) MartialProgress.count(player, MartialArts.PATIENT_BLADE_PARRIES, 1);
         if (LongFist.stanceActive(player)) QiService.addQi(player, LongFist.PARRY_QI);
         SevenStarsSword.onPerfectParry(player, attacker);
+        GoldenBell.onPerfectParry(player, attacker);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -222,6 +223,11 @@ public final class MartialCombat {
             boolean strike = TravellerStaff.isStrike(animation);
             if (strike) TravellerStaff.strikeBegan(player);
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.TRAVELLER_STAFF, credit, strike, false));
+            return;
+        }
+        credit = GoldenBell.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.GOLDEN_BELL, credit, true, false));
             return;
         }
         credit = SevenStarsSword.creditOf(player, animation);
@@ -659,6 +665,7 @@ public final class MartialCombat {
         MountainShatteringFist.tick(player);
         MajinFistArt.tick(player);
         SevenStarsSword.tick(player);
+        GoldenBell.tick(player);
         SanguineArt.tick(player);
         BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
@@ -694,6 +701,14 @@ public final class MartialCombat {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
         // The Seven Stars Sword: a player of the art hurt loses stars; stars go out on their own; newcomers see them.
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SevenStarsSword::onDamage);
+        // The Golden Bell: its form lessens the blows, Iron Rebound sends them back, the mountain holds and strikes nobody.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, GoldenBell::onProjectileImpact);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(GoldenBell::onAttack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) GoldenBell.startTracking(event.getTarget(), watcher);
+        });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onIncomingDamage);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onKnockBack);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onProjectileImpact);
@@ -738,6 +753,7 @@ public final class MartialCombat {
         MountainShatteringFist.forget(id);
         MajinFistArt.forget(id);
         SevenStarsSword.forget(id);
+        GoldenBell.forget(id);
     }
 
     public static void clearForTests() {
@@ -761,5 +777,6 @@ public final class MartialCombat {
         MountainShatteringFist.forget(null);
         MajinFistArt.forget(null);
         SevenStarsSword.forget(null);
+        GoldenBell.forget(null);
     }
 }
