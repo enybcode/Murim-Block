@@ -119,6 +119,7 @@ public final class MartialCombat {
     public static void onPerfectParry(ServerPlayer player, Entity attacker) {
         if (isEnemy(attacker, player)) MartialProgress.count(player, MartialArts.PATIENT_BLADE_PARRIES, 1);
         if (LongFist.stanceActive(player)) QiService.addQi(player, LongFist.PARRY_QI);
+        SevenStarsSword.onPerfectParry(player, attacker);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -218,6 +219,11 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.TRAVELLER_STAFF, credit, strike, false));
             return;
         }
+        credit = SevenStarsSword.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.SEVEN_STARS_SWORD, credit, true, false));
+            return;
+        }
         credit = CelestialPeakSpear.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CELESTIAL_PEAK_SPEAR, credit, CelestialPeakSpear.isStrike(animation), false));
@@ -251,6 +257,8 @@ public final class MartialCombat {
         // Third Resonance: the third strike of a chain strikes twice as hard (not the techniques).
         if (swing.art.equals(MartialArts.TRAVELLER_STAFF) && swing.strike && TravellerStaff.thirdOfChain(player))
             factor *= THIRD_RESONANCE_FACTOR;
+        // Star Marks: the blow on a full constellation bursts it, harder.
+        if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) factor *= SevenStarsSword.factorBefore(player, event.getTarget());
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -277,6 +285,7 @@ public final class MartialCombat {
         else if (fist) LongFist.onHit(player, target, animation, enemy);
         else if (sanguine) SanguineArt.onHit(player, target, animation, enemy);
         else if (spear) CelestialPeakSpear.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.SEVEN_STARS_SWORD)) SevenStarsSword.onHit(player, target);
         else AzureCloudSword.onHit(player, target, animation, swing.riposte);
         // The combo: a knock-down ends it, and counts as complete after enough hits.
         long now = player.level().getGameTime();
@@ -640,6 +649,7 @@ public final class MartialCombat {
         AzureCloudSword.tickAim(player, now);
         TravellerStaff.tick(player);
         MountainShatteringFist.tick(player);
+        SevenStarsSword.tick(player);
         SanguineArt.tick(player);
         BloodIceberg.tick(player);
         List<Scheduled> list = SCHEDULED.get(player.getUUID());
@@ -673,6 +683,16 @@ public final class MartialCombat {
                     && BloodIceberg.inArena(event.getLevel(), event.getPos().relative(event.getFace() == null ? net.minecraft.core.Direction.UP : event.getFace()))) event.setCanceled(true);
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(AzureCloudSword::onDetonate);
+        // The Seven Stars Sword: a player of the art hurt loses stars; stars go out on their own; newcomers see them.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(SevenStarsSword::onDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SevenStarsMoves::onProjectileImpact);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) ->
+                SevenStarsSword.serverTick(event.getServer()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) SevenStarsSword.startTracking(event.getTarget(), watcher);
+        });
         // The Spinning Rampart stops what comes from the front before anything else sees it (Epic Fight's stun included).
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onIncomingDamage);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onKnockBack);
@@ -707,6 +727,7 @@ public final class MartialCombat {
         SanguineArt.forget(id);
         TravellerStaff.forget(id);
         MountainShatteringFist.forget(id);
+        SevenStarsSword.forget(id);
     }
 
     public static void clearForTests() {
@@ -728,5 +749,6 @@ public final class MartialCombat {
         BloodIceberg.forget(null);
         TravellerStaff.forget(null);
         MountainShatteringFist.forget(null);
+        SevenStarsSword.forget(null);
     }
 }

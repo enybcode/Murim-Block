@@ -23,6 +23,8 @@ public record FinishCinematicPayload(boolean start, int executorId, int victimId
     public static final int SCARLET_BLOOM = 3;
     /** Mountain Burial, the Mountain-Shattering Fist's finish (2.4 s: three blows, the last at 1.4 s). */
     public static final int MOUNTAIN_BURIAL = 4;
+    /** Extinguished Stars, the Seven Stars Sword's: seven thrusts, seven stars lit and put out at 1.9 s. */
+    public static final int SEVEN_STARS = 5;
 
     public static final CustomPacketPayload.Type<FinishCinematicPayload> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "finish_cinematic"));

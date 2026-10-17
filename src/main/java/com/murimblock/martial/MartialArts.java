@@ -228,6 +228,44 @@ public final class MartialArts {
     public static final Evolution EARTHQUAKE = new Evolution(EARTH_BREAKER.id(), 60, "evolution.murimblock.earthquake");
     public static final Evolution STAMPEDE = new Evolution(BULL_CHARGE.id(), 90, "evolution.murimblock.stampede");
 
+    // ---------------------------------------------------------------- the Seven Stars Sword (docs/combat/styles/seven-stars-sword.md)
+
+    /**
+     * A free art of the middle of the game (Enzo, 17/10/2026), the florett only, learnt from Qi Condensation: each blow
+     * puts a star on its target, seven burst. Five techniques (an intermediate art's), a secret, an ultimate.
+     */
+    public static final ResourceLocation SEVEN_STARS_SWORD = id("seven_stars_sword");
+    public static final com.murimblock.cultivation.CultivationRealm SEVEN_STARS_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    public static final Technique SHOOTING_STAR = new Technique(id("shooting_star"), SEVEN_STARS_SWORD, 30, 140);
+    public static final Technique DIPPER_STEPS = new Technique(id("dipper_steps"), SEVEN_STARS_SWORD, 40, 200);
+    public static final Technique ORBITING_STARS = new Technique(id("orbiting_stars"), SEVEN_STARS_SWORD, 45, 360);
+    public static final Technique CONSTELLATION_LINK = new Technique(id("constellation_link"), SEVEN_STARS_SWORD, 55, 280);
+    public static final Technique FALLING_STAR_RAIN = new Technique(id("falling_star_rain"), SEVEN_STARS_SWORD, 70, 400);
+    /** The ultimate: seven swords of light round a target held still; three minutes to recover. */
+    public static final Technique SEVEN_STARS_ARRAY = new Technique(id("seven_stars_array"), SEVEN_STARS_SWORD, 150, 3600);
+    /** The secret: a florett strike right after a perfect parry, on the attacker, completes its constellation. */
+    public static final Technique POLARIS_RIPOSTE = new Technique(id("polaris_riposte"), SEVEN_STARS_SWORD, 0, 0, true);
+    /** Its passive keeps Dawn Day's florett strikes (a little quicker); each that lands puts a star on its target. */
+    public static final Passive STAR_MARKS = new Passive(id("star_marks"), List.of(), List.of());
+    /** Constellations burst (the first quest, Seven Points). */
+    public static final String SEVEN_POINTS_BURSTS = "seven_points.bursts";
+    public static final String WALK_THE_DIPPER_FINISHES = "walk_the_dipper.finishes";
+    public static final String UNBROKEN_ORBIT_BLOCKS = "unbroken_orbit.blocks";
+    public static final String BIND_THE_SKY_GROUPS = "bind_the_sky.groups";
+    public static final String SEVEN_SWORDS_BURSTS = "seven_swords.bursts";
+    /** Not a quest: perfect parries in the stance until Polaris Riposte is found. */
+    public static final String POLARIS_PARRIES = "polaris.parries";
+    public static final Quest SEVEN_POINTS = new Quest("seven_points", DIPPER_STEPS.id(), List.of(new QuestStep(SEVEN_POINTS_BURSTS, 10)));
+    public static final Quest WALK_THE_DIPPER = new Quest("walk_the_dipper", ORBITING_STARS.id(), List.of(new QuestStep(WALK_THE_DIPPER_FINISHES, 15)));
+    public static final Quest UNBROKEN_ORBIT = new Quest("unbroken_orbit", CONSTELLATION_LINK.id(), List.of(new QuestStep(UNBROKEN_ORBIT_BLOCKS, 30)));
+    public static final Quest BIND_THE_SKY = new Quest("bind_the_sky", FALLING_STAR_RAIN.id(), List.of(new QuestStep(BIND_THE_SKY_GROUPS, 10)));
+    public static final Quest SEVEN_SWORDS = new Quest("seven_swords", SEVEN_STARS_ARRAY.id(), List.of(new QuestStep(SEVEN_SWORDS_BURSTS, 50)));
+    /** At 30: Shooting Star goes 12 blocks and may go again once, free, within 2 s. */
+    public static final Evolution TWIN_COMETS = new Evolution(SHOOTING_STAR.id(), 30, "evolution.murimblock.twin_comets");
+    /** At 60: Dipper Steps bounds five times. At 90: Falling Star Rain calls nine stars. */
+    public static final Evolution FULL_DIPPER = new Evolution(DIPPER_STEPS.id(), 60, "evolution.murimblock.full_dipper");
+    public static final Evolution METEOR_SHOWER = new Evolution(FALLING_STAR_RAIN.id(), 90, "evolution.murimblock.meteor_shower");
+
     public static final ResourceLocation SANGUINE_ART = id("sanguine_art");
     /** Keep the serialized ID of the replaced first ability, preserving existing bars and learned data. */
     /**
@@ -261,7 +299,8 @@ public final class MartialArts {
 
     /** The realm an art's manual asks of its reader, if any. */
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
-        return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM : null;
+        return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
+                : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -280,6 +319,8 @@ public final class MartialArts {
         add(new Art(TRAVELLER_STAFF, List.of(VERTICAL_STRIKE, POINT_FLURRY, SPINNING_RAMPART), THIRD_RESONANCE, List.of(), List.of()));
         add(new Art(MOUNTAIN_SHATTERING_FIST, List.of(MOUNTAIN_CRUSHING_PUNCH, EARTH_BREAKER, BULL_CHARGE, HEAVEN_FALLING_MOUNTAIN, SKY_BREAKER),
                 EARTHSHAKER, List.of(SHATTER_THE_STONE, SHAKE_THE_EARTH, HEAVENS_WEIGHT), List.of(MOUNTAIN_SPLITTING_PUNCH, EARTHQUAKE, STAMPEDE)));
+        add(new Art(SEVEN_STARS_SWORD, List.of(SHOOTING_STAR, DIPPER_STEPS, ORBITING_STARS, CONSTELLATION_LINK, FALLING_STAR_RAIN, SEVEN_STARS_ARRAY, POLARIS_RIPOSTE),
+                STAR_MARKS, List.of(SEVEN_POINTS, WALK_THE_DIPPER, UNBROKEN_ORBIT, BIND_THE_SKY, SEVEN_SWORDS), List.of(TWIN_COMETS, FULL_DIPPER, METEOR_SHOWER)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
     }

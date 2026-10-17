@@ -58,6 +58,8 @@ neoForge {
             sourceSet = sourceSets.gameTest
             gameDirectory = project.file('build/game-test-run')
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // -PgameTestFilter=sevenstars,bloodsoldier: only the tests whose name or batch holds one of the words (GameTestFilter).
+            systemProperty 'murimblock.gameTestFilter', (project.findProperty('gameTestFilter') ?: '').toString()
             disableIdeRun()
         }
 
@@ -126,6 +128,14 @@ neoForge {
             gameDirectory = project.file('build/cultist-look-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'bloodsect.cultistLookTour', 'true'
+            disableIdeRun()
+        }
+        // The Seven Stars Sword, one piece at a time (SevenStarsTour).
+        sevenStarsTour {
+            client()
+            gameDirectory = project.file('build/seven-stars-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.sevenStarsTour', 'true'
             disableIdeRun()
         }
         // The Blood Soldiers and the Blood Lacquer, on them and on the player (SoldierLookTour).

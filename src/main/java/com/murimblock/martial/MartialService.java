@@ -45,7 +45,7 @@ public final class MartialService {
     /** Game time at which each player's techniques are ready again (not saved: a restart resets cooldowns). */
     private static final Map<UUID, Map<ResourceLocation, Long>> READY_AT = new HashMap<>();
 
-    public enum CastResult { CAST, NO_TECHNIQUE, NOT_IN_COMBAT, HINDERED, COOLDOWN, NO_QI, NO_WEAPON, NO_ROOM, SWORD_OUT, FAILED }
+    public enum CastResult { CAST, NO_TECHNIQUE, NOT_IN_COMBAT, HINDERED, COOLDOWN, NO_QI, NO_WEAPON, NO_ROOM, SWORD_OUT, NO_TARGET, FAILED }
 
     private MartialService() {
     }
@@ -120,15 +120,19 @@ public final class MartialService {
         if (technique == MartialArts.SPINNING_RAMPART) return CastResult.FAILED;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
-        double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
+        boolean twinComet = technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player);
+        double cost = secondStep || twinComet ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
         if (!Techniques.perform(player, technique, riposte)) return CastResult.FAILED;
         if (riposte != null) MartialCombat.consumeRiposte(player);
         if (cost > 0) pay(player, cost);
         if (secondStep) {
             MartialCombat.takeSecondStep(player);
+        } else if (twinComet) {
+            SevenStarsSword.takeRecast(player);
         } else {
             READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, player.level().getGameTime() + technique.cooldownTicks());
             if (technique == MartialArts.CLOUD_STEP_SLASH && data(player).evolved(AzureCloudSword.art(), id)) MartialCombat.openSecondStep(player);
+            if (technique == MartialArts.SHOOTING_STAR && data(player).evolved(SevenStarsSword.art(), id)) SevenStarsSword.openRecast(player);
         }
         return CastResult.CAST;
     }
@@ -150,13 +154,16 @@ public final class MartialService {
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
         if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)) return CastResult.HINDERED;
         ResourceLocation id = technique.id();
-        boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
+        boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player)
+                || technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player);
         if (cooldownLeft(player, id) > 0 && !secondStep) return CastResult.COOLDOWN;
         double cost = secondStep ? 0 : riposte != null ? technique.qiCost() / 2 : technique.qiCost();
         if (QiService.getQi(player) < cost) return CastResult.NO_QI;
         if (!Techniques.canUse(player, technique)) return CastResult.NO_WEAPON;
         // The crescent rises 7 blocks: not under a roof (in the air it is the descent, which needs none).
         if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && !AzureCloudSword.airborne(player) && !AzureCloudSword.roomAbove(player)) return CastResult.NO_ROOM;
+        // The Seven Stars Sword's techniques that go for someone: not cast with nobody there (nothing spent).
+        if (technique.art().equals(MartialArts.SEVEN_STARS_SWORD) && !SevenStarsMoves.hasTarget(player, technique)) return CastResult.NO_TARGET;
         return CastResult.CAST;
     }
 
@@ -196,6 +203,15 @@ public final class MartialService {
     private static boolean guardRecoil(ServerPlayer player) {
         var patch = EpicFightBridge.patch(player);
         return patch != null && (AzureCloudSword.inGuardMotion(patch) || (patch.isHoldingAny() && !patch.getEntityState().inaction()));
+    }
+
+    /** Takes `ticks` off a technique's cooldown, on the server and on the player's bar. */
+    static void reduceCooldown(ServerPlayer player, MartialArts.Technique technique, int ticks) {
+        Map<ResourceLocation, Long> ready = READY_AT.get(player.getUUID());
+        Long at = ready == null ? null : ready.get(technique.id());
+        if (at == null) return;
+        ready.put(technique.id(), at - ticks);
+        if (player.connection != null) PacketDistributor.sendToPlayer(player, new TechniquePayloads.Cooldown(technique.id(), cooldownLeft(player, technique.id())));
     }
 
     /** Places a strike of the main style's passive in one of its four M1 slots (refused if it breaks the chain's rule). */
