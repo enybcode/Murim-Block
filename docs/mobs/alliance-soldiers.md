@@ -27,8 +27,10 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
 
 ## Comportement
 
-- **Neutres, comme les piglins** (demande d'Enzo, 15/10/2026) : ils n'attaquent personne en premier, ni joueur ni
-  monstre. Frappé, un soldat se retourne contre celui qui l'a frappé et appelle tous les soldats autour de lui (puis de
+- **Neutres envers les joueurs non agressifs, les villageois et les animaux ordinaires**. Les bandits et les
+  **tigres** sont reconnus comme des menaces : les cinq types de soldats les attaquent à vue, y compris dans les
+  avant-postes et en patrouille. Les tigres doivent être visibles et à portée de détection (24 blocs) ; un soldat
+  posté ne les recherche qu'autour de son poste. Frappé, un soldat se retourne contre celui qui l'a frappé et appelle tous les soldats autour de lui (puis de
   nouveau toutes les 4 à 6 s tant qu'il le voit). Ils restent en colère 20 à 39 s après le dernier coup, puis oublient.
   Un monstre qui frappe l'un d'eux est combattu de la même façon.
 - Placés (avant-poste, œuf, commande), ils restent autour de leur poste (10 blocs) et ne disparaissent jamais ;
@@ -62,7 +64,8 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
 ## Vérifications
 
 `AllianceSoldierGameTests` : l'arme de chacun (Epic Fight y voit une lance, une épée), aucun ne disparaît ; un disciple
-n'attaque ni le bandit ni le joueur à côté de lui ; l'archer frappé par un zombie lui tire dessus ; un garde frappé et le sergent à côté se retournent contre le
+n'attaque ni le joueur, ni le villageois, ni le cheval ou la vache à côté de lui ; l'archer frappé par un zombie lui tire dessus ; un garde frappé et le sergent à côté se retournent contre le
 joueur et restent en colère comme des piglins ; une patrouille de cinq suit son sergent et se trouve un nouveau chef s'il tombe ;
 les moines vont dans les montagnes, les patrouilles pas dans le désert du Culte ; butin en taëls. `SiteGameTests.allianceOutpostIsWholeAndCarried` compte la garnison. Portraits en vrai client :
-`gradlew -PgameTests runMugshotTour`.
+`gradlew -PgameTests runMugshotTour`. `AllianceTigerGameTests` vérifie que les cinq types de soldats et le capitaine
+ciblent puis blessent un tigre sans avoir été attaqués ; `BanditEcologyGameTests` couvre l'hostilité envers les bandits.

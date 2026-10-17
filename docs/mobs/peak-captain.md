@@ -39,7 +39,8 @@ Epic Fight's own cloth simulator is tied to the player's cape and its Blender ex
 
 ## Behaviour
 
-- Neutral, like the Alliance's soldiers. He attacks no one first. When struck, he turns on the attacker, calls the
+- Neutral toward peaceful people and ordinary animals, like the Alliance's soldiers. Bandits and tigers are threats
+  he attacks on sight. When struck, he turns on the attacker, calls the
   soldiers near him, and stays angry for 30 to 50 s.
 - 180 health, plus his armour's 20 points. Hard to stagger (stun armour 8). Boss bar (blue).
 - Three phases (`PeakCaptainEntity.Phase`), every move parryable:
