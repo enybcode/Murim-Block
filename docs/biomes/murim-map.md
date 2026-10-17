@@ -46,6 +46,18 @@ Les frontières entre régions ondulent sur des milliers de blocs (un bruit tir�
 
 **Vérifié** : tests unitaires (`MurimMapTest` : sur 64 graines, un même point lointain tombe dans chacune des quatre régions extérieures selon le monde, le cœur de chaque région est bien dans sa région ; sur quatre graines, chaque région tient entre un septième et un quart de la terre) ; GameTests (`MurimMapGameTests` : chaque biome dans sa région, régions de surface égale, environ 30 000 points de terre chacune) ; visite des biomes en vrai client (`runBiomeTour`).
 
+## La carte en jeu (17/10/2026)
+
+Demande d'Enzo : « un moyen de voir la forme du Murim et l'emplacement de chaque région ». Touche **M** (Murim Map,
+réglable dans les contrôles) ou bouton **Murim Map** de la page Info : la bulle vue de haut (nord en haut), son littoral
+encré, l'océan, chaque région dans sa couleur (les mêmes que les images ci-dessus) avec son nom au milieu de ses terres,
+et le joueur en sceau rouge clignotant avec sa direction. À droite, la légende et la région où l'on se trouve ; au
+survol, la région et les coordonnées du point. Le serveur dessine la grille (`world/map/MurimMapView`, 160 × 160 cases
+d'environ 310 blocs) à partir de la disposition du monde et l'envoie au joueur qui ouvre la carte
+(`network/MurimMapPayloads`, protocole 27) : la graine ne quitte jamais le serveur. Dans un monde sans carte Murim,
+l'écran le dit. Écran : `client/MurimMapScreen`. Vérifié par `MurimMapViewTest` et en vrai client
+(`gradlew -PgameTests runMurimMapTour`, monde de graine 42).
+
 ## Les montagnes de glace du nord
 
 Demande d'Enzo : « de vrais biomes avec d'immenses montagnes de glace cachant de grands mystères ».

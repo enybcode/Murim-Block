@@ -101,6 +101,11 @@ public final class MurimProfileScreen extends Screen {
         screen.page = Page.CULTIVATION;
         return screen;
     }
+    public static MurimProfileScreen info() {
+        MurimProfileScreen screen = new MurimProfileScreen();
+        screen.page = Page.INFOS;
+        return screen;
+    }
     public static MurimProfileScreen combatSettings() {
         MurimProfileScreen screen = new MurimProfileScreen();
         screen.page = Page.INFOS;
@@ -854,6 +859,7 @@ public final class MurimProfileScreen extends Screen {
     private void initInfoButtons() {
         if (!settingsMode) {
             button(layout.infoSettings, () -> label("settings.title"), () -> { settingsMode = true; rebuildWidgets(); }, true);
+            button(layout.infoMap, () -> label("map.button"), com.murimblock.client.MurimMapScreen::open, true);
             return;
         }
         setting(0, "camera", () -> label("settings.camera." + ClientConfig.tpsType.name().toLowerCase(Locale.ROOT)),

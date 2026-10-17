@@ -16,7 +16,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "26";
+    private static final String NETWORK_VERSION = "27";
 
     private MurimblockNetworking() {
     }
@@ -34,6 +34,10 @@ public final class MurimblockNetworking {
         registrar.playToClient(ScrollShopPayloads.Open.TYPE, ScrollShopPayloads.Open.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.ScrollShopScreen.open(payload));
         registrar.playToServer(ScrollShopPayloads.Buy.TYPE, ScrollShopPayloads.Buy.STREAM_CODEC, ScrollShopPayloads.Buy::handle);
+        // The Murim map: asked for by a player, sent to them.
+        registrar.playToServer(MurimMapPayloads.Request.TYPE, MurimMapPayloads.Request.STREAM_CODEC, MurimMapPayloads.Request::handle);
+        registrar.playToClient(MurimMapPayloads.View.TYPE, MurimMapPayloads.View.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.MurimMapScreen.receive(payload));
         registrar.playToClient(CultivationPayloads.SenseReadings.TYPE, CultivationPayloads.SenseReadings.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.QiSenseClient.readings(payload));
         registrar.playToClient(CultivationPayloads.Breakthrough.TYPE, CultivationPayloads.Breakthrough.STREAM_CODEC,

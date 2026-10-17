@@ -198,6 +198,14 @@ neoForge {
             systemProperty 'murimblock.thunderSaberPoseTour', 'true'
             disableIdeRun()
         }
+        // The Murim map in a new Murim world (MurimMapTour).
+        murimMapTour {
+            client()
+            gameDirectory = project.file('build/murim-map-tour-run')
+            programArguments.addAll('--width', '1920', '--height', '1080')
+            systemProperty 'murimblock.murimMapTour', 'true'
+            disableIdeRun()
+        }
         // The HUD and the Techniques page at full screen (HudTour).
         hudTour {
             client()
