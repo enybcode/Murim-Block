@@ -64,7 +64,8 @@ public final class StarPeakBuilder {
         double r = Math.sqrt(dx * dx + dz * dz), a = Math.atan2(dz, dx);
         double spur = 0;
         for (double s : spurs) spur = Math.max(spur, Math.pow(Math.max(0, Math.cos(a - s)), 10));
-        double reach = RADIUS * (0.72 + 0.28 * spur) * (1 + 0.08 * noise.getValue(Math.cos(a) * 2.3, Math.sin(a) * 2.3));
+        // Never past RADIUS: the build covers that square only, and anything beyond would be cut off straight.
+        double reach = Math.min(RADIUS, RADIUS * (0.72 + 0.28 * spur) * (1 + 0.08 * noise.getValue(Math.cos(a) * 2.3, Math.sin(a) * 2.3)));
         double t = r / reach;
         if (t >= 1) return Integer.MIN_VALUE;
         // A rounded summit, shoulders, then long slopes spreading to the foot: a massif, not a needle.
