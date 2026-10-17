@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "murimblock:item/seed/alpine_forget_me_not_seeds"
+  }
+}

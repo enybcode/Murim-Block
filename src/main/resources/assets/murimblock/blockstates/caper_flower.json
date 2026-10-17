@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/caper_flower",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/caper_flower",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/caper_flower",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/caper_flower",
+        "y": 270
+      }
+    ]
+  }
+}

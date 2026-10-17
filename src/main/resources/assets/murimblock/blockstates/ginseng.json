@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/ginseng",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/ginseng",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/ginseng",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/ginseng",
+        "y": 270
+      }
+    ]
+  }
+}

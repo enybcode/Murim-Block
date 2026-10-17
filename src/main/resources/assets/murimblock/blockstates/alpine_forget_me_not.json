@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/alpine_forget_me_not",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/alpine_forget_me_not",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/alpine_forget_me_not",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/alpine_forget_me_not",
+        "y": 270
+      }
+    ]
+  }
+}

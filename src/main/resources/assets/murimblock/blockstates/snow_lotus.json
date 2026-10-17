@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "murimblock:block/snow_lotus"
-    }
+    "": [
+      {
+        "model": "murimblock:block/plant/snow_lotus",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/snow_lotus",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/snow_lotus",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/snow_lotus",
+        "y": 270
+      }
+    ]
   }
 }

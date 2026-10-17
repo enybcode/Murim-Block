@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:cloud_sea_peaks"
+  ],
+  "features": [
+    "murimblock:spirit_rhododendron"
+  ],
+  "step": "vegetal_decoration"
+}

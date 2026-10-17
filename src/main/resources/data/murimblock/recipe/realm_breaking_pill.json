@@ -1,1 +1,1 @@
-{"type":"minecraft:crafting_shapeless","category":"misc","ingredients":[{"item":"murimblock:cistanche"},{"item":"murimblock:rhododendron"},{"item":"murimblock:lotus_blossom"},{"item":"minecraft:gold_ingot"}],"result":{"id":"murimblock:realm_breaking_pill","count":1}}
+{"type":"minecraft:crafting_shapeless","category":"misc","ingredients":[{"item":"murimblock:cistanche_stem"},{"item":"murimblock:rhododendron_blossom"},{"item":"murimblock:lotus_seed_pod"},{"item":"minecraft:gold_ingot"}],"result":{"id":"murimblock:realm_breaking_pill","count":1}}

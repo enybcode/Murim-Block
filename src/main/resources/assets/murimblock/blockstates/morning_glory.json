@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/morning_glory",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/morning_glory",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/morning_glory",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/morning_glory",
+        "y": 270
+      }
+    ]
+  }
+}

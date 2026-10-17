@@ -233,6 +233,14 @@ neoForge {
             systemProperty 'murimblock.murimMapTour', 'true'
             disableIdeRun()
         }
+        // The Murim's plants, wild and planted (GardenTour).
+        gardenTour {
+            client()
+            gameDirectory = project.file('build/garden-tour-run')
+            programArguments.addAll('--width', '1600', '--height', '900')
+            systemProperty 'murimblock.gardenTour', 'true'
+            disableIdeRun()
+        }
         // The HUD and the Techniques page at full screen (HudTour).
         hudTour {
             client()

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "murimblock:block/rhododendron_top"
+    "layer0": "murimblock:item/herb/rhododendron_blossom"
   }
 }

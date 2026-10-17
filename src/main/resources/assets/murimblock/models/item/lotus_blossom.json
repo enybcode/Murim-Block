@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "murimblock:block/lotus_flower"
+    "layer0": "murimblock:item/herb/lotus_seed_pod"
   }
 }

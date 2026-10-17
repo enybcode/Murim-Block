@@ -406,8 +406,11 @@ public final class MurimItems {
                     .title(Component.translatable("itemGroup.murimblock_nature"))
                     .icon(() -> new ItemStack(MurimBlocks.PEACH.sapling().get()))
                     .withTabsBefore(MURIMBLOCK_TAB.getKey())
-                    .displayItems((parameters, output) -> MurimBlocks.creativeOrder()
-                            .forEach(block -> output.accept(block.get())))
+                    .displayItems((parameters, output) -> {
+                        MurimBlocks.creativeOrder().forEach(block -> output.accept(block.get()));
+                        // The plants' herbs, what they grow from, and the new wild plants (docs/cultivation/plants.md).
+                        com.murimblock.world.plant.MurimFlora.creativeItems().forEach(item -> output.accept(item.get()));
+                    })
                     .build());
     /** Every weapon of every mod installed, Murimblock's first (WeaponsTab). */
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> WEAPONS_TAB = TABS.register("murimblock_weapons",

@@ -91,7 +91,8 @@ class Plant {
         return [f, { uv: [u0 / this.D, v0 / this.D], uv_size: [(u1 - u0) / this.D, (v1 - v0) / this.D] }];
       }));
       const c = { origin: p.from.map(v => +v.toFixed(4)), size: p.to.map((v, i) => +(v - p.from[i]).toFixed(4)), uv };
-      if (p.deg) { c.pivot = p.pivot.map(v => +v.toFixed(4)); c.rotation = [p.axis === 'x' ? p.deg : 0, p.axis === 'y' ? p.deg : 0, p.axis === 'z' ? p.deg : 0]; }
+      // Bedrock (GeckoLib, Blockbench) turns x and y the other way round from Java and from turn() here.
+      if (p.deg) { c.pivot = p.pivot.map(v => +v.toFixed(4)); c.rotation = [p.axis === 'x' ? -p.deg : 0, p.axis === 'y' ? -p.deg : 0, p.axis === 'z' ? p.deg : 0]; }
       if (!byName[p.bone]) throw new Error(`${this.name}: no bone ${p.bone} in stage ${stage}`);
       byName[p.bone].cubes.push(c);
     }

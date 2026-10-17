@@ -1,0 +1,11 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:jade_karst_forest",
+    "murimblock:wulingyuan_pillars"
+  ],
+  "features": [
+    "murimblock:spirit_karst_fern"
+  ],
+  "step": "vegetal_decoration"
+}

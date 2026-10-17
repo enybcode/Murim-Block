@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "murimblock:block/kunlun_sedge"
+    "layer0": "murimblock:item/herb/kunlun_sedge"
   }
 }

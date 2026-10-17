@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "murimblock:block/kunlun_sedge"
-    }
+    "": [
+      {
+        "model": "murimblock:block/plant/kunlun_sedge",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/kunlun_sedge",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/kunlun_sedge",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/kunlun_sedge",
+        "y": 270
+      }
+    ]
   }
 }
