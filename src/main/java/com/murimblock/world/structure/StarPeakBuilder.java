@@ -71,6 +71,8 @@ public final class StarPeakBuilder {
         double shape = Math.pow(1 - Math.pow(t, 1.15), 2.2);
         double rough = noise.getValue((cx + dx) / 23.0, (cz + dz) / 23.0) * 7 + noise.getValue((cx + dx) / 7.0, (cz + dz) / 7.0) * 2.5;
         double h = base + (top - 1 - base) * shape + rough * Math.min(1, t * 4) * (1 - t);
+        // Round the platform, steps a block high, so it crowns the summit instead of standing on it like a pillar.
+        if (r < 9) h = Math.max(h, top - (r - PLATFORM));
         return (int) Math.min(top - 1, Math.round(h));
     }
 

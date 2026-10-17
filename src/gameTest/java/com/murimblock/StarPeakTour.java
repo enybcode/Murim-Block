@@ -89,30 +89,32 @@ public final class StarPeakTour {
             if (ticks == 1) {
                 mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.OFF);
                 mc.options.tutorialStep = net.minecraft.client.tutorial.TutorialSteps.NONE;
-                mc.options.renderDistance().set(32);
-                teleport(mc, sx + 0.5, 230, sz + 640.5, 180, -4);
+                mc.options.renderDistance().set(24);
+                teleport(mc, sx + 0.5, 230, sz + 330.5, 200, -6);
             }
-            if (ticks == 200) capture(mc, "01-far-south.png");
-            if (ticks == 202) teleport(mc, sx + 560.5, 220, sz + 0.5, 90, -6);
-            if (ticks == 400) capture(mc, "02-far-east.png");
-            if (ticks == 402) teleport(mc, sx + 0.5, 200, sz + 250.5, 180, -18);
-            if (ticks == 560) capture(mc, "03-from-below.png");
+            if (ticks == 600) capture(mc, "01-far-south.png");
+            if (ticks  == 602) teleport(mc, sx + 320.5, 210, sz + 0.5, 90, -8);
+            if (ticks == 1200) capture(mc, "02-far-east.png");
+            if (ticks == 1202) teleport(mc, sx + 0.5, 200, sz + 230.5, 180, -22);
+            if (ticks == 1500) capture(mc, "03-from-below.png");
             // On the summit, looking out over the world, then down at the platform.
-            if (ticks == 562) teleport(mc, sx + 0.5, sy + 2.6, sz + 0.5, 0, 12);
-            if (ticks == 720) capture(mc, "04-summit-north.png");
-            if (ticks == 722) teleport(mc, sx + 0.5, sy + 2.6, sz + 0.5, 180, 12);
-            if (ticks == 780) capture(mc, "05-summit-south.png");
-            if (ticks == 782) teleport(mc, sx + 5.5, sy + 5, sz + 5.5, 135, 40);
-            if (ticks == 840) capture(mc, "06-platform.png");
+            if (ticks == 1502) teleport(mc, sx + 0.5, sy + 2.6, sz + 0.5, 0, 12);
+            if (ticks == 1660) capture(mc, "04-summit-north.png");
+            if (ticks == 1662) teleport(mc, sx + 0.5, sy + 2.6, sz + 0.5, 180, 12);
+            if (ticks == 1720) capture(mc, "05-summit-south.png");
+            if (ticks == 1722) teleport(mc, sx + 5.5, sy + 5, sz + 5.5, 135, 40);
+            if (ticks == 1780) capture(mc, "06-platform.png");
             // A player at Qi Liquidation sits down on it; the stars answer (the three minutes cut short).
-            if (ticks == 842) server.execute(() -> {
+            if (ticks == 1782) server.execute(() -> {
                 ServerPlayer player = server.getPlayerList().getPlayers().get(0);
                 player.setGameMode(GameType.SURVIVAL);
                 player.teleportTo(server.overworld(), sx + 0.5, sy + 1, sz + 0.5, 180, 0);
                 CultivationService.setCultivation(player, CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
             });
-            if (ticks == 870) {
+            if (ticks == 1810) {
                 mc.options.hideGui = false;
+                mc.options.tutorialStep = net.minecraft.client.tutorial.TutorialSteps.NONE;
+                mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
                 server.execute(() -> MeditationService.start(server.getPlayerList().getPlayers().get(0)));
                 // Seen from a marker before it, the world below.
                 camera = new net.minecraft.world.entity.Marker(net.minecraft.world.entity.EntityType.MARKER, mc.level);
@@ -121,13 +123,13 @@ public final class StarPeakTour {
                 camera.yRotO = 0; camera.xRotO = 25;
                 mc.setCameraEntity(camera);
             }
-            if (ticks == 930) capture(mc, "07-meditating.png");
-            if (ticks == 932) server.execute(() -> {
+            if (ticks == 1870) capture(mc, "07-meditating.png");
+            if (ticks == 1872) server.execute(() -> {
                 ServerPlayer player = server.getPlayerList().getPlayers().get(0);
                 StarPeakPlacement.meditating(player, StarPeakPlacement.MEDITATION_TICKS);
             });
-            if (ticks == 950) capture(mc, "08-the-stars-answer.png");
-            if (ticks == 960) {
+            if (ticks == 1890) capture(mc, "08-the-stars-answer.png");
+            if (ticks == 1900) {
                 boolean given = StarPeakPlacement.given(server.getPlayerList().getPlayers().get(0));
                 Files.writeString(mc.gameDirectory.toPath().resolve("star-peak-tour-report.txt"), (given ? "PASSED" : "FAILED") + "; summit=" + summit + "\n");
                 finished = true;
