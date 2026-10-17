@@ -8,7 +8,8 @@
 > - c'est une technique **de haut niveau, donc 8 techniques** ;
 > - « j'aimerais qu'il ait des attaques sans rage et avec, et quand il est à 100 de rage tout change et il se met à quatre
 >   pattes » ;
-> - **troisième version** : « on doit plus jouer autour de la kagune ».
+> - « on doit plus jouer autour de la kagune » ;
+> - **quatrième version** : « non, nouvelles idées de skills, n'oublie pas le haki des rois ».
 >
 > Les inspirations sont des **idées**, pas des copies : ni le nom, ni l'apparence de ces personnages. Les noms en jeu sont en
 > anglais : le nom anglais d'abord, la traduction entre parenthèses. Les chiffres sont un premier jet, alignés sur
@@ -25,14 +26,15 @@ Le cultivateur laisse un démon affamé pousser dans sa moelle. Il en tire **qua
 de ses reins : la **Moelle du Démon** (魔髓, *Demon Marrow*, la kagune qu'on a modélisée).
 
 **La kagune est l'arme, le bouclier, les jambes et la gueule.** Le joueur ne frappe jamais de ses mains : chaque coup et
-chaque technique est une **forme** que prend la kagune. Elle fouette, plonge dans le sol, s'agrippe, s'enroule, se ferme en
-mâchoire, se soude en faux, se hérisse d'épines. Et à 100 de rage, elle **devient ses pattes**.
+chaque technique est une **forme** que prend la kagune. Elle s'élève en cage, creuse le sol, empale et manie ses ennemis
+comme des pantins, les draine par des fils, s'arrache pour leurrer, et se couvre d'éclairs noirs quand il y coule son haki. Et à 100 de rage, elle **devient ses pattes**.
 
 Les trois inspirations, et ce qu'on en garde :
 - **Kaneki (Tokyo Ghoul)** : la kagune qui frappe, empale, saisit, dévore et change de forme, puis la carapace qui la
   couvre (le kakuja). C'est le cœur de l'art.
-- **Le haki des rois (One Piece)** : la **pression** qui écrase. Ici, elle **sort de la kagune** quand elle éclate : à la
-  transformation, et autour de la forme du démon.
+- **Le haki des rois (One Piece)** : la **volonté** qui écrase. Ici, elle **passe par la kagune** : il la libère depuis une
+  couronne de tentacules (Sovereign's Will), il la coule dans la kagune pour frapper sans toucher (Sovereign's Mantle), et
+  la forme du démon la porte en permanence.
 - **La furie de Kyubi (Naruto contre Pain)** : la bête **à quatre pattes**, le manteau rouge qui bouillonne, la perte de
   contrôle, et la sphère de destruction dans la gueule (ici, une gueule faite de kagune).
 
@@ -42,7 +44,7 @@ Les trois inspirations, et ce qu'on en garde :
 |---|---|---|
 | **La kagune** | **quatre tentacules** dans le dos, qui prennent la forme de chaque technique | **huit tentacules** : **quatre deviennent ses pattes**, quatre restent pour frapper |
 | **Le corps** | debout | **à quatre pattes sur la kagune**, la carapace, le manteau rouge |
-| **Les techniques** | cinq **sans rage**, deux qui **dépensent** la rage, l'ultime | **les huit changent** : la kagune prend des formes plus grandes |
+| **Les techniques** | cinq **sans rage**, deux de **haki** qui **dépensent** la rage, l'ultime | **les huit changent** : la kagune prend des formes plus grandes |
 | **La rage** | elle **monte** | elle **descend** ; la forme dure tant qu'il en reste |
 
 **Pourquoi c'est terrifiant à affronter :** on **voit la rage dans la kagune**.
@@ -80,12 +82,13 @@ Une barre rouge à côté de celle du Qi, sur **100 points**. Elle bat comme un 
 | Un M1 de kagune qui touche | +3 |
 | Une technique **sans rage** qui touche | +8 |
 | Recevoir un coup | +1 par point de vie perdu |
-| Dévorer (technique 5) | +25 |
+| Les Liens de sang (technique 4) | +3 par seconde et par lien |
+| L'Offrande tranchée (technique 5) | +15 |
 | Tuer un ennemi | +10 |
 | Une parade parfaite de la kagune | +10 |
 
 - Elle **retombe** de 4 par seconde après 5 s sans frapper ni être frappé.
-- Les techniques à rage (6 et 7) en **coûtent** une part.
+- Les techniques de haki (6 et 7) en **coûtent** une part.
 - **À 100, la kagune éclate toute seule**, sauf si on garde la touche de l'art enfoncée pour la retenir (au plus 5 s : le
   démon finit toujours par sortir).
 
@@ -105,123 +108,165 @@ Une barre rouge à côté de celle du Qi, sur **100 points**. Elle bat comme un 
 
 ## Les huit techniques
 
+> **Quatrième version** (demande d'Enzo : « non, nouvelles idées de skills, n'oublie pas le haki des rois ») : huit
+> techniques nouvelles, toutes faites par la kagune, dont **deux de haki des rois**. Le haki n'est plus un simple effet :
+> c'est une volonté qu'on **libère** (technique 6) ou qu'on **coule dans la kagune** (technique 7), et la forme du démon la
+> porte en permanence.
+
 La **part** suit le Sanguine Art (mains nues durcies : environ 16 à Qi Crystallization, un peu plus haut à Foundation
 Establishment). Le garde-fou commun (`BurstGuard`) reste : aucun enchaînement ne tue un joueur en un instant.
 
-| # | Forme humaine : la kagune devient… | Rage | Qi | Recharge | Forme du démon (la même touche) |
+| # | Forme humaine | Rage | Qi | Recharge | Forme du démon (la même touche) |
 |---|---|---|---|---|---|
-| 1 | **Crimson Lash** (Le Fouet cramoisi) : **des fouets** | donne +8 | 150 | 6 s | **Lash Storm** (La Tempête de fouets) |
-| 2 | **Impaling Thorns** (Les Épines qui empalent) : **des pieux sous terre** | donne +8 | 200 | 10 s | **Thorn Forest** (La Forêt d'épines) |
-| 3 | **Marrow Grapple** (Le Grappin de moelle) : **des grappins** | donne +5 | 120 | 5 s | **Web Swing** (La Toile) |
-| 4 | **Centipede Coil** (Le Cocon du Mille-Pattes) : **un cocon** | donne +5 par coup arrêté | 300 | 18 s | **Drill Charge** (La Charge en vrille) |
-| 5 | **Devour** (Dévorer) : **une mâchoire** | donne +25 | 250 | 20 s | **Feast** (Le Festin) |
-| 6 | **Twin Scythes** (Les Faux jumelles) : **deux faux** | coûte 30 | 350 | 14 s | **Reaper's Wheel** (La Roue de la Faucheuse) |
-| 7 | **Thousand Thorns** (Les Mille Épines) : **des épines tirées** | coûte 35 | 400 | 16 s | **Thorn Barrage** (Le Déluge d'épines) |
-| 8 | **Kagune Burst** (L'Éclatement de la kagune) : **elle éclate** | toute la barre | 900 | 10 min | **Demon's Maw** (La Bouche du Démon) |
+| 1 | **Crimson Cage** (La Cage cramoisie) | donne +8 | 200 | 12 s | **Flesh Prison** (La Prison de chair) |
+| 2 | **Burrowing Centipede** (Le Mille-Pattes fouisseur) | donne +8 | 180 | 9 s | **Earth Devourer** (Le Dévoreur de terre) |
+| 3 | **Marionette** (Le Pantin) | donne +10 | 250 | 16 s | **Puppet Flail** (Le Fléau de pantins) |
+| 4 | **Blood Tethers** (Les Liens de sang) | donne +3 par seconde liée | 220 | 18 s | **Hunger Web** (La Toile de la faim) |
+| 5 | **Severed Offering** (L'Offrande tranchée) | donne +15 | 150 + 10 % de vie | 20 s | **Writhing Brood** (La Couvée grouillante) |
+| 6 | **Sovereign's Will** (La Volonté du Souverain), **haki** | coûte 40 | 400 | 30 s | **Sovereign's Dominion** (Le Règne du Souverain) |
+| 7 | **Sovereign's Mantle** (Le Manteau du Souverain), **haki dans la kagune** | coûte 30 | 350 | 25 s | **Black Lightning Kagune** (La Kagune aux éclairs noirs) |
+| 8 | **Devourer's Crown** (La Couronne du Dévoreur) | toute la barre | 900 | 10 min | **Demon's Maw** (La Bouche du Démon) |
 
 En forme du démon, les techniques **ne coûtent plus de rage** (seulement du Qi, deux fois moins) et rechargent deux fois
 plus vite.
 
-### 1. Crimson Lash (Le Fouet cramoisi) — la kagune en fouets, sans rage
+### 1. Crimson Cage (La Cage cramoisie) — sans rage
 
-**Forme humaine :** les quatre tentacules se dressent derrière lui, puis **fouettent l'un après l'autre** devant lui en
-éventail, de gauche à droite, chacun un peu plus loin (de 3 à 6 blocs).
-- 4 × 0,5 dans un éventail de 90° sur 6 blocs, et **+8 de fureur** s'il touche.
-- **Les effets :** chaque fouet laisse une **traînée rouge** courbe, en ruban pixelisé rouge sang ; un claquement, et
-  l'écran tremble pour ceux qui sont touchés.
+**Forme humaine :** il plante ses quatre tentacules dans le sol. Ils filent sous terre et **jaillissent en cercle** autour de
+la cible (jusqu'à 14 blocs), en huit barreaux courbes qui se referment au-dessus d'elle comme une cage.
+- La cible est **enfermée** 4 s dans 5 blocs de large : elle ne peut pas en sortir, et toucher un barreau fait mal (×0,3,
+  repoussé vers le centre).
+- Pendant la cage, le joueur peut frapper **à travers** les barreaux avec les M1 : ses coups traversent sa propre chair.
+- Un coup puissant de la cible casse un barreau : elle peut sortir par le trou.
+- **L'avertissement :** le sol se fend en anneau une demi-seconde avant, ce qui laisse une chance de sauter dehors.
 
-**Forme du démon, Lash Storm :** les quatre tentacules libres fouettent **tout autour**, sans s'arrêter, pendant 2 s, en
-tournoyant au-dessus de la bête (8 × 0,4 à 7 blocs).
+**Forme du démon, Flesh Prison :** la cage fait **12 blocs** et enferme **tout un groupe** 6 s. Ses barreaux se resserrent
+lentement : à la fin, ceux qui sont encore dedans sont broyés (×1,5).
 
-### 2. Impaling Thorns (Les Épines qui empalent) — la kagune en pieux, sans rage
+### 2. Burrowing Centipede (Le Mille-Pattes fouisseur) — sans rage
 
-**Forme humaine :** deux tentacules **plongent dans le sol** devant lui et **jaillissent sous la cible** en pieux (jusqu'à
-10 blocs).
-- La cible est **empalée** : ×1,2 et clouée 1,5 s. Puis les tentacules la **tirent jusqu'à ses pieds**, prête pour Devour.
-- **L'avertissement :** la terre se fend en cercle sous la cible une demi-seconde avant.
+**Forme humaine :** les tentacules se tressent en vrille sous lui et le **tirent dans le sol**. Il **disparaît sous terre**
+1,5 s, file jusqu'à 12 blocs (on voit une bosse de terre qui court vers la cible), puis **jaillit** sous elle.
+- À la sortie : ×1,2, la cible est **projetée en l'air**, prête pour un coup en l'air.
+- Sous terre, il ne prend aucun dégât, mais il ne voit que la bosse qui avance.
+- Ne passe pas sous la pierre dure (obsidienne, bedrock) : il ressort avant.
 
-**Forme du démon, Thorn Forest :** les quatre pattes s'enfoncent dans le sol. **Une forêt de pieux** jaillit autour de lui
-sur 8 blocs, en trois vagues qui s'éloignent (3 × 0,7). La dernière vague cloue 1 s.
+**Forme du démon, Earth Devourer :** il plonge et ressort **trois fois** de suite, en serpentant sous le combat. Chaque
+sortie projette tout à 3 blocs (×0,8), et le sol reste éventré.
 
-### 3. Marrow Grapple (Le Grappin de moelle) — la kagune en grappins, sans rage
+### 3. Marionette (Le Pantin) — sans rage
 
-**Forme humaine :** un tentacule **file droit devant** (jusqu'à 16 blocs) et s'accroche à ce qu'il touche.
-- **Sur un bloc** : la kagune le **tire jusque-là**, très vite. C'est le déplacement de l'art (passer un fossé, monter sur
-  un toit, fuir).
-- **Sur un ennemi** : ×0,6, et elle le **tire à lui** (ou se tire jusqu'à lui s'il est plus lourd, comme un boss).
-- Deux charges : on peut s'accrocher deux fois à la suite.
+**Forme humaine :** deux tentacules **transpercent** un ennemi proche (à 5 blocs) et **le soulèvent**. Le joueur s'en sert
+comme d'une arme : il **le balance** sur les autres pendant 3 s, puis le **jette** (20 blocs).
+- La cible prend ×0,8, puis ×0,6 à l'atterrissage. Chaque ennemi qu'elle percute prend ×0,6 et tombe.
+- Ne prend qu'un ennemi **plus faible d'un royaume** ou immobilisé. Un égal debout se dégage d'un coup de garde.
+- Contre un boss, les tentacules s'y accrochent au lieu de le soulever, et **tirent le joueur** jusqu'à lui.
 
-**Forme du démon, Web Swing :** il lance ses **quatre tentacules libres** à la fois, sur les murs, les arbres et le sol, et
-**se balance** d'une prise à l'autre au-dessus du combat, comme une araignée. Retomber sur un ennemi l'écrase (×1,0).
+**Forme du démon, Puppet Flail :** il soulève **jusqu'à trois ennemis** à la fois, un par tentacule libre, et les fait
+tournoyer autour de lui comme un fléau (5 blocs) avant de les projeter dans toutes les directions.
 
-### 4. Centipede Coil (Le Cocon du Mille-Pattes) — la kagune en cocon, sans rage
+### 4. Blood Tethers (Les Liens de sang) — sans rage
 
-**Forme humaine :** les quatre tentacules **s'enroulent autour de lui** en spirale serrée, comme un cocon, et tournent. Tenu
-jusqu'à 3 s.
-- **Arrête tout ce qui vient de toutes les directions** (coups et projectiles) tant qu'il tient.
-- **Chaque coup arrêté est renvoyé** : un tentacule sort du cocon et frappe celui qui a frappé (0,4). +5 de fureur par
-  coup arrêté.
-- Au relâché, la kagune se déroule d'un coup : un balayage à 360° (×0,8) qui repousse tout.
-- Le coût : du Qi au départ, puis 30 par seconde tenue (comme le Spinning Rampart du bâton).
+**Forme humaine :** les quatre tentacules se divisent en **quatre fils rouges** qui filent chacun vers un ennemi différent
+(10 blocs) et s'y plantent. Tenu jusqu'à 6 s.
+- Chaque lien **draine** sa cible : ×0,15 par seconde, et le joueur en regagne la moitié en vie.
+- **+3 de fureur par seconde** et par lien.
+- Une cible peut **casser son lien** en s'éloignant à plus de 14 blocs, ou en le tranchant (un coup puissant sur le fil).
+- Pendant la tenue, le joueur peut marcher lentement mais pas frapper.
 
-**Forme du démon, Drill Charge :** les quatre tentacules libres **se tressent en vrille** devant lui. Il charge sur ses
-pattes (12 blocs), la vrille en avant, et **perce** tout sur son passage (×1,4, projeté). Les murs de terre et de bois se
-brisent, si les règles du monde le permettent.
+**Forme du démon, Hunger Web :** les liens deviennent une **toile** : huit fils tendus entre la bête, les murs et les ennemis.
+Ceux qui y sont pris sont ralentis et drainés ; un ennemi qui touche un fil y reste collé 1 s.
 
-### 5. Devour (Dévorer) — la kagune en mâchoire, sans rage
+### 5. Severed Offering (L'Offrande tranchée) — sans rage, coûte de la vie
 
-**Forme humaine :** les quatre tentacules **s'ouvrent comme une mâchoire** autour d'un ennemi proche (à 4 blocs), se
-referment sur lui et le soulèvent. Quatre secondes, et la cible ne peut rien faire, comme dans la pince du Roi Crabe.
-- La mâchoire serre trois fois (×1,5 en tout) ; il regagne **30 % des dégâts** en vie et **+25 de fureur**.
-- Ne marche que sur un ennemi **immobilisé** (empalé, plaqué, étourdi, K.O.) ou plus faible d'un royaume. Sur un égal
-  debout, la mâchoire ne fait que le repousser.
-- **Sur un joueur à terre (K.O. PvP)**, c'est le **finish de l'art** : la kagune l'avale, en cinématique.
-- **Les effets :** en vue de la victime, les tentacules se referment sur l'écran ; les bords deviennent rouges et la vue
-  tremble à chaque serrage.
+**Forme humaine :** il **arrache lui-même** un de ses tentacules (10 % de sa vie) et le jette au sol devant lui. Le morceau
+**vit tout seul** 8 s.
+- Le tentacule tranché **se tord** et fouette ce qui l'approche (×0,4 par coup, à 3 blocs).
+- Les mobs le prennent pour cible : il **attire** leur attention.
+- Le joueur peut le **faire éclater** en relançant la technique : une explosion de chair (×1,2 à 4 blocs) qui ralentit.
+- Le tentacule du joueur repousse en 4 s. Pendant ce temps, il n'en a que trois.
+- **+15 de fureur** : le démon aime sa propre douleur.
 
-**Forme du démon, Feast :** la mâchoire attrape **n'importe qui à sa portée**, même debout (sauf un plus fort que lui), et
-le serre sous la bête (×2,0). La forme regagne **+20 de rage**, donc dure plus longtemps.
+**Forme du démon, Writhing Brood :** il arrache **trois** tentacules qui tombent et rampent vers les ennemis les plus proches
+comme des serpents, s'enroulent autour d'eux (les immobilisent 2 s), puis éclatent.
 
-### 6. Twin Scythes (Les Faux jumelles) — la kagune en faux, coûte 30 de rage
+### 6. Sovereign's Will (La Volonté du Souverain) — coûte 40 de rage, le haki des rois
 
-**Forme humaine :** deux tentacules descendent le long de ses bras et **se soudent en deux grandes faux** de chair durcie,
-lames courbes à la place des mains, pendant 8 s.
-- Les M1 deviennent des **coups de faux** : plus lents, ×1,6 chacun, et ils traversent la garde à moitié.
-- Relancer la technique pendant ces 8 s : un **double coup en croix** qui envoie deux lames de rage (×1,2, 10 blocs).
-- **Les effets :** les faux luisent sur le fil ; chaque coup laisse une longue traînée rouge sombre.
+**Forme humaine :** les quatre tentacules **se déploient en couronne** au-dessus de sa tête, grands ouverts, immobiles. Il
+fixe ses ennemis et **libère sa volonté**. L'onde part de la couronne de kagune et se répand à 20 blocs.
 
-**Forme du démon, Reaper's Wheel :** les quatre tentacules libres deviennent **quatre faux** et la bête **tournoie** sur ses
-pattes, une roue de lames à 5 blocs (6 × 0,6 en 1,5 s).
+Ce que fait la volonté, selon la différence de royaume (lue comme la perception du Qi) :
+- **Deux royaumes ou plus en dessous** : la cible **tombe à genoux**, sans pouvoir rien faire, 4 s. Les mobs ordinaires
+  **s'évanouissent** (étourdis 6 s), les animaux s'enfuient.
+- **Un royaume en dessous** : la cible est **écrasée** : Lenteur III, Faiblesse II, plus de sprint, 5 s.
+- **Même royaume** : les deux volontés **se heurtent**. La cible est **oppressée** (Lenteur I 3 s, techniques à 20 % de Qi
+  en plus). Si elle a elle-même un art de haki, c'est un **choc des souverains** (voir plus bas).
+- **Plus fort que lui** : rien. Mais lui le sent, et sa vue tremble.
 
-### 7. Thousand Thorns (Les Mille Épines) — la kagune en épines tirées, coûte 35 de rage
+**Les effets, les plus importants de l'art :**
+- au déclenchement, **le temps s'arrête une demi-seconde** autour de lui : les particules se figent, le son se coupe ;
+- puis l'onde part en **anneau d'air déformé** depuis la couronne, et des **éclairs noirs et rouges** crépitent le long des
+  tentacules et jusqu'au sol ;
+- les feuilles tombent des arbres, l'herbe se couche, le verre se fissure (sans casser), et les nuages juste au-dessus
+  s'écartent ;
+- **pour ceux qui la subissent** : l'écran se **désature**, des veines rouges poussent depuis les bords, un battement de cœur
+  lourd se fait entendre, la vue est tirée vers le sol, et un message en lettres manuscrites qui tremblent :
+  « *You cannot breathe.* »
 
-**Forme humaine :** les quatre tentacules se dressent, **se hérissent d'épines** comme un porc-épic, puis les **tirent** vers
-la cible, en salve (24 épines en 1,5 s, ×0,15 chacune, 20 blocs).
-- Chaque épine qui touche **reste plantée** et ralentit ; à 6 épines, la cible est **clouée** 1 s.
-- Elles se parent une à une, et s'arrêtent sur les murs.
-- **Les effets :** les épines sont de petits modèles rouges et pointus ; elles restent plantées dans le sol 3 s.
+**Le choc des souverains :** deux joueurs de même royaume qui lancent un haki dans la même seconde. Leurs ondes se rencontrent
+à mi-chemin : un **mur d'éclairs noirs** entre eux, le ciel se fend, et pendant 2 s, personne autour ne peut bouger. Le plus
+haut en Qi l'emporte et l'autre est repoussé.
 
-**Forme du démon, Thorn Barrage :** les tentacules tirent leurs épines **tout autour** et **vers le ciel** : elles
-retombent en pluie sur un cercle de 10 blocs (60 épines en 3 s).
+**Forme du démon, Sovereign's Dominion :** la volonté ne s'arrête plus. Pendant 10 s, une **zone de règne** de 16 blocs
+l'entoure : ceux d'en dessous y restent **à genoux**, les égaux y sont **écrasés**, et les projectiles des faibles
+**tombent au sol** avant de l'atteindre.
 
-### 8. Kagune Burst (L'Éclatement de la kagune) — l'ultime
+### 7. Sovereign's Mantle (Le Manteau du Souverain) — coûte 30 de rage, le haki dans la kagune
+
+**Forme humaine :** il **coule sa volonté dans la kagune**. Pendant 12 s, les tentacules se couvrent d'un **manteau d'éclairs
+noirs** qui crépitent le long de leurs écailles.
+- Les coups de kagune **frappent sans toucher** : chaque M1 et chaque technique libère un **arc noir** qui porte 3 blocs plus
+  loin que le tentacule et frappe aussi celui qui est juste derrière la cible.
+- Les coups **traversent la garde à moitié** : une garde levée n'arrête que la moitié des dégâts.
+- Un ennemi **plus faible d'un royaume** touché par un coup chargé de haki est **étourdi** 1 s.
+- Les tentacules **ne peuvent plus être tranchés** pendant le manteau.
+- **Les effets :** la kagune vire au rouge très sombre, presque noir, avec des éclairs noirs qui sautent d'un tentacule à
+  l'autre ; à chaque coup, un éclair noir zèbre l'air jusqu'à la cible, avec une lumière Photon rouge sombre.
+- **L'inspiration :** le haki des rois « enrobé » des plus grands, qui frappe sans contact.
+
+**Forme du démon, Black Lightning Kagune :** le manteau couvre **les huit tentacules**, pattes comprises : chaque pas de la bête
+fait crépiter le sol d'éclairs noirs (×0,2 autour, à 2 blocs), et chaque coup d'éclair saute sur deux ennemis de plus.
+
+### 8. Devourer's Crown (La Couronne du Dévoreur) — l'ultime
 
 **Forme humaine :** à 100 de rage, au lieu de laisser la transformation venir, il **la force**. Toute la barre est dépensée.
-- La kagune **éclate** : une explosion de chair à 5 blocs (×1,5), et la **pression du souverain** se répand à 20 blocs
-  (voir plus bas).
-- La forme du démon qui suit dure **30 s au lieu de 20**.
+- La kagune **éclate** : une explosion de chair à 5 blocs (×1,5).
+- La **Volonté du Souverain** (technique 6) part d'elle-même, sans rage ni recharge, à 30 blocs.
+- La forme du démon qui suit dure **30 s au lieu de 20**, et commence avec le **Manteau du Souverain** (technique 7) déjà en
+  place.
 
 **Forme du démon, Demon's Maw (La Bouche du Démon) :** une fois par forme.
 - Les quatre tentacules libres se referment devant sa tête en **une gueule** de chair.
-- Dans la gueule, une **sphère** de Qi noir et rouge grossit en 1,5 s.
+- Dans la gueule, une **sphère** de Qi noir et rouge grossit en 1,5 s, parcourue d'éclairs noirs.
 - La gueule la crache : elle file 30 blocs et **explose** sur 8 blocs (×4,0 au centre, ×2,0 au bord). Le cratère reste, si
   les règles du monde le permettent.
 - Elle met **fin à la forme** juste après : le démon a tout donné, et le contrecoup commence.
 - Inspiration : la bombe de Kyubi.
 
+### Les idées en réserve (pour remplacer une technique si tu préfères)
+
+- **Kagune Wings** (Les Ailes de kagune) : les tentacules s'aplatissent en **ailes** de chair pour planer et frapper en
+  piqué.
+- **Fang Drill** (La Vrille-croc) : les quatre tentacules se tressent en vrille devant lui et il charge, perçant tout.
+- **Twin Scythes** (Les Faux jumelles) : deux tentacules se soudent en faux le long des bras pendant 8 s.
+- **Thousand Thorns** (Les Mille Épines) : la kagune se hérisse et tire une salve d'épines qui restent plantées.
+- **Devour** (Dévorer) : la kagune se ferme en mâchoire sur un ennemi immobilisé et le serre pour soigner.
+- **King's Gaze** (Le Regard du Roi), haki : il fixe **une seule** cible ; si elle est plus faible, elle reste figée tant
+  qu'il la regarde (3 s au plus).
+
 ## La forme du démon : *Demon Form*
 
-**La transformation (à 100 de rage, ou par Kagune Burst) :**
+**La transformation (à 100 de rage, ou par Devourer's Crown) :**
 - Le joueur se tient la tête à deux mains et **hurle**. Le monde s'arrête une demi-seconde : les particules se figent et
   le son se coupe.
 - **Quatre nouveaux tentacules** jaillissent de ses reins, s'enfoncent dans le sol devant et derrière lui, et le
@@ -272,7 +317,8 @@ s'arrête pas, dès qu'il est à 24 blocs du démon.
 - **Les modèles :**
   - la **kagune** (déjà en maquette : `scripts/concepts/kagune-preview.cjs`, `art/blockbench/kagune_preview.bbmodel`) à
     quatre tentacules, et à huit pour la forme du démon, avec les **pattes** ;
-  - les formes qu'elle prend : la mâchoire, les faux, la vrille, le cocon, les épines (petits modèles tirés) ;
+  - les formes qu'elle prend : la cage, la vrille sous terre, les fils de sang, le tentacule tranché, la couronne, le
+    manteau d'éclairs noirs ;
   - la **carapace** (sur la kagune et le corps) ;
   - le **manteau** (une couche translucide sur le joueur, qui bouillonne) ;
   - la **sphère** de la Bouche du Démon ;
