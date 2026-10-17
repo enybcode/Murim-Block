@@ -207,6 +207,8 @@ public final class MurimItems {
             () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_DRAGON_SAGE, 0x1F7A58, 0xF0C24A, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ALLIANCE_MERCHANT_SPAWN_EGG = ITEMS.register("alliance_merchant_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> SCARLET_GUARDIAN_SPAWN_EGG = ITEMS.register("scarlet_guardian_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.SCARLET_GUARDIAN, 0x20191D, 0x86192A, new Item.Properties()));
     /** The Golden Bell monk's egg: saffron and brown, his robe and sash. */
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_BELL_MONK_SPAWN_EGG = ITEMS.register("golden_bell_monk_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_BELL_MONK, 0xE2861F, 0x6B4226, new Item.Properties()));
@@ -355,6 +357,7 @@ public final class MurimItems {
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
                         output.accept(GOLDEN_BELL_MONK_SPAWN_EGG.get());
+                        output.accept(SCARLET_GUARDIAN_SPAWN_EGG.get());
                         output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
                         output.accept(NETHER_TALISMAN.get());
                         output.accept(END_TALISMAN.get());

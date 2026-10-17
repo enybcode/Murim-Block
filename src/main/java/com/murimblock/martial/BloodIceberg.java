@@ -153,8 +153,8 @@ public final class BloodIceberg {
     }
 
     /** The technique: the arena is laid out under the player; it starts to rise once the palms strike the ground. */
-    public static boolean raise(ServerPlayer p) {
-        ServerLevel level = p.serverLevel();
+    public static boolean raise(LivingEntity p) {
+        ServerLevel level = (ServerLevel)p.level();
         BlockPos feet = p.blockPosition();
         long now = level.getGameTime(), seed = now * 31 + p.getUUID().getLeastSignificantBits();
         Shape shape = shape(seed);
@@ -186,13 +186,13 @@ public final class BloodIceberg {
     @Nullable static Peak peak(ServerPlayer p) { return PEAKS.get(p.getUUID()); }
 
     /** Every tick, for each player: their arena rising, then its gifts while they are in it. */
-    static void tick(ServerPlayer p) {
+    public static void tick(LivingEntity p) {
         Peak k = PEAKS.get(p.getUUID());
         if (k == null || k.collapsing) return;
         long now = p.level().getGameTime();
         if (now >= k.ends + 60) { PEAKS.remove(p.getUUID()); return; }
         if (!p.level().dimension().equals(k.level)) return;
-        ServerLevel level = p.serverLevel();
+        ServerLevel level = (ServerLevel)p.level();
         if (now >= k.start && k.placed < k.spots.size()) rise(level, k, now, p);
         if (!k.flowing && k.placed >= k.spots.size()) flow(level, k, now);
         if (now >= k.start + RISE_TICKS && now < k.ends && on(p, k)) {
@@ -202,12 +202,15 @@ public final class BloodIceberg {
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, EFFECT_EVERY + 40, 0, true, false, true));
                 p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, EFFECT_EVERY + 40, 0, true, false, true));
             }
-            if (t > 0 && t % CRYSTAL_EVERY == 0) SanguineArt.icebergCrystal(p);
+            if (t > 0 && t % CRYSTAL_EVERY == 0) {
+                if (p instanceof ServerPlayer player) SanguineArt.icebergCrystal(player);
+                else if (p instanceof com.murimblock.mob.ScarletGuardianEntity guardian) guardian.replenishCrystal();
+            }
         }
     }
 
     /** This tick's layers, from the ground up; whoever stands where the stone grows is carried up on it. */
-    private static void rise(ServerLevel level, Peak k, long now, ServerPlayer owner) {
+    private static void rise(ServerLevel level, Peak k, long now, LivingEntity owner) {
         int lowest = k.spots.getFirst().pos().getY();
         double f = Math.min(1, (now - k.start + 1) / (double) RISE_TICKS);
         int upTo = (int) Math.floor(lowest + (k.maxY - lowest + 1) * f);
@@ -267,11 +270,11 @@ public final class BloodIceberg {
     }
 
     /** Its caster died: the arena collapses at once (BloodIceberg.collapseTick takes it down, top first, in half a second). */
-    public static void collapse(ServerPlayer p) {
+    public static void collapse(LivingEntity p) {
         Peak k = PEAKS.get(p.getUUID());
         if (k == null || k.collapsing) return;
         k.collapsing = true;
-        ServerLevel level = p.server.getLevel(k.level);
+        ServerLevel level = p.level().getServer().getLevel(k.level);
         if (level != null) level.playSound(null, k.centre.getX() + .5, k.centre.getY() + FLOOR, k.centre.getZ() + .5,
                 SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.4F, .6F);
     }
@@ -295,7 +298,7 @@ public final class BloodIceberg {
     }
 
     /** Whether the player is in (or on, or at the foot of) their arena. */
-    static boolean on(ServerPlayer p, Peak k) {
+    static boolean on(LivingEntity p, Peak k) {
         double dx = Math.abs(p.getX() - (k.centre.getX() + .5)), dz = Math.abs(p.getZ() - (k.centre.getZ() + .5));
         return dx <= RADIUS + .5 && dz <= RADIUS + .5 && p.getY() >= k.centre.getY() - DEPTH - 2 && p.getY() <= k.maxY + 8;
     }

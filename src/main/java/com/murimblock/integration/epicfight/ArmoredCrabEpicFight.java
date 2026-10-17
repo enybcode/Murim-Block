@@ -57,6 +57,7 @@ public final class ArmoredCrabEpicFight {
             CrabManEpicFight.buildAnimations(builder);
             TigerEpicFight.buildAnimations(builder);
             MurimAnimations.buildAnimations(builder);
+            ScarletGuardianAnimations.build(builder);
         }));
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
             event.registerEntityPatch(MurimEntities.ARMORED_CRAB.get(), ArmoredCrabPatch::new);
@@ -89,6 +90,8 @@ public final class ArmoredCrabEpicFight {
             event.registerEntityPatch(MurimEntities.ALLIANCE_MERCHANT.get(), AllianceMerchantPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.ALLIANCE_MERCHANT.get(), Armatures.BIPED);
             // The Golden Bell monk: the same skeleton, his own model, his bare fists.
+            event.registerEntityPatch(MurimEntities.SCARLET_GUARDIAN.get(), ScarletGuardianPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.SCARLET_GUARDIAN.get(), Armatures.BIPED);
             event.registerEntityPatch(MurimEntities.GOLDEN_BELL_MONK.get(), GoldenBellMonkPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.GOLDEN_BELL_MONK.get(), Armatures.BIPED);
             event.registerEntityPatch(MurimEntities.GOLDEN_DRAGON_SAGE.get(), GoldenDragonSagePatch::new);
