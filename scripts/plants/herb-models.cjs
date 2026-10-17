@@ -27,9 +27,9 @@ const RARITY = { bamboo_shoot: 'common', astragalus_root: 'common', kunlun_sedge
   ginseng_root: 'rare', lingzhi: 'very_rare' };
 const LOOP = 4;
 
-function make(name, build) {
+function make(name, build, rarity = RARITY[name]) {
   const P = new Plant(name, 1, 1, 64);
-  const S = [0], tier = RARITY[name];
+  const S = [0], tier = rarity;
   /** Every bone made, its kind (branch, berries, float, bloom, glow, motes) and its pivot. */
   const bones = [];
   let current = 'body';
@@ -214,6 +214,8 @@ const HERBS = {
   },
 };
 
-const only = process.argv.slice(2);
-for (const [name, build] of Object.entries(HERBS)) if (!only.length || only.includes(name)) make(name, build);
-module.exports = { HERBS };
+if (require.main === module) {
+  const only = process.argv.slice(2);
+  for (const [name, build] of Object.entries(HERBS)) if (!only.length || only.includes(name)) make(name, build);
+}
+module.exports = { HERBS, make, shade, flat, speckle, GREEN, GREEN_D, GREEN_L };
