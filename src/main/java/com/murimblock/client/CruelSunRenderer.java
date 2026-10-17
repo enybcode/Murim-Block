@@ -109,7 +109,7 @@ public final class CruelSunRenderer extends EntityRenderer<CruelSunEntity> {
             Entity sun = mc.level.getEntity(e.getKey());
             if (!(sun instanceof CruelSunEntity) || sun.isRemoved()) { PhotonLights.remove(e.getValue()); it.remove(); }
         }
-        for (Entity e : mc.level.entitiesForRendering()) {
+        for (Entity e : com.murimblock.client.ClientEntityIndex.of(CruelSunEntity.class)) {
             if (!(e instanceof CruelSunEntity sun)) continue;
             DynamicLight l = LIGHTS.computeIfAbsent(sun.getId(), id -> PhotonLights.add(new DynamicLight().point().color(1.0F, 0.72F, 0.32F)));
             float s = sun.size();

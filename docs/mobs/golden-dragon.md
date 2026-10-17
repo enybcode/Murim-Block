@@ -57,9 +57,8 @@ changer de dimension, qui coûteraient très cher » ; destinations Nether, End 
 - **Dialogues** (`GoldenDragonSageDialogue`, pages de `DialogueService` comme le vieux maître du monde intérieur) :
   - premières paroles à la première rencontre, puis une salutation du jour (trois, une par jour) ;
   - menu : qui il est (et la rumeur du dragon d'or), ce lieu, comment devenir plus fort (deux pages), les autres
-    mondes, adieu ;
-  - les autres mondes mènent à son offre : un talisman pour le Nether, l'End ou le Murim, 32 yuanbao d'or chacun.
-    Sans assez d'or, il refuse ; le prix est vérifié et pris côté serveur.
+    mondes, ses marchandises, adieu ;
+  - les autres mondes mènent à ses talismans, puis à son rouleau de marchandises (ci-dessous).
   - Les textes (`dialogue.murimblock.golden_dragon_sage.*`) sont à faire relire par la session « lore ».
 - **Talismans de passage** (`CrossingTalismanItem`) : `nether_crossing_talisman`, `end_crossing_talisman`,
   `murim_crossing_talisman` (rareté épique, empilables par 16 ; icônes `scripts/animation/crossing-talismans.cjs` :
@@ -69,8 +68,49 @@ changer de dimension, qui coûteraient très cher » ; destinations Nether, End 
   - Arrivées : le Nether à la position divisée par 8, sur un sol sûr (sinon une petite plateforme d'obsidienne) ; l'End
     sur sa plateforme d'obsidienne d'arrivée ; le Murim au lit ou à l'ancre du joueur s'il en a un dans l'Overworld,
     sinon au point d'apparition du monde.
-- **Vérifié** : GameTests `CrossingTalismanGameTests` (dialogue jusqu'à l'achat, refus sans or, prix pris sur deux
-  piles ; aller au Nether sur un sol sûr, retour au point exact, talisman en cendres). Pas encore de tour en vrai client.
+- **Vérifié** : GameTests `CrossingTalismanGameTests` (dialogue jusqu'au rouleau, refus sans or, prix pris sur deux
+  piles ; aller au Nether sur un sol sûr, retour au point exact, talisman en cendres).
+
+## Rouleau de marchandises et guides des arts (17/10/2026)
+
+Demande d'Enzo : « il peut aussi donner des livres pour guider le joueur vers les arts martiaux, un par art, vendus
+selon le degré de difficulté », et un écran de vente « beau, en mode le rouleau dans Kung Fu Panda ». Maquette
+validée le 17/10 (« parfait »), icônes des livres refaites en pixel art à sa demande.
+
+- **Écran** (`client/ScrollShopScreen`, textures peintes par `scripts/animation/ScrollShopArt.java`) : rouleau
+  suspendu qui se déroule depuis son rouleau du haut (12 ticks), brocart rouge à frise dorée, papier de riz vieilli
+  avec montagnes dans la brume et dragon d'or pâle, sceau 龍 ; titre « Treasures of the Golden Dragon » ; une ligne par
+  marchandise : icône, nom, difficulté en gouttes d'encre rouge, prix en lingots d'or, sceau rond 購 pour acheter (vif au
+  survol, gris si la bourse ne suffit pas) ; bourse en bas ; molette pour faire défiler (6 lignes visibles). Police
+  manuscrite, mise à l'échelle si l'écran est petit.
+- **Vente** (`mob/GoldenDragonShop`, paquets `ScrollShopPayloads`, protocole réseau **26**) : seulement depuis un
+  rouleau ouvert, le Dragon à moins de 8 blocs ; prix vérifié et pris côté serveur.
+
+| Ligne | Difficulté | Prix (yuanbao d'or) |
+|---|---|---|
+| Guide : Long Fist | 1 | 3 |
+| Guide : Golden Bell | 1 | 3 |
+| Guide : Traveller's Staff | 1 | 3 |
+| Guide : Celestial Peak Spear | 2 | 6 |
+| Guide : Azure Cloud Sword | 3 | 10 |
+| Guide : Mountain-Shattering Fist | 4 | 16 |
+| Guide : Seven Stars Sword | 4 | 20 |
+| Guide : Majin Fist | 4 | 20 |
+| Guide : Purple Heaven Thunder Saber | 4 | 24 |
+| Sanguine Art | — | « Not yet written » (personne ne garde cet art : pas en vente) |
+| Talismans Nether, End, Murim | — | 32 chacun |
+
+- **Guides** (`item/MartialGuideItem`, `<art>_guide`, icônes 16×16 en pixel art : livre fermé de la couleur de l'art,
+  emblème doré poing, cloche, bâton, lance, épée, montagne, étoile, soleil ou éclair) : lu, il s'ouvre en livre de 3 pages (l'art, qui le garde
+  et comment l'obtenir, le chemin) et écrit dans le chat la direction et la distance du lieu le plus proche : avant-poste
+  de l'Alliance (Poing Long, Bâton : marchand), arène de l'Alliance (capitaine), temple de la Mer de Bambous (Sensei Yun ; le moine de la Cloche d'Or),
+  grand camp de bandits (le Seigneur de guerre puis le Fils du Démon, qui porte les rouleaux du Poing Brise-Montagne et du Poing du Majin), sommet du Pic Cueille-Étoiles (Sept Étoiles). Le guide du Sabre du Tonnerre ne mène à aucun lieu (le manuel est
+  donné par la foudre, à un paratonnerre sous l'orage, dès Qi Crystallization) : il écrit les conditions à la place. N'enseigne rien, jamais
+  consommé ; recharge de 5 s.
+- Les pages (`guide.murimblock.*`) sont à faire relire par la session « lore ».
+- **Vérifié** : GameTests `SageShopGameTests` (tous les arts sauf le Sanguinaire ont leur guide, prix croissants avec la
+  difficulté, ligne sanguinaire invendable, refus sans rouleau ouvert, de loin, hors liste ; achat ; guide lu et gardé),
+  tour en vrai client `runSageShopTour` (déroulé, achat par le sceau, défilement, échelle 2, pages du guide).
 
 ## À décider
 

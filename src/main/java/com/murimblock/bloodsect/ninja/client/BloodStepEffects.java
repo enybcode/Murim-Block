@@ -50,7 +50,7 @@ public final class BloodStepEffects {
         if(level==null || mc.isPaused()) return;
         long now=level.getGameTime();
         var seen=new HashSet<UUID>();
-        for(var entity:level.entitiesForRendering()) {
+        for(var entity:com.murimblock.client.ClientEntityIndex.of(BloodNinja.class)) {
             if(!(entity instanceof BloodNinja ninja) || !ninja.isAlive()) continue;
             float age=ninja.getDaoAttackAge(0);
             Track track=TRACKS.get(ninja.getUUID());
@@ -98,7 +98,7 @@ public final class BloodStepEffects {
         var streak=RenderType.entityTranslucentEmissive(BLOOD,false);
         drawingGhosts=true;
         try {
-            for(var entity:level.entitiesForRendering()) {
+            for(var entity:com.murimblock.client.ClientEntityIndex.of(BloodNinja.class)) {
                 if(!(entity instanceof BloodNinja ninja)) continue;
                 var track=TRACKS.get(ninja.getUUID());
                 if(track==null) continue;

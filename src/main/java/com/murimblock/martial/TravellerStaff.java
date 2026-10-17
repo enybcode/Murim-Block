@@ -154,6 +154,11 @@ public final class TravellerStaff {
         return SPINS.containsKey(player.getUUID());
     }
 
+    /** A player coming into sight of another mid-spin: the watcher is told, so the staff spins for them too. */
+    public static void startTracking(net.minecraft.world.entity.Entity target, ServerPlayer watcher) {
+        if (target instanceof ServerPlayer p && spinning(p)) PacketDistributor.sendToPlayer(watcher, new StaffSpinPayload(p.getId(), true));
+    }
+
     /**
      * The key went down: the staff slides to its middle and spins (its start, then the loop the clients show as long as
      * the player is spinning). Its 10 Qi are paid by the caller. False if it cannot start now.

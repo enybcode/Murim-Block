@@ -144,7 +144,7 @@ public final class BloodCrystalOverlay {
             if(player.isInvisible()||player.isSpectator())return;
             // Scarlet Tear's blood sword, in both views: drawn in the fist, at the right hand's joint.
             var level=Minecraft.getInstance().level;
-            for(var entity:level.entitiesForRendering()) {
+            for(var entity:com.murimblock.client.ClientEntityIndex.of(BloodCrystalEntity.class)) {
                 if(!(entity instanceof BloodCrystalEntity sword)||!sword.sword()||sword.state()!=BloodCrystalEntity.CHARGING||sword.visualOwner()!=player)continue;
                 var joint=patch.getArmature().searchJointByName("Tool_R");stack.pushPose();
                 try {
@@ -195,7 +195,7 @@ public final class BloodCrystalOverlay {
             if(firstMesh!=null) {
                 // First-person arms use their own pose. Bind the charge to that wrist rather than its world projection.
                 var mc=Minecraft.getInstance();
-                for(var entity:mc.level.entitiesForRendering()) {
+                for(var entity:com.murimblock.client.ClientEntityIndex.of(BloodCrystalEntity.class)) {
                     if(!(entity instanceof BloodCrystalEntity crystal)||crystal.state()!=BloodCrystalEntity.CHARGING||crystal.visualOwner()!=player)continue;
                     var joint=patch.getArmature().searchJointByName("Tool_R");stack.pushPose();
                     try {

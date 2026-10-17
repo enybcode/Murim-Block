@@ -25,6 +25,10 @@
 
 ## Development And Delivery
 
+- [Blood Sect camp](../art/structures/blood-camp/README.md): 65 × 65 WorldEdit outpost, authoring scripts and native-client verification; imported manually.
+- [Scarlet Guardian](mobs/scarlet-guardian.md): main-mod boss using Sanguine Art, reinforced defence and a name-only boss bar.
+- [Plantes Murim et alchimie — proposition](cultivation/plantes-murim-proposition.md): growth, habitats, rarity, cauldrons and cultivation; design only, not implemented.
+
 - [The Blood Sect](mobs/blood-ninja.md): the Blood Ninja and its cultists, the blood dao, dark blood (Colleuhu95's Blood Sect Decor, merged into the mod on 16/10/2026), and the [underground WorldEdit base](../art/structures/blood-cult/README.md).
 
 - [Point de reprise et installation sur un autre PC](../l%C3%A0%20o%C3%B9%20je%20me%20suis%20arr%C3%AAter/README.md): état courant, derniers échanges Claude, dépendances et suite.

@@ -71,11 +71,38 @@ neoForge {
             disableIdeRun()
         }
 
+        scarletGuardianTour {
+            client()
+            gameDirectory = project.file('build/scarlet-guardian-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.scarletGuardianTour', 'true'
+            disableIdeRun()
+        }
+
+        scarletGuardianHealthTour {
+            client()
+            gameDirectory = project.file('build/scarlet-guardian-health-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.scarletGuardianTour', 'true'
+            systemProperty 'murimblock.scarletGuardianHealthTour', 'true'
+            disableIdeRun()
+        }
+
         banditEcologyTour {
             client()
             gameDirectory = project.file('build/bandit-ecology-tour-run')
             programArguments.addAll('--width', '960', '--height', '720')
             systemProperty 'murimblock.banditEcologyTour', 'true'
+            disableIdeRun()
+        }
+
+        // Local review: import the camp schematic into a fresh desert world and film real blocks.
+        bloodCampTour {
+            client()
+            gameDirectory = project.file('build/blood-camp-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.bloodCampTour', 'true'
+            systemProperty 'murimblock.bloodCampSchematic', project.file('art/structures/blood-camp/camp_secte_sang_65.schem').absolutePath
             disableIdeRun()
         }
 
@@ -169,6 +196,14 @@ neoForge {
             gameDirectory = project.file('build/thunder-saber-pose-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.thunderSaberPoseTour', 'true'
+            disableIdeRun()
+        }
+        // The HUD and the Techniques page at full screen (HudTour).
+        hudTour {
+            client()
+            gameDirectory = project.file('build/hud-tour-run')
+            programArguments.addAll('--width', '1920', '--height', '1080')
+            systemProperty 'murimblock.hudTour', 'true'
             disableIdeRun()
         }
         // The Golden Bell: the gold, iron and stone bodies, the bell and its light (GoldenBellTour).
@@ -283,6 +318,15 @@ neoForge {
             gameDirectory = project.file('build/spear-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.spearTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client check of the Golden Dragon's scroll of wares (see SageShopTour).
+        sageShopTour {
+            client()
+            gameDirectory = project.file('build/sage-shop-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.sageShopTour', 'true'
             disableIdeRun()
         }
 
@@ -795,6 +839,21 @@ tasks.named('runTrailTour').configure {
         if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only trail tour.')
         trailTourSave.get().asFile.deleteDir()
         trailTourShots.get().asFile.deleteDir()
+    }
+}
+def sageShopTourSave = layout.buildDirectory.dir('sage-shop-tour-run/saves/murim-sage-shop')
+def sageShopTourReport = layout.buildDirectory.file('sage-shop-tour-run/sage-shop-tour-report.txt')
+def sageShopTourShots = layout.buildDirectory.dir('sage-shop-tour-run/screenshots')
+tasks.named('runSageShopTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only sage shop tour.')
+        sageShopTourSave.get().asFile.deleteDir()
+        sageShopTourShots.get().asFile.deleteDir()
+        sageShopTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = sageShopTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sage shop tour failed; see build/sage-shop-tour-run/sage-shop-tour-report.txt')
     }
 }
 def knifeTourSave = layout.buildDirectory.dir('knife-tour-run/saves/murim-knife')

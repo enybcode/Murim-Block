@@ -695,6 +695,14 @@ public final class MartialCombat {
     // ---------------------------------------------------------------- hooks
 
     public static void registerHooks() {
+        // A leap or dive of an art forgives the fall where Minecraft applies it, not only on the player's tick: on a
+        // busy server several movement packets arrive between two ticks, and the fall built up in them used to hurt
+        // (4 damage after the crescent's 7-block slam, martial tour of 17/10).
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingFallEvent event) -> {
+            if (!(event.getEntity() instanceof ServerPlayer player)) return;
+            Long safe = NO_FALL.get(player.getUUID());
+            if (safe != null && player.level().getGameTime() <= safe) event.setCanceled(true);
+        });
         // The Blood Iceberg's rules: its caster's death brings it down; nothing is built or poured in it.
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) BloodIceberg.collapse(player);
@@ -737,6 +745,9 @@ public final class MartialCombat {
                 SevenStarsSword.serverTick(event.getServer()));
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
             if (event.getEntity() instanceof ServerPlayer watcher) SevenStarsSword.startTracking(event.getTarget(), watcher);
+        });
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer watcher) TravellerStaff.startTracking(event.getTarget(), watcher);
         });
         // The Spinning Rampart stops what comes from the front before anything else sees it (Epic Fight's stun included).
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onIncomingDamage);

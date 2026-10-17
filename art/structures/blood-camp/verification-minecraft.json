@@ -1,0 +1,7 @@
+{
+  "source": "Native Minecraft 1.21.1 framebuffer, real blocks in a fresh desert world",
+  "schematic_sha256": "58cf8b86891211c6ced3d821854bbea662c3d28b4a138dd1318fb95b5b6f82e1",
+  "native_report": "PASSED\nSource: Native Minecraft 1.21.1 framebuffer; real placed blocks\nFrames: 440\nFPS: 20\nSchematic SHA256: 58cf8b86891211c6ced3d821854bbea662c3d28b4a138dd1318fb95b5b6f82e1\nStability verified: true\n",
+  "stability_report": "PASSED\nAfter real neighbor updates and at least 180 client ticks\nNon-air block types preserved: 22210\nContained blood cells: 38\nBlock entities imported: 55\n",
+  "note": "Native GIF captures remain local, outside the repository. Reproduce with runBloodCampTour."
+}
