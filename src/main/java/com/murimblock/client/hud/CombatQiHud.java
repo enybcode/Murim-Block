@@ -38,7 +38,9 @@ public final class CombatQiHud {
         }
 
         if (VanillaGuiLayers.EXPERIENCE_BAR.equals(event.getName())) {
-            render(event.getGuiGraphics());
+            // In combat the dantian in the combat bar holds the Qi: no bar here then.
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player != null && !MurimblockApi.combat().isInCombatMode(player)) render(event.getGuiGraphics());
             event.setCanceled(true);
             return;
         }
@@ -46,6 +48,17 @@ public final class CombatQiHud {
         if (VanillaGuiLayers.EXPERIENCE_LEVEL.equals(event.getName())) {
             event.setCanceled(true);
         }
+    }
+
+    /** Armour that only the realm gives (a point or two): no armour row for it, it would look like an empty bar. */
+    @SubscribeEvent
+    public static void onArmourLayer(RenderGuiLayerEvent.Pre event) {
+        if (!VanillaGuiLayers.ARMOR_LEVEL.equals(event.getName())) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+        var armour = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+        var realm = armour == null ? null : armour.getModifier(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "realm_armor"));
+        if (realm != null && player.getArmorValue() - realm.amount() < 1) event.setCanceled(true);
     }
 
     static double computeQiRatio(double qi, double qiMax) {

@@ -328,57 +328,108 @@ public final class MurimProfileScreen extends Screen {
         return label("techniques.revealed", shown, 1 + art.techniques().size());
     }
 
-    /** The library: one cover per martial art on a wooden shelf; an art not learned is a dark "???" cover. */
+    /** The library's page shown, and its arrows as last drawn. */
+    private int libraryPage;
+    @Nullable private Box previousPage, nextPage;
+
+    /** Each art's cover colour (its manual's); a new art gets the azure one until it has its own. */
+    private static final Map<ResourceLocation, Integer> COVER_COLOURS = Map.of(
+            MartialArts.AZURE_CLOUD_SWORD, COVER, MartialArts.GOLDEN_BELL, 0xFF6A4418, MartialArts.LONG_FIST, 0xFF5C3B26,
+            MartialArts.SANGUINE_ART, 0xFF5E1E22, MartialArts.SEVEN_STARS_SWORD, 0xFF27305E, MartialArts.THUNDER_SABER, 0xFF3E2A5E,
+            MartialArts.TRAVELLER_STAFF, 0xFF4C4A28, MartialArts.CELESTIAL_PEAK_SPEAR, 0xFF2E4A62,
+            MartialArts.MOUNTAIN_SHATTERING_FIST, 0xFF5A4630, MartialArts.MAJIN_FIST, 0xFF3A1A2A);
+
+    /** A colour a little lighter (a card under the pointer). */
+    private static int lighter(int argb) {
+        int r = Math.min(255, ((argb >> 16) & 0xFF) + 18), gr = Math.min(255, ((argb >> 8) & 0xFF) + 18), bl = Math.min(255, (argb & 0xFF) + 18);
+        return 0xFF000000 | r << 16 | gr << 8 | bl;
+    }
+
+    /** The art's passive and techniques as small squares, gold for each one revealed. */
+    private void pips(GuiGraphics g, MartialData data, MartialArts.Art art, int x, int y, int width) {
+        int all = 1 + art.techniques().size(), shown = 1;
+        for (MartialArts.Technique t : art.techniques()) if (data.hasTechnique(t.id())) shown++;
+        int step = Math.max(3, Math.min(6, (width + 2) / all));
+        for (int i = 0; i < all; i++) {
+            fill(g, new Box(x + i * step, y, step - 2, 4), i < shown ? GOLD : PAPER_LINE);
+            if (i < shown) fill(g, new Box(x + i * step, y, step - 2, 1), GOLD_LIGHT);
+        }
+    }
+
+    /**
+     * The library: the arts learned (the main style first) as cards on a grid that fits the page, then the others as
+     * dark "???" cards; a page at a time, with arrows when there are more.
+     */
     private void renderLibrary(GuiGraphics g, MartialData data) {
+        previousPage = null;
+        nextPage = null;
         text(g, HEADER, label("techniques.title"), 2);
         Box content = layout.content;
-        text(g, label("techniques.library_hint"), new Box(content.x(), content.y() + 22, content.width(), 18), MUTED, false, 1);
+        text(g, label("techniques.library_hint"), new Box(content.x(), content.y() + 22, content.width(), 9), MUTED, false, 1);
         List<MartialArts.Art> arts = new ArrayList<>();
         MartialArts.arts().forEach(arts::add);
-        int coverWidth = 72, coverHeight = 92, gap = 16;
-        int shelfY = content.bottom() - 6;
-        int total = arts.size() * coverWidth + Math.max(0, arts.size() - 1) * gap;
-        int x = content.x() + Math.max(0, (content.width() - total) / 2);
-        int y = Math.max(content.y() + 42, shelfY - coverHeight);
-        int coverH = shelfY - y;
-        fill(g, new Box(content.x(), shelfY, content.width(), 3), WOOD);
-        fill(g, new Box(content.x(), shelfY, content.width(), 1), WOOD_LIGHT);
-        fill(g, new Box(content.x(), shelfY + 3, content.width(), 1), WOOD_DARK);
         if (arts.isEmpty()) {
-            text(g, label("techniques.empty"), new Box(content.x(), y + coverH / 2, content.width(), 9), MUTED, true, 1);
+            text(g, label("techniques.empty"), new Box(content.x(), content.y() + 60, content.width(), 9), MUTED, true, 1);
             return;
         }
-        for (MartialArts.Art art : arts) {
-            Box cover = new Box(x, y, coverWidth, coverH);
-            boolean known = data.knowsArt(art.id());
-            boolean hot = known && cover.contains(pointerX, pointerY);
-            if (known) {
-                fill(g, cover, hot ? 0xFF367064 : COVER);
-                fill(g, new Box(cover.x() + 4, cover.bottom() - 6, cover.width() - 4, 6), COVER_DARK);
-                fill(g, new Box(cover.x(), cover.y(), 4, cover.height()), SEAL);
-                outline(g, cover, hot ? GOLD_LIGHT : GOLD);
-                ItemStack stack = manual(art.id());
-                if (!stack.isEmpty()) {
-                    g.pose().pushPose();
-                    g.pose().translate(left + cover.x() + 2 + (cover.width() - 32) / 2.0F, top + cover.y() + 6, 0);
-                    g.pose().scale(2, 2, 1);
-                    g.renderItem(stack, 0, 0);
-                    g.pose().popPose();
-                }
-                text(g, Component.translatable(art.translationKey()), new Box(cover.x() + 6, cover.y() + 42, cover.width() - 9, 18), GOLD_LIGHT, true, 1);
-                text(g, revealed(data, art), new Box(cover.x() + 6, cover.y() + 61, cover.width() - 9, 9), INK_SOFT, true, 1);
-                Box open = new Box(cover.x() + 4 + (cover.width() - 4 - 34) / 2, cover.bottom() - 17, 34, 11);
-                fill(g, open, SEAL);
-                text(g, label("techniques.open"), new Box(open.x(), open.y() + 1, open.width(), 9), SEAL_TEXT, true, 1);
-                covers.add(Map.entry(cover, art.id()));
-            } else {
-                fill(g, cover, 0xFF26231E);
-                dashed(g, cover, PAPER_LINE);
-                text(g, Component.literal("???"), new Box(cover.x(), cover.y() + coverH / 2 - 10, cover.width(), 9), MUTED, true, 1);
-                text(g, label("techniques.not_found"), new Box(cover.x(), cover.y() + coverH / 2 + 2, cover.width(), 9), PAPER_LINE, true, 1);
+        ResourceLocation main = data.mainArt().orElse(null);
+        arts.sort(java.util.Comparator.comparingInt(art -> art.id().equals(main) ? 0 : data.knowsArt(art.id()) ? 1 : 2));
+        int gap = 5, gridTop = content.y() + 36, pagerY = content.bottom() - 10;
+        int cols = Math.clamp(content.width() / 92, 1, 3);
+        int cardW = (content.width() - gap * (cols - 1)) / cols;
+        int rows = Math.max(1, (pagerY - 3 - gridTop + gap) / (40 + gap));
+        int cardH = Math.min(52, (pagerY - 3 - gridTop - gap * (rows - 1)) / rows);
+        int perPage = cols * rows, pages = (arts.size() + perPage - 1) / perPage;
+        libraryPage = Math.clamp(libraryPage, 0, pages - 1);
+        for (int k = 0; k < perPage; k++) {
+            int index = libraryPage * perPage + k;
+            if (index >= arts.size()) break;
+            MartialArts.Art art = arts.get(index);
+            Box card = new Box(content.x() + (k % cols) * (cardW + gap), gridTop + (k / cols) * (cardH + gap), cardW, cardH);
+            if (!data.knowsArt(art.id())) {
+                fill(g, card, 0xFF26231E);
+                dashed(g, card, PAPER_LINE);
+                text(g, Component.literal("???"), new Box(card.x(), card.y() + (cardH - 8) / 2, cardW, 9), MUTED, true, 1);
+                continue;
             }
-            x += coverWidth + gap;
+            boolean hot = card.contains(pointerX, pointerY), isMain = art.id().equals(main);
+            int colour = COVER_COLOURS.getOrDefault(art.id(), COVER);
+            fill(g, card, isMain ? GOLD : hot ? GOLD_LIGHT : GOLD_DARK);
+            fill(g, new Box(card.x() + 1, card.y() + 1, cardW - 2, cardH - 2), hot ? lighter(colour) : colour);
+            fill(g, new Box(card.x() + 1, card.y() + 1, 2, cardH - 2), SEAL);
+            Box well = new Box(card.x() + 6, card.y() + 5, 20, 20);
+            fill(g, well, 0x66000000);
+            ItemStack stack = manual(art.id());
+            if (!stack.isEmpty()) g.renderItem(stack, left + well.x() + 2, top + well.y() + 2);
+            int textX = well.right() + 4, textW = card.right() - textX - 3;
+            text(g, Component.translatable(art.translationKey()), new Box(textX, card.y() + 5, textW, 18), GOLD_LIGHT, false, 1);
+            pips(g, data, art, textX, card.y() + 26, textW);
+            if (isMain && cardH >= 40) {
+                Component tag = label("techniques.main_tag");
+                int tagW = font.width(Component.literal(tag.getString()).withStyle(GUI_TEXT_STYLE)) + 6;
+                Box badge = new Box(card.right() - tagW - 3, card.bottom() - 13, tagW, 10);
+                fill(g, badge, SEAL);
+                text(g, tag, new Box(badge.x(), badge.y() + 1, badge.width(), 9), SEAL_TEXT, true, 1);
+            }
+            covers.add(Map.entry(card, art.id()));
         }
+        if (pages > 1) {
+            String counter = (libraryPage + 1) + " / " + pages;
+            int counterW = font.width(Component.literal(counter).withStyle(GUI_TEXT_STYLE));
+            int cx = content.right() - 12 - 4 - counterW - 4 - 12;
+            previousPage = new Box(cx, pagerY, 12, 10);
+            nextPage = new Box(content.right() - 12, pagerY, 12, 10);
+            arrow(g, previousPage, "<", libraryPage > 0);
+            text(g, Component.literal(counter), new Box(previousPage.right() + 4, pagerY + 1, counterW + 2, 9), INK_SOFT, false, 1);
+            arrow(g, nextPage, ">", libraryPage < pages - 1);
+        }
+    }
+
+    private void arrow(GuiGraphics g, Box box, String sign, boolean active) {
+        boolean hot = active && box.contains(pointerX, pointerY);
+        fill(g, box, hot ? SELECTED : PAPER);
+        outline(g, box, active ? (hot ? GOLD_LIGHT : GOLD) : PAPER_LINE);
+        text(g, Component.literal(sign), new Box(box.x(), box.y() + 1, box.width(), 9), active ? INK : PAPER_LINE, true, 1);
     }
 
     /**
@@ -399,8 +450,9 @@ public final class MurimProfileScreen extends Screen {
             g.renderItem(stack, left + nameX, top + content.y() - 1);
             nameX += 20;
         }
-        text(g, new Box(nameX, content.y() + 3, content.right() - nameX - 78, 9), Component.translatable(art.translationKey()), GOLD_LIGHT);
-        text(g, new Box(content.right() - 76, content.y() + 3, 76, 9), revealed(data, art), MUTED);
+        int pipsW = Math.min(60, 6 * (1 + art.techniques().size()));
+        text(g, new Box(nameX, content.y() + 3, content.right() - nameX - pipsW - 6, 9), Component.translatable(art.translationKey()), GOLD_LIGHT);
+        pips(g, data, art, content.right() - pipsW, content.y() + 5, pipsW);
 
         // The tiles: the passive, then each technique (a secret only as "???" until found).
         List<ResourceLocation> entries = new ArrayList<>();
@@ -458,12 +510,15 @@ public final class MurimProfileScreen extends Screen {
         if (selected == null) return;
         int y = info.y();
         if (data.hasTechnique(selected.id())) {
-            text(g, new Box(info.x(), y, info.width(), 9), techniqueName(data, art, selected), GOLD_LIGHT);
-            text(g, new Box(info.x(), y + 11, info.width(), 9), selected.secret() ? label("techniques.secret_found")
+            fill(g, new Box(info.x(), y, 26, 26), GOLD_DARK);
+            TechniqueIcons.draw(g, selected, left + info.x() + 1, top + y + 1, 24);
+            Box named = new Box(info.x() + 30, y, info.width() - 30, 9);
+            text(g, named, techniqueName(data, art, selected), GOLD_LIGHT);
+            text(g, new Box(named.x(), y + 11, named.width(), 9), selected.secret() ? label("techniques.secret_found")
                     : label("techniques.cost", QiFormat.format(selected.qiCost()), QiFormat.format(selected.cooldownTicks() / 20.0)), AZURE_TEXT);
             if (!selected.secret()) {
                 int mastery = data.mastery(selected.id());
-                text(g, new Box(info.x(), y + 22, info.width(), 9), label("techniques.mastery", mastery), MUTED);
+                text(g, new Box(info.x() + 30, y + 21, info.width() - 30, 9), label("techniques.mastery", mastery), MUTED);
                 fill(g, new Box(info.x(), y + 32, info.width(), 2), TRACK);
                 int reached = info.width() * Math.clamp(mastery, 0, 100) / 100;
                 if (reached > 0) fill(g, new Box(info.x(), y + 32, reached, 2), GOLD);
@@ -493,8 +548,8 @@ public final class MurimProfileScreen extends Screen {
                 TechniqueIcons.draw(g, placed, left + box.x() + 1, top + box.y() + 1, slot - 2);
                 if (box.contains(pointerX, pointerY)) hoveredText = Component.translatable(placed.translationKey());
             }
-            String key = minecraft == null ? "" : CombatBarClient.slotKey(minecraft, i).getTranslatedKeyMessage().getString();
-            text(g, Component.literal(key.length() > 1 ? key.substring(0, 1) : key), new Box(box.x(), box.bottom() + 1, slot, 9), MUTED, true, 1);
+            String key = minecraft == null ? "" : CombatBarClient.keyLabel(minecraft, i);
+            text(g, Component.literal(key), new Box(box.x(), box.bottom() + 1, slot, 9), MUTED, true, 1);
             barSlots.add(box);
         }
         int hintY = by + 2 * (slot + 11);
@@ -609,6 +664,14 @@ public final class MurimProfileScreen extends Screen {
                     selectedTechnique = null;
                     return true;
                 }
+            }
+            if (previousPage != null && previousPage.contains(mx, my)) {
+                libraryPage = Math.max(0, libraryPage - 1);
+                return true;
+            }
+            if (nextPage != null && nextPage.contains(mx, my)) {
+                libraryPage++;
+                return true;
             }
             if (backButton != null && backButton.contains(mx, my)) {
                 openArt = null;

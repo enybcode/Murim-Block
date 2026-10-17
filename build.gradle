@@ -171,6 +171,14 @@ neoForge {
             systemProperty 'murimblock.thunderSaberPoseTour', 'true'
             disableIdeRun()
         }
+        // The HUD and the Techniques page at full screen (HudTour).
+        hudTour {
+            client()
+            gameDirectory = project.file('build/hud-tour-run')
+            programArguments.addAll('--width', '1920', '--height', '1080')
+            systemProperty 'murimblock.hudTour', 'true'
+            disableIdeRun()
+        }
         // The Golden Bell: the gold, iron and stone bodies, the bell and its light (GoldenBellTour).
         goldenBellTour {
             client()
