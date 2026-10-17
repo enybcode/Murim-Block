@@ -8,7 +8,10 @@
 // two curling down to the feet, and big, lively movement: the whole tentacles swing from the back, waves run down
 // them, the tips lash.
 //
-//   node scripts/concepts/kagune-preview.cjs [--port=9236]
+//   node scripts/concepts/kagune-preview.cjs [--port=9236] [--form=kakuja] [--rest] [--check]
+// --form=kakuja: the form at 100 Fury (Enzo, 17/10, after his references: Kaneki's centipede kakuja), an overlay on the
+// skin like the blood crystals: the kagune becomes one great centipede, purple plates with glowing red joints and hooked
+// spines, coiled in a ring round the player, and a purple half-mask on the face.
 // Writes art/blockbench/kagune_preview.bbmodel (model + idle, open in Animate) and the GIFs and stills in
 // docs/combat/styles/images/kagune-*.
 const fs = require('node:fs');
@@ -54,6 +57,14 @@ region('face', 32, 32, 16, 16, (x, y) => {
   return [hex('#D9A882'), 0.95 + rnd() * 0.08];
 });
 region('hairfront', 48, 32, 16, 16, (x, y) => (y < 5 || (y < 9 && (x < 3 || x > 12 || (x > 6 && x < 9)))) ? [hex('#ECECF0'), 0.92 + rnd() * 0.1] : [hex('#D9A882'), 0.95 + rnd() * 0.08]);
+// The kakuja (100 Fury): purple plates lit along the top edge, dark violet spines, glowing red joints, the half-mask.
+region('kakuja_plate', 0, 48, 16, 16, (x, y) => [y < 2 ? hex('#A070D0') : y >= 6 && y <= 9 ? (y === 7 || y === 8 ? hex('#FF3A44') : hex('#C01828')) : y > 13 ? hex('#3A1C5E') : hex('#6E3CA0'), 0.92 + rnd() * 0.1]);
+region('kakuja_spine', 16, 48, 16, 16, (x, y) => [x > 11 ? hex('#E0202E') : y < 5 ? hex('#7A58A8') : hex('#2A1440'), 0.9 + rnd() * 0.12]);
+region('kakuja_joint', 32, 48, 16, 16, (x, y) => [Math.abs(y - 7.5) < 3 ? hex('#FF3A44') : hex('#B0101E'), 0.95 + rnd() * 0.06]);
+const MASK = ['LLLLD', 'PPPPD', 'PKRKP', 'PPKPD', 'PPPPD', 'WDWDP', 'DWDWD'];
+const MASK_COLOURS = { L: '#A878D8', P: '#6E3CA0', D: '#2A1440', K: '#0A0608', R: '#FF2A30', W: '#ECE4D4' };
+region('kakuja_mask', 48, 48, 5, 7, (x, y) => [hex(MASK_COLOURS[MASK[y][x]]), MASK[y][x] === 'R' ? 1 : 0.95 + rnd() * 0.06]);
+region('kakuja_mask_edge', 53, 48, 3, 7, () => [hex('#2A1440'), 1]);
 const atlas = Buffer.from(kit.png(A, A, rgba));
 
 // ---------------------------------------------------------------- model (1 unit = 1 pixel, player 32 high, facing -z)
@@ -95,11 +106,135 @@ const TENTACLES = [
   ['lower_right', [-1.6, 13.4, 2.8], [8, -66, 0], 1, [[1, 1], [-2, 5], [-7, 6]]],
   ['lower_left', [1.6, 13.4, 2.8], [8, 66, 0], -1, [[1, 1], [-2, 5], [-7, 6]]],
 ];
+const FORM = arg('form') || 'kagune';
+/** The centipede of the kakuja: one great chain. */
+/** The kakuja's two centipedes (Enzo: "there are two of them"): name, root, the way they leave (yaw), their coil, length. */
+const CENTIPEDES = [
+  // name, root, how it leaves (yaw out, pitch up), length; its loose curve along the body: [up/down, out/in] per joint,
+  // as waves along it (amplitude in degrees, waves along its length, phase).
+  { name: 'centipede_right', root: [-1.6, 11, 9], yaw: -70, pitch: -30, segments: 30, seg: 3.6, side: 1,
+    curveX: [7, 1.3, 0.4], curveY: [9, 0.9, 1.2] },
+  { name: 'centipede_left', root: [1.6, 11, 9], yaw: 70, pitch: -14, segments: 28, seg: 3.6, side: -1,
+    curveX: [8, 1.1, 2.2], curveY: [9, 1.0, 0.3] },
+]
+const CHAINS = FORM === 'kakuja' ? CENTIPEDES.map(c => [c.name]) : TENTACLES;
 const LENGTH = 2.4, STEP = 0.08, FPS = 20, FRAMES = Math.round(LENGTH * FPS);
 const SAMPLES = Math.round(LENGTH / STEP);
 
 /** Builds the project; `scale[i][s]` turns tentacle i's movement down at sample s (1 = the full idle). */
 function build(scale) {
+  return FORM === 'kakuja' ? buildKakuja(scale) : buildKagune(scale);
+}
+
+/** The project around the player and the chains, with its idle. */
+function project(rootGroup, animators) {
+  return {
+    meta: { format_version: '4.10', model_format: 'free', box_uv: false }, name: FORM === 'kakuja' ? 'kakuja_preview' : 'kagune_preview', model_identifier: '',
+    visible_box: [1, 1, 0], variable_placeholders: '', variable_placeholder_buttons: [], timeline_setups: [], unhandled_root_fields: {},
+    resolution: { width: A, height: A }, elements: elements.slice(), outliner: [rootGroup],
+    textures: [{ path: '', name: 'kagune.png', folder: '', namespace: 'murimblock', id: '0', width: A, height: A, uv_width: A, uv_height: A, particle: false,
+      use_as_default: false, layers_enabled: false, sync_to_project: '', render_mode: 'default', render_sides: 'auto', frame_time: 1, frame_order_type: 'loop',
+      frame_order: '', frame_interpolate: false, visible: true, internal: true, saved: false, uuid: id('texture'), source: 'data:image/png;base64,' + atlas.toString('base64') }],
+    animations: [{ uuid: id('anim/idle'), name: 'idle', loop: 'loop', override: false, length: LENGTH, snapping: 20, selected: false, anim_time_update: '',
+      blend_weight: '', start_delay: '', loop_delay: '', animators }],
+  };
+}
+const kf = (channel, t, [x, y, z]) => ({ channel, data_points: [{ x: +x.toFixed(2), y: +y.toFixed(2), z: +z.toFixed(2) }], uuid: id(`kf/${channel}/${t}/${x}/${y}/${z}`), time: +t.toFixed(2), color: -1, interpolation: 'catmullrom' });
+function breathe(add, playerBones) {
+  const breath = [0, 0.6, 1.2, 1.8, 2.4];
+  add(playerBones.body, breath.map(t => kf('rotation', t, [Math.sin((2 * Math.PI * t) / 2.4) * 1.5, 0, 0])));
+  add(playerBones.head, breath.map(t => kf('rotation', t, [Math.sin((2 * Math.PI * t) / 2.4 + 0.5) * -2.5, 0, 0])));
+  add(playerBones.armR, breath.map(t => kf('rotation', t, [0, 0, 5 + Math.sin((2 * Math.PI * t) / 2.4) * 2])));
+  add(playerBones.armL, breath.map(t => kf('rotation', t, [0, 0, -5 - Math.sin((2 * Math.PI * t) / 2.4) * 2])));
+}
+
+/**
+ * The kakuja: one great centipede out of the small of the back, purple plates and red joints, a pair of hooked spines on
+ * each segment and one along its back every other, coiled in a ring round the player, its tail ending in a blade; the
+ * purple half-mask over the left of the face, its eye slit glowing. The idle: the coil breathes and slides, a slow wave
+ * along it, the joints pulse.
+ */
+function buildKakuja(scale) {
+  elements.length = 0;
+  const bones = {}, meat = {}, legs = {};
+  function centipede({ name, root, yaw, pitch, segments: N, seg: L, side, curveX, curveY }) {
+    const width = k => (k < 2 ? 4.6 + k : k > N - 7 ? Math.max(1.6, 6.4 * (N - k) / 7) : 6.4);
+    let child = null;
+    for (let k = N - 1; k >= 0; k--) {
+      const z0 = root[2] + k * L, w = width(k), h = w * 0.82, o = [root[0], root[1], z0], mid = [root[0], root[1], z0 + L / 2];
+      const parts = [];
+      if (k === N - 1) {
+        // The tail: a long curved blade.
+        parts.push(cube(`${name}_tail`, [root[0] - w / 2, root[1] - h / 2, z0], [root[0] + w / 2, root[1] + h / 2, z0 + L * 2.4], mid, 'kakuja_plate'));
+        parts.push(cube(`${name}_tail_tip`, [root[0] - 0.6, root[1] - 0.6, z0 + L * 2.2], [root[0] + 0.6, root[1] + 0.6, z0 + L * 3.4], mid, 'kakuja_spine', [-12, 0, 0]));
+      } else {
+        // A plate (a red band across it), then the glowing joint before the next one.
+        parts.push(cube(`${name}_${k}`, [root[0] - w / 2, root[1] - h / 2, z0 + 0.4], [root[0] + w / 2, root[1] + h / 2, z0 + L - 0.7], mid, 'kakuja_plate'));
+        parts.push(cube(`${name}_${k}_joint`, [root[0] - w * 0.47, root[1] - h * 0.47, z0 + L - 1.2], [root[0] + w * 0.47, root[1] + h * 0.47, z0 + L + 0.6], mid, 'kakuja_joint'));
+        // A pair of hooked spines, out to the sides and swept back, like a centipede's legs; red at the tip.
+        const sx = w / 2, sl = 3.4 + w * 0.55;
+        const legL = group(`${name}_leg_l_${k}`, [root[0] + sx, root[1], z0 + 1.4], [cube(`${name}_${k}_spine_l`, [root[0] + sx - 0.3, root[1] - 0.6, z0 + 0.8], [root[0] + sx + sl, root[1] + 0.6, z0 + 2.0], [root[0] + sx, root[1], z0 + 1.4], 'kakuja_spine', [0, -32, 18])]);
+        const legR = group(`${name}_leg_r_${k}`, [root[0] - sx, root[1], z0 + 1.4], [cube(`${name}_${k}_spine_r`, [root[0] - sx - sl, root[1] - 0.6, z0 + 0.8], [root[0] - sx + 0.3, root[1] + 0.6, z0 + 2.0], [root[0] - sx, root[1], z0 + 1.4], 'kakuja_spine', [0, 32, -18])]);
+        legs[`${name}_${k}`] = [legL, legR];
+        if (k % 2 === 0 && k < N - 4) parts.push(cube(`${name}_${k}_spine_back`, [root[0] - 0.4, root[1] + h / 2 - 0.2, z0 + 0.8], [root[0] + 0.4, root[1] + h / 2 + sl * 0.8, z0 + 1.6], [root[0], root[1] + h / 2, z0 + 1.2], 'kakuja_spine', [-40, 0, 0]));
+      }
+      const m = group(`${name}_flesh_${k}`, mid, parts);
+      meat[`${name}_${k}`] = m;
+      const kids = [m, ...(legs[`${name}_${k}`] || [])];
+      if (child) kids.push(child);
+      // The coil: out to its side and up, then bending all the way round.
+      // Its loose curve: gentle waves of bending along it, out and up, then wandering.
+      const u = k / N;
+      const rest = k === 0 ? [pitch, yaw, 0]
+        : [curveX[0] * Math.sin(2 * Math.PI * curveX[1] * u + curveX[2]), side * curveY[0] * Math.sin(2 * Math.PI * curveY[1] * u + curveY[2]), 0];
+      child = group(`${name}_${k}`, o, kids, rest);
+      bones[`${name}_${k}`] = child;
+    }
+    return child;
+  }
+  const playerBones = buildPlayer();
+  // The half-mask, on the head: a thin plate over the left half of the face (5 x 7 texels, a texel a pixel), and a horn
+  // from the temple.
+  playerBones.head.children.push(
+    cube('mask', [-0.5, 24.6, -4.45], [4.5, 31.6, -4.05], [0, 24, 0], { all: 'kakuja_mask_edge', north: 'kakuja_mask' }),
+    cube('mask_horn', [3.6, 29.6, -3.6], [4.8, 33.6, -2.4], [4.2, 30, -3], 'kakuja_spine', [0, 0, -24]));
+  // The stalk out of the back that carries both.
+  const knot = cube('kakuja_knot', [-3.4, 9.4, 1.8], [3.4, 15.8, 10.4], [0, 12, 2], 'kakuja_plate');
+  const knotJoint = cube('kakuja_knot_joint', [-2.8, 10, 5.6], [2.8, 15.2, 7.0], [0, 12, 2], 'kakuja_joint');
+  const knotJoint2 = cube('kakuja_knot_joint_2', [-2.8, 10, 8.6], [2.8, 15.2, 9.6], [0, 12, 2], 'kakuja_joint');
+  const rootGroup = group('player', [0, 0, 0], [...playerBones.list, group('kakuja', [0, 12, 2], [knot, knotJoint, knotJoint2, ...CENTIPEDES.map(centipede)])]);
+  const animators = {};
+  const add = (g, keys) => { animators[g.uuid] = { name: g.name, type: 'bone', keyframes: keys }; };
+  CENTIPEDES.forEach((c, i) => {
+    for (let k = 0; k < c.segments; k++) {
+      const keys = [], pulse = [], legL = [], legR = [];
+      for (let sI = 0; sI <= SAMPLES; sI++) {
+        const t = sI * STEP, a = scale[i][sI % SAMPLES], w = (2 * Math.PI * t) / LENGTH + i * 2.1;
+        // A slither: a wave that runs from the root to the tail, side to side and up and down, every joint its share;
+        // the root sways the whole body.
+        const x = Math.sin(w - k * 0.42) * 2.4 * a + (k === 0 ? Math.sin(w * 0.5 + i) * 6 * a : 0);
+        const y = c.side * (Math.cos(w - k * 0.38) * 3.2 * a + (k === 0 ? Math.cos(w * 0.5) * 8 * a : 0));
+        const z = c.side * Math.sin(w - k * 0.5) * 1.6 * a;
+        keys.push(kf('rotation', t, [x, y, z]));
+        const p = Math.max(0, Math.sin(2 * w - k * 0.35));
+        const sc = 1 + 0.07 * p * p;
+        pulse.push(kf('scale', t, [sc, sc, 1]));
+        // The legs: a centipede's walking wave, each pair a little behind the one before, left and right in turn.
+        const step = 2 * w * 2 - k * 0.9;
+        legL.push(kf('rotation', t, [Math.cos(step) * 10, Math.sin(step) * 28, 0]));
+        legR.push(kf('rotation', t, [Math.cos(step + Math.PI) * 10, Math.sin(step + Math.PI) * 28, 0]));
+      }
+      add(bones[`${c.name}_${k}`], keys);
+      add(meat[`${c.name}_${k}`], pulse);
+      const lg = legs[`${c.name}_${k}`];
+      if (lg) { add(lg[0], legL); add(lg[1], legR); }
+    }
+  });
+  breathe(add, playerBones);
+  return project(rootGroup, animators);
+}
+
+function buildKagune(scale) {
   elements.length = 0;
   const bones = {}, flesh = {};
   const tube = (name, k, root, w, z0, len) => {
@@ -131,7 +266,6 @@ function build(scale) {
   const playerBones = buildPlayer();
   const rootGroup = group('player', [0, 0, 0], [...playerBones.list, kagune]);
 
-  const kf = (channel, t, [x, y, z]) => ({ channel, data_points: [{ x: +x.toFixed(2), y: +y.toFixed(2), z: +z.toFixed(2) }], uuid: id(`kf/${channel}/${t}/${x}/${y}/${z}`), time: +t.toFixed(2), color: -1, interpolation: 'catmullrom' });
   const animators = {};
   const add = (g, keys) => { animators[g.uuid] = { name: g.name, type: 'bone', keyframes: keys }; };
   TENTACLES.forEach(([name, , , side], i) => {
@@ -156,21 +290,8 @@ function build(scale) {
       add(m, pulse);
     }
   });
-  const breath = [0, 0.6, 1.2, 1.8, 2.4];
-  add(playerBones.body, breath.map(t => kf('rotation', t, [Math.sin((2 * Math.PI * t) / 2.4) * 1.5, 0, 0])));
-  add(playerBones.head, breath.map(t => kf('rotation', t, [Math.sin((2 * Math.PI * t) / 2.4 + 0.5) * -2.5, 0, 0])));
-  add(playerBones.armR, breath.map(t => kf('rotation', t, [0, 0, 5 + Math.sin((2 * Math.PI * t) / 2.4) * 2])));
-  add(playerBones.armL, breath.map(t => kf('rotation', t, [0, 0, -5 - Math.sin((2 * Math.PI * t) / 2.4) * 2])));
-  return {
-    meta: { format_version: '4.10', model_format: 'free', box_uv: false }, name: 'kagune_preview', model_identifier: '', visible_box: [1, 1, 0],
-    variable_placeholders: '', variable_placeholder_buttons: [], timeline_setups: [], unhandled_root_fields: {}, resolution: { width: A, height: A },
-    elements: elements.slice(), outliner: [rootGroup],
-    textures: [{ path: '', name: 'kagune.png', folder: '', namespace: 'murimblock', id: '0', width: A, height: A, uv_width: A, uv_height: A, particle: false,
-      use_as_default: false, layers_enabled: false, sync_to_project: '', render_mode: 'default', render_sides: 'auto', frame_time: 1, frame_order_type: 'loop',
-      frame_order: '', frame_interpolate: false, visible: true, internal: true, saved: false, uuid: id('texture'), source: 'data:image/png;base64,' + atlas.toString('base64') }],
-    animations: [{ uuid: id('anim/idle'), name: 'idle', loop: 'loop', override: false, length: LENGTH, snapping: 20, selected: false, anim_time_update: '',
-      blend_weight: '', start_delay: '', loop_delay: '', animators }],
-  };
+  breathe(add, playerBones);
+  return project(rootGroup, animators);
 }
 
 // ---------------------------------------------------------------- Blockbench: checking, solving, filming
@@ -201,8 +322,8 @@ const load = (bb, proj) => bb.evaluate(`(async () => { while (ModelProject.all.l
 const check = (bb, t) => bb.evaluate(`(() => {
   Timeline.setTime(${t}); Animator.preview();
   const boxes = [[-4.6, 11.5, -2.6, 4.6, 24.5, 2.0], [-4.8, 24, -4.8, 4.8, 33, 4.7], [-8.8, 11.5, -2.6, -3.4, 24.5, 2.6], [3.4, 11.5, -2.6, 8.8, 24.5, 2.6], [-4.4, 0, -2.6, 4.4, 12.5, 2.6]];
-  const out = [0, 0, 0, 0], low = [99, 99, 99, 99], why = [];
-  const names = ${JSON.stringify(TENTACLES.map(t => t[0]))};
+  const names = ${JSON.stringify(CHAINS.map(t => t[0]))};
+  const out = names.map(() => 0), low = names.map(() => 99), why = [];
   const v = new THREE.Vector3();
   for (const el of Outliner.elements) {
     const i = names.findIndex(n => el.name.startsWith(n + '_'));
@@ -234,14 +355,14 @@ const save = (file, data) => fs.writeFileSync(file, Buffer.from(data.split(',')[
   const bb = await connect(PORT);
   // SOLVE: start from the full idle; check every sample time; turn down the samples (and their neighbours) of each
   // tentacle that touches; again, until no frame touches anything.
-  const scale = TENTACLES.map(() => new Array(SAMPLES).fill(process.argv.includes('--rest') ? 0 : 1));
+  const scale = CHAINS.map(() => new Array(SAMPLES).fill(process.argv.includes('--rest') ? 0 : 1));
   let proj, faults;
   for (let round = 0; round < 10; round++) {
     proj = build(scale);
     await load(bb, proj);
-    faults = TENTACLES.map(() => 0);
-    const worst = TENTACLES.map(() => 99);
-    const hits = TENTACLES.map(() => new Set());
+    faults = CHAINS.map(() => 0);
+    const worst = CHAINS.map(() => 99);
+    const hits = CHAINS.map(() => new Set());
     // Each sample time, and halfway between samples (the curve between keys).
     for (let s = 0; s < SAMPLES * 2; s++) {
       const r = await check(bb, (s * STEP) / 2);
@@ -252,21 +373,23 @@ const save = (file, data) => fs.writeFileSync(file, Buffer.from(data.split(',')[
     if (faults.every(n => n === 0)) break;
     hits.forEach((set, i) => set.forEach(s => { for (const d of [-1, 0, 1]) { const j = (s + d + SAMPLES) % SAMPLES; scale[i][j] *= d === 0 ? 0.7 : 0.85; } }));
   }
-  fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', 'kagune_preview.bbmodel'), JSON.stringify(proj, null, 1));
+  fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', `${FORM}_preview.bbmodel`), JSON.stringify(proj, null, 1));
   console.log(proj.elements.length, 'cubes; movement kept per tentacle (mean):', JSON.stringify(scale.map(a => +(a.reduce((x, y) => x + y) / a.length).toFixed(2))));
   if (process.argv.includes('--check')) { bb.close(); return; }
-  if (process.argv.includes('--rest')) { const out = path.join(ROOT, 'build', 'kagune-preview'); fs.mkdirSync(out, { recursive: true });
+  if (process.argv.includes('--rest')) { const out = path.join(ROOT, 'build', `${FORM}-preview`); fs.mkdirSync(out, { recursive: true });
     for (const [v, p, t] of [['front', [-30, 42, -140], [0, 26, 6]], ['side', [-150, 40, 10], [0, 26, 10]]]) save(path.join(out, 'rest-' + v + '.png'), await shot(bb, p, t, 640, 640, 0));
     bb.close(); return; }
   const out = path.join(ROOT, 'docs', 'combat', 'styles', 'images');
   fs.mkdirSync(out, { recursive: true });
-  const VIEWS = { back: [[70, 56, 118], [0, 26, 10]], front: [[-30, 42, -140], [0, 26, 6]], side: [[-150, 40, 10], [0, 26, 10]] };
+  const VIEWS = FORM === 'kakuja'
+    ? { back: [[150, 100, 230], [0, 30, 40]], front: [[-70, 70, -230], [0, 30, 36]], side: [[-260, 70, 60], [0, 30, 50]] }
+    : { back: [[70, 56, 118], [0, 26, 10]], front: [[-30, 42, -140], [0, 26, 6]], side: [[-150, 40, 10], [0, 26, 10]] };
   for (const [view, [pos, target]] of Object.entries(VIEWS)) {
-    const dir = path.join(ROOT, 'build', 'kagune-preview', view);
+    const dir = path.join(ROOT, 'build', `${FORM}-preview`, view);
     fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
     for (let f = 0; f < FRAMES; f++) save(path.join(dir, `frame-${String(f).padStart(3, '0')}.png`), await shot(bb, pos, target, 640, 640, f / FPS));
-    fs.copyFileSync(path.join(dir, 'frame-000.png'), path.join(out, `kagune-${view}.png`));
-    const gif = path.join(out, `kagune-idle-${view}.gif`);
+    fs.copyFileSync(path.join(dir, 'frame-000.png'), path.join(out, `${FORM}-${view}.png`));
+    const gif = path.join(out, `${FORM}-idle-${view}.gif`);
     execFileSync('java', [path.join(ROOT, 'scripts', 'animation', 'FramesToGif.java'), dir, gif, String(1000 / FPS), '640'], { stdio: 'ignore' });
     console.log(view, FRAMES, 'frames ->', path.relative(ROOT, gif));
   }
