@@ -4,7 +4,7 @@
 > active n'est **pas** le cercle de respiration ci-dessous (maquette refusée : « ça ne colle pas avec l'esprit
 > Minecraft ») mais des **orbes de Qi** à attirer du regard, comme les orbes d'XP ; on médite en première personne, après
 > une courte cinématique ; et l'**aura** est refaite en volume de flammes, de la taille du Qi tenu, de la couleur de l'art
-> le mieux maîtrisé. **Le rythme** de la section 4 est aussi en jeu (`CultivationRules.GROWTH`). Le reste ci-dessous reste une proposition.
+> le mieux maîtrisé. **Le rythme** de la section 4 est aussi en jeu (`CultivationRules.GROWTH`), et **le qinggong** du 2ᵉ royaume (`Qinggong`). Le reste ci-dessous reste une proposition.
 >
 > **État : proposition du 17/10/2026, à valider par Enzo.** Demande : « retravailler la cultivation » ; points retenus :
 > la méditation trop passive, des méthodes de cultivation, des ressources et des lieux, la progression et son rythme, puis une vision du Qi.

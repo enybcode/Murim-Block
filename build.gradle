@@ -124,6 +124,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at Qinggong's leap in the air (see QinggongTour).
+        qinggongTour {
+            client()
+            gameDirectory = project.file('build/qinggong-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qinggongTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at the meditation's aura, by art and by Qi (see AuraTour).
         auraTour {
             client()
