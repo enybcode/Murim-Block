@@ -1,4 +1,6 @@
 {
+  "entity.murimblock.scarlet_guardian": "Guardian of the Scarlet Threshold",
+  "item.murimblock.scarlet_guardian_spawn_egg": "Scarlet Guardian Spawn Egg",
   "command.murimblock.spawn.protected": "Natural spawning blocked in region %s. Existing mobs and intentional spawns are unchanged.",
   "command.murimblock.spawn.removed": "Spawn protection removed: %s.",
   "command.murimblock.spawn.missing": "No spawn protection named %s in this dimension.",

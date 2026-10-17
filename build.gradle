@@ -71,11 +71,38 @@ neoForge {
             disableIdeRun()
         }
 
+        scarletGuardianTour {
+            client()
+            gameDirectory = project.file('build/scarlet-guardian-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.scarletGuardianTour', 'true'
+            disableIdeRun()
+        }
+
+        scarletGuardianHealthTour {
+            client()
+            gameDirectory = project.file('build/scarlet-guardian-health-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.scarletGuardianTour', 'true'
+            systemProperty 'murimblock.scarletGuardianHealthTour', 'true'
+            disableIdeRun()
+        }
+
         banditEcologyTour {
             client()
             gameDirectory = project.file('build/bandit-ecology-tour-run')
             programArguments.addAll('--width', '960', '--height', '720')
             systemProperty 'murimblock.banditEcologyTour', 'true'
+            disableIdeRun()
+        }
+
+        // Local review: import the camp schematic into a fresh desert world and film real blocks.
+        bloodCampTour {
+            client()
+            gameDirectory = project.file('build/blood-camp-tour-run')
+            programArguments.addAll('--width', '960', '--height', '720')
+            systemProperty 'murimblock.bloodCampTour', 'true'
+            systemProperty 'murimblock.bloodCampSchematic', project.file('art/structures/blood-camp/camp_secte_sang_65.schem').absolutePath
             disableIdeRun()
         }
 
