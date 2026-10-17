@@ -18,8 +18,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The Golden Dragon's wares, shown on a hanging scroll (client/ScrollShopScreen), Enzo, 17/10/2026: a guide to every
- * martial art that can be won, priced by its difficulty, and the crossing talismans, 32 gold yuanbao each. The Sanguine
- * Art's guide is on the scroll but not for sale: no one in the Murim keeps that art yet. The price is checked and taken
+ * martial art that can be won, priced by its difficulty, and the crossing talismans, 32 gold yuanbao each. The arts no
+ * one in the Murim keeps yet (the Sanguine Art, the Thunder Saber) are on the scroll but not for sale. The price is checked and taken
  * here, on the server; only a scroll the player has open, from a seller still near, sells.
  */
 public final class GoldenDragonShop {
@@ -32,6 +32,12 @@ public final class GoldenDragonShop {
     /** A guide's line, under its art's name (the book shows it is a guide). */
     private static Ware guide(Supplier<? extends com.murimblock.item.MartialGuideItem> item, int difficulty, int price) {
         return new Ware(() -> new ItemStack(item.get()), Component.translatable("art.murimblock." + item.get().art().getPath()), price, difficulty, true);
+    }
+
+    /** An art no one keeps yet: on the scroll under its name, with its manual's icon, not for sale. */
+    private static Ware unwritten(Supplier<? extends net.minecraft.world.item.Item> manual) {
+        String art = ((com.murimblock.martial.MartialManualItem) manual.get()).art().getPath();
+        return new Ware(() -> new ItemStack(manual.get()), Component.translatable("art.murimblock." + art), 0, 0, false);
     }
 
     private static Ware talisman(Supplier<? extends net.minecraft.world.item.Item> item) {
@@ -52,7 +58,8 @@ public final class GoldenDragonShop {
                     guide(MurimItems.MOUNTAIN_SHATTERING_FIST_GUIDE, 4, 16),
                     guide(MurimItems.SEVEN_STARS_SWORD_GUIDE, 4, 20),
                     guide(MurimItems.MAJIN_FIST_GUIDE, 4, 20),
-                    new Ware(() -> new ItemStack(MurimItems.SANGUINE_ART_SCROLL.get()), Component.translatable("art.murimblock.sanguine_art"), 0, 4, false),
+                    unwritten(MurimItems.SANGUINE_ART_SCROLL),
+                    unwritten(com.murimblock.martial.ThunderSaberItems.MANUAL),
                     talisman(MurimItems.NETHER_TALISMAN),
                     talisman(MurimItems.END_TALISMAN),
                     talisman(MurimItems.MURIM_TALISMAN));

@@ -49,11 +49,15 @@ public final class SageShopGameTests {
                 previous = ware.price();
             }
         }
-        for (MartialArts.Art art : MartialArts.arts()) {
-            if (!art.id().equals(MartialArts.SANGUINE_ART)) helper.assertTrue(guided.contains(art.id()), "No guide to " + art.id());
+        // Every art has its guide, or, when no one keeps it yet, its line not for sale (its manual's icon).
+        Set<ResourceLocation> unwritten = new HashSet<>();
+        for (GoldenDragonShop.Ware ware : GoldenDragonShop.wares()) {
+            if (!ware.forSale() && ware.item().get().getItem() instanceof com.murimblock.martial.MartialManualItem manual) unwritten.add(manual.art());
         }
-        // The Sanguine Art is on the scroll, not for sale: no one keeps it yet.
-        helper.assertTrue(GoldenDragonShop.wares().stream().anyMatch(w -> !w.forSale() && w.item().get().is(MurimItems.SANGUINE_ART_SCROLL.get())), "No Sanguine line");
+        for (MartialArts.Art art : MartialArts.arts()) {
+            helper.assertTrue(guided.contains(art.id()) || unwritten.contains(art.id()), "Not on the scroll: " + art.id());
+        }
+        helper.assertTrue(unwritten.contains(MartialArts.SANGUINE_ART), "No Sanguine line");
         for (var talisman : List.of(MurimItems.NETHER_TALISMAN, MurimItems.END_TALISMAN, MurimItems.MURIM_TALISMAN)) {
             int i = index(talisman.get());
             helper.assertTrue(i >= 0 && GoldenDragonShop.wares().get(i).price() == 32, "Talisman missing or mispriced: " + talisman.getId());

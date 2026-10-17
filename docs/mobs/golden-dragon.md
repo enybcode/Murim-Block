@@ -96,7 +96,8 @@ validée le 17/10 (« parfait »), icônes des livres refaites en pixel art à s
 | Guide : Mountain-Shattering Fist | 4 | 16 |
 | Guide : Seven Stars Sword | 4 | 20 |
 | Guide : Majin Fist | 4 | 20 |
-| Sanguine Art | 4 | « Not yet written » (personne ne garde cet art : pas en vente) |
+| Sanguine Art | — | « Not yet written » (personne ne garde cet art : pas en vente) |
+| Purple Heaven Thunder Saber | — | « Not yet written » (source à décider) |
 | Talismans Nether, End, Murim | — | 32 chacun |
 
 - **Guides** (`item/MartialGuideItem`, `<art>_guide`, icônes 16×16 en pixel art : livre fermé de la couleur de l'art,
