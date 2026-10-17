@@ -112,10 +112,10 @@ const FORM = arg('form') || 'kagune';
 const CENTIPEDES = [
   // name, root, how it leaves (yaw out, pitch up), length; its loose curve along the body: [up/down, out/in] per joint,
   // as waves along it (amplitude in degrees, waves along its length, phase).
-  { name: 'centipede_right', root: [-1.6, 11, 9], yaw: -70, pitch: -30, segments: 30, seg: 3.6, side: 1,
-    curveX: [7, 1.3, 0.4], curveY: [9, 0.9, 1.2] },
-  { name: 'centipede_left', root: [1.6, 11, 9], yaw: 70, pitch: -14, segments: 28, seg: 3.6, side: -1,
-    curveX: [8, 1.1, 2.2], curveY: [9, 1.0, 0.3] },
+  { name: 'centipede_right', root: [-1.6, 11, 9], yaw: -70, pitch: -30, segments: 24, seg: 4.5, side: 1,
+    curveX: [8.5, 1.3, 0.4], curveY: [11, 0.9, 1.2] },
+  { name: 'centipede_left', root: [1.6, 11, 9], yaw: 70, pitch: -14, segments: 22, seg: 4.5, side: -1,
+    curveX: [9.5, 1.1, 2.2], curveY: [11, 1.0, 0.3] },
 ]
 const CHAINS = FORM === 'kakuja' ? CENTIPEDES.map(c => [c.name]) : TENTACLES;
 const LENGTH = 2.4, STEP = 0.08, FPS = 20, FRAMES = Math.round(LENGTH * FPS);
@@ -168,15 +168,18 @@ function buildKakuja(scale) {
         parts.push(cube(`${name}_tail`, [root[0] - w / 2, root[1] - h / 2, z0], [root[0] + w / 2, root[1] + h / 2, z0 + L * 2.4], mid, 'kakuja_plate'));
         parts.push(cube(`${name}_tail_tip`, [root[0] - 0.6, root[1] - 0.6, z0 + L * 2.2], [root[0] + 0.6, root[1] + 0.6, z0 + L * 3.4], mid, 'kakuja_spine', [-12, 0, 0]));
       } else {
-        // A plate (a red band across it), then the glowing joint before the next one.
-        parts.push(cube(`${name}_${k}`, [root[0] - w / 2, root[1] - h / 2, z0 + 0.4], [root[0] + w / 2, root[1] + h / 2, z0 + L - 0.7], mid, 'kakuja_plate'));
-        parts.push(cube(`${name}_${k}_joint`, [root[0] - w * 0.47, root[1] - h * 0.47, z0 + L - 1.2], [root[0] + w * 0.47, root[1] + h * 0.47, z0 + L + 0.6], mid, 'kakuja_joint'));
+        // The segment: a domed plate over its first three quarters, with a red band across it.
+        parts.push(cube(`${name}_${k}`, [root[0] - w / 2, root[1] - h / 2, z0 + 0.5], [root[0] + w / 2, root[1] + h / 2, z0 + L * 0.74], mid, 'kakuja_plate'));
+        // Its shield: wider than the plate, over its back and sides, lifted at the rear so it overlaps the next segment.
+        parts.push(cube(`${name}_${k}_shield`, [root[0] - w / 2 - 0.6, root[1] + h * 0.1, z0 + 0.3], [root[0] + w / 2 + 0.6, root[1] + h / 2 + 0.7, z0 + L * 0.86], [root[0], root[1] + h / 2, z0 + 0.3], 'kakuja_plate', [-7, 0, 0]));
+        // The joint to the next segment: narrow, sunken, glowing red.
+        parts.push(cube(`${name}_${k}_joint`, [root[0] - w * 0.3, root[1] - h * 0.3, z0 + L * 0.7], [root[0] + w * 0.3, root[1] + h * 0.3, z0 + L + 0.6], mid, 'kakuja_joint'));
         // A pair of hooked spines, out to the sides and swept back, like a centipede's legs; red at the tip.
         const sx = w / 2, sl = 3.4 + w * 0.55;
         const legL = group(`${name}_leg_l_${k}`, [root[0] + sx, root[1], z0 + 1.4], [cube(`${name}_${k}_spine_l`, [root[0] + sx - 0.3, root[1] - 0.6, z0 + 0.8], [root[0] + sx + sl, root[1] + 0.6, z0 + 2.0], [root[0] + sx, root[1], z0 + 1.4], 'kakuja_spine', [0, -32, 18])]);
         const legR = group(`${name}_leg_r_${k}`, [root[0] - sx, root[1], z0 + 1.4], [cube(`${name}_${k}_spine_r`, [root[0] - sx - sl, root[1] - 0.6, z0 + 0.8], [root[0] - sx + 0.3, root[1] + 0.6, z0 + 2.0], [root[0] - sx, root[1], z0 + 1.4], 'kakuja_spine', [0, 32, -18])]);
         legs[`${name}_${k}`] = [legL, legR];
-        if (k % 2 === 0 && k < N - 4) parts.push(cube(`${name}_${k}_spine_back`, [root[0] - 0.4, root[1] + h / 2 - 0.2, z0 + 0.8], [root[0] + 0.4, root[1] + h / 2 + sl * 0.8, z0 + 1.6], [root[0], root[1] + h / 2, z0 + 1.2], 'kakuja_spine', [-40, 0, 0]));
+        if (k % 2 === 0 && k < N - 4) parts.push(cube(`${name}_${k}_spine_back`, [root[0] - 0.45, root[1] + h / 2 + 0.4, z0 + 1.2], [root[0] + 0.45, root[1] + h / 2 + 0.6 + sl * 0.8, z0 + 2.1], [root[0], root[1] + h / 2 + 0.5, z0 + 1.6], 'kakuja_spine', [-40, 0, 0]));
       }
       const m = group(`${name}_flesh_${k}`, mid, parts);
       meat[`${name}_${k}`] = m;
@@ -212,9 +215,11 @@ function buildKakuja(scale) {
         const t = sI * STEP, a = scale[i][sI % SAMPLES], w = (2 * Math.PI * t) / LENGTH + i * 2.1;
         // A slither: a wave that runs from the root to the tail, side to side and up and down, every joint its share;
         // the root sways the whole body.
-        const x = Math.sin(w - k * 0.42) * 2.4 * a + (k === 0 ? Math.sin(w * 0.5 + i) * 6 * a : 0);
-        const y = c.side * (Math.cos(w - k * 0.38) * 3.2 * a + (k === 0 ? Math.cos(w * 0.5) * 8 * a : 0));
-        const z = c.side * Math.sin(w - k * 0.5) * 1.6 * a;
+        // A strong slither: every joint bends in turn (a wave down the body), and the whole body coils and uncoils.
+        const coil = Math.sin(w * 0.5 + i * 1.3);
+        const x = Math.sin(w - k * 0.55) * 7 * a + coil * 2.5 * a + (k === 0 ? Math.sin(w * 0.5 + i) * 10 * a : 0);
+        const y = c.side * (Math.cos(w - k * 0.5) * 9 * a + (k === 0 ? Math.cos(w * 0.5) * 14 * a : 0));
+        const z = c.side * Math.sin(w - k * 0.6) * 4 * a;
         keys.push(kf('rotation', t, [x, y, z]));
         const p = Math.max(0, Math.sin(2 * w - k * 0.35));
         const sc = 1 + 0.07 * p * p;
@@ -355,7 +360,9 @@ const save = (file, data) => fs.writeFileSync(file, Buffer.from(data.split(',')[
   const bb = await connect(PORT);
   // SOLVE: start from the full idle; check every sample time; turn down the samples (and their neighbours) of each
   // tentacle that touches; again, until no frame touches anything.
-  const scale = CHAINS.map(() => new Array(SAMPLES).fill(process.argv.includes('--rest') ? 0 : 1));
+  const SAVED = path.join(ROOT, 'build', FORM + '-preview', 'scale.json');
+  const scale = !process.argv.includes('--rest') && fs.existsSync(SAVED) && !process.argv.includes('--fresh') ? JSON.parse(fs.readFileSync(SAVED, 'utf8'))
+    : CHAINS.map(() => new Array(SAMPLES).fill(process.argv.includes('--rest') ? 0 : 1));
   let proj, faults;
   for (let round = 0; round < 10; round++) {
     proj = build(scale);
@@ -364,12 +371,13 @@ const save = (file, data) => fs.writeFileSync(file, Buffer.from(data.split(',')[
     const worst = CHAINS.map(() => 99);
     const hits = CHAINS.map(() => new Set());
     // Each sample time, and halfway between samples (the curve between keys).
-    for (let s = 0; s < SAMPLES * 2; s++) {
+    for (let s = 0; s < SAMPLES * 2; s += 2) {
       const r = await check(bb, (s * STEP) / 2);
       if (round === 0 && s === 0 && r.why.length) console.log('why', JSON.stringify(r.why));
       r.out.forEach((n, i) => { if (n > 0) { faults[i] += n; hits[i].add(Math.floor(s / 2)); } worst[i] = Math.min(worst[i], r.low[i]); });
     }
     console.log(`round ${round}: faults ${JSON.stringify(faults)}, lowest y ${JSON.stringify(worst.map(v => +v.toFixed(1)))}`);
+    if (!process.argv.includes('--rest')) { fs.mkdirSync(path.dirname(SAVED), { recursive: true }); fs.writeFileSync(SAVED, JSON.stringify(scale)); }
     if (faults.every(n => n === 0)) break;
     hits.forEach((set, i) => set.forEach(s => { for (const d of [-1, 0, 1]) { const j = (s + d + SAMPLES) % SAMPLES; scale[i][j] *= d === 0 ? 0.7 : 0.85; } }));
   }
@@ -377,7 +385,7 @@ const save = (file, data) => fs.writeFileSync(file, Buffer.from(data.split(',')[
   console.log(proj.elements.length, 'cubes; movement kept per tentacle (mean):', JSON.stringify(scale.map(a => +(a.reduce((x, y) => x + y) / a.length).toFixed(2))));
   if (process.argv.includes('--check')) { bb.close(); return; }
   if (process.argv.includes('--rest')) { const out = path.join(ROOT, 'build', `${FORM}-preview`); fs.mkdirSync(out, { recursive: true });
-    for (const [v, p, t] of [['front', [-30, 42, -140], [0, 26, 6]], ['side', [-150, 40, 10], [0, 26, 10]]]) save(path.join(out, 'rest-' + v + '.png'), await shot(bb, p, t, 640, 640, 0));
+    for (const [v, p, t] of [['front', [-30, 42, -140], [0, 26, 6]], ['side', [-150, 40, 10], [0, 26, 10]], ['close', [-50, 50, 40], [-14, 28, 30]], ['face', [-6, 28, -26], [0, 28, 0]]]) save(path.join(out, 'rest-' + v + '.png'), await shot(bb, p, t, 640, 640, 0));
     bb.close(); return; }
   const out = path.join(ROOT, 'docs', 'combat', 'styles', 'images');
   fs.mkdirSync(out, { recursive: true });
