@@ -24,7 +24,7 @@ import net.minecraft.world.level.Level;
 public class MeditatingBodyEntity extends Entity {
     private static final EntityDataAccessor<Optional<UUID>> OWNER = SynchedEntityData.defineId(MeditatingBodyEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<String> OWNER_NAME = SynchedEntityData.defineId(MeditatingBodyEntity.class, EntityDataSerializers.STRING);
-    /** The aura shown on the body: the owner's main style (empty: none), and that the reserve was full. */
+    /** The owner's main style (empty: none), used for the body's meditation aura. */
     private static final EntityDataAccessor<String> ART = SynchedEntityData.defineId(MeditatingBodyEntity.class, EntityDataSerializers.STRING);
 
     public MeditatingBodyEntity(EntityType<? extends MeditatingBodyEntity> type, Level level) {

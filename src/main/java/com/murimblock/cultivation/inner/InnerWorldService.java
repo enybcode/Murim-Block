@@ -37,7 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 /**
- * The inner world (docs/cultivation/qi-cultivation.md): seated in meditation with a full reserve, a cultivator holding
+ * The inner world (docs/cultivation/qi-cultivation.md): seated in meditation with at least 80% Qi, a cultivator holding
  * the meditation key leaves their body in the lotus and opens their eyes on their own island, built to their image
  * ({@link InnerIsland}). At the bottleneck of a realm, the remnant soul offers them the trial (SoulDialogue): their
  * Heart Demon, a double with all their strength, rises before them; slain, the great breakthrough happens when they
@@ -154,12 +154,12 @@ public final class InnerWorldService {
 
     // ---------------------------------------------------------------- going in
 
-    /** Into the inner world, from meditation with a full reserve; at a bottleneck, the old master waits with the trial. */
+    /** Into the inner world, meditating with at least 80% Qi; at a bottleneck, the old master waits with the trial. */
     public static boolean enter(ServerPlayer player) {
         if (isInside(player) || !MeditationService.isMeditating(player)) return false;
         ServerLevel inner = innerLevel(player.server);
         if (inner == null) return false;
-        if (QiService.getQi(player) < QiService.getQiMax(player) - 1e-6) {
+        if (QiService.getQi(player) < QiService.getQiMax(player) * CultivationRules.INNER_WORLD_MIN_RESERVE_FRACTION - 1e-6) {
             player.displayClientMessage(Component.translatable("cultivation.murimblock.inner.reserve"), true);
             return false;
         }
