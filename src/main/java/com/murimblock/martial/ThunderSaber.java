@@ -347,6 +347,7 @@ public final class ThunderSaber {
     /** Every tick of a player: the beats fading, the techniques under way. */
     static void tick(ServerPlayer player) {
         ThunderSaberMoves.tick(player);
+        ThunderCalling.tick(player);
         long now = player.level().getGameTime();
         Long sov = SOVEREIGN.get(player.getUUID());
         if (sov != null && now > sov) { SOVEREIGN.remove(player.getUUID()); ThunderSaberMoves.sovereignEnds(player); sync(player); }
@@ -368,6 +369,7 @@ public final class ThunderSaber {
 
     static void forget(@Nullable UUID player) {
         ThunderSaberMoves.forget(player);
+        ThunderCalling.forget(player);
         if (player == null) { DRUMS.clear(); UNSHAKEN.clear(); SHOCKS.clear(); SOVEREIGN.clear(); LAST_STRIKE.clear(); return; }
         DRUMS.remove(player);
         UNSHAKEN.remove(player);
