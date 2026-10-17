@@ -34,6 +34,8 @@ public final class MurimMistClient {
         if (biome == MurimBiomes.SHU_BAMBOO_SEA) return 0.5F;
         if (biome == MurimBiomes.JIANGNAN_WATERLANDS) return 0.65F;
         if (biome == MurimBiomes.PEACH_BLOSSOM_VALLEY) return 0.7F;
+        // The stone forest: the far pillars fade into a blue haze, rank behind rank.
+        if (biome == MurimBiomes.WULINGYUAN_PILLARS) return 0.62F;
         return 1.0F;
     }
 
