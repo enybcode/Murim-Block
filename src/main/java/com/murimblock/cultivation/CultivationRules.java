@@ -18,6 +18,9 @@ public final class CultivationRules {
     /** Share of Qi Max the reserve gets back per minute: out of combat mode, in combat mode, meditating. */
     public static final double REGEN_IDLE = 0.05, REGEN_COMBAT = 0.02, REGEN_MEDITATION = 0.40;
 
+    /** Minimum share of Qi Max needed to open the inner world from meditation. */
+    public static final double INNER_WORLD_MIN_RESERVE_FRACTION = 0.80;
+
     // ---------------------------------------------------------------- Qi Max: meditation
 
     /** Once the reserve is full, meditation condenses this share of Qi Max per minute into Qi Max (before multipliers). */

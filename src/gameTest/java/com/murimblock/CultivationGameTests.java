@@ -247,6 +247,22 @@ public final class CultivationGameTests {
         return player;
     }
 
+    @GameTest(template = "foundation_arena", batch = "cultivation_inner_reserve", timeoutTicks = 60)
+    public static void theInnerWorldOpensAtEightyPercentButNotBelow(GameTestHelper helper) {
+        ServerPlayer player = seated(helper);
+        QiService.setQiMax(player, 250);
+        QiService.setQi(player, 199.99);
+        helper.assertTrue(!InnerWorldService.enter(player), "The inner world opened below 80% Qi");
+        helper.assertTrue(MeditationService.isMeditating(player) && !InnerWorldService.session(player).active(),
+                "A refused entry interrupted meditation or left an active journey");
+
+        QiService.setQi(player, 200);
+        helper.assertTrue(InnerWorldService.enter(player), "The inner world refused exactly 80% Qi (200 / 250)");
+        helper.assertTrue(InnerWorldService.isInside(player), "The player was not sent into the inner world");
+        helper.assertTrue(QiService.getQi(player) == 200, "Entering spent or refilled the player's Qi");
+        end(helper, player);
+    }
+
     @GameTest(template = "foundation_arena", batch = "cultivation_inner_visit", timeoutTicks = 60)
     public static void theInnerWorldIsEnteredFromMeditationAndLeftBackToTheBody(GameTestHelper helper) {
         ServerPlayer player = seated(helper);
