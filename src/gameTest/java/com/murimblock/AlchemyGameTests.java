@@ -5,9 +5,11 @@ import com.murimblock.alchemy.AlchemyKnowledge;
 import com.murimblock.alchemy.AlchemyPillItem;
 import com.murimblock.alchemy.AlchemyRecipes;
 import com.murimblock.alchemy.PillFurnaceBlockEntity;
+import com.murimblock.alchemy.PillFurnaceMenu;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.qi.QiService;
 import com.murimblock.world.plant.HerbItem;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -28,7 +30,8 @@ import static com.murimblock.testing.GameTestPlayers.player;
  * The pill furnace (docs/cultivation/alchemy.md): spring water, then the herbs in their order; a mixture one does not
  * know never starts; fed and held in each band, it makes its pills with their purity; a blaze ruins it in a residue
  * without breaking anything; the manual teaches the common recipes, a scroll a rare one; a purifying brew draws
- * toxicity off.
+ * toxicity off; its screen's slots take the water, the herbs in order and the charcoal, its recipe book fills them, and
+ * the screen closes when the work ends so that it is watched.
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -62,8 +65,12 @@ public final class AlchemyGameTests {
         }
     }
 
+    /** What came out: in the furnace's pill slot, or flown out round it. */
     private static List<ItemStack> dropsNear(GameTestHelper helper) {
-        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(FURNACE)).inflate(3)).stream().map(ItemEntity::getItem).toList();
+        List<ItemStack> out = new ArrayList<>(helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(FURNACE)).inflate(3)).stream().map(ItemEntity::getItem).toList());
+        if (helper.getLevel().getBlockEntity(helper.absolutePos(FURNACE)) instanceof PillFurnaceBlockEntity f && !f.items().getItem(PillFurnaceBlockEntity.OUT_SLOT).isEmpty())
+            out.add(f.items().getItem(PillFurnaceBlockEntity.OUT_SLOT));
+        return out;
     }
 
     private static void clearDrops(GameTestHelper helper) {
@@ -79,6 +86,82 @@ public final class AlchemyGameTests {
         helper.assertTrue(f.addHerb(p, herb("chrysanthemum_flower", 70)) != null, "The harmonizer went in first");
         helper.assertTrue(f.addHerb(p, herb("lotus_seed_pod", 70)) == null, "The principal did not go in");
         helper.assertTrue(f.herbs().size() == 1, "Herbs in: " + f.herbs().size());
+        cleanup(p);
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "alchemy_slots")
+    public static void theScreenSlotsTakeTheWaterTheHerbsInOrderAndTheCharcoal(GameTestHelper helper) {
+        ServerPlayer p = player(helper);
+        AlchemyKnowledge.learn(p, AlchemyRecipes.byId("qi_gathering_pill"));
+        PillFurnaceBlockEntity f = furnace(helper);
+        PillFurnaceMenu menu = (PillFurnaceMenu) f.createMenu(1, p.getInventory(), p);
+        int inv = PillFurnaceBlockEntity.SLOTS;
+        // A herb before the water does not go in.
+        p.getInventory().setItem(9, herb("lotus_seed_pod", 70));
+        menu.quickMoveStack(p, inv);
+        helper.assertTrue(f.herbs().isEmpty(), "A herb went in before the water");
+        p.getInventory().clearContent();
+        p.getInventory().setItem(9, herb("lotus_seed_pod", 70));
+        p.getInventory().setItem(10, new ItemStack(Items.WATER_BUCKET));
+        menu.quickMoveStack(p, inv + 1);
+        helper.assertTrue(f.hasWater() && f.items().getItem(PillFurnaceBlockEntity.WATER_SLOT).is(Items.BUCKET), "The water bucket was not poured, leaving its bucket");
+        // The harmonizer is refused first; the principal goes in, then the rest in order.
+        p.getInventory().setItem(11, herb("chrysanthemum_flower", 70));
+        menu.quickMoveStack(p, inv + 2);
+        helper.assertTrue(f.herbs().isEmpty(), "The harmonizer went in first");
+        menu.quickMoveStack(p, inv);
+        p.getInventory().setItem(12, herb("sea_buckthorn_berries", 70));
+        menu.quickMoveStack(p, inv + 3);
+        p.getInventory().clearContent();
+        p.getInventory().setItem(11, herb("chrysanthemum_flower", 70));
+        menu.quickMoveStack(p, inv + 2);
+        helper.assertTrue(f.recipe() == AlchemyRecipes.byId("qi_gathering_pill"), "The herbs did not make the recipe: " + f.herbs());
+        // Charcoal in its slot feeds the fire when it needs it.
+        p.getInventory().setItem(13, new ItemStack(Items.CHARCOAL, 3));
+        menu.quickMoveStack(p, inv + 4);
+        helper.assertTrue(f.items().getItem(PillFurnaceBlockEntity.FUEL_SLOT).getCount() == 3, "The charcoal did not go in its slot");
+        f.tickForTests(helper.getLevel());
+        helper.assertTrue(f.lit() && f.items().getItem(PillFurnaceBlockEntity.FUEL_SLOT).getCount() == 2, "The fire did not take a charcoal from its slot");
+        cleanup(p);
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "alchemy_book")
+    public static void theRecipeBookPutsInItsWaterAndHerbs(GameTestHelper helper) {
+        ServerPlayer p = player(helper);
+        AlchemyKnowledge.forgetAllForTests(p);
+        PillFurnaceBlockEntity f = furnace(helper);
+        PillFurnaceMenu menu = (PillFurnaceMenu) f.createMenu(1, p.getInventory(), p);
+        AlchemyRecipes.Recipe r = AlchemyRecipes.byId("healing_decoction");
+        p.getInventory().setItem(9, new ItemStack(Items.WATER_BUCKET));
+        p.getInventory().setItem(10, herb("astragalus_root", 60));
+        p.getInventory().setItem(11, herb("sea_buckthorn_berries", 50));
+        p.getInventory().setItem(12, herb("sea_buckthorn_berries", 90));
+        menu.clickMenuButton(p, PillFurnaceMenu.FILL_RECIPE + r.index());
+        helper.assertTrue(!f.hasWater(), "An unknown recipe was filled in");
+        AlchemyKnowledge.learn(p, r);
+        menu.clickMenuButton(p, PillFurnaceMenu.FILL_RECIPE + r.index());
+        helper.assertTrue(f.hasWater() && f.recipe() == r, "The book did not fill the recipe: " + f.herbs());
+        helper.assertTrue(HerbItem.purity(f.herbs().get(0)) == 90, "The book did not take the purest herb");
+        cleanup(p);
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "alchemy_close", timeoutTicks = 200)
+    public static void theScreenClosesWhenTheWorkEnds(GameTestHelper helper) {
+        ServerPlayer p = player(helper);
+        AlchemyKnowledge.learn(p, AlchemyRecipes.byId("qi_gathering_pill"));
+        helper.setBlock(FURNACE.below(), net.minecraft.world.level.block.Blocks.STONE);
+        PillFurnaceBlockEntity f = furnace(helper);
+        fill(f, p, 70);
+        f.addFuel(new ItemStack(Items.CHARCOAL));
+        p.openMenu(f, f.getBlockPos());
+        helper.assertTrue(p.containerMenu instanceof PillFurnaceMenu, "The furnace's screen did not open");
+        hold(helper, f, 650, 10);
+        hold(helper, f, PillFurnaceBlockEntity.BLAST + 10, 2);
+        helper.assertTrue(!(p.containerMenu instanceof PillFurnaceMenu), "The screen stayed open over the blaze");
+        clearDrops(helper);
         cleanup(p);
         helper.succeed();
     }

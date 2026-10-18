@@ -18,22 +18,27 @@ Fabrication : un lingot d'or, un bloc de charbon et cinq blocs de cuivre (` G ` 
 
 ## Comment on raffine
 
-1. **L'eau** : un seau ou une fiole d'eau sur le four.
-2. **Les herbes, dans l'ordre de la recette** (utilisées sur le four) : la **principale**, l'**assistante**, l'**harmonisante**.
-   Une herbe qui ne va pas là est refusée. Accroupi, main vide : on reprend ses herbes avant que le travail commence.
-3. **Le feu** : du charbon (de bois ou minéral) sur le four ou par l'écran. Le feu tient les braises (320) ; le **soufflet**
-   (maintenu) fait monter la chaleur, laissée seule elle redescend.
-4. **L'écran de feu** (main vide sur le four) : la recette et ses herbes, la jauge de chaleur avec la **bande dorée** de
-   l'étape en cours, les quatre étapes et leurs bandes, le soufflet, le charbon, **Infuser le Qi** (maintenu), le Qi et le
-   combustible, la pureté visée.
+1. **L'eau** : un seau ou une fiole d'eau dans sa case de l'écran (versée aussitôt, le seau vide reste) ou sur le four.
+2. **Les herbes, dans l'ordre de la recette**, dans leurs trois cases (ou utilisées sur le four) : la **principale**,
+   l'**assistante**, l'**harmonisante**. Une herbe qui ne va pas là est refusée ; on ne reprend que la dernière entrée, avant que
+   le travail commence (accroupi, main vide : toutes).
+3. **Le feu** : du charbon (de bois ou minéral) dans sa case, que le four prend quand son feu en a besoin, ou sur le four.
+   Le feu tient les braises (320) ; le **soufflet** (maintenu) fait monter la chaleur, laissée seule elle redescend.
+4. **L'écran** (main vide sur le four), **à la Minecraft**, choisi par Enzo le 18/10 : à gauche le livre de recettes de
+   Minecraft (les recettes connues, un clic y met l'eau et les herbes depuis l'inventaire, les plus pures d'abord ; les autres en
+   rouge avec où les apprendre ; les bandes de la recette montrée ; une recherche) ; à droite le four : l'eau, les trois herbes,
+   la flèche vers les pilules, la flamme sur le charbon, la chaleur en **thermomètre** avec la **bande dorée** de l'étape en
+   cours, **Fan** et **Qi** maintenus, le Qi, les quatre étapes et la pureté visée ; l'inventaire dessous. Ce qui manque
+   apparaît en transparence dans sa case.
 5. **Extraire** : tenir l'aiguille dans la bande le temps voulu. **Stabiliser** : la laisser redescendre dans une bande plus
    basse. **Raffiner** : tenir une bande étroite **en infusant son Qi** (il se vide pendant ce temps).
-6. **Les pilules sortent**, leur pureté faite de celle des herbes (60 %) et de l'adresse (40 % : le temps idéal sur le temps
+6. **Les pilules sortent** dans leur case (ce qui n'y tient pas jaillit du four), leur pureté faite de celle des herbes (60 %) et de l'adresse (40 % : le temps idéal sur le temps
    mis), moins ce qu'a coûté la chaleur de trop (plus de 120 au-dessus d'une bande). Une pilule de plus si la pureté atteint
    80, une de plus si une herbe était à maturité spirituelle.
 7. **Au-delà de 950** : tout brûle en **résidu**, une gerbe de flammes et une petite explosion qui blesse sans rien casser.
 
-On ne raffine que ce qu'on sait : une recette inconnue ne démarre pas.
+On ne raffine que ce qu'on sait : une recette inconnue ne démarre pas. Réussite ou explosion, **l'écran se ferme** chez tous ceux
+qui l'ont ouvert, pour qu'on voie l'animation (demande d'Enzo).
 
 ## Les recettes
 
@@ -68,13 +73,13 @@ Toutes ajoutent leur toxicité (`CultivationRules`, qui baisse d'un point par mi
 ## Code et vérifications
 
 `alchemy/` : `AlchemyRecipes`, `AlchemyKnowledge`, `PillFurnaceBlock`, `PillFurnaceBlockEntity` (chaleur, étapes, pureté,
-explosion), `PillFurnaceMenu` (données synchronisées et boutons par les clics de menu de Minecraft : aucun paquet réseau
-propre), `AlchemyPillItem`, `AlchemyBookItem`, `AlchemyEvents` (pureté des deux premières pilules, recettes gardées à la
+explosion), `PillFurnaceMenu` (six cases, données synchronisées, recettes connues et boutons par les clics de menu de Minecraft :
+aucun paquet réseau propre), `AlchemyPillItem`, `AlchemyBookItem`, `AlchemyEvents` (pureté des deux premières pilules, recettes gardées à la
 mort). Écran : `client/PillFurnaceScreen`. Données, icônes et noms : `scripts/plants/alchemy-data.cjs`.
 
 Tests : `AlchemyGameTests` (l'eau d'abord et l'ordre des herbes, une recette inconnue ne démarre pas, les trois étapes
 tenues donnent des pilules pures et le raffinage boit le Qi, l'explosion donne un résidu sans rien casser, le manuel et un
-parchemin, le breuvage purifiant). En vrai client : `gradlew -PgameTests runFurnaceTour`.
+parchemin, le breuvage purifiant, les cases de l'écran et leur ordre, le livre qui remplit une recette, l'écran fermé à la fin). En vrai client : `gradlew -PgameTests runFurnaceTour`.
 
 ## Plus tard
 

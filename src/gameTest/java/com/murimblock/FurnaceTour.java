@@ -71,9 +71,20 @@ public final class FurnaceTour {
                 ServerPlayer p = player(server);
                 p.teleportTo(level, 0.5, -60, 1.0, 0, 20);
                 AlchemyKnowledge.learn(p, AlchemyRecipes.byId("qi_gathering_pill"));
+                for (String r : new String[]{"healing_decoction", "qi_decoction", "purifying_brew", "realm_breaking_pill"}) AlchemyKnowledge.learn(p, AlchemyRecipes.byId(r));
+                p.getInventory().setItem(9, HerbItem.of(AlchemyRecipes.item("ginseng_root").get(), 2, "mature", 70));
+                p.getInventory().setItem(10, HerbItem.of(AlchemyRecipes.item("chrysanthemum_flower").get(), 7, "mature", 70));
+                p.getInventory().setItem(0, new ItemStack(Items.IRON_SWORD));
+                p.getInventory().setItem(1, new ItemStack(Items.BREAD, 12));
+                p.getInventory().setItem(2, HerbItem.of(AlchemyRecipes.item("goji_berries").get(), 5, "mature", 70));
+                p.getInventory().setItem(3, new ItemStack(Items.CHARCOAL, 23));
                 QiService.setQiMax(p, 300);
                 QiService.setQi(p, 300);
             });
+            // The screen of the cold, empty furnace: its recipe book, what goes where.
+            if (ticks == 20) server.execute(() -> player(server).openMenu(furnace(server), AT));
+            if (ticks == 32) capture(mc, "00-screen-empty.png");
+            if (ticks == 34) mc.setScreen(null);
             if (ticks == 40) {
                 camera = new Marker(EntityType.MARKER, mc.level);
                 place(-2.6, -58.2, 1.2, -30, 22);

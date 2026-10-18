@@ -27,6 +27,13 @@ public final class AlchemyKnowledge {
         return false;
     }
 
+    /** The recipes known, one bit each by their index (for the furnace's recipe book). */
+    public static int mask(Player player) {
+        int mask = 0;
+        for (AlchemyRecipes.Recipe r : AlchemyRecipes.ALL) if (knows(player, r)) mask |= 1 << r.index();
+        return mask;
+    }
+
     /** Learns it; returns whether it was new. */
     public static boolean learn(Player player, AlchemyRecipes.Recipe recipe) {
         if (knows(player, recipe)) return false;

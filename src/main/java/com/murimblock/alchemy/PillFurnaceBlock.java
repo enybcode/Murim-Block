@@ -108,7 +108,7 @@ public class PillFurnaceBlock extends BaseEntityBlock {
 
     @Override protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof PillFurnaceBlockEntity furnace) {
-            for (ItemStack s : furnace.herbs()) popResource(level, pos, s.copy());
+            net.minecraft.world.Containers.dropContents(level, pos, furnace.items());
         }
         super.onRemove(state, level, pos, newState, moved);
     }

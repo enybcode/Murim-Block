@@ -8,10 +8,11 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -22,7 +23,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -31,6 +34,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -48,7 +52,9 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * its fire fed with charcoal, the alchemist holds the heat: the bellows raise it, left alone it sinks to the embers'.
  * Four steps: PREPARE (the herbs in), EXTRACT, STABILIZE (hold each band its time), REFINE (hold a narrow band while
  * infusing one's own Qi). Out come the pills, their purity the herbs' and the alchemist's skill; too much heat costs
- * purity, a blaze past {@link #BLAST} ruins it all in a residue and a burst of flame.
+ * purity, a blaze past {@link #BLAST} ruins it all in a residue and a burst of flame. Its screen's slots ({@link #items()}):
+ * the water, the three herbs in their order, the charcoal it burns as it needs, the pills that come out. When it ends,
+ * well or badly, the screens open on it close so that its alchemists watch it.
  */
 public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntity, MenuProvider {
     public static final int PREPARE = 0, EXTRACT = 1, STABILIZE = 2, REFINE = 3, DONE = 4;
@@ -65,8 +71,14 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
             FINISH = RawAnimation.begin().thenPlay("finish");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
+    public static final int WATER_SLOT = 0, HERB_SLOT = 1, HERB_SLOTS = 3, FUEL_SLOT = 4, OUT_SLOT = 5, SLOTS = 6;
     private boolean water;
-    private final List<ItemStack> herbs = new ArrayList<>();
+    private final SimpleContainer items = new SimpleContainer(SLOTS) {
+        @Override public void setChanged() {
+            super.setChanged();
+            slotsChanged();
+        }
+    };
     private int phase = PREPARE, held, spent, fuel;
     private double heat, scorch;
     private boolean bellows, infusing;
@@ -82,14 +94,71 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
     // ---------------------------------------------------------------- what is in it
 
     public boolean hasWater() { return water; }
-    public List<ItemStack> herbs() { return herbs; }
+    public SimpleContainer items() { return items; }
+
+    /** The herbs in, in their order (the herb slots up to the first empty one). */
+    public List<ItemStack> herbs() {
+        List<ItemStack> in = new ArrayList<>();
+        for (int i = 0; i < HERB_SLOTS; i++) {
+            ItemStack s = items.getItem(HERB_SLOT + i);
+            if (s.isEmpty()) break;
+            in.add(s);
+        }
+        return in;
+    }
+
+    public static boolean isWater(ItemStack stack) {
+        return stack.is(Items.WATER_BUCKET) || stack.is(Items.POTION) && stack.has(DataComponents.POTION_CONTENTS)
+                && stack.get(DataComponents.POTION_CONTENTS).is(Potions.WATER);
+    }
+
+    /** What a water bucket or bottle leaves once poured. */
+    public static ItemStack emptied(ItemStack stack) {
+        return new ItemStack(stack.is(Items.WATER_BUCKET) ? Items.BUCKET : Items.GLASS_BOTTLE);
+    }
+
+    public static boolean isFuel(ItemStack stack) {
+        return stack.is(Items.CHARCOAL) || stack.is(Items.COAL);
+    }
+
+    /** Whether this herb may go in as the herb at this place now: after the water, in order, on the way to a recipe. */
+    public boolean accepts(int place, ItemStack stack) {
+        if (phase != PREPARE || !water || !(stack.getItem() instanceof HerbItem)) return false;
+        List<ItemStack> in = herbs();
+        if (place != in.size()) return false;
+        List<Item> next = new ArrayList<>(in.stream().map(ItemStack::getItem).toList());
+        next.add(stack.getItem());
+        return !AlchemyRecipes.startingWith(next).isEmpty();
+    }
+
+    /** Whoever opens it to prepare a mixture is its brewer (the one whose knowledge counts). */
+    public void claim(Player player) {
+        if (phase == PREPARE) brewer = player.getUUID();
+    }
+
+    /** A water bucket or bottle put in its slot is poured at once, leaving the empty one there. */
+    private void slotsChanged() {
+        ItemStack w = items.getItem(WATER_SLOT);
+        if (!water && phase == PREPARE && isWater(w)) {
+            water = true;
+            items.setItem(WATER_SLOT, emptied(w));
+            if (level != null) level.playSound(null, worldPosition, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.2F);
+        }
+        changed();
+    }
+
+    /** The screens open on this furnace close, so that the lid flying or the blaze is seen. */
+    private void closeScreens(ServerLevel level) {
+        for (ServerPlayer p : level.players())
+            if (p.containerMenu instanceof PillFurnaceMenu m && m.pos.equals(worldPosition)) p.closeContainer();
+    }
     public int phase() { return phase; }
     public int heat() { return (int) Math.round(heat); }
     public int fuel() { return fuel; }
     public boolean lit() { return fuel > 0; }
 
     @Nullable public AlchemyRecipes.Recipe recipe() {
-        return AlchemyRecipes.made(herbs.stream().map(ItemStack::getItem).toList());
+        return AlchemyRecipes.made(herbs().stream().map(ItemStack::getItem).toList());
     }
 
     /** Spring water poured in (first). */
@@ -105,10 +174,9 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
     @Nullable public String addHerb(Player player, ItemStack stack) {
         if (phase != PREPARE) return "alchemy.murimblock.busy";
         if (!water) return "alchemy.murimblock.water_first";
-        List<Item> next = new ArrayList<>(herbs.stream().map(ItemStack::getItem).toList());
-        next.add(stack.getItem());
-        if (AlchemyRecipes.startingWith(next).isEmpty()) return "alchemy.murimblock.not_now";
-        herbs.add(stack.copyWithCount(1));
+        int place = herbs().size();
+        if (place >= HERB_SLOTS || !accepts(place, stack)) return "alchemy.murimblock.not_now";
+        items.setItem(HERB_SLOT + place, stack.copyWithCount(1));
         if (player != null) brewer = player.getUUID();
         changed();
         AlchemyRecipes.Recipe made = recipe();
@@ -118,7 +186,7 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
 
     /** Fuel added (charcoal, coal): true if it took it. */
     public boolean addFuel(ItemStack stack) {
-        if (!(stack.is(Items.CHARCOAL) || stack.is(Items.COAL)) || fuel + FUEL_PER_COAL > MAX_FUEL) return false;
+        if (!isFuel(stack) || fuel + FUEL_PER_COAL > MAX_FUEL) return false;
         fuel += FUEL_PER_COAL;
         changed();
         return true;
@@ -127,8 +195,11 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
     /** Before the work starts, everything back (the water is lost). */
     public List<ItemStack> takeBack() {
         if (phase != PREPARE) return List.of();
-        List<ItemStack> back = new ArrayList<>(herbs);
-        herbs.clear();
+        List<ItemStack> back = new ArrayList<>();
+        for (int i = 0; i < HERB_SLOTS; i++) {
+            if (!items.getItem(HERB_SLOT + i).isEmpty()) back.add(items.getItem(HERB_SLOT + i));
+            items.setItem(HERB_SLOT + i, ItemStack.EMPTY);
+        }
         water = false;
         changed();
         return back;
@@ -149,7 +220,13 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
 
     void tick(ServerLevel level) {
         if (outIn >= 0 && --outIn < 0) release(level);
-        // The fire: fed, it holds the embers' heat; the bellows raise it; without fuel it dies down.
+        // The fire: fed, it holds the embers' heat; the bellows raise it; without fuel it dies down. A mixture ready or
+        // at work takes the charcoal from its slot as the fire needs it.
+        if (fuel == 0 && phase <= REFINE && recipe() != null && isFuel(items.getItem(FUEL_SLOT))) {
+            items.getItem(FUEL_SLOT).shrink(1);
+            fuel = FUEL_PER_COAL;
+            items.setChanged();
+        }
         if (fuel > 0) fuel--;
         double target = fuel > 0 ? EMBERS : 0;
         heat += (target - heat) * DRIFT;
@@ -202,7 +279,7 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
 
     /** The herbs' own purity (a mature herb found wild is 70). */
     int herbsPurity() {
-        return (int) Math.round(herbs.stream().mapToInt(HerbItem::purity).average().orElse(60));
+        return (int) Math.round(herbs().stream().mapToInt(HerbItem::purity).average().orElse(60));
     }
 
     /** The pills' purity: their herbs' purity and the skill, less what too much heat cost. */
@@ -214,20 +291,31 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
 
     private void finish(ServerLevel level, AlchemyRecipes.Recipe recipe) {
         int purity = forecastPurity();
-        int count = recipe.count() + (purity >= 80 ? 1 : 0) + (herbs.stream().anyMatch(h -> HerbItem.maturity(h).equals("spirit")) ? 1 : 0);
+        int count = recipe.count() + (purity >= 80 ? 1 : 0) + (herbs().stream().anyMatch(h -> HerbItem.maturity(h).equals("spirit")) ? 1 : 0);
         out = List.of(AlchemyPillItem.withPurity(new ItemStack(recipe.resultItem(), count), purity));
         Player brewerPlayer = brewer == null ? null : level.getPlayerByUUID(brewer);
         if (brewerPlayer != null) brewerPlayer.displayClientMessage(Component.translatable("alchemy.murimblock.done", count,
                 Component.translatable(recipe.resultItem().getDescriptionId()), purity), true);
         triggerAnim("main", "finish");
+        closeScreens(level);
         level.playSound(null, worldPosition, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.5F, 0.7F);
         outIn = 20;
         reset();
     }
 
-    /** The pills fly out of the open furnace. */
+    /** The pills come out of the open furnace into its slot; what does not fit there flies out. */
     private void release(ServerLevel level) {
         for (ItemStack stack : out) {
+            ItemStack slot = items.getItem(OUT_SLOT);
+            if (slot.isEmpty()) {
+                items.setItem(OUT_SLOT, stack);
+                continue;
+            }
+            if (ItemStack.isSameItemSameComponents(slot, stack) && slot.getCount() + stack.getCount() <= slot.getMaxStackSize()) {
+                slot.grow(stack.getCount());
+                items.setChanged();
+                continue;
+            }
             ItemEntity item = new ItemEntity(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1.6, worldPosition.getZ() + 0.5, stack);
             item.setDeltaMovement((level.random.nextDouble() - 0.5) * 0.15, 0.35, (level.random.nextDouble() - 0.5) * 0.15);
             level.addFreshEntity(item);
@@ -246,12 +334,13 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
         if (brewerPlayer != null) brewerPlayer.displayClientMessage(Component.translatable("alchemy.murimblock.blast"), true);
         heat = EMBERS;
         outIn = 2;
+        closeScreens(level);
         reset();
     }
 
     private void reset() {
-        herbs.clear();
         water = false;
+        for (int i = 0; i < HERB_SLOTS; i++) items.setItem(HERB_SLOT + i, ItemStack.EMPTY);
         phase = PREPARE;
         held = 0;
         spent = 0;
@@ -290,7 +379,7 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
                 case 6 -> fuel;
                 case 7 -> recipe == null ? candidate() : recipe.index();
                 case 8 -> recipe != null && level instanceof ServerLevel s && knownByBrewer(s, recipe) ? 1 : 0;
-                case 9 -> herbs.size();
+                case 9 -> herbs().size();
                 case 10 -> forecastPurity();
                 case 11 -> (bellows ? 1 : 0) | (infusing ? 2 : 0) | (water ? 4 : 0);
                 case 12 -> recipe == null ? 0 : (int) Math.round(recipe.qiPerTick() * 100);
@@ -303,8 +392,8 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
 
     /** While the herbs are going in: the recipe they are on their way to, if only one. */
     private int candidate() {
-        if (herbs.isEmpty()) return -1;
-        var c = AlchemyRecipes.startingWith(herbs.stream().map(ItemStack::getItem).toList());
+        if (herbs().isEmpty()) return -1;
+        var c = AlchemyRecipes.startingWith(herbs().stream().map(ItemStack::getItem).toList());
         return c.size() == 1 ? c.get(0).index() : -1;
     }
 
@@ -313,7 +402,7 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
     }
 
     @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new PillFurnaceMenu(id, inventory, this, data);
+        return new PillFurnaceMenu(id, inventory, this, data, player);
     }
 
     // ---------------------------------------------------------------- saving
@@ -321,9 +410,9 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("water", water);
-        ListTag list = new ListTag();
-        for (ItemStack h : herbs) list.add(h.save(registries));
-        tag.put("herbs", list);
+        NonNullList<ItemStack> list = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+        for (int i = 0; i < SLOTS; i++) list.set(i, items.getItem(i));
+        ContainerHelper.saveAllItems(tag, list, registries);
         tag.putInt("phase", phase);
         tag.putInt("held", held);
         tag.putInt("spent", spent);
@@ -335,10 +424,15 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
 
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        water = tag.getBoolean("water");
-        herbs.clear();
-        for (Tag t : tag.getList("herbs", Tag.TAG_COMPOUND)) ItemStack.parse(registries, t).ifPresent(herbs::add);
         phase = tag.getInt("phase");
+        water = tag.getBoolean("water");
+        NonNullList<ItemStack> list = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, list, registries);
+        // Furnaces from before the slots kept their herbs in a list.
+        int legacy = HERB_SLOT;
+        for (Tag t : tag.getList("herbs", Tag.TAG_COMPOUND))
+            if (legacy < HERB_SLOT + HERB_SLOTS) list.set(legacy++, ItemStack.parse(registries, t).orElse(ItemStack.EMPTY));
+        for (int i = 0; i < SLOTS; i++) items.getItems().set(i, list.get(i));
         held = tag.getInt("held");
         spent = tag.getInt("spent");
         fuel = tag.getInt("fuel");
