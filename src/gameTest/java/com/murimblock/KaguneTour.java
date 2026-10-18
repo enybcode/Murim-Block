@@ -84,6 +84,15 @@ public final class KaguneTour {
     }
 
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
+        // MURIM_KAGUNE_FILM=1: a film instead, a frame every other tick, from the front: the tentacles, the
+        // transformation at 100, then the centipedes.
+        if ("1".equals(System.getenv("MURIM_KAGUNE_FILM")) && ticks > 20) {
+            if (ticks == 40) { mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT); set(server, KaguneState.Form.HUNGER); }
+            if (ticks == 108) set(server, KaguneState.Form.TRANSFORM);
+            if (ticks >= 60 && ticks <= 260 && ticks % 2 == 0) capture(mc, String.format("film/%03d.png", (ticks - 60) / 2));
+            if (ticks == 262) { check(true, "filmed"); finish(mc); }
+            return;
+        }
         switch (ticks) {
             case 20 -> {
                 mc.options.hideGui = true;
