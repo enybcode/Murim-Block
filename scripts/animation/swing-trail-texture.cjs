@@ -53,6 +53,8 @@ const SKINS = {
   chief_great_axe: skin([225, 95, 35], [0, 0, -0.5], [0, -0.24, -2.1], 6),
   alliance_spear: skin([105, 160, 255], [0, 0.15, -0.5], [0, 0.25, -2.05], 6),
   crimson_dragon_spear: skin([215, 25, 35], [0, 0.15, -0.5], [0, 0.25, -2.05], 6),
+  // The Spear of Ruin: an ember trail, orange as its burning cracks.
+  spear_of_ruin: skin([255, 96, 30], [0, 0.15, -0.5], [0, 0.25, -2.1], 7),
   bishou: skin([55, 205, 140], [0, 0, -0.1], [0, 0.1, -0.95]),
   flying_knife: skin([230, 45, 40], [0, 0, -0.1], [0, 0.1, -0.95]),
   iron_fan: skin([240, 195, 100], [0, 0, -0.05], [0, 0.1, -0.7]),

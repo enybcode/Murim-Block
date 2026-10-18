@@ -241,6 +241,14 @@ public final class MurimItems {
             () -> new SwordItem(Tiers.WOOD, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.WOOD, 3, -2.6F))));
     public static final DeferredItem<SwordItem> CRIMSON_DRAGON_SPEAR = ITEMS.register("crimson_dragon_spear",
             () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.8F))));
+    /**
+     * The Spear of Ruin (灭世枪), the Overlord Spear Art's weapon (docs/combat/styles/overlord-spear.md, concept chosen by Enzo
+     * on 18/10/2026): black steel cracked with veins of burning Qi that glow in the dark, three gold claws on the head, a red
+     * mane. A spear for Epic Fight (data/murimblock/capabilities/weapons/spear_of_ruin.json), heavier and stronger than the
+     * captain's: 8 damage. Model from scripts/animation/ruin-spear-model.cjs.
+     */
+    public static final DeferredItem<SwordItem> SPEAR_OF_RUIN = ITEMS.register("spear_of_ruin",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.EPIC).attributes(SwordItem.createAttributes(Tiers.IRON, 4, -2.9F))));
 
     /**
      * The Peak Guard's armour, the captain's, on a man's build: a plumed iron helm with cheek guards and a neck curtain,
@@ -379,6 +387,7 @@ public final class MurimItems {
                         output.accept(CHIEF_FUR_BOOTS.get());
                         output.accept(PEAK_CAPTAIN_SPAWN_EGG.get());
                         output.accept(CRIMSON_DRAGON_SPEAR.get());
+                        output.accept(SPEAR_OF_RUIN.get());
                         output.accept(PEAK_GUARD_HELM.get());
                         output.accept(PEAK_GUARD_LAMELLAR.get());
                         output.accept(PEAK_GUARD_TASSETS.get());

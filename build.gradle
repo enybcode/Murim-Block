@@ -381,6 +381,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a look at the Spear of Ruin in a real client (see RuinSpearTour).
+        ruinSpearTour {
+            client()
+            gameDirectory = project.file('build/ruin-spear-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ruinSpearTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client check of the Murim knives (see KnifeTour).
         knifeTour {
             client()
@@ -905,6 +914,21 @@ tasks.named('runSageShopTour').configure {
     doLast {
         def report = sageShopTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sage shop tour failed; see build/sage-shop-tour-run/sage-shop-tour-report.txt')
+    }
+}
+def ruinSpearTourSave = layout.buildDirectory.dir('ruin-spear-tour-run/saves/murim-ruin-spear')
+def ruinSpearTourReport = layout.buildDirectory.file('ruin-spear-tour-run/ruin-spear-tour-report.txt')
+def ruinSpearTourShots = layout.buildDirectory.dir('ruin-spear-tour-run/screenshots')
+tasks.named('runRuinSpearTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only ruin spear tour.')
+        ruinSpearTourSave.get().asFile.deleteDir()
+        ruinSpearTourShots.get().asFile.deleteDir()
+        ruinSpearTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ruinSpearTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Ruin spear tour failed; see build/ruin-spear-tour-run/ruin-spear-tour-report.txt')
     }
 }
 def knifeTourSave = layout.buildDirectory.dir('knife-tour-run/saves/murim-knife')
