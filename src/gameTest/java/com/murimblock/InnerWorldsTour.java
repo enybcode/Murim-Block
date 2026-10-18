@@ -33,7 +33,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 /**
  * Opt-in graphical check of the martial arts' inner worlds (docs/cultivation/inner-worlds.md) in a real client: each
  * art's island built in the inner world at Core Formation, the art made the main style (its sky), seen from the south.
- * Never in the player JAR. Run: gradlew -PgameTests runInnerWorldsTour; pictures in build/inner-worlds-tour-run/screenshots.
+ * Also checks that a block of the island cannot be mined. Never in the player JAR. Run: gradlew -PgameTests runInnerWorldsTour; pictures in build/inner-worlds-tour-run/screenshots.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class InnerWorldsTour {
@@ -88,6 +88,18 @@ public final class InnerWorldsTour {
                 visit(p);
                 BlockPos c = centre(0);
                 p.teleportTo(server.getLevel(InnerWorldService.INNER_WORLD), c.getX() + 0.5, c.getY() + 15, c.getZ() + 36.5, 180, 18);
+            });
+            // Nothing is mined in the inner world, even in creative mode (InnerWorldGuard).
+            if (ticks == 120) server.execute(() -> {
+                ServerPlayer p = player(server);
+                p.setGameMode(GameType.CREATIVE);
+                BlockPos ground = centre(0).offset(4, 0, 4);
+                ServerLevel inner = server.getLevel(InnerWorldService.INNER_WORLD);
+                var before = inner.getBlockState(ground);
+                p.gameMode.destroyBlock(ground);
+                boolean kept = !before.isAir() && inner.getBlockState(ground).equals(before);
+                com.mojang.logging.LogUtils.getLogger().info("Inner worlds tour: a block mined in the inner world {}", kept ? "stayed (PASSED)" : "broke (FAILED)");
+                p.setGameMode(GameType.SPECTATOR);
             });
             int i = (ticks - START) / EACH, phase = (ticks - START) % EACH;
             if (ticks >= START && i < ARTS.size()) {

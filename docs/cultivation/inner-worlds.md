@@ -26,6 +26,9 @@ style principal reconstruit l'île à la visite suivante. Sans style principal :
 | Devouring Demon | démon, vide | île rongée sur ses bords, débris qui tombent dans le vide, grandes arches de côtes, sculk, œil rouge qui regarde depuis le nord |
 | Majin Fist | fureur | arène de pierre noire fendue de rouge, chaînes suspendues dans le vide, braseros aux flammes sombres |
 
+**On ne mine rien dans le monde intérieur** (Enzo, 19/10 ; `InnerWorldGuard`), quel que soit le mode de jeu : aucun bloc ne
+se casse ni ne commence à se fendre. Vérifié par `runInnerWorldsTour` (un bloc cassé en créatif reste en place).
+
 Les lieux évitent la plateforme, ses stèles, la place du démon du cœur (au nord) et celle de l'âme du vieux maître.
 
 ## Code et vérifications
