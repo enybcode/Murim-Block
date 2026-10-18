@@ -71,15 +71,21 @@ public final class QiSense {
         if (player.tickCount % 5 == 0) send(player, true, readings(player));
     }
 
-    /** What this reader reads of the auras around: within reach, in sight. */
+    /**
+     * What this reader reads of the auras around: within the sense's reach and in sight; the powerful ones (as strong as
+     * the reader or stronger, risen high enough to be seen over the trees: Enzo, 18/10/2026) from three times as far,
+     * unseen. Both reaches grow with the reader's realm (CultivationRules.senseRange).
+     */
     public static List<CultivationPayloads.Reading> readings(ServerPlayer viewer) {
         CultivationRealm own = CultivationService.getRealm(viewer);
         List<CultivationPayloads.Reading> out = new ArrayList<>();
-        double range = CultivationRules.SENSE_RANGE;
-        for (LivingEntity e : viewer.level().getEntitiesOfClass(LivingEntity.class, viewer.getBoundingBox().inflate(range),
-                e -> e != viewer && e.isAlive() && !e.isSpectator() && e.distanceToSqr(viewer) <= range * range)) {
+        double range = CultivationRules.senseRange(own), far = CultivationRules.farSenseRange(own);
+        for (LivingEntity e : viewer.level().getEntitiesOfClass(LivingEntity.class, viewer.getBoundingBox().inflate(far),
+                e -> e != viewer && e.isAlive() && !e.isSpectator() && e.distanceToSqr(viewer) <= far * far)) {
             Optional<CultivationData> data = cultivationOf(e);
-            if (data.isEmpty() || !viewer.hasLineOfSight(e)) continue;
+            if (data.isEmpty()) continue;
+            boolean near = e.distanceToSqr(viewer) <= range * range && viewer.hasLineOfSight(e);
+            if (!near && data.get().realm().ordinal() < own.ordinal()) continue;
             CultivationRules.Reading kind = CultivationRules.reading(own, data.get().realm());
             int realm = kind == CultivationRules.Reading.CLEAR || kind == CultivationRules.Reading.FUZZY ? data.get().realm().ordinal() : -1;
             int stage = kind == CultivationRules.Reading.CLEAR ? data.get().stage().ordinal() : -1;

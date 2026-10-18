@@ -503,6 +503,31 @@ public final class CultivationGameTests {
 
     // ---------------------------------------------------------------- Qi Sense
 
+    /**
+     * Beyond the sense's reach (16 blocks at Qi Condensation), only the powerful are felt, through walls, out to its far
+     * reach (48): one as strong or stronger is read, a weaker one is not.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_sense")
+    public static void qiSenseFeelsThePowerfulFromFarAndThroughWalls(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper);
+        ServerPlayer strong = player(helper), weak = player(helper);
+        CultivationService.setCultivation(reader, CultivationRealm.QI_CONDENSATION, CultivationStage.MIDDLE);
+        CultivationService.setCultivation(strong, CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
+        CultivationService.setCultivation(weak, CultivationRealm.QI_SENSING, CultivationStage.LATE);
+        double x = reader.getX(), y = reader.getY(), z = reader.getZ();
+        helper.assertTrue(CultivationRules.senseRange(CultivationRealm.QI_CONDENSATION) == 16 && CultivationRules.farSenseRange(CultivationRealm.QI_CONDENSATION) == 48,
+                "Qi Condensation's reaches are not 16 and 48");
+        strong.moveTo(x + 30, y, z);
+        weak.moveTo(x - 30, y, z);
+        var readings = QiSense.readings(reader);
+        helper.assertTrue(readings.stream().anyMatch(r -> r.entityId() == strong.getId()), "The stronger one, 30 blocks off, is not felt");
+        helper.assertTrue(readings.stream().noneMatch(r -> r.entityId() == weak.getId()), "The weaker one, 30 blocks off, is felt");
+        // A far stronger cultivator reaches much further.
+        helper.assertTrue(CultivationRules.farSenseRange(CultivationRealm.CORE_FORMATION) > CultivationRules.farSenseRange(CultivationRealm.QI_LIQUIDATION),
+                "A higher realm does not feel further");
+        end(helper, reader, strong, weak);
+    }
+
     @GameTest(template = "foundation_arena", batch = "cultivation_sense")
     public static void qiSenseShowsEachReaderOnlyWhatTheirRealmAllows(GameTestHelper helper) {
         ServerPlayer reader = cultivator(helper);

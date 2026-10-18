@@ -34,33 +34,29 @@ import org.joml.Matrix4f;
 
 /**
  * Qi Sense on the client (docs/cultivation/qi-cultivation.md): the key held asks the server to open the sense; while it
- * is open, the edges of the view darken and over each aura the server let us read floats its realm's seal, with four
- * dots for the stage (its name hidden meanwhile). Of a stronger cultivator only a smudged seal; of a far stronger one,
- * no seal but a dark swirl, and the view trembles under the pressure.
+ * is open, the world is seen as Qi vision (QiVisionClient) and the edges of the view darken; the names of the auras read
+ * are hidden, and before a far stronger one the view trembles under the pressure. The realms' seals that floated over
+ * the auras are gone until Enzo reworks them (18/10/2026): the readings still come, for the pressure.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class QiSenseClient {
-    private static final ResourceLocation[] SEALS = new ResourceLocation[9];
-    private static final ResourceLocation VEILED = tex("seal_veiled"), ABYSS = tex("seal_abyss"), PIP = tex("pip");
     private static boolean sentActive;
     private static boolean open;
     private static final Map<Integer, CultivationPayloads.Reading> READINGS = new HashMap<>();
 
-    static {
-        for (int i = 0; i < SEALS.length; i++) SEALS[i] = tex("seal_" + (i + 1));
-    }
-
     private QiSenseClient() {
     }
 
-    private static ResourceLocation tex(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/gui/realm/" + name + ".png");
-    }
 
     public static void readings(CultivationPayloads.SenseReadings payload) {
         open = payload.open();
         READINGS.clear();
         for (CultivationPayloads.Reading r : payload.readings()) READINGS.put(r.entityId(), r);
+    }
+
+    /** What the server let us read of an aura (empty: nothing). */
+    public static java.util.Optional<CultivationPayloads.Reading> reading(int entityId) {
+        return java.util.Optional.ofNullable(READINGS.get(entityId));
     }
 
     public static boolean open() {
@@ -83,64 +79,6 @@ public final class QiSenseClient {
         if (open && READINGS.containsKey(event.getEntity().getId())) event.setCanRender(TriState.FALSE);
     }
 
-    @SubscribeEvent
-    public static void onRenderLevel(RenderLevelStageEvent event) {
-        if (!open || event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES || READINGS.isEmpty()) return;
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
-        Camera camera = event.getCamera();
-        Vec3 cam = camera.getPosition();
-        PoseStack pose = event.getPoseStack();
-        MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        float time = mc.level.getGameTime() + partial;
-        for (CultivationPayloads.Reading r : READINGS.values()) {
-            Entity e = mc.level.getEntity(r.entityId());
-            if (e == null) continue;
-            Vec3 at = e.getPosition(partial).add(0, e.getBbHeight() + 0.65, 0);
-            CultivationRules.Reading kind = CultivationRules.Reading.values()[Math.max(0, Math.min(3, r.kind()))];
-            pose.pushPose();
-            pose.translate(at.x - cam.x, at.y - cam.y, at.z - cam.z);
-            pose.mulPose(camera.rotation());
-            switch (kind) {
-                case CLEAR, FUZZY -> {
-                    float s = 0.32F;
-                    quad(pose, buffers.getBuffer(RenderType.entityTranslucent(SEALS[Math.max(0, Math.min(8, r.realm()))])), s, 0, 1, 0, 1, 1.0F);
-                    // The stage's four dots under the seal; uncertain within the same realm (they flicker).
-                    for (int i = 0; i < 4; i++) {
-                        boolean full = kind == CultivationRules.Reading.CLEAR ? i <= r.stage() : (int) (time / 6 + i) % 2 == 0;
-                        pose.pushPose();
-                        pose.translate((i - 1.5F) * 0.16F, -0.42F, 0);
-                        quad(pose, buffers.getBuffer(RenderType.entityTranslucent(PIP)), 0.06F, full ? 0.5F : 0, full ? 1 : 0.5F, 0, 1,
-                                kind == CultivationRules.Reading.CLEAR ? 1.0F : 0.6F);
-                        pose.popPose();
-                    }
-                }
-                case VEILED -> {
-                    pose.translate(Mth.sin(time * 0.9F) * 0.03F, Mth.cos(time * 1.3F) * 0.03F, 0);
-                    quad(pose, buffers.getBuffer(RenderType.entityTranslucent(VEILED)), 0.36F, 0, 1, 0, 1, 0.85F);
-                }
-                case ABYSS -> {
-                    pose.translate(0, -0.3F, 0);
-                    pose.mulPose(com.mojang.math.Axis.ZP.rotation(time * 0.05F));
-                    quad(pose, buffers.getBuffer(RenderType.entityTranslucent(ABYSS)), 0.9F, 0, 1, 0, 1, 0.95F);
-                }
-            }
-            pose.popPose();
-        }
-        buffers.endBatch();
-    }
-
-    /** A square facing the camera, `s` half-wide, from the texture's (u0..u1, v0..v1). */
-    private static void quad(PoseStack pose, VertexConsumer vc, float s, float u0, float u1, float v0, float v1, float alpha) {
-        Matrix4f m = pose.last().pose();
-        PoseStack.Pose last = pose.last();
-        vc.addVertex(m, -s, s, 0).setColor(1, 1, 1, alpha).setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(last, 0, 0, 1);
-        vc.addVertex(m, -s, -s, 0).setColor(1, 1, 1, alpha).setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(last, 0, 0, 1);
-        vc.addVertex(m, s, -s, 0).setColor(1, 1, 1, alpha).setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(last, 0, 0, 1);
-        vc.addVertex(m, s, s, 0).setColor(1, 1, 1, alpha).setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(last, 0, 0, 1);
-    }
-
     /** The sense open: the edges of the view darken to a deep blue. */
     @SubscribeEvent
     public static void onRenderGui(RenderGuiEvent.Pre event) {
@@ -157,19 +95,38 @@ public final class QiSenseClient {
         }
     }
 
-    /** A far stronger aura in front of us, near: the view trembles under its pressure. */
+    /**
+     * The pressure of a stronger aura (Enzo, 18/10/2026: "si le mec est très puissant, l'écran tremble"): while the sense
+     * is open, the view trembles before an aura above one's own, a little for one realm above, hard for one far above,
+     * the harder the nearer (within the sense's far reach).
+     */
     @SubscribeEvent
     public static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+        float pressure = pressure();
+        if (pressure <= 0) return;
         Minecraft mc = Minecraft.getInstance();
-        if (!open || mc.level == null || mc.player == null) return;
+        double t = mc.level.getGameTime() + event.getPartialTick();
+        float jolt = (float) (Math.sin(t * 2.9) * Math.sin(t * 0.7 + 1.3));
+        event.setRoll(event.getRoll() + (float) Math.sin(t * 1.7) * 1.6F * pressure + jolt * 0.8F * pressure);
+        event.setPitch(event.getPitch() + (float) Math.sin(t * 2.3 + 0.5) * 0.9F * pressure);
+        event.setYaw(event.getYaw() + (float) Math.cos(t * 1.9) * 0.9F * pressure);
+    }
+
+    /** How hard the strongest aura above one's own presses on the view now (0: none, 1: far above, close). */
+    public static float pressure() {
+        Minecraft mc = Minecraft.getInstance();
+        if (!open || mc.level == null || mc.player == null) return 0;
+        double far = CultivationRules.farSenseRange(com.murimblock.cultivation.CultivationService.getRealm(mc.player));
+        float strongest = 0;
         for (CultivationPayloads.Reading r : READINGS.values()) {
-            if (r.kind() != CultivationRules.Reading.ABYSS.ordinal()) continue;
+            float weight = r.kind() == CultivationRules.Reading.ABYSS.ordinal() ? 1.0F : r.kind() == CultivationRules.Reading.VEILED.ordinal() ? 0.3F : 0;
+            if (weight == 0) continue;
             Entity e = mc.level.getEntity(r.entityId());
-            if (e == null || e.distanceTo(mc.player) > 10) continue;
-            double t = mc.level.getGameTime() + event.getPartialTick();
-            event.setRoll(event.getRoll() + (float) Math.sin(t * 1.7) * 0.6F);
-            return;
+            if (e == null) continue;
+            float near = (float) Math.max(0, 1 - e.distanceTo(mc.player) / far);
+            strongest = Math.max(strongest, weight * (0.25F + 0.75F * near * near));
         }
+        return strongest;
     }
 
     @SubscribeEvent

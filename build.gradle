@@ -124,6 +124,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the mock-up of Qi vision (see QiVisionTour).
+        qiVisionTour {
+            client()
+            gameDirectory = project.file('build/qi-vision-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiVisionTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at Qinggong's leap in the air (see QinggongTour).
         qinggongTour {
             client()

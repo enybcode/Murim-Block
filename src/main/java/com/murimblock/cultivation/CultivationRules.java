@@ -269,6 +269,22 @@ public final class CultivationRules {
     /** How far Qi Sense reaches (blocks), and what it costs (Qi per second). */
     public static final double SENSE_RANGE = 16, SENSE_QI_PER_SECOND = 1;
 
+    /**
+     * How far Qi Sense reaches with each realm (Enzo, 18/10/2026: "en fonction de notre stade de puissance, on voit plus
+     * ou moins loin"): the auras in sight, and the outlines of the world in Qi vision (blocks; from Qi Condensation, where
+     * the sense opens).
+     */
+    static final double[] SENSE_REACH = {16, 16, 16, 24, 32, 48, 64, 96, 128};
+
+    public static double senseRange(CultivationRealm realm) {
+        return SENSE_REACH[realm.ordinal()];
+    }
+
+    /** How far a powerful aura (as strong as one's own or stronger) is felt, through anything: three times the sense, 160 at most. */
+    public static double farSenseRange(CultivationRealm realm) {
+        return Math.min(160, senseRange(realm) * 3);
+    }
+
     /** What a cultivator reads of another's aura. */
     public enum Reading {
         /** The seal and the exact stage. */
