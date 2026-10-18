@@ -111,8 +111,9 @@ public final class OverlordSpearGameTests {
         MartialProgress.addMastery(player, celestial, MartialArts.LONG_REACH.id(), 4);
         int style = MartialService.data(player).styleMastery(celestial);
         helper.assertTrue(player.getInventory().countItem(MurimItems.OVERLORD_SPEAR_SCROLL.get()) == 1, "No scroll at mastery " + style);
+        helper.assertTrue(player.getInventory().countItem(MurimItems.SPEAR_OF_RUIN.get()) == 1, "No Spear of Ruin with the scroll");
         MartialProgress.addMastery(player, celestial, MartialArts.PIERCING_DRAGON.id(), 40);
-        helper.assertTrue(player.getInventory().countItem(MurimItems.OVERLORD_SPEAR_SCROLL.get()) == 1, "The scroll came twice");
+        helper.assertTrue(player.getInventory().countItem(MurimItems.OVERLORD_SPEAR_SCROLL.get()) == 1 && player.getInventory().countItem(MurimItems.SPEAR_OF_RUIN.get()) == 1, "The scroll or the spear came twice");
         // Below Qi Condensation, a closed book; from it, the art and all its techniques, not the secret.
         CultivationService.setCultivation(player, CultivationRealm.QI_GUIDING, CultivationStage.PEAK);
         new ItemStack(MurimItems.OVERLORD_SPEAR_SCROLL.get()).use(player.level(), player, InteractionHand.MAIN_HAND);

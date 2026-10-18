@@ -5,7 +5,8 @@
 //   demon_bite  100 Fury, on all fours (0.85 s): the head draws back as a centipede rears, then thrusts as it bites.
 //
 //   node scripts/animation/demon-art-techniques.cjs [--check]
-//   demon_thorns, demon_burrow: Impaling Thorns and Burrow, the same: he sinks a little, the head lowers.
+//   demon_thorns, demon_burrow: Impaling Thorns and Burrow, the same: he sinks a little, the head lowers;
+//   demon_grapple, demon_constrict: Grapple and Constrict: a lean forward as it shoots out, back as it pulls.
 // Writes animmodels/animations/biped/murim/demon_lash.json, demon_bite, demon_thorns and demon_burrow. --check prints the bite's contacts
 // (on all fours, no hand nor foot may go under the ground).
 const { writeSmooth } = require('./pose.cjs');
@@ -54,13 +55,30 @@ const BURROW = [
   { t: 1.1, pose: beast({}) },
 ];
 
+// Grapple (0.85 s): his weight goes forward a touch as the tentacle shoots out, back as it pulls.
+const GRAPPLE = [
+  { t: 0, pose: lash({}) },
+  { t: 0.25, pose: lash({ lean: 6, twist: 4, openR: 6 }) },
+  { t: 0.55, pose: lash({ lean: -3, crouch: 4 }) },
+  { t: 0.85, pose: lash({}) },
+];
+
+// Constrict (2.6 s), on all fours: the head thrust out as the centipede strikes, held low while it crushes.
+const CONSTRICT = [
+  { t: 0, pose: beast({}) },
+  { t: 0.3, pose: beast({ head: 8, lean: 93 }) },
+  { t: 2.2, pose: beast({ head: 4, lean: 92 }) },
+  { t: 2.6, pose: beast({}) },
+];
+
 /** On all fours: set down so the lowest hand or foot is on the ground, and the lunge carried forward. */
 const grounded = (keys, forward) => keys.map((k, i) => {
   const c = contacts(k.pose), low = Math.min(c.handR, c.handL, c.footR, c.footL);
   const p = k.pose.Root.pos;
   return { t: k.t, pose: { ...k.pose, Root: { ...k.pose.Root, pos: [p[0], p[1] + forward[i], p[2] - low] } } };
 });
-const anims = { demon_lash: LASH, demon_bite: grounded(BITE, [0, -0.02, 0.05, 0]), demon_thorns: THORNS, demon_burrow: grounded(BURROW, [0, 0, 0, 0]) };
+const anims = { demon_lash: LASH, demon_bite: grounded(BITE, [0, -0.02, 0.05, 0]), demon_thorns: THORNS, demon_burrow: grounded(BURROW, [0, 0, 0, 0]),
+  demon_grapple: GRAPPLE, demon_constrict: grounded(CONSTRICT, [0, 0, 0, 0]) };
 if (process.argv.includes('--check')) {
   for (const k of anims.demon_bite) console.log(k.t.toFixed(2), Object.entries(contacts(k.pose)).map(([j, z]) => `${j} ${z.toFixed(2)}`).join('  '));
 } else {

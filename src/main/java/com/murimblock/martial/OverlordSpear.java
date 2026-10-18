@@ -113,14 +113,15 @@ public final class OverlordSpear {
 
     // ---------------------------------------------------------------- the manual: the Celestial Peak Spear at mastery 50
 
-    /** The Celestial Peak Spear's mastery went from `was` to `now`: at 50, the manual (once a player). */
+    /** The Celestial Peak Spear's mastery went from `was` to `now`: at 50, the scroll and the Spear of Ruin (once a player). */
     static void celestialMastery(ServerPlayer player, int was, int now) {
         if (was >= MartialArts.OVERLORD_FROM_MASTERY || now < MartialArts.OVERLORD_FROM_MASTERY) return;
         MartialData data = MartialService.data(player);
         if (data.knowsArt(MartialArts.OVERLORD_SPEAR) || data.manualsReceived().contains(MartialArts.OVERLORD_SPEAR)) return;
         MartialService.set(player, data.receivedManual(MartialArts.OVERLORD_SPEAR));
-        ItemStack manual = new ItemStack(MurimItems.OVERLORD_SPEAR_SCROLL.get());
-        if (!player.getInventory().add(manual)) player.drop(manual, false);
+        // The scroll and the art's own spear, together (Enzo, 18/10/2026).
+        for (ItemStack given : new ItemStack[]{new ItemStack(MurimItems.OVERLORD_SPEAR_SCROLL.get()), new ItemStack(MurimItems.SPEAR_OF_RUIN.get())})
+            if (!player.getInventory().add(given)) player.drop(given, false);
         ServerLevel level = player.serverLevel();
         player.sendSystemMessage(Component.translatable("art.murimblock.overlord_spear.enlightenment").withStyle(net.minecraft.ChatFormatting.GOLD));
         level.playSound(null, player.blockPosition(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 0.8F, 0.6F);

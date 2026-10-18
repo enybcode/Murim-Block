@@ -95,7 +95,7 @@ public class TechniqueIcons {
             "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun",
             "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
             "breaking_the_cauldrons", "conquerors_weight",
-            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow"};
+            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
     static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67;
 
@@ -1357,6 +1357,36 @@ public class TechniqueIcons {
                 g.fill(new Ellipse2D.Double(5, 23, 9, 4));
                 centipede(g, 10, 26, 6, 0, 22, 12, 13);
                 for (int[] d : new int[][]{{4, 20}, {15, 21}, {6, 16}}) px(img, d[0], d[1], c(110, 64, 44));
+            }
+            case 5 -> { // Grapple: a long tentacle shot out from the lower left, its hooked tip sunk in a foe's dark shape.
+                g.setColor(c(96, 74, 70));
+                g.fill(new Ellipse2D.Double(19, 4, 10, 14));
+                taper(g, 4, 28, 12, 14, 23, 10, 3.6, 1.2, FLESH_DARK);
+                taper(g, 4, 28, 12, 14, 23, 10, 2.2, 0.8, FLESH);
+                // The hook, curled back.
+                line(g, 23, 10, 26, 8, 1.4f, FLESH_LIGHT);
+                line(g, 26, 8, 25, 12, 1.2f, FLESH_LIGHT);
+                // Pulled taut: two lines of strain.
+                line(g, 9, 19, 12, 22, 0.8f, c(255, 150, 140));
+                line(g, 13, 15, 16, 18, 0.8f, c(255, 150, 140));
+            }
+            case 6 -> { // Constrict: a dark foe's shape, three turns of a centipede tight round it.
+                g.setColor(c(96, 74, 70));
+                g.fill(new Ellipse2D.Double(11, 3, 10, 8));
+                g.fillRect(11, 10, 10, 18);
+                for (int ring = 0; ring < 3; ring++) {
+                    double y = 12 + ring * 6, tilt = ring % 2 == 0 ? 2 : -2;
+                    g.setColor(CHITIN_DARK);
+                    g.setStroke(new BasicStroke(3.2f));
+                    g.draw(new Line2D.Double(7, y + tilt, 25, y - tilt));
+                    g.setColor(ring == 1 ? CHITIN_LIGHT : CHITIN);
+                    g.setStroke(new BasicStroke(1.6f));
+                    g.draw(new Line2D.Double(7, y + tilt, 25, y - tilt));
+                    for (int k = 0; k < 5; k++) px(img, 8 + k * 4, (int) Math.round(y + tilt - (k * 4 + 1) * tilt / 9) + 2, CHITIN_DARK);
+                }
+                // The head, its red fangs.
+                line(g, 25, 10, 28, 8, 1.2f, FLESH_LIGHT);
+                line(g, 25, 10, 28, 12, 1.2f, FLESH_LIGHT);
             }
             default -> { }
         }

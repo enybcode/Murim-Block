@@ -107,6 +107,8 @@ public final class MurimblockNetworking {
         registrar.playToClient(OverlordFlashPayload.TYPE, OverlordFlashPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.OverlordFxClient.flash(payload));
         // A kagune's blow landing (the Devouring Demon Art): its light, blood, shake and hit-stop.
+        registrar.playToClient(KaguneGrabPayload.TYPE, KaguneGrabPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.KaguneGrabs.grab(payload));
         registrar.playToClient(KaguneEruptPayload.TYPE, KaguneEruptPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.KaguneEruptions.erupt(payload));
         registrar.playToClient(KaguneImpactPayload.TYPE, KaguneImpactPayload.STREAM_CODEC,

@@ -657,7 +657,7 @@
   "evolution.murimblock.stampede": "Stampede",
   "item.murimblock.overlord_spear_scroll": "Overlord Spear Scroll",
   "art.murimblock.overlord_spear": "Overlord Spear",
-  "art.murimblock.overlord_spear.enlightenment": "The spear grows heavy in your hands. It no longer wants to keep its distance: it wants to crush. You received the Overlord Spear Scroll.",
+  "art.murimblock.overlord_spear.enlightenment": "The spear grows heavy in your hands. It no longer wants to keep its distance: it wants to crush. You received the Overlord Spear Scroll and the Spear of Ruin.",
   "passive.murimblock.conquerors_weight": "Conqueror's Weight",
   "passive.murimblock.conquerors_weight.desc": "Epic Fight's spear strikes. Each one that lands adds a charge of Domination (5 at most, lost after 4 s without a hit). At 5, your next strike is a battering ram: x1.8 damage, the target's guard broken, and a shock wave splits the ground 4 blocks ahead, pushing everything back.",
   "gui.murimblock.techniques.strikes_fixed.overlord_spear": "Epic Fight's own spear strikes. Every fifth that lands makes the next one a battering ram.",
@@ -1197,5 +1197,9 @@
   "technique.murimblock.impaling_thorns": "Impaling Thorns",
   "technique.murimblock.impaling_thorns.desc": "Your tentacles drive into the ground in front of you, and a heartbeat later burst out as thorns under the foe you look at, up to 12 blocks away: whoever still stands there is impaled, thrown up and held fast. In the demon form, this key is Burrow.",
   "technique.murimblock.burrow": "Burrow",
-  "technique.murimblock.burrow.desc": "The demon form's Impaling Thorns: your centipedes dive into the ground and burst out under the two nearest foes in front of you, up to 9 blocks away, rearing up and coming down on them."
+  "technique.murimblock.burrow.desc": "The demon form's Impaling Thorns: your centipedes dive into the ground and burst out under the two nearest foes in front of you, up to 9 blocks away, rearing up and coming down on them.",
+  "technique.murimblock.grapple": "Grapple",
+  "technique.murimblock.grapple.desc": "A tentacle shoots at what you look at, up to 14 blocks away. A foe is hooked and dragged in to just in front of you; anything else, it hooks into and pulls you there, and the fall it saves you never hurts. In the demon form, this key is Constrict.",
+  "technique.murimblock.constrict": "Constrict",
+  "technique.murimblock.constrict.desc": "The demon form's Grapple: a centipede shoots at the foe you look at, up to 8 blocks away, and coils three times round it. It is held fast for two seconds, crushed four times, then thrown off."
 }

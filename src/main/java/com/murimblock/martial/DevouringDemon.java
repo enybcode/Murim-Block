@@ -47,6 +47,10 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
  *   where the foe he looked at (up to {@link #THORNS_REACH} blocks) stood: whoever is still there is impaled, thrown up and
  *   held. In the demon form, <b>Burrow</b>: the centipedes dive into the ground and burst out under the
  *   {@link #BURROW_TARGETS} nearest foes ahead (up to {@link #BURROW_REACH} blocks).</li>
+ *   <li><b>Grapple</b>: a tentacle shoots at what he looks at, up to {@link #GRAPPLE_REACH} blocks: a foe is hooked and
+ *   pulled in to just in front of him; else it hooks into the block and pulls him to it (no fall damage). In the demon
+ *   form, <b>Constrict</b>: a centipede shoots at the foe he looks at (up to {@link #CONSTRICT_REACH} blocks), coils round
+ *   it, holds it {@link #CONSTRICT_HOLD_TICKS} ticks, crushing it every {@link #CONSTRICT_CRUSH_EVERY}, then throws it off.</li>
  * </ul>
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
@@ -65,6 +69,12 @@ public final class DevouringDemon {
     public static final int THORNS_HIT_TICK = 10, THORNS_HOLD_TICKS = 25;
     public static final double BURROW_REACH = 9, BURROW_ARC = 150, BURROW_SHARE = 2.0, BURROW_RADIUS = 1.5, BURROW_LIFT = 0.95;
     public static final int BURROW_HIT_TICK = 11, BURROW_HOLD_TICKS = 20, BURROW_TARGETS = 2;
+    /** Grapple: how far, how wide, when the tentacle gets there (ticks), how long it pulls, how hard, to where, how fast he goes. */
+    public static final double GRAPPLE_REACH = 14, GRAPPLE_CONE = 8, GRAPPLE_SHARE = 0.8, GRAPPLE_PULL_TO = 2.2, GRAPPLE_PULL_RATE = 0.4, GRAPPLE_SPEED = 1.6;
+    public static final int GRAPPLE_HIT_TICK = 5, GRAPPLE_PULL_TICKS = 14;
+    /** Constrict: how far, how wide, when the coils close (ticks), how long they hold, a crush every so often and its share, the throw. */
+    public static final double CONSTRICT_REACH = 8, CONSTRICT_CONE = 15, CONSTRICT_SHARE = 0.6, CONSTRICT_TOSS = 0.9;
+    public static final int CONSTRICT_HIT_TICK = 6, CONSTRICT_HOLD_TICKS = 40, CONSTRICT_CRUSH_EVERY = 10;
 
     private record Pending(MartialArts.Technique technique, long at, List<Vec3> points) {
         Pending(MartialArts.Technique technique, long at) { this(technique, at, List.of()); }
@@ -164,6 +174,7 @@ public final class DevouringDemon {
             }
             default -> { }
         }
+        holdTick(player, now);
         Pending p = PENDING.get(id);
         if (p != null && now >= p.at()) {
             PENDING.remove(id);
@@ -221,6 +232,32 @@ public final class DevouringDemon {
             KaguneState.put(player, state.withStrike(KaguneState.STRIKE_BITE, now));
             PENDING.put(player.getUUID(), new Pending(cast, now + BITE_HIT_TICK));
             level.playSound(null, player.blockPosition(), SoundEvents.SILVERFISH_AMBIENT, SoundSource.PLAYERS, 1.4F, 0.5F);
+            return true;
+        }
+        if (cast == MartialArts.GRAPPLE) {
+            // A foe looked at, or else the block looked at: the tentacle goes for it.
+            LivingEntity target = lookedAt(player, GRAPPLE_REACH, GRAPPLE_CONE);
+            Vec3 anchor = null;
+            if (target == null) {
+                var hit = player.pick(GRAPPLE_REACH, 1, false);
+                if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return false;
+                anchor = hit.getLocation();
+            }
+            patch.playAnimationSynchronized(DemonArtAnimations.GRAPPLE, 0.0F);
+            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_GRAPPLE, now));
+            HOLDS.put(player.getUUID(), new Hold(cast, target, anchor, now + GRAPPLE_HIT_TICK, now + GRAPPLE_HIT_TICK + GRAPPLE_PULL_TICKS));
+            grab(player, KaguneState.STRIKE_GRAPPLE, target, anchor == null ? target.position() : anchor);
+            level.playSound(null, player.blockPosition(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.PLAYERS, 1.4F, 0.5F);
+            return true;
+        }
+        if (cast == MartialArts.CONSTRICT) {
+            LivingEntity target = lookedAt(player, CONSTRICT_REACH, CONSTRICT_CONE);
+            if (target == null) return false;
+            patch.playAnimationSynchronized(DemonArtAnimations.CONSTRICT, 0.0F);
+            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_CONSTRICT, now));
+            HOLDS.put(player.getUUID(), new Hold(cast, target, null, now + CONSTRICT_HIT_TICK, now + CONSTRICT_HIT_TICK + CONSTRICT_HOLD_TICKS));
+            grab(player, KaguneState.STRIKE_CONSTRICT, target, target.position());
+            level.playSound(null, player.blockPosition(), SoundEvents.SILVERFISH_AMBIENT, SoundSource.PLAYERS, 1.4F, 0.4F);
             return true;
         }
         if (cast == MartialArts.IMPALING_THORNS) {
@@ -386,6 +423,103 @@ public final class DevouringDemon {
                 new com.murimblock.network.KaguneImpactPayload(player.getId(), e.getId(), at.x, at.y, at.z, strike));
     }
 
+    // ---------------------------------------------------------------- Grapple, Constrict: the kagune holds on
+
+    /**
+     * A tentacle or a centipede holding on, from {@code from} (game time) to {@code until}: to a foe (pulled in by Grapple,
+     * crushed in Constrict's coils) or, for Grapple with no foe, to a point of a wall it pulls him to.
+     */
+    private record Hold(MartialArts.Technique technique, @Nullable LivingEntity target, @Nullable Vec3 anchor, long from, long until) { }
+    private static final Map<UUID, Hold> HOLDS = new HashMap<>();
+
+    /** Tells the clients round him what the kagune goes for (client/KaguneGrabs): a foe, or a point. */
+    private static void grab(ServerPlayer player, int strike, @Nullable LivingEntity target, Vec3 at) {
+        if (player.connection == null) return;
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntityAndSelf(player,
+                new com.murimblock.network.KaguneGrabPayload(player.getId(), strike, target == null ? -1 : target.getId(), at.x, at.y, at.z));
+    }
+
+    /** The nearest foe he looks at, within reach and cone, in sight. */
+    @Nullable static LivingEntity lookedAt(ServerPlayer player, double reach, double cone) {
+        Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
+        LivingEntity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (LivingEntity e : player.serverLevel().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(reach),
+                e -> MartialCombat.isEnemy(e, player))) {
+            Vec3 to = e.getBoundingBox().getCenter().subtract(eye);
+            double d = to.length();
+            if (d > reach || d < 1e-3) continue;
+            if (Math.toDegrees(Math.acos(Math.clamp(to.normalize().dot(look), -1, 1))) > cone + Math.toDegrees(Math.atan2(e.getBbWidth(), d))) continue;
+            if (!player.hasLineOfSight(e)) continue;
+            if (d < bestDistance) { bestDistance = d; best = e; }
+        }
+        return best;
+    }
+
+    /** Whether a foe is held in Constrict's coils now. */
+    public static boolean constricted(LivingEntity e) {
+        for (Hold h : HOLDS.values()) if (h.technique() == MartialArts.CONSTRICT && h.target() == e) return true;
+        return false;
+    }
+
+    private static void holdTick(ServerPlayer player, long now) {
+        Hold h = HOLDS.get(player.getUUID());
+        if (h == null || now < h.from()) return;
+        LivingEntity target = h.target();
+        boolean gone = target != null && (!target.isAlive() || target.level() != player.level());
+        if (now > h.until() || gone) {
+            HOLDS.remove(player.getUUID());
+            // Let go: Constrict throws the crushed foe off.
+            if (h.technique() == MartialArts.CONSTRICT && target != null && target.isAlive()) {
+                Vec3 away = target.position().subtract(player.position()).multiply(1, 0, 1);
+                away = away.lengthSqr() < 1e-4 ? Vec3.directionFromRotation(0, player.getYRot()) : away.normalize();
+                target.setDeltaMovement(away.x * CONSTRICT_TOSS, 0.45, away.z * CONSTRICT_TOSS);
+                target.hurtMarked = true;
+            }
+            return;
+        }
+        long t = now - h.from();
+        if (h.technique() == MartialArts.GRAPPLE) {
+            if (target != null) {
+                if (t == 0) {
+                    // Hooked: struck, and pulled in to just in front of him.
+                    target.invulnerableTime = 0;
+                    target.hurt(player.damageSources().playerAttack(player), TechniquePower.damage(player, MartialArts.DEVOURING_DEMON, GRAPPLE_SHARE));
+                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, GRAPPLE_PULL_TICKS + 10, 3, false, false));
+                    impact(player, target, KaguneState.STRIKE_GRAPPLE);
+                    MartialProgress.addMastery(player, art(), MartialArts.GRAPPLE.id(), 1);
+                }
+                Vec3 to = player.position().add(Vec3.directionFromRotation(0, player.getYRot()).scale(GRAPPLE_PULL_TO)).subtract(target.position());
+                if (to.length() < 0.6) { HOLDS.remove(player.getUUID()); return; }
+                target.setDeltaMovement(to.scale(GRAPPLE_PULL_RATE).add(0, 0.08, 0));
+                target.hurtMarked = true;
+            } else if (h.anchor() != null) {
+                // Hooked into the wall: pulled to it, never hurt by the fall it saves.
+                Vec3 to = h.anchor().subtract(player.position().add(0, 0.6, 0));
+                if (to.length() < 1.2) { HOLDS.remove(player.getUUID()); player.fallDistance = 0; return; }
+                if (t == 0) player.serverLevel().playSound(null, net.minecraft.core.BlockPos.containing(h.anchor()), SoundEvents.ROOTED_DIRT_BREAK, SoundSource.PLAYERS, 1.2F, 0.6F);
+                player.setDeltaMovement(to.normalize().scale(Math.min(GRAPPLE_SPEED, to.length() * 0.35)).add(0, 0.06, 0));
+                player.hurtMarked = true;
+                player.fallDistance = 0;
+            }
+            return;
+        }
+        if (h.technique() == MartialArts.CONSTRICT && target != null) {
+            // Coiled round: held where it is, crushed again and again.
+            target.setDeltaMovement(0, Math.min(0, target.getDeltaMovement().y), 0);
+            target.hurtMarked = true;
+            if (t == 0) {
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, CONSTRICT_HOLD_TICKS + 2, 6, false, false));
+            }
+            if (t % CONSTRICT_CRUSH_EVERY == CONSTRICT_CRUSH_EVERY / 2) {
+                target.invulnerableTime = 0;
+                if (target.hurt(player.damageSources().playerAttack(player), TechniquePower.damage(player, MartialArts.DEVOURING_DEMON, CONSTRICT_SHARE)))
+                    impact(player, target, KaguneState.STRIKE_CONSTRICT);
+                player.serverLevel().playSound(null, target.blockPosition(), SoundEvents.TURTLE_EGG_CRACK, SoundSource.PLAYERS, 1.2F, 0.5F);
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- blows
 
     /** The demon form strikes harder and takes less. */
@@ -423,6 +557,7 @@ public final class DevouringDemon {
         UUID id = player.getUUID();
         USERS.remove(id);
         PENDING.remove(id);
+        HOLDS.remove(id);
         LAST_GAIN.remove(id);
         KaguneState.put(player, KaguneState.NONE);
     }
