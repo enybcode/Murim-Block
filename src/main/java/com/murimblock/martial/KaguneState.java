@@ -1,5 +1,6 @@
 package com.murimblock.martial;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.murimblock.Murimblock;
 import io.netty.buffer.ByteBuf;
@@ -9,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,11 +21,12 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 
 /**
  * The kagune of the Devouring Demon Art on a player (docs/combat/styles/devouring-demon-art.md): which form is out and
- * since when (game time), seen by every client (client/KaguneOverlay draws it on the skin). First slice: the two forms
- * and the transformation, set by the operator command {@code /kagune off|hunger|transform|demon}; the Fury bar and the
- * techniques come next. Not saved: a reloaded player has his kagune put away.
+ * since when (game time), the Fury (0 to 100) and the strike the kagune is making (since when), seen by every client
+ * (client/KaguneOverlay draws it on the skin, client/KaguneStrikes points it at the foe, the combat bar shows the Fury).
+ * The server drives it (DevouringDemon); the operator command {@code /kagune off|hunger|transform|demon} and
+ * {@code /kagune fury <0-100>} set it by hand. Not saved: a reloaded player has his kagune put away.
  */
-public record KaguneState(Form form, long since) {
+public record KaguneState(Form form, long since, int fury, int strike, long strikeSince) {
     public enum Form {
         /** Put away: nothing drawn. */
         NONE,
@@ -35,10 +38,17 @@ public record KaguneState(Form form, long since) {
         DEMON
     }
 
-    public static final KaguneState NONE = new KaguneState(Form.NONE, 0);
+    public static final int MAX_FURY = 100;
+    /** The kagune's strikes, for the clients (client/KaguneStrikes): none, Lash (the four tentacles), Centipede Bite. */
+    public static final int STRIKE_NONE = 0, STRIKE_LASH = 1, STRIKE_BITE = 2;
+
+    public static final KaguneState NONE = new KaguneState(Form.NONE, 0, 0, STRIKE_NONE, 0);
     public static final StreamCodec<ByteBuf, KaguneState> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT.map(i -> Form.values()[i], Form::ordinal), KaguneState::form,
             ByteBufCodecs.VAR_LONG, KaguneState::since,
+            ByteBufCodecs.VAR_INT, KaguneState::fury,
+            ByteBufCodecs.VAR_INT, KaguneState::strike,
+            ByteBufCodecs.VAR_LONG, KaguneState::strikeSince,
             KaguneState::new);
     public static final AttachmentType<KaguneState> TYPE = AttachmentType.builder(() -> NONE)
             .sync((holder, recipient) -> true, STREAM_CODEC).build();
@@ -47,8 +57,22 @@ public record KaguneState(Form form, long since) {
         return player.getData(TYPE);
     }
 
+    /** Takes out (or changes) the form, from now; the Fury and the strike stay. */
     public static void set(Player player, Form form) {
-        player.setData(TYPE, new KaguneState(form, player.level().getGameTime()));
+        var s = of(player);
+        put(player, new KaguneState(form, player.level().getGameTime(), form == Form.NONE ? 0 : s.fury(), s.strike(), s.strikeSince()));
+    }
+
+    static void put(Player player, KaguneState state) {
+        if (!of(player).equals(state)) player.setData(TYPE, state);
+    }
+
+    public KaguneState withFury(int value) {
+        return new KaguneState(form, since, Math.clamp(value, 0, MAX_FURY), strike, strikeSince);
+    }
+
+    public KaguneState withStrike(int code, long now) {
+        return new KaguneState(form, since, fury, code, now);
     }
 
     /** How long the transformation lasts (s): the animation's own length (art/blockbench/kagune_forms.bbmodel). */
@@ -65,6 +89,12 @@ public record KaguneState(Form form, long since) {
         var state = of(player);
         if (state.form() == Form.DEMON) return true;
         return state.form() == Form.TRANSFORM && (player.level().getGameTime() - state.since()) / 20F >= TRANSFORM_SECONDS;
+    }
+
+    /** Whether the player is in the demon form or becoming it (the techniques change from the transformation on). */
+    public static boolean demon(Player player) {
+        var form = of(player).form();
+        return form == Form.TRANSFORM || form == Form.DEMON;
     }
 
     /** The beast's body and speed, kept in step with the form on each side (the hitbox on both, the speed on the server). */
@@ -117,6 +147,14 @@ public record KaguneState(Form form, long since) {
         @SubscribeEvent
         static void register(RegisterCommandsEvent event) {
             event.getDispatcher().register(Commands.literal("kagune").requires(source -> source.hasPermission(2))
+                    .then(Commands.literal("fury").then(Commands.argument("value", IntegerArgumentType.integer(0, MAX_FURY))
+                            .executes(context -> {
+                                ServerPlayer player = context.getSource().getPlayerOrException();
+                                int value = IntegerArgumentType.getInteger(context, "value");
+                                DevouringDemon.setFury(player, value);
+                                context.getSource().sendSuccess(() -> Component.literal("Fury: " + value), false);
+                                return 1;
+                            })))
                     .then(Commands.argument("form", StringArgumentType.word())
                             .suggests((context, builder) -> SharedSuggestionProvider.suggest(new String[]{"off", "hunger", "transform", "demon"}, builder))
                             .executes(context -> {

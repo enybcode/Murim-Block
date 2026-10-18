@@ -3,6 +3,7 @@ package com.murimblock.client;
 import com.murimblock.Murimblock;
 import com.murimblock.api.MurimblockApi;
 import com.murimblock.martial.BloodCrystalState;
+import com.murimblock.martial.KaguneState;
 import com.murimblock.martial.MartialArts;
 import com.murimblock.martial.MartialData;
 import com.murimblock.martial.MartialService;
@@ -229,7 +230,9 @@ public final class CombatBarClient {
             g.fill(x - 1, y - 1, x + SLOT + 1, y + SLOT + 1, HELD[i] >= 0 ? HELD_EDGE : WELL_EDGE);
             g.fill(x, y, x + SLOT, y + SLOT, WELL);
             if (technique != null) {
-                TechniqueIcons.draw(g, technique, x, y, SLOT);
+                // The Devouring Demon's techniques change in the demon form, on the same key: its version's icon.
+                MartialArts.Technique shown = KaguneState.demon(player) ? MartialArts.DEMON_VERSIONS.getOrDefault(technique, technique) : technique;
+                TechniqueIcons.draw(g, shown, x, y, SLOT);
                 // Hanging at the top of the crescent: its slot glows, pulsing azure, "Slam" beside the bar.
                 if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && slamReady() && mc.level != null) {
                     float pulse = 0.5F + 0.5F * net.minecraft.util.Mth.sin((mc.level.getGameTime() + mc.getTimer().getGameTimeDeltaPartialTick(false)) * 0.9F);
@@ -264,7 +267,10 @@ public final class CombatBarClient {
             g.drawString(mc.font, key, x + SLOT + 1 - mc.font.width(key), y + SLOT - 7, technique == null ? KEY_EMPTY : KEY, true);
             g.pose().popPose();
         }
-        dantian(g, centre, cy, QiService.getQi(player), QiService.getQiMax(player));
+        boolean devouring = data.mainArt().filter(MartialArts.DEVOURING_DEMON::equals).isPresent();
+        if (devouring) furyRing(g, mc, player, centre, cy);
+        if (devouring && KaguneState.demon(player)) dantian(g, centre, cy, QiService.getQi(player), QiService.getQiMax(player), 0xFF9C1A2E, 0xFFE0485A);
+        else dantian(g, centre, cy, QiService.getQi(player), QiService.getQiMax(player));
         // The weapon in hand, in the dantian.
         g.pose().pushPose();
         g.pose().translate(0, 0, 50);
@@ -275,6 +281,11 @@ public final class CombatBarClient {
 
     /** The dantian: a dark rim, a gold ring, inside it the Qi as a level of blue, its surface lit. */
     static void dantian(GuiGraphics g, int cx, int cy, double qi, double qiMax) {
+        dantian(g, cx, cy, qi, qiMax, RING, RING_LIGHT);
+    }
+
+    /** As above, its ring of these colours (crimson in the Devouring Demon's demon form). */
+    static void dantian(GuiGraphics g, int cx, int cy, double qi, double qiMax, int ringColour, int ringLight) {
         double ratio = qiMax <= 0 || !Double.isFinite(qi) ? 0 : Math.clamp(qi / qiMax, 0, 1);
         int level = cy + RADIUS - (int) Math.round(2 * RADIUS * ratio);
         for (int dy = -RADIUS - 2; dy <= RADIUS + 1; dy++) {
@@ -282,10 +293,42 @@ public final class CombatBarClient {
             int outer = half(RADIUS + 2, row), ring = half(RADIUS + 1, row), inner = half(RADIUS, row);
             int y = cy + dy;
             if (outer > 0) g.fill(cx - outer, y, cx + outer, y + 1, RIM);
-            if (ring > 0) g.fill(cx - ring, y, cx + ring, y + 1, dy < -RADIUS + 3 ? RING_LIGHT : RING);
+            if (ring > 0) g.fill(cx - ring, y, cx + ring, y + 1, dy < -RADIUS + 3 ? ringLight : ringColour);
             if (inner > 0) {
                 int colour = y < level ? VOID : y == level ? QI_LIGHT : y >= cy + RADIUS - 2 ? QI_DARK : QI;
                 g.fill(cx - inner, y, cx + inner, y + 1, colour);
+            }
+        }
+    }
+
+    /**
+     * The Devouring Demon's Fury, no text: a ring of blood round the dantian (Enzo, 18/10/2026: the Fury bar with the combat
+     * bar). It climbs both sides from the bottom, like flames, and closes at the top at 100; past three quarters it beats
+     * like a heart. In the demon form it turns to the centipedes' purple veined with red, flowing, and sinks back down as
+     * the Fury drains.
+     */
+    static void furyRing(GuiGraphics g, Minecraft mc, LocalPlayer player, int cx, int cy) {
+        var state = KaguneState.of(player);
+        double fill = state.fury() / (double) KaguneState.MAX_FURY;
+        boolean demon = KaguneState.demon(player);
+        long time = mc.level == null ? 0 : mc.level.getGameTime();
+        boolean beat = !demon && fill >= 0.75 && time % 16 < 3;
+        double inner = RADIUS + 2.5, outer = RADIUS + 5.5;
+        int reach = (int) Math.ceil(outer);
+        for (int dy = -reach; dy < reach; dy++) {
+            for (int dx = -reach; dx < reach; dx++) {
+                double px = dx + 0.5, py = dy + 0.5, r = Math.hypot(px, py);
+                if (r < inner || r >= outer) continue;
+                // 0 at the bottom, 1 at the top, the same on both sides.
+                double at = Math.atan2(Math.abs(px), py) / Math.PI;
+                int colour;
+                if (at > fill) colour = 0xB4200A0E;
+                else if (demon) colour = ((int) (at * 14 - time * 0.25) & 1) == 0 ? 0xFF8E2AC8 : 0xFFD8203A;
+                else if (fill - at < 0.04) colour = beat ? 0xFFFFD0B0 : 0xFFFF8A70;
+                else colour = beat ? 0xFFFF4A4A : at > 0.5 ? 0xFFE02A2A : 0xFFB0121C;
+                // The outer edge darker: a ring with some depth.
+                if (r >= outer - 1 && at <= fill) colour = (colour & 0xFF000000) | ((colour & 0xFEFEFE) >> 1);
+                g.fill(cx + dx, cy + dy, cx + dx + 1, cy + dy + 1, colour);
             }
         }
     }

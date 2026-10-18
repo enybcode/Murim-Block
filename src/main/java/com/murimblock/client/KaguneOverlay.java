@@ -131,6 +131,8 @@ public final class KaguneOverlay {
                     base.translate(0, -12, -2);
                 }
                 model.toParentAtRest(bone, base);
+                // A strike under way points its chains at the foe (KaguneStrikes), before they are kept off the ground.
+                KaguneStrikes.apply(model, player, state, bone, animation, time[0], bend, base.last().pose(), partial);
                 model.keepAboveGround(bone, animation, time[0], bend[0], bend[1], base.last().pose(), GROUND_CLEARANCE);
                 model.draw(bone, animation, time[0], bend[0], bend[1], stack, out, light, OverlayTexture.NO_OVERLAY);
                 stack.popPose();

@@ -426,10 +426,29 @@ public final class MartialArts {
     /** Its passive keeps Epic Fight's spear strikes; each that lands adds a charge of Domination, five make a battering ram. */
     public static final Passive CONQUERORS_WEIGHT = new Passive(id("conquerors_weight"), List.of(), List.of());
 
+    // ---------------------------------------------------------------- the Devouring Demon Art (docs/combat/styles/devouring-demon-art.md)
+
+    /**
+     * A high art of the kagune (Enzo, 18/10/2026), bare hands: four tentacles under 100 Fury, the demon form on all fours
+     * at 100 (DevouringDemon). Eight techniques, none costing Fury, each changing in the demon form on the same key
+     * (DEMON_VERSIONS); built one pair at a time. Proposed realm: Foundation Establishment.
+     */
+    public static final ResourceLocation DEVOURING_DEMON = id("devouring_demon");
+    public static final com.murimblock.cultivation.CultivationRealm DEVOURING_DEMON_REALM = com.murimblock.cultivation.CultivationRealm.FOUNDATION_ESTABLISHMENT;
+    /** The four tentacles whip in a fan in front of him. In the demon form: Centipede Bite. */
+    public static final Technique LASH = new Technique(id("lash"), DEVOURING_DEMON, 160, 100);
+    /** A centipede shoots at the foe ahead, up to 7 blocks, and bites: the key of Lash, in the demon form. */
+    public static final Technique CENTIPEDE_BITE = new Technique(id("centipede_bite"), DEVOURING_DEMON, 160, 100);
+    /** Epic Fight's bare-hand strikes for now; the tentacles' own M1 come next. Each blow feeds the Fury. */
+    public static final Passive DEVOURING_HUNGER = new Passive(id("devouring_hunger"), List.of(), List.of());
+    /** Each technique's version in the demon form, cast by its key there (its cost and cooldown are the key's). */
+    public static final Map<Technique, Technique> DEMON_VERSIONS = Map.of(LASH, CENTIPEDE_BITE);
+
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
                 : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : art.equals(THUNDER_SABER) ? THUNDER_SABER_REALM
-                : art.equals(MAJIN_FIST) ? MAJIN_REALM : art.equals(OVERLORD_SPEAR) ? OVERLORD_REALM : null;
+                : art.equals(MAJIN_FIST) ? MAJIN_REALM : art.equals(OVERLORD_SPEAR) ? OVERLORD_REALM
+                : art.equals(DEVOURING_DEMON) ? DEVOURING_DEMON_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -463,6 +482,8 @@ public final class MartialArts {
                 List.of(TAKE_THE_BLOW, RETURN_IT), List.of(STEADFAST_BELL, MIRROR_IRON, ANCIENT_MOUNTAIN)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
+        // No quests yet: the scroll teaches every technique built so far.
+        add(new Art(DEVOURING_DEMON, List.of(LASH), DEVOURING_HUNGER, List.of(), List.of()));
     }
 
     private MartialArts() {

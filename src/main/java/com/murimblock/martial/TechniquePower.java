@@ -28,6 +28,8 @@ public final class TechniquePower {
     public static final double MOUNTAIN_TRAINING = 4;
     /** What a hand burning with the sun adds to the Majin Fist's techniques (a high art, of Qi Liquidation). */
     public static final double MAJIN_TRAINING = 5;
+    /** What the kagune adds to the Devouring Demon Art's techniques (a high art, of Foundation Establishment). */
+    public static final double DEMON_TRAINING = 5;
     /** The technique's damage grows by this share for each doubling of Qi Max above 100. */
     public static final double QI_SCALING = 0.12;
 
@@ -52,7 +54,7 @@ public final class TechniquePower {
     public static double factor(ServerPlayer player, net.minecraft.resources.ResourceLocation art) {
         boolean bare = player.getMainHandItem().isEmpty();
         double training = art.equals(MartialArts.LONG_FIST) ? FIST_TRAINING : art.equals(MartialArts.SANGUINE_ART) ? BLOOD_TRAINING
-                : art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_TRAINING : art.equals(MartialArts.MAJIN_FIST) ? MAJIN_TRAINING : 0;
+                : art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_TRAINING : art.equals(MartialArts.MAJIN_FIST) ? MAJIN_TRAINING : art.equals(MartialArts.DEVOURING_DEMON) ? DEMON_TRAINING : 0;
         return qiFactor(QiService.getQiMax(player)) * fistFactor(player.getAttributeValue(Attributes.ATTACK_DAMAGE), bare && training > 0, training);
     }
 

@@ -94,9 +94,10 @@ public class TechniqueIcons {
             "golden_bell", "iron_rebound", "rooted_mountain", "bell_toll", "bell_palms",
             "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun",
             "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
-            "breaking_the_cauldrons", "conquerors_weight"};
+            "breaking_the_cauldrons", "conquerors_weight",
+            "lash", "centipede_bite", "devouring_hunger"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -115,7 +116,8 @@ public class TechniqueIcons {
             else if (i < BELL) thunder(g, img, i - THUNDER);
             else if (i < SUN) bell(g, img, i - BELL);
             else if (i < RUIN) sun(g, img, i - SUN);
-            else ruin(g, img, i - RUIN);
+            else if (i < DEMON) ruin(g, img, i - RUIN);
+            else demon(g, img, i - DEMON);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -1267,6 +1269,75 @@ public class TechniqueIcons {
                 for (int k = 0; k < 5; k++) disc(g, 6 + k * 5, 6, k == 4 ? 2.4 : 1.6, k == 4 ? RUIN_HOT : RUIN_EMBER);
                 ruinSpear(g, img, 4, 28, 26, 12);
             }
+        }
+    }
+
+    // ------------------------------------------------------------ the Devouring Demon Art: dried blood, red flesh, purple centipedes
+
+    static final Color FLESH = c(214, 36, 48), FLESH_LIGHT = c(255, 112, 112), FLESH_DARK = c(120, 14, 24),
+            CHITIN = c(132, 52, 196), CHITIN_LIGHT = c(190, 120, 240), CHITIN_DARK = c(58, 18, 92);
+
+    static void demonBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 17) / 22.0;
+            int r = (int) (22 + 34 * (1 - d)), gg = (int) (6 + 6 * (1 - d)), b = (int) (10 + 10 * (1 - d));
+            img.setRGB(x, y, c(r, gg, b).getRGB());
+        }
+        g.setColor(c(170, 40, 52));
+        g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(60, 10, 16));
+        g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A centipede along a quadratic curve: plates from tail to head, a leg each side, the head with its fangs. */
+    static void centipede(Graphics2D g, double x0, double y0, double cx, double cy, double x1, double y1, int plates) {
+        for (int i = 0; i <= plates; i++) {
+            double t = (double) i / plates, u = 1 - t;
+            double px = u * u * x0 + 2 * u * t * cx + t * t * x1, py = u * u * y0 + 2 * u * t * cy + t * t * y1;
+            double dx = 2 * u * (cx - x0) + 2 * t * (x1 - cx), dy = 2 * u * (cy - y0) + 2 * t * (y1 - cy), len = Math.hypot(dx, dy);
+            double nx = -dy / len, ny = dx / len, r = 1.7 + 1.3 * t;
+            line(g, px + nx * r, py + ny * r, px + nx * (r + 1.6), py + ny * (r + 1.6) + 0.6, 0.8f, CHITIN_DARK);
+            line(g, px - nx * r, py - ny * r, px - nx * (r + 1.6), py - ny * (r + 1.6) + 0.6, 0.8f, CHITIN_DARK);
+            disc(g, px, py, r, i % 2 == 0 ? CHITIN : CHITIN_DARK);
+            disc(g, px - nx * r * 0.35, py - ny * r * 0.35, r * 0.4, i % 2 == 0 ? CHITIN_LIGHT : FLESH);
+        }
+        // The fangs, red, open.
+        double dx = x1 - cx, dy = y1 - cy, len = Math.hypot(dx, dy), fx = dx / len, fy = dy / len;
+        line(g, x1, y1, x1 + fx * 3 - fy * 2.2, y1 + fy * 3 + fx * 2.2, 1.2f, FLESH_LIGHT);
+        line(g, x1, y1, x1 + fx * 3 + fy * 2.2, y1 + fy * 3 - fx * 2.2, 1.2f, FLESH_LIGHT);
+    }
+
+    static void demon(Graphics2D g, BufferedImage img, int i) {
+        demonBack(img, g);
+        switch (i) {
+            case 0 -> { // Lash: four tentacles whipping through an arc from the lower left, motion lines on the arc.
+                g.setColor(c(255, 150, 140, 110));
+                g.setStroke(new BasicStroke(1f));
+                g.draw(new Arc2D.Double(3, 3, 26, 26, 200, -140, Arc2D.OPEN));
+                g.draw(new Arc2D.Double(7, 7, 18, 18, 200, -130, Arc2D.OPEN));
+                double[][] tips = {{4, 9}, {12, 4}, {22, 5}, {28, 12}};
+                for (int k = 0; k < tips.length; k++) {
+                    double[] t = tips[k];
+                    taper(g, 7, 28, 4 + k * 5, 18 - k, t[0], t[1], 5.2, 1.6, FLESH_DARK);
+                    taper(g, 7, 28, 4 + k * 5, 18 - k, t[0], t[1], 3.4, 0.8, k % 2 == 0 ? FLESH : FLESH_LIGHT);
+                }
+                disc(g, 7, 28, 2.6, FLESH_DARK);
+            }
+            case 1 -> // Centipede Bite: a centipede arching over from the lower left, coming down fangs first on the right.
+                    centipede(g, 4, 28, 9, -1, 26, 21, 15);
+            case 2 -> { // Devouring Hunger: the ring of Fury, a demon's red eye in it.
+                for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+                    double r = Math.hypot(x - 15.5, y - 15.5), a = Math.atan2(Math.abs(x - 15.5), y - 15.5) / Math.PI;
+                    if (r >= 10 && r < 13.5 && a <= 0.82) px(img, x, y, r >= 12.5 ? FLESH_DARK : a > 0.5 ? FLESH : c(176, 18, 28));
+                    else if (r >= 10 && r < 13.5) px(img, x, y, c(40, 8, 12));
+                }
+                g.setColor(c(14, 4, 6));
+                g.fill(new Ellipse2D.Double(8.5, 12.5, 14, 7));
+                disc(g, 15.5, 16, 3, FLESH);
+                disc(g, 15.5, 16, 1.4, c(255, 220, 200));
+                line(g, 9, 11, 22, 13, 1.2f, CHITIN);
+            }
+            default -> { }
         }
     }
 }

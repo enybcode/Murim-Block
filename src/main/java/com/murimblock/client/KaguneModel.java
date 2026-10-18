@@ -161,7 +161,7 @@ public final class KaguneModel {
 
     private void drawBone(int i, Animation animation, float t, float bendYaw, float bendPitch, PoseStack stack, VertexConsumer out, int light, int overlay) {
         var bone = bones.get(i);
-        float[] l = local(i, animation, t);
+        float[] l = posed(i, animation, t);
         // Shrunk out of sight (a hidden form): nothing under it is drawn.
         if (Math.abs(l[7]) < 0.02F && Math.abs(l[8]) < 0.02F) return;
         stack.pushPose();
@@ -202,7 +202,7 @@ public final class KaguneModel {
 
     /** The lowest point (y, in the base's space) of bone i's joints and everything under it, posed and bent. */
     private float lowest(int i, Animation animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f parent) {
-        float[] l = local(i, animation, t);
+        float[] l = posed(i, animation, t);
         if (Math.abs(l[7]) < 0.02F && Math.abs(l[8]) < 0.02F) return Float.MAX_VALUE;
         var m = new org.joml.Matrix4f(parent);
         apply(l, m);
@@ -218,7 +218,7 @@ public final class KaguneModel {
         int stop = bones.get(from).parent();
         for (int p = bones.get(i).parent(); p >= 0 && p != stop; p = bones.get(p).parent()) chain.add(0, p);
         var m = new org.joml.Matrix4f(base);
-        for (int p : chain) { apply(local(p, animation, t), m); bendAt(p, bendYaw, bendPitch, m); }
+        for (int p : chain) { apply(posed(p, animation, t), m); bendAt(p, bendYaw, bendPitch, m); }
         return m;
     }
 
@@ -247,6 +247,85 @@ public final class KaguneModel {
             }
             lift.put(root, best);
         }
+    }
+
+    // ---------------------------------------------------------------- strikes (KaguneStrikes)
+
+    /** A chain taken over by a strike: how much (0 to 1), its first joint's turn, and the wave along it (degrees, radians). */
+    private record Aim(float weight, Quaternionf root, float curl, float phase, float arc) { }
+    private final Map<Integer, Aim> aims = new HashMap<>();
+    /** For each chain joint, its chain's first joint and how far along it is (-1 off the chains). */
+    private int[] chainRootOf, chainIndex;
+
+    private void indexChains() {
+        chainRootOf = new int[bones.size()];
+        chainIndex = new int[bones.size()];
+        java.util.Arrays.fill(chainRootOf, -1);
+        for (int root : chainRoots()) {
+            int k = 0;
+            for (int i = root; i >= 0; ) {
+                chainRootOf[i] = root;
+                chainIndex[i] = k++;
+                int next = -1;
+                for (int c : bones.get(i).children()) if (chainSide[c] != 0) next = c;
+                i = next;
+            }
+        }
+    }
+
+    /** No chain taken over (each frame starts so). */
+    public void clearAims() {
+        aims.clear();
+    }
+
+    /**
+     * A strike takes over a chain: its first joint turned to point the chain along {@code dir} ({@code up} as its top),
+     * both in the base's space (KaguneOverlay: the player's model space), by {@code weight} over the animation's own pose;
+     * the joints along it bent by a wave of {@code curl} degrees, travelling with {@code phase}.
+     */
+    public void aim(int root, float weight, Vector3f dir, Vector3f up, float curl, float phase,
+                    int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base) {
+        aim(root, weight, dir, up, curl, phase, 0, from, animation, t, bendYaw, bendPitch, base);
+    }
+
+    /** As above, every joint after the first also bent down by {@code arc} degrees: the chain arches over (a cobra striking). */
+    public void aim(int root, float weight, Vector3f dir, Vector3f up, float curl, float phase, float arc,
+                    int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base) {
+        if (root < 0 || weight <= 0) return;
+        if (chainRootOf == null) indexChains();
+        var frame = frameAbove(from, root, animations.get(animation), t, bendYaw, bendPitch, base);
+        var inv = new org.joml.Matrix3f(frame).invert();
+        Vector3f d = inv.transform(new Vector3f(dir)).normalize(), u = inv.transform(new Vector3f(up)).normalize();
+        // The chain runs along its joints' +z: z = d, y = the top, x to make a frame.
+        Vector3f x = new Vector3f(u).cross(d);
+        if (x.lengthSquared() < 1e-6) x.set(1, 0, 0); else x.normalize();
+        // The frames carry Blockbench's mirror (x by -1): there the cross product turns the top over; turned back.
+        if (inv.determinant() < 0) x.negate();
+        Vector3f y = new Vector3f(d).cross(x).normalize();
+        var q = new Quaternionf().setFromNormalized(new org.joml.Matrix3f(x, y, d));
+        aims.put(root, new Aim(Math.min(1, weight), q, curl, phase, arc));
+    }
+
+    /** How many joints a chain has (from its first), for a strike to spread an arc over it. */
+    public int chainLength(int root) {
+        if (root < 0) return 0;
+        if (chainRootOf == null) indexChains();
+        int n = 0;
+        for (int i = 0; i < bones.size(); i++) if (chainRootOf[i] == root) n++;
+        return n;
+    }
+
+    /** Bone i's local transform now: the animation's, or a strike's where it takes the chain over. */
+    private float[] posed(int i, Animation animation, float t) {
+        float[] l = local(i, animation, t);
+        if (aims.isEmpty() || chainRootOf == null || chainRootOf[i] < 0) return l;
+        Aim aim = aims.get(chainRootOf[i]);
+        if (aim == null) return l;
+        Quaternionf target = i == chainRootOf[i] ? aim.root()
+                : new Quaternionf().rotationX((float) Math.toRadians(aim.arc() + aim.curl() * Math.sin(aim.phase() - chainIndex[i] * 0.55)));
+        var q = new Quaternionf(l[3], l[4], l[5], l[6]).slerp(target, aim.weight());
+        l[3] = q.x; l[4] = q.y; l[5] = q.z; l[6] = q.w;
+        return l;
     }
 
     private boolean under(int bone, int from) {

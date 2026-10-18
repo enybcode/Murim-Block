@@ -12,6 +12,7 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
@@ -87,6 +88,12 @@ public final class KaguneTour {
         // MURIM_KAGUNE_FILM=1: a film instead, a frame every other tick, from the front: the tentacles, the
         // transformation at 100, then the centipedes.
         // MURIM_KAGUNE_FILM=beast: the demon form on all fours, from the front then from behind: still, walking, running.
+        // MURIM_KAGUNE_FILM=art: the art in play, the HUD shown: the Fury ring at 0, 25, 50 and 75, Lash on three zombies,
+        // the Fury full and the transformation, then Centipede Bite.
+        if ("art".equals(System.getenv("MURIM_KAGUNE_FILM"))) {
+            art(mc, server);
+            return;
+        }
         if ("beast".equals(System.getenv("MURIM_KAGUNE_FILM")) && ticks > 20) {
             var up = mc.options.keyUp.getKey();
             var sprint = mc.options.keySprint.getKey();
@@ -146,6 +153,109 @@ public final class KaguneTour {
             }
             default -> { }
         }
+    }
+
+    private static net.minecraft.world.entity.Marker camera;
+    private static final List<java.util.UUID> zombies = new ArrayList<>();
+    private static final List<String> casts = new ArrayList<>();
+
+    private static ServerPlayer self(MinecraftServer server) {
+        return server.getPlayerList().getPlayer(Minecraft.getInstance().player.getUUID());
+    }
+
+    private static void art(Minecraft mc, MinecraftServer server) throws Exception {
+        if (ticks == 20) server.execute(() -> {
+            var level = server.overworld();
+            level.setDayTime(6000);
+            level.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, server);
+            level.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(false, server);
+            // Not peaceful: the zombies would vanish.
+            server.setDifficulty(Difficulty.NORMAL, true);
+            ServerPlayer player = self(server);
+            player.getAbilities().flying = false;
+            player.onUpdateAbilities();
+            player.setGameMode(GameType.SURVIVAL);
+            com.murimblock.martial.MartialService.learn(player, com.murimblock.martial.MartialArts.art(com.murimblock.martial.MartialArts.DEVOURING_DEMON));
+            com.murimblock.martial.MartialService.unlock(player, com.murimblock.martial.MartialArts.LASH);
+            com.murimblock.martial.MartialService.assign(player, 0, com.murimblock.martial.MartialArts.LASH.id());
+            com.murimblock.qi.QiService.setQiMax(player, 400);
+            com.murimblock.qi.QiService.setQi(player, 400);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
+            com.murimblock.combat.CombatService.setCombatMode(player, true);
+            player.teleportTo(level, 0.5, -60, 0.5, 0, 0);
+            for (double[] at : new double[][]{{0.5, 3.6}, {-2.4, 2.4}, {3.4, 2.4}}) {
+                var zombie = EntityType.ZOMBIE.create(level);
+                zombie.moveTo(at[0], -60, at[1], 180, 0);
+                zombie.setYHeadRot(180);
+                zombie.yBodyRot = 180;
+                zombie.setNoAi(true);
+                zombie.setPersistenceRequired();
+                zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.LEATHER_HELMET));
+                zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(400);
+                zombie.setHealth(400);
+                level.addFreshEntity(zombie);
+                zombies.add(zombie.getUUID());
+            }
+        });
+        if (ticks == 40) {
+            camera = new net.minecraft.world.entity.Marker(EntityType.MARKER, mc.level);
+            // From his right side: the zombies to the south on the right of the picture.
+            place(-6.0, -58.0, 1.6, -90, 12);
+            mc.options.chatVisibility().set(net.minecraft.world.entity.player.ChatVisiblity.HIDDEN);
+            mc.gui.getChat().clearMessages(false);
+            mc.options.fov().set(60);
+        }
+        if (camera != null && mc.getCameraEntity() != camera) mc.setCameraEntity(camera);
+        // He faces the zombies (south): the client turns its own player, not the server's teleport.
+        if (ticks > 30) { mc.player.setYRot(0); mc.player.yRotO = 0; mc.player.setYHeadRot(0); mc.player.yHeadRotO = 0; mc.player.setYBodyRot(0); mc.player.yBodyRotO = 0; mc.player.setXRot(0); }
+        // The Fury ring at a quarter, half and three quarters.
+        int[][] steps = {{52, 25}, {62, 50}, {72, 75}, {82, 10}};
+        for (int[] s : steps) if (ticks == s[0]) server.execute(() -> com.murimblock.martial.DevouringDemon.setFury(self(server), s[1]));
+        if (ticks == 50) capture(mc, "art-01-fury-0.png");
+        if (ticks == 60) capture(mc, "art-02-fury-25.png");
+        if (ticks == 70) capture(mc, "art-03-fury-50.png");
+        if (ticks == 80) capture(mc, "art-04-fury-75.png");
+        // Slowed to 5 ticks a second while filming: every tick gets its own frame.
+        if (ticks == 84) server.execute(() -> server.tickRateManager().setTickRate(5));
+        if (ticks == 215) server.execute(() -> server.tickRateManager().setTickRate(20));
+        if (ticks == 90) cast(server);
+        if (ticks == 120) server.execute(() -> com.murimblock.martial.DevouringDemon.setFury(self(server), KaguneState.MAX_FURY));
+        if (ticks == 186) capture(mc, "art-05-demon.png");
+        if (ticks == 190) cast(server);
+        if (ticks >= 86 && ticks <= 214) capture(mc, String.format("art/%03d.png", ticks - 86));
+        if (ticks == 100) server.execute(() -> {
+            float hurt = 0;
+            for (var id : zombies) if (server.overworld().getEntity(id) instanceof net.minecraft.world.entity.LivingEntity z) hurt += 400 - z.getHealth();
+            float total = hurt;
+            mc.execute(() -> check(total > 0, "Lash struck the zombies ahead: " + total + " in all"));
+        });
+        if (ticks == 205) server.execute(() -> {
+            boolean ahead = server.overworld().getEntity(zombies.get(0)) instanceof net.minecraft.world.entity.LivingEntity z && z.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN);
+            mc.execute(() -> check(ahead, "Centipede Bite bit the zombie ahead"));
+        });
+        if (ticks == 216) {
+            check(casts.equals(List.of("CAST", "CAST")), "both techniques were cast: " + casts);
+            finish(mc);
+        }
+    }
+
+    private static void cast(MinecraftServer server) {
+        server.execute(() -> {
+            ServerPlayer player = self(server);
+            com.murimblock.martial.MartialService.resetCooldowns(player);
+            casts.add(String.valueOf(com.murimblock.martial.MartialService.castSlot(player, 0)));
+        });
+    }
+
+    private static void place(double x, double y, double z, float yaw, float pitch) {
+        camera.setPos(x, y, z);
+        camera.xo = camera.xOld = x;
+        camera.yo = camera.yOld = y;
+        camera.zo = camera.zOld = z;
+        camera.setYRot(yaw);
+        camera.yRotO = yaw;
+        camera.setXRot(pitch);
+        camera.xRotO = pitch;
     }
 
     private static void check(boolean ok, String what) {

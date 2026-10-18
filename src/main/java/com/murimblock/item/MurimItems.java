@@ -332,6 +332,9 @@ public final class MurimItems {
 
     public static final DeferredItem<MartialManualItem> SANGUINE_ART_SCROLL = ITEMS.register("sanguine_art_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.SANGUINE_ART));
+    /** The Devouring Demon Art's scroll (docs/combat/styles/devouring-demon-art.md); where it is found is still to decide. */
+    public static final DeferredItem<MartialManualItem> DEVOURING_DEMON_SCROLL = ITEMS.register("devouring_demon_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.DEVOURING_DEMON));
 
     /** Elixirs of cultivation (docs/cultivation/qi-cultivation.md), made from the flora of the Murim lands. */
     public static final DeferredItem<com.murimblock.cultivation.PillItem> QI_GATHERING_PILL = ITEMS.register("qi_gathering_pill",
@@ -409,6 +412,7 @@ public final class MurimItems {
                         output.accept(MOUNTAIN_SHATTERING_FIST_SCROLL.get());
                         output.accept(MAJIN_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());
+                        output.accept(DEVOURING_DEMON_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());
                         // The alchemy: the pill furnace, its manual and scrolls, its pills (docs/cultivation/alchemy.md).

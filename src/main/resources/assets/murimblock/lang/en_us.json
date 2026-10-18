@@ -1146,5 +1146,14 @@
   "effect.murimblock.thorn_body": "Thorn Body",
   "effect.murimblock.blood_vigor": "Blood Vigor",
   "effect.murimblock.keen_senses": "Keen Senses",
-  "effect.murimblock.clear_mind": "Clear Mind"
+  "effect.murimblock.clear_mind": "Clear Mind",
+  "art.murimblock.devouring_demon": "Devouring Demon Art",
+  "item.murimblock.devouring_demon_scroll": "Devouring Demon Art Scroll",
+  "passive.murimblock.devouring_hunger": "Devouring Hunger",
+  "passive.murimblock.devouring_hunger.desc": "In combat, bare-handed, your kagune comes out of your back: four red tentacles. Every blow you land or take feeds your Fury, the ring of blood round your dantian. Full, you become the demon: two centipedes and a mask, on all fours, faster, striking harder and taking less, and every technique changes. The Fury drains in that form; spent, you are yourself again, out of breath.",
+  "gui.murimblock.techniques.strikes_fixed.devouring_demon": "Epic Fight's bare-hand strikes for now; each blow feeds the Fury. Nothing to choose here.",
+  "technique.murimblock.lash": "Lash",
+  "technique.murimblock.lash.desc": "Your four tentacles wind back and whip through the arc in front of you, 4.5 blocks out: every foe there is struck and thrown back. In the demon form, this key is Centipede Bite.",
+  "technique.murimblock.centipede_bite": "Centipede Bite",
+  "technique.murimblock.centipede_bite.desc": "The demon form's Lash: a centipede rears up and shoots at the foe you look at, up to 7 blocks, and bites. It is slowed and dragged toward you, and you devour a fifth of the wound as health."
 }

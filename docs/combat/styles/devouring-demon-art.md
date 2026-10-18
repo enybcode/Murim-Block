@@ -61,19 +61,48 @@ dessous, la cible tombe à genoux ; un royaume, elle est écrasée (ralentie, af
 oppressée ; plus fort que le joueur, rien. Les effets : le temps se fige une demi-seconde, des éclairs noirs et rouges,
 l'écran de la victime se décolore et l'on entend un battement de cœur.
 
+## En jeu (18/10/2026, sur `test`)
+
+- **L'art** : `MartialArts.DEVOURING_DEMON` (royaume proposé : Foundation Establishment, `DEVOURING_DEMON_REALM`), mains
+  nues, passif `devouring_hunger` (les coups à mains nues d'Epic Fight pour l'instant). Logique serveur :
+  `martial/DevouringDemon` ; état synchronisé : `martial/KaguneState` (forme, rage, coup de kagune en cours).
+- **La kagune sort toute seule** en mode combat, art principal, mains vides (pas de touche pour l'instant) ; une arme en
+  main ou la sortie du mode combat la range, et la rage est perdue.
+- **La rage (Fury)**, sur 100 : +4 par coup porté, +3 par coup reçu (une fois par tick) ; après 6 s sans rien, −2 par
+  seconde. À 100, **transformation automatique** (2,6 s, aucune technique pendant), puis forme du démon à quatre pattes :
+  dégâts ×1,25, dégâts reçus ×0,75, −3 de rage par seconde, +2 par coup porté. À 0 : retour aux tentacules, essoufflé
+  4 s (lenteur II, faiblesse). La forme du démon tient hors combat jusqu'à épuisement ; un K.O. ou une arme la finit.
+- **Le HUD**, combiné à la barre de combat (`CombatBarClient.furyRing`) : un anneau de sang autour du dantian, qui monte
+  des deux côtés depuis le bas et se ferme en haut à 100 ; au-delà de 75 il bat comme un cœur ; en forme du démon il
+  devient violet veiné de rouge, qui coule, et le cerclage d'or du dantian passe au cramoisi ; les icônes des
+  techniques montrent leur version du démon.
+- **Lash** (160 Qi, 5 s) : les quatre tentacules s'enroulent vers sa droite puis balaient l'arc devant lui (4,5 blocs,
+  150°), coup ×1,3 sur chaque ennemi, repoussé. Corps : `demon_lash`.
+- **Centipede Bite** (la même touche en forme du démon) : une scolopendre se dresse comme un cobra, puis frappe en arc et
+  retombe sur l'ennemi regardé (7 blocs, cône de 22°), coup ×2,2, ralenti, attiré ; il dévore un cinquième de la
+  blessure en vie. Corps : `demon_bite`, à quatre pattes.
+- **Le mouvement des chaînes** (`client/KaguneStrikes`, `KaguneModel.aim`) est calculé dans le jeu, par-dessus l'idle,
+  pour viser là où il regarde (espace modèle : devant −z, sa droite +x, vérifié en jeu) ; la morsure fait un arc dont la
+  corde vaut la distance de la cible : la tête retombe dessus.
+- **Chiffres** : +5 de « kagune » sur la main nue des techniques (`TechniquePower.DEMON_TRAINING`).
+- **Tests** : `DevouringDemonGameTests` (la kagune sort, la rage monte, transformation, retour, Lash dans l'arc, morsure
+  sur la cible regardée). Film en vrai client (HUD, Lash, transformation, morsure ; jeu ralenti à 5 ticks/s pour que
+  chaque tick ait son image) : `MURIM_KAGUNE=1 MURIM_KAGUNE_FILM=art gradlew -PgameTests runWeaponTour`.
+- **Icônes** : `scripts/worldgen/TechniqueIcons.java`, famille « demon ».
+
 ## À faire, dans l'ordre
 
-1. La surcouche des deux formes en jeu, à partir du modèle fusionné.
-2. La barre de rage dans le HUD.
-3. La transformation et le retour.
-4. Les M1 de chaque forme.
-5. Les 8 techniques et leurs 8 versions du démon, avec leurs chiffres (alignés sur
-   [../technique-balance.md](../technique-balance.md) et le Sanguine Art).
-6. Le parchemin, et l'endroit où on le trouve.
+1. ~~La surcouche des deux formes~~, ~~la barre de rage dans le HUD~~, ~~la transformation et le retour~~ : faits.
+2. Les 7 autres techniques et leurs versions du démon (Impaling Thorns / Burrow, Grapple / Constrict, Cage / Spiral,
+   Cocoon / Carapace, Sovereign's Will / Demon's Roar, Black Lightning Mantle / Black Storm, Burst / Demon's Maw).
+3. Les M1 de chaque forme (par les tentacules, à 4 blocs) ; pour l'instant ceux d'Epic Fight à mains nues.
+4. La forme du démon ne doit plus pouvoir parer (pas encore bloqué).
+5. Le parchemin, et l'endroit où on le trouve.
 
 ## Encore à décider par Enzo
 
 - Le nom de l'art (proposé : *Devouring Demon Art*) et de la barre (proposé : *Fury*).
 - Le royaume requis (proposé : Foundation Establishment).
 - Où trouver le parchemin.
-- La transformation : automatique quand la barre est pleine (proposé), ou déclenchée par le joueur.
+- La transformation : automatique quand la barre est pleine (fait ainsi, à confirmer), ou déclenchée par le joueur.
+- La kagune : sortie d'elle-même en mode combat (fait ainsi, à confirmer), ou par une touche.
