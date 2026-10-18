@@ -156,6 +156,9 @@ public final class KaguneModel {
         stack.scale(l[7], l[8], l[9]);
     }
 
+    /** An extra turn (degrees about X) at the first joint of some chains, to lift them off the ground (keyed by bone). */
+    private final Map<Integer, Float> lift = new HashMap<>();
+
     private void drawBone(int i, Animation animation, float t, float bendYaw, float bendPitch, PoseStack stack, VertexConsumer out, int light, int overlay) {
         var bone = bones.get(i);
         float[] l = local(i, animation, t);
@@ -163,13 +166,92 @@ public final class KaguneModel {
         if (Math.abs(l[7]) < 0.02F && Math.abs(l[8]) < 0.02F) return;
         stack.pushPose();
         apply(l, stack);
-        if (chainSide[i] != 0 && (bendYaw != 0 || bendPitch != 0)) {
-            stack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(bendYaw * chainSide[i]));
-            stack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(bendPitch));
-        }
+        bendAt(i, bendYaw, bendPitch, stack.last().pose());
         for (var cube : bone.cubes()) drawCube(cube, stack, out, light, overlay);
         for (int child : bone.children()) drawBone(child, animation, t, bendYaw, bendPitch, stack, out, light, overlay);
         stack.popPose();
+    }
+
+    /** The tail's bend at a chain joint, and the lift at a chain's first joint. */
+    private void bendAt(int i, float bendYaw, float bendPitch, org.joml.Matrix4f m) {
+        if (chainSide[i] != 0 && (bendYaw != 0 || bendPitch != 0)) {
+            m.rotate((float) Math.toRadians(bendYaw * chainSide[i]), 0, 1, 0);
+            m.rotate((float) Math.toRadians(bendPitch), 1, 0, 0);
+        }
+        Float up = lift.get(i);
+        if (up != null && up != 0) m.rotate((float) Math.toRadians(up), 1, 0, 0);
+    }
+
+    private static void apply(float[] l, org.joml.Matrix4f m) {
+        m.translate(l[0], l[1], l[2]).rotate(new Quaternionf(l[3], l[4], l[5], l[6])).scale(l[7], l[8], l[9]);
+    }
+
+    /** The first joints of the tentacles and the centipedes (a chain joint whose parent is not one). */
+    private List<Integer> chainRoots;
+
+    List<Integer> chainRoots() {
+        if (chainRoots == null) {
+            chainRoots = new ArrayList<>();
+            for (int i = 0; i < bones.size(); i++) {
+                int p = bones.get(i).parent();
+                if (chainSide[i] != 0 && (p < 0 || chainSide[p] == 0)) chainRoots.add(i);
+            }
+        }
+        return chainRoots;
+    }
+
+    /** The lowest point (y, in the base's space) of bone i's joints and everything under it, posed and bent. */
+    private float lowest(int i, Animation animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f parent) {
+        float[] l = local(i, animation, t);
+        if (Math.abs(l[7]) < 0.02F && Math.abs(l[8]) < 0.02F) return Float.MAX_VALUE;
+        var m = new org.joml.Matrix4f(parent);
+        apply(l, m);
+        bendAt(i, bendYaw, bendPitch, m);
+        float low = m.m31();
+        for (int child : bones.get(i).children()) low = Math.min(low, lowest(child, animation, t, bendYaw, bendPitch, m));
+        return low;
+    }
+
+    /** Bone i's parent frame, from bone from's parent down (posed and bent), from a base matrix. */
+    private org.joml.Matrix4f frameAbove(int from, int i, Animation animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base) {
+        List<Integer> chain = new ArrayList<>();
+        int stop = bones.get(from).parent();
+        for (int p = bones.get(i).parent(); p >= 0 && p != stop; p = bones.get(p).parent()) chain.add(0, p);
+        var m = new org.joml.Matrix4f(base);
+        for (int p : chain) { apply(local(p, animation, t), m); bendAt(p, bendYaw, bendPitch, m); }
+        return m;
+    }
+
+    /**
+     * Keeps every chain under bone {@code from} above the ground (Enzo, 18/10: "the kagune must not go into the ground"):
+     * with {@code base} mapping the model into a space where the ground is at y = 0 (the player's feet), each chain that
+     * would dip under {@code clearance} is turned up at its first joint, by the least angle, either way, that lifts it
+     * clear (or, failing that, the one that lifts it most).
+     */
+    public void keepAboveGround(int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base, float clearance) {
+        var a = animations.get(animation);
+        for (int root : chainRoots()) {
+            if (!under(root, from)) continue;
+            lift.remove(root);
+            var frame = frameAbove(from, root, a, t, bendYaw, bendPitch, base);
+            if (lowest(root, a, t, bendYaw, bendPitch, frame) >= clearance) continue;
+            float best = 0, bestLow = -Float.MAX_VALUE;
+            search:
+            for (float step = 3; step <= 90; step += 3) {
+                for (float sign : new float[]{1, -1}) {
+                    lift.put(root, step * sign);
+                    float low = lowest(root, a, t, bendYaw, bendPitch, frame);
+                    if (low >= clearance) { best = step * sign; break search; }
+                    if (low > bestLow) { bestLow = low; best = step * sign; }
+                }
+            }
+            lift.put(root, best);
+        }
+    }
+
+    private boolean under(int bone, int from) {
+        for (int p = bone; p >= 0; p = bones.get(p).parent()) if (p == from) return true;
+        return false;
     }
 
     private static final float ATLAS = 64;

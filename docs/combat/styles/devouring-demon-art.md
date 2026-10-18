@@ -25,6 +25,11 @@
   - `idle_demon` : les scolopendres au repos.
 - **Vérifié** : à chaque image des deux idles, aucun bloc de kagune ne passe sous le sol ni dans le corps. La
   transformation n'est pas encore vérifiée.
+- **En jeu** (`/kagune off|hunger|transform|demon`, opérateur) : `martial/KaguneState`, `client/KaguneOverlay`, physique
+  de queue `client/KaguneTail`. Après la transformation, il est **à quatre pattes** (`demon-beast-gait.cjs`, tête levée) :
+  hitbox de 0,9 × 1,15 bloc (yeux à 0,95), **+40 % de vitesse** (`KaguneState.Beast`). Chaque chaîne de la kagune est
+  relevée à sa racine, image par image, pour rester à 0,28 bloc au-dessus du sol (`KaguneModel.keepAboveGround`).
+  Vérifié en vrai client : `MURIM_KAGUNE=1 MURIM_KAGUNE_FILM=beast gradlew -PgameTests runWeaponTour`.
 
 ## Comment ça marche
 

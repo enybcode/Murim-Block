@@ -53,9 +53,6 @@ public final class DemonBeastClient {
 
     /** Whether the player is in the demon form now, past the transformation. */
     public static boolean inBeastForm(Player player) {
-        var state = KaguneState.of(player);
-        if (state.form() == KaguneState.Form.DEMON) return true;
-        if (state.form() != KaguneState.Form.TRANSFORM) return false;
-        return (player.level().getGameTime() - state.since()) / 20F >= KaguneModel.get().length("transform");
+        return KaguneState.beast(player);
     }
 }
