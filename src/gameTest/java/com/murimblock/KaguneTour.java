@@ -100,6 +100,11 @@ public final class KaguneTour {
             if (ticks >= 60 && ticks <= 320 && ticks % 2 == 0) capture(mc, String.format("beast/%03d.png", (ticks - 60) / 2));
             if (ticks == 150) check(com.murimblock.client.DemonBeastClient.motion(mc.player) == com.murimblock.integration.epicfight.MurimAnimations.Motions.DEMON_BEAST_WALK,
                     "walking in the demon form is the beast's walk: " + com.murimblock.client.DemonBeastClient.motion(mc.player));
+            if (ticks == 90) {
+                check(Math.abs(mc.player.getBbHeight() - KaguneState.BEAST_SIZE.height()) < 0.01F, "on all fours the hitbox is the beast's: " + mc.player.getBbHeight() + " high");
+                var speed = server.getPlayerList().getPlayers().get(0).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+                check(speed != null && speed.getValue() > 0.1 * 1.3, "on all fours he is faster than standing: speed " + (speed == null ? "?" : speed.getValue()));
+            }
             if (ticks == 322) finish(mc);
             return;
         }

@@ -37,6 +37,8 @@ public final class KaguneOverlay {
     /** Blockbench draws in pixels with the player's right arm at -x; Epic Fight's model space is in blocks, right arm at +x. */
     private static final float PIXEL = 1 / 16F;
     /** How far the beast gait leans the torso (scripts/animation/demon-beast-gait.cjs): the centipedes are turned back by it. */
+    /** How far above the ground (blocks, at the player's feet) every joint of the kagune stays: the tube's own thickness. */
+    static final float GROUND_CLEARANCE = 0.28F;
     static final float BEAST_LEAN = Float.parseFloat(System.getProperty("murimblock.beastLean", "90"));
 
     private KaguneOverlay() { }
@@ -118,6 +120,18 @@ public final class KaguneOverlay {
                 }
                 model.toParentAtRest(bone, stack);
                 float[] bend = KaguneTail.bend(player, partial);
+                // The same transforms from the model's own space (no camera), where the ground is at the player's feet
+                // (y 0, in blocks): every chain is kept above it.
+                var base = new PoseStack();
+                MathUtils.mulStack(base, torsoPose);
+                base.scale(-PIXEL, PIXEL, PIXEL);
+                if (DemonBeastClient.inBeastForm(player)) {
+                    base.translate(0, 12, 2);
+                    base.mulPose(com.mojang.math.Axis.XP.rotationDegrees(BEAST_LEAN));
+                    base.translate(0, -12, -2);
+                }
+                model.toParentAtRest(bone, base);
+                model.keepAboveGround(bone, animation, time[0], bend[0], bend[1], base.last().pose(), GROUND_CLEARANCE);
                 model.draw(bone, animation, time[0], bend[0], bend[1], stack, out, light, OverlayTexture.NO_OVERLAY);
                 stack.popPose();
             }
