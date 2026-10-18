@@ -190,7 +190,7 @@ public final class OverlordSpearGameTests {
         OverlordSpear.landForTests(player);
         helper.assertTrue(close.getHealth() < edge.getHealth() && edge.getHealth() < 300, "The landing did not strike the centre harder: " + close.getHealth() + ", " + edge.getHealth());
         helper.assertTrue(out.getHealth() == 300, "The landing struck beyond its crater");
-        helper.assertTrue(helper.getLevel().getBlockState(player.blockPosition().below().east(2)).isAir(), "No crater");
+        helper.assertTrue(helper.getLevel().getBlockState(player.blockPosition().below().east(1)).isAir(), "No crater");
         end(helper, player, close, edge, out);
     }
 

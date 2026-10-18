@@ -50,6 +50,9 @@ ramp('core', '#ffd27a', '#ffffff', 3, true);
 ramp('mid', '#ff5a1e', '#ffb050', 3, true, 210);
 ramp('sheath', '#c81014', '#ff3a1a', 3, true, 120);
 ramp('ring', '#b80c10', '#ffb040', 6, true, 230);
+colour('wave0', '#ff3a14', true, 110);
+colour('wave1', '#ff7a2a', true, 170);
+colour('wave2', '#ffd890', true, 220);
 
 const uvOf = name => { const [x, y] = AT[name]; return Object.fromEntries(FACES.map(f => [f, { uv: [x, y], uv_size: [1, 1] }])); };
 /** A cube from `from` to `to` (model pixels) in one palette colour, turned `rot` degrees about `pivot`. */
@@ -155,30 +158,43 @@ const write = (name, cubes, bounds) => {
 
 // ---------------------------------------------------------------- the shock wave: a ring 16 across at scale 1
 
+// A thin band of light lying on the ground: hot at its front, red behind, see-through (the renderer fades it as it
+// spreads). 48 short segments, so its curve stays round when it is grown to ten blocks.
 {
-  const c = [], n = 32, r = 8;
+  const c = [], n = 48, r = 8;
   for (let i = 0; i < n; i++) {
-    const a = i * 360 / n, seg = 2 * Math.PI * r / n + 0.2;
-    c.push(cube('ring' + (i % 2 ? 4 : 5), [-seg / 2, 0, r - 1.4], [seg / 2, 0.35, r - 0.4], [0, a, 0], [0, 0, 0]));
-    c.push(cube('ring' + (i % 2 ? 1 : 2), [-seg / 2, 0, r - 0.4], [seg / 2, 0.2, r + 0.4], [0, a, 0], [0, 0, 0]));
+    const a = i * 360 / n, seg = 2 * Math.PI * r / n + 0.12;
+    c.push(cube('wave2', [-seg / 2, 0, r - 0.32], [seg / 2, 0.06, r]), );
+    c.push(cube('wave0', [-seg / 2, 0, r - 0.7], [seg / 2, 0.04, r - 0.32]));
+    c[c.length - 2].rotation = c[c.length - 1].rotation = [0, a, 0];
+    c[c.length - 2].pivot = c[c.length - 1].pivot = [0, 0, 0];
   }
   write('overlord_ring', c, 2);
 }
 
-// ---------------------------------------------------------------- the cracks: 8 jagged lines out to 8 (16 across)
+// ---------------------------------------------------------------- the cracks: jagged lines out to 8 (16 across)
 
+// Seven main cracks of uneven length, each a chain of short segments turning a little at each joint and thinning out,
+// with a branch or two; a dark line in the ground, a thread of embers along it.
 {
   const c = [];
-  for (let k = 0; k < 8; k++) {
-    const base = k * 45 + (k % 2 ? 9 : -6);
-    let x = 0.8;
-    for (let s = 0; s < 4; s++) {
-      const len = 1.6 + ((k * 3 + s) % 3) * 0.4, bend = base + (s % 2 ? 12 : -12), w = 0.55 - s * 0.1;
-      c.push(cube(s < 2 ? 'ember5' : 'ember3', [x, 0, -w / 2], [x + len, 0.12, w / 2], [0, bend, 0], [0, 0, 0]));
-      c.push(cube('iron0', [x, -0.02, -w / 2 - 0.25], [x + len, 0.06, w / 2 + 0.25], [0, bend, 0], [0, 0, 0]));
-      x += len - 0.2;
+  let seed = 7;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const crack = (x0, z0, heading, length, w0, branches) => {
+    let x = x0, z = z0, h = heading, w = w0;
+    const step = 0.55;
+    for (let d = 0; d < length; d += step) {
+      h += (rnd() - 0.5) * 34;
+      const dx = Math.cos(h * Math.PI / 180) * step, dz = Math.sin(h * Math.PI / 180) * step;
+      const cx = x + dx / 2, cz = z + dz / 2, len = step + 0.08;
+      // Bedrock turns about y the other way round: a segment along x turned by -h follows the heading.
+      c.push({ origin: [cx - len / 2, 0, cz - w / 2], size: [len, 0.05, w], uv: uvOf('iron0'), rotation: [0, -h, 0], pivot: [cx, 0, cz] });
+      if (w > 0.12) c.push({ origin: [cx - len / 2, 0.03, cz - w * 0.22], size: [len, 0.04, w * 0.44], uv: uvOf(d < length * 0.5 ? 'ember5' : 'ember3'), rotation: [0, -h, 0], pivot: [cx, 0, cz] });
+      if (branches > 0 && rnd() < 0.18 && d > 1) { crack(x + dx, z + dz, h + (rnd() < 0.5 ? -40 : 40), length * 0.35, w * 0.6, 0); branches--; }
+      x += dx; z += dz; w = Math.max(0.06, w * 0.9);
     }
-  }
+  };
+  for (let k = 0; k < 7; k++) crack(0, 0, k * 360 / 7 + rnd() * 20, 4.5 + rnd() * 3, 0.42, 2);
   write('overlord_cracks', c, 2);
 }
 
