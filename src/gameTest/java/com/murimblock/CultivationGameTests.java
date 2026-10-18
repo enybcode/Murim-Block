@@ -402,6 +402,7 @@ public final class CultivationGameTests {
         MeditationService.held(player);
         helper.assertTrue(!InnerWorldService.isInside(player), "The inner world opened without the seven seconds");
         helper.assertTrue(MeditationService.ENTER_HOLD_TICKS == 140, "Entering should take seven seconds");
+        helper.assertTrue(InnerWorldService.ENTRY_QI_SHARE == 0.8, "Entering should need 80% of the Qi");
         end(helper, player);
     }
 

@@ -154,12 +154,15 @@ public final class InnerWorldService {
 
     // ---------------------------------------------------------------- going in
 
-    /** Into the inner world, from meditation with a full reserve; at a bottleneck, the old master waits with the trial. */
+    /** The share of the Qi reserve one must hold to open the inner world (Enzo, 18/10). */
+    public static final double ENTRY_QI_SHARE = 0.8;
+
+    /** Into the inner world, from meditation with at least {@link #ENTRY_QI_SHARE} of the reserve; at a bottleneck, the old master waits with the trial. */
     public static boolean enter(ServerPlayer player) {
         if (isInside(player) || !MeditationService.isMeditating(player)) return false;
         ServerLevel inner = innerLevel(player.server);
         if (inner == null) return false;
-        if (QiService.getQi(player) < QiService.getQiMax(player) - 1e-6) {
+        if (QiService.getQi(player) < QiService.getQiMax(player) * ENTRY_QI_SHARE - 1e-6) {
             player.displayClientMessage(Component.translatable("cultivation.murimblock.inner.reserve"), true);
             return false;
         }
