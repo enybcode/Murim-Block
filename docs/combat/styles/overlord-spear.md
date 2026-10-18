@@ -11,7 +11,7 @@ C'est un art intermédiaire : il s'apprend à **Qi Condensation**.
 ## Où le trouver
 
 Quand la **maîtrise de la Lance du Pic Céleste** (l'art du capitaine de l'arène) atteint **50**, le joueur reçoit le
-manuel de la Lance du Conquérant.
+rouleau de la Lance du Conquérant **et la Lance de la Ruine** (une seule fois ; décision d'Enzo du 18/10/2026).
 
 ## Passif « Conqueror's Weight »
 

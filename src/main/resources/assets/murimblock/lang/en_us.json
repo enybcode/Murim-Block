@@ -620,7 +620,7 @@
   "evolution.murimblock.stampede": "Stampede",
   "item.murimblock.overlord_spear_scroll": "Overlord Spear Scroll",
   "art.murimblock.overlord_spear": "Overlord Spear",
-  "art.murimblock.overlord_spear.enlightenment": "The spear grows heavy in your hands. It no longer wants to keep its distance: it wants to crush. You received the Overlord Spear Scroll.",
+  "art.murimblock.overlord_spear.enlightenment": "The spear grows heavy in your hands. It no longer wants to keep its distance: it wants to crush. You received the Overlord Spear Scroll and the Spear of Ruin.",
   "passive.murimblock.conquerors_weight": "Conqueror's Weight",
   "passive.murimblock.conquerors_weight.desc": "Epic Fight's spear strikes. Each one that lands adds a charge of Domination (5 at most, lost after 4 s without a hit). At 5, your next strike is a battering ram: x1.8 damage, the target's guard broken, and a shock wave splits the ground 4 blocks ahead, pushing everything back.",
   "gui.murimblock.techniques.strikes_fixed.overlord_spear": "Epic Fight's own spear strikes. Every fifth that lands makes the next one a battering ram.",
