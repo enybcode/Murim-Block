@@ -36,7 +36,7 @@
   "item.murimblock.realm_breaking_pill.tooltip": "Weakens the Heart Demon of your next great breakthrough (10 min)",
   "item.murimblock.pill.toxicity": "Adds toxicity: too many pills poison",
   "cultivation.murimblock.minor": "You broke through to %s",
-  "cultivation.murimblock.bottleneck": "Your Qi presses against the gate of %s. Meditate with a full reserve and hold [%s] for fifteen seconds: in your inner world, the old master will offer you the trial",
+  "cultivation.murimblock.bottleneck": "Your Qi presses against the gate of %s. Meditate with a full reserve and hold [%s] for seven seconds: in your inner world, the old master will offer you the trial",
   "cultivation.murimblock.major": "%s broke through to %s",
   "cultivation.murimblock.deviation": "Your Qi deviates: Qi Max lost, the reserve gone, your body weakened for a while",
   "cultivation.murimblock.inner.reserve": "Your reserve must be full to open your inner world",

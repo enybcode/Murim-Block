@@ -43,7 +43,7 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MeditationClient {
-    /** How long the key is held to open the inner world (15 s), or to leave it, in ticks. */
+    /** How long the key is held to open the inner world (7 s), or to leave it, in ticks. */
     public static final int HOLD_TICKS = MeditationService.ENTER_HOLD_TICKS, LEAVE_TICKS = MeditationService.LEAVE_HOLD_TICKS;
     private static int held;
     private static boolean wasDown, holdSent;

@@ -96,8 +96,8 @@ public final class MeditationService {
         return true;
     }
 
-    /** How long the meditation key is held, seated, to open the inner world (15 s), and anywhere inside to leave it (ticks). */
-    public static final int ENTER_HOLD_TICKS = 15 * 20, LEAVE_HOLD_TICKS = 30;
+    /** How long the meditation key is held, seated, to open the inner world (7 s, Enzo 18/10), and anywhere inside to leave it (ticks). */
+    public static final int ENTER_HOLD_TICKS = 7 * 20, LEAVE_HOLD_TICKS = 30;
 
     /**
      * The key held down while seated (or anywhere in the inner world): into the inner world, or back out of it. One

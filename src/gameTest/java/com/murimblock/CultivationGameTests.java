@@ -396,12 +396,12 @@ public final class CultivationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "cultivation_hold")
-    public static void theInnerWorldOpensOnlyAfterFifteenSecondsSeated(GameTestHelper helper) {
+    public static void theInnerWorldOpensOnlyAfterSevenSecondsSeated(GameTestHelper helper) {
         ServerPlayer player = seated(helper);
         // A client claiming a full hold right after sitting down is not heard.
         MeditationService.held(player);
-        helper.assertTrue(!InnerWorldService.isInside(player), "The inner world opened without the fifteen seconds");
-        helper.assertTrue(MeditationService.ENTER_HOLD_TICKS == 300, "Entering should take fifteen seconds");
+        helper.assertTrue(!InnerWorldService.isInside(player), "The inner world opened without the seven seconds");
+        helper.assertTrue(MeditationService.ENTER_HOLD_TICKS == 140, "Entering should take seven seconds");
         end(helper, player);
     }
 
