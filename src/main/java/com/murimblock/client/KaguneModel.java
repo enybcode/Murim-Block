@@ -235,6 +235,8 @@ public final class KaguneModel {
         var a = animations.get(animation);
         for (int root : chainRoots()) {
             if (!under(root, from)) continue;
+            // A strike driving it into the ground (Impaling Thorns, Burrow): let it go under.
+            if (diving.contains(root)) { lift.remove(root); continue; }
             lift.remove(root);
             var frame = frameAbove(from, root, a, t, bendYaw, bendPitch, base);
             if (lowest(root, a, t, bendYaw, bendPitch, frame) >= clearance) continue;
@@ -276,9 +278,35 @@ public final class KaguneModel {
         }
     }
 
+    /** Chains a strike drives into the ground this frame: not kept above it. */
+    private final java.util.Set<Integer> diving = new java.util.HashSet<>();
+
+    /** This chain goes into the ground this frame (KaguneStrikes: Impaling Thorns, Burrow). */
+    public void dive(int root) {
+        if (root >= 0) diving.add(root);
+    }
+
+    /**
+     * Draws one chain by itself, anywhere (KaguneEruptions: the kagune bursting out of the ground under a foe): from the
+     * stack's frame (in the model's pixels), its first joint at its own offset, pointed along {@code dir}, as {@link #aim}
+     * would; the chains taken over for the players' own kagune are left as they were.
+     */
+    public void drawChain(int root, String animation, float t, Vector3f dir, Vector3f up, float curl, float phase, float arc, float stretch,
+                          PoseStack stack, VertexConsumer out, int light) {
+        if (root < 0) return;
+        var keptAim = aims.remove(root);
+        var keptLift = lift.remove(root);
+        aim(root, 1, dir, up, curl, phase, arc, stretch, root, animation, t, 0, 0, stack.last().pose());
+        draw(root, animation, t, stack, out, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        aims.remove(root);
+        if (keptAim != null) aims.put(root, keptAim);
+        if (keptLift != null) lift.put(root, keptLift);
+    }
+
     /** No chain taken over (each frame starts so). */
     public void clearAims() {
         aims.clear();
+        diving.clear();
     }
 
     /**

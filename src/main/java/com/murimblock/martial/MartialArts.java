@@ -439,10 +439,14 @@ public final class MartialArts {
     public static final Technique LASH = new Technique(id("lash"), DEVOURING_DEMON, 160, 100);
     /** A centipede shoots at the foe ahead, up to 7 blocks, and bites: the key of Lash, in the demon form. */
     public static final Technique CENTIPEDE_BITE = new Technique(id("centipede_bite"), DEVOURING_DEMON, 160, 100);
+    /** The tentacles plunge into the ground and burst out under the foe looked at, up to 12 blocks: impaled, lifted, held. */
+    public static final Technique IMPALING_THORNS = new Technique(id("impaling_thorns"), DEVOURING_DEMON, 220, 160);
+    /** In the demon form: the centipedes dive into the ground and burst out under the two nearest foes ahead. */
+    public static final Technique BURROW = new Technique(id("burrow"), DEVOURING_DEMON, 220, 160);
     /** Epic Fight's bare-hand strikes for now; the tentacles' own M1 come next. Each blow feeds the Fury. */
     public static final Passive DEVOURING_HUNGER = new Passive(id("devouring_hunger"), List.of(), List.of());
     /** Each technique's version in the demon form, cast by its key there (its cost and cooldown are the key's). */
-    public static final Map<Technique, Technique> DEMON_VERSIONS = Map.of(LASH, CENTIPEDE_BITE);
+    public static final Map<Technique, Technique> DEMON_VERSIONS = Map.of(LASH, CENTIPEDE_BITE, IMPALING_THORNS, BURROW);
 
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
@@ -483,7 +487,7 @@ public final class MartialArts {
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
         // No quests yet: the scroll teaches every technique built so far.
-        add(new Art(DEVOURING_DEMON, List.of(LASH), DEVOURING_HUNGER, List.of(), List.of()));
+        add(new Art(DEVOURING_DEMON, List.of(LASH, IMPALING_THORNS), DEVOURING_HUNGER, List.of(), List.of()));
     }
 
     private MartialArts() {

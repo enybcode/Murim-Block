@@ -67,7 +67,7 @@ public final class KaguneImpactFx {
         if (level == null) return;
         long now = level.getGameTime();
         LANDED.put(p.attacker(), now);
-        boolean bite = p.strike() == KaguneState.STRIKE_BITE;
+        boolean bite = p.strike() == KaguneState.STRIKE_BITE || p.strike() == KaguneState.STRIKE_BURROW;
         Vec3 at = new Vec3(p.x(), p.y(), p.z());
         if (PhotonLights.isEnabled()) {
             PhotonLights.flash(new DynamicLight().point().at(p.x(), p.y(), p.z()).color(0.85F, 0.05F, 0.08F)

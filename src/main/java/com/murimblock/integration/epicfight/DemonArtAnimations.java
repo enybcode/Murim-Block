@@ -16,7 +16,7 @@ import yesman.epicfight.gameasset.Armatures;
 public final class DemonArtAnimations {
     public static AnimationAccessor<StaticAnimation> BEAST_IDLE;
     public static AnimationAccessor<MovementAnimation> BEAST_WALK, BEAST_RUN;
-    public static AnimationAccessor<ActionAnimation> LASH, BITE;
+    public static AnimationAccessor<ActionAnimation> LASH, BITE, THORNS, BURROW;
 
     private DemonArtAnimations() { }
 
@@ -26,5 +26,7 @@ public final class DemonArtAnimations {
         BEAST_RUN = builder.nextAccessor("biped/murim/demon_beast_run", a -> new MovementAnimation(true, a, Armatures.BIPED));
         LASH = builder.nextAccessor("biped/murim/demon_lash", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
         BITE = builder.nextAccessor("biped/murim/demon_bite", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        THORNS = builder.nextAccessor("biped/murim/demon_thorns", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        BURROW = builder.nextAccessor("biped/murim/demon_burrow", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
     }
 }
