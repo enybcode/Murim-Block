@@ -367,7 +367,7 @@ public final class WeaponTour {
 
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
-        if (!Boolean.getBoolean("murimblock.weaponTour") || SkyArenaTour.wanted()) return;
+        if (!Boolean.getBoolean("murimblock.weaponTour") || SkyArenaTour.wanted() || KaguneTour.wanted()) return;
         Minecraft mc = Minecraft.getInstance();
         mc.options.pauseOnLostFocus = false;
         if (mc.screen instanceof PauseScreen) mc.setScreen(null);
