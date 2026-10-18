@@ -1026,8 +1026,6 @@
   "gui.murimblock.furnace.slot.out": "The pills come out here",
   "gui.murimblock.furnace.slot.herb": "%s: %s",
   "gui.murimblock.furnace.slot.herb_any": "Herbs, in the recipe's order",
-  "gui.murimblock.furnace.book.manual": "Taught by the Alchemy Manual",
-  "gui.murimblock.furnace.book.scroll": "Found on a rare scroll",
   "gui.murimblock.furnace.book.fill": "Click: put its water and herbs in",
   "gui.murimblock.furnace.book.qi": "Refining: %s Qi/s",
   "gui.murimblock.furnace.forecast": "Purity %s%%  ·  Toxicity %s",

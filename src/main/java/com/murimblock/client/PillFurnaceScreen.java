@@ -21,8 +21,8 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * The pill furnace's screen (docs/cultivation/alchemy.md) in Minecraft's own look, as Enzo chose it: on the left a recipe
- * book (Minecraft's) with the recipes, those known to choose (which puts their water and herbs in), the others in red
- * with where to learn them, and the heat bands of the one shown; on the right the furnace's panel: the water and the
+ * book (Minecraft's) with the recipes the player knows, and only those (one chosen puts its water and herbs in), and the
+ * heat bands of the one shown; on the right the furnace's panel: the water and the
  * three herbs in their order, the arrow to the pills, the flame over the charcoal, the heat as a thermometer with the
  * gold band of the step under way, the bellows and the Qi held down, the Qi, the four steps and the purity; the
  * inventory under it.
@@ -34,8 +34,6 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
             FLAME = ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"),
             RECIPE = ResourceLocation.withDefaultNamespace("recipe_book/crafting_overlay"),
             RECIPE_HOT = ResourceLocation.withDefaultNamespace("recipe_book/crafting_overlay_highlighted"),
-            LOCKED = ResourceLocation.withDefaultNamespace("recipe_book/crafting_overlay_disabled"),
-            LOCKED_HOT = ResourceLocation.withDefaultNamespace("recipe_book/crafting_overlay_disabled_highlighted"),
             BUTTON = ResourceLocation.withDefaultNamespace("widget/button"),
             BUTTON_HOT = ResourceLocation.withDefaultNamespace("widget/button_highlighted");
     private static final int GREY = 0xFFC6C6C6, LIGHT = 0xFFFFFFFF, SHADE = 0xFF555555, SLOT = 0xFF8B8B8B, SLOT_D = 0xFF373737, TEXT = 0x404040,
@@ -67,22 +65,22 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
 
     private int panel() { return leftPos + PillFurnaceMenu.PANEL_X; }
 
-    /** The recipes the search lets through, in their order. */
+    /** The recipes the player knows that the search lets through, in their order. */
     private List<AlchemyRecipes.Recipe> listed() {
         String q = search == null ? "" : search.getValue().trim().toLowerCase(Locale.ROOT);
         List<AlchemyRecipes.Recipe> list = new ArrayList<>();
         for (AlchemyRecipes.Recipe r : AlchemyRecipes.ALL)
-            if (q.isEmpty() || Component.translatable(r.nameKey()).getString().toLowerCase(Locale.ROOT).contains(q)) list.add(r);
+            if (menu.knows(r) && (q.isEmpty() || Component.translatable(r.nameKey()).getString().toLowerCase(Locale.ROOT).contains(q))) list.add(r);
         return list;
     }
 
     private int recipeX(int i) { return leftPos + 11 + (i % 5) * 25; }
     private int recipeY(int i) { return topPos + 31 + (i / 5) * 25; }
 
-    /** The recipe the screen shows: the one in the furnace, else the one chosen in the book. */
+    /** The recipe the screen shows: the one in the furnace, else the one chosen in the book; never one the player does not know. */
     private AlchemyRecipes.Recipe shown() {
-        AlchemyRecipes.Recipe inIt = AlchemyRecipes.byIndex(menu.data.get(7));
-        return inIt != null ? inIt : AlchemyRecipes.byIndex(chosen);
+        AlchemyRecipes.Recipe inIt = AlchemyRecipes.byIndex(menu.data.get(7)), r = inIt != null ? inIt : AlchemyRecipes.byIndex(chosen);
+        return r != null && menu.knows(r) ? r : null;
     }
 
     // ---------------------------------------------------------------- drawing
@@ -100,7 +98,7 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
             AlchemyRecipes.Recipe r = list.get(i);
             int bx = recipeX(i), by = recipeY(i);
             boolean hot = mouseX >= bx && mouseX < bx + 25 && mouseY >= by && mouseY < by + 25;
-            g.blitSprite(menu.knows(r) ? hot ? RECIPE_HOT : RECIPE : hot ? LOCKED_HOT : LOCKED, bx, by, 25, 25);
+            g.blitSprite(hot ? RECIPE_HOT : RECIPE, bx, by, 25, 25);
             g.renderItem(new ItemStack(r.resultItem()), bx + 4, by + 4);
             if (shown() == r) outline(g, bx, by, 25, 25, LIGHT);
         }
@@ -115,10 +113,6 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
             g.drawString(font, b.low() + "-" + b.high(), x + 72, ty + 1 + i * 10, now ? 0xFFD860 : 0xC0C0C0, false);
         }
         g.drawString(font, t("book.qi", String.format(Locale.ROOT, "%.0f", r.qiPerTick() * 20)), x + 12, ty + 44, 0x73C2F2, false);
-        if (!menu.knows(r)) {
-            List<net.minecraft.util.FormattedCharSequence> lines = font.split(t(r.inManual() ? "book.manual" : "book.scroll"), 124);
-            for (int i = 0; i < lines.size() && i < 2; i++) g.drawString(font, lines.get(i), x + 12, ty + 58 + i * 10, 0xFF8080, false);
-        }
     }
 
     private void furnacePanel(GuiGraphics g, int mouseX, int mouseY) {
@@ -249,9 +243,7 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
         for (int i = 0; i < list.size() && i < 20; i++)
             if (over(mouseX, mouseY, recipeX(i), recipeY(i), 25, 25)) {
                 AlchemyRecipes.Recipe r = list.get(i);
-                List<Component> lines = new ArrayList<>(List.of(Component.translatable(r.nameKey())));
-                if (!menu.knows(r)) lines.add(t(r.inManual() ? "book.manual" : "book.scroll").withStyle(ChatFormatting.RED));
-                else lines.add(t("book.fill").withStyle(ChatFormatting.GRAY));
+                List<Component> lines = List.of(Component.translatable(r.nameKey()), t("book.fill").withStyle(ChatFormatting.GRAY));
                 g.renderComponentTooltip(font, lines, mouseX, mouseY);
                 return;
             }
@@ -303,7 +295,7 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
                 if (over(mx, my, recipeX(i), recipeY(i), 25, 25)) {
                     AlchemyRecipes.Recipe r = list.get(i);
                     chosen = r.index();
-                    if (menu.knows(r)) press(PillFurnaceMenu.FILL_RECIPE + r.index());
+                    press(PillFurnaceMenu.FILL_RECIPE + r.index());
                     return true;
                 }
         }

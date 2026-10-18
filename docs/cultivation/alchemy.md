@@ -25,8 +25,8 @@ Fabrication : un lingot d'or, un bloc de charbon et cinq blocs de cuivre (` G ` 
 3. **Le feu** : du charbon (de bois ou minéral) dans sa case, que le four prend quand son feu en a besoin, ou sur le four.
    Le feu tient les braises (320) ; le **soufflet** (maintenu) fait monter la chaleur, laissée seule elle redescend.
 4. **L'écran** (main vide sur le four), **à la Minecraft**, choisi par Enzo le 18/10 : à gauche le livre de recettes de
-   Minecraft (les recettes connues, un clic y met l'eau et les herbes depuis l'inventaire, les plus pures d'abord ; les autres en
-   rouge avec où les apprendre ; les bandes de la recette montrée ; une recherche) ; à droite le four : l'eau, les trois herbes,
+   Minecraft (seulement les recettes connues, les autres n'y paraissent pas ; un clic y met l'eau et les herbes depuis
+   l'inventaire, les plus pures d'abord ; les bandes de la recette montrée ; une recherche) ; à droite le four : l'eau, les trois herbes,
    la flèche vers les pilules, la flamme sur le charbon, la chaleur en **thermomètre** avec la **bande dorée** de l'étape en
    cours, **Fan** et **Qi** maintenus, le Qi, les quatre étapes et la pureté visée ; l'inventaire dessous. Ce qui manque
    apparaît en transparence dans sa case.
