@@ -36,6 +36,8 @@ public final class KaguneOverlay {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/kagune_forms.png");
     /** Blockbench draws in pixels with the player's right arm at -x; Epic Fight's model space is in blocks, right arm at +x. */
     private static final float PIXEL = 1 / 16F;
+    /** How far the beast gait leans the torso (scripts/animation/demon-beast-gait.cjs): the centipedes are turned back by it. */
+    static final float BEAST_LEAN = Float.parseFloat(System.getProperty("murimblock.beastLean", "90"));
 
     private KaguneOverlay() { }
 
@@ -107,8 +109,16 @@ public final class KaguneOverlay {
                 stack.pushPose();
                 MathUtils.mulStack(stack, torsoPose);
                 stack.scale(-PIXEL, PIXEL, PIXEL);
+                // On all fours the torso lies level: the centipedes are turned back up about their root, so they keep the
+                // shape they were drawn with (DemonBeastClient).
+                if (DemonBeastClient.inBeastForm(player)) {
+                    stack.translate(0, 12, 2);
+                    stack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(BEAST_LEAN));
+                    stack.translate(0, -12, -2);
+                }
                 model.toParentAtRest(bone, stack);
-                model.draw(bone, animation, time[0], stack, out, light, OverlayTexture.NO_OVERLAY);
+                float[] bend = KaguneTail.bend(player, partial);
+                model.draw(bone, animation, time[0], bend[0], bend[1], stack, out, light, OverlayTexture.NO_OVERLAY);
                 stack.popPose();
             }
             // The mask, on the Head joint.

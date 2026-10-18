@@ -65,6 +65,14 @@ const MASK = ['LLLLD', 'PPPPD', 'PKRKP', 'PPKPD', 'PPPPD', 'WDWDP', 'DWDWD'];
 const MASK_COLOURS = { L: '#A878D8', P: '#6E3CA0', D: '#2A1440', K: '#0A0608', R: '#FF2A30', W: '#ECE4D4' };
 region('kakuja_mask', 48, 48, 5, 7, (x, y) => [hex(MASK_COLOURS[MASK[y][x]]), MASK[y][x] === 'R' ? 1 : 0.95 + rnd() * 0.06]);
 region('kakuja_mask_edge', 53, 48, 3, 7, () => [hex('#2A1440'), 1]);
+// The mask in relief (Enzo, 18/10: "rework the mask"): its plate (purple, lit along the top, a darker vein), the dark of
+// its ridges, the teeth (white with black gaps), the red eye, the glowing seam.
+region('mask_plate', 56, 56, 8, 8, (x, y) => [y < 2 ? hex('#B088E0') : (x + y) % 5 === 0 ? hex('#4A2470') : hex('#7A44B0'), 0.94 + rnd() * 0.08]);
+region('mask_dark', 56, 52, 4, 4, () => [hex('#2A1440'), 0.9 + rnd() * 0.1]);
+region('mask_teeth', 60, 52, 4, 4, () => [hex('#EEE6D6'), 0.95 + rnd() * 0.06]);
+region('mask_eye', 56, 48, 2, 2, () => [hex('#FF2028'), 1]);
+region('mask_socket', 58, 48, 2, 2, () => [hex('#060406'), 1]);
+region('mask_seam', 60, 48, 4, 4, () => [hex('#E0202C'), 1]);
 const atlas = Buffer.from(kit.png(A, A, rgba));
 
 // ---------------------------------------------------------------- model (1 unit = 1 pixel, player 32 high, facing -z)
@@ -196,11 +204,24 @@ function buildKakuja(scale) {
     return child;
   }
   const playerBones = buildPlayer();
-  // The half-mask, on the head: a thin plate over the left half of the face (5 x 7 texels, a texel a pixel), and a horn
-  // from the temple.
+  // The half-mask (Enzo, 18/10: "rework the mask"), in relief on the left half of the face (+x is the player's left;
+  // the face is the head's -z side, at z -4): a curved plate wrapping onto the side of the head, a jutting brow ridge, the
+  // eye in its black socket with a red iris, a row of teeth over the mouth, a cheekbone, a red seam down the middle of the
+  // face, and two horns sweeping back from the brow and the temple.
+  const M = (name, from, to, faces, rot = [0, 0, 0], origin = [0, 24, 0]) => cube('mask_' + name, from, to, origin, faces, rot);
   playerBones.head.children.push(
-    cube('mask', [-0.5, 24.6, -4.45], [4.5, 31.6, -4.05], [0, 24, 0], { all: 'kakuja_mask_edge', north: 'kakuja_mask' }),
-    cube('mask_horn', [3.6, 29.6, -3.6], [4.8, 33.6, -2.4], [4.2, 30, -3], 'kakuja_spine', [0, 0, -24]));
+    M('plate', [-0.3, 25, -4.5], [4.3, 31.6, -4.05], 'mask_plate'),
+    M('side', [4.05, 25, -4.45], [4.5, 31.6, 0.6], 'mask_plate'),
+    M('brow', [-0.1, 29.5, -4.9], [4.6, 30.1, -4.4], 'mask_plate', [-12, 0, 0], [2.2, 29.8, -4.5]),
+    M('socket', [0.9, 27.7, -4.62], [3.4, 29.1, -4.48], 'mask_socket'),
+    M('eye', [1.6, 28.0, -4.7], [2.7, 28.7, -4.58], 'mask_eye'),
+    M('cheek', [2.6, 26.7, -4.85], [4.6, 27.6, -4.4], { all: 'mask_dark', up: 'mask_plate' }),
+    // The jaw: a dark band, and five teeth in relief over it.
+    M('jaw', [0.1, 25.1, -4.6], [4.1, 26.4, -4.45], 'mask_socket'),
+    ...[0, 1, 2, 3, 4].map(i => M('tooth_' + i, [0.25 + i * 0.78, 25.25, -4.72], [0.8 + i * 0.78, 26.25 - (i % 2) * 0.25, -4.55], 'mask_teeth')),
+    M('seam', [-0.65, 24.9, -4.58], [-0.3, 31.7, -4.05], 'mask_seam'),
+    M('horn_brow', [2.6, 30.2, -4.6], [3.6, 34.6, -3.6], 'kakuja_spine', [-38, 0, -14], [3.1, 30.4, -4.1]),
+    M('horn_temple', [3.9, 29.4, -2.4], [5.1, 33.8, -1.2], 'kakuja_spine', [-30, 0, -32], [4.5, 29.6, -1.8]));
   // The stalk out of the back that carries both.
   const knot = cube('kakuja_knot', [-3.4, 9.4, 1.8], [3.4, 15.8, 10.4], [0, 12, 2], 'kakuja_plate');
   const knotJoint = cube('kakuja_knot_joint', [-2.8, 10, 5.6], [2.8, 15.2, 7.0], [0, 12, 2], 'kakuja_joint');
@@ -383,7 +404,7 @@ const save = (file, data) => fs.writeFileSync(file, Buffer.from(data.split(',')[
   }
   fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', `${FORM}_preview.bbmodel`), JSON.stringify(proj, null, 1));
   console.log(proj.elements.length, 'cubes; movement kept per tentacle (mean):', JSON.stringify(scale.map(a => +(a.reduce((x, y) => x + y) / a.length).toFixed(2))));
-  if (process.argv.includes('--check')) { bb.close(); return; }
+  if (process.argv.includes('--check') || process.argv.includes('--no-film')) { bb.close(); return; }
   if (process.argv.includes('--rest')) { const out = path.join(ROOT, 'build', `${FORM}-preview`); fs.mkdirSync(out, { recursive: true });
     for (const [v, p, t] of [['front', [-30, 42, -140], [0, 26, 6]], ['side', [-150, 40, 10], [0, 26, 10]], ['close', [-50, 50, 40], [-14, 28, 30]], ['face', [-6, 28, -26], [0, 28, 0]]]) save(path.join(out, 'rest-' + v + '.png'), await shot(bb, p, t, 640, 640, 0));
     bb.close(); return; }

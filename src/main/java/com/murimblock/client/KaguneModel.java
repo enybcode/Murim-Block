@@ -32,6 +32,8 @@ public final class KaguneModel {
     record Animation(float length, boolean loop, int fps, Map<Integer, float[][]> tracks) { }
 
     final List<Bone> bones = new ArrayList<>();
+    /** Which bones are joints of a tentacle or a centipede (they bend with the tail's physics), and on which side (+1 right, -1 left). */
+    private int[] chainSide = new int[0];
     final Map<String, Animation> animations = new HashMap<>();
     private final Map<String, Integer> byName = new HashMap<>();
 
@@ -49,6 +51,12 @@ public final class KaguneModel {
                 model.byName.put(b.get("name").getAsString(), model.bones.size());
                 model.bones.add(new Bone(b.get("name").getAsString(), b.get("parent").getAsInt(), floats(b.getAsJsonArray("pos")),
                         floats(b.getAsJsonArray("rot")), floats(b.getAsJsonArray("scale")), new ArrayList<>(), new ArrayList<>()));
+            }
+            model.chainSide = new int[model.bones.size()];
+            var chain = java.util.regex.Pattern.compile("^(upper|lower|centipede)_(left|right)_\\d+$");
+            for (int i = 0; i < model.bones.size(); i++) {
+                var m = chain.matcher(model.bones.get(i).name());
+                if (m.matches()) model.chainSide[i] = m.group(2).equals("left") ? -1 : 1;
             }
             for (int i = 0; i < model.bones.size(); i++) {
                 int parent = model.bones.get(i).parent();
@@ -118,8 +126,13 @@ public final class KaguneModel {
 
     /** Draws bone i and everything under it, posed at time t of the animation, from its parent's frame. */
     public void draw(int i, String animation, float t, PoseStack stack, VertexConsumer out, int light, int overlay) {
+        draw(i, animation, t, 0, 0, stack, out, light, overlay);
+    }
+
+    /** As above, every tentacle and centipede joint bent a little more (degrees per joint: yaw, pitch), as a tail drags. */
+    public void draw(int i, String animation, float t, float bendYaw, float bendPitch, PoseStack stack, VertexConsumer out, int light, int overlay) {
         if (i < 0) return;
-        drawBone(i, animations.get(animation), t, stack, out, light, overlay);
+        drawBone(i, animations.get(animation), t, bendYaw, bendPitch, stack, out, light, overlay);
     }
 
     /** Applies the transforms of bone i's parents (from the root down), posed at time t, so bone i can be drawn there. */
@@ -143,15 +156,19 @@ public final class KaguneModel {
         stack.scale(l[7], l[8], l[9]);
     }
 
-    private void drawBone(int i, Animation animation, float t, PoseStack stack, VertexConsumer out, int light, int overlay) {
+    private void drawBone(int i, Animation animation, float t, float bendYaw, float bendPitch, PoseStack stack, VertexConsumer out, int light, int overlay) {
         var bone = bones.get(i);
         float[] l = local(i, animation, t);
         // Shrunk out of sight (a hidden form): nothing under it is drawn.
         if (Math.abs(l[7]) < 0.02F && Math.abs(l[8]) < 0.02F) return;
         stack.pushPose();
         apply(l, stack);
+        if (chainSide[i] != 0 && (bendYaw != 0 || bendPitch != 0)) {
+            stack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(bendYaw * chainSide[i]));
+            stack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(bendPitch));
+        }
         for (var cube : bone.cubes()) drawCube(cube, stack, out, light, overlay);
-        for (int child : bone.children()) drawBone(child, animation, t, stack, out, light, overlay);
+        for (int child : bone.children()) drawBone(child, animation, t, bendYaw, bendPitch, stack, out, light, overlay);
         stack.popPose();
     }
 

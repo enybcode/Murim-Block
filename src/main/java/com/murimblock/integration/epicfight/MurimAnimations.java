@@ -148,6 +148,7 @@ public final class MurimAnimations {
         buildStaffArt(builder);
         SectWeaponAnimations.build(builder);
         CrabKingAnimations.build(builder);
+        DemonArtAnimations.build(builder);
     }
 
     // ---------------------------------------------------------------- the Purple Heaven Thunder Saber (scripts/animation/thunder-saber-art.cjs)
@@ -803,7 +804,9 @@ public final class MurimAnimations {
         MEDITATE,
         SANGUINE_GUARD,
         /** The Traveller's Staff spun before the chest (the Spinning Rampart held). */
-        STAFF_RAMPART;
+        STAFF_RAMPART,
+        /** The Devouring Demon Art's demon form, on all fours: still, walking, running (DemonArtAnimations). */
+        DEMON_BEAST, DEMON_BEAST_WALK, DEMON_BEAST_RUN;
 
         final int id;
 

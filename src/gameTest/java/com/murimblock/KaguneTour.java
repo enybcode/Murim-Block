@@ -86,6 +86,23 @@ public final class KaguneTour {
     private static void step(Minecraft mc, MinecraftServer server) throws Exception {
         // MURIM_KAGUNE_FILM=1: a film instead, a frame every other tick, from the front: the tentacles, the
         // transformation at 100, then the centipedes.
+        // MURIM_KAGUNE_FILM=beast: the demon form on all fours, from the front then from behind: still, walking, running.
+        if ("beast".equals(System.getenv("MURIM_KAGUNE_FILM")) && ticks > 20) {
+            var up = mc.options.keyUp.getKey();
+            var sprint = mc.options.keySprint.getKey();
+            if (ticks == 40) { mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT); set(server, KaguneState.Form.DEMON); }
+            if (ticks == 100) net.minecraft.client.KeyMapping.set(up, true);
+            if (ticks == 160) net.minecraft.client.KeyMapping.set(sprint, true);
+            if (ticks == 200) mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            if (ticks == 240) { net.minecraft.client.KeyMapping.set(sprint, false); net.minecraft.client.KeyMapping.set(up, false); }
+            // Then it turns on the spot, left then right: the kagune swings like a tail.
+            if (ticks > 244 && ticks <= 300) { mc.player.setYRot(mc.player.getYRot() + (ticks <= 272 ? 9 : -9)); mc.player.setYBodyRot(mc.player.getYRot()); }
+            if (ticks >= 60 && ticks <= 320 && ticks % 2 == 0) capture(mc, String.format("beast/%03d.png", (ticks - 60) / 2));
+            if (ticks == 150) check(com.murimblock.client.DemonBeastClient.motion(mc.player) == com.murimblock.integration.epicfight.MurimAnimations.Motions.DEMON_BEAST_WALK,
+                    "walking in the demon form is the beast's walk: " + com.murimblock.client.DemonBeastClient.motion(mc.player));
+            if (ticks == 322) finish(mc);
+            return;
+        }
         if ("1".equals(System.getenv("MURIM_KAGUNE_FILM")) && ticks > 20) {
             if (ticks == 40) { mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT); set(server, KaguneState.Form.HUNGER); }
             if (ticks == 108) set(server, KaguneState.Form.TRANSFORM);
