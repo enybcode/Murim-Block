@@ -22,6 +22,11 @@ const r3 = t => Math.round(t * 1000) / 1000;
 /** The pose moved to stand `y` blocks forward (root), keeping its own height. */
 const at = (pose, y) => ({ ...pose, Root: { ...pose.Root, pos: [pose.Root.pos[0], y, pose.Root.pos[2]] } });
 
+/** A heavy thrust: the trunk thrown forward behind the shaft, the hips low, the front knee deep, the hand far out. */
+const DEEP_LUNGE = { Thigh_L: [['x', 74], ['y', 6]], Leg_L: [['x', -66]], Thigh_R: [['x', -40], ['y', -6]], Leg_R: [['x', -4]] };
+const HEAVY = (y = 0, yaw = 0, pitch = 0, z = -0.28) => hold({ Root: { pos: [0, y, HIP + z] }, Torso: [['x', -24], ['z', -10 + yaw * 0.4]], Chest: [['x', -10], ['z', yaw * 0.3]],
+  ...look(-10 + yaw * 0.6, 22 - pitch * 0.4), ...DEEP_LUNGE }, yawed([0.1, 0.66, 0.26 + pitch * 0.006], yaw), yawed(pitched([0, 1, 0], pitch), yaw));
+
 // ---------------------------------------------------------------- 1. Tyrant's Thrust
 begin();
 /** Drawn far back: the hand behind the hip, the trunk turned away, the point still on the enemy. */
@@ -35,22 +40,23 @@ const overlord_tyrant_charge = [
 begin();
 const overlord_tyrant_release = [
   { t: 0, pose: DEEP_WIND(-0.08) },
-  { t: 0.08, pose: THRUST(0.3, 0, 0, -0.14) },
-  { t: 0.16, pose: THRUST(0.55, 0, 0, -0.2) },
-  { t: 0.42, pose: THRUST(0.6, 0, 0, -0.2) },
-  { t: 0.7, pose: GUARD(0.6) },
+  { t: 0.07, pose: HEAVY(0.45, 0, 2, -0.2) },
+  { t: 0.14, pose: HEAVY(0.85, 0, 0, -0.3) },
+  { t: 0.42, pose: HEAVY(0.9, 0, 0, -0.3) },
+  { t: 0.56, pose: DRAW(0.9) },
+  { t: 0.8, pose: GUARD(0.9) },
 ];
 
 // ---------------------------------------------------------------- 2. Earth-Splitting Sweep
 begin();
 /** The spear high over the head, both arms up, the point to the sky behind. */
-const RAISED = hold({ Root: { pos: [0, 0, HIP - 0.04] }, Torso: [['x', 10]], Chest: [['x', 6]], ...look(0, -14), ...STANCE },
-  [0.14, 0.04, 0.82], pitched([0, 1, 0], 62));
+const RAISED = hold({ Root: { pos: [0, 0, HIP + 0.06] }, Torso: [['x', 18]], Chest: [['x', 10]], ...look(0, -22), ...STANCE },
+  [0.12, -0.04, 0.9], pitched([0, 1, 0], 70));
 /** Brought down on the ground ahead: the point in the earth, the body bent over it. */
-const SLAMMED = hold({ Root: { pos: [0, 0.1, HIP - 0.3] }, Torso: [['x', -30]], Chest: [['x', -12]], ...look(0, 24), ...CROUCH },
-  [0.12, 0.42, 0.26], pitched([0, 1, 0], -52));
+const SLAMMED = hold({ Root: { pos: [0, 0.2, HIP - 0.4] }, Torso: [['x', -38]], Chest: [['x', -14]], ...look(0, 30), ...CROUCH },
+  [0.1, 0.48, 0.2], pitched([0, 1, 0], -58));
 const overlord_earth_sweep = (() => {
-  const keys = [{ t: 0, pose: GUARD() }, { t: 0.22, pose: RAISED }, { t: 0.34, pose: SLAMMED }, { t: 0.44, pose: SLAMMED }];
+  const keys = [{ t: 0, pose: GUARD() }, { t: 0.24, pose: RAISED }, { t: 0.34, pose: SLAMMED }, { t: 0.46, pose: SLAMMED }];
   const per = 0.32, start = 0.5;
   for (let q = 0; q <= 4; q++) keys.push({ t: r3(start + per * q / 4), pose: SWEEP(q * 90, 0.1) });
   const back = GUARD(0.1); back.Root.rot = [['z', 360]];
@@ -69,13 +75,14 @@ const overlord_falling_leap = [
   { t: 1.6, pose: AIR_RAISE(0, 0.05) },
 ];
 begin();
-const PLANTED = (z) => hold({ Root: { pos: [0, 0.15, HIP + z] }, Torso: [['x', -26]], Chest: [['x', -12]], ...look(0, 24), ...CROUCH },
-  [0.14, 0.36, 0.22], pitched([0, 1, 0], -84));
+const PLANTED = (z) => hold({ Root: { pos: [0, 0.15, HIP + z] }, Torso: [['x', -34]], Chest: [['x', -14]], ...look(0, 28), ...CROUCH },
+  [0.12, 0.38, 0.16], pitched([0, 1, 0], -86));
 const overlord_falling_plant = [
   { t: 0, pose: AIR_RAISE(0, 0.05) },
-  { t: 0.08, pose: PLANTED(-0.46) },
-  { t: 0.36, pose: PLANTED(-0.5) },
-  { t: 0.7, pose: at(GUARD(), 0.15) },
+  { t: 0.06, pose: PLANTED(-0.56) },
+  { t: 0.36, pose: PLANTED(-0.6) },
+  { t: 0.52, pose: at(WIND(-0.1), 0.15) },
+  { t: 0.76, pose: at(GUARD(), 0.15) },
 ];
 
 // ---------------------------------------------------------------- 4. Overlord's Charge
@@ -84,10 +91,10 @@ const CHARGE_LENGTH = 10;
 const overlord_charge = [
   { t: 0, pose: GUARD() },
   { t: 0.16, pose: WIND(-0.1) },
-  { t: 0.26, pose: THRUST(1.2, 0, 0, -0.16) },
-  { t: 0.5, pose: THRUST(CHARGE_LENGTH * 0.45, 0, 0, -0.18) },
-  { t: 0.78, pose: THRUST(CHARGE_LENGTH * 0.88, 0, 0, -0.2) },
-  { t: 0.9, pose: THRUST(CHARGE_LENGTH, 0, 0, -0.2) },
+  { t: 0.26, pose: HEAVY(1.2, 0, 0, -0.24) },
+  { t: 0.5, pose: HEAVY(CHARGE_LENGTH * 0.45, 0, 0, -0.28) },
+  { t: 0.78, pose: HEAVY(CHARGE_LENGTH * 0.88, 0, 0, -0.28) },
+  { t: 0.9, pose: HEAVY(CHARGE_LENGTH, 0, 0, -0.3) },
   { t: 1.1, pose: DRAW(CHARGE_LENGTH) },
   { t: 1.3, pose: GUARD(CHARGE_LENGTH) },
 ];
@@ -101,12 +108,12 @@ const rampage = (thrusts) => {
   for (let i = 0; i < thrusts; i++) {
     const [yaw, pitch] = PETALS[i % PETALS.length], t = RAMPAGE_GAP * (i + 1), y = 0.25 * Math.floor(i / 3);
     keys.push({ t: r3(t - RAMPAGE_GAP * 0.45), pose: DRAW(y, yaw, pitch) });
-    keys.push({ t: r3(t), pose: THRUST(y + 0.08, yaw, pitch, -0.12, STANCE) });
+    keys.push({ t: r3(t), pose: i % 3 === 2 ? HEAVY(y + 0.12, yaw, pitch, -0.2) : THRUST(y + 0.08, yaw, pitch, -0.12, STANCE) });
   }
   const y = 0.25 * Math.floor(thrusts / 3), last = r3(RAMPAGE_GAP * thrusts + RAMPAGE_LAST);
   keys.push({ t: r3(last - 0.12), pose: DEEP_WIND(y) });
-  keys.push({ t: last, pose: THRUST(y + 0.5, 0, 0, -0.18) });
-  keys.push({ t: r3(last + 0.16), pose: THRUST(y + 0.55, 0, 0, -0.2) });
+  keys.push({ t: last, pose: HEAVY(y + 0.7, 0, 0, -0.26) });
+  keys.push({ t: r3(last + 0.16), pose: HEAVY(y + 0.8, 0, 0, -0.3) });
   keys.push({ t: r3(last + 0.42), pose: GUARD(y + 0.55) });
   return keys;
 };
@@ -114,14 +121,15 @@ const overlord_rampage = rampage(12);
 
 // ---------------------------------------------------------------- the ultimate: Conqueror Descends
 begin();
-const TO_SKY = (z = 0) => hold({ Root: { pos: [0, 0, HIP + z] }, Torso: [['x', 12]], Chest: [['x', 8]], ...look(0, -34), ...STANCE },
-  [0.1, 0.06, 0.9], pitched([0, 1, 0], 84));
+const TO_SKY = (z = 0) => hold({ Root: { pos: [0, -0.05, HIP + z] }, Torso: [['x', 22]], Chest: [['x', 12]], ...look(0, -40), ...STANCE },
+  [0.08, -0.02, 0.98], pitched([0, 1, 0], 86));
 const overlord_ascend = [
   { t: 0, pose: GUARD() },
   { t: 0.3, pose: TO_SKY(0.02) },
   { t: 2.2, pose: TO_SKY(0.04) },
-  { t: 2.4, pose: THRUST(0.3, 0, -20, -0.16) },
-  { t: 2.9, pose: GUARD(0.3) },
+  { t: 2.4, pose: HEAVY(0.5, 0, -28, -0.3) },
+  { t: 2.6, pose: HEAVY(0.55, 0, -30, -0.32) },
+  { t: 3.0, pose: GUARD(0.55) },
 ];
 
 // ---------------------------------------------------------------- the finish: Overlord's Verdict

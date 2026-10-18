@@ -103,7 +103,7 @@ public final class OverlordTour {
             MartialArts.OVERLORDS_CHARGE, MartialArts.HUNDRED_BATTLES_RAMPAGE, MartialArts.CONQUEROR_DESCENDS};
 
     private static void cast(MinecraftServer server, int slot) {
-        server.execute(() -> check(MartialService.castSlot(self(server), slot) == MartialService.CastResult.CAST, "cast " + ALL[slot].id().getPath()));
+        server.execute(() -> { var r = MartialService.castSlot(self(server), slot); check(r == MartialService.CastResult.CAST, "cast " + ALL[slot].id().getPath() + " (" + r + ")"); });
     }
 
     /** The player back at the start, ready, Qi full, a line of fresh zombies ahead. */

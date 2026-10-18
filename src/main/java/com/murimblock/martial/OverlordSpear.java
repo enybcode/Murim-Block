@@ -211,8 +211,10 @@ public final class OverlordSpear {
             Vec3 p = player.position().add(dir.scale(k + 0.5));
             BlockPos ground = BlockPos.containing(p.x, player.getY() - 0.5, p.z);
             crack(level, ground);
-            level.sendParticles(ParticleTypes.EXPLOSION, p.x, player.getY() + 0.2, p.z, 1, 0.1, 0, 0.1, 0);
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, p.x, player.getY() + 0.2, p.z, 1, 0.1, 0, 0.1, 0);
         }
+        OverlordFx.spark(level, player.position().add(dir.scale(1.5)), 1.5);
+        OverlordFx.shock(level, player.position().add(dir.scale(RAM_WAVE * 0.6)), RAM_WAVE * 0.5);
         for (LivingEntity e : inLine(player, dir, RAM_WAVE + 0.5, 1.2)) {
             if (blow(player, e, damage)) push(e, dir.scale(1.2), 0.25);
         }
@@ -357,8 +359,8 @@ public final class OverlordSpear {
         }
         BlockState under = level.getBlockState(centre);
         if (!under.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, under), player.getX(), player.getY() + 0.2, player.getZ(), 120, SWEEP_RING * 0.7, 0.2, SWEEP_RING * 0.7, 0.3);
-        level.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 0.3, player.getZ(), 4, SWEEP_RING * 0.5, 0.1, SWEEP_RING * 0.5, 0);
-        LongFist.ring(level, player.position(), SWEEP_RING + 0.5);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, player.getX(), player.getY() + 0.3, player.getZ(), 4, SWEEP_RING * 0.5, 0.1, SWEEP_RING * 0.5, 0);
+        OverlordFx.shock(level, player.position(), SWEEP_RING + 0.5);
         level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.1F, 0.7F);
         OverlordFx.flash(level, player.position().add(0, 0.5, 0), 10);
     }
@@ -385,7 +387,7 @@ public final class OverlordSpear {
         MartialCombat.later(player, 3, () -> {
             player.setDeltaMovement(across.x, vy, across.z);
             player.hurtMarked = true;
-            player.serverLevel().sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 0.2, player.getZ(), 2, 0.5, 0.1, 0.5, 0);
+            player.serverLevel().sendParticles(ParticleTypes.LARGE_SMOKE, player.getX(), player.getY() + 0.2, player.getZ(), 2, 0.5, 0.1, 0.5, 0);
         });
         MartialCombat.noFallFor(player, 200);
         FLIGHTS.put(player.getUUID(), new Flight());
@@ -419,9 +421,9 @@ public final class OverlordSpear {
         }
         if (struck > 0) MartialProgress.addMastery(player, art(), MartialArts.FALLING_MOUNTAIN.id(), 1);
         if (!state.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), player.getX(), player.getY() + 0.2, player.getZ(), 160, MOUNTAIN_CRATER * 0.6, 0.3, MOUNTAIN_CRATER * 0.6, 0.35);
-        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, player.getX(), player.getY() + 0.4, player.getZ(), 1, 0, 0, 0, 0);
+        level.sendParticles(ParticleTypes.LAVA, player.getX(), player.getY() + 0.4, player.getZ(), 1, 0, 0, 0, 0);
         level.sendParticles(ParticleTypes.LARGE_SMOKE, player.getX(), player.getY() + 0.5, player.getZ(), 40, MOUNTAIN_CRATER * 0.5, 0.4, MOUNTAIN_CRATER * 0.5, 0.02);
-        LongFist.ring(level, player.position(), reach);
+        OverlordFx.shock(level, player.position(), reach);
         level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.6F, 0.6F);
         OverlordFx.flash(level, player.position().add(0, 0.5, 0), 14);
     }
@@ -467,7 +469,7 @@ public final class OverlordSpear {
         // A wall before the body: the charge stops there, the carried crushed into it.
         BlockPos ahead = BlockPos.containing(player.position().add(dir.scale(2.6 + c.carried.size() * 0.5)).add(0, 1, 0));
         if (player.horizontalCollision || !level.getBlockState(ahead).getCollisionShape(level, ahead).isEmpty() && !c.carried.isEmpty()) crush(player, c, dir, ahead);
-        level.sendParticles(ParticleTypes.CLOUD, player.getX(), player.getY() + 0.2, player.getZ(), 2, 0.3, 0.05, 0.3, 0.02);
+        level.sendParticles(ParticleTypes.SMOKE, player.getX(), player.getY() + 0.2, player.getZ(), 2, 0.3, 0.05, 0.3, 0.02);
         crack(level, player.blockPosition().below());
     }
 
@@ -489,7 +491,8 @@ public final class OverlordSpear {
         }
         BlockState state = level.getBlockState(wall);
         if (!state.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), wall.getX() + 0.5, wall.getY() + 0.5, wall.getZ() + 0.5, 60, 0.6, 0.6, 0.6, 0.2);
-        level.sendParticles(ParticleTypes.EXPLOSION, wall.getX() + 0.5, wall.getY() + 0.5, wall.getZ() + 0.5, 2, 0.3, 0.3, 0.3, 0);
+        OverlordFx.spark(level, Vec3.atCenterOf(wall).add(0, -0.5, 0), 2.0);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, wall.getX() + 0.5, wall.getY() + 0.5, wall.getZ() + 0.5, 2, 0.3, 0.3, 0.3, 0);
         level.playSound(null, wall, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.3F, 0.8F);
         if (!c.carried.isEmpty()) MartialProgress.addMastery(player, art(), MartialArts.OVERLORDS_CHARGE.id(), 1);
         OverlordFx.flash(level, Vec3.atCenterOf(wall), 10);
@@ -518,10 +521,10 @@ public final class OverlordSpear {
             e.invulnerableTime = 0;
             if (blow(player, e, damage) && last) push(e, dir.scale(1.6), 0.4);
         }
-        level.sendParticles(last ? ParticleTypes.EXPLOSION_EMITTER : ParticleTypes.EXPLOSION, tip.x, tip.y, tip.z, 1, 0, 0, 0, 0);
+        level.sendParticles(last ? ParticleTypes.LAVA : ParticleTypes.LARGE_SMOKE, tip.x, tip.y, tip.z, 1, 0, 0, 0, 0);
         level.sendParticles(ParticleTypes.FLAME, tip.x, tip.y, tip.z, last ? 30 : 8, 0.3, 0.3, 0.3, 0.05);
         level.playSound(null, BlockPos.containing(tip), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, last ? 1.2F : 0.35F, last ? 0.8F : 1.6F);
-        if (last) OverlordFx.flash(level, tip, 10);
+        if (last) { OverlordFx.flash(level, tip, 10); OverlordFx.spark(level, tip.add(0, -1.0, 0), 2.5); }
     }
 
     // ---------------------------------------------------------------- the ultimate: Conqueror Descends
@@ -622,10 +625,10 @@ public final class OverlordSpear {
         }
         if (struck > 0) MartialProgress.addMastery(player, art(), MartialArts.CONQUEROR_DESCENDS.id(), 1);
         if (!state.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), u.target.x, u.target.y + 0.5, u.target.z, 400, ULT_RADIUS * 0.5, 0.6, ULT_RADIUS * 0.5, 0.5);
-        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, u.target.x, u.target.y + 0.5, u.target.z, 4, ULT_RADIUS * 0.3, 0.2, ULT_RADIUS * 0.3, 0);
+        level.sendParticles(ParticleTypes.LAVA, u.target.x, u.target.y + 0.5, u.target.z, 4, ULT_RADIUS * 0.3, 0.2, ULT_RADIUS * 0.3, 0);
         level.sendParticles(ParticleTypes.FLAME, u.target.x, u.target.y + 0.5, u.target.z, 300, ULT_RADIUS * 0.5, 0.4, ULT_RADIUS * 0.5, 0.15);
         level.sendParticles(ParticleTypes.LARGE_SMOKE, u.target.x, u.target.y + 1, u.target.z, 80, ULT_RADIUS * 0.4, 1.0, ULT_RADIUS * 0.4, 0.03);
-        LongFist.ring(level, u.target, ULT_RADIUS);
+        OverlordFx.shock(level, u.target, ULT_RADIUS);
         level.playSound(null, ground, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 4.0F, 0.4F);
         level.playSound(null, ground, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 3.0F, 0.6F);
         OverlordFx.flash(level, u.target.add(0, 2, 0), 30);
@@ -747,9 +750,9 @@ public final class OverlordSpear {
             carryBy(victim, new Vec3(0, -(victim.getY() - executor.getY()), 0));
             BlockState under = level.getBlockState(victim.blockPosition().below());
             if (!under.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, under), victim.getX(), victim.getY() + 0.2, victim.getZ(), 140, 1.2, 0.2, 1.2, 0.3);
-            level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, victim.getX(), victim.getY() + 0.3, victim.getZ(), 1, 0, 0, 0, 0);
+            level.sendParticles(ParticleTypes.LAVA, victim.getX(), victim.getY() + 0.3, victim.getZ(), 1, 0, 0, 0, 0);
             ShatteredGround.crater(level, victim.blockPosition().below(), 2.5, 2);
-            LongFist.ring(level, victim.position(), 4);
+            OverlordFx.shock(level, victim.position(), 4);
             level.playSound(null, victim.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.6F, 0.6F);
             OverlordFx.flash(level, victim.position().add(0, 0.5, 0), 14);
         }

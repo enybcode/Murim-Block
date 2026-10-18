@@ -15,13 +15,13 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * A shape of the Overlord Spear's Qi (OverlordSpear), shown only: Tyrant's Thrust's beam (a lance of red and gold light
- * stretched along its line, geo/overlord_beam) or the ultimate's giant spear (the Spear of Ruin twenty times its size,
- * geo/overlord_giant_spear). It touches nothing and is never saved; the server moves it and takes it away when its time
+ * stretched along its line, geo/overlord_beam), the ultimate's giant spear (geo/overlord_giant_spear), a shock wave
+ * spreading over the ground (geo/overlord_ring) or cracks of embers in it (geo/overlord_cracks). It touches nothing and is never saved; the server moves it and takes it away when its time
  * is over. Drawn by client/OverlordQiRenderer, turned by {@link #turn()}, its length grown over a few ticks, fading out
  * over its last ticks.
  */
 public class OverlordQiEntity extends Entity implements GeoEntity {
-    public static final byte BEAM = 0, SPEAR = 1;
+    public static final byte BEAM = 0, SPEAR = 1, RING = 2, CRACKS = 3;
 
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(OverlordQiEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> WIDTH = SynchedEntityData.defineId(OverlordQiEntity.class, EntityDataSerializers.FLOAT);
