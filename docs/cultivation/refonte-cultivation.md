@@ -122,7 +122,7 @@ Proposition : **une vraie vision**, qui change la façon de voir le monde et s'�
 | 5. Qi Crystallization | **L'annonce des coups** : le Qi d'un ennemi se rassemble avant une technique, à l'endroit où le coup va partir. Ça aide à parer parfaitement. **Fait le 18/10** (`QiForesight`) : Qi doré qui converge vers l'impact pendant l'armé de chaque coup d'Epic Fight, éclat au contact |
 | 6. Foundation Establishment | **Les points vitaux** : après une parade, des points s'allument un instant sur l'ennemi. Les frapper fait plus mal (点穴). **Prêt le 18/10 mais pas appliqué** (`VitalPoints`) : gardé pour une future technique |
 | 7. Core Formation | **Le Qi à travers les murs** : les êtres vivants dans un rayon de 24 blocs. **Fait le 18/10** (`QiThroughWalls`) : contour lumineux à la couleur de l'aura, par-dessus les murs |
-| 8. Nascent Soul | **Le caché** : murs d'illusion, caches enterrées, traces récentes d'un boss ou d'un joueur fort |
+| 8. Nascent Soul | **Le caché** : murs d'illusion, caches enterrées, traces récentes d'un boss ou d'un joueur fort. **Fait le 18/10** (`QiTraces`) : marques de Qi tous les 4 à 8 blocs (15 min), filet ambré des caches pleines ; murs d'illusion plus tard |
 
 - **Le coût** : du Qi chaque seconde, qui grandit avec la portée. Après 30 s, les yeux fatiguent : la vue se brouille et
   il faut relâcher.

@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 32: Qi vision's hidden (the trails of the powerful).
      * 31: Qi vision's vital points (lit after a perfect parry, struck).
      * 30: the Overlord Spear's flashes of blood red and gold.
      * 26: the Golden Dragon's scroll of wares (unrolled for a player, a ware bought).
@@ -18,7 +19,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "31";
+    private static final String NETWORK_VERSION = "32";
 
     private MurimblockNetworking() {
     }
@@ -46,6 +47,8 @@ public final class MurimblockNetworking {
                 (payload, context) -> com.murimblock.client.cultivation.QiSenseClient.readings(payload));
         registrar.playToClient(CultivationPayloads.Vital.TYPE, CultivationPayloads.Vital.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.VitalPointsClient.receive(payload));
+        registrar.playToClient(CultivationPayloads.Traces.TYPE, CultivationPayloads.Traces.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.cultivation.QiHiddenClient.traces(payload));
         registrar.playToClient(CultivationPayloads.Breakthrough.TYPE, CultivationPayloads.Breakthrough.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.AuraClient.breakthrough(payload.entityId(), payload.kind()));
         registrar.playToServer(

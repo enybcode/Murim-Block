@@ -69,6 +69,7 @@ public final class QiSense {
             QiService.removeQi(player, CultivationRules.SENSE_QI_PER_SECOND);
         }
         if (player.tickCount % 5 == 0) send(player, true, readings(player));
+        QiTraces.tick(player);
     }
 
     /**

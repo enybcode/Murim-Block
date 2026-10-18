@@ -124,6 +124,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at Qi vision's hidden (see QiHiddenTour).
+        qiHiddenTour {
+            client()
+            gameDirectory = project.file('build/qi-hidden-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiHiddenTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at Qi vision through walls (see QiThroughWallsTour).
         qiThroughWallsTour {
             client()

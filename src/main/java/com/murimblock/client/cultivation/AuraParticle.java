@@ -17,6 +17,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 public class AuraParticle extends TextureSheetParticle {
     private final SpriteSet sprites;
     private final float startSize;
+    private boolean still;
 
     public AuraParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites) {
         super(level, x, y, z, vx, vy, vz);
@@ -40,12 +41,19 @@ public class AuraParticle extends TextureSheetParticle {
         return this;
     }
 
+    /** Held on its first, fullest frame (a short-lived mark that must not run through to the hollow ones). */
+    public AuraParticle still() {
+        this.still = true;
+        setSprite(sprites.get(0, 1));
+        return this;
+    }
+
     @Override
     public void tick() {
         super.tick();
         float t = (float) age / lifetime;
         this.alpha = Math.max(0, 1 - t * t);
-        setSpriteFromAge(sprites);
+        if (!still) setSpriteFromAge(sprites);
     }
 
     @Override

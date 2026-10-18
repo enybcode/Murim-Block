@@ -113,6 +113,34 @@ public final class CultivationPayloads {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** A point of a trail of the powerful (QiTraces): where, which way, how old (ticks), the walker's art ("" a creature, "none" no art), which walker. */
+    public record Trace(float x, float y, float z, float yaw, int age, String art, int walker) {
+        public static final StreamCodec<ByteBuf, Trace> STREAM_CODEC = new StreamCodec<>() {
+            @Override public Trace decode(ByteBuf buf) {
+                return new Trace(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), ByteBufCodecs.VAR_INT.decode(buf),
+                        ByteBufCodecs.stringUtf8(128).decode(buf), ByteBufCodecs.VAR_INT.decode(buf));
+            }
+
+            @Override public void encode(ByteBuf buf, Trace t) {
+                buf.writeFloat(t.x).writeFloat(t.y).writeFloat(t.z).writeFloat(t.yaw);
+                ByteBufCodecs.VAR_INT.encode(buf, t.age);
+                ByteBufCodecs.stringUtf8(128).encode(buf, t.art);
+                ByteBufCodecs.VAR_INT.encode(buf, t.walker);
+            }
+        };
+    }
+
+    /** Server to a reader at Nascent Soul, Qi Sense open, each second: the trails of the powerful around, the hidden caches (where their Qi comes out). */
+    public record Traces(List<Trace> traces, List<net.minecraft.core.BlockPos> caches) implements CustomPacketPayload {
+        public static final Type<Traces> TYPE = new Type<>(id("qi_traces"));
+        public static final StreamCodec<ByteBuf, Traces> STREAM_CODEC = StreamCodec.composite(
+                Trace.STREAM_CODEC.apply(ByteBufCodecs.list(256)), Traces::traces,
+                net.minecraft.core.BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list(32)), Traces::caches,
+                Traces::new);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Server to the clients near a body: a breakthrough (or its failure) happens to it now, to be shown. */
     public record Breakthrough(int entityId, int kind) implements CustomPacketPayload {
         public static final int MINOR = 0, MAJOR = 1, DEVIATION = 2, ENTER = 3, RETURN = 4;

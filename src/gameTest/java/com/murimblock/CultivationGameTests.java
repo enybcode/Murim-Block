@@ -504,6 +504,57 @@ public final class CultivationGameTests {
 
     // ---------------------------------------------------------------- Qi Sense
 
+    /** Hidden caches: a buried chest with something in it is felt; a buried empty one is not, nor a full one in sight. */
+    @GameTest(template = "foundation_arena", batch = "cultivation_caches")
+    public static void hiddenCachesWithSomethingInsideAreFelt(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper);
+        CultivationService.setCultivation(reader, CultivationRealm.NASCENT_SOUL, CultivationStage.EARLY);
+        BlockPos at = reader.blockPosition();
+        BlockPos full = at.offset(4, -4, 0), empty = at.offset(-4, -4, 0), seen = at.offset(0, 0, 3);
+        ServerLevel level = helper.getLevel();
+        for (BlockPos b : BlockPos.betweenClosed(at.offset(-6, -6, -2), at.offset(6, -1, 2))) level.setBlockAndUpdate(b, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        for (BlockPos b : List.of(full, empty, seen)) level.setBlockAndUpdate(b, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
+        ((net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(full)).setItem(0, new ItemStack(Items.DIAMOND));
+        ((net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(seen)).setItem(0, new ItemStack(Items.DIAMOND));
+        List<BlockPos> caches = com.murimblock.cultivation.QiTraces.caches(reader);
+        helper.assertTrue(caches.stream().anyMatch(c -> c.getX() == full.getX() && c.getZ() == full.getZ()), "The buried chest with a diamond is not felt");
+        helper.assertTrue(caches.stream().noneMatch(c -> c.getX() == empty.getX() && c.getZ() == empty.getZ()), "The buried empty chest is felt");
+        helper.assertTrue(caches.stream().noneMatch(c -> c.getX() == seen.getX() && c.getZ() == seen.getZ()), "The chest in sight is felt");
+        for (BlockPos b : BlockPos.betweenClosed(at.offset(-6, -6, -2), at.offset(6, -1, 2))) level.setBlockAndUpdate(b, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(seen, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        end(helper, reader);
+    }
+
+    /**
+     * Hidden traces: a cultivator from Qi Condensation leaves a point of trail each stride, a weaker one none; a reader at
+     * Nascent Soul is sent the others' (in their art, one walker), never their own.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_traces")
+    public static void thePowerfulLeaveTracesSeenFromNascentSoul(GameTestHelper helper) {
+        com.murimblock.cultivation.QiTraces.clearForTests();
+        ServerPlayer reader = cultivator(helper), strong = player(helper), weak = player(helper);
+        CultivationService.setCultivation(reader, CultivationRealm.NASCENT_SOUL, CultivationStage.EARLY);
+        CultivationService.setCultivation(strong, CultivationRealm.QI_CONDENSATION, CultivationStage.EARLY);
+        CultivationService.setCultivation(weak, CultivationRealm.QI_GUIDING, CultivationStage.PEAK);
+        helper.assertTrue(com.murimblock.cultivation.QiTraces.leavesTraces(strong), "Qi Condensation leaves no traces");
+        helper.assertFalse(com.murimblock.cultivation.QiTraces.leavesTraces(weak), "Qi Guiding leaves traces");
+        long now = helper.getLevel().getGameTime();
+        double x = reader.getX(), y = reader.getY(), z = reader.getZ();
+        for (int i = 0; i < 4; i++) {
+            strong.moveTo(x + 2, y, z + i * 8.5);
+            com.murimblock.cultivation.QiTraces.step(strong, now);
+            // Less than a stride: no new footprint.
+            strong.moveTo(x + 2, y, z + i * 8.5 + 3.5);
+            com.murimblock.cultivation.QiTraces.step(strong, now);
+        }
+        com.murimblock.cultivation.QiTraces.step(reader, now);
+        var seen = com.murimblock.cultivation.QiTraces.seen(reader);
+        helper.assertTrue(seen.size() == 4, "The reader sees " + seen.size() + " points of trail, not 4");
+        helper.assertTrue(seen.stream().allMatch(t -> t.art().equals("none") && t.walker() == 0), "The trail is not the walker's");
+        com.murimblock.cultivation.QiTraces.clearForTests();
+        end(helper, reader, strong, weak);
+    }
+
     /**
      * Through walls: a weaker aura 8 blocks off behind a stone wall is not read at Foundation Establishment, and is from
      * Core Formation (within 24 blocks); 30 blocks off behind it, still not.
