@@ -230,6 +230,7 @@ public final class DevouringDemon {
             e.push(away.x * LASH_PUSH, 0.25, away.z * LASH_PUSH);
             e.hurtMarked = true;
             hit = true;
+            impact(player, e, KaguneState.STRIKE_LASH);
         }
         if (hit) {
             MartialProgress.addMastery(player, art(), MartialArts.LASH.id(), 1);
@@ -270,10 +271,21 @@ public final class DevouringDemon {
             e.push(in.x * BITE_PULL, 0.15, in.z * BITE_PULL);
             e.hurtMarked = true;
         }
+        impact(player, e, KaguneState.STRIKE_BITE);
         MartialProgress.addMastery(player, art(), MartialArts.LASH.id(), 1);
         ServerLevel level = player.serverLevel();
         level.playSound(null, e.blockPosition(), SoundEvents.EVOKER_FANGS_ATTACK, SoundSource.PLAYERS, 1.2F, 0.6F);
         level.playSound(null, e.blockPosition(), SoundEvents.GENERIC_EAT, SoundSource.PLAYERS, 1.0F, 0.5F);
+    }
+
+    /** A blow landed: its light, blood, shake and hit-stop on the clients round (client/KaguneImpactFx). */
+    static void impact(ServerPlayer player, LivingEntity e, int strike) {
+        if (player.connection == null) return;
+        Vec3 at = e.getBoundingBox().getCenter().add(0, e.getBbHeight() * 0.1, 0);
+        Vec3 toward = player.position().subtract(e.position()).multiply(1, 0, 1);
+        if (toward.lengthSqr() > 1e-4) at = at.add(toward.normalize().scale(e.getBbWidth() * 0.45));
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntityAndSelf(player,
+                new com.murimblock.network.KaguneImpactPayload(player.getId(), e.getId(), at.x, at.y, at.z, strike));
     }
 
     // ---------------------------------------------------------------- blows

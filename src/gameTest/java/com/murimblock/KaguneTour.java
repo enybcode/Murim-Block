@@ -178,8 +178,14 @@ public final class KaguneTour {
             com.murimblock.martial.MartialService.learn(player, com.murimblock.martial.MartialArts.art(com.murimblock.martial.MartialArts.DEVOURING_DEMON));
             com.murimblock.martial.MartialService.unlock(player, com.murimblock.martial.MartialArts.LASH);
             com.murimblock.martial.MartialService.assign(player, 0, com.murimblock.martial.MartialArts.LASH.id());
-            com.murimblock.qi.QiService.setQiMax(player, 400);
-            com.murimblock.qi.QiService.setQi(player, 400);
+            // The art's own realm, its Qi Max halfway to the next stage: no breakthrough (and its ring) while filming.
+            com.murimblock.cultivation.CultivationService.setCultivation(player, com.murimblock.cultivation.CultivationRealm.FOUNDATION_ESTABLISHMENT,
+                    com.murimblock.cultivation.CultivationStage.MIDDLE);
+            var cultivation = com.murimblock.cultivation.CultivationService.getCultivation(player);
+            double floor = com.murimblock.cultivation.CultivationRules.floorOf(cultivation);
+            double next = com.murimblock.cultivation.CultivationProgression.getRequiredQiMaxForNext(cultivation).orElse(floor * 2);
+            com.murimblock.qi.QiService.setQiMax(player, (floor + next) / 2);
+            com.murimblock.qi.QiService.setQi(player, (floor + next) / 2);
             player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
             com.murimblock.combat.CombatService.setCombatMode(player, true);
             player.teleportTo(level, 0.5, -60, 0.5, 0, 0);
