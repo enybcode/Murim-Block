@@ -39,6 +39,7 @@ public final class CultivationEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         MeditationService.forget(player);
         QiSense.setActive(player, false);
+        AuraPressure.forget(player.getUUID());
         InnerWorldService.onLogout(player);
     }
 
@@ -47,6 +48,7 @@ public final class CultivationEvents {
         MeditationService.tick(player);
         if (player.tickCount % 5 == 0) RealmBonuses.updateFist(player);
         QiSense.tick(player);
+        AuraPressure.tick(player);
         InnerWorldService.tick(player);
     }
 

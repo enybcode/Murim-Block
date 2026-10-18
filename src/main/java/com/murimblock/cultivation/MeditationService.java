@@ -164,7 +164,7 @@ public final class MeditationService {
 
     /**
      * Tells the clients that see this player how full their reserve is, their main style, the art their aura shows and
-     * how much Qi they hold, when it changed (the Qi by a twentieth at least).
+     * how much Qi they hold and how far their aura weighs on those around, when it changed (the Qi by a twentieth at least).
      */
     public static void refreshAura(ServerPlayer player) {
         AuraState now = aura(player);
@@ -175,10 +175,11 @@ public final class MeditationService {
         float qi = (float) QiService.getQi(player);
         boolean meditating = SEATED.containsKey(player.getUUID());
         int place = CultivationService.placeOf(player).ordinal();
-        if (now.meditating() != meditating || Math.abs(now.fill() - fill) >= FILL_STEP || (fill >= 1 && now.fill() < 1)
+        float pressure = AuraPressure.active(player) ? (float) AuraPressure.reach(CultivationService.getRealm(player)) : 0;
+        if (now.pressure() != pressure || now.meditating() != meditating || Math.abs(now.fill() - fill) >= FILL_STEP || (fill >= 1 && now.fill() < 1)
                 || !Objects.equals(now.mainArt(), art) || now.place() != place || !Objects.equals(now.auraArt(), auraArt)
                 || Math.abs(qi - now.qi()) > Math.max(1, now.qi() * 0.05)) {
-            setAura(player, new AuraState(meditating, fill, art, place, auraArt, qi));
+            setAura(player, new AuraState(meditating, fill, art, place, auraArt, qi, pressure));
         }
     }
 

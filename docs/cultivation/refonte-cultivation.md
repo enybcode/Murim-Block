@@ -99,7 +99,7 @@ méditation active, les veines et la méthode qui accélèrent.
 | 3. Qi Condensation | La perception du Qi porte deux fois plus loin et montre les veines |
 | 4. Qi Liquidation | **Marcher sur l'eau** en courant |
 | 5. Qi Crystallization | **Courir sur les murs** (trois pas) |
-| 6. Foundation Establishment | **La pression d'aura** : les mobs plus faibles hésitent et ralentissent près de soi |
+| 6. Foundation Establishment | **La pression d'aura** : les mobs plus faibles hésitent et ralentissent près de soi. **Fait le 18/10** (`AuraPressure`), d'après Bleach : les bien plus faibles écrasés au sol, l'aura visible à l'œil nu jusqu'à la limite de sa zone ; au-delà de 10 000 Qi, le sol se fissure à chaque pas et l'espace ondule |
 | 7. Core Formation | **Le vol sur l'épée** (御剑飞行), qui coûte du Qi chaque seconde |
 | 8. Nascent Soul | Projeter son âme pour éclairer au loin (repérage) |
 | 9. Void Enlightenment | Un pas à travers le vide (courte téléportation) |

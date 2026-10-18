@@ -187,6 +187,23 @@ Valeurs à l'étape Early de chaque royaume :
 
 **Le faible contre le fort** (demande d'Enzo du 14/10) : un coup porté à un joueur par plus faible que lui perd **5 % par étape d'écart, 20 % par royaume, au plus 75 %** (`CultivationRules.shield`, appliqué avant l'armure). L'attaquant est un joueur (son royaume et son étape), un mob Murim ou un boss (le royaume que lit la perception du Qi), ou n'importe quelle autre créature, comptée comme Qi Sensing Early. Exemple : en Qi Condensation Early, un zombie fait 40 % de dégâts en moins, le Bandit Chief (Qi Guiding Peak) 5 %. Rien contre un égal ou un plus fort, ni pour les chutes, le feu ou le vide (pas d'attaquant). Le démon du cœur et l'ombre ont le royaume de leur maître : aucun effet.
 
+**La pression d'aura** (dès Foundation Establishment, 18/10/2026, `AuraPressure`, d'après la pression spirituelle de Bleach,
+réglée avec Enzo sur maquettes) :
+- les mobs plus faibles (d'un royaume plus bas ; les mobs ordinaires comptent royaume 0) dans un rayon de 8 blocs à
+  Foundation, 10 à Core Formation, 12 à Nascent Soul, 16 au-delà : **un peu plus faibles**, ralentis (Lenteur II) et
+  hésitants ; **bien plus faibles** (trois royaumes ou plus), **écrasés au sol** (Lenteur IV, plaqués s'ils le quittent,
+  la poussière se soulève sous eux) ; ni les joueurs, ni ses propres animaux ; **accroupi**, on retient son aura ;
+- **visible à l'œil nu** par tous à 48 blocs (`AuraPressureClient`) : l'aura de la vision du Qi en flammes autour du
+  corps, à la couleur de l'art le mieux maîtrisé et à la taille du Qi, et un anneau de flammes au sol à la limite de la
+  zone ; la portée part avec l'état d'aura que tout le monde reçoit (`AuraState.pressure`, protocole 35), jamais le
+  royaume ;
+- **quand le Qi déborde** (10 000 Qi ou plus en réserve) : le sol se fissure **à chaque pas** (la fracture d'Epic Fight,
+  comme la Lance du Suzerain, remise d'elle-même) et **reste cassé** sous soi à l'arrêt ; plus de Qi, plus grande la
+  fissure (un pas : 2 blocs à 10 000, 3 à 20 000, 5 au plus ; à l'arrêt : 3,3 à 10 000, 8 à 45 000, 9 au plus) ;
+  **l'espace ondule** toutes les 2 s (filtre `shaders/post/pressure_wave`, `PressureWaveClient`, jamais par-dessus la
+  vision du Qi).
+- Test `CultivationGameTests` ; film `runAuraPressureTour`.
+
 Débloquages prévus plus tard, hors première tranche :
 - le **qinggong** (saut léger) au 2ᵉ royaume ;
 - des arts martiaux qui demandent un royaume minimum ;

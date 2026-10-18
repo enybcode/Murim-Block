@@ -151,6 +151,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the aura's pressure (see AuraPressureTour).
+        auraPressureTour {
+            client()
+            gameDirectory = project.file('build/aura-pressure-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.auraPressureTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at Qi vision through walls (see QiThroughWallsTour).
         qiThroughWallsTour {
             client()

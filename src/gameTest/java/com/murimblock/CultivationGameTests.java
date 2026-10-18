@@ -502,6 +502,34 @@ public final class CultivationGameTests {
         });
     }
 
+    // ---------------------------------------------------------------- Aura pressure
+
+    /**
+     * The aura's pressure: at Foundation Establishment a zombie near is crushed to the ground (far weaker); not at Qi
+     * Crystallization, not while sneaking, never one's own wolf.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_pressure")
+    public static void theAurasPressureSlowsTheWeakerNear(GameTestHelper helper) {
+        ServerPlayer player = cultivator(helper);
+        Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(3, 2, 3));
+        var wolf = helper.spawnWithNoFreeWill(EntityType.WOLF, new BlockPos(1, 2, 3));
+        wolf.tame(player);
+        player.tickCount = 10;
+        CultivationService.setCultivation(player, CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Qi Crystallization weighs on the zombie");
+        CultivationService.setCultivation(player, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);
+        player.setShiftKeyDown(true);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "A sneaking player's aura weighs on the zombie");
+        player.setShiftKeyDown(false);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        var slow = zombie.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        helper.assertTrue(slow != null && slow.getAmplifier() == 3, "The zombie, far weaker, is not crushed to the ground");
+        helper.assertFalse(wolf.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "One's own wolf is slowed");
+        end(helper, player);
+    }
+
     // ---------------------------------------------------------------- Methods
 
     /**

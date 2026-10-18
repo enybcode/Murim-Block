@@ -50,7 +50,8 @@ public final class QiVisionClient {
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         boolean open = mc.player != null && QiSenseClient.open();
-        if (open && !effectOn && mc.gameRenderer.currentEffect() == null) {
+        // Over the overflowing aura's ripple, if it is on: the vision comes first.
+        if (open && !effectOn && (mc.gameRenderer.currentEffect() == null || PressureWaveClient.isOn(mc))) {
             mc.gameRenderer.loadEffect(EFFECT);
             effectOn = true;
         } else if (!open && effectOn) {
