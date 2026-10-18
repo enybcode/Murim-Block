@@ -505,6 +505,31 @@ public final class CultivationGameTests {
     // ---------------------------------------------------------------- Qi Sense
 
     /**
+     * Through walls: a weaker aura 8 blocks off behind a stone wall is not read at Foundation Establishment, and is from
+     * Core Formation (within 24 blocks); 30 blocks off behind it, still not.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_walls")
+    public static void qiSenseReadsThroughWallsFromCoreFormation(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper), hidden = player(helper);
+        CultivationService.setCultivation(hidden, CultivationRealm.QI_SENSING, CultivationStage.LATE);
+        double x = reader.getX(), y = reader.getY(), z = reader.getZ();
+        hidden.moveTo(x, y, z + 8);
+        BlockPos base = BlockPos.containing(x, y, z + 4);
+        for (int dx = -3; dx <= 3; dx++) for (int dy = -2; dy <= 4; dy++)
+            helper.getLevel().setBlockAndUpdate(base.offset(dx, dy, 0), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        helper.assertFalse(reader.hasLineOfSight(hidden), "The wall does not hide the other player");
+        CultivationService.setCultivation(reader, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.PEAK);
+        helper.assertTrue(QiSense.readings(reader).stream().noneMatch(r -> r.entityId() == hidden.getId()), "Read through a wall at Foundation Establishment");
+        CultivationService.setCultivation(reader, CultivationRealm.CORE_FORMATION, CultivationStage.EARLY);
+        helper.assertTrue(QiSense.readings(reader).stream().anyMatch(r -> r.entityId() == hidden.getId()), "Not read through a wall at Core Formation");
+        hidden.moveTo(x, y, z + 30);
+        helper.assertTrue(QiSense.readings(reader).stream().noneMatch(r -> r.entityId() == hidden.getId()), "Read through walls beyond 24 blocks");
+        for (int dx = -3; dx <= 3; dx++) for (int dy = -2; dy <= 4; dy++)
+            helper.getLevel().setBlockAndUpdate(base.offset(dx, dy, 0), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        end(helper, reader, hidden);
+    }
+
+    /**
      * Vital points: a perfect parry at Foundation Establishment, Qi Sense open, lights some of the attacker's points (not
      * below that realm); a blow aimed at one does 1.5x and puts it out, a blow aimed elsewhere does not.
      */

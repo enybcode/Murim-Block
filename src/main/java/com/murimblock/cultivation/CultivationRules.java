@@ -280,6 +280,15 @@ public final class CultivationRules {
         return SENSE_REACH[realm.ordinal()];
     }
 
+    /** From Core Formation, the auras near enough are read through walls (Qi vision, 18/10/2026): this realm, this far. */
+    public static final CultivationRealm THROUGH_WALLS_REALM = CultivationRealm.CORE_FORMATION;
+    public static final double THROUGH_WALLS_REACH = 24;
+
+    /** Whether this reader reads an aura this far off unseen, behind a wall. */
+    public static boolean readsThroughWalls(CultivationRealm realm, double distanceSqr) {
+        return realm.ordinal() >= THROUGH_WALLS_REALM.ordinal() && distanceSqr <= THROUGH_WALLS_REACH * THROUGH_WALLS_REACH;
+    }
+
     /** How far a powerful aura (as strong as one's own or stronger) is felt, through anything: three times the sense, 160 at most. */
     public static double farSenseRange(CultivationRealm realm) {
         return Math.min(160, senseRange(realm) * 3);

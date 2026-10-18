@@ -74,7 +74,7 @@ public final class QiSense {
     /**
      * What this reader reads of the auras around: within the sense's reach and in sight; the powerful ones (as strong as
      * the reader or stronger, risen high enough to be seen over the trees: Enzo, 18/10/2026) from three times as far,
-     * unseen. Both reaches grow with the reader's realm (CultivationRules.senseRange).
+     * unseen; from Core Formation, the near ones behind walls too (CultivationRules.readsThroughWalls). Both reaches grow with the reader's realm (CultivationRules.senseRange).
      */
     public static List<CultivationPayloads.Reading> readings(ServerPlayer viewer) {
         CultivationRealm own = CultivationService.getRealm(viewer);
@@ -84,7 +84,8 @@ public final class QiSense {
                 e -> e != viewer && e.isAlive() && !e.isSpectator() && e.distanceToSqr(viewer) <= far * far)) {
             Optional<CultivationData> data = cultivationOf(e);
             if (data.isEmpty()) continue;
-            boolean near = e.distanceToSqr(viewer) <= range * range && viewer.hasLineOfSight(e);
+            double d2 = e.distanceToSqr(viewer);
+            boolean near = d2 <= range * range && (viewer.hasLineOfSight(e) || CultivationRules.readsThroughWalls(own, d2));
             if (!near && data.get().realm().ordinal() < own.ordinal()) continue;
             CultivationRules.Reading kind = CultivationRules.reading(own, data.get().realm());
             int realm = kind == CultivationRules.Reading.CLEAR || kind == CultivationRules.Reading.FUZZY ? data.get().realm().ordinal() : -1;
