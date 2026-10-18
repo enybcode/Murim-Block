@@ -105,6 +105,8 @@ public final class QiVisionClient {
         for (LivingEntity e : shown) {
             float scale = e instanceof AbstractClientPlayer p ? AuraClient.qiScale(MeditationService.aura(p).qi()) : creatureScale(mc, e);
             float[] c = shown(e);
+            // Its vital points lit (a perfect parry broke its guard): its Qi scattered, a mere wisp, so that they show.
+            if (VitalPointsClient.on(e)) scale *= 0.35F;
             if (e.distanceToSqr(mc.player) <= reach * reach) AuraClient.volume(mc.level, random, e.position(), 0.6F, c, scale);
             if (scale >= COLUMN_FROM && e.distanceToSqr(mc.player) <= reach * reach) vortex(mc, random, e, c, scale);
         }

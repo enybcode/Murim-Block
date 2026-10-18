@@ -124,6 +124,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at Qi vision's vital points (see VitalPointsTour).
+        vitalPointsTour {
+            client()
+            gameDirectory = project.file('build/vital-points-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.vitalPointsTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at the mock-up of Qi vision's foresight (see QiForesightTour).
         qiForesightTour {
             client()

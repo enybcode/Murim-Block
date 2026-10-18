@@ -97,6 +97,22 @@ public final class CultivationPayloads {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /**
+     * Server to a player: the vital points lit on a body (a bit each of VitalPoints.POINTS, 0: none left), the one just
+     * struck (-1: none) and for how many ticks more they stay lit.
+     */
+    public record Vital(int entityId, int mask, int struck, int ticks) implements CustomPacketPayload {
+        public static final Type<Vital> TYPE = new Type<>(id("vital_points"));
+        public static final StreamCodec<ByteBuf, Vital> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, Vital::entityId,
+                ByteBufCodecs.VAR_INT, Vital::mask,
+                ByteBufCodecs.VAR_INT, Vital::struck,
+                ByteBufCodecs.VAR_INT, Vital::ticks,
+                Vital::new);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Server to the clients near a body: a breakthrough (or its failure) happens to it now, to be shown. */
     public record Breakthrough(int entityId, int kind) implements CustomPacketPayload {
         public static final int MINOR = 0, MAJOR = 1, DEVIATION = 2, ENTER = 3, RETURN = 4;

@@ -505,6 +505,45 @@ public final class CultivationGameTests {
     // ---------------------------------------------------------------- Qi Sense
 
     /**
+     * Vital points: a perfect parry at Foundation Establishment, Qi Sense open, lights some of the attacker's points (not
+     * below that realm); a blow aimed at one does 1.5x and puts it out, a blow aimed elsewhere does not.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_vital")
+    public static void vitalPointsLightAfterAParryAndAStrikeOnOneHurtsMore(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper);
+        Zombie target = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 3));
+        target.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
+        target.getAttribute(Attributes.ARMOR).setBaseValue(0);
+        CultivationService.setCultivation(reader, CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
+        QiSense.setActive(reader, true);
+        com.murimblock.cultivation.VitalPoints.onPerfectParry(reader, target);
+        helper.assertTrue(com.murimblock.cultivation.VitalPoints.open(reader, target) == 0, "Vital points light up below Foundation Establishment");
+        CultivationService.setCultivation(reader, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);
+        QiSense.setActive(reader, true);
+        com.murimblock.cultivation.VitalPoints.onPerfectParry(reader, target);
+        int mask = com.murimblock.cultivation.VitalPoints.open(reader, target);
+        helper.assertTrue(Integer.bitCount(mask) == com.murimblock.cultivation.VitalPoints.COUNT, "The parry lit " + Integer.bitCount(mask) + " points");
+        int point = Integer.numberOfTrailingZeros(mask);
+        reader.moveTo(target.getX(), target.getY(), target.getZ() - 2.5, 0, 0);
+        target.setYRot(180);
+        target.setYBodyRot(180);
+        reader.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, com.murimblock.cultivation.VitalPoints.position(target, point));
+        float before = target.getHealth();
+        target.hurt(reader.damageSources().playerAttack(reader), 4);
+        float struck = before - target.getHealth();
+        helper.assertTrue(struck > 5.9F, "A blow on a vital point did " + struck + ", not 6");
+        helper.assertTrue((com.murimblock.cultivation.VitalPoints.open(reader, target) & 1 << point) == 0, "The point struck is still lit");
+        // Aimed at the sky: an ordinary blow.
+        target.invulnerableTime = 0;
+        reader.setXRot(-80);
+        before = target.getHealth();
+        target.hurt(reader.damageSources().playerAttack(reader), 4);
+        helper.assertTrue(before - target.getHealth() < 4.1F, "A blow aimed elsewhere was made stronger");
+        com.murimblock.cultivation.VitalPoints.clearForTests();
+        end(helper, reader);
+    }
+
+    /**
      * Beyond the sense's reach (16 blocks at Qi Condensation), only the powerful are felt, through walls, out to its far
      * reach (48): one as strong or stronger is read, a weaker one is not.
      */
