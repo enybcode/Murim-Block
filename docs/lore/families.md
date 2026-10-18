@@ -55,6 +55,58 @@ dans un coffre, c'est qu'il a été volé, vendu ou trouvé sur un mort.
 Seize familles : trois ou quatre par région, dont les quatre du sud. Les arts **sans famille** (le Poing Long, le Bâton
 du Voyageur, le Sabre du Tonnerre, l'Épée du Nuage Azur, la Cloche d'Or) ont leur légende à la fin.
 
+## L'héritage de famille (objectif d'Enzo, pour plus tard)
+
+> Enzo, 18/10/2026 : « l'objectif plus tard est de faire des techniques de famille qui permettraient au joueur de spawn
+> avec un bonus : arme, passif ou technique ». **Proposition, rien n'est en jeu.**
+
+Les familles ne sont donc pas seulement du décor : **le joueur naît dans l'une d'elles**. À sa première apparition, il
+reçoit son nom de famille et **un héritage**, d'un seul des trois types :
+
+- **Arme** : l'arme de la maison, donnée au départ. Une bonne arme de début, pas une arme de fin de jeu.
+- **Passif** : un petit bonus permanent, toujours actif.
+- **Technique** : une technique de famille, rangée dans la barre de combat comme celles des arts, mais seule : ce n'est
+  pas un art entier, et elle ne remplace pas les arts qu'on apprend en jouant.
+
+Ce que ça change pour le lore : le joueur a désormais **un nom de famille**, mais toujours **ni élu, ni destin, ni
+passé raconté**. Il est un fils ou une fille sans importance d'une maison du Murim, souvent loin de chez lui. Sa famille
+est un point de départ, pas une histoire.
+
+**Règles proposées :**
+- **Un tirage au hasard** à la première connexion, avec trois raretés (comme les tirages de clans des jeux murim) :
+  - **commune** : 70 % (7 familles, 10 % chacune) ;
+  - **rare** : 25 % (6 familles, environ 4 % chacune) ;
+  - **légendaire** : 5 % (3 familles, environ 1,7 % chacune).
+- **Une seule famille par joueur**, sauvegardée avec ses données (identifiant stable, comme les arts). Affichée dans la
+  page Profile (« Family: Feng »), à la place d'une ligne vide.
+- **L'héritage reste petit** : il aide les premières heures et donne une couleur au personnage, il ne vaut jamais un art.
+- **Rien n'est perdu à la mort.**
+- En multijoueur, chacun tire la sienne : deux amis peuvent être de familles ennemies.
+
+**Les seize héritages :**
+
+| Famille | Rareté | Type | Héritage (nom en jeu) | Ce qu'il fait | Tiré de la légende |
+|---|---|---|---|---|---|
+| Tao | commune | Passif | *Peach Mourning* | Chaque ennemi tué rend 1 PV, dans une pluie de pétales. | Un pêcher pour chaque mort. |
+| Langpi | commune | Arme | *Wolfskin Bow* | Un arc de corne et 32 flèches ; un manteau du clan contre le froid du nord. | La flèche qui chassa le vent. |
+| Shi | commune | Passif | *Stone Knuckles* | Mains nues +2 dégâts, et la pierre se casse plus vite à mains nues. | Le poing qui ouvrit la colline. |
+| Zhang | commune | Passif | *Rooted Feet* | −25 % de recul subi. | Le bâton qui prit racine. |
+| Jiang | commune | Passif | *River Born* | Nage plus vite, retient son souffle deux fois plus longtemps. | Les pêcheurs-guerriers de la rivière. |
+| Qian | commune | Passif | *Merchant's Blood* | Commence avec 20 taels ; −10 % chez les marchands. | Le prix d'une vie. |
+| Shen | commune | Passif | *Ones the Water Spared* | Les boules d'eau et la Lenteur des hommes-crabes durent moitié moins. | Ceux que la maladie n'a pas pris. |
+| Feng | rare | Arme | *Feng Guard Spear* | La lance de la Garde du Pic, les trois pics sur la douille, un peu meilleure qu'une lance de fer. | Le pont des trois cents. |
+| Dou | rare | Passif | *Star Reading* | La nuit, à ciel ouvert, le Qi se régénère 15 % plus vite. | La Cueilleuse d'étoiles. |
+| Xue | rare | Technique | *Blood Price* | Sacrifie 4 PV pour rendre 20 Qi (à faire valider par Colleuhu95). | La larme écarlate. |
+| Lin | rare | Arme | *Bamboo Needles* | 16 aiguilles de bambou à lancer, faibles mais rapides ; ramassables. | Trois jours sans toucher terre. |
+| Ye | rare | Arme | *Ye-Forged Blade* | Une épée, un sabre ou une lance en fer au choix, poinçonnée Ye, plus solide et plus tranchante. | L'épée qui demanda une vie. |
+| Su | rare | Technique | *Silk Breath* | Un souffle de Qi qui soigne un peu le joueur et ses alliés proches. | La soie qui soigne. |
+| Bai | légendaire | Technique | *Waiting Blade* | Une garde tenue : le premier coup reçu pendant 1 s est paré parfaitement et rendu. | Le coup qui n'a pas été donné. |
+| Han | légendaire | Technique | *Frost Palm* | Une paume froide : ralentit la cible et coupe sa régénération de Qi 3 s. | Le coup du solstice. |
+| Ku | légendaire | Passif | *The Hunger* | +10 % de dégâts sous 30 % de PV, mais la faim vient plus vite. | Celui qui se mange. |
+
+Huit passifs, quatre armes, quatre techniques (les légendaires sont surtout des techniques, les communes surtout des
+passifs). Les chiffres sont un premier jet.
+
 ---
 
 ## Centre — les montagnes sacrées
@@ -364,6 +416,14 @@ Les mêmes petites touches que la bible, sans rien de lourd :
 - **le wiki** : une page par famille, avec son emblème, si Enzo le veut.
 
 ## Questions pour Enzo
+
+Sur l'héritage :
+- Tirage au hasard (avec raretés), ou le joueur choisit sa famille ?
+- Peut-on relancer ? Par exemple avec un objet rare (*Ancestral Tablet*) trouvé ou acheté.
+- Un « sans famille » (cultivateur errant) dans le tirage, ou tout le monde a une famille ?
+- Les héritages te vont-ils (types, raretés, puissance) ?
+
+Sur le lore :
 
 - Seize familles, c'est trop, ou ça te va ? On peut n'en garder que deux par région pour la bêta.
 - Le Crab King en héritier Jiang et les hommes-crabes en bateliers Shen : ça te va ?
