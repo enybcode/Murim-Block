@@ -42,6 +42,7 @@ import org.joml.Matrix4f;
 public final class QiSenseClient {
     private static boolean sentActive;
     private static boolean open;
+    private static long openedAt;
     private static final Map<Integer, CultivationPayloads.Reading> READINGS = new HashMap<>();
 
     private QiSenseClient() {
@@ -49,6 +50,8 @@ public final class QiSenseClient {
 
 
     public static void readings(CultivationPayloads.SenseReadings payload) {
+        Minecraft mc = Minecraft.getInstance();
+        if (payload.open() && !open && mc.level != null) openedAt = mc.level.getGameTime();
         open = payload.open();
         READINGS.clear();
         for (CultivationPayloads.Reading r : payload.readings()) READINGS.put(r.entityId(), r);
@@ -61,6 +64,15 @@ public final class QiSenseClient {
 
     public static boolean open() {
         return open;
+    }
+
+    /** How tired the eyes are: 0 until held open SENSE_TIRES_AFTER, then up to 1 when it closes by itself. */
+    public static float fatigue() {
+        Minecraft mc = Minecraft.getInstance();
+        if (!open || mc.level == null) return 0;
+        long held = mc.level.getGameTime() - openedAt;
+        return Math.max(0, Math.min(1, (held - com.murimblock.cultivation.CultivationRules.SENSE_TIRES_AFTER)
+                / (float) (com.murimblock.cultivation.CultivationRules.SENSE_HOLD_MAX - com.murimblock.cultivation.CultivationRules.SENSE_TIRES_AFTER)));
     }
 
     @SubscribeEvent

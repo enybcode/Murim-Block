@@ -25,6 +25,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public final class QiSense {
     private static final Set<UUID> ACTIVE = new HashSet<>();
+    /** When each one opened it (game time), and till when each one's eyes rest. */
+    private static final java.util.Map<UUID, Long> OPENED = new java.util.HashMap<>(), RESTING = new java.util.HashMap<>();
 
     private QiSense() {
     }
@@ -40,6 +42,14 @@ public final class QiSense {
     public static void setActive(ServerPlayer player, boolean on) {
         if (!on) {
             if (ACTIVE.remove(player.getUUID())) send(player, false, List.of());
+            OPENED.remove(player.getUUID());
+            return;
+        }
+        long now = player.level().getGameTime();
+        Long rest = RESTING.get(player.getUUID());
+        if (rest != null && now < rest) {
+            player.displayClientMessage(Component.translatable("cultivation.murimblock.sense.tired"), true);
+            send(player, false, List.of());
             return;
         }
         if (!unlocked(player)) {
@@ -48,12 +58,13 @@ public final class QiSense {
             send(player, false, List.of());
             return;
         }
-        if (QiService.getQi(player) < CultivationRules.SENSE_QI_PER_SECOND) {
+        if (QiService.getQi(player) < CultivationRules.senseQiPerSecond(CultivationService.getRealm(player))) {
             player.displayClientMessage(Component.translatable("cultivation.murimblock.sense.no_qi"), true);
             send(player, false, List.of());
             return;
         }
         if (ACTIVE.add(player.getUUID())) {
+            OPENED.put(player.getUUID(), now);
             player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.5F, 0.6F);
             send(player, true, readings(player));
         }
@@ -61,12 +72,21 @@ public final class QiSense {
 
     public static void tick(ServerPlayer player) {
         if (!isActive(player)) return;
+        long now = player.level().getGameTime();
+        // Held too long: the eyes close by themselves, and rest.
+        if (now - OPENED.getOrDefault(player.getUUID(), now) >= CultivationRules.SENSE_HOLD_MAX) {
+            setActive(player, false);
+            RESTING.put(player.getUUID(), now + CultivationRules.SENSE_REST);
+            player.displayClientMessage(Component.translatable("cultivation.murimblock.sense.tired"), true);
+            return;
+        }
         if (player.tickCount % 20 == 0) {
-            if (QiService.getQi(player) < CultivationRules.SENSE_QI_PER_SECOND || !unlocked(player) || !player.isAlive()) {
+            double cost = CultivationRules.senseQiPerSecond(CultivationService.getRealm(player));
+            if (QiService.getQi(player) < cost || !unlocked(player) || !player.isAlive()) {
                 setActive(player, false);
                 return;
             }
-            QiService.removeQi(player, CultivationRules.SENSE_QI_PER_SECOND);
+            QiService.removeQi(player, cost);
         }
         if (player.tickCount % 5 == 0) send(player, true, readings(player));
         QiTraces.tick(player);
@@ -108,7 +128,20 @@ public final class QiSense {
         if (player.connection != null) PacketDistributor.sendToPlayer(player, new CultivationPayloads.SenseReadings(open, readings));
     }
 
+    /** How long this one has held it open (ticks), 0 if closed. */
+    public static long heldFor(ServerPlayer player) {
+        Long opened = OPENED.get(player.getUUID());
+        return opened == null || !isActive(player) ? 0 : player.level().getGameTime() - opened;
+    }
+
+    /** Tests: as if opened this many ticks earlier. */
+    public static void backdateForTests(ServerPlayer player, long ticks) {
+        OPENED.computeIfPresent(player.getUUID(), (k, v) -> v - ticks);
+    }
+
     public static void clearForTests() {
         ACTIVE.clear();
+        OPENED.clear();
+        RESTING.clear();
     }
 }

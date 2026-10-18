@@ -58,8 +58,11 @@ public final class QiVisionClient {
             effectOn = false;
         }
         // The world's outlines reach as far as the sense, by realm.
-        if (effectOn && mc.gameRenderer.currentEffect() != null)
+        // The eyes tiring: the sight wavers, blurs and darkens.
+        if (effectOn && mc.gameRenderer.currentEffect() != null) {
             mc.gameRenderer.currentEffect().setUniform("SeeFar", (float) com.murimblock.cultivation.CultivationRules.farSenseRange(CultivationService.getRealm(mc.player)));
+            mc.gameRenderer.currentEffect().setUniform("Fatigue", QiSenseClient.fatigue());
+        }
         if (open && !mc.isPaused()) {
             auras(mc);
             if (CultivationService.getRealm(mc.player).ordinal() >= CultivationRealm.QI_LIQUIDATION.ordinal()) currents(mc);

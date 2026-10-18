@@ -280,6 +280,17 @@ public final class CultivationRules {
         return SENSE_REACH[realm.ordinal()];
     }
 
+    /** What Qi Sense costs each second: more as it reaches further (1 Qi up to Qi Condensation, 8 at Void Enlightenment). */
+    public static double senseQiPerSecond(CultivationRealm realm) {
+        return senseRange(realm) / 16;
+    }
+
+    /**
+     * The eyes tire (Qi vision, 18/10/2026): held open past {@link #SENSE_TIRES_AFTER} ticks, the sight blurs; at
+     * {@link #SENSE_HOLD_MAX} it closes by itself, and cannot open again for {@link #SENSE_REST}.
+     */
+    public static final int SENSE_TIRES_AFTER = 60 * 20, SENSE_HOLD_MAX = 80 * 20, SENSE_REST = 20 * 20;
+
     /** From Core Formation, the auras near enough are read through walls (Qi vision, 18/10/2026): this realm, this far. */
     public static final CultivationRealm THROUGH_WALLS_REALM = CultivationRealm.CORE_FORMATION;
     public static final double THROUGH_WALLS_REACH = 24;

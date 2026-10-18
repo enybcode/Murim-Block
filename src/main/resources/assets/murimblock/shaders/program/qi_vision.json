@@ -18,6 +18,7 @@
         { "name": "OutSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] },
         { "name": "SeeFar", "type": "float", "count": 1, "values": [ 48.0 ] },
         { "name": "Time", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Fatigue", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "Columns", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "Col0X", "type": "float", "count": 1, "values": [ 0.0 ] },
         { "name": "Col0Foot", "type": "float", "count": 1, "values": [ 0.0 ] },

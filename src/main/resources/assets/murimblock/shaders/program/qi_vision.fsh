@@ -13,6 +13,8 @@ uniform sampler2D DepthSampler;
 uniform float SeeFar;
 // The columns of the powerful (QiVisionClient.columns): on the screen, each one's middle, foot, top, half-width; its colour.
 uniform float Time;
+// The eyes tiring (QiSenseClient.fatigue): 0 rested, 1 about to close: the sight wavers, blurs and darkens from the edges.
+uniform float Fatigue;
 uniform float Columns;
 uniform float Col0X, Col0Foot, Col0Top, Col0Width, Col0R, Col0G, Col0B;
 uniform float Col1X, Col1Foot, Col1Top, Col1Width, Col1R, Col1G, Col1B;
@@ -59,7 +61,9 @@ vec3 shaft(vec2 uv, float x, float foot, float top, float width, vec3 tint) {
 }
 
 void main() {
-    vec3 c = texture(DiffuseSampler, texCoord).rgb;
+    // Tired eyes waver.
+    vec2 waver = vec2(sin(Time * 6.0 + texCoord.y * 28.0), cos(Time * 5.0 + texCoord.x * 23.0)) * 0.006 * Fatigue;
+    vec3 c = texture(DiffuseSampler, texCoord + waver).rgb;
     float here = dist(texCoord);
     // Where the depth breaks: the silhouettes of things against what lies behind them.
     float breaks = 0.0;
@@ -87,5 +91,12 @@ void main() {
     if (Columns > 0.5) shafts += shaft(texCoord, Col0X, Col0Foot, Col0Top, Col0Width, vec3(Col0R, Col0G, Col0B));
     if (Columns > 1.5) shafts += shaft(texCoord, Col1X, Col1Foot, Col1Top, Col1Width, vec3(Col1R, Col1G, Col1B));
     if (Columns > 2.5) shafts += shaft(texCoord, Col2X, Col2Foot, Col2Top, Col2Width, vec3(Col2R, Col2G, Col2B));
-    fragColor = vec4(max(world, c * 1.3 * qi) + shafts, 1.0);
+    vec3 seen = max(world, c * 1.3 * qi) + shafts;
+    // Tired: all blurs (towards the blurred view, greyed) and darkens from the edges in.
+    if (Fatigue > 0.0) {
+        vec3 blur = texture(SoftSampler, texCoord + waver * 2.0).rgb;
+        seen = mix(seen, vec3(dot(blur, vec3(0.3, 0.59, 0.11)) * 0.35), Fatigue * 0.65);
+        seen *= 1.0 - Fatigue * smoothstep(0.2, 0.75, length(texCoord - 0.5));
+    }
+    fragColor = vec4(seen, 1.0);
 }

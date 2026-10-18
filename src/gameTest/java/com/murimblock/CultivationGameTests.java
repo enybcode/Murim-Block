@@ -504,6 +504,33 @@ public final class CultivationGameTests {
 
     // ---------------------------------------------------------------- Qi Sense
 
+    /**
+     * Qi Sense's cost grows with its reach (1 Qi a second at Qi Condensation, 4 at Core Formation); held 80 s it closes
+     * by itself, and cannot open again while the eyes rest (20 s).
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_tired")
+    public static void qiSenseCostsMoreFurtherAndTiresTheEyes(GameTestHelper helper) {
+        QiSense.clearForTests();
+        ServerPlayer reader = cultivator(helper);
+        helper.assertTrue(CultivationRules.senseQiPerSecond(CultivationRealm.QI_CONDENSATION) == 1
+                && CultivationRules.senseQiPerSecond(CultivationRealm.CORE_FORMATION) == 4, "Qi Sense's cost does not follow its reach");
+        CultivationService.setCultivation(reader, CultivationRealm.CORE_FORMATION, CultivationStage.EARLY);
+        QiService.setQiMax(reader, 5000);
+        QiService.refillQi(reader);
+        QiSense.setActive(reader, true);
+        helper.assertTrue(QiSense.isActive(reader), "Qi Sense does not open");
+        QiSense.backdateForTests(reader, CultivationRules.SENSE_HOLD_MAX - 5);
+        QiSense.tick(reader);
+        helper.assertTrue(QiSense.isActive(reader), "Qi Sense closed before 80 s");
+        QiSense.backdateForTests(reader, 5);
+        QiSense.tick(reader);
+        helper.assertFalse(QiSense.isActive(reader), "Qi Sense still open after 80 s");
+        QiSense.setActive(reader, true);
+        helper.assertFalse(QiSense.isActive(reader), "Qi Sense opened again while the eyes rest");
+        QiSense.clearForTests();
+        end(helper, reader);
+    }
+
     /** Hidden caches: a buried chest with something in it is felt; a buried empty one is not, nor a full one in sight. */
     @GameTest(template = "foundation_arena", batch = "cultivation_caches")
     public static void hiddenCachesWithSomethingInsideAreFelt(GameTestHelper helper) {

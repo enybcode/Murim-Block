@@ -133,6 +133,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at Qi vision's tiring eyes (see QiFatigueTour).
+        qiFatigueTour {
+            client()
+            gameDirectory = project.file('build/qi-fatigue-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiFatigueTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at Qi vision through walls (see QiThroughWallsTour).
         qiThroughWallsTour {
             client()
