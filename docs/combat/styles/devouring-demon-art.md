@@ -76,8 +76,10 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
   des deux côtés depuis le bas et se ferme en haut à 100 ; au-delà de 75 il bat comme un cœur ; en forme du démon il
   devient violet veiné de rouge, qui coule, et le cerclage d'or du dantian passe au cramoisi ; les icônes des
   techniques montrent leur version du démon.
-- **Lash** (160 Qi, 5 s) : les quatre tentacules s'enroulent vers sa droite puis balaient l'arc devant lui (4,5 blocs,
-  150°), coup ×1,3 sur chaque ennemi, repoussé. Corps : `demon_lash`.
+- **Lash** (160 Qi, 5 s) : les quatre tentacules se dressent derrière ses épaules, ramassées comme des queues de
+  scorpion, puis se projettent l'une après l'autre, de droite à gauche, chacune vers son point de l'arc devant lui
+  (4,5 blocs, 150°), et s'abattent dessus ; coup ×1,3 sur chaque ennemi, repoussé. Corps : `demon_lash`. Revue par Enzo
+  le 18/10 (la morsure validée telle quelle).
 - **Centipede Bite** (la même touche en forme du démon) : une scolopendre se dresse comme un cobra, puis frappe en arc et
   retombe sur l'ennemi regardé (7 blocs, cône de 22°), coup ×2,2, ralenti, attiré ; il dévore un cinquième de la
   blessure en vie. Corps : `demon_bite`, à quatre pattes.
