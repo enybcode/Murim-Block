@@ -206,7 +206,9 @@ public final class KaguneTour {
         if (ticks == 40) {
             camera = new net.minecraft.world.entity.Marker(EntityType.MARKER, mc.level);
             // From his right side: the zombies to the south on the right of the picture.
-            place(-6.0, -58.0, 1.6, -90, 12);
+            // MURIM_KAGUNE_CAM=top: from above, to see that nothing goes through him.
+            if ("top".equals(System.getenv("MURIM_KAGUNE_CAM"))) place(0.5, -53.5, -1.5, 0, 62);
+            else place(-6.0, -58.0, 1.6, -90, 12);
             mc.options.chatVisibility().set(net.minecraft.world.entity.player.ChatVisiblity.HIDDEN);
             mc.gui.getChat().clearMessages(false);
             mc.options.fov().set(60);
@@ -241,6 +243,8 @@ public final class KaguneTour {
         });
         if (ticks == 216) {
             check(casts.equals(List.of("CAST", "CAST")), "both techniques were cast: " + casts);
+            check(com.murimblock.client.KaguneStrikes.jointsSeenInBody() == 0, "Lash's tentacles never went through him: " + com.murimblock.client.KaguneStrikes.jointsSeenInBody() + " joints at worst");
+            check(com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() == 0, "the centipede never went through him: " + com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() + " joints at worst");
             finish(mc);
         }
     }

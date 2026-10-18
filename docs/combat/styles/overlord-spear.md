@@ -64,6 +64,24 @@ entre joueurs (`BurstGuard`).
 | Hundred Battles Rampage | 75 | 22 s | 12 × 0,35, le dernier ×1,0 |
 | Conqueror Descends (ultime) | 180 | 4 min | ×3,0 au centre, ×1,5 au bord |
 
+## Le sol qui se brise (18/10/2026)
+
+Demande d'Enzo : « retravaille tout l'art avec cette idée » (la fracture du sol d'Epic Fight). Chaque coup brise le sol
+à sa façon, avec la fracture d'Epic Fight (`OverlordFx` : `shock`, `line` qui la fait **rouler** bloc après bloc, `ring` en
+cercle) ; tout se remet en place de lui-même. La fracture ne fait aucun dégât par elle-même (son onde de choc est coupée) :
+les dégâts restent ceux des techniques.
+
+| Élément | Le sol |
+|---|---|
+| Coup de bélier (passif) | une fracture court droit devant sur 4 blocs |
+| Tyrant's Thrust | le rayon laboure le sol sur toute sa longueur (plus large pour le secret) |
+| Earth-Splitting Sweep | l'impact devant, puis l'anneau de sol brisé suit le tour de la lance |
+| Falling Mountain | le sol craque à l'envol, gros impact (5) à l'atterrissage, réplique en cercle plus loin |
+| Overlord's Charge | un sillon de sol brisé derrière les pas, éclat au pied du mur (ou au bout de la course) |
+| Hundred Battles Rampage | chaque estoc frappe le sol sous la pointe, le dernier envoie une fracture devant |
+| Conqueror Descends | le sol tremble dans le cercle pendant l'alerte, impact de 9 blocs, deux répliques en vagues |
+| Overlord's Verdict | le sol se fend quand la pointe passe sous l'adversaire, puis cède au plantage |
+
 ## Ce qui est en jeu (18/10/2026)
 
 | Élément | Code | Vérifié par |
@@ -74,7 +92,7 @@ entre joueurs (`BurstGuard`).
 | Les animations (lance à deux mains, d'après les poses de la Lance du Pic Céleste) | `scripts/animation/overlord-spear.cjs`, `MurimAnimations.buildOverlordSpear` | idem |
 | Le rayon de Qi et la lance géante (modèles GeckoLib qui brillent) | `martial/OverlordQiEntity`, `client/OverlordQiRenderer`, `scripts/animation/overlord-fx.cjs` | idem |
 | Les flashs rouge sang et or (Photon), protocole réseau 30 | `martial/OverlordFx`, `client/OverlordFxClient`, `OverlordFlashPayload` | idem |
-| Le terrain cassé (fissures, cratères, mur percé) se reconstruit toujours | `combat/ShatteredGround` | idem |
+| Le sol frappé : la fracture d'Epic Fight (`LevelUtil.circleSlamFracture`, comme son Meteor Slam : blocs soulevés et inclinés, poussière, tout se remet en place) pour le bélier (2), le balayage (4), la Montagne (5), le finish (3) et l'ultime (9) ; seul le mur de la charge est percé (il revient) | `OverlordFx.shock`, `combat/ShatteredGround` | idem |
 | Les icônes (famille noir et rouge sang), le rouleau, l'aura (braises), le guide du Dragon d'Or (4 gouttes, 18 yuanbao) | `TechniqueIcons.java`, `ScrollTexture.java`, `AuraClient`, `GoldenDragonShop` | `SageShopGameTests` |
 | La Lance de la Ruine | `MurimItems.SPEAR_OF_RUIN`, `scripts/animation/ruin-spear-model.cjs` | `runRuinSpearTour` |
 

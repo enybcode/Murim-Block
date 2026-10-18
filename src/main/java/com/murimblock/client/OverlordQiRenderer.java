@@ -21,13 +21,12 @@ import software.bernie.geckolib.util.Color;
 /**
  * The Overlord Spear's shapes of Qi (martial/OverlordQiEntity), in one palette texture (scripts/animation/overlord-fx.cjs):
  * Tyrant's Thrust's beam (geo/overlord_beam, one block at scale 1, stretched to its width and length), the ultimate's
- * giant spear (geo/overlord_giant_spear, made as long as it is told), the shock wave (geo/overlord_ring) and the cracks
- * (geo/overlord_cracks), spread flat to their radius. Both shine (full light, their glowmasks); the beam's sheath is see-through, and both fade
+ * giant spear (geo/overlord_giant_spear, made as long as it is told). Both shine (full light, their glowmasks); the beam's sheath is see-through, and both fade
  * out over their last ticks.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class OverlordQiRenderer extends GeoEntityRenderer<OverlordQiEntity> {
-    /** The giant spear's model's own length at scale 1 (blocks); the ring and the cracks are one block across. */
+    /** The giant spear's model's own length at scale 1 (blocks);  */
     private static final float SPEAR_LENGTH = 3.82F;
 
     public OverlordQiRenderer(EntityRendererProvider.Context context) {
@@ -52,9 +51,6 @@ public final class OverlordQiRenderer extends GeoEntityRenderer<OverlordQiEntity
         float length = qi.length(partial);
         if (qi.kind() == OverlordQiEntity.BEAM) {
             pose.scale(qi.width(), length, qi.width());
-        } else if (qi.kind() == OverlordQiEntity.RING || qi.kind() == OverlordQiEntity.CRACKS) {
-            // Spread flat to twice its length (its radius), as thin as it was made.
-            pose.scale(length * 2, 1, length * 2);
         } else {
             float s = length / SPEAR_LENGTH;
             pose.scale(s, s, s);
@@ -79,8 +75,6 @@ public final class OverlordQiRenderer extends GeoEntityRenderer<OverlordQiEntity
         @Override public ResourceLocation getModelResource(OverlordQiEntity qi) {
             return asset(switch (qi.kind()) {
                 case OverlordQiEntity.BEAM -> "geo/overlord_beam.geo.json";
-                case OverlordQiEntity.RING -> "geo/overlord_ring.geo.json";
-                case OverlordQiEntity.CRACKS -> "geo/overlord_cracks.geo.json";
                 default -> "geo/overlord_giant_spear.geo.json";
             });
         }

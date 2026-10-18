@@ -184,13 +184,12 @@ public final class OverlordSpearGameTests {
     }
 
     @GameTest(template = "spear_arena", batch = "overlord_mountain")
-    public static void fallingMountainLandsInACraterThatStrikesAllRound(GameTestHelper helper) {
+    public static void fallingMountainLandsAndStrikesAllRound(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie close = dummy(helper, player, 1.5, 0), edge = dummy(helper, player, -4, 0), out = dummy(helper, player, 0, -7.5);
         OverlordSpear.landForTests(player);
         helper.assertTrue(close.getHealth() < edge.getHealth() && edge.getHealth() < 300, "The landing did not strike the centre harder: " + close.getHealth() + ", " + edge.getHealth());
         helper.assertTrue(out.getHealth() == 300, "The landing struck beyond its crater");
-        helper.assertTrue(helper.getLevel().getBlockState(player.blockPosition().below().east(1)).isAir(), "No crater");
         end(helper, player, close, edge, out);
     }
 
