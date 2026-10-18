@@ -8,9 +8,6 @@
 //                                     a gold spiked pommel, an eight-sided black shaft banded in gold and cracked with
 //                                     embers, a crimson mane of twelve ribbons, three gold claws, a broad leaf blade of
 //                                     black steel with gold-white edges and a burning seam, wrapped in a shell of red Qi;
-//   geo/overlord_ring.geo.json        a shock wave: a ring of light one block across (the renderer grows it), its inner
-//                                     edge hot, its outer edge red;
-//   geo/overlord_cracks.geo.json      cracks in the ground: eight jagged lines of embers out from the centre, flat.
 // Usage: node scripts/animation/overlord-fx.cjs
 const fs = require('fs');
 const path = require('path');
@@ -156,54 +153,13 @@ const write = (name, cubes, bounds) => {
   write('overlord_giant_spear', c, 5);
 }
 
-// ---------------------------------------------------------------- the shock wave: a ring 16 across at scale 1
-
-// A thin band of light lying on the ground: hot at its front, red behind, see-through (the renderer fades it as it
-// spreads). 48 short segments, so its curve stays round when it is grown to ten blocks.
-{
-  const c = [], n = 48, r = 8;
-  for (let i = 0; i < n; i++) {
-    const a = i * 360 / n, seg = 2 * Math.PI * r / n + 0.12;
-    c.push(cube('wave2', [-seg / 2, 0, r - 0.32], [seg / 2, 0.06, r]), );
-    c.push(cube('wave0', [-seg / 2, 0, r - 0.7], [seg / 2, 0.04, r - 0.32]));
-    c[c.length - 2].rotation = c[c.length - 1].rotation = [0, a, 0];
-    c[c.length - 2].pivot = c[c.length - 1].pivot = [0, 0, 0];
-  }
-  write('overlord_ring', c, 2);
-}
-
-// ---------------------------------------------------------------- the cracks: jagged lines out to 8 (16 across)
-
-// Seven main cracks of uneven length, each a chain of short segments turning a little at each joint and thinning out,
-// with a branch or two; a dark line in the ground, a thread of embers along it.
-{
-  const c = [];
-  let seed = 7;
-  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  const crack = (x0, z0, heading, length, w0, branches) => {
-    let x = x0, z = z0, h = heading, w = w0;
-    const step = 0.55;
-    for (let d = 0; d < length; d += step) {
-      h += (rnd() - 0.5) * 34;
-      const dx = Math.cos(h * Math.PI / 180) * step, dz = Math.sin(h * Math.PI / 180) * step;
-      const cx = x + dx / 2, cz = z + dz / 2, len = step + 0.08;
-      // Bedrock turns about y the other way round: a segment along x turned by -h follows the heading.
-      c.push({ origin: [cx - len / 2, 0, cz - w / 2], size: [len, 0.05, w], uv: uvOf('iron0'), rotation: [0, -h, 0], pivot: [cx, 0, cz] });
-      if (w > 0.12) c.push({ origin: [cx - len / 2, 0.03, cz - w * 0.22], size: [len, 0.04, w * 0.44], uv: uvOf(d < length * 0.5 ? 'ember5' : 'ember3'), rotation: [0, -h, 0], pivot: [cx, 0, cz] });
-      if (branches > 0 && rnd() < 0.18 && d > 1) { crack(x + dx, z + dz, h + (rnd() < 0.5 ? -40 : 40), length * 0.35, w * 0.6, 0); branches--; }
-      x += dx; z += dz; w = Math.max(0.06, w * 0.9);
-    }
-  };
-  for (let k = 0; k < 7; k++) crack(0, 0, k * 360 / 7 + rnd() * 20, 4.5 + rnd() * 3, 0.42, 2);
-  write('overlord_cracks', c, 2);
-}
-
 fs.mkdirSync(path.join(ASSETS, 'textures', 'entity'), { recursive: true });
 fs.writeFileSync(path.join(ASSETS, 'textures', 'entity', 'overlord_qi.png'), png(S, S, TEX));
 fs.writeFileSync(path.join(ASSETS, 'textures', 'entity', 'overlord_qi_glowmask.png'), png(S, S, GLOW));
 // GeckoLib wants an animation file: an empty one.
 fs.writeFileSync(path.join(ASSETS, 'animations', 'overlord_qi.animation.json'), JSON.stringify({ format_version: '1.8.0', animations: {} }, null, 2) + '\n');
-// The first textures (one per shape) are replaced by the palette.
+// The first textures (one per shape) are replaced by the palette; the ring and the cracks gave way to Epic Fight's fracture.
+for (const old of ['overlord_ring', 'overlord_cracks']) { const g = path.join(ASSETS, 'geo', old + '.geo.json'); if (fs.existsSync(g)) fs.unlinkSync(g); }
 for (const old of ['overlord_beam', 'overlord_beam_glowmask', 'overlord_giant_spear', 'overlord_giant_spear_glowmask']) {
   const f = path.join(ASSETS, 'textures', 'entity', old + '.png');
   if (fs.existsSync(f)) fs.unlinkSync(f);

@@ -74,8 +74,6 @@ public final class OverlordSpear {
     public static final double[] LIFT_STEPS = {0.5, 0.35, 0.22, 0.12};
     /** Falling Mountain: how far and high it leaps, its crater, its shares. */
     public static final double LEAP_REACH = 8, LEAP_HEIGHT = 5, MOUNTAIN_CRATER = 5, MOUNTAIN_CORE = 2.5;
-    /** The hole Falling Mountain leaves (the blow reaches MOUNTAIN_CRATER): small and shallow, it comes back. */
-    public static final double MOUNTAIN_HOLE = 2.5;
     public static final float MOUNTAIN_CORE_SHARE = 1.8F, MOUNTAIN_SHARE = 1.0F;
     /** Overlord's Charge: how many it carries, the crush against a wall. */
     public static final int CHARGE_CARRY = 3;
@@ -86,7 +84,7 @@ public final class OverlordSpear {
     /** Conqueror Descends: how far it may fall from the player, how high it starts, its length, its blast. */
     public static final double ULT_REACH = 20, ULT_HEIGHT = 46, ULT_RADIUS = 10, ULT_CORE = 3;
     public static final float ULT_LENGTH = 40, ULT_CORE_SHARE = 3.0F, ULT_SHARE = 1.5F;
-    public static final int ULT_FALL_TICKS = 8, ULT_CRATER_DEPTH = 2;
+    public static final int ULT_FALL_TICKS = 8;
     /** The finish: when the fallen is lifted, when driven into the ground (ticks in). */
     public static final int FINISH_LIFT_TICK = 18, FINISH_HIT_TICK = 32;
 
@@ -214,8 +212,7 @@ public final class OverlordSpear {
             BlockPos ground = BlockPos.containing(p.x, player.getY() - 0.5, p.z);
             crack(level, ground);
         }
-        OverlordFx.spark(level, player.position().add(dir.scale(1.5)), 1.5);
-        OverlordFx.shock(level, player.position().add(dir.scale(RAM_WAVE * 0.6)), RAM_WAVE * 0.5);
+        OverlordFx.shock(player, player.position().add(dir.scale(2.2)), 2.0);
         for (LivingEntity e : inLine(player, dir, RAM_WAVE + 0.5, 1.2)) {
             if (blow(player, e, damage)) push(e, dir.scale(1.2), 0.25);
         }
@@ -360,7 +357,7 @@ public final class OverlordSpear {
         }
         BlockState under = level.getBlockState(centre);
         if (!under.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, under), player.getX(), player.getY() + 0.2, player.getZ(), 120, SWEEP_RING * 0.7, 0.2, SWEEP_RING * 0.7, 0.3);
-        OverlordFx.shock(level, player.position(), SWEEP_RING + 0.5);
+        OverlordFx.shock(player, player.position(), SWEEP_RING);
         level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.1F, 0.7F);
         OverlordFx.flash(level, player.position().add(0, 0.5, 0), 10);
     }
@@ -404,7 +401,6 @@ public final class OverlordSpear {
         if (patch != null) patch.playAnimationSynchronized(MurimAnimations.OVERLORD_FALLING_PLANT, 0.0F);
         BlockPos ground = player.blockPosition().below();
         BlockState state = level.getBlockState(ground);
-        ShatteredGround.crater(level, ground, MOUNTAIN_HOLE, 1);
         float core = TechniquePower.damage(player, MartialArts.OVERLORD_SPEAR, MOUNTAIN_CORE_SHARE);
         float edge = TechniquePower.damage(player, MartialArts.OVERLORD_SPEAR, MOUNTAIN_SHARE);
         double reach = MOUNTAIN_CRATER + 0.5;
@@ -423,7 +419,7 @@ public final class OverlordSpear {
         if (struck > 0) MartialProgress.addMastery(player, art(), MartialArts.FALLING_MOUNTAIN.id(), 1);
         if (!state.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), player.getX(), player.getY() + 0.2, player.getZ(), 160, MOUNTAIN_CRATER * 0.6, 0.3, MOUNTAIN_CRATER * 0.6, 0.35);
         level.sendParticles(ParticleTypes.LAVA, player.getX(), player.getY() + 0.4, player.getZ(), 1, 0, 0, 0, 0);
-        OverlordFx.shock(level, player.position(), reach);
+        OverlordFx.shock(player, player.position(), MOUNTAIN_CRATER);
         level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.6F, 0.6F);
         OverlordFx.flash(level, player.position().add(0, 0.5, 0), 14);
     }
@@ -491,7 +487,6 @@ public final class OverlordSpear {
         }
         BlockState state = level.getBlockState(wall);
         if (!state.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), wall.getX() + 0.5, wall.getY() + 0.5, wall.getZ() + 0.5, 60, 0.6, 0.6, 0.6, 0.2);
-        OverlordFx.spark(level, Vec3.atCenterOf(wall).add(0, -0.5, 0), 2.0);
         level.playSound(null, wall, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.3F, 0.8F);
         if (!c.carried.isEmpty()) MartialProgress.addMastery(player, art(), MartialArts.OVERLORDS_CHARGE.id(), 1);
         OverlordFx.flash(level, Vec3.atCenterOf(wall), 10);
@@ -523,7 +518,7 @@ public final class OverlordSpear {
         if (last) level.sendParticles(ParticleTypes.LAVA, tip.x, tip.y, tip.z, 3, 0.3, 0.3, 0.3, 0);
         level.sendParticles(ParticleTypes.FLAME, tip.x, tip.y, tip.z, last ? 30 : 8, 0.3, 0.3, 0.3, 0.05);
         level.playSound(null, BlockPos.containing(tip), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, last ? 1.2F : 0.35F, last ? 0.8F : 1.6F);
-        if (last) { OverlordFx.flash(level, tip, 10); OverlordFx.spark(level, tip.add(0, -1.0, 0), 2.5); }
+        if (last) OverlordFx.flash(level, tip, 10);
     }
 
     // ---------------------------------------------------------------- the ultimate: Conqueror Descends
@@ -605,7 +600,6 @@ public final class OverlordSpear {
         ServerLevel level = player.serverLevel();
         BlockPos ground = BlockPos.containing(u.target.x, u.target.y - 1, u.target.z);
         BlockState state = level.getBlockState(ground);
-        ShatteredGround.crater(level, ground, ULT_RADIUS * 0.6, ULT_CRATER_DEPTH);
         float core = TechniquePower.damage(player, MartialArts.OVERLORD_SPEAR, ULT_CORE_SHARE);
         float edge = TechniquePower.damage(player, MartialArts.OVERLORD_SPEAR, ULT_SHARE);
         int struck = 0;
@@ -627,7 +621,7 @@ public final class OverlordSpear {
         level.sendParticles(ParticleTypes.LAVA, u.target.x, u.target.y + 0.5, u.target.z, 4, ULT_RADIUS * 0.3, 0.2, ULT_RADIUS * 0.3, 0);
         level.sendParticles(ParticleTypes.FLAME, u.target.x, u.target.y + 0.5, u.target.z, 300, ULT_RADIUS * 0.5, 0.4, ULT_RADIUS * 0.5, 0.15);
         level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, u.target.x, u.target.y + 1, u.target.z, 30, ULT_RADIUS * 0.3, 0.5, ULT_RADIUS * 0.3, 0.02);
-        OverlordFx.shock(level, u.target, ULT_RADIUS);
+        OverlordFx.shock(player, u.target, ULT_RADIUS * 0.9);
         level.playSound(null, ground, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 4.0F, 0.4F);
         level.playSound(null, ground, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 3.0F, 0.6F);
         OverlordFx.flash(level, u.target.add(0, 2, 0), 30);
@@ -749,8 +743,7 @@ public final class OverlordSpear {
             BlockState under = level.getBlockState(victim.blockPosition().below());
             if (!under.isAir()) level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, under), victim.getX(), victim.getY() + 0.2, victim.getZ(), 140, 1.2, 0.2, 1.2, 0.3);
             level.sendParticles(ParticleTypes.LAVA, victim.getX(), victim.getY() + 0.3, victim.getZ(), 1, 0, 0, 0, 0);
-            ShatteredGround.crater(level, victim.blockPosition().below(), 1.8, 1);
-            OverlordFx.shock(level, victim.position(), 4);
+            OverlordFx.shock(executor, victim.position(), 3);
             level.playSound(null, victim.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.6F, 0.6F);
             OverlordFx.flash(level, victim.position().add(0, 0.5, 0), 14);
         }

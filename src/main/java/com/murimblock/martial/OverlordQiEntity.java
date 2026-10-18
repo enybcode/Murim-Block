@@ -15,13 +15,12 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
  * A shape of the Overlord Spear's Qi (OverlordSpear), shown only: Tyrant's Thrust's beam (a lance of red and gold light
- * stretched along its line, geo/overlord_beam), the ultimate's giant spear (geo/overlord_giant_spear), a shock wave
- * spreading over the ground (geo/overlord_ring) or cracks of embers in it (geo/overlord_cracks). It touches nothing and is never saved; the server moves it and takes it away when its time
+ * stretched along its line, geo/overlord_beam) or the ultimate's giant spear (geo/overlord_giant_spear). It touches nothing and is never saved; the server moves it and takes it away when its time
  * is over. Drawn by client/OverlordQiRenderer, turned by {@link #turn()}, its length grown over a few ticks, fading out
  * over its last ticks.
  */
 public class OverlordQiEntity extends Entity implements GeoEntity {
-    public static final byte BEAM = 0, SPEAR = 1, RING = 2, CRACKS = 3;
+    public static final byte BEAM = 0, SPEAR = 1;
 
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(OverlordQiEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> WIDTH = SynchedEntityData.defineId(OverlordQiEntity.class, EntityDataSerializers.FLOAT);
@@ -76,11 +75,9 @@ public class OverlordQiEntity extends Entity implements GeoEntity {
         return from + (to - from) * (1 - (1 - k) * (1 - k));
     }
 
-    /** How much of it shows (1: whole): a shock wave fades all the way as it spreads, cracks over their last second, the rest over their last ticks. */
+    /** How much of it shows (1: whole), fading over its last ticks. */
     public float alpha(float partialTick) {
-        float age = tickCount + partialTick, left = life() - age;
-        if (kind() == RING) return Math.max(0.0F, Math.min(1.0F, 1.15F - age / Math.max(1, life())));
-        if (kind() == CRACKS) return Math.max(0.0F, Math.min(1.0F, left / 20.0F));
+        float left = life() - tickCount - partialTick;
         return Math.max(0.0F, Math.min(1.0F, left / FADE_TICKS));
     }
 

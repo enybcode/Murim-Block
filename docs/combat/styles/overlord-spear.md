@@ -74,7 +74,7 @@ entre joueurs (`BurstGuard`).
 | Les animations (lance à deux mains, d'après les poses de la Lance du Pic Céleste) | `scripts/animation/overlord-spear.cjs`, `MurimAnimations.buildOverlordSpear` | idem |
 | Le rayon de Qi et la lance géante (modèles GeckoLib qui brillent) | `martial/OverlordQiEntity`, `client/OverlordQiRenderer`, `scripts/animation/overlord-fx.cjs` | idem |
 | Les flashs rouge sang et or (Photon), protocole réseau 30 | `martial/OverlordFx`, `client/OverlordFxClient`, `OverlordFlashPayload` | idem |
-| Le terrain cassé (fissures, cratères, mur percé) se reconstruit toujours | `combat/ShatteredGround` | idem |
+| Le sol frappé : la fracture d'Epic Fight (`LevelUtil.circleSlamFracture`, comme son Meteor Slam : blocs soulevés et inclinés, poussière, tout se remet en place) pour le bélier (2), le balayage (4), la Montagne (5), le finish (3) et l'ultime (9) ; seul le mur de la charge est percé (il revient) | `OverlordFx.shock`, `combat/ShatteredGround` | idem |
 | Les icônes (famille noir et rouge sang), le rouleau, l'aura (braises), le guide du Dragon d'Or (4 gouttes, 18 yuanbao) | `TechniqueIcons.java`, `ScrollTexture.java`, `AuraClient`, `GoldenDragonShop` | `SageShopGameTests` |
 | La Lance de la Ruine | `MurimItems.SPEAR_OF_RUIN`, `scripts/animation/ruin-spear-model.cjs` | `runRuinSpearTour` |
 
