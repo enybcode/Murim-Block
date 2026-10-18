@@ -1,11 +1,14 @@
 package com.murimblock;
 
+import com.murimblock.alchemy.AlchemyEffects;
 import com.murimblock.alchemy.AlchemyItems;
 import com.murimblock.alchemy.AlchemyKnowledge;
 import com.murimblock.alchemy.AlchemyPillItem;
 import com.murimblock.alchemy.AlchemyRecipes;
 import com.murimblock.alchemy.PillFurnaceBlockEntity;
+import com.murimblock.alchemy.ElixirItem;
 import com.murimblock.alchemy.PillFurnaceMenu;
+import com.murimblock.alchemy.RecipeScrollItem;
 import com.murimblock.cultivation.CultivationService;
 import com.murimblock.qi.QiService;
 import com.murimblock.world.plant.HerbItem;
@@ -31,7 +34,8 @@ import static com.murimblock.testing.GameTestPlayers.player;
  * know never starts; fed and held in each band, it makes its pills with their purity; a blaze ruins it in a residue
  * without breaking anything; the manual teaches the common recipes, a scroll a rare one; a purifying brew draws
  * toxicity off; its screen's slots take the water, the herbs in order and the charcoal, its recipe book fills them, and
- * the screen closes when the work ends so that it is watched.
+ * the screen closes when the work ends so that it is watched; Minecraft's own things go in as ingredients, the elixirs
+ * give their passives, Iron Skin softens blows, a recipe scroll teaches the recipe written on it.
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -162,6 +166,59 @@ public final class AlchemyGameTests {
         hold(helper, f, PillFurnaceBlockEntity.BLAST + 10, 2);
         helper.assertTrue(!(p.containerMenu instanceof PillFurnaceMenu), "The screen stayed open over the blaze");
         clearDrops(helper);
+        cleanup(p);
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "alchemy_vanilla")
+    public static void minecraftsThingsGoInAndAnElixirGivesItsPassive(GameTestHelper helper) {
+        ServerPlayer p = player(helper);
+        AlchemyKnowledge.learn(p, AlchemyRecipes.byId("swift_wind_pill"));
+        PillFurnaceBlockEntity f = furnace(helper);
+        f.pourWater(p);
+        f.addHerb(p, herb("fresh_bamboo_shoot", 70));
+        helper.assertTrue(f.addHerb(p, new ItemStack(Items.SUGAR)) == null && f.addHerb(p, new ItemStack(Items.FEATHER)) == null, "Sugar or a feather was refused");
+        helper.assertTrue(f.recipe() == AlchemyRecipes.byId("swift_wind_pill"), "Not the Swift Wind Pill: " + f.herbs());
+        p.removeAllEffects();
+        ((ElixirItem) AlchemyItems.ELIXIRS.get("golden_body_pill").get()).take(p, 90);
+        helper.assertTrue(p.hasEffect(net.minecraft.world.effect.MobEffects.ABSORPTION) && p.hasEffect(net.minecraft.world.effect.MobEffects.HEALTH_BOOST),
+                "The Golden Body Pill gave no golden body: " + p.getActiveEffects());
+        p.removeAllEffects();
+        cleanup(p);
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "alchemy_iron_skin")
+    public static void ironSkinSoftensTheBlows(GameTestHelper helper) {
+        ServerPlayer p = player(helper);
+        p.removeAllEffects();
+        p.setHealth(p.getMaxHealth());
+        p.invulnerableTime = 0;
+        p.hurt(helper.getLevel().damageSources().generic(), 8);
+        float bare = p.getMaxHealth() - p.getHealth();
+        p.setHealth(p.getMaxHealth());
+        p.invulnerableTime = 0;
+        ((ElixirItem) AlchemyItems.ELIXIRS.get("iron_skin_pill").get()).take(p, 100);
+        helper.assertTrue(p.hasEffect(AlchemyEffects.IRON_SKIN), "No Iron Skin");
+        p.hurt(helper.getLevel().damageSources().generic(), 8);
+        float skin = p.getMaxHealth() - p.getHealth();
+        helper.assertTrue(bare > 0 && skin < bare * 0.9F, "Iron Skin took " + skin + " of a blow that took " + bare);
+        p.removeAllEffects();
+        cleanup(p);
+        helper.succeed();
+    }
+
+    @GameTest(template = "foundation_arena", batch = "alchemy_scroll")
+    public static void aRecipeScrollTeachesTheRecipeOnIt(GameTestHelper helper) {
+        ServerPlayer p = player(helper);
+        AlchemyKnowledge.forgetAllForTests(p);
+        p.setItemInHand(InteractionHand.MAIN_HAND, RecipeScrollItem.of(AlchemyRecipes.byId("dragon_breath_elixir")));
+        p.getMainHandItem().use(helper.getLevel(), p, InteractionHand.MAIN_HAND);
+        helper.assertTrue(AlchemyKnowledge.knows(p, AlchemyRecipes.byId("dragon_breath_elixir")) && p.getMainHandItem().isEmpty(), "The scroll did not teach its recipe");
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(AlchemyItems.TREATISE.get()));
+        p.getMainHandItem().use(helper.getLevel(), p, InteractionHand.MAIN_HAND);
+        helper.assertTrue(AlchemyKnowledge.knows(p, AlchemyRecipes.byId("tiger_might_pill")) && !AlchemyKnowledge.knows(p, AlchemyRecipes.byId("diamond_body_pill")),
+                "The treatise taught the wrong recipes");
         cleanup(p);
         helper.succeed();
     }

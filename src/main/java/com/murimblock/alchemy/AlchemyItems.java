@@ -37,8 +37,11 @@ public final class AlchemyItems {
             () -> IMenuTypeExtension.create(PillFurnaceMenu::new));
 
     public static final DeferredItem<Item> MANUAL = ITEMS.register("alchemy_manual", () -> new AlchemyBookItem(
-            List.of("qi_gathering_pill", "realm_breaking_pill", "healing_decoction", "qi_decoction", "purifying_brew"), false,
-            new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+            AlchemyRecipes.from(AlchemyRecipes.Source.MANUAL), false, new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<Item> TREATISE = ITEMS.register("elixir_treatise", () -> new AlchemyBookItem(
+            AlchemyRecipes.from(AlchemyRecipes.Source.TREATISE), false, new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
+    public static final DeferredItem<Item> RECIPE_SCROLL = ITEMS.register("recipe_scroll", () -> new RecipeScrollItem(
+            new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
     public static final DeferredItem<Item> MARTIAL_ELIXIR_SCROLL = ITEMS.register("martial_elixir_recipe", () -> new AlchemyBookItem(
             List.of("martial_elixir"), true, new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
     public static final DeferredItem<Item> SOUL_SOOTHING_SCROLL = ITEMS.register("soul_soothing_pill_recipe", () -> new AlchemyBookItem(
@@ -50,8 +53,17 @@ public final class AlchemyItems {
     public static final DeferredItem<Item> MARTIAL_ELIXIR = pill("martial_elixir", AlchemyPillItem.Kind.MARTIAL_ELIXIR, Rarity.RARE);
     public static final DeferredItem<Item> SOUL_SOOTHING_PILL = pill("soul_soothing_pill", AlchemyPillItem.Kind.SOUL_SOOTHING_PILL, Rarity.EPIC);
     public static final DeferredItem<Item> PILL_RESIDUE = ITEMS.register("pill_residue", () -> new Item(new Item.Properties()));
+    /** The elixirs (AlchemyElixirs), by their id. */
+    public static final java.util.Map<String, DeferredItem<Item>> ELIXIRS = elixirs();
 
     private AlchemyItems() {
+    }
+
+    private static java.util.Map<String, DeferredItem<Item>> elixirs() {
+        java.util.Map<String, DeferredItem<Item>> map = new java.util.LinkedHashMap<>();
+        for (AlchemyElixirs.Elixir e : AlchemyElixirs.ALL)
+            map.put(e.id(), ITEMS.register(e.id(), () -> new ElixirItem(e, new Item.Properties().stacksTo(16).rarity(e.rarity()))));
+        return map;
     }
 
     private static DeferredItem<Item> pill(String name, AlchemyPillItem.Kind kind, Rarity rarity) {
@@ -67,7 +79,10 @@ public final class AlchemyItems {
 
     /** In the main tab, after the pills. */
     public static List<Supplier<? extends Item>> creativeItems() {
-        return List.of(FURNACE_ITEM, MANUAL, MARTIAL_ELIXIR_SCROLL, SOUL_SOOTHING_SCROLL, HEALING_DECOCTION, QI_DECOCTION, PURIFYING_BREW,
-                MARTIAL_ELIXIR, SOUL_SOOTHING_PILL, PILL_RESIDUE);
+        List<Supplier<? extends Item>> list = new java.util.ArrayList<>(List.of(FURNACE_ITEM, MANUAL, TREATISE, MARTIAL_ELIXIR_SCROLL, SOUL_SOOTHING_SCROLL,
+                RECIPE_SCROLL, HEALING_DECOCTION, QI_DECOCTION, PURIFYING_BREW, MARTIAL_ELIXIR, SOUL_SOOTHING_PILL));
+        list.addAll(ELIXIRS.values());
+        list.add(PILL_RESIDUE);
+        return list;
     }
 }

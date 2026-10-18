@@ -77,7 +77,7 @@ public class PillFurnaceBlock extends BaseEntityBlock {
             level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.6F, 1.2F);
             return ItemInteractionResult.CONSUME;
         }
-        if (stack.getItem() instanceof com.murimblock.world.plant.HerbItem) {
+        if (AlchemyRecipes.isIngredient(stack.getItem())) {
             if (level.isClientSide) return ItemInteractionResult.SUCCESS;
             String refused = furnace.addHerb(player, stack);
             if (refused != null && !refused.equals("alchemy.murimblock.unknown")) {

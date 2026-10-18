@@ -48,6 +48,7 @@ public final class Murimblock {
         MurimBlocks.register(modEventBus);
         com.murimblock.world.plant.MurimFlora.register(modEventBus);
         com.murimblock.alchemy.AlchemyItems.register(modEventBus);
+        com.murimblock.alchemy.AlchemyEffects.register(modEventBus);
         com.murimblock.martial.SanguineBlocks.register(modEventBus);
         com.murimblock.martial.SanguineItems.register(modEventBus);
         com.murimblock.martial.CelestialPeakItems.register(modEventBus);

@@ -90,7 +90,7 @@ public class PillFurnaceMenu extends AbstractContainerMenu {
         }
 
         @Override public boolean mayPlace(ItemStack stack) {
-            return furnace == null ? stack.getItem() instanceof HerbItem : furnace.accepts(place, stack);
+            return furnace == null ? AlchemyRecipes.isIngredient(stack.getItem()) : furnace.accepts(place, stack);
         }
 
         @Override public boolean mayPickup(Player player) {
@@ -183,7 +183,7 @@ public class PillFurnaceMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(stack, PillFurnaceBlockEntity.WATER_SLOT, PillFurnaceBlockEntity.WATER_SLOT + 1, false)) return ItemStack.EMPTY;
         } else if (PillFurnaceBlockEntity.isFuel(stack)) {
             if (!moveItemStackTo(stack, PillFurnaceBlockEntity.FUEL_SLOT, PillFurnaceBlockEntity.FUEL_SLOT + 1, false)) return ItemStack.EMPTY;
-        } else if (stack.getItem() instanceof HerbItem && moveItemStackTo(stack, PillFurnaceBlockEntity.HERB_SLOT,
+        } else if (AlchemyRecipes.isIngredient(stack.getItem()) && moveItemStackTo(stack, PillFurnaceBlockEntity.HERB_SLOT,
                 PillFurnaceBlockEntity.HERB_SLOT + PillFurnaceBlockEntity.HERB_SLOTS, false)) {
             // went in as the next herb
         } else if (index < FURNACE_SLOTS + 27) {

@@ -71,7 +71,9 @@ public final class FurnaceTour {
                 ServerPlayer p = player(server);
                 p.teleportTo(level, 0.5, -60, 1.0, 0, 20);
                 AlchemyKnowledge.learn(p, AlchemyRecipes.byId("qi_gathering_pill"));
-                for (String r : new String[]{"healing_decoction", "qi_decoction", "purifying_brew", "realm_breaking_pill"}) AlchemyKnowledge.learn(p, AlchemyRecipes.byId(r));
+                for (AlchemyRecipes.Recipe r : AlchemyRecipes.ALL) AlchemyKnowledge.learn(p, r);
+                int slot = 18;
+                for (String e : com.murimblock.alchemy.AlchemyItems.ELIXIRS.keySet()) if (slot < 36) p.getInventory().setItem(slot++, new ItemStack(com.murimblock.alchemy.AlchemyItems.ELIXIRS.get(e).get()));
                 p.getInventory().setItem(9, HerbItem.of(AlchemyRecipes.item("ginseng_root").get(), 2, "mature", 70));
                 p.getInventory().setItem(10, HerbItem.of(AlchemyRecipes.item("chrysanthemum_flower").get(), 7, "mature", 70));
                 p.getInventory().setItem(0, new ItemStack(Items.IRON_SWORD));

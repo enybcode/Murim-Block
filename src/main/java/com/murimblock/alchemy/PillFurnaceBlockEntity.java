@@ -121,9 +121,9 @@ public class PillFurnaceBlockEntity extends BlockEntity implements GeoBlockEntit
         return stack.is(Items.CHARCOAL) || stack.is(Items.COAL);
     }
 
-    /** Whether this herb may go in as the herb at this place now: after the water, in order, on the way to a recipe. */
+    /** Whether this ingredient (a herb or a thing of Minecraft's) may go in at this place now: after the water, in order, on the way to a recipe. */
     public boolean accepts(int place, ItemStack stack) {
-        if (phase != PREPARE || !water || !(stack.getItem() instanceof HerbItem)) return false;
+        if (phase != PREPARE || !water || !AlchemyRecipes.isIngredient(stack.getItem())) return false;
         List<ItemStack> in = herbs();
         if (place != in.size()) return false;
         List<Item> next = new ArrayList<>(in.stream().map(ItemStack::getItem).toList());

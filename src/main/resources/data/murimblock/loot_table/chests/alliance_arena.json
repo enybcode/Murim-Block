@@ -199,6 +199,64 @@
           "weight": 2
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:empty",
+          "weight": 25
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:elixir_treatise",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:recipe_scroll",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_custom_data",
+              "tag": "{recipe:\"diamond_body_pill\"}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:recipe_scroll",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_custom_data",
+              "tag": "{recipe:\"phoenix_rebirth_pill\"}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:recipe_scroll",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_custom_data",
+              "tag": "{recipe:\"heavenly_tiger_pill\"}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:recipe_scroll",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_custom_data",
+              "tag": "{recipe:\"dragon_breath_elixir\"}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

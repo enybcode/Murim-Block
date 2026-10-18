@@ -122,7 +122,7 @@ const lang = {
   "gui.murimblock.furnace.slot.herb": "%s: %s",
   "gui.murimblock.furnace.slot.herb_any": "Herbs, in the recipe's order",
   "gui.murimblock.furnace.book.fill": "Click: put its water and herbs in",
-  "gui.murimblock.furnace.book.qi": "Refining: %s Qi/s",
+  "gui.murimblock.furnace.book.qi": "Qi: %s/s",
   "gui.murimblock.furnace.forecast": "Purity %s%%  ·  Toxicity %s",
   "gui.murimblock.furnace.toxicity.low": "low",
   "gui.murimblock.furnace.toxicity.medium": "medium",

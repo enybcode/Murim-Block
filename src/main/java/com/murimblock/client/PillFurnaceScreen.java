@@ -35,13 +35,19 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
             RECIPE = ResourceLocation.withDefaultNamespace("recipe_book/crafting_overlay"),
             RECIPE_HOT = ResourceLocation.withDefaultNamespace("recipe_book/crafting_overlay_highlighted"),
             BUTTON = ResourceLocation.withDefaultNamespace("widget/button"),
+            PAGE_BACK = ResourceLocation.withDefaultNamespace("recipe_book/page_backward"),
+            PAGE_BACK_HOT = ResourceLocation.withDefaultNamespace("recipe_book/page_backward_highlighted"),
+            PAGE_ON = ResourceLocation.withDefaultNamespace("recipe_book/page_forward"),
+            PAGE_ON_HOT = ResourceLocation.withDefaultNamespace("recipe_book/page_forward_highlighted"),
             BUTTON_HOT = ResourceLocation.withDefaultNamespace("widget/button_highlighted");
     private static final int GREY = 0xFFC6C6C6, LIGHT = 0xFFFFFFFF, SHADE = 0xFF555555, SLOT = 0xFF8B8B8B, SLOT_D = 0xFF373737, TEXT = 0x404040,
             STATUS = 0x8A6A10, PURE = 0x2E7D32, QI = 0xFF2F8FD8, BAND = 0xFFF0C040;
     private static final String[] STEPS = {"prepare", "extract", "stabilize", "refine"};
     private static final int FAN_X = 7, QI_X = 55, BUTTONS_Y = 42, BUTTON_W = 44, BUTTON_H = 16, THERMO_X = 152, THERMO_Y = 17, THERMO_H = 56;
     private EditBox search;
-    private int chosen = -1;
+    private int chosen = -1, page;
+    /** The book shows its recipes three rows of five to a page. */
+    private static final int PER_PAGE = 15;
     private boolean fanHeld, qiHeld;
 
     public PillFurnaceScreen(PillFurnaceMenu menu, Inventory inventory, Component title) {
@@ -60,6 +66,7 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
         search.setMaxLength(50);
         search.setTextColor(0xFFFFFF);
         search.setHint(Component.translatable("gui.recipebook.search_hint").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
+        search.setResponder(text -> page = 0);
         addRenderableWidget(search);
     }
 
@@ -74,8 +81,14 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
         return list;
     }
 
-    private int recipeX(int i) { return leftPos + 11 + (i % 5) * 25; }
-    private int recipeY(int i) { return topPos + 31 + (i / 5) * 25; }
+    private int recipeX(int i) { return leftPos + 11 + (i % PER_PAGE % 5) * 25; }
+    private int recipeY(int i) { return topPos + 31 + (i % PER_PAGE / 5) * 25; }
+
+    private int pages(List<AlchemyRecipes.Recipe> list) { return Math.max(1, (list.size() + PER_PAGE - 1) / PER_PAGE); }
+    /** The first and the end of this page's recipes in the list. */
+    private int first() { return page * PER_PAGE; }
+    private int end(List<AlchemyRecipes.Recipe> list) { return Math.min(list.size(), first() + PER_PAGE); }
+    private static final int BACK_X = 92, ON_X = 126, PAGE_Y = 143;
 
     /** The recipe the screen shows: the one in the furnace, else the one chosen in the book; never one the player does not know. */
     private AlchemyRecipes.Recipe shown() {
@@ -94,7 +107,7 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
         int x = leftPos, y = topPos;
         g.blit(BOOK, x, y, 1, 1, 147, 166);
         List<AlchemyRecipes.Recipe> list = listed();
-        for (int i = 0; i < list.size() && i < 20; i++) {
+        for (int i = first(); i < end(list); i++) {
             AlchemyRecipes.Recipe r = list.get(i);
             int bx = recipeX(i), by = recipeY(i);
             boolean hot = mouseX >= bx && mouseX < bx + 25 && mouseY >= by && mouseY < by + 25;
@@ -102,9 +115,16 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
             g.renderItem(new ItemStack(r.resultItem()), bx + 4, by + 4);
             if (shown() == r) outline(g, bx, by, 25, 25, LIGHT);
         }
+        if (pages(list) > 1) {
+            boolean backHot = over(mouseX, mouseY, x + BACK_X, y + PAGE_Y, 12, 17), onHot = over(mouseX, mouseY, x + ON_X, y + PAGE_Y, 12, 17);
+            if (page > 0) g.blitSprite(backHot ? PAGE_BACK_HOT : PAGE_BACK, x + BACK_X, y + PAGE_Y, 12, 17);
+            if (page < pages(list) - 1) g.blitSprite(onHot ? PAGE_ON_HOT : PAGE_ON, x + ON_X, y + PAGE_Y, 12, 17);
+            String n = (page + 1) + "/" + pages(list);
+            g.drawString(font, n, x + 116 - font.width(n) / 2, y + PAGE_Y + 5, 0xFFFFFF, false);
+        }
         AlchemyRecipes.Recipe r = shown();
         if (r == null) return;
-        int ty = y + 86, phase = menu.data.get(1);
+        int ty = y + 108, phase = menu.data.get(1);
         g.drawString(font, Component.translatable(r.nameKey()), x + 12, ty, 0xFFFFFF, false);
         for (int i = 1; i <= 3; i++) {
             AlchemyRecipes.Band b = r.band(i);
@@ -112,7 +132,7 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
             g.drawString(font, t("step." + STEPS[i]), x + 12, ty + 1 + i * 10, now ? 0xFFD860 : 0xC0C0C0, false);
             g.drawString(font, b.low() + "-" + b.high(), x + 72, ty + 1 + i * 10, now ? 0xFFD860 : 0xC0C0C0, false);
         }
-        g.drawString(font, t("book.qi", String.format(Locale.ROOT, "%.0f", r.qiPerTick() * 20)), x + 12, ty + 44, 0x73C2F2, false);
+        g.drawString(font, t("book.qi", String.format(Locale.ROOT, "%.0f", r.qiPerTick() * 20)), x + 12, ty + 42, 0x73C2F2, false);
     }
 
     private void furnacePanel(GuiGraphics g, int mouseX, int mouseY) {
@@ -240,7 +260,7 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
         int x = panel(), y = topPos;
         var d = menu.data;
         List<AlchemyRecipes.Recipe> list = listed();
-        for (int i = 0; i < list.size() && i < 20; i++)
+        for (int i = first(); i < end(list); i++)
             if (over(mouseX, mouseY, recipeX(i), recipeY(i), 25, 25)) {
                 AlchemyRecipes.Recipe r = list.get(i);
                 List<Component> lines = List.of(Component.translatable(r.nameKey()), t("book.fill").withStyle(ChatFormatting.GRAY));
@@ -291,7 +311,9 @@ public class PillFurnaceScreen extends AbstractContainerScreen<PillFurnaceMenu> 
             if (over(mx, my, x + FAN_X, y + BUTTONS_Y, BUTTON_W, BUTTON_H)) { fanHeld = true; press(PillFurnaceMenu.BELLOWS_DOWN); return true; }
             if (over(mx, my, x + QI_X, y + BUTTONS_Y, BUTTON_W, BUTTON_H)) { qiHeld = true; press(PillFurnaceMenu.QI_DOWN); return true; }
             List<AlchemyRecipes.Recipe> list = listed();
-            for (int i = 0; i < list.size() && i < 20; i++)
+            if (page > 0 && over(mx, my, leftPos + BACK_X, topPos + PAGE_Y, 12, 17)) { page--; return true; }
+            if (page < pages(list) - 1 && over(mx, my, leftPos + ON_X, topPos + PAGE_Y, 12, 17)) { page++; return true; }
+            for (int i = first(); i < end(list); i++)
                 if (over(mx, my, recipeX(i), recipeY(i), 25, 25)) {
                     AlchemyRecipes.Recipe r = list.get(i);
                     chosen = r.index();
