@@ -59,14 +59,14 @@ public final class AuraClient {
 
     /** The aura's colour for a main style (r, g, b in 0..1). */
     public static float[] colour(Optional<ResourceLocation> art) {
-        if (art.filter(MartialArts.AZURE_CLOUD_SWORD::equals).isPresent()) return new float[]{0.62F, 0.86F, 1.0F};
-        if (art.filter(MartialArts.LONG_FIST::equals).isPresent()) return new float[]{1.0F, 0.72F, 0.3F};
+        if (art.filter(MartialArts.AZURE_CLOUD_SWORD::equals).isPresent()) return new float[]{0.3F, 0.72F, 1.0F};
+        if (art.filter(MartialArts.LONG_FIST::equals).isPresent()) return new float[]{1.0F, 0.65F, 0.18F};
         if (art.filter(MartialArts.SANGUINE_ART::equals).isPresent()) return new float[]{1.0F, 0.16F, 0.42F};
-        if (art.filter(MartialArts.CELESTIAL_PEAK_SPEAR::equals).isPresent()) return new float[]{1.0F, 0.9F, 0.55F};
-        if (art.filter(MartialArts.TRAVELLER_STAFF::equals).isPresent()) return new float[]{0.62F, 0.92F, 0.52F};
+        if (art.filter(MartialArts.CELESTIAL_PEAK_SPEAR::equals).isPresent()) return new float[]{1.0F, 0.86F, 0.3F};
+        if (art.filter(MartialArts.TRAVELLER_STAFF::equals).isPresent()) return new float[]{0.45F, 0.92F, 0.3F};
         if (art.filter(MartialArts.MOUNTAIN_SHATTERING_FIST::equals).isPresent()) return new float[]{1.0F, 0.45F, 0.14F};
-        if (art.filter(MartialArts.SEVEN_STARS_SWORD::equals).isPresent()) return new float[]{0.52F, 0.58F, 1.0F};
-        if (art.filter(MartialArts.THUNDER_SABER::equals).isPresent()) return new float[]{0.72F, 0.62F, 1.0F};
+        if (art.filter(MartialArts.SEVEN_STARS_SWORD::equals).isPresent()) return new float[]{0.32F, 0.4F, 1.0F};
+        if (art.filter(MartialArts.THUNDER_SABER::equals).isPresent()) return new float[]{0.62F, 0.4F, 1.0F};
         if (art.filter(MartialArts.MAJIN_FIST::equals).isPresent()) return new float[]{0.7F, 0.1F, 0.12F};
         if (art.filter(MartialArts.GOLDEN_BELL::equals).isPresent()) return new float[]{1.0F, 0.78F, 0.22F};
         return new float[]{0.95F, 0.96F, 1.0F};

@@ -104,7 +104,7 @@ public final class QiVisionClient {
             if (QiSenseClient.reading(e.getId()).isPresent()) shown.add(e);
         for (LivingEntity e : shown) {
             float scale = e instanceof AbstractClientPlayer p ? AuraClient.qiScale(MeditationService.aura(p).qi()) : creatureScale(mc, e);
-            float[] c = vivid(colour(e));
+            float[] c = shown(e);
             if (e.distanceToSqr(mc.player) <= reach * reach) AuraClient.volume(mc.level, random, e.position(), 0.6F, c, scale);
             if (scale >= COLUMN_FROM && e.distanceToSqr(mc.player) <= reach * reach) vortex(mc, random, e, c, scale);
         }
@@ -170,7 +170,7 @@ public final class QiVisionClient {
             float[] a = screen(toScreen, foot), b = screen(toScreen, foot.add(0, columnHeight(scale), 0));
             float[] side = screen(toScreen, foot.add(right.x() * columnRadius(scale), 0, right.z() * columnRadius(scale)));
             if (a == null || b == null || side == null) continue;
-            float[] c = vivid(colour(e));
+            float[] c = shown(e);
             shafts.add(new float[]{a[0], a[1], b[1], Math.max(0.004F, Math.abs(side[0] - a[0])), c[0], c[1], c[2], scale});
         }
         shafts.sort((x, y) -> Float.compare(y[7], x[7]));
@@ -247,6 +247,11 @@ public final class QiVisionClient {
     }
 
     /** The colour made pure (its grey taken out), so the ink wash leaves it its colour. */
+    /** The colour an aura is seen in: a player's exactly as when meditating (the art's), a creature's made vivid. */
+    static float[] shown(LivingEntity e) {
+        return e instanceof AbstractClientPlayer ? colour(e) : vivid(colour(e));
+    }
+
     static float[] vivid(float[] c) {
         float mn = Math.min(c[0], Math.min(c[1], c[2])), mx = Math.max(c[0], Math.max(c[1], c[2]));
         if (mx - mn < 1e-3) return new float[]{0.2F, 0.7F, 1.0F};

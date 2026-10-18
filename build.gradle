@@ -124,6 +124,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the mock-up of Qi vision's foresight (see QiForesightTour).
+        qiForesightTour {
+            client()
+            gameDirectory = project.file('build/qi-foresight-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiForesightTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at the mock-up of Qi vision (see QiVisionTour).
         qiVisionTour {
             client()

@@ -119,7 +119,7 @@ Proposition : **une vraie vision**, qui change la façon de voir le monde et s'�
 |---|---|
 | 3. Qi Condensation | Les auras, les sceaux, le monde en lavis (aujourd'hui : les sceaux seulement) |
 | 4. Qi Liquidation | **Les courants de Qi** de la terre : des rivières de lumière qui coulent vers les veines de Qi (on les suit pour les trouver), à 64 blocs |
-| 5. Qi Crystallization | **L'annonce des coups** : le Qi d'un ennemi se rassemble avant une technique, à l'endroit où le coup va partir. Ça aide à parer parfaitement |
+| 5. Qi Crystallization | **L'annonce des coups** : le Qi d'un ennemi se rassemble avant une technique, à l'endroit où le coup va partir. Ça aide à parer parfaitement. **Fait le 18/10** (`QiForesight`) : Qi doré qui converge vers l'impact pendant l'armé de chaque coup d'Epic Fight, éclat au contact |
 | 6. Foundation Establishment | **Les points vitaux** : après une parade, des points s'allument un instant sur l'ennemi. Les frapper fait plus mal (点穴) |
 | 7. Core Formation | **Le Qi à travers les murs** : les êtres vivants dans un rayon de 24 blocs |
 | 8. Nascent Soul | **Le caché** : murs d'illusion, caches enterrées, traces récentes d'un boss ou d'un joueur fort |

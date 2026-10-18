@@ -82,7 +82,7 @@ void main() {
     // The Qi keeps its colour: bright, strongly coloured light.
     float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b));
     float sat = (mx - mn) / max(mx, 0.001);
-    float qi = smoothstep(0.55, 0.8, sat) * smoothstep(0.6, 0.85, mx);
+    float qi = smoothstep(0.4, 0.6, sat) * smoothstep(0.6, 0.85, mx);
     vec3 shafts = vec3(0.0);
     if (Columns > 0.5) shafts += shaft(texCoord, Col0X, Col0Foot, Col0Top, Col0Width, vec3(Col0R, Col0G, Col0B));
     if (Columns > 1.5) shafts += shaft(texCoord, Col1X, Col1Foot, Col1Top, Col1Width, vec3(Col1R, Col1G, Col1B));
