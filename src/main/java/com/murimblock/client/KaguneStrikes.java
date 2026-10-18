@@ -25,7 +25,10 @@ import org.joml.Vector3f;
  */
 public final class KaguneStrikes {
     private static final String[] TENTACLES = {"upper_right_0", "lower_right_0", "upper_left_0", "lower_left_0"};
-    private static final float LASH_SECONDS = 0.75F, BITE_SECONDS = 0.85F;
+    private static final float LASH_SECONDS = 0.75F, BITE_SECONDS = 0.85F, THORNS_SECONDS = 1.0F, BURROW_SECONDS = 1.1F;
+    /** Impaling Thorns: where each tentacle drives into the ground in front of him (degrees to his right): the upper two,
+     *  coming over his head, wide of his face; the lower two, coming round his sides, nearer the middle. */
+    private static final float[] THORNS_YAWS = {50, 24, -50, -24};
     /** Lash: which turn each tentacle lunges (right to left), the point of the arc each goes for (degrees to his right), when
      *  the first lunges, the gap between them and how long a lunge takes (s): the four land round the blow's tick (0.3 s). */
     private static final int[] LASH_ORDER = {0, 1, 2, 3};
@@ -33,6 +36,8 @@ public final class KaguneStrikes {
     private static final float LASH_FIRST = 0.15F, LASH_GAP = 0.045F, LASH_LUNGE = 0.08F;
     /** How far (radians) a lunging tentacle bows out of the straight line, over his head and round his sides: enough to clear him. */
     private static final float LASH_BOW_OVER = 3.05F, LASH_BOW_SIDE = 2.45F;
+    /** Impaling Thorns' dives go to the ground just ahead: a shallower bow, or they loop. */
+    private static final float THORNS_BOW_OVER = 2.2F, THORNS_BOW_SIDE = 1.8F;
     /** A tentacle joint's length (blocks): 3.4 pixels. */
     private static final float TENTACLE_SEGMENT = 3.4F / 16;
 
@@ -79,27 +84,49 @@ public final class KaguneStrikes {
                 Vector3f raised = lower ? direction(side * 125, -30) : direction(side * 160, -58);
                 float start = LASH_FIRST + order * LASH_GAP;
                 float k = ease(Mth.clamp((t - start) / LASH_LUNGE, 0, 1)) * (1 - ease(Mth.clamp((t - 0.45F) / 0.15F, 0, 1)));
-                // The chord from the kagune's root to its point of the arc, and the side it bows out to, away from him.
                 Vector3f target = direction(yaw + LASH_YAWS[order], 0).mul((float) DevouringDemon.LASH_REACH - 0.6F).add(0, lower ? 0.7F : 1.0F, 0);
-                Vector3f chord = new Vector3f(target).sub(root);
-                float distance = chord.length();
-                chord.normalize();
-                Vector3f away = lower ? new Vector3f(side, 0, 0) : new Vector3f(0, 1, 0);
-                away.sub(new Vector3f(chord).mul(away.dot(chord))).normalize();
-                float bow = lower ? LASH_BOW_SIDE : LASH_BOW_OVER, half = bow / 2;
-                Vector3f lunge = new Vector3f(chord).mul(Mth.cos(half)).add(new Vector3f(away).mul(Mth.sin(half))).normalize();
-                // Long enough for the bowed chain to land on its point.
-                float reach = Mth.clamp(1.08F * distance / (Mth.sin(half) / half) / Math.max(1, joints * TENTACLE_SEGMENT), 0.9F, 2.0F);
-                Vector3f dir = raised.lerp(lunge, k).normalize();
-                Vector3f top = new Vector3f(0, 1, 0).lerp(new Vector3f(away).negate(), k).normalize();
-                float coil = ease(Mth.clamp(t / 0.15F, 0, 1));
-                float stretch = Mth.lerp(k, Mth.lerp(coil, 1, 0.78F), reach);
-                float curl = Mth.lerp(k, (lower ? 18 : 10) * coil, 2);
-                float arc = joints > 1 ? (float) Math.toDegrees(bow) / (joints - 1) * k : 0;
-                model.aim(bone, weight, dir, top, curl, t * 24, arc, stretch, from, animation, time, bend[0], bend[1], base);
+                bowTo(model, bone, raised, root, target, lower ? new Vector3f(side, 0, 0) : new Vector3f(0, 1, 0), lower ? LASH_BOW_SIDE : LASH_BOW_OVER,
+                        k, t, lower ? 18 : 10, weight, TENTACLE_SEGMENT, from, animation, time, bend, base);
                 // The development tour checks that no tentacle goes through him (past its first joints, on his back).
                 if (CHECKING) inBody = Math.max(inBody, model.jointsInside(from, bone, animation, time, bend[0], bend[1], base,
                         -0.38F, 0, -0.16F, 0.38F, 1.95F, 0.16F, 3));
+            }
+        } else if (state.strike() == KaguneState.STRIKE_THORNS && t < THORNS_SECONDS && model.bone("kagune") == from) {
+            // The four rise behind him, then drive into the ground in front of him, round him (over his head, round his
+            // sides), one after the other; they stay in it while the thorns burst out under the foe (KaguneEruptions),
+            // then come back out the way they went.
+            Vector3f root = base.transformPosition(new Vector3f(0, 14, 2));
+            for (int i = 0; i < TENTACLES.length; i++) {
+                int bone = model.bone(TENTACLES[i]);
+                float side = TENTACLES[i].contains("right") ? 1 : -1;
+                boolean lower = TENTACLES[i].startsWith("lower");
+                Vector3f raised = lower ? direction(side * 125, -30) : direction(side * 160, -58);
+                float start = 0.12F + LASH_ORDER[i] * 0.03F;
+                float k = ease(Mth.clamp((t - start) / 0.1F, 0, 1)) * (1 - ease(Mth.clamp((t - 0.72F) / 0.13F, 0, 1)));
+                float weight = envelope(t, 0.1F, 0.85F, THORNS_SECONDS);
+                // Into the ground two blocks and a half in front of him, fanned out.
+                Vector3f target = direction(yaw + THORNS_YAWS[i], 0).mul(2.5F).add(0, -0.6F, 0);
+                bowTo(model, bone, raised, root, target, lower ? new Vector3f(side, 0, 0) : new Vector3f(0, 1, 0), lower ? THORNS_BOW_SIDE : THORNS_BOW_OVER,
+                        k, t, lower ? 18 : 10, weight, TENTACLE_SEGMENT, from, animation, time, bend, base);
+                if (k > 0.05F) model.dive(bone);
+                if (CHECKING) inBody = Math.max(inBody, model.jointsInside(from, bone, animation, time, bend[0], bend[1], base,
+                        -0.38F, 0, -0.16F, 0.38F, 1.95F, 0.16F, 3));
+            }
+        } else if (state.strike() == KaguneState.STRIKE_BURROW && t < BURROW_SECONDS && model.bone("kakuja") == from) {
+            // Both centipedes rear up over his back, then arch over his head and dive into the ground ahead; they stay in
+            // it while they burst out under the foes (KaguneEruptions), then come back out.
+            Vector3f root = base.transformPosition(new Vector3f(0, 12, 2));
+            for (String name : new String[]{"centipede_right_0", "centipede_left_0"}) {
+                int bone = model.bone(name);
+                float side = name.contains("right") ? 1 : -1;
+                float k = ease(Mth.clamp((t - 0.2F - (side < 0 ? 0.05F : 0)) / 0.14F, 0, 1)) * (1 - ease(Mth.clamp((t - 0.85F) / 0.15F, 0, 1)));
+                float weight = envelope(t, 0.12F, 0.95F, BURROW_SECONDS);
+                Vector3f target = direction(yaw + side * 22, 0).mul(2.4F).add(0, -1.2F, 0);
+                bowTo(model, bone, direction(side * 15, -74), root, target, new Vector3f(0, 1, 0), LASH_BOW_OVER,
+                        k, t, 16, weight, SEGMENT, from, animation, time, bend, base);
+                if (k > 0.05F) model.dive(bone);
+                if (CHECKING) biteInBody = Math.max(biteInBody, model.jointsInside(from, bone, animation, time, bend[0], bend[1], base,
+                        -0.42F, 0, -1.0F, 0.42F, 0.82F, 0.45F, 3));
             }
         } else if (state.strike() == KaguneState.STRIKE_BITE && t < BITE_SECONDS && model.bone("kakuja") == from) {
             String root = (state.strikeSince() & 1) == 0 ? "centipede_right_0" : "centipede_left_0";
@@ -138,6 +165,34 @@ public final class KaguneStrikes {
             if (CHECKING) biteInBody = Math.max(biteInBody, model.jointsInside(from, model.bone(root), animation, time, bend[0], bend[1], base,
                     -0.42F, 0, -1.0F, 0.42F, 0.82F, 0.45F, 3));
         }
+    }
+
+    /**
+     * A chain lunging from {@code raised} (by {@code k}, 0 to 1) to land on {@code target} (the base's space) along a bow
+     * that goes out on the side of {@code away} (over his head, round his side) by {@code bow} radians: never straight
+     * through him; stretched as long as it needs to get there. Coiled short (an S of {@code coiledCurl}) while raised.
+     */
+    private static void bowTo(KaguneModel model, int bone, Vector3f raised, Vector3f root, Vector3f target, Vector3f away, float bow,
+                              float k, float t, float coiledCurl, float weight, float segment,
+                              int from, String animation, float time, float[] bend, Matrix4f base) {
+        int joints = model.chainLength(bone);
+        Vector3f chord = new Vector3f(target).sub(root);
+        float distance = chord.length();
+        chord.normalize();
+        away = new Vector3f(away);
+        away.sub(new Vector3f(chord).mul(away.dot(chord))).normalize();
+        float half = bow / 2;
+        Vector3f lunge = new Vector3f(chord).mul(Mth.cos(half)).add(new Vector3f(away).mul(Mth.sin(half))).normalize();
+        // Long enough for the bowed chain to land on its point.
+        float reach = Mth.clamp(1.08F * distance / (Mth.sin(half) / half) / Math.max(1, joints * segment), 0.9F, 2.0F);
+        Vector3f dir = new Vector3f(raised).lerp(lunge, k).normalize();
+        // The bow bends toward the chain's "top" in these mirrored frames: the side away from him, turned over.
+        Vector3f top = new Vector3f(0, 1, 0).lerp(new Vector3f(away).negate(), k).normalize();
+        float coil = ease(Mth.clamp(t / 0.15F, 0, 1));
+        float stretch = Mth.lerp(k, Mth.lerp(coil, 1, 0.78F), reach);
+        float curl = Mth.lerp(k, coiledCurl * coil, 2);
+        float arc = joints > 1 ? (float) Math.toDegrees(bow) / (joints - 1) * k : 0;
+        model.aim(bone, weight, dir, top, curl, t * 24, arc, stretch, from, animation, time, bend[0], bend[1], base);
     }
 
     /** The strike's time, held still a moment on the blow it landed (the hit-stop, KaguneImpactFx). */

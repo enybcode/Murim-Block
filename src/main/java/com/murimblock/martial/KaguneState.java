@@ -39,8 +39,8 @@ public record KaguneState(Form form, long since, int fury, int strike, long stri
     }
 
     public static final int MAX_FURY = 100;
-    /** The kagune's strikes, for the clients (client/KaguneStrikes): none, Lash (the four tentacles), Centipede Bite. */
-    public static final int STRIKE_NONE = 0, STRIKE_LASH = 1, STRIKE_BITE = 2;
+    /** The kagune's strikes, for the clients (client/KaguneStrikes): none, Lash, Centipede Bite, Impaling Thorns, Burrow. */
+    public static final int STRIKE_NONE = 0, STRIKE_LASH = 1, STRIKE_BITE = 2, STRIKE_THORNS = 3, STRIKE_BURROW = 4;
 
     public static final KaguneState NONE = new KaguneState(Form.NONE, 0, 0, STRIKE_NONE, 0);
     public static final StreamCodec<ByteBuf, KaguneState> STREAM_CODEC = StreamCodec.composite(

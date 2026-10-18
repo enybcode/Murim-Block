@@ -6,6 +6,7 @@ import com.murimblock.combat.knockdown.KnockdownService;
 import com.murimblock.cultivation.MeditationService;
 import com.murimblock.integration.epicfight.DemonArtAnimations;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -42,6 +43,10 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
  *   <li><b>Lash</b>: the four tentacles whip the arc in front of him ({@link #LASH_REACH} blocks, {@link #LASH_ARC}
  *   degrees), every foe there struck and pushed back. In the demon form, <b>Centipede Bite</b>: a centipede shoots at the
  *   foe he looks at, up to {@link #BITE_REACH} blocks, bites (slowed, drawn in) and he devours a share of it as health.</li>
+ *   <li><b>Impaling Thorns</b>: the tentacles plunge into the ground; {@link #THORNS_HIT_TICK} ticks later they burst out
+ *   where the foe he looked at (up to {@link #THORNS_REACH} blocks) stood: whoever is still there is impaled, thrown up and
+ *   held. In the demon form, <b>Burrow</b>: the centipedes dive into the ground and burst out under the
+ *   {@link #BURROW_TARGETS} nearest foes ahead (up to {@link #BURROW_REACH} blocks).</li>
  * </ul>
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
@@ -55,8 +60,15 @@ public final class DevouringDemon {
     public static final double BITE_REACH = 7, BITE_CONE = 22, BITE_SHARE = 2.2, BITE_PULL = 0.7;
     public static final float BITE_DEVOUR = 0.2F;
     public static final int BITE_HIT_TICK = 8, BITE_SLOW_TICKS = 50;
+    public static final double THORNS_REACH = 12, THORNS_CONE = 12, THORNS_SHARE = 1.6, THORNS_RADIUS = 1.3, THORNS_LIFT = 0.65;
+    /** Into the body's animation (ticks): the thorns burst out; how long the impaled stay held. */
+    public static final int THORNS_HIT_TICK = 10, THORNS_HOLD_TICKS = 25;
+    public static final double BURROW_REACH = 9, BURROW_ARC = 150, BURROW_SHARE = 2.0, BURROW_RADIUS = 1.5, BURROW_LIFT = 0.95;
+    public static final int BURROW_HIT_TICK = 11, BURROW_HOLD_TICKS = 20, BURROW_TARGETS = 2;
 
-    private record Pending(MartialArts.Technique technique, long at) { }
+    private record Pending(MartialArts.Technique technique, long at, List<Vec3> points) {
+        Pending(MartialArts.Technique technique, long at) { this(technique, at, List.of()); }
+    }
     private static final Map<UUID, Pending> PENDING = new HashMap<>();
     /** When each player last gained Fury (game time), and the tick he last did (once a tick). */
     private static final Map<UUID, Long> LAST_GAIN = new HashMap<>();
@@ -157,6 +169,7 @@ public final class DevouringDemon {
             PENDING.remove(id);
             if (p.technique() == MartialArts.LASH) lashHits(player);
             else if (p.technique() == MartialArts.CENTIPEDE_BITE) biteHits(player);
+            else eruptionHits(player, p.technique(), p.points());
         }
     }
 
@@ -210,7 +223,92 @@ public final class DevouringDemon {
             level.playSound(null, player.blockPosition(), SoundEvents.SILVERFISH_AMBIENT, SoundSource.PLAYERS, 1.4F, 0.5F);
             return true;
         }
+        if (cast == MartialArts.IMPALING_THORNS) {
+            LivingEntity target = thornsTarget(player);
+            if (target == null) return false;
+            List<Vec3> at = List.of(target.position());
+            patch.playAnimationSynchronized(DemonArtAnimations.THORNS, 0.0F);
+            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_THORNS, now));
+            PENDING.put(player.getUUID(), new Pending(cast, now + THORNS_HIT_TICK, at));
+            erupt(player, KaguneState.STRIKE_THORNS, at);
+            level.playSound(null, player.blockPosition(), SoundEvents.ROOTED_DIRT_BREAK, SoundSource.PLAYERS, 1.4F, 0.6F);
+            return true;
+        }
+        if (cast == MartialArts.BURROW) {
+            List<Vec3> at = burrowTargets(player).stream().map(LivingEntity::position).toList();
+            if (at.isEmpty()) return false;
+            patch.playAnimationSynchronized(DemonArtAnimations.BURROW, 0.0F);
+            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_BURROW, now));
+            PENDING.put(player.getUUID(), new Pending(cast, now + BURROW_HIT_TICK, at));
+            erupt(player, KaguneState.STRIKE_BURROW, at);
+            level.playSound(null, player.blockPosition(), SoundEvents.RAVAGER_STEP, SoundSource.PLAYERS, 1.4F, 0.6F);
+            return true;
+        }
         return false;
+    }
+
+    /** Tells the clients round him where the kagune will burst out of the ground (client/KaguneEruptions). */
+    private static void erupt(ServerPlayer player, int strike, List<Vec3> at) {
+        if (player.connection == null) return;
+        List<Double> xyz = new java.util.ArrayList<>();
+        for (Vec3 v : at) { xyz.add(v.x); xyz.add(v.y); xyz.add(v.z); }
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntityAndSelf(player,
+                new com.murimblock.network.KaguneEruptPayload(player.getId(), strike, xyz));
+    }
+
+    /** Impaling Thorns' foe: the nearest he looks at, within reach, in sight. */
+    @Nullable static LivingEntity thornsTarget(ServerPlayer player) {
+        Vec3 eye = player.getEyePosition(), look = player.getLookAngle();
+        LivingEntity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (LivingEntity e : player.serverLevel().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(THORNS_REACH),
+                e -> MartialCombat.isEnemy(e, player))) {
+            Vec3 to = e.getBoundingBox().getCenter().subtract(eye);
+            double d = to.length();
+            if (d > THORNS_REACH || d < 1e-3) continue;
+            if (Math.toDegrees(Math.acos(Math.clamp(to.normalize().dot(look), -1, 1))) > THORNS_CONE + Math.toDegrees(Math.atan2(e.getBbWidth(), d))) continue;
+            if (!player.hasLineOfSight(e)) continue;
+            if (d < bestDistance) { bestDistance = d; best = e; }
+        }
+        return best;
+    }
+
+    /** Burrow's foes: the two nearest in front of him, within reach (under the ground, no need to see them). */
+    static List<LivingEntity> burrowTargets(ServerPlayer player) {
+        Vec3 facing = Vec3.directionFromRotation(0, player.getYRot());
+        return player.serverLevel().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(BURROW_REACH, 3, BURROW_REACH),
+                        e -> MartialCombat.isEnemy(e, player)).stream()
+                .filter(e -> {
+                    Vec3 flat = e.position().subtract(player.position()).multiply(1, 0, 1);
+                    return flat.length() <= BURROW_REACH && flat.length() > 0.5
+                            && Math.toDegrees(Math.acos(Math.clamp(flat.normalize().dot(facing), -1, 1))) <= BURROW_ARC / 2;
+                })
+                .sorted(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(player)))
+                .limit(BURROW_TARGETS).toList();
+    }
+
+    /** The kagune bursts out of the ground: every foe standing where it comes up is struck, thrown up, held. */
+    static void eruptionHits(ServerPlayer player, MartialArts.Technique technique, List<Vec3> at) {
+        boolean burrow = technique == MartialArts.BURROW;
+        double radius = burrow ? BURROW_RADIUS : THORNS_RADIUS;
+        boolean hit = false;
+        for (Vec3 p : at) {
+            for (LivingEntity e : player.serverLevel().getEntitiesOfClass(LivingEntity.class, new net.minecraft.world.phys.AABB(p, p).inflate(radius, 2.5, radius),
+                    e -> MartialCombat.isEnemy(e, player))) {
+                if (e.position().multiply(1, 0, 1).distanceTo(p.multiply(1, 0, 1)) > radius + e.getBbWidth() / 2 || e.getY() < p.y - 1) continue;
+                e.invulnerableTime = 0;
+                if (!e.hurt(player.damageSources().playerAttack(player), TechniquePower.damage(player, MartialArts.DEVOURING_DEMON, burrow ? BURROW_SHARE : THORNS_SHARE))) continue;
+                e.setDeltaMovement(e.getDeltaMovement().multiply(0.2, 0, 0.2).add(0, burrow ? BURROW_LIFT : THORNS_LIFT, 0));
+                e.hurtMarked = true;
+                // Impaled: held where it is for a moment.
+                e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, burrow ? BURROW_HOLD_TICKS : THORNS_HOLD_TICKS, 5, false, false));
+                impact(player, e, burrow ? KaguneState.STRIKE_BURROW : KaguneState.STRIKE_THORNS);
+                hit = true;
+            }
+            player.serverLevel().playSound(null, net.minecraft.core.BlockPos.containing(p), burrow ? SoundEvents.RAVAGER_ROAR : SoundEvents.ROOTED_DIRT_BREAK,
+                    SoundSource.PLAYERS, burrow ? 0.9F : 1.3F, burrow ? 1.3F : 0.5F);
+        }
+        if (hit) MartialProgress.addMastery(player, art(), MartialArts.IMPALING_THORNS.id(), 1);
     }
 
     /** Lash's sweep: every foe in the arc ahead, within reach, struck and pushed back. */
@@ -264,7 +362,7 @@ public final class DevouringDemon {
         e.invulnerableTime = 0;
         if (!e.hurt(player.damageSources().playerAttack(player), damage)) return;
         player.heal(Math.max(0, before - e.getHealth()) * BITE_DEVOUR);
-        e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, BITE_SLOW_TICKS, 1));
+        e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, BITE_SLOW_TICKS, 1, false, false));
         Vec3 in = player.position().subtract(e.position()).multiply(1, 0, 1);
         if (in.lengthSqr() > 1e-4) {
             in = in.normalize();

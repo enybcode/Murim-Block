@@ -38,13 +38,15 @@ public final class DevouringDemonGameTests {
     private static final BlockPos CENTRE = new BlockPos(4, 1, 4);
     private static final int TRANSFORM_TICKS = (int) Math.ceil(KaguneState.TRANSFORM_SECONDS * 20) + 2;
 
-    /** A student of the art, bare-handed, combat on, facing south (+z), Lash in slot 0. */
+    /** A student of the art, bare-handed, combat on, facing south (+z), Lash in slot 0, Impaling Thorns in slot 1. */
     private static ServerPlayer student(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         EpicFightCombatDefaults.enforce(player);
         MartialService.learn(player, MartialArts.art(MartialArts.DEVOURING_DEMON));
         MartialService.unlock(player, MartialArts.LASH);
         MartialService.assign(player, 0, MartialArts.LASH.id());
+        MartialService.unlock(player, MartialArts.IMPALING_THORNS);
+        MartialService.assign(player, 1, MartialArts.IMPALING_THORNS.id());
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         BlockPos p = helper.absolutePos(CENTRE);
         player.moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
@@ -173,6 +175,69 @@ public final class DevouringDemonGameTests {
             helper.assertTrue(far.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The bitten foe is not slowed");
             helper.assertTrue(player.getHealth() > 10, "He devoured nothing: " + player.getHealth());
             end(helper, player, far, aside);
+        });
+    }
+
+    /** Impaling Thorns: the foe he looks at, 7 blocks off, impaled where it stands (struck, thrown up, held); not the one aside. */
+    @GameTest(template = "spear_arena", batch = "demon_thorns")
+    public static void thornsImpaleTheFoeLookedAt(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        Zombie[] zombies = new Zombie[2];
+        int cast = 3, hit = cast + DevouringDemon.THORNS_HIT_TICK + 2;
+        ticking(helper, player, hit + 2);
+        helper.runAfterDelay(cast, () -> {
+            // Back to the arena's north side, so the far foe is still in it.
+            player.teleportTo(player.getX(), player.getY(), player.getZ() - 3);
+            zombies[0] = dummy(helper, player, 0, 7);
+            zombies[1] = dummy(helper, player, 3, 2);
+            helper.assertTrue(MartialService.castSlot(player, 1) == MartialService.CastResult.CAST, "Impaling Thorns was not cast");
+            helper.assertTrue(KaguneState.of(player).strike() == KaguneState.STRIKE_THORNS, "The kagune does not go into the ground");
+        });
+        helper.runAfterDelay(hit, () -> {
+            Zombie far = zombies[0], aside = zombies[1];
+            helper.assertTrue(far.getHealth() < 400, "The thorns missed the foe looked at");
+            helper.assertTrue(far.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The impaled foe is not held");
+            helper.assertTrue(aside.getHealth() == 400, "The thorns struck a foe he was not looking at");
+            end(helper, player, far, aside);
+        });
+    }
+
+    /** Nobody looked at: no thorns, and no Qi spent. */
+    @GameTest(template = "spear_arena", batch = "demon_thorns_none")
+    public static void noFoeNoThorns(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        ticking(helper, player, 4);
+        helper.runAfterDelay(3, () -> {
+            double qi = QiService.getQi(player);
+            helper.assertTrue(MartialService.castSlot(player, 1) != MartialService.CastResult.CAST, "Impaling Thorns was cast at nobody");
+            helper.assertTrue(QiService.getQi(player) == qi, "Qi was spent on nothing");
+            end(helper, player);
+        });
+    }
+
+    /** In the demon form the key burrows: the two nearest foes ahead struck from under the ground, not the farther one. */
+    @GameTest(template = "spear_arena", batch = "demon_burrow", timeoutTicks = 200)
+    public static void burrowStrikesTheTwoNearest(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        int cast = 4 + TRANSFORM_TICKS, hit = cast + DevouringDemon.BURROW_HIT_TICK + 2;
+        ticking(helper, player, hit + 2);
+        helper.runAfterDelay(2, () -> DevouringDemon.setFury(player, KaguneState.MAX_FURY));
+        Zombie[] zombies = new Zombie[3];
+        helper.runAfterDelay(cast, () -> {
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.DEMON, "Not in the demon form: " + KaguneState.of(player).form());
+            player.teleportTo(player.getX(), player.getY(), player.getZ() - 3);
+            zombies[0] = dummy(helper, player, -2, 3);
+            zombies[1] = dummy(helper, player, 2, 3);
+            zombies[2] = dummy(helper, player, 0, 7);
+            MartialService.clearCooldownsForTests(player);
+            helper.assertTrue(MartialService.castSlot(player, 1) == MartialService.CastResult.CAST, "Burrow was not cast");
+            helper.assertTrue(KaguneState.of(player).strike() == KaguneState.STRIKE_BURROW, "The centipedes do not burrow");
+        });
+        helper.runAfterDelay(hit, () -> {
+            helper.assertTrue(zombies[0].getHealth() < 400 && zombies[1].getHealth() < 400, "Burrow missed the two nearest: "
+                    + zombies[0].getHealth() + ", " + zombies[1].getHealth());
+            helper.assertTrue(zombies[2].getHealth() == 400, "Burrow struck a third foe");
+            end(helper, player, zombies);
         });
     }
 }

@@ -85,6 +85,17 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
 - **Centipede Bite** (la même touche en forme du démon) : une scolopendre se dresse comme un cobra, puis frappe en arc et
   retombe sur l'ennemi regardé (7 blocs, cône de 22°), coup ×2,2, ralenti, attiré ; il dévore un cinquième de la
   blessure en vie. Corps : `demon_bite`, à quatre pattes.
+- **Impaling Thorns** (touche 2 de l'art, 220 Qi, 8 s) : les tentacules se dressent puis plongent dans le sol devant lui
+  (par-dessus sa tête et autour de ses flancs) ; une demi-seconde après, des épines de tentacule jaillissent du sol là où
+  se tenait l'ennemi regardé (12 blocs, cône de 12°, en vue) : qui y est encore est empalé (×1,6), projeté en l'air et
+  tenu sur place 1,25 s. Sans ennemi visé, rien n'est lancé ni payé. Corps : `demon_thorns`.
+- **Burrow** (la même touche en forme du démon) : les scolopendres se dressent, passent par-dessus sa tête et plongent
+  sous terre ; elles ressortent sous les deux ennemis les plus proches devant lui (9 blocs, 150°), se dressent (×2,0, en
+  l'air, tenus 1 s) puis se recourbent vers lui. Corps : `demon_burrow`.
+- **Les jaillissements** (`client/KaguneEruptions`, `network/KaguneEruptPayload`, protocole 32) : dessinés avec les chaînes
+  de la kagune elle-même (`KaguneModel.drawChain`) au point dit par le serveur, au tick du coup ; le sol se brise (ses
+  propres particules) au moment où elles sortent, rien d'autre. Les ralentissements « tenu » ne montrent pas de
+  particules d'effet.
 - **Le mouvement des chaînes** (`client/KaguneStrikes`, `KaguneModel.aim`) est calculé dans le jeu, par-dessus l'idle,
   pour viser là où il regarde (espace modèle : devant −z, sa droite +x, vérifié en jeu) ; la morsure fait un arc dont la
   corde vaut la distance de la cible : la tête retombe dessus.
@@ -107,7 +118,7 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
 ## À faire, dans l'ordre
 
 1. ~~La surcouche des deux formes~~, ~~la barre de rage dans le HUD~~, ~~la transformation et le retour~~ : faits.
-2. Les 7 autres techniques et leurs versions du démon (Impaling Thorns / Burrow, Grapple / Constrict, Cage / Spiral,
+2. Les 6 autres techniques et leurs versions du démon (Grapple / Constrict, Cage / Spiral,
    Cocoon / Carapace, Sovereign's Will / Demon's Roar, Black Lightning Mantle / Black Storm, Burst / Demon's Maw).
 3. Les M1 de chaque forme (par les tentacules, à 4 blocs) ; pour l'instant ceux d'Epic Fight à mains nues.
 4. La forme du démon ne doit plus pouvoir parer (pas encore bloqué).

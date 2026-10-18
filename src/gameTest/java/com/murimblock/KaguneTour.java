@@ -178,6 +178,8 @@ public final class KaguneTour {
             com.murimblock.martial.MartialService.learn(player, com.murimblock.martial.MartialArts.art(com.murimblock.martial.MartialArts.DEVOURING_DEMON));
             com.murimblock.martial.MartialService.unlock(player, com.murimblock.martial.MartialArts.LASH);
             com.murimblock.martial.MartialService.assign(player, 0, com.murimblock.martial.MartialArts.LASH.id());
+            com.murimblock.martial.MartialService.unlock(player, com.murimblock.martial.MartialArts.IMPALING_THORNS);
+            com.murimblock.martial.MartialService.assign(player, 1, com.murimblock.martial.MartialArts.IMPALING_THORNS.id());
             // The art's own realm, its Qi Max halfway to the next stage: no breakthrough (and its ring) while filming.
             com.murimblock.cultivation.CultivationService.setCultivation(player, com.murimblock.cultivation.CultivationRealm.FOUNDATION_ESTABLISHMENT,
                     com.murimblock.cultivation.CultivationStage.MIDDLE);
@@ -223,37 +225,65 @@ public final class KaguneTour {
         if (ticks == 60) capture(mc, "art-02-fury-25.png");
         if (ticks == 70) capture(mc, "art-03-fury-50.png");
         if (ticks == 80) capture(mc, "art-04-fury-75.png");
-        // Slowed to 5 ticks a second while filming: every tick gets its own frame.
+        // Slowed to 5 ticks a second while filming: every tick gets its own frame. Lash (90), Impaling Thorns (118), the
+        // Fury full (150) and the transformation, Centipede Bite (220), Burrow (250).
         if (ticks == 84) server.execute(() -> server.tickRateManager().setTickRate(5));
-        if (ticks == 215) server.execute(() -> server.tickRateManager().setTickRate(20));
-        if (ticks == 90) cast(server);
-        if (ticks == 120) server.execute(() -> com.murimblock.martial.DevouringDemon.setFury(self(server), KaguneState.MAX_FURY));
-        if (ticks == 186) capture(mc, "art-05-demon.png");
-        if (ticks == 190) cast(server);
-        if (ticks >= 86 && ticks <= 214) capture(mc, String.format("art/%03d.png", ticks - 86));
+        if (ticks == 280) server.execute(() -> server.tickRateManager().setTickRate(20));
+        if (ticks == 90) cast(server, 0);
+        if (ticks == 117 || ticks == 249) server.execute(() -> healthBefore = health(server));
+        if (ticks == 118) cast(server, 1);
+        if (ticks == 150) server.execute(() -> com.murimblock.martial.DevouringDemon.setFury(self(server), KaguneState.MAX_FURY));
+        if (ticks == 215) capture(mc, "art-05-demon.png");
+        if (ticks == 220) cast(server, 0);
+        if (ticks == 250) cast(server, 1);
+        if (ticks >= 86 && ticks <= 280) capture(mc, String.format("art/%03d.png", ticks - 86));
         if (ticks == 100) server.execute(() -> {
-            float hurt = 0;
-            for (var id : zombies) if (server.overworld().getEntity(id) instanceof net.minecraft.world.entity.LivingEntity z) hurt += 400 - z.getHealth();
-            float total = hurt;
-            mc.execute(() -> check(total > 0, "Lash struck the zombies ahead: " + total + " in all"));
+            float total = 0;
+            for (float h : health(server)) total += 400 - h;
+            float hurt = total;
+            mc.execute(() -> check(hurt > 0, "Lash struck the zombies ahead: " + hurt + " in all"));
         });
-        if (ticks == 205) server.execute(() -> {
+        if (ticks == 118 + com.murimblock.martial.DevouringDemon.THORNS_HIT_TICK + 3) server.execute(() -> {
+            float[] now = health(server);
+            int struck = 0;
+            for (int i = 0; i < now.length; i++) if (now[i] < healthBefore[i]) struck++;
+            int n = struck;
+            mc.execute(() -> check(n == 1, "Impaling Thorns impaled the zombie he looked at, alone: " + n));
+        });
+        if (ticks == 235) server.execute(() -> {
             boolean ahead = server.overworld().getEntity(zombies.get(0)) instanceof net.minecraft.world.entity.LivingEntity z && z.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN);
             mc.execute(() -> check(ahead, "Centipede Bite bit the zombie ahead"));
         });
-        if (ticks == 216) {
-            check(casts.equals(List.of("CAST", "CAST")), "both techniques were cast: " + casts);
-            check(com.murimblock.client.KaguneStrikes.jointsSeenInBody() == 0, "Lash's tentacles never went through him: " + com.murimblock.client.KaguneStrikes.jointsSeenInBody() + " joints at worst");
-            check(com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() == 0, "the centipede never went through him: " + com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() + " joints at worst");
+        if (ticks == 250 + com.murimblock.martial.DevouringDemon.BURROW_HIT_TICK + 3) server.execute(() -> {
+            float[] now = health(server);
+            int struck = 0;
+            for (int i = 0; i < now.length; i++) if (now[i] < healthBefore[i]) struck++;
+            int n = struck;
+            mc.execute(() -> check(n == 2, "Burrow came up under the two nearest zombies: " + n));
+        });
+        if (ticks == 284) {
+            check(casts.equals(List.of("CAST", "CAST", "CAST", "CAST")), "the four techniques were cast: " + casts);
+            check(com.murimblock.client.KaguneStrikes.jointsSeenInBody() == 0, "the tentacles never went through him: " + com.murimblock.client.KaguneStrikes.jointsSeenInBody() + " joints at worst");
+            check(com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() == 0, "the centipedes never went through him: " + com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() + " joints at worst");
             finish(mc);
         }
     }
 
-    private static void cast(MinecraftServer server) {
+    private static float[] healthBefore = new float[0];
+
+    /** The zombies' health now, in order (400 for one gone). */
+    private static float[] health(MinecraftServer server) {
+        float[] out = new float[zombies.size()];
+        for (int i = 0; i < out.length; i++)
+            out[i] = server.overworld().getEntity(zombies.get(i)) instanceof net.minecraft.world.entity.LivingEntity z ? z.getHealth() : 400;
+        return out;
+    }
+
+    private static void cast(MinecraftServer server, int slot) {
         server.execute(() -> {
             ServerPlayer player = self(server);
             com.murimblock.martial.MartialService.resetCooldowns(player);
-            casts.add(String.valueOf(com.murimblock.martial.MartialService.castSlot(player, 0)));
+            casts.add(String.valueOf(com.murimblock.martial.MartialService.castSlot(player, slot)));
         });
     }
 

@@ -95,7 +95,7 @@ public class TechniqueIcons {
             "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun",
             "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
             "breaking_the_cauldrons", "conquerors_weight",
-            "lash", "centipede_bite", "devouring_hunger"};
+            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
     static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67;
 
@@ -1336,6 +1336,27 @@ public class TechniqueIcons {
                 disc(g, 15.5, 16, 3, FLESH);
                 disc(g, 15.5, 16, 1.4, c(255, 220, 200));
                 line(g, 9, 11, 22, 13, 1.2f, CHITIN);
+            }
+            case 3 -> { // Impaling Thorns: the ground broken, red thorns bursting up out of it, leaning out.
+                g.setColor(c(46, 20, 16));
+                g.fillRect(2, 24, 28, 6);
+                g.setColor(c(92, 52, 36));
+                g.fillRect(2, 24, 28, 1);
+                double[][] thorns = {{9, 26, 5, 6}, {15, 26, 15, 3}, {21, 26, 25, 7}, {12, 26, 10, 12}, {19, 26, 21, 13}};
+                for (double[] t : thorns) {
+                    taper(g, t[0], t[1], (t[0] + t[2]) / 2, (t[1] + t[3]) / 2 + 2, t[2], t[3], 4.2, 0.6, FLESH_DARK);
+                    taper(g, t[0], t[1], (t[0] + t[2]) / 2, (t[1] + t[3]) / 2 + 2, t[2], t[3], 2.6, 0.4, FLESH);
+                }
+                // Clods thrown up.
+                for (int[] d : new int[][]{{5, 20}, {26, 18}, {8, 15}, {24, 12}}) px(img, d[0], d[1], c(110, 64, 44));
+            }
+            case 4 -> { // Burrow: a centipede bursting up out of a hole in the ground and arching over.
+                g.setColor(c(46, 20, 16));
+                g.fillRect(2, 25, 28, 5);
+                g.setColor(c(14, 6, 6));
+                g.fill(new Ellipse2D.Double(5, 23, 9, 4));
+                centipede(g, 10, 26, 6, 0, 22, 12, 13);
+                for (int[] d : new int[][]{{4, 20}, {15, 21}, {6, 16}}) px(img, d[0], d[1], c(110, 64, 44));
             }
             default -> { }
         }
