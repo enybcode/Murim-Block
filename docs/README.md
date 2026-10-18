@@ -21,6 +21,7 @@
 - [Murim biomes](biomes/README.md): the seven biomes, their blocks and textures (redrawn 14 October).
 - [Murim structures](structures/README.md): the Cloud Cliff Sanctuary and the six sites with their technical sheets.
 - [Murim lore](lore/README.md): the world bible: the Murim, its history, regions, powers and mysteries; the player has no lore of his own (15 October, proposal awaiting Enzo).
+- [Murim families](lore/families.md): sixteen families by region, with the legends of their arts, drawing on murim manhwa and manhua (18 October, proposal awaiting Enzo).
 - [Murim factions](factions/README.md): proposal for the beta: Orthodox Alliance (centre) and Heavenly Demon Cult (desert), 12 arts, bosses, mobs (15 October, awaiting Enzo).
 
 ## Development And Delivery
