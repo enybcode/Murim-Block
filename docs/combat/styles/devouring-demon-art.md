@@ -78,7 +78,9 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
   techniques montrent leur version du démon.
 - **Lash** (160 Qi, 5 s) : les quatre tentacules se dressent derrière ses épaules, ramassées comme des queues de
   scorpion, puis se projettent l'une après l'autre, de droite à gauche, chacune vers son point de l'arc devant lui
-  (4,5 blocs, 150°), et s'abattent dessus ; coup ×1,3 sur chaque ennemi, repoussé. Corps : `demon_lash`. Revue par Enzo
+  (4,5 blocs, 150°), et s'abattent dessus, sans jamais traverser le joueur (les deux du haut passent en arc au-dessus
+  de sa tête, les deux du bas en arc autour de ses flancs, chacune étirée juste ce qu'il faut pour arriver sur son
+  point) ; coup ×1,3 sur chaque ennemi, repoussé. Corps : `demon_lash`. Revue par Enzo
   le 18/10 (la morsure validée telle quelle).
 - **Centipede Bite** (la même touche en forme du démon) : une scolopendre se dresse comme un cobra, puis frappe en arc et
   retombe sur l'ennemi regardé (7 blocs, cône de 22°), coup ×2,2, ralenti, attiré ; il dévore un cinquième de la
@@ -96,7 +98,10 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
 - **Chiffres** : +5 de « kagune » sur la main nue des techniques (`TechniquePower.DEMON_TRAINING`).
 - **Tests** : `DevouringDemonGameTests` (la kagune sort, la rage monte, transformation, retour, Lash dans l'arc, morsure
   sur la cible regardée). Film en vrai client (HUD, Lash, transformation, morsure ; jeu ralenti à 5 ticks/s pour que
-  chaque tick ait son image) : `MURIM_KAGUNE=1 MURIM_KAGUNE_FILM=art gradlew -PgameTests runWeaponTour`.
+  chaque tick ait son image) : `MURIM_KAGUNE=1 MURIM_KAGUNE_FILM=art gradlew -PgameTests runWeaponTour`
+  (`MURIM_KAGUNE_CAM=top` : vu de dessus). Il vérifie à chaque image qu'aucun joint de la kagune (passé les 3 premiers,
+  sur son dos) n'entre dans le corps du joueur, debout pour Lash, à quatre pattes pour la morsure
+  (`KaguneStrikes.jointsSeenInBody`).
 - **Icônes** : `scripts/worldgen/TechniqueIcons.java`, famille « demon ».
 
 ## À faire, dans l'ordre

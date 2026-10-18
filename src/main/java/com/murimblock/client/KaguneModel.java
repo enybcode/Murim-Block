@@ -322,6 +322,24 @@ public final class KaguneModel {
         return n;
     }
 
+    /** How many joints of the chain from {@code root} (past its first {@code skip}) are inside a box of the base's space (a check). */
+    public int jointsInside(int from, int root, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base,
+                            float x0, float y0, float z0, float x1, float y1, float z1, int skip) {
+        var a = animations.get(animation);
+        var m = frameAbove(from, root, a, t, bendYaw, bendPitch, base);
+        int n = 0, k = 0;
+        for (int i = root; i >= 0; k++) {
+            apply(posed(i, a, t), m);
+            bendAt(i, bendYaw, bendPitch, m);
+            Vector3f at = m.transformPosition(new Vector3f());
+            if (k >= skip && at.x > x0 && at.x < x1 && at.y > y0 && at.y < y1 && at.z > z0 && at.z < z1) n++;
+            int next = -1;
+            for (int c : bones.get(i).children()) if (chainSide[c] != 0) next = c;
+            i = next;
+        }
+        return n;
+    }
+
     /** How much longer a chain joint's own segment is drawn now (1 off a strike). */
     private float stretchOf(int i) {
         if (aims.isEmpty() || chainRootOf == null || chainRootOf[i] < 0) return 1;
