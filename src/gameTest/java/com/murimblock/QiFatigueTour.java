@@ -33,8 +33,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.slf4j.Logger;
 
 /**
- * Opt-in real client look at Qi vision's tiring eyes (QiSenseClient.fatigue): held open from 58 s, the sight wavers,
- * blurs and darkens from the edges until it closes by itself at 80 s. Never included in the player JAR.
+ * Opt-in real client look at Qi vision's tiring eyes (QiSenseClient.fatigue): held open from 28 s, the sight wavers,
+ * blurs and darkens from the edges until it closes by itself at 40 s. Never included in the player JAR.
  * Run: gradlew -PgameTests runQiFatigueTour; frames in build/qi-fatigue-tour-run/screenshots/fatigue/.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -85,8 +85,8 @@ public final class QiFatigueTour {
                 spawn(level, com.murimblock.mob.MurimEntities.MOUNTAIN_BANDIT.get(), 6.5, 6.0);
             });
             if (ticks == 62) server.execute(() -> QiSense.setActive(server.getPlayerList().getPlayers().get(0), true));
-            if (ticks >= 62 + 58 * 20 && ticks < 62 + 82 * 20 && ticks % 6 == 0) capture(mc, String.format("fatigue/frame-%03d.png", (ticks - 62 - 58 * 20) / 6));
-            if (ticks == 62 + 83 * 20) {
+            if (ticks >= 62 + 28 * 20 && ticks < 62 + 42 * 20 && ticks % 4 == 0) capture(mc, String.format("fatigue/frame-%03d.png", (ticks - 62 - 28 * 20) / 4));
+            if (ticks == 62 + 43 * 20) {
                 Files.writeString(mc.gameDirectory.toPath().resolve("qi-fatigue-tour-report.txt"), "PASSED; sense open="
                         + com.murimblock.client.cultivation.QiSenseClient.open() + "\n");
                 finished = true;

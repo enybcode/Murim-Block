@@ -125,7 +125,7 @@ Proposition : **une vraie vision**, qui change la façon de voir le monde et s'�
 | 8. Nascent Soul | **Le caché** : murs d'illusion, caches enterrées, traces récentes d'un boss ou d'un joueur fort. **Fait le 18/10** (`QiTraces`) : marques de Qi tous les 4 à 8 blocs (15 min), filet ambré des caches pleines ; murs d'illusion plus tard |
 
 - **Le coût** : du Qi chaque seconde, qui grandit avec la portée. Après 30 s, les yeux fatiguent : la vue se brouille et
-  il faut relâcher. **Fait le 18/10**, durées doublées par Enzo : brouillage dès 60 s, fermeture à 80 s, 20 s de repos.
+  il faut relâcher. **Fait le 18/10**, réglé par Enzo : de 2 à 16 Qi par seconde selon la portée, brouillage dès 30 s, fermeture à 40 s, 10 s de repos.
 - **En méditant, la vision s'ouvre d'elle-même** quand le flux monte. On voit alors le Qi du lieu couler en soi en
   filaments :
   - sur une veine, il jaillit du sol ;
