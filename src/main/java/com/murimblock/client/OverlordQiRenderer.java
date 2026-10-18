@@ -53,8 +53,8 @@ public final class OverlordQiRenderer extends GeoEntityRenderer<OverlordQiEntity
         if (qi.kind() == OverlordQiEntity.BEAM) {
             pose.scale(qi.width(), length, qi.width());
         } else if (qi.kind() == OverlordQiEntity.RING || qi.kind() == OverlordQiEntity.CRACKS) {
-            // Spread flat to twice its length (its radius), a little thicker as it grows.
-            pose.scale(length * 2, 1 + length * 0.15F, length * 2);
+            // Spread flat to twice its length (its radius), as thin as it was made.
+            pose.scale(length * 2, 1, length * 2);
         } else {
             float s = length / SPEAR_LENGTH;
             pose.scale(s, s, s);

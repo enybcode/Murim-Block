@@ -84,6 +84,13 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
 - **Le mouvement des chaînes** (`client/KaguneStrikes`, `KaguneModel.aim`) est calculé dans le jeu, par-dessus l'idle,
   pour viser là où il regarde (espace modèle : devant −z, sa droite +x, vérifié en jeu) ; la morsure fait un arc dont la
   corde vaut la distance de la cible : la tête retombe dessus.
+- **Le style** (Enzo, 18/10/2026 : « le joueur ne doit presque rien faire, la kagune doit s'étendre et frapper, pas
+  trop de particules à part à l'impact ») : le corps bouge à peine (`demon_lash`, `demon_bite`) ; la kagune se ramasse,
+  courte, puis s'étire (ses joints s'écartent, ses segments s'allongent : jusqu'à ×1,45 pour les tentacules, ×1,35
+  pour la scolopendre qui va chercher une cible lointaine). Rien pendant le coup ; à l'impact seulement
+  (`client/KaguneImpactFx`, `network/KaguneImpactPayload`, protocole 31) : une lumière Photon rouge (et violette pour la
+  morsure), une gerbe de sang qui part à l'opposé du frappeur et retombe au sol, la vue secouée (fort pour la victime,
+  léger pour le frappeur) et un arrêt sur le coup (hit-stop) de la kagune.
 - **Chiffres** : +5 de « kagune » sur la main nue des techniques (`TechniquePower.DEMON_TRAINING`).
 - **Tests** : `DevouringDemonGameTests` (la kagune sort, la rage monte, transformation, retour, Lash dans l'arc, morsure
   sur la cible regardée). Film en vrai client (HUD, Lash, transformation, morsure ; jeu ralenti à 5 ticks/s pour que

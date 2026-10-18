@@ -101,6 +101,9 @@ public final class MurimblockNetworking {
         // The Overlord Spear's impacts: a flash of blood red and gold (a Photon light).
         registrar.playToClient(OverlordFlashPayload.TYPE, OverlordFlashPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.OverlordFxClient.flash(payload));
+        // A kagune's blow landing (the Devouring Demon Art): its light, blood, shake and hit-stop.
+        registrar.playToClient(KaguneImpactPayload.TYPE, KaguneImpactPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.KaguneImpactFx.impact(payload));
         registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }

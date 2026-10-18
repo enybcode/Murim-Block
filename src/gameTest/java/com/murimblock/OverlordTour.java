@@ -121,6 +121,8 @@ public final class OverlordTour {
             self.setDeltaMovement(Vec3.ZERO);
             MartialService.clearCooldownsForTests(self);
             QiService.setQi(self, 2000);
+            // At rest before the next technique: the last one, or its stun, is over.
+            com.murimblock.integration.epicfight.EpicFightBridge.patch(self).playAnimationSynchronized(Animations.BIPED_IDLE, 0.0F);
             for (double z : dz) zombie(server, 0, z);
             here = at;
         });

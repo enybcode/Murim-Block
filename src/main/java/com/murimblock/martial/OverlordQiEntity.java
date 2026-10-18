@@ -76,9 +76,11 @@ public class OverlordQiEntity extends Entity implements GeoEntity {
         return from + (to - from) * (1 - (1 - k) * (1 - k));
     }
 
-    /** How much of it shows (1: whole), fading over its last ticks. */
+    /** How much of it shows (1: whole): a shock wave fades all the way as it spreads, cracks over their last second, the rest over their last ticks. */
     public float alpha(float partialTick) {
-        float left = life() - tickCount - partialTick;
+        float age = tickCount + partialTick, left = life() - age;
+        if (kind() == RING) return Math.max(0.0F, Math.min(1.0F, 1.15F - age / Math.max(1, life())));
+        if (kind() == CRACKS) return Math.max(0.0F, Math.min(1.0F, left / 20.0F));
         return Math.max(0.0F, Math.min(1.0F, left / FADE_TICKS));
     }
 

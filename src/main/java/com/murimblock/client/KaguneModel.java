@@ -167,7 +167,10 @@ public final class KaguneModel {
         stack.pushPose();
         apply(l, stack);
         bendAt(i, bendYaw, bendPitch, stack.last().pose());
+        float stretch = stretchOf(i);
+        if (stretch != 1) { stack.pushPose(); stack.scale(1, 1, stretch); }
         for (var cube : bone.cubes()) drawCube(cube, stack, out, light, overlay);
+        if (stretch != 1) stack.popPose();
         for (int child : bone.children()) drawBone(child, animation, t, bendYaw, bendPitch, stack, out, light, overlay);
         stack.popPose();
     }
@@ -252,7 +255,7 @@ public final class KaguneModel {
     // ---------------------------------------------------------------- strikes (KaguneStrikes)
 
     /** A chain taken over by a strike: how much (0 to 1), its first joint's turn, and the wave along it (degrees, radians). */
-    private record Aim(float weight, Quaternionf root, float curl, float phase, float arc) { }
+    private record Aim(float weight, Quaternionf root, float curl, float phase, float arc, float stretch) { }
     private final Map<Integer, Aim> aims = new HashMap<>();
     /** For each chain joint, its chain's first joint and how far along it is (-1 off the chains). */
     private int[] chainRootOf, chainIndex;
@@ -285,11 +288,15 @@ public final class KaguneModel {
      */
     public void aim(int root, float weight, Vector3f dir, Vector3f up, float curl, float phase,
                     int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base) {
-        aim(root, weight, dir, up, curl, phase, 0, from, animation, t, bendYaw, bendPitch, base);
+        aim(root, weight, dir, up, curl, phase, 0, 1, from, animation, t, bendYaw, bendPitch, base);
     }
 
-    /** As above, every joint after the first also bent down by {@code arc} degrees: the chain arches over (a cobra striking). */
-    public void aim(int root, float weight, Vector3f dir, Vector3f up, float curl, float phase, float arc,
+    /**
+     * As above, every joint after the first also bent down by {@code arc} degrees (the chain arches over, a cobra striking),
+     * and the chain drawn {@code stretch} times its length (its joints spread, its segments drawn longer): coiled under 1,
+     * reaching out over it.
+     */
+    public void aim(int root, float weight, Vector3f dir, Vector3f up, float curl, float phase, float arc, float stretch,
                     int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base) {
         if (root < 0 || weight <= 0) return;
         if (chainRootOf == null) indexChains();
@@ -303,7 +310,7 @@ public final class KaguneModel {
         if (inv.determinant() < 0) x.negate();
         Vector3f y = new Vector3f(d).cross(x).normalize();
         var q = new Quaternionf().setFromNormalized(new org.joml.Matrix3f(x, y, d));
-        aims.put(root, new Aim(Math.min(1, weight), q, curl, phase, arc));
+        aims.put(root, new Aim(Math.min(1, weight), q, curl, phase, arc, stretch));
     }
 
     /** How many joints a chain has (from its first), for a strike to spread an arc over it. */
@@ -313,6 +320,13 @@ public final class KaguneModel {
         int n = 0;
         for (int i = 0; i < bones.size(); i++) if (chainRootOf[i] == root) n++;
         return n;
+    }
+
+    /** How much longer a chain joint's own segment is drawn now (1 off a strike). */
+    private float stretchOf(int i) {
+        if (aims.isEmpty() || chainRootOf == null || chainRootOf[i] < 0) return 1;
+        Aim aim = aims.get(chainRootOf[i]);
+        return aim == null ? 1 : 1 + (aim.stretch() - 1) * aim.weight();
     }
 
     /** Bone i's local transform now: the animation's, or a strike's where it takes the chain over. */
@@ -325,6 +339,7 @@ public final class KaguneModel {
                 : new Quaternionf().rotationX((float) Math.toRadians(aim.arc() + aim.curl() * Math.sin(aim.phase() - chainIndex[i] * 0.55)));
         var q = new Quaternionf(l[3], l[4], l[5], l[6]).slerp(target, aim.weight());
         l[3] = q.x; l[4] = q.y; l[5] = q.z; l[6] = q.w;
+        if (i != chainRootOf[i]) l[2] *= 1 + (aim.stretch() - 1) * aim.weight();
         return l;
     }
 
