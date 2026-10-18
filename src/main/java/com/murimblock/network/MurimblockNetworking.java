@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 30: the Overlord Spear's flashes of blood red and gold.
      * 26: the Golden Dragon's scroll of wares (unrolled for a player, a ware bought).
      * 25: the Purple Heaven Thunder Saber (its drums, the electrified, its lightning).
      * 24: the Golden Bell (the body's matter shown to everyone round, the bell's ring, a blow sent back).
@@ -16,7 +17,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "29";
+    private static final String NETWORK_VERSION = "30";
 
     private MurimblockNetworking() {
     }
@@ -94,6 +95,9 @@ public final class MurimblockNetworking {
         // A Majin Fist impact's flash of sunlight (a Photon light).
         registrar.playToClient(SunFlashPayload.TYPE, SunFlashPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.CruelSunRenderer.flash(payload));
+        // The Overlord Spear's impacts: a flash of blood red and gold (a Photon light).
+        registrar.playToClient(OverlordFlashPayload.TYPE, OverlordFlashPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.OverlordFxClient.flash(payload));
         registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }

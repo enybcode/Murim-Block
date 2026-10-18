@@ -399,6 +399,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: a film of the Overlord Spear's techniques in a real client (see OverlordTour).
+        overlordTour {
+            client()
+            gameDirectory = project.file('build/overlord-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.overlordTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: a look at the Spear of Ruin in a real client (see RuinSpearTour).
         ruinSpearTour {
             client()
@@ -932,6 +941,21 @@ tasks.named('runSageShopTour').configure {
     doLast {
         def report = sageShopTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sage shop tour failed; see build/sage-shop-tour-run/sage-shop-tour-report.txt')
+    }
+}
+def overlordTourSave = layout.buildDirectory.dir('overlord-tour-run/saves/murim-overlord')
+def overlordTourReport = layout.buildDirectory.file('overlord-tour-run/overlord-tour-report.txt')
+def overlordTourShots = layout.buildDirectory.dir('overlord-tour-run/screenshots')
+tasks.named('runOverlordTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Overlord tour.')
+        overlordTourSave.get().asFile.deleteDir()
+        overlordTourShots.get().asFile.deleteDir()
+        overlordTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = overlordTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Overlord tour failed; see build/overlord-tour-run/overlord-tour-report.txt')
     }
 }
 def ruinSpearTourSave = layout.buildDirectory.dir('ruin-spear-tour-run/saves/murim-ruin-spear')

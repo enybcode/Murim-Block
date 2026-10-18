@@ -339,11 +339,12 @@ public final class MurimProfileScreen extends Screen {
     @Nullable private Box previousPage, nextPage;
 
     /** Each art's cover colour (its manual's); a new art gets the azure one until it has its own. */
-    private static final Map<ResourceLocation, Integer> COVER_COLOURS = Map.of(
-            MartialArts.AZURE_CLOUD_SWORD, COVER, MartialArts.GOLDEN_BELL, 0xFF6A4418, MartialArts.LONG_FIST, 0xFF5C3B26,
-            MartialArts.SANGUINE_ART, 0xFF5E1E22, MartialArts.SEVEN_STARS_SWORD, 0xFF27305E, MartialArts.THUNDER_SABER, 0xFF3E2A5E,
-            MartialArts.TRAVELLER_STAFF, 0xFF4C4A28, MartialArts.CELESTIAL_PEAK_SPEAR, 0xFF2E4A62,
-            MartialArts.MOUNTAIN_SHATTERING_FIST, 0xFF5A4630, MartialArts.MAJIN_FIST, 0xFF3A1A2A);
+    private static final Map<ResourceLocation, Integer> COVER_COLOURS = Map.ofEntries(
+            Map.entry(MartialArts.AZURE_CLOUD_SWORD, COVER), Map.entry(MartialArts.GOLDEN_BELL, 0xFF6A4418), Map.entry(MartialArts.LONG_FIST, 0xFF5C3B26),
+            Map.entry(MartialArts.SANGUINE_ART, 0xFF5E1E22), Map.entry(MartialArts.SEVEN_STARS_SWORD, 0xFF27305E), Map.entry(MartialArts.THUNDER_SABER, 0xFF3E2A5E),
+            Map.entry(MartialArts.TRAVELLER_STAFF, 0xFF4C4A28), Map.entry(MartialArts.CELESTIAL_PEAK_SPEAR, 0xFF2E4A62),
+            Map.entry(MartialArts.MOUNTAIN_SHATTERING_FIST, 0xFF5A4630), Map.entry(MartialArts.MAJIN_FIST, 0xFF3A1A2A),
+            Map.entry(MartialArts.OVERLORD_SPEAR, 0xFF2A1A1C));
 
     /** A colour a little lighter (a card under the pointer). */
     private static int lighter(int argb) {

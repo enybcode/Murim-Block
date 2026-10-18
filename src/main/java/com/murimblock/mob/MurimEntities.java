@@ -26,6 +26,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.ScarletPieceEntity>> SCARLET_PIECE =
             TYPES.register("scarlet_piece", () -> EntityType.Builder.<com.murimblock.martial.ScarletPieceEntity>of(com.murimblock.martial.ScarletPieceEntity::new, MobCategory.MISC)
                     .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(8).updateInterval(1).build("murimblock:scarlet_piece"));
+    /** The Overlord Spear's shapes of Qi: Tyrant's Thrust's beam, the ultimate's giant spear (shown only). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.OverlordQiEntity>> OVERLORD_QI =
+            TYPES.register("overlord_qi", () -> EntityType.Builder.<com.murimblock.martial.OverlordQiEntity>of(com.murimblock.martial.OverlordQiEntity::new, MobCategory.MISC)
+                    .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:overlord_qi"));
     public static final DeferredHolder<EntityType<?>, EntityType<TrainingOpponentEntity>> TRAINING_OPPONENT =
             TYPES.register("training_opponent", () -> EntityType.Builder.of(TrainingOpponentEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("murimblock:training_opponent"));

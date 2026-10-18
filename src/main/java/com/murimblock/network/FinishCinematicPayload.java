@@ -32,6 +32,9 @@ public record FinishCinematicPayload(boolean start, int executorId, int victimId
     /** Noon Sentence, the Majin Fist's: a sun raised over the body at 0.6 s, brought down on it at 1.6 s. */
     public static final int NOON_SENTENCE = 7;
 
+    /** Overlord's Verdict, the Overlord Spear's: the fallen lifted on the point at 0.9 s, driven into the ground at 1.6 s. */
+    public static final int OVERLORD_VERDICT = 9;
+
     public static final CustomPacketPayload.Type<FinishCinematicPayload> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "finish_cinematic"));
     public static final StreamCodec<ByteBuf, FinishCinematicPayload> STREAM_CODEC = StreamCodec.composite(

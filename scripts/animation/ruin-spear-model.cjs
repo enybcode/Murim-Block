@@ -196,4 +196,4 @@ if (require.main === module) {
   fs.writeFileSync(path.join(ROOT, 'art', 'blockbench', `${NAME}.bbmodel`), JSON.stringify(bbmodel(), null, 1));
   console.log('wrote the Spear of Ruin:', PARTS.length, 'cubes');
 }
-module.exports = { PARTS };
+module.exports = { PARTS, SWATCH_AT, TEX, TEX_SIZE, faces };

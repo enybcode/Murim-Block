@@ -92,9 +92,11 @@ public class TechniqueIcons {
             "shooting_star", "dipper_steps", "orbiting_stars", "constellation_link", "falling_star_rain", "seven_stars_array", "polaris_riposte", "star_marks",
             "thunder_descends", "rolling_thunder", "heavens_drum", "severing_flash", "nine_heavens_wrath", "thunder_sovereign", "heaven_answers", "rolling_drums",
             "golden_bell", "iron_rebound", "rooted_mountain", "bell_toll", "bell_palms",
-            "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun"};
+            "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun",
+            "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
+            "breaking_the_cauldrons", "conquerors_weight"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -112,7 +114,8 @@ public class TechniqueIcons {
             else if (i < THUNDER) stars(g, img, i - STARS);
             else if (i < BELL) thunder(g, img, i - THUNDER);
             else if (i < SUN) bell(g, img, i - BELL);
-            else sun(g, img, i - SUN);
+            else if (i < RUIN) sun(g, img, i - SUN);
+            else ruin(g, img, i - RUIN);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -1171,6 +1174,98 @@ public class TechniqueIcons {
                 sunDisc(g, 23, 8, 3.5, 10);
                 for (int k = 0; k < 5; k++) taper(g, 10 + k * 2.5, 26, 9 + k * 2.5, 18, 12 + k * 2, 11 + (k % 2) * 2, 2.4, 0.3, k % 2 == 0 ? SUN_DEEP : SUN_GOLD);
                 goldFist(g, img, 14, 21, 9, 1);
+            }
+        }
+    }
+    // ------------------------------------------------------------ the Overlord Spear: black iron, blood red, embers
+
+    static final Color RUIN_IRON = c(40, 40, 46), RUIN_EDGE = c(240, 236, 222), RUIN_EMBER = c(255, 106, 36), RUIN_HOT = c(255, 214, 122),
+            RUIN_BLOOD = c(176, 24, 24), RUIN_GOLD = c(217, 168, 63);
+
+    static void ruinBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.min(1, Math.hypot(x - 15.5, y - 16) / 21.0);
+            img.setRGB(x, y, c((int) (18 + 70 * (1 - d) * (1 - d)), (int) (10 + 10 * (1 - d)), (int) (12 + 8 * (1 - d))).getRGB());
+        }
+        g.setColor(RUIN_GOLD); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(70, 16, 14)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** The Spear of Ruin from its butt to its point: a black shaft with embers, a red mane, gold claws, a black head split by a burning seam. */
+    static void ruinSpear(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+        double hx = x1 - ux * 8, hy = y1 - uy * 8;
+        line(g, x0, y0, hx, hy, 1.8f, RUIN_IRON);
+        for (double t : new double[]{0.3, 0.6}) px(img, (int) Math.round(x0 + (hx - x0) * t), (int) Math.round(y0 + (hy - y0) * t), RUIN_EMBER);
+        // The mane, the claws.
+        line(g, hx - ux * 1.5, hy - uy * 1.5, hx - ux * 1.5 + nx * 3 - ux * 2, hy - uy * 1.5 + ny * 3 - uy * 2, 1.6f, RUIN_BLOOD);
+        line(g, hx - ux * 0.5 + nx, hy - uy * 0.5 + ny, hx + ux * 1.5 + nx * 1.6, hy + uy * 1.5 + ny * 1.6, 1f, RUIN_GOLD);
+        line(g, hx - ux * 0.5 - nx, hy - uy * 0.5 - ny, hx + ux * 1.5 - nx * 1.6, hy + uy * 1.5 - ny * 1.6, 1f, RUIN_GOLD);
+        // The head: a broad leaf of black steel, bright edges, the burning seam.
+        Path2D head = new Path2D.Double();
+        head.moveTo(hx, hy); head.lineTo(hx + ux * 3 + nx * 2.4, hy + uy * 3 + ny * 2.4); head.lineTo(x1, y1);
+        head.lineTo(hx + ux * 3 - nx * 2.4, hy + uy * 3 - ny * 2.4); head.closePath();
+        g.setColor(RUIN_EDGE); g.fill(head);
+        Path2D inner = new Path2D.Double();
+        inner.moveTo(hx + ux * 0.6, hy + uy * 0.6); inner.lineTo(hx + ux * 3 + nx * 1.5, hy + uy * 3 + ny * 1.5); inner.lineTo(x1 - ux * 1.2, y1 - uy * 1.2);
+        inner.lineTo(hx + ux * 3 - nx * 1.5, hy + uy * 3 - ny * 1.5); inner.closePath();
+        g.setColor(RUIN_IRON); g.fill(inner);
+        line(g, hx + ux * 0.8, hy + uy * 0.8, x1 - ux * 1.6, y1 - uy * 1.6, 0.8f, RUIN_EMBER);
+    }
+
+    static void ruin(Graphics2D g, BufferedImage img, int i) {
+        ruinBack(img, g);
+        switch (i) {
+            case 0 -> { // Tyrant's Thrust: the spear driven right, a beam of red light out of its point.
+                g.setColor(c(200, 30, 20, 120)); g.fill(new Rectangle2D.Double(17, 12, 14, 8));
+                g.setColor(c(255, 120, 60, 200)); g.fill(new Rectangle2D.Double(17, 14, 14, 4));
+                line(g, 17, 16, 31, 16, 1f, RUIN_HOT);
+                ruinSpear(g, img, 2, 20, 19, 16);
+            }
+            case 1 -> { // Earth-Splitting Sweep: the spear planted, a ring of cracks round it, stones thrown up.
+                g.setColor(c(50, 16, 10)); g.fill(new Rectangle2D.Double(2, 22, 28, 8));
+                g.setColor(RUIN_EMBER); g.setStroke(new BasicStroke(1.2f)); g.draw(new Ellipse2D.Double(3, 21, 26, 8));
+                cracks(g, 16, 25, new double[][]{{4, 24}, {28, 26}, {9, 29}, {24, 29}});
+                rock(g, img, 6, 14, 2); rock(g, img, 26, 12, 2); rock(g, img, 21, 7, 1.5);
+                ruinSpear(g, img, 17, 3, 15, 26);
+            }
+            case 2 -> { // Falling Mountain: the spear point down into a crater, cracks and dust.
+                g.setColor(c(50, 16, 10)); g.fill(new Rectangle2D.Double(2, 24, 28, 6));
+                g.setColor(c(20, 8, 6)); g.fill(new Arc2D.Double(7, 21, 18, 8, 180, 180, Arc2D.CHORD));
+                cracks(g, 16, 26, new double[][]{{3, 25}, {29, 25}, {8, 30}, {25, 30}});
+                for (int k = 0; k < 3; k++) line(g, 10 + k * 6, 2, 12 + k * 4, 9, 0.8f, c(255, 140, 60, 150));
+                ruinSpear(g, img, 20, 2, 16, 25);
+            }
+            case 3 -> { // Overlord's Charge: the spear level, three figures on the point, a wall cracking ahead.
+                g.setColor(c(80, 70, 66)); g.fill(new Rectangle2D.Double(27, 6, 4, 22));
+                cracks(g, 27, 16, new double[][]{{30, 8}, {30, 26}, {31, 16}});
+                for (int k = 0; k < 3; k++) { g.setColor(c(20, 12, 12)); g.fill(new Ellipse2D.Double(18 + k * 2.6, 11, 3, 3)); g.fill(new Rectangle2D.Double(18 + k * 2.6, 14, 3, 6)); }
+                for (int k = 0; k < 3; k++) line(g, 1, 14 + k * 3, 7, 14 + k * 3, 0.8f, c(255, 150, 80, 140));
+                ruinSpear(g, img, 3, 18, 27, 17);
+            }
+            case 4 -> { // Hundred Battles Rampage: a fan of thrusts, each ending in a small burst.
+                double[][] at = {{28, 8}, {30, 14}, {29, 20}, {26, 25}, {24, 5}};
+                for (double[] q : at) { line(g, 9, 17, q[0] - 3, q[1], 0.7f, c(240, 236, 222, 140)); disc(g, q[0], q[1], 2.2, c(255, 120, 40, 200)); disc(g, q[0], q[1], 1, RUIN_HOT); }
+                ruinSpear(g, img, 2, 21, 20, 15);
+            }
+            case 5 -> { // Conqueror Descends: a giant spear falling point first onto a red circle, a small figure under it.
+                g.setColor(RUIN_BLOOD); g.setStroke(new BasicStroke(1.4f)); g.draw(new Ellipse2D.Double(3, 23, 26, 7));
+                g.setColor(c(255, 90, 30, 90)); g.fill(new Ellipse2D.Double(6, 24, 20, 5));
+                ruinSpear(g, img, 16, -6, 16, 24);
+                g.setColor(c(20, 10, 10)); g.fill(new Ellipse2D.Double(25, 21, 2.4, 2.4)); g.fill(new Rectangle2D.Double(25, 23.4, 2.4, 4));
+            }
+            case 6 -> { // Breaking the Cauldrons: a cracked bronze cauldron, an enormous beam over it (the secret).
+                g.setColor(c(200, 30, 20, 140)); g.fill(new Rectangle2D.Double(2, 4, 28, 10));
+                g.setColor(c(255, 170, 90, 220)); g.fill(new Rectangle2D.Double(2, 7, 28, 4));
+                line(g, 2, 9, 30, 9, 1f, RUIN_HOT);
+                g.setColor(c(122, 90, 46)); g.fill(new Arc2D.Double(8, 15, 16, 14, 180, 180, Arc2D.CHORD));
+                g.fill(new Rectangle2D.Double(9, 19, 14, 2)); line(g, 11, 27, 10, 30, 1.4f, c(122, 90, 46)); line(g, 21, 27, 22, 30, 1.4f, c(122, 90, 46));
+                cracks(g, 16, 22, new double[][]{{12, 27}, {20, 28}, {16, 29}});
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Conqueror's Weight: five embers over the spear's head, the fifth blazing.
+                for (int k = 0; k < 5; k++) disc(g, 6 + k * 5, 6, k == 4 ? 2.4 : 1.6, k == 4 ? RUIN_HOT : RUIN_EMBER);
+                ruinSpear(g, img, 4, 28, 26, 12);
             }
         }
     }

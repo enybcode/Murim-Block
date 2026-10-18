@@ -1,0 +1,87 @@
+package com.murimblock.client;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.murimblock.Murimblock;
+import com.murimblock.martial.OverlordQiEntity;
+import com.murimblock.mob.MurimEntities;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
+import software.bernie.geckolib.util.Color;
+
+/**
+ * The Overlord Spear's shapes of Qi (martial/OverlordQiEntity): Tyrant's Thrust's beam (geo/overlord_beam, one block at
+ * scale 1, stretched to its width and length) and the ultimate's giant spear (geo/overlord_giant_spear, the Spear of Ruin,
+ * made as long as it is told). Both shine (full light, their glowmasks); the beam's sheath is see-through, and both fade
+ * out over their last ticks.
+ */
+@EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
+public final class OverlordQiRenderer extends GeoEntityRenderer<OverlordQiEntity> {
+    /** The giant spear's model's own length at scale 1 (blocks). */
+    private static final float SPEAR_LENGTH = 2.07F;
+
+    public OverlordQiRenderer(EntityRendererProvider.Context context) {
+        super(context, new Model());
+        shadowRadius = 0;
+        addRenderLayer(new AutoGlowingGeoLayer<>(this));
+    }
+
+    @SubscribeEvent
+    public static void register(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(MurimEntities.OVERLORD_QI.get(), OverlordQiRenderer::new);
+    }
+
+    @Override
+    public void render(OverlordQiEntity qi, float yaw, float partial, PoseStack pose, MultiBufferSource buffers, int light) {
+        super.render(qi, yaw, partial, pose, buffers, LightTexture.FULL_BRIGHT);
+    }
+
+    @Override
+    protected void applyRotations(OverlordQiEntity qi, PoseStack pose, float age, float yaw, float partial, float nativeScale) {
+        pose.mulPose(qi.turn());
+        float length = qi.length(partial);
+        if (qi.kind() == OverlordQiEntity.BEAM) {
+            pose.scale(qi.width(), length, qi.width());
+        } else {
+            float s = length / SPEAR_LENGTH;
+            pose.scale(s, s, s);
+        }
+    }
+
+    @Override
+    public Color getRenderColor(OverlordQiEntity qi, float partial, int light) {
+        return Color.ofARGB(qi.alpha(partial), 1.0F, 1.0F, 1.0F);
+    }
+
+    @Override
+    public RenderType getRenderType(OverlordQiEntity qi, ResourceLocation texture, MultiBufferSource buffers, float partial) {
+        return RenderType.entityTranslucentEmissive(texture);
+    }
+
+    private static final class Model extends GeoModel<OverlordQiEntity> {
+        private static ResourceLocation asset(String path) {
+            return ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, path);
+        }
+
+        @Override public ResourceLocation getModelResource(OverlordQiEntity qi) {
+            return asset(qi.kind() == OverlordQiEntity.BEAM ? "geo/overlord_beam.geo.json" : "geo/overlord_giant_spear.geo.json");
+        }
+
+        @Override public ResourceLocation getTextureResource(OverlordQiEntity qi) {
+            return asset(qi.kind() == OverlordQiEntity.BEAM ? "textures/entity/overlord_beam.png" : "textures/entity/overlord_giant_spear.png");
+        }
+
+        @Override public ResourceLocation getAnimationResource(OverlordQiEntity qi) {
+            return asset("animations/overlord_qi.animation.json");
+        }
+    }
+}

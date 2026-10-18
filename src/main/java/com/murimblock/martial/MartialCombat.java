@@ -204,6 +204,13 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.LONG_FIST, credit, LongFist.isStrike(animation), false));
             return;
         }
+        credit = OverlordSpear.creditOf(player, animation);
+        if (credit != null) {
+            boolean strike = OverlordSpear.isStrike(animation);
+            if (strike) OverlordSpear.strikeBegan(player);
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.OVERLORD_SPEAR, credit, strike, false));
+            return;
+        }
         credit = MountainShatteringFist.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MOUNTAIN_SHATTERING_FIST, credit, MountainShatteringFist.isStrike(animation), false));
@@ -285,6 +292,8 @@ public final class MartialCombat {
         if (swing.art.equals(MartialArts.THUNDER_SABER)) factor *= ThunderSaber.factorBefore(player, event.getTarget());
         // Pride of the Sun: a strike by day under the sky lands harder.
         if (swing.art.equals(MartialArts.MAJIN_FIST)) factor *= MajinFistArt.factorBefore(player, swing.animation);
+        // Conqueror's Weight: the battering ram strikes x1.8.
+        if (swing.art.equals(MartialArts.OVERLORD_SPEAR) && swing.strike && OverlordSpear.ramming(player)) factor *= OverlordSpear.RAM_FACTOR;
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -306,7 +315,9 @@ public final class MartialCombat {
         boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
         boolean spear = swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR);
         boolean mountain = swing.art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST);
-        if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
+        boolean overlord = swing.art.equals(MartialArts.OVERLORD_SPEAR);
+        if (overlord) OverlordSpear.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
         else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
         else if (swing.art.equals(MartialArts.MAJIN_FIST)) MajinFistArt.onHit(player, target, animation, enemy);
         else if (fist) LongFist.onHit(player, target, animation, enemy);
@@ -320,7 +331,8 @@ public final class MartialCombat {
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
         if (fist ? LongFist.knocksDown(animation) : spear ? CelestialPeakSpear.knocksDown(animation)
-                : mountain ? MountainShatteringFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
+                : mountain ? MountainShatteringFist.knocksDown(animation) : overlord ? OverlordSpear.knocksDown(animation)
+                : !sanguine && AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
@@ -677,6 +689,7 @@ public final class MartialCombat {
         AzureCloudSword.tickAim(player, now);
         TravellerStaff.tick(player);
         MountainShatteringFist.tick(player);
+        OverlordSpear.tick(player);
         MajinFistArt.tick(player);
         SevenStarsSword.tick(player);
         ThunderSaber.tick(player);
@@ -788,6 +801,7 @@ public final class MartialCombat {
         SanguineArt.forget(id);
         TravellerStaff.forget(id);
         MountainShatteringFist.forget(id);
+        OverlordSpear.forget(id);
         MajinFistArt.forget(id);
         SevenStarsSword.forget(id);
         ThunderSaber.forget(id);
@@ -813,6 +827,7 @@ public final class MartialCombat {
         BloodIceberg.forget(null);
         TravellerStaff.forget(null);
         MountainShatteringFist.forget(null);
+        OverlordSpear.forget(null);
         MajinFistArt.forget(null);
         SevenStarsSword.forget(null);
         ThunderSaber.forget(null);

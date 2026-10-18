@@ -69,6 +69,7 @@ public final class AuraClient {
         if (art.filter(MartialArts.THUNDER_SABER::equals).isPresent()) return new float[]{0.62F, 0.4F, 1.0F};
         if (art.filter(MartialArts.MAJIN_FIST::equals).isPresent()) return new float[]{0.7F, 0.1F, 0.12F};
         if (art.filter(MartialArts.GOLDEN_BELL::equals).isPresent()) return new float[]{1.0F, 0.78F, 0.22F};
+        if (art.filter(MartialArts.OVERLORD_SPEAR::equals).isPresent()) return new float[]{0.95F, 0.2F, 0.1F};
         return new float[]{0.95F, 0.96F, 1.0F};
     }
 
@@ -182,6 +183,13 @@ public final class AuraClient {
             AuraParticle p = spark(level, feet.x + Math.cos(a) * r * 1.2, feet.y + 0.3 + (age % 40) / 40.0 * 1.2 * scale, feet.z + Math.sin(a) * r * 1.2,
                     -Math.sin(a) * 0.04, 0.01, Math.cos(a) * 0.04, new float[]{0.45F, 0.95F, 0.4F}, false);
             if (p != null) p.big(0.07F, 18);
+        } else if (id.equals(MartialArts.OVERLORD_SPEAR)) {
+            // Embers rising round the feet, as from cracked, burning ground.
+            if (age % 3 == 0) {
+                double a = random.nextDouble() * Math.PI * 2;
+                level.addParticle(net.minecraft.core.particles.ParticleTypes.SMALL_FLAME, feet.x + Math.cos(a) * r, feet.y + 0.1, feet.z + Math.sin(a) * r,
+                        0, 0.04 + random.nextDouble() * 0.05, 0);
+            }
         } else if (id.equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) {
             if (age % 4 == 0) {
                 double a = random.nextDouble() * Math.PI * 2;

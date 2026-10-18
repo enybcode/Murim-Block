@@ -401,10 +401,35 @@ public final class MartialArts {
             List.of(new QuestStep(CRIMSON_PEAK_FORMS, 3)));
 
     /** The realm an art's manual asks of its reader, if any. */
+    // ---------------------------------------------------------------- the Overlord Spear (docs/combat/styles/overlord-spear.md)
+
+    /**
+     * The Overlord Spear (Enzo, 18/10/2026: an intermediate spear art "with a certain destructive power"): one does not
+     * pierce, one pulverises. A spear in hand, learnt from Qi Condensation; its manual comes to whoever brings the
+     * Celestial Peak Spear to mastery 50. No quests: the manual teaches its five techniques and its ultimate.
+     */
+    public static final ResourceLocation OVERLORD_SPEAR = id("overlord_spear");
+    public static final com.murimblock.cultivation.CultivationRealm OVERLORD_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    /** The Celestial Peak Spear's mastery that brings the manual. */
+    public static final int OVERLORD_FROM_MASTERY = 50;
+    /** Held to charge (0.5 to 1.5 s), let go: a beam of Qi through all in its line. */
+    public static final Technique TYRANTS_THRUST = new Technique(id("tyrants_thrust"), OVERLORD_SPEAR, 35, 160);
+    public static final int TYRANTS_THRUST_MAX_CHARGE = 30;
+    public static final Technique EARTH_SPLITTING_SWEEP = new Technique(id("earth_splitting_sweep"), OVERLORD_SPEAR, 50, 240);
+    public static final Technique FALLING_MOUNTAIN = new Technique(id("falling_mountain"), OVERLORD_SPEAR, 60, 300);
+    public static final Technique OVERLORDS_CHARGE = new Technique(id("overlords_charge"), OVERLORD_SPEAR, 55, 280);
+    public static final Technique HUNDRED_BATTLES_RAMPAGE = new Technique(id("hundred_battles_rampage"), OVERLORD_SPEAR, 75, 440);
+    /** The ultimate: a giant spear of Qi falls from the sky; four minutes to recover. */
+    public static final Technique CONQUEROR_DESCENDS = new Technique(id("conqueror_descends"), OVERLORD_SPEAR, 180, 4800);
+    /** The secret: Tyrant's Thrust under a fifth of one's health, its beam three blocks wide and twice as strong. */
+    public static final Technique BREAKING_THE_CAULDRONS = new Technique(id("breaking_the_cauldrons"), OVERLORD_SPEAR, 0, 0, true);
+    /** Its passive keeps Epic Fight's spear strikes; each that lands adds a charge of Domination, five make a battering ram. */
+    public static final Passive CONQUERORS_WEIGHT = new Passive(id("conquerors_weight"), List.of(), List.of());
+
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
                 : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : art.equals(THUNDER_SABER) ? THUNDER_SABER_REALM
-                : art.equals(MAJIN_FIST) ? MAJIN_REALM : null;
+                : art.equals(MAJIN_FIST) ? MAJIN_REALM : art.equals(OVERLORD_SPEAR) ? OVERLORD_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -429,6 +454,10 @@ public final class MartialArts {
                 ROLLING_DRUMS, List.of(FIRST_DRUM, UNMOVED, DRUM_ANSWERS, CALL_DOWN_SKY, SOVEREIGN_PATH), List.of(SECOND_THUNDER, THIRD_TURN, LINGERING_STORM)));
         add(new Art(MAJIN_FIST, List.of(SUNFIRE_FIST, PRIDE_FLARE, CRUEL_SUN, NOON_JUDGMENT, MIDDAY_METEOR, THE_ONE, GRAND_NOON),
                 PRIDE_OF_THE_SUN, List.of(KINDLING, SPREADING_FLAME, SUNS_WRATH, HIGH_NOON, PRIDE_INCARNATE), List.of(SOLAR_FIST, INFERNO_FLARE, TWIN_SUNS)));
+
+        // No quests (Enzo's design): the manual teaches the five techniques and the ultimate; the secret is found.
+        add(new Art(OVERLORD_SPEAR, List.of(TYRANTS_THRUST, EARTH_SPLITTING_SWEEP, FALLING_MOUNTAIN, OVERLORDS_CHARGE, HUNDRED_BATTLES_RAMPAGE,
+                CONQUEROR_DESCENDS, BREAKING_THE_CAULDRONS), CONQUERORS_WEIGHT, List.of(), List.of()));
 
         add(new Art(GOLDEN_BELL, List.of(GOLDEN_BELL_FORM, IRON_REBOUND, ROOTED_MOUNTAIN, BELL_TOLL), BELL_PALMS,
                 List.of(TAKE_THE_BLOW, RETURN_IT), List.of(STEADFAST_BELL, MIRROR_IRON, ANCIENT_MOUNTAIN)));

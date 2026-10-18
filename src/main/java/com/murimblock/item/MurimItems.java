@@ -190,6 +190,7 @@ public final class MurimItems {
     public static final DeferredItem<MartialGuideItem> CELESTIAL_PEAK_SPEAR_GUIDE = guide("celestial_peak_spear", com.murimblock.martial.MartialArts.CELESTIAL_PEAK_SPEAR, "alliance_arena");
     public static final DeferredItem<MartialGuideItem> AZURE_CLOUD_SWORD_GUIDE = guide("azure_cloud_sword", com.murimblock.martial.MartialArts.AZURE_CLOUD_SWORD, "misty_bamboo_temple");
     public static final DeferredItem<MartialGuideItem> MOUNTAIN_SHATTERING_FIST_GUIDE = guide("mountain_shattering_fist", com.murimblock.martial.MartialArts.MOUNTAIN_SHATTERING_FIST, "bandit_camp");
+    public static final DeferredItem<MartialGuideItem> OVERLORD_SPEAR_GUIDE = guide("overlord_spear", com.murimblock.martial.MartialArts.OVERLORD_SPEAR, "alliance_arena");
     public static final DeferredItem<MartialGuideItem> MAJIN_FIST_GUIDE = guide("majin_fist", com.murimblock.martial.MartialArts.MAJIN_FIST, "bandit_camp");
     public static final DeferredItem<MartialGuideItem> SEVEN_STARS_SWORD_GUIDE = guide("seven_stars_sword", com.murimblock.martial.MartialArts.SEVEN_STARS_SWORD, MartialGuideItem.STAR_PEAK);
     public static final DeferredItem<MartialGuideItem> THUNDER_SABER_GUIDE = guide("thunder_saber", com.murimblock.martial.MartialArts.THUNDER_SABER, MartialGuideItem.NOWHERE);
@@ -201,7 +202,7 @@ public final class MurimItems {
     /** Every martial guide, in the Golden Dragon's order (easiest first). */
     public static java.util.List<DeferredItem<MartialGuideItem>> guides() {
         return java.util.List.of(LONG_FIST_GUIDE, GOLDEN_BELL_GUIDE, TRAVELLER_STAFF_GUIDE, CELESTIAL_PEAK_SPEAR_GUIDE, AZURE_CLOUD_SWORD_GUIDE,
-                MOUNTAIN_SHATTERING_FIST_GUIDE, SEVEN_STARS_SWORD_GUIDE, MAJIN_FIST_GUIDE, THUNDER_SABER_GUIDE);
+                MOUNTAIN_SHATTERING_FIST_GUIDE, OVERLORD_SPEAR_GUIDE, SEVEN_STARS_SWORD_GUIDE, MAJIN_FIST_GUIDE, THUNDER_SABER_GUIDE);
     }
     public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",
@@ -247,6 +248,9 @@ public final class MurimItems {
      * mane. A spear for Epic Fight (data/murimblock/capabilities/weapons/spear_of_ruin.json), heavier and stronger than the
      * captain's: 8 damage. Model from scripts/animation/ruin-spear-model.cjs.
      */
+    /** The Overlord Spear's scroll: read (from Qi Condensation), it teaches the art; given at the Celestial Peak Spear's mastery 50. */
+    public static final DeferredItem<MartialManualItem> OVERLORD_SPEAR_SCROLL = ITEMS.register("overlord_spear_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.OVERLORD_SPEAR));
     public static final DeferredItem<SwordItem> SPEAR_OF_RUIN = ITEMS.register("spear_of_ruin",
             () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.EPIC).attributes(SwordItem.createAttributes(Tiers.IRON, 4, -2.9F))));
 
@@ -388,6 +392,7 @@ public final class MurimItems {
                         output.accept(PEAK_CAPTAIN_SPAWN_EGG.get());
                         output.accept(CRIMSON_DRAGON_SPEAR.get());
                         output.accept(SPEAR_OF_RUIN.get());
+                        output.accept(OVERLORD_SPEAR_SCROLL.get());
                         output.accept(PEAK_GUARD_HELM.get());
                         output.accept(PEAK_GUARD_LAMELLAR.get());
                         output.accept(PEAK_GUARD_TASSETS.get());

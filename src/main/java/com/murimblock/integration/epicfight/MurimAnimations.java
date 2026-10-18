@@ -134,6 +134,7 @@ public final class MurimAnimations {
         buildLongFist(builder);
         buildSanguineArt(builder);
         buildCelestialPeakSpear(builder);
+        buildOverlordSpear(builder);
         buildBanditChief(builder);
         BanditWarlordAnimations.build(builder);
         ColossusAnimations.build(builder);
@@ -477,6 +478,73 @@ public final class MurimAnimations {
                 .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(7))
                 .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
                 .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+    }
+
+    // ---------------------------------------------------------------- the Overlord Spear (scripts/animation/overlord-spear.cjs)
+
+    /**
+     * The Overlord Spear's moves: Tyrant's Thrust held and let go (its beam is dealt by the server), Earth-Splitting Sweep
+     * (the slam, then a turn at the knees), Falling Mountain (the leap held in the air, the landing planted), Overlord's
+     * Charge (ten blocks), Hundred Battles Rampage (twelve thrusts, then one that throws), the ultimate's call to the sky
+     * and the finish, Overlord's Verdict.
+     */
+    public static AnimationAccessor<ActionAnimation> OVERLORD_TYRANT_CHARGE, OVERLORD_TYRANT_RELEASE, OVERLORD_FALLING_PLANT, OVERLORD_ASCEND, FINISH_OVERLORD_VERDICT;
+    public static AnimationAccessor<StaticAnimation> OVERLORD_FALLING_LEAP;
+    public static AnimationAccessor<AttackAnimation> OVERLORD_EARTH_SWEEP, OVERLORD_RAMPAGE;
+    public static AnimationAccessor<DashAttackAnimation> OVERLORD_CHARGE;
+    /** When the thrust goes out, the sweep's spear meets the ground, the charge runs, the ultimate's spear is brought down (s). */
+    public static final float OVERLORD_RELEASE_HIT = 0.1F, OVERLORD_SLAM = 0.34F, OVERLORD_CHARGE_FROM = 0.26F, OVERLORD_CHARGE_TO = 0.9F,
+            OVERLORD_ASCEND_CALL = 2.4F, OVERLORD_VERDICT_LIFT = 0.9F, OVERLORD_VERDICT_SLAM = 1.6F;
+    /** When each of the rampage's thrusts lands, and the last (overlord-spear.cjs, its timings). */
+    public static final float[] OVERLORD_RAMPAGE_THRUSTS = {0.15F, 0.3F, 0.45F, 0.6F, 0.75F, 0.9F, 1.05F, 1.2F, 1.35F, 1.5F, 1.65F, 1.8F};
+    public static final float OVERLORD_RAMPAGE_LAST = 2.02F;
+    /** The sweep: a ring of four blocks round at the knees; the charge's point ahead of the body all along. */
+    private static final OBBCollider OVERLORD_RING = new OBBCollider(4.0D, 0.8D, 4.0D, 0.0D, 0.6D, 0.0D);
+    private static final OBBCollider OVERLORD_CHARGE_POINT = new OBBCollider(0.9D, 1.0D, 1.4D, 0.0D, 1.0D, -1.6D);
+
+    private static void buildOverlordSpear(AnimationBuilder builder) {
+        OVERLORD_TYRANT_CHARGE = builder.nextAccessor("biped/murim/overlord_tyrant_charge", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        OVERLORD_TYRANT_RELEASE = builder.nextAccessor("biped/murim/overlord_tyrant_release", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+        // The spear brought down at 0.34 s, then round at the knees until 0.84 s: one hit each, thrown up (the server lifts them).
+        OVERLORD_EARTH_SWEEP = builder.nextAccessor("biped/murim/overlord_earth_sweep", a -> technique(new AttackAnimation(0.06F, 0.28F, OVERLORD_SLAM, 0.84F, 1.18F,
+                OVERLORD_RING, root(), a, Armatures.BIPED), 1.2F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(10))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.LONG)
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        OVERLORD_FALLING_LEAP = builder.nextAccessor("biped/murim/overlord_falling_leap", BanditWarlordAnimations.Airborne::new);
+        OVERLORD_FALLING_PLANT = builder.nextAccessor("biped/murim/overlord_falling_plant", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+        // Ten blocks run from 0.26 s to 0.9 s, the point ahead striking all it meets (the server carries them on).
+        OVERLORD_CHARGE = builder.nextAccessor("biped/murim/overlord_charge", a -> technique(new DashAttackAnimation(0.06F, 0.2F, OVERLORD_CHARGE_FROM, OVERLORD_CHARGE_TO, 1.3F,
+                OVERLORD_CHARGE_POINT, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(8))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get())
+                .addProperty(AttackAnimationProperty.FIXED_MOVE_DISTANCE, true));
+        OVERLORD_RAMPAGE = builder.nextAccessor("biped/murim/overlord_rampage", a -> {
+            float[] thrusts = OVERLORD_RAMPAGE_THRUSTS;
+            Phase[] phases = new Phase[thrusts.length + 1];
+            float start = 0.0F;
+            for (int i = 0; i < thrusts.length; i++) {
+                float t = thrusts[i];
+                phases[i] = new Phase(start, t - 0.04F, t - 0.02F, t + 0.03F, t + 0.04F, t + 0.05F, root(), THRUST_BOX)
+                        .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(0.35F))
+                        .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.HOLD)
+                        .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_SHARP.get());
+                start = t + 0.05F;
+            }
+            float last = OVERLORD_RAMPAGE_LAST;
+            phases[thrusts.length] = new Phase(start, last - 0.04F, last - 0.02F, last + 0.12F, last + 0.42F, Float.MAX_VALUE, root(), THRUST_BOX)
+                    .addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(1.0F))
+                    .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(4.0F))
+                    .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.KNOCKDOWN)
+                    .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLUNT_HIT_HARD.get())
+                    .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get());
+            return new AttackAnimation(0.06F, a, Armatures.BIPED, phases).addProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR, 0.0F);
+        });
+        OVERLORD_ASCEND = builder.nextAccessor("biped/murim/overlord_ascend", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        FINISH_OVERLORD_VERDICT = builder.nextAccessor("biped/murim/overlord_verdict", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     private static DashAttackAnimation dragon(AnimationAccessor<? extends DashAttackAnimation> accessor, OBBCollider path) {

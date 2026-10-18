@@ -56,6 +56,7 @@ public final class GoldenDragonShop {
                     guide(MurimItems.CELESTIAL_PEAK_SPEAR_GUIDE, 2, 6),
                     guide(MurimItems.AZURE_CLOUD_SWORD_GUIDE, 3, 10),
                     guide(MurimItems.MOUNTAIN_SHATTERING_FIST_GUIDE, 4, 16),
+                    guide(MurimItems.OVERLORD_SPEAR_GUIDE, 4, 18),
                     guide(MurimItems.SEVEN_STARS_SWORD_GUIDE, 4, 20),
                     guide(MurimItems.MAJIN_FIST_GUIDE, 4, 20),
                     guide(MurimItems.THUNDER_SABER_GUIDE, 4, 24),

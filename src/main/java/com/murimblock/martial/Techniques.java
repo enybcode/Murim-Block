@@ -27,6 +27,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.THUNDER_SABER)) return ThunderSaber.holdsSaber(player);
         if (technique.art().equals(MartialArts.MAJIN_FIST)) return MajinFistArt.bareHanded(player);
         if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.bareHanded(player);
+        if (technique.art().equals(MartialArts.OVERLORD_SPEAR)) return OverlordSpear.holdsSpear(player);
         return true;
     }
 
@@ -39,7 +40,8 @@ final class Techniques {
         if (patch == null) return false;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
         if (patch.getEntityState().inaction() && !(counter && AzureCloudSword.inGuardMotion(patch)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)
-                && !(technique == MartialArts.SEVERING_FLASH && ThunderSaberMoves.charging(player))) return false;
+                && !(technique == MartialArts.SEVERING_FLASH && ThunderSaberMoves.charging(player))
+                && !(technique == MartialArts.TYRANTS_THRUST && OverlordSpear.charging(player))) return false;
         if (technique.art().equals(MartialArts.AZURE_CLOUD_SWORD)) return AzureCloudSword.perform(player, patch, technique, riposte);
         if (technique.art().equals(MartialArts.LONG_FIST)) return LongFist.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.SANGUINE_ART)) return SanguineArt.perform(player, patch, technique);
@@ -50,6 +52,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.THUNDER_SABER)) return ThunderSaberMoves.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.MAJIN_FIST)) return MajinFistArt.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.OVERLORD_SPEAR)) return OverlordSpear.perform(player, patch, technique);
         return false;
     }
 }
