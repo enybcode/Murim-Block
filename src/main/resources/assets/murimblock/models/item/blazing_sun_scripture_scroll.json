@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "murimblock:item/blazing_sun_scripture_scroll"
+  }
+}

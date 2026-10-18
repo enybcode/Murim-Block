@@ -89,6 +89,11 @@ public final class MurimProfileScreen extends Screen {
     private int pointerY;
     private Component hoveredText;
     private boolean settingsMode;
+    /** Cultivation: the methods' view (opened from the method's pill), the method shown, and what can be clicked in it. */
+    private boolean methodsMode;
+    private com.murimblock.cultivation.CultivationMethod shownMethod;
+    private Box methodPill, methodBack, methodPractise;
+    private final List<Map.Entry<Box, com.murimblock.cultivation.CultivationMethod>> methodRows = new java.util.ArrayList<>();
 
     public MurimProfileScreen() { super(label("title")); }
     public static MurimProfileScreen techniques() {
@@ -99,6 +104,13 @@ public final class MurimProfileScreen extends Screen {
     public static MurimProfileScreen cultivation() {
         MurimProfileScreen screen = new MurimProfileScreen();
         screen.page = Page.CULTIVATION;
+        return screen;
+    }
+    /** The Cultivation tab open on its methods (tours). */
+    public static MurimProfileScreen methods(com.murimblock.cultivation.CultivationMethod shown) {
+        MurimProfileScreen screen = cultivation();
+        screen.methodsMode = true;
+        screen.shownMethod = shown;
         return screen;
     }
     public static MurimProfileScreen info() {
@@ -123,6 +135,7 @@ public final class MurimProfileScreen extends Screen {
             button(layout.tab(target), () -> label("tab." + target.id), () -> {
                 page = target;
                 settingsMode = false;
+                methodsMode = false;
                 rebuildWidgets();
             }, false);
         }
@@ -691,6 +704,32 @@ public final class MurimProfileScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (page == Page.CULTIVATION && minecraft != null && minecraft.player != null) {
+            int mx = (int) mouseX - left, my = (int) mouseY - top;
+            if (!methodsMode && methodPill != null && methodPill.contains(mx, my)) {
+                methodsMode = true;
+                shownMethod = com.murimblock.cultivation.MethodService.method(minecraft.player);
+                return true;
+            }
+            if (methodsMode) {
+                for (Map.Entry<Box, com.murimblock.cultivation.CultivationMethod> row : methodRows) {
+                    if (row.getKey().contains(mx, my)) {
+                        shownMethod = row.getValue();
+                        return true;
+                    }
+                }
+                if (methodBack != null && methodBack.contains(mx, my)) {
+                    methodsMode = false;
+                    return true;
+                }
+                if (methodPractise != null && methodPractise.contains(mx, my) && shownMethod != null
+                        && com.murimblock.cultivation.MethodService.data(minecraft.player).knows(shownMethod)
+                        && shownMethod != com.murimblock.cultivation.MethodService.method(minecraft.player)) {
+                    PacketDistributor.sendToServer(new com.murimblock.network.CultivationPayloads.PractiseMethod(shownMethod.id()));
+                    return true;
+                }
+            }
+        }
         if (page == Page.TECHNIQUES && minecraft != null && minecraft.player != null) {
             int mx = (int) mouseX - left, my = (int) mouseY - top;
             for (Map.Entry<Box, ResourceLocation> cover : covers) {
@@ -752,10 +791,17 @@ public final class MurimProfileScreen extends Screen {
     // ---------------------------------------------------------------- Cultivation and Info
 
     private void renderCultivation(GuiGraphics g, Player player, CultivationSnapshot cultivation, double qi, double qiMax) {
+        methodRows.clear();
+        methodPill = methodBack = methodPractise = null;
+        if (methodsMode) {
+            renderMethods(g, player);
+            return;
+        }
         section(g, REALM_LABEL, label("cultivation.current"));
         text(g, realm(cultivation), layout.text(page, REALM), GOLD_LIGHT, false, 2);
         text(g, STAGE, label("cultivation.stage", stage(cultivation)));
         stagePips(g, cultivation.stageId());
+        methodPill(g, player);
         section(g, NEXT_LABEL, label("cultivation.next_stage"));
         var next = MurimblockApi.cultivation().getNextCultivation(player);
         text(g, NEXT_REALM, next.map(MurimProfileScreen::realm).orElseGet(() -> label("cultivation.complete")));
@@ -826,6 +872,89 @@ public final class MurimProfileScreen extends Screen {
                     Math.round(bonuses.damage() * 100), Math.round(bonuses.fist())), INK_SOFT);
         }
     }
+    /**
+     * The method practised, as a pill beside the stage marks, edged in its colour: what it gives here on hover; a click
+     * opens the methods.
+     */
+    private void methodPill(GuiGraphics g, Player player) {
+        var data = com.murimblock.cultivation.MethodService.data(player);
+        var method = data.method();
+        Box stage = layout.text(page, STAGE);
+        Box pill = new Box(layout.stagePips.right() + 8, layout.stagePips.y() - 3, stage.right() - layout.stagePips.right() - 8, 11);
+        methodPill = pill;
+        boolean hot = pill.contains(pointerX, pointerY);
+        fill(g, pill, hot ? SELECTED : TRACK);
+        outline(g, pill, 0xFF000000 | method.colour);
+        text(g, Component.translatable(method.key()), new Box(pill.x() + 2, pill.y() + 2, pill.width() - 4, 9), INK_SOFT, true, 1);
+        if (hot) hoveredText = Component.translatable(method.key()).append(" - ")
+                .append(label("cultivation.method.here", QiFormat.format(com.murimblock.cultivation.MethodService.factor(player))));
+    }
+
+    /**
+     * The methods: on the left every method (known in ink with its colour, the others "???"), the one practised framed in
+     * gold; on the right the one shown: its level, how it cultivates, its effect, what it gives here, and the seal that
+     * practises it (a change puts the Qi out of tune for a day).
+     */
+    private void renderMethods(GuiGraphics g, Player player) {
+        var data = com.murimblock.cultivation.MethodService.data(player);
+        if (shownMethod == null) shownMethod = data.method();
+        Box list = layout.panels(page).get(0), detail = layout.panels(page).get(1);
+        int lx = list.x() + 6, lw = list.width() - 12;
+        section(g, new Box(lx, list.y() + 6, lw, 9), label("cultivation.methods"));
+        var methods = com.murimblock.cultivation.CultivationMethod.values();
+        for (int i = 0; i < methods.length; i++) {
+            var m = methods[i];
+            boolean known = data.knows(m);
+            Box row = new Box(lx, list.y() + 22 + i * 17, lw, 15);
+            methodRows.add(Map.entry(row, m));
+            if (m == shownMethod) fill(g, row, SELECTED);
+            if (m == data.method()) outline(g, row, GOLD);
+            else if (row.contains(pointerX, pointerY)) outline(g, row, PAPER_LINE);
+            fill(g, new Box(row.x() + 4, row.y() + 5, 5, 5), known ? 0xFF000000 | m.colour : PAPER_LINE);
+            text(g, new Box(row.x() + 13, row.y() + 4, row.width() - 16, 9), known ? Component.translatable(m.key()) : Component.literal("???"), known ? INK : MUTED);
+        }
+        methodBack = new Box(lx, list.bottom() - 20, 52, 14);
+        outline(g, methodBack, methodBack.contains(pointerX, pointerY) ? GOLD : PAPER_LINE);
+        text(g, label("cultivation.method.back"), new Box(methodBack.x() + 2, methodBack.y() + 3, methodBack.width() - 4, 9), INK_SOFT, true, 1);
+
+        var m = shownMethod;
+        boolean known = data.knows(m);
+        int rx = detail.x() + 6, rw = detail.width() - 12, y = detail.y() + 6;
+        text(g, known ? Component.translatable(m.key()) : Component.literal("???"), new Box(rx, y, rw, 9), known ? GOLD_LIGHT : MUTED, false, 1);
+        fill(g, new Box(rx, y + 11, 18, 1), 0xFF000000 | m.colour);
+        int level = com.murimblock.cultivation.MethodService.level(player);
+        // Its level on the left; on the right, what it gives where one stands.
+        Component here = label("cultivation.method.here_short", QiFormat.format(m.factor(player)));
+        int hereWidth = font.width(Component.literal(here.getString()).withStyle(GUI_TEXT_STYLE));
+        text(g, new Box(rx, y + 15, rw - hereWidth - 4, 9), m == com.murimblock.cultivation.CultivationMethod.ORDINARY_BREATH ? Component.translatable(m.key() + ".place")
+                : level > 0 ? label("cultivation.method.level", level) : label("cultivation.method.level0"), MUTED);
+        if (!known) {
+            text(g, new Box(rx, y + 30, rw, 9), label("cultivation.method.unknown"), MUTED);
+            return;
+        }
+        text(g, new Box(rx + rw - hereWidth, y + 15, hereWidth, 9), here, GOLD);
+        section(g, new Box(rx, y + 30, rw, 9), label("cultivation.method.cultivates"));
+        text(g, new Box(rx, y + 42, rw, 18), Component.translatable(m.key() + ".cultivates"), INK);
+        section(g, new Box(rx, y + 62, rw, 9), label("cultivation.method.effect"));
+        text(g, new Box(rx, y + 74, rw, 27), Component.translatable(m.key() + ".effect"), INK);
+        long now = player.level().getGameTime();
+        boolean practised = m == data.method();
+        methodPractise = new Box(rx, detail.bottom() - 20, rw, 14);
+        if (practised) {
+            if (data.discordAt(now)) text(g, new Box(rx, methodPractise.y() - 11, rw, 9),
+                    label("cultivation.method.discord", (data.discordUntil() - now + 1199) / 1200), SEAL);
+            fill(g, methodPractise, FRAME);
+            outline(g, methodPractise, GOLD_DARK);
+            text(g, label("cultivation.method.practised"), new Box(methodPractise.x() + 2, methodPractise.y() + 3, methodPractise.width() - 4, 9), GOLD_LIGHT, true, 1);
+        } else {
+            boolean hot = methodPractise.contains(pointerX, pointerY);
+            fill(g, methodPractise, SEAL);
+            outline(g, methodPractise, hot ? GOLD_LIGHT : GOLD);
+            text(g, label("cultivation.method.practise"), new Box(methodPractise.x() + 2, methodPractise.y() + 3, methodPractise.width() - 4, 9), SEAL_TEXT, true, 1);
+            if (hot) hoveredText = label("cultivation.method.change");
+        }
+    }
+
     /** Early, Middle, Late, Peak as four marks; reached stages are red seals. */
     private void stagePips(GuiGraphics g, String stageId) {
         int reached = CultivationStage.bySerializedName(stageId).map(Enum::ordinal).orElse(-1);

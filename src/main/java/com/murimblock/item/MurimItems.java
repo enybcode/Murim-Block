@@ -336,6 +336,14 @@ public final class MurimItems {
     public static final DeferredItem<MartialManualItem> DEVOURING_DEMON_SCROLL = ITEMS.register("devouring_demon_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.DEVOURING_DEMON));
 
+    /** The cultivation methods' scrolls (CultivationMethod): where each is found is still to decide. */
+    public static final DeferredItem<com.murimblock.cultivation.MethodScrollItem> AZURE_SKY_BREATHING_SCROLL = ITEMS.register("azure_sky_breathing_scroll",
+            () -> new com.murimblock.cultivation.MethodScrollItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), com.murimblock.cultivation.CultivationMethod.AZURE_SKY_BREATHING));
+    public static final DeferredItem<com.murimblock.cultivation.MethodScrollItem> FROST_LOTUS_HEART_SCROLL = ITEMS.register("frost_lotus_heart_scroll",
+            () -> new com.murimblock.cultivation.MethodScrollItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), com.murimblock.cultivation.CultivationMethod.FROST_LOTUS_HEART));
+    public static final DeferredItem<com.murimblock.cultivation.MethodScrollItem> BLAZING_SUN_SCRIPTURE_SCROLL = ITEMS.register("blazing_sun_scripture_scroll",
+            () -> new com.murimblock.cultivation.MethodScrollItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), com.murimblock.cultivation.CultivationMethod.BLAZING_SUN_SCRIPTURE));
+
     /** Elixirs of cultivation (docs/cultivation/qi-cultivation.md), made from the flora of the Murim lands. */
     public static final DeferredItem<com.murimblock.cultivation.PillItem> QI_GATHERING_PILL = ITEMS.register("qi_gathering_pill",
             () -> new com.murimblock.cultivation.PillItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON),
@@ -413,6 +421,9 @@ public final class MurimItems {
                         output.accept(MAJIN_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());
                         output.accept(DEVOURING_DEMON_SCROLL.get());
+                        output.accept(AZURE_SKY_BREATHING_SCROLL.get());
+                        output.accept(FROST_LOTUS_HEART_SCROLL.get());
+                        output.accept(BLAZING_SUN_SCRIPTURE_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());
                         // The alchemy: the pill furnace, its manual and scrolls, its pills (docs/cultivation/alchemy.md).

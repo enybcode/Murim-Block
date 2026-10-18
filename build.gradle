@@ -142,6 +142,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the cultivation methods in the Cultivation tab (see MethodsTour).
+        methodsTour {
+            client()
+            gameDirectory = project.file('build/methods-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.methodsTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at Qi vision through walls (see QiThroughWallsTour).
         qiThroughWallsTour {
             client()

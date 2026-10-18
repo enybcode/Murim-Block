@@ -134,7 +134,8 @@ public final class MeditationService {
         if (CultivationRules.atBottleneck(data, qiMax)) return;
         long now = player.level().getGameTime();
         CultivationJournal journal = CultivationService.journal(player);
-        double amount = CultivationRules.condensed(qiMax, data.realm(), CultivationService.placeOf(player), journal.condensedOn(now), ticks);
+        // The method practised: more in its element's places, half while out of tune after a change.
+        double amount = CultivationRules.condensed(qiMax, data.realm(), CultivationService.placeOf(player), journal.condensedOn(now), ticks) * MethodService.factor(player);
         CultivationService.setJournal(player, journal.condensed(now, ticks));
         CultivationService.gainQiMax(player, amount, CultivationService.Source.MEDITATION);
     }

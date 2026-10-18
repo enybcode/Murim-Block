@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 33: the cultivation methods (one practised, chosen in the Cultivation tab).
      * 32: Qi vision's hidden (the trails of the powerful).
      * 31: Qi vision's vital points (lit after a perfect parry, struck).
      * 30: the Overlord Spear's flashes of blood red and gold.
@@ -19,7 +20,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "32";
+    private static final String NETWORK_VERSION = "33";
 
     private MurimblockNetworking() {
     }
@@ -31,6 +32,7 @@ public final class MurimblockNetworking {
         registrar.playToServer(CultivationPayloads.Absorb.TYPE, CultivationPayloads.Absorb.STREAM_CODEC, CultivationPayloads.Absorb::handle);
         registrar.playToServer(CultivationPayloads.Leap.TYPE, CultivationPayloads.Leap.STREAM_CODEC, CultivationPayloads.Leap::handle);
         registrar.playToServer(CultivationPayloads.Sense.TYPE, CultivationPayloads.Sense.STREAM_CODEC, CultivationPayloads.Sense::handle);
+        registrar.playToServer(CultivationPayloads.PractiseMethod.TYPE, CultivationPayloads.PractiseMethod.STREAM_CODEC, CultivationPayloads.PractiseMethod::handle);
         // Conversations: a page shown, an answer chosen.
         registrar.playToClient(DialoguePayloads.Page.TYPE, DialoguePayloads.Page.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.DialogueScreen.open(payload));

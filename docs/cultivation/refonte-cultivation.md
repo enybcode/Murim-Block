@@ -34,6 +34,10 @@ romans.
 
 ## 2. Les méthodes de cultivation (心法)
 
+> **Fait le 18/10** (`CultivationMethod`, voir qi-cultivation.md) : Ordinary Breath, Azure Sky Breathing, Frost Lotus
+> Heart et Blazing Sun Scripture, leurs trois niveaux, la vue des méthodes dans l'onglet Cultivation, le désaccord d'une
+> journée. Pas encore : Blood Refining Canon, l'aura colorée par l'affinité, les lieux des rouleaux (à décider).
+
 **Ce ne sont pas des arts martiaux.** Une méthode change la façon de cultiver. On n'en pratique qu'une à la fois, dans une
 case de l'onglet Cultivation, comme le style principal. On les trouve comme les arts : chez un marchand, lâchées par un
 boss, ou dans un lieu précis.

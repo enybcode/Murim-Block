@@ -64,6 +64,19 @@ public final class CultivationPayloads {
         }
     }
 
+    /** Client: practise this known cultivation method (from the Cultivation tab). */
+    public record PractiseMethod(String method) implements CustomPacketPayload {
+        public static final Type<PractiseMethod> TYPE = new Type<>(id("practise_method"));
+        public static final StreamCodec<ByteBuf, PractiseMethod> STREAM_CODEC = ByteBufCodecs.stringUtf8(64).map(PractiseMethod::new, PractiseMethod::method);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(PractiseMethod payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player)
+                com.murimblock.cultivation.CultivationMethod.byId(payload.method).ifPresent(m -> com.murimblock.cultivation.MethodService.practise(player, m));
+        }
+    }
+
     /** Client: the Qi Sense key held down (true) or let go. */
     public record Sense(boolean active) implements CustomPacketPayload {
         public static final Type<Sense> TYPE = new Type<>(id("qi_sense"));

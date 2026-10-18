@@ -53,6 +53,22 @@ C'est la charge de Qi actuelle, renommée à l'écran « Meditate » (l'identifi
 
 ### La condensation
 
+- **Les méthodes de cultivation** (心法, 18/10/2026, `CultivationMethod`, `MethodService`, `MethodData`) : on en pratique une à la fois ;
+  elle multiplie ce que la méditation condense selon le lieu, et donne un petit effet qui grandit à ses trois niveaux
+  (Qi Condensation, Foundation Establishment, Nascent Soul) :
+  - **Ordinary Breath** : connue au départ, ×1 partout, aucun effet ;
+  - **Azure Sky Breathing** (vent) : ×1,4 dès y 100 sous le ciel ouvert ; +15/25/35 % de Qi régénéré hors combat ;
+  - **Frost Lotus Heart** (glace) : ×1,5 au froid (neige, Tianshan, Kunlun) ; un coup reçu au corps à corps ralentit
+    l'attaquant 1/1,5/2 s (au plus toutes les 8 s) ;
+  - **Blazing Sun Scripture** (feu) : ×1,5 de jour sous le soleil ; dès Foundation, 10 puis 15 % des coups enflamment
+    3 puis 4 s.
+  - On l'apprend en lisant son rouleau (consommé) ; **où trouver les rouleaux reste à décider** (pour l'instant
+    l'onglet créatif seulement).
+  - Dans l'onglet Cultivation, une pastille près des marques de stade montre la méthode pratiquée (son gain ici au
+    survol) ; un clic ouvre la vue des méthodes (les inconnues en « ??? », le détail, le bouton Practise).
+  - **Changer** désaccorde le Qi une journée Minecraft (24 000 ticks) : la méditation condense moitié moins.
+  - Paquet `PractiseMethod` (protocole 33). Test `CultivationGameTests`, film `runMethodsTour`.
+
 - **Le gain** : 1,2 % du Qi Max par minute, multiplié par le lieu et par l'efficacité du royaume.
 - **Exemple** : à 150 de Qi Max, dans un lieu ordinaire et au 1ᵉʳ royaume, on gagne environ 1,8 Qi Max par minute.
 

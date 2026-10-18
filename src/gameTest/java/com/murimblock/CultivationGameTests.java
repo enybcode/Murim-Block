@@ -502,6 +502,44 @@ public final class CultivationGameTests {
         });
     }
 
+    // ---------------------------------------------------------------- Methods
+
+    /**
+     * Methods: Ordinary Breath from the start; an unknown method cannot be practised; a scroll's method once learned can,
+     * and the change puts the Qi out of tune (meditation halved); Frost Lotus Heart slows a melee attacker, once in a while.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_methods")
+    public static void methodsAreLearnedPractisedAndPutTheQiOutOfTune(GameTestHelper helper) {
+        com.murimblock.cultivation.MethodService.clearForTests();
+        ServerPlayer player = cultivator(helper);
+        CultivationService.setCultivation(player, CultivationRealm.QI_CONDENSATION, CultivationStage.EARLY);
+        var frost = com.murimblock.cultivation.CultivationMethod.FROST_LOTUS_HEART;
+        helper.assertTrue(com.murimblock.cultivation.MethodService.method(player) == com.murimblock.cultivation.CultivationMethod.ORDINARY_BREATH,
+                "Ordinary Breath is not practised from the start");
+        helper.assertTrue(com.murimblock.cultivation.MethodService.factor(player) == 1, "Ordinary Breath does not cultivate x1");
+        helper.assertTrue(com.murimblock.cultivation.MethodService.practise(player, frost) == com.murimblock.cultivation.MethodService.Change.UNKNOWN,
+                "An unknown method was practised");
+        ItemStack scroll = new ItemStack(MurimItems.FROST_LOTUS_HEART_SCROLL.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, scroll);
+        scroll.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(com.murimblock.cultivation.MethodService.data(player).knows(frost), "The scroll did not teach Frost Lotus Heart");
+        helper.assertTrue(player.getMainHandItem().isEmpty(), "The scroll was not used up");
+        helper.assertTrue(com.murimblock.cultivation.MethodService.practise(player, frost) == com.murimblock.cultivation.MethodService.Change.CHANGED,
+                "A known method could not be practised");
+        double expected = frost.factor(player) * com.murimblock.cultivation.MethodService.DISCORD_FACTOR;
+        helper.assertTrue(Math.abs(com.murimblock.cultivation.MethodService.factor(player) - expected) < 1e-9, "The Qi is not out of tune after a change");
+        // Struck in melee: the attacker is slowed; struck again at once, not (once every 8 s).
+        Zombie attacker = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+        player.hurt(player.damageSources().mobAttack(attacker), 1);
+        helper.assertTrue(attacker.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Frost Lotus Heart did not slow the attacker");
+        attacker.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        player.invulnerableTime = 0;
+        player.hurt(player.damageSources().mobAttack(attacker), 1);
+        helper.assertFalse(attacker.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Frost Lotus Heart slowed twice in a row");
+        com.murimblock.cultivation.MethodService.clearForTests();
+        end(helper, player);
+    }
+
     // ---------------------------------------------------------------- Qi Sense
 
     /**

@@ -29,6 +29,16 @@ public final class CultivationAttachments {
                     .build()
     );
 
+    /** The cultivation methods known and practised (MethodData): saved, kept through death, sent to the player alone. */
+    static final Supplier<AttachmentType<MethodData>> PLAYER_METHOD = ATTACHMENT_TYPES.register(
+            "player_cultivation_method",
+            () -> AttachmentType.builder(() -> MethodData.INITIAL)
+                    .serialize(MethodData.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, recipient) -> holder == recipient, MethodData.STREAM_CODEC)
+                    .build()
+    );
+
     /** Seen by every client tracking the player (meditation, aura, main style); not saved, rebuilt at login. */
     static final Supplier<AttachmentType<AuraState>> PLAYER_AURA = ATTACHMENT_TYPES.register(
             "player_aura",
