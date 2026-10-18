@@ -19,7 +19,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "32";
+    private static final String NETWORK_VERSION = "33";
 
     private MurimblockNetworking() {
     }
@@ -105,6 +105,8 @@ public final class MurimblockNetworking {
         registrar.playToClient(OverlordFlashPayload.TYPE, OverlordFlashPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.OverlordFxClient.flash(payload));
         // A kagune's blow landing (the Devouring Demon Art): its light, blood, shake and hit-stop.
+        registrar.playToClient(KaguneGrabPayload.TYPE, KaguneGrabPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.KaguneGrabs.grab(payload));
         registrar.playToClient(KaguneEruptPayload.TYPE, KaguneEruptPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.KaguneEruptions.erupt(payload));
         registrar.playToClient(KaguneImpactPayload.TYPE, KaguneImpactPayload.STREAM_CODEC,

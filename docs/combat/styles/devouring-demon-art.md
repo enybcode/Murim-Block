@@ -92,6 +92,17 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
 - **Burrow** (la même touche en forme du démon) : les scolopendres se dressent, passent par-dessus sa tête et plongent
   sous terre ; elles ressortent sous les deux ennemis les plus proches devant lui (9 blocs, 150°), se dressent (×2,0, en
   l'air, tenus 1 s) puis se recourbent vers lui. Corps : `demon_burrow`.
+- **Grapple** (touche 3, 140 Qi, 6 s) : une tentacule part haut par-dessus son épaule (une queue de scorpion) vers ce qu'il
+  regarde, jusqu'à 14 blocs, en s'étirant autant qu'il faut : un ennemi (cône de 8°, en vue) est harponné (×0,8) et ramené à
+  2 blocs devant lui ; sinon elle se plante dans le bloc visé et le tire jusque-là, sans dégâts de chute. Rien de visé :
+  rien n'est lancé. Corps : `demon_grapple`.
+- **Constrict** (la même touche en forme du démon) : une scolopendre part sur l'ennemi regardé (8 blocs, 15°) et s'enroule
+  trois fois autour de lui (`client/KaguneGrabs`) ; il est tenu sur place 2 s et broyé 4 fois (×0,6 chacune), puis
+  relâché et projeté. Corps : `demon_constrict`. Message réseau `KaguneGrabPayload` (protocole 33).
+- **Hors du corps, toujours** : chaque image, toute chaîne qui entrerait dans le corps du joueur (debout ou à quatre pattes)
+  est tournée à sa racine du plus petit angle qui la dégage, comme pour le sol (`KaguneModel.keepClear`), sauf pendant la
+  transformation où les tentacules rentrent dans son dos. Étirée loin, la chair de chaque segment est allongée pour
+  rejoindre la suivante (pas de trous).
 - **Les jaillissements** (`client/KaguneEruptions`, `network/KaguneEruptPayload`, protocole 32) : dessinés avec les chaînes
   de la kagune elle-même (`KaguneModel.drawChain`) au point dit par le serveur, au tick du coup ; le sol se brise (ses
   propres particules) au moment où elles sortent, rien d'autre. Les ralentissements « tenu » ne montrent pas de
@@ -111,14 +122,14 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
   sur la cible regardée). Film en vrai client (HUD, Lash, transformation, morsure ; jeu ralenti à 5 ticks/s pour que
   chaque tick ait son image) : `MURIM_KAGUNE=1 MURIM_KAGUNE_FILM=art gradlew -PgameTests runWeaponTour`
   (`MURIM_KAGUNE_CAM=top` : vu de dessus). Il vérifie à chaque image qu'aucun joint de la kagune (passé les 3 premiers,
-  sur son dos) n'entre dans le corps du joueur, debout pour Lash, à quatre pattes pour la morsure
+  sur son dos) n'entre dans le corps du joueur, debout ou à quatre pattes, quelle que soit la technique ou l'idle
   (`KaguneStrikes.jointsSeenInBody`).
 - **Icônes** : `scripts/worldgen/TechniqueIcons.java`, famille « demon ».
 
 ## À faire, dans l'ordre
 
 1. ~~La surcouche des deux formes~~, ~~la barre de rage dans le HUD~~, ~~la transformation et le retour~~ : faits.
-2. Les 6 autres techniques et leurs versions du démon (Grapple / Constrict, Cage / Spiral,
+2. Les 5 autres techniques et leurs versions du démon (Cage / Spiral,
    Cocoon / Carapace, Sovereign's Will / Demon's Roar, Black Lightning Mantle / Black Storm, Burst / Demon's Maw).
 3. Les M1 de chaque forme (par les tentacules, à 4 blocs) ; pour l'instant ceux d'Epic Fight à mains nues.
 4. La forme du démon ne doit plus pouvoir parer (pas encore bloqué).

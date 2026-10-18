@@ -167,8 +167,9 @@ public final class KaguneModel {
         stack.pushPose();
         apply(l, stack);
         bendAt(i, bendYaw, bendPitch, stack.last().pose());
-        float stretch = stretchOf(i);
-        if (stretch != 1) { stack.pushPose(); stack.scale(1, 1, stretch); }
+        // A segment's flesh (hung off its joint, mid-segment), far-stretched, drawn long enough to meet the next one.
+        float stretch = flesh(i) ? stretchOf(bone.parent()) : 1;
+        if (stretch != 1) { stack.pushPose(); stack.scale(1, 1, stretch > 1 ? Math.max(stretch, stretch * gapOf(i)) : stretch); }
         for (var cube : bone.cubes()) drawCube(cube, stack, out, light, overlay);
         if (stretch != 1) stack.popPose();
         for (int child : bone.children()) drawBone(child, animation, t, bendYaw, bendPitch, stack, out, light, overlay);
@@ -232,26 +233,82 @@ public final class KaguneModel {
      * clear (or, failing that, the one that lifts it most).
      */
     public void keepAboveGround(int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base, float clearance) {
+        keepClear(from, animation, t, bendYaw, bendPitch, base, clearance, null);
+    }
+
+    /**
+     * As {@link #keepAboveGround}, and out of the player's body too (Enzo, 18/10/2026: "without passing through the
+     * player"): {@code body} the box his body fills in the base's space (x0, y0, z0, x1, y1, z1), past each chain's first
+     * {@link #BODY_SKIP} joints (rooted on his back). Each chain that would dip under the ground (unless a strike drives it
+     * in) or enter the box is turned at its first joint by the least angle, either way, that clears both, or that comes
+     * nearest.
+     */
+    public void keepClear(int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base, float clearance,
+                          @javax.annotation.Nullable float[] body) {
         var a = animations.get(animation);
         for (int root : chainRoots()) {
             if (!under(root, from)) continue;
-            // A strike driving it into the ground (Impaling Thorns, Burrow): let it go under.
-            if (diving.contains(root)) { lift.remove(root); continue; }
             lift.remove(root);
+            boolean dive = diving.contains(root);
+            if (dive && body == null) continue;
             var frame = frameAbove(from, root, a, t, bendYaw, bendPitch, base);
-            if (lowest(root, a, t, bendYaw, bendPitch, frame) >= clearance) continue;
-            float best = 0, bestLow = -Float.MAX_VALUE;
+            if (miss(root, a, t, bendYaw, bendPitch, frame, clearance, body, dive) == 0) continue;
+            float best = 0, bestMiss = Float.MAX_VALUE;
             search:
             for (float step = 3; step <= 90; step += 3) {
                 for (float sign : new float[]{1, -1}) {
                     lift.put(root, step * sign);
-                    float low = lowest(root, a, t, bendYaw, bendPitch, frame);
-                    if (low >= clearance) { best = step * sign; break search; }
-                    if (low > bestLow) { bestLow = low; best = step * sign; }
+                    float m = miss(root, a, t, bendYaw, bendPitch, frame, clearance, body, dive);
+                    if (m == 0) { best = step * sign; break search; }
+                    if (m < bestMiss) { bestMiss = m; best = step * sign; }
                 }
             }
             lift.put(root, best);
         }
+    }
+
+    /** Whether bone i is shrunk out of sight now (a hidden form): nothing under it is drawn. */
+    public boolean hidden(int i, String animation, float t) {
+        float[] l = local(i, animations.get(animation), t);
+        return Math.abs(l[7]) < 0.02F && Math.abs(l[8]) < 0.02F;
+    }
+
+    /** The joints of the chain from {@code root} rooted on his back, not counted in his body. */
+    public static final int BODY_SKIP = 3;
+
+    /** How far a chain is from clear: its joints in the body, and how far it dips under the ground (0: clear). */
+    private float miss(int root, Animation a, float t, float bendYaw, float bendPitch, org.joml.Matrix4f frame, float clearance,
+                       @javax.annotation.Nullable float[] body, boolean dive) {
+        float under = dive ? 0 : Math.max(0, clearance - lowest(root, a, t, bendYaw, bendPitch, frame));
+        return under * 4 + (body == null ? 0 : inside(root, a, t, bendYaw, bendPitch, frame, body, BODY_SKIP));
+    }
+
+    /** How many joints of the chain from {@code root} (past its first {@code skip}) are in the box, from its parent's frame. */
+    private int inside(int root, Animation a, float t, float bendYaw, float bendPitch, org.joml.Matrix4f frame, float[] box, int skip) {
+        var m = new org.joml.Matrix4f(frame);
+        int n = 0, k = 0;
+        for (int i = root; i >= 0; k++) {
+            float[] l = posed(i, a, t);
+            // Shrunk out of sight (drawn back into his back, a hidden form): not there.
+            if (Math.abs(l[7]) < 0.02F && Math.abs(l[8]) < 0.02F) return n;
+            apply(l, m);
+            bendAt(i, bendYaw, bendPitch, m);
+            Vector3f at = m.transformPosition(new Vector3f());
+            if (k >= skip && at.x > box[0] && at.x < box[3] && at.y > box[1] && at.y < box[4] && at.z > box[2] && at.z < box[5]) n++;
+            int next = -1;
+            for (int c : bones.get(i).children()) if (chainSide[c] != 0) next = c;
+            i = next;
+        }
+        return n;
+    }
+
+    /** The joints of every chain under {@code from} inside the box, now (a check: the development tour). */
+    public int jointsInside(int from, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base, float[] box) {
+        var a = animations.get(animation);
+        int n = 0;
+        for (int root : chainRoots())
+            if (under(root, from)) n = Math.max(n, inside(root, a, t, bendYaw, bendPitch, frameAbove(from, root, a, t, bendYaw, bendPitch, base), box, BODY_SKIP));
+        return n;
     }
 
     // ---------------------------------------------------------------- strikes (KaguneStrikes)
@@ -296,8 +353,13 @@ public final class KaguneModel {
         if (root < 0) return;
         var keptAim = aims.remove(root);
         var keptLift = lift.remove(root);
+        // From the stack's own point: the first joint's offset from its parent cancelled.
+        var pos = bones.get(root).pos();
+        stack.pushPose();
+        stack.translate(-pos[0], -pos[1], -pos[2]);
         aim(root, 1, dir, up, curl, phase, arc, stretch, root, animation, t, 0, 0, stack.last().pose());
         draw(root, animation, t, stack, out, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        stack.popPose();
         aims.remove(root);
         if (keptAim != null) aims.put(root, keptAim);
         if (keptLift != null) lift.put(root, keptLift);
@@ -350,22 +412,35 @@ public final class KaguneModel {
         return n;
     }
 
-    /** How many joints of the chain from {@code root} (past its first {@code skip}) are inside a box of the base's space (a check). */
-    public int jointsInside(int from, int root, String animation, float t, float bendYaw, float bendPitch, org.joml.Matrix4f base,
-                            float x0, float y0, float z0, float x1, float y1, float z1, int skip) {
-        var a = animations.get(animation);
-        var m = frameAbove(from, root, a, t, bendYaw, bendPitch, base);
-        int n = 0, k = 0;
-        for (int i = root; i >= 0; k++) {
-            apply(posed(i, a, t), m);
-            bendAt(i, bendYaw, bendPitch, m);
-            Vector3f at = m.transformPosition(new Vector3f());
-            if (k >= skip && at.x > x0 && at.x < x1 && at.y > y0 && at.y < y1 && at.z > z0 && at.z < z1) n++;
-            int next = -1;
-            for (int c : bones.get(i).children()) if (chainSide[c] != 0) next = c;
-            i = next;
+
+    /** Whether bone i is a segment's flesh: hung off a chain joint, its body between that joint and the next. */
+    private boolean flesh(int i) {
+        int parent = bones.get(i).parent();
+        return chainSide[i] == 0 && parent >= 0 && chainSide[parent] != 0 && bones.get(i).name().contains("_flesh_");
+    }
+
+    /** For each segment's flesh, how much it must be drawn longer, stretched, to meet the next: its joint's spacing over its length. */
+    private float[] cover;
+
+    private float gapOf(int i) {
+        if (cover == null) {
+            cover = new float[bones.size()];
+            for (int b = 0; b < bones.size(); b++) {
+                cover[b] = 1;
+                if (!flesh(b)) continue;
+                int joint = bones.get(b).parent();
+                float spacing = 0;
+                for (int c : bones.get(joint).children()) if (chainSide[c] != 0) spacing = Math.abs(bones.get(c).pos()[2]);
+                if (spacing == 0) spacing = Math.abs(bones.get(joint).pos()[2]);
+                float lo = Float.MAX_VALUE, hi = -Float.MAX_VALUE;
+                for (var cube : bones.get(b).cubes()) {
+                    lo = Math.min(lo, cube.pos()[2] + Math.min(cube.from()[2], cube.to()[2]));
+                    hi = Math.max(hi, cube.pos()[2] + Math.max(cube.from()[2], cube.to()[2]));
+                }
+                if (spacing > 0 && hi > lo) cover[b] = Math.clamp(spacing / (hi - lo), 1, 3);
+            }
         }
-        return n;
+        return cover[i];
     }
 
     /** How much longer a chain joint's own segment is drawn now (1 off a strike). */
@@ -378,7 +453,12 @@ public final class KaguneModel {
     /** Bone i's local transform now: the animation's, or a strike's where it takes the chain over. */
     private float[] posed(int i, Animation animation, float t) {
         float[] l = local(i, animation, t);
-        if (aims.isEmpty() || chainRootOf == null || chainRootOf[i] < 0) return l;
+        if (aims.isEmpty() || chainRootOf == null) return l;
+        int parent = bones.get(i).parent();
+        if (chainRootOf[i] < 0) {
+            if (parent >= 0 && chainRootOf[parent] >= 0) l[2] *= stretchOf(parent);
+            return l;
+        }
         Aim aim = aims.get(chainRootOf[i]);
         if (aim == null) return l;
         Quaternionf target = i == chainRootOf[i] ? aim.root()

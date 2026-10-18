@@ -38,7 +38,7 @@ public final class DevouringDemonGameTests {
     private static final BlockPos CENTRE = new BlockPos(4, 1, 4);
     private static final int TRANSFORM_TICKS = (int) Math.ceil(KaguneState.TRANSFORM_SECONDS * 20) + 2;
 
-    /** A student of the art, bare-handed, combat on, facing south (+z), Lash in slot 0, Impaling Thorns in slot 1. */
+    /** A student of the art, bare-handed, combat on, facing south (+z), Lash in slot 0, Impaling Thorns in slot 1, Grapple in 2. */
     private static ServerPlayer student(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         EpicFightCombatDefaults.enforce(player);
@@ -47,6 +47,8 @@ public final class DevouringDemonGameTests {
         MartialService.assign(player, 0, MartialArts.LASH.id());
         MartialService.unlock(player, MartialArts.IMPALING_THORNS);
         MartialService.assign(player, 1, MartialArts.IMPALING_THORNS.id());
+        MartialService.unlock(player, MartialArts.GRAPPLE);
+        MartialService.assign(player, 2, MartialArts.GRAPPLE.id());
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         BlockPos p = helper.absolutePos(CENTRE);
         player.moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
@@ -238,6 +240,86 @@ public final class DevouringDemonGameTests {
                     + zombies[0].getHealth() + ", " + zombies[1].getHealth());
             helper.assertTrue(zombies[2].getHealth() == 400, "Burrow struck a third foe");
             end(helper, player, zombies);
+        });
+    }
+
+    /** A zombie that stands (no will to walk) but can be moved, at (dx, dz) from the player. */
+    private static Zombie standing(GameTestHelper helper, ServerPlayer player, double dx, double dz) {
+        Zombie zombie = dummy(helper, player, dx, dz);
+        zombie.setNoAi(false);
+        zombie.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0);
+        return zombie;
+    }
+
+    /** Grapple at a foe 8 blocks off: hooked, struck, and dragged in close to him. */
+    @GameTest(template = "spear_arena", batch = "demon_grapple")
+    public static void grapplePullsTheFoeIn(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        Zombie[] zombie = new Zombie[1];
+        int cast = 3, done = cast + DevouringDemon.GRAPPLE_HIT_TICK + DevouringDemon.GRAPPLE_PULL_TICKS;
+        ticking(helper, player, done + 2);
+        helper.runAfterDelay(cast, () -> {
+            player.teleportTo(player.getX(), player.getY(), player.getZ() - 3);
+            zombie[0] = standing(helper, player, 0, 8);
+            helper.assertTrue(MartialService.castSlot(player, 2) == MartialService.CastResult.CAST, "Grapple was not cast");
+        });
+        helper.runAfterDelay(done, () -> {
+            double d = zombie[0].distanceTo(player);
+            helper.assertTrue(zombie[0].getHealth() < 400, "The hooked foe was not struck");
+            helper.assertTrue(d < 4.5, "The foe was not dragged in: " + d + " blocks off");
+            end(helper, player, zombie[0]);
+        });
+    }
+
+    /** Grapple with no foe in sight, at a wall: the tentacle hooks into it and pulls him toward it. */
+    @GameTest(template = "spear_arena", batch = "demon_grapple_wall")
+    public static void grappleHooksTheWall(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        int cast = 3, pull = cast + DevouringDemon.GRAPPLE_HIT_TICK + 1;
+        ticking(helper, player, pull + 2);
+        helper.runAfterDelay(cast, () -> {
+            BlockPos wall = BlockPos.containing(player.getX(), player.getEyeY(), player.getZ() + 4);
+            helper.getLevel().setBlockAndUpdate(wall, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            helper.assertTrue(MartialService.castSlot(player, 2) == MartialService.CastResult.CAST, "Grapple did not hook the wall");
+        });
+        helper.runAfterDelay(pull, () -> {
+            helper.assertTrue(player.getDeltaMovement().z > 0.3, "Not pulled toward the wall: " + player.getDeltaMovement());
+            BlockPos wall = BlockPos.containing(player.getX(), player.getEyeY(), player.getZ() + 4);
+            helper.getLevel().setBlockAndUpdate(wall, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            end(helper, player);
+        });
+    }
+
+    /** Constrict, in the demon form: the foe held where it stands and crushed again and again, then thrown off. */
+    @GameTest(template = "spear_arena", batch = "demon_constrict", timeoutTicks = 260)
+    public static void constrictHoldsAndCrushes(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        int cast = 4 + TRANSFORM_TICKS, coiled = cast + DevouringDemon.CONSTRICT_HIT_TICK;
+        int early = coiled + DevouringDemon.CONSTRICT_CRUSH_EVERY / 2 + 1, late = coiled + DevouringDemon.CONSTRICT_HOLD_TICKS - 1;
+        ticking(helper, player, late + 4);
+        helper.runAfterDelay(2, () -> DevouringDemon.setFury(player, KaguneState.MAX_FURY));
+        Zombie[] zombie = new Zombie[1];
+        float[] firstCrush = new float[1];
+        double[] where = new double[3];
+        helper.runAfterDelay(cast, () -> {
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.DEMON, "Not in the demon form: " + KaguneState.of(player).form());
+            zombie[0] = standing(helper, player, 0, 4);
+            MartialService.clearCooldownsForTests(player);
+            helper.assertTrue(MartialService.castSlot(player, 2) == MartialService.CastResult.CAST, "Constrict was not cast");
+        });
+        helper.runAfterDelay(early, () -> {
+            firstCrush[0] = zombie[0].getHealth();
+            where[0] = zombie[0].getX(); where[1] = zombie[0].getY(); where[2] = zombie[0].getZ();
+            helper.assertTrue(firstCrush[0] < 400, "The coils did not crush");
+            helper.assertTrue(DevouringDemon.constricted(zombie[0]), "The foe is not held in the coils");
+        });
+        helper.runAfterDelay(late, () -> {
+            helper.assertTrue(zombie[0].getHealth() < firstCrush[0], "Crushed only once: " + zombie[0].getHealth());
+            helper.assertTrue(zombie[0].position().distanceTo(new net.minecraft.world.phys.Vec3(where[0], where[1], where[2])) < 0.5, "The held foe moved");
+        });
+        helper.runAfterDelay(late + 3, () -> {
+            helper.assertTrue(!DevouringDemon.constricted(zombie[0]), "The coils never let go");
+            end(helper, player, zombie[0]);
         });
     }
 }

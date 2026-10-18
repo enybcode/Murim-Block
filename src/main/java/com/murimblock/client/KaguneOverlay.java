@@ -118,6 +118,8 @@ public final class KaguneOverlay {
                     stack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(BEAST_LEAN));
                     stack.translate(0, -12, -2);
                 }
+                // The other form, shrunk out of sight: nothing to draw, keep clear or check.
+                if (model.hidden(bone, animation, time[0])) { stack.popPose(); continue; }
                 model.toParentAtRest(bone, stack);
                 float[] bend = KaguneTail.bend(player, partial);
                 // The same transforms from the model's own space (no camera), where the ground is at the player's feet
@@ -133,7 +135,13 @@ public final class KaguneOverlay {
                 model.toParentAtRest(bone, base);
                 // A strike under way points its chains at the foe (KaguneStrikes), before they are kept off the ground.
                 KaguneStrikes.apply(model, player, state, bone, animation, time[0], bend, base.last().pose(), partial);
-                model.keepAboveGround(bone, animation, time[0], bend[0], bend[1], base.last().pose(), GROUND_CLEARANCE);
+                // Kept above the ground and out of his body, whatever the strike or the idle (the body: KaguneStrikes).
+                boolean beast = DemonBeastClient.inBeastForm(player);
+                // In the transformation the tentacles are meant to draw back into his back: not kept out of it then.
+                float[] body = state.form() == KaguneState.Form.TRANSFORM && !beast ? null : beast ? KaguneStrikes.ON_ALL_FOURS : KaguneStrikes.STANDING;
+                model.keepClear(bone, animation, time[0], bend[0], bend[1], base.last().pose(), GROUND_CLEARANCE, body);
+                if (body != null && KaguneStrikes.checking() && player == net.minecraft.client.Minecraft.getInstance().player)
+                    KaguneStrikes.seen(beast, model.jointsInside(bone, animation, time[0], bend[0], bend[1], base.last().pose(), body));
                 model.draw(bone, animation, time[0], bend[0], bend[1], stack, out, light, OverlayTexture.NO_OVERLAY);
                 stack.popPose();
             }

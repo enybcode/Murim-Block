@@ -1160,5 +1160,9 @@
   "technique.murimblock.impaling_thorns": "Impaling Thorns",
   "technique.murimblock.impaling_thorns.desc": "Your tentacles drive into the ground in front of you, and a heartbeat later burst out as thorns under the foe you look at, up to 12 blocks away: whoever still stands there is impaled, thrown up and held fast. In the demon form, this key is Burrow.",
   "technique.murimblock.burrow": "Burrow",
-  "technique.murimblock.burrow.desc": "The demon form's Impaling Thorns: your centipedes dive into the ground and burst out under the two nearest foes in front of you, up to 9 blocks away, rearing up and coming down on them."
+  "technique.murimblock.burrow.desc": "The demon form's Impaling Thorns: your centipedes dive into the ground and burst out under the two nearest foes in front of you, up to 9 blocks away, rearing up and coming down on them.",
+  "technique.murimblock.grapple": "Grapple",
+  "technique.murimblock.grapple.desc": "A tentacle shoots at what you look at, up to 14 blocks away. A foe is hooked and dragged in to just in front of you; anything else, it hooks into and pulls you there, and the fall it saves you never hurts. In the demon form, this key is Constrict.",
+  "technique.murimblock.constrict": "Constrict",
+  "technique.murimblock.constrict.desc": "The demon form's Grapple: a centipede shoots at the foe you look at, up to 8 blocks away, and coils three times round it. It is held fast for two seconds, crushed four times, then thrown off."
 }
