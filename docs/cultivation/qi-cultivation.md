@@ -67,7 +67,7 @@ C'est la charge de Qi actuelle, renommée à l'écran « Meditate » (l'identifi
   - Dans l'onglet Cultivation, une pastille près des marques de stade montre la méthode pratiquée (son gain ici au
     survol) ; un clic ouvre la vue des méthodes (les inconnues en « ??? », le détail, le bouton Practise).
   - **Changer** désaccorde le Qi une journée Minecraft (24 000 ticks) : la méditation condense moitié moins.
-  - Paquet `PractiseMethod` (protocole 33). Test `CultivationGameTests`, film `runMethodsTour`.
+  - Paquet `PractiseMethod` (protocole 34). Test `CultivationGameTests`, film `runMethodsTour`.
 
 - **Le gain** : 1,2 % du Qi Max par minute, multiplié par le lieu et par l'efficacité du royaume.
 - **Exemple** : à 150 de Qi Max, dans un lieu ordinaire et au 1ᵉʳ royaume, on gagne environ 1,8 Qi Max par minute.

@@ -5,7 +5,8 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
-     * 33: the cultivation methods (one practised, chosen in the Cultivation tab).
+     * 34: the cultivation methods (one practised, chosen in the Cultivation tab).
+     * 33: the Devouring Demon Art's Grapple and Constrict.
      * 32: Qi vision's hidden (the trails of the powerful).
      * 31: Qi vision's vital points (lit after a perfect parry, struck).
      * 30: the Overlord Spear's flashes of blood red and gold.
@@ -20,7 +21,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "33";
+    private static final String NETWORK_VERSION = "34";
 
     private MurimblockNetworking() {
     }
