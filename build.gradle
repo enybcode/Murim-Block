@@ -305,6 +305,14 @@ neoForge {
             systemProperty 'murimblock.murimMapTour', 'true'
             disableIdeRun()
         }
+        // The martial arts' inner worlds (InnerWorldsTour).
+        innerWorldsTour {
+            client()
+            gameDirectory = project.file('build/inner-worlds-tour-run')
+            programArguments.addAll('--width', '1600', '--height', '900')
+            systemProperty 'murimblock.innerWorldsTour', 'true'
+            disableIdeRun()
+        }
         // The pill furnace at work (FurnaceTour).
         furnaceTour {
             client()

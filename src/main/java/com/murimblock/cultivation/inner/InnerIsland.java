@@ -1,6 +1,5 @@
 package com.murimblock.cultivation.inner;
 
-import com.murimblock.martial.MartialArts;
 import com.murimblock.world.block.MurimBlocks;
 import com.murimblock.world.structure.kit.BuildKit;
 import com.murimblock.world.structure.kit.RoofTiles;
@@ -24,8 +23,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * <ul>
  *   <li>its size and what grows on it follow the realm: a bare rock in the mist at Qi Sensing, a pond from Qi Guiding,
  *   pines from Qi Condensation, floating stones around from Qi Liquefaction, a golden core above from Core Formation;</li>
- *   <li>its ground and furniture follow the main style: a sea of clouds and a pavilion for the Azure Cloud Sword, a
- *   stone training yard with wooden dummies for the Long Fist;</li>
+ *   <li>its ground, stone, trees, water and landmarks follow the main style and its element, one world per martial
+ *   art (InnerTheme, InnerWorlds; Enzo 19/10/2026): a sea of clouds and a pavilion for the Azure Cloud Sword, a
+ *   training yard for the Long Fist, a bell tower for the Golden Bell, a storm for the Thunder Saber...;</li>
  *   <li>a stele stands round the meditation platform for each art learned, and each failed great breakthrough leaves a
  *   crack across the ground (the red mist of an unstable foundation is drawn by the client).</li>
  * </ul>
@@ -71,25 +71,30 @@ public final class InnerIsland {
     public static Layout build(ServerLevel level, BlockPos centre, Look look, int oldRadius) {
         int cx = centre.getX(), cz = centre.getZ();
         // Load the chunks first (empty: the inner world generates nothing).
-        int reach = Math.max(oldRadius, look.radius()) + 12;
+        // The themes' landmarks reach beyond the island (peaks, floating blocks, the demon's eye).
+        int reach = Math.max(oldRadius, look.radius()) + 30;
         for (int x = cx - reach; x <= cx + reach; x += 16) for (int z = cz - reach; z <= cz + reach; z += 16) level.getChunk(x >> 4, z >> 4);
         BuildKit kit = new BuildKit(level, cx, cz);
         if (oldRadius > 0) {
-            int r = oldRadius + 10;
-            kit.fillRel(-r, GROUND - 45, -r, r, GROUND + 16, r, Blocks.AIR.defaultBlockState());
+            int r = oldRadius + 28;
+            kit.fillRel(-r, GROUND - 45, -r, r, GROUND + 30, r, Blocks.AIR.defaultBlockState());
         }
         int radius = look.radius();
-        boolean azure = look.mainArt().filter(MartialArts.AZURE_CLOUD_SWORD::equals).isPresent();
-        boolean fist = look.mainArt().filter(MartialArts.LONG_FIST::equals).isPresent();
-        rock(kit, radius, fist);
+        InnerTheme theme = InnerTheme.of(look.mainArt());
+        boolean azure = theme == InnerTheme.AZURE_CLOUD, fist = theme == InnerTheme.LONG_FIST;
+        rock(kit, radius, theme);
         if (azure) clouds(kit, radius);
         platform(kit);
-        if (look.realm() >= 1) pond(kit, radius);
-        if (look.realm() >= 2) pines(kit, radius);
-        if (look.realm() >= 3) floatingStones(kit, radius);
+        if (look.realm() >= 1 && InnerWorlds.pond(theme)) pond(kit, radius, theme == InnerTheme.GOLDEN_BELL);
+        if (look.realm() >= 2) {
+            if (theme == InnerTheme.PLAIN || azure) pines(kit, radius);
+            else InnerWorlds.trees(kit, theme, radius);
+        }
+        if (look.realm() >= 3) floatingStones(kit, radius, InnerWorlds.floating(theme));
         if (look.realm() >= 6) core(kit);
         if (azure) pavilion(kit, radius);
         if (fist) dummies(kit, radius);
+        InnerWorlds.landmarks(kit, theme, radius);
         steles(level, kit, centre, look.arts());
         cracks(kit, radius, look.failures());
         lights(level, kit, centre, radius);
@@ -100,21 +105,21 @@ public final class InnerIsland {
         return block.defaultBlockState();
     }
 
-    /** The floating rock: a ground of grass (stone flags in a yard), earth under it, then stone tapering to a point. */
-    private static void rock(BuildKit kit, int radius, boolean yard) {
+    /** The floating rock: its theme's ground, two layers of soil under it, then its stone tapering to a point. */
+    private static void rock(BuildKit kit, int radius, InnerTheme theme) {
         for (int x = -radius - 3; x <= radius + 3; x++) for (int z = -radius - 3; z <= radius + 3; z++) {
             double d = Math.hypot(x, z);
             double edge = radius + (noise(x, z, 1) - 0.5) * 2.4;
-            if (d > edge) continue;
+            if (d > edge || InnerWorlds.eaten(theme, x, z, d, radius)) continue;
             int depth = (int) Math.round(2 + (edge - d) * 1.1 + noise(x, z, 2) * 3);
-            BlockState top = yard && d < radius * 0.6 ? s(Blocks.STONE_BRICKS) : noise(x, z, 3) < 0.15 ? s(Blocks.MOSS_BLOCK) : s(Blocks.GRASS_BLOCK);
+            BlockState top = InnerWorlds.top(theme, x, z, d, radius);
             kit.setRel(x, GROUND, z, top);
             for (int y = 1; y <= depth; y++) {
-                BlockState under = y <= 2 ? s(Blocks.DIRT) : noise(x, z + y, 4) < 0.25 ? s(MurimBlocks.MOSSY_KARST_LIMESTONE.get()) : s(MurimBlocks.KARST_LIMESTONE.get());
+                BlockState under = y <= 2 ? InnerWorlds.soil(theme) : InnerWorlds.rock(theme, noise(x, z + y, 4) < 0.25);
                 kit.setRel(x, GROUND - y, z, under);
             }
             // Short grass and ferns here and there.
-            if (top.is(Blocks.GRASS_BLOCK) && d > 3.5 && noise(x, z, 5) < 0.18) kit.setRel(x, GROUND + 1, z, s(Blocks.SHORT_GRASS));
+            if (top.is(Blocks.GRASS_BLOCK) && InnerWorlds.grassy(theme) && d > 3.5 && noise(x, z, 5) < 0.18) kit.setRel(x, GROUND + 1, z, s(Blocks.SHORT_GRASS));
         }
     }
 
@@ -128,7 +133,7 @@ public final class InnerIsland {
         }
     }
 
-    private static void pond(BuildKit kit, int radius) {
+    private static void pond(BuildKit kit, int radius, boolean lotus) {
         int px = (int) Math.round(radius * 0.5), pz = (int) Math.round(radius * 0.35);
         for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++) {
             if (Math.hypot(x, z) > 1.8) continue;
@@ -136,8 +141,8 @@ public final class InnerIsland {
             kit.setRel(px + x, GROUND, pz + z, s(Blocks.WATER));
             kit.setRel(px + x, GROUND - 1, pz + z, s(Blocks.CLAY));
         }
-        kit.setRel(px, GROUND + 1, pz + 1, s(Blocks.LILY_PAD));
-        kit.setRel(px - 1, GROUND + 1, pz - 1, s(Blocks.LILY_PAD));
+        kit.setRel(px, GROUND + 1, pz + 1, lotus ? s(MurimBlocks.LOTUS_BLOSSOM.get()) : s(Blocks.LILY_PAD));
+        kit.setRel(px - 1, GROUND + 1, pz - 1, lotus ? s(MurimBlocks.LOTUS_PAD.get()) : s(Blocks.LILY_PAD));
     }
 
     private static void pines(BuildKit kit, int radius) {
@@ -160,14 +165,14 @@ public final class InnerIsland {
         }
     }
 
-    private static void floatingStones(BuildKit kit, int radius) {
+    private static void floatingStones(BuildKit kit, int radius, BlockState[] look) {
         for (int i = 0; i < 6; i++) {
             double angle = i * Math.PI / 3 + 0.3;
             int x = (int) Math.round(Math.cos(angle) * (radius + 6)), z = (int) Math.round(Math.sin(angle) * (radius + 6));
             int y = GROUND + 2 + (int) (noise(i, 0, 7) * 5);
-            kit.fillRel(x - 1, y, z - 1, x + 1, y, z + 1, s(MurimBlocks.KARST_LIMESTONE.get()));
-            kit.setRel(x, y - 1, z, s(MurimBlocks.KARST_LIMESTONE.get()));
-            kit.setRel(x, y + 1, z, s(Blocks.MOSS_BLOCK));
+            kit.fillRel(x - 1, y, z - 1, x + 1, y, z + 1, look[0]);
+            kit.setRel(x, y - 1, z, look[0]);
+            kit.setRel(x, y + 1, z, look[1]);
         }
     }
 
