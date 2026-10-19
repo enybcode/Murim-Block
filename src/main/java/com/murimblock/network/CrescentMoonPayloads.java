@@ -12,14 +12,6 @@ public final class CrescentMoonPayloads {
     private CrescentMoonPayloads() {
     }
 
-    /** To the player: how full their moon is (Waxing Moon, 0 to 6 phases), shown by the crosshair. */
-    public record Phases(int phases) implements CustomPacketPayload {
-        public static final Type<Phases> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crescent_moon_phases"));
-        public static final StreamCodec<ByteBuf, Phases> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, Phases::phases, Phases::new);
-
-        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
-    }
-
     /**
      * To the players near: a light of moonlight there (a Photon light, {@code range} blocks wide, {@code ticks} long): a
      * flash at an impact (FLASH), the steady light of the full moon (MOONLIGHT), or night falling round the place (NIGHT:

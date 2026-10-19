@@ -13,6 +13,7 @@ import com.murimblock.martial.MartialData;
 import com.murimblock.martial.MartialService;
 import com.murimblock.martial.MartialService.CastResult;
 import com.murimblock.martial.MoonQiEntity;
+import com.murimblock.martial.ReflectionEntity;
 import com.murimblock.qi.QiService;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -36,9 +37,9 @@ import static com.murimblock.testing.GameTestPlayers.player;
 
 /**
  * The Crescent Moon Halberd (docs/combat/styles/crescent-moon-halberd.md, Enzo's choice of 19/10/2026): its scroll teaches
- * from Qi Condensation; Waxing Moon fills a phase a landed strike and, full, sends a crescent off the next; each technique
- * does what it should (the ring that slows, the hook that pulls or trips, the fan of three crescents, the mirror that
- * stops what comes from the front and sends it back, the full moon's beams on the enemies round).
+ * from Qi Condensation; Mirror Image leaves a reflection at a dodge that draws the mobs and shatters at the first blow;
+ * each technique does what it should (the twin striking from behind, the reflections bursting, the swap, the hall of
+ * four, the full moon's beams on the enemies round).
  */
 @GameTestHolder(Murimblock.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -46,17 +47,12 @@ public final class CrescentMoonGameTests {
     private CrescentMoonGameTests() { }
 
     private static final BlockPos CENTRE = new BlockPos(4, 1, 4);
-    private static final MartialArts.Technique[] ALL = {MartialArts.MOONLIT_CIRCLE, MartialArts.TIDE_HOOK, MartialArts.FALLING_CRESCENT,
-            MartialArts.MIRROR_LAKE_STANCE, MartialArts.NIGHT_OF_THE_FULL_MOON};
+    private static final MartialArts.Technique[] ALL = {MartialArts.TWIN_REFLECTION, MartialArts.SHATTERED_MIRROR, MartialArts.SWAP,
+            MartialArts.HALL_OF_MIRRORS, MartialArts.NIGHT_OF_THE_FULL_MOON};
 
     /** A student of the art, every technique on the bar (slots 0 to 4), the halberd in hand, on stone, full Qi, facing south. */
     private static ServerPlayer adept(GameTestHelper helper) {
         return adept(helper, CENTRE);
-    }
-
-    /** At the near edge of streak_arena (16 by 16), facing south across it: room for the crescents and the hook. */
-    private static ServerPlayer atTheEdge(GameTestHelper helper) {
-        return adept(helper, new BlockPos(8, 1, 1));
     }
 
     private static ServerPlayer adept(GameTestHelper helper, BlockPos at) {
@@ -99,6 +95,7 @@ public final class CrescentMoonGameTests {
     private static void end(GameTestHelper helper, ServerPlayer player, Zombie... zombies) {
         for (Zombie z : zombies) z.discard();
         helper.getLevel().getEntitiesOfClass(MoonQiEntity.class, new AABB(player.blockPosition()).inflate(120)).forEach(e -> e.discard());
+        helper.getLevel().getEntitiesOfClass(ReflectionEntity.class, new AABB(player.blockPosition()).inflate(120)).forEach(e -> e.discard());
         EpicFightBridge.patch(player).resetHolding();
         MartialCombat.clearForTests();
         cleanup(player);
@@ -120,99 +117,81 @@ public final class CrescentMoonGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "streak_arena", batch = "moon_waxing", timeoutTicks = 80)
-    public static void aLandedStrikeFillsTheMoonAndAFullMoonSendsACrescent(GameTestHelper helper) {
-        ServerPlayer player = atTheEdge(helper);
-        Zombie close = dummy(helper, player, 0, 1.6), far = dummy(helper, player, 0, 7.5);
-        EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F);
-        tickFor(helper, player, 60);
-        helper.runAfterDelay(20, () -> {
-            helper.assertTrue(CrescentMoonHalberd.phases(player) == 1, "A landed strike did not fill a phase: " + CrescentMoonHalberd.phases(player));
-            CrescentMoonHalberd.setPhasesForTests(player, CrescentMoonHalberd.PHASES);
-            EpicFightBridge.patch(player).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO2, 0.0F);
-        });
-        helper.runAfterDelay(23, () -> helper.assertTrue(CrescentMoonHalberd.phases(player) == 0, "The full moon was not spent"));
-        helper.runAfterDelay(45, () -> {
-            helper.assertTrue(far.getHealth() < 300, "The crescent did not reach 7 blocks");
-            end(helper, player, close, far);
-        });
-    }
-
-    @GameTest(template = "spear_arena", batch = "moon_circle", timeoutTicks = 80)
-    public static void moonlitCircleStrikesAllRoundAndLeavesARingThatSlows(GameTestHelper helper) {
+    @GameTest(template = "spear_arena", batch = "moon_image", timeoutTicks = 40)
+    public static void aDodgeLeavesAReflectionThatDrawsTheMobsAndShattersAtTheFirstBlow(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
-        Zombie front = dummy(helper, player, 0, 2.5), back = dummy(helper, player, 0, -2.5), standing = dummy(helper, player, 0, 4.2);
-        helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "Moonlit Circle was not cast");
-        tickFor(helper, player, 40);
-        helper.runAfterDelay(30, () -> {
-            helper.assertTrue(front.getHealth() < 300 && back.getHealth() < 300, "The turn missed someone: " + front.getHealth() + ", " + back.getHealth());
-            helper.assertTrue(CrescentMoonHalberd.ringForTests(player), "No ring on the ground");
-            helper.assertTrue(standing.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The ring did not slow who stood in it");
-            end(helper, player, front, back, standing);
-        });
+        Zombie zombie = dummy(helper, player, 0, 3);
+        zombie.setTarget(player);
+        CrescentMoonHalberd.dodgedForTests(player);
+        var reflections = CrescentMoonHalberd.reflections(player);
+        helper.assertTrue(reflections.size() == 1, "No reflection after the dodge");
+        ReflectionEntity r = reflections.get(0);
+        helper.assertTrue(zombie.getTarget() == r, "The mob did not turn on the reflection");
+        helper.assertFalse(r.hurt(player.damageSources().playerAttack(player), 4), "Its own cultivator shattered it");
+        helper.assertTrue(r.hurt(player.damageSources().mobAttack(zombie), 4) && !r.isAlive(), "A blow did not shatter it");
+        end(helper, player, zombie);
     }
 
-    @GameTest(template = "streak_arena", batch = "moon_hook", timeoutTicks = 80)
-    public static void tideHookPullsALightFoeInAndTripsAHeavyOne(GameTestHelper helper) {
-        ServerPlayer player = atTheEdge(helper);
-        Zombie light = dummy(helper, player, 0, 5.5, 20);
-        helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Tide Hook was not cast");
-        tickFor(helper, player, 60);
-        helper.runAfterDelay(24, () -> {
-            helper.assertTrue(light.getHealth() < 20, "The hook did not strike");
-            helper.assertTrue(light.distanceTo(player) < 3.2, "The light foe was not pulled in: " + light.distanceTo(player));
-            light.discard();
-            MartialService.clearCooldownsForTests(player);
-            EpicFightBridge.patch(player).playAnimationSynchronized(Animations.BIPED_IDLE, 0.0F);
-        });
-        Zombie[] heavy = new Zombie[1];
-        helper.runAfterDelay(26, () -> {
-            heavy[0] = dummy(helper, player, 0, 5.5);
-            helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Tide Hook was not cast again");
-        });
-        helper.runAfterDelay(50, () -> {
-            helper.assertTrue(heavy[0].getHealth() < 300, "The hook did not strike the heavy foe");
-            helper.assertTrue(heavy[0].distanceTo(player) > 4.5, "The heavy foe was pulled: " + heavy[0].distanceTo(player));
-            helper.assertTrue(heavy[0].hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The heavy foe was not tripped");
-            end(helper, player, heavy[0]);
-        });
-    }
-
-    @GameTest(template = "streak_arena", batch = "moon_fan", timeoutTicks = 80)
-    public static void fallingCrescentSendsThreeCrescentsInAFan(GameTestHelper helper) {
-        ServerPlayer player = atTheEdge(helper);
-        Zombie middle = dummy(helper, player, 0, 7), left = dummy(helper, player, 2.3, 7), right = dummy(helper, player, -2.3, 7);
-        helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "Falling Crescent was not cast");
-        tickFor(helper, player, 40);
-        helper.runAfterDelay(9, () -> helper.assertTrue(CrescentMoonHalberd.crescentsForTests(player) == 3, "Not three crescents: " + CrescentMoonHalberd.crescentsForTests(player)));
-        helper.runAfterDelay(30, () -> {
-            helper.assertTrue(middle.getHealth() < 300 && left.getHealth() < 300 && right.getHealth() < 300,
-                    "The fan missed someone: " + middle.getHealth() + ", " + left.getHealth() + ", " + right.getHealth());
-            end(helper, player, middle, left, right);
-        });
-    }
-
-    @GameTest(template = "spear_arena", batch = "moon_mirror", timeoutTicks = 80)
-    public static void mirrorLakeStopsWhatComesFromTheFrontAndSendsItBack(GameTestHelper helper) {
+    @GameTest(template = "spear_arena", batch = "moon_twin", timeoutTicks = 60)
+    public static void twinReflectionStrikesTheFoeFromBehindWithTheCultivator(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
-        Zombie ahead = dummy(helper, player, 0, 3), behind = dummy(helper, player, 0, -3);
-        helper.assertTrue(MartialService.aim(player, 3), "Mirror Lake Stance did not start");
-        helper.assertTrue(CrescentMoonHalberd.mirroring(player), "Not in the stance");
-        float health = player.getHealth();
-        player.invulnerableTime = 0;
-        player.hurt(helper.getLevel().damageSources().mobAttack(ahead), 4);
-        helper.assertTrue(player.getHealth() == health, "A blow from the front got through the mirror");
-        helper.assertTrue(CrescentMoonHalberd.crescentsForTests(player) == 1, "No crescent sent back");
+        Zombie foe = dummy(helper, player, 0, 2.2);
+        helper.assertTrue(MartialService.castSlot(player, 0) == CastResult.CAST, "Twin Reflection was not cast");
+        var reflections = CrescentMoonHalberd.reflections(player);
+        helper.assertTrue(reflections.size() == 1, "No reflection");
+        helper.assertTrue(reflections.get(0).getZ() > foe.getZ(), "The reflection is not behind the foe");
+        tickFor(helper, player, 20);
+        var twin = reflections.get(0);
+        helper.runAfterDelay(14, () -> {
+            helper.assertTrue(foe.getHealth() < 300, "The twin did not strike");
+            helper.assertTrue(twin.isAlive(), "The twin did not stay");
+            helper.assertTrue(MartialCombat.guardBroken(foe), "The blow from behind did not break the guard");
+            end(helper, player, foe);
+        });
+    }
+
+    @GameTest(template = "spear_arena", batch = "moon_shatter", timeoutTicks = 60)
+    public static void shatteredMirrorBurstsEveryReflectionCuttingRoundIt(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        Zombie near = dummy(helper, player, 3.5, 0.5), far = dummy(helper, player, -3.5, 0.5);
+        CrescentMoonHalberd.dodgedForTests(player);
+        var r = CrescentMoonHalberd.reflections(player).get(0);
+        r.moveTo(near.getX() - 1, near.getY(), near.getZ());
+        helper.assertTrue(MartialService.castSlot(player, 1) == CastResult.CAST, "Shattered Mirror was not cast");
         tickFor(helper, player, 30);
-        helper.runAfterDelay(10, () -> {
-            helper.assertTrue(ahead.getHealth() < 300, "The crescent sent back missed its sender");
-            player.invulnerableTime = 0;
-            player.hurt(helper.getLevel().damageSources().mobAttack(behind), 4);
-            helper.assertTrue(player.getHealth() < health, "A blow from behind was stopped");
-            helper.assertTrue(MartialService.castSlot(player, 3) == CastResult.CAST, "The stance was not let go");
-            helper.assertFalse(CrescentMoonHalberd.mirroring(player), "Still in the stance after the key was let go");
-            end(helper, player, ahead, behind);
+        helper.runAfterDelay(24, () -> {
+            helper.assertFalse(r.isAlive(), "The reflection did not burst");
+            helper.assertTrue(CrescentMoonHalberd.reflections(player).isEmpty(), "A reflection was left");
+            helper.assertTrue(near.getHealth() < far.getHealth(), "The shards did not cut round the reflection: " + near.getHealth() + ", " + far.getHealth());
+            end(helper, player, near, far);
         });
+    }
+
+    @GameTest(template = "spear_arena", batch = "moon_swap", timeoutTicks = 40)
+    public static void swapChangesPlacesWithTheNearestReflection(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        helper.assertTrue(MartialService.castSlot(player, 2) != CastResult.CAST, "Swap was cast with no reflection");
+        MartialService.clearCooldownsForTests(player);
+        CrescentMoonHalberd.dodgedForTests(player);
+        var r = CrescentMoonHalberd.reflections(player).get(0);
+        r.moveTo(player.getX() + 3, player.getY(), player.getZ());
+        var mine = player.position();
+        var theirs = r.position();
+        com.murimblock.integration.epicfight.EpicFightBridge.patch(player).playAnimationSynchronized(yesman.epicfight.gameasset.Animations.BIPED_IDLE, 0.0F);
+        helper.assertTrue(MartialService.castSlot(player, 2) == CastResult.CAST, "Swap was not cast");
+        helper.assertTrue(player.position().distanceTo(theirs) < 0.1 && r.position().distanceTo(mine) < 0.1, "They did not change places");
+        end(helper, player);
+    }
+
+    @GameTest(template = "spear_arena", batch = "moon_hall", timeoutTicks = 60)
+    public static void hallOfMirrorsSendsFourReflectionsEachAtAFoe(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        Zombie a = dummy(helper, player, 3, 3), b = dummy(helper, player, -3, 3);
+        helper.assertTrue(MartialService.castSlot(player, 3) == CastResult.CAST, "Hall of Mirrors was not cast");
+        helper.assertTrue(CrescentMoonHalberd.reflections(player).size() == 4, "Not four reflections");
+        CrescentMoonHalberd.hallStrikeForTests(player);
+        helper.assertTrue(a.getHealth() < 300 && b.getHealth() < 300, "A foe was left alone: " + a.getHealth() + ", " + b.getHealth());
+        end(helper, player, a, b);
     }
 
     @GameTest(template = "spear_arena", batch = "moon_ult", timeoutTicks = 80)

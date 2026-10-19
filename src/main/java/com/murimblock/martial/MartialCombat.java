@@ -188,6 +188,8 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), pending);
             return;
         }
+        // Mirror Image (the Crescent Moon Halberd): a dodge leaves a reflection where it began.
+        if (CrescentMoonHalberd.isDodge(animation)) CrescentMoonHalberd.dodged(player);
         // With Scarlet Tear's blood sword out, its cuts (the sword strikes) belong to the Sanguine Art.
         ResourceLocation credit = SanguineArt.holdsSword(player) ? SanguineArt.creditOf(player, animation) : null;
         if (credit != null) {
@@ -213,9 +215,7 @@ public final class MartialCombat {
         }
         credit = CrescentMoonHalberd.creditOf(player, animation);
         if (credit != null) {
-            boolean strike = CrescentMoonHalberd.isStrike(animation);
-            if (strike) CrescentMoonHalberd.strikeBegan(player);
-            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CRESCENT_MOON_HALBERD, credit, strike, false));
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CRESCENT_MOON_HALBERD, credit, CrescentMoonHalberd.isStrike(animation), false));
             return;
         }
         credit = MountainShatteringFist.creditOf(player, animation);
@@ -780,10 +780,6 @@ public final class MartialCombat {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onIncomingDamage);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onKnockBack);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onProjectileImpact);
-        // Mirror Lake Stance stops what comes from the front and sends it back as a crescent.
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, CrescentMoonHalberd::onIncomingDamage);
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, CrescentMoonHalberd::onKnockBack);
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, CrescentMoonHalberd::onProjectileImpact);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {
             if (!event.enabled()) SanguineArt.leftCombat(event.getEntity().getUUID());

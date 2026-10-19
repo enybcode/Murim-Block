@@ -1,12 +1,6 @@
-// The Crescent Moon Halberd Art's shapes of moonlight (martial/MoonQiEntity, client/MoonQiRenderer), GeckoLib models in
+// The Crescent Moon Halberd's ultimate's moonlight (martial/MoonQiEntity, client/MoonQiRenderer), GeckoLib models in
 // one shared palette texture (textures/entity/moon_qi.png, 32 x 32, a texel a colour; its _glowmask keeps what shines),
 // voxels of flat colour in the game's pixel style, and their animations (animations/moon_qi.animation.json):
-//   geo/moon_crescent.geo.json  a crescent of moonlight lying flat, its horns behind, 3 blocks across at scale 1: a white
-//                               cutting edge, pale blue flesh, a see-through sheath, drops of light trailing behind;
-//   geo/moon_ring.geo.json      Moonlit Circle's ring on the ground, 9 blocks across: a band of moon-water, a dotted
-//                               ring inside it turning the other way, a crescent sigil at the heart (spin);
-//   geo/moon_mirror.geo.json    Mirror Lake Stance's mirror, standing upright before the body: a disc of still water
-//                               ringed with silver light, a crescent in it (ripple);
 //   geo/moon_full.geo.json      the ultimate's full moon, 2 blocks across at scale 1 (made far bigger): a shell of pale
 //                               moonstone with grey seas, wrapped in a halo of light (turn);
 //   geo/moon_beam.geo.json      a beam of moonlight one block long and wide at scale 1 (stretched down to the ground).
@@ -89,65 +83,6 @@ const write = (name, bones, bounds) => {
   console.log(name, bones.reduce((n, b) => n + (b.cubes || []).length, 0), 'cubes');
 };
 
-// ---------------------------------------------------------------- the crescent, flying along +Z, horns behind
-
-{
-  const R = 24, back = { z: -11, r: 22 };
-  const inside = (x, z, grow = 0) => Math.hypot(x, z) <= R + grow && Math.hypot(x, z - back.z) > back.r - grow;
-  const body = flat(1, 26, -0.6, 0.6, (x, z) => {
-    if (!inside(x, z)) return null;
-    const toEdge = R - Math.hypot(x, z);
-    return toEdge < 1.5 ? 'edge2' : toEdge < 3 ? 'edge0' : 'flesh' + Math.max(0, Math.min(3, Math.floor(4 - toEdge / 2.2)));
-  });
-  const sheath = flat(2, 28, -1.4, 1.4, (x, z) => inside(x, z, 1.4) && !inside(x, z, -0.2) ? 'sheath1' : null);
-  const drops = [];
-  for (let i = 0; i < 9; i++) {
-    const a = (i - 4) * 0.28, r = R - 6 - (i % 3) * 3;
-    const x = Math.sin(a) * r, z = Math.cos(a) * r - 9 - (i % 2) * 4, s = 1.4 - (i % 3) * 0.35;
-    drops.push(cube(i % 2 ? 'drop2' : 'drop0', [x - s / 2, -s / 2, z - s / 2], [x + s / 2, s / 2, z + s / 2]));
-  }
-  write('moon_crescent', [{ name: 'root', pivot: [0, 0, 0], cubes: [...body, ...sheath, ...drops] }], 4);
-}
-
-// ---------------------------------------------------------------- Moonlit Circle's ring on the ground (r 72 px = 4.5 blocks)
-
-{
-  const band = flat(2, 76, 0, 0.4, (x, z) => {
-    const d = Math.hypot(x, z);
-    if (d > 70 && d <= 74) return 'silver3';
-    if (d > 64 && d <= 70) return 'water' + (Math.floor(Math.atan2(z, x) * 6) & 3);
-    return null;
-  });
-  const dots = flat(2, 60, 0.1, 0.6, (x, z) => {
-    const d = Math.hypot(x, z), a = Math.atan2(z, x);
-    return d > 52 && d <= 56 && Math.sin(a * 16) > 0.2 ? 'silver1' : null;
-  });
-  const sigil = flat(1, 18, 0.2, 0.8, (x, z) => {
-    const inMoon = Math.hypot(x, z) <= 14 && Math.hypot(x - 6, z + 3) > 12;
-    return inMoon ? (Math.hypot(x, z) > 12.5 ? 'edge2' : 'flesh2') : null;
-  });
-  write('moon_ring', [
-    { name: 'band', pivot: [0, 0, 0], cubes: band },
-    { name: 'dots', pivot: [0, 0, 0], cubes: dots },
-    { name: 'sigil', pivot: [0, 0, 0], cubes: sigil },
-  ], 10);
-}
-
-// ---------------------------------------------------------------- Mirror Lake's mirror, upright, 1.6 blocks high (r 13 px)
-
-{
-  const disc = upright(1, 14, -0.4, 0.4, (x, y) => {
-    const d = Math.hypot(x, y);
-    if (d > 13) return null;
-    if (d > 11.5) return 'silver3';
-    const inMoon = Math.hypot(x + 1, y) <= 7 && Math.hypot(x + 4, y + 1.5) > 6;
-    return inMoon ? 'edge1' : 'water' + (Math.floor(d / 3) & 3);
-  });
-  const rim = upright(1, 16, -1.0, 1.0, (x, y) => { const d = Math.hypot(x, y); return d > 13 && d <= 14.5 ? 'sheath2' : null; });
-  // Stood on its edge, its foot at the ground's height of a body's chest.
-  write('moon_mirror', [{ name: 'mirror', pivot: [0, 0, 0], cubes: [...disc, ...rim].map(c => ({ ...c, origin: [c.origin[0], c.origin[1] + 0, c.origin[2]] })) }], 3);
-}
-
 // ---------------------------------------------------------------- the full moon, a sphere of 32 px (2 blocks) across
 
 {
@@ -186,16 +121,6 @@ const write = (name, bones, bounds) => {
 const anims = {
   format_version: '1.8.0',
   animations: {
-    // Moonlit Circle: the band turns slowly one way, the dots faster the other, the sigil breathes.
-    spin: { loop: true, animation_length: 8, bones: {
-      band: { rotation: { '0.0': [0, 0, 0], '4.0': [0, -180, 0], '8.0': [0, -360, 0] } },
-      dots: { rotation: { '0.0': [0, 0, 0], '4.0': [0, 360, 0], '8.0': [0, 720, 0] } },
-      sigil: { scale: { '0.0': [1, 1, 1], '2.0': [1.12, 1, 1.12], '4.0': [1, 1, 1], '6.0': [1.12, 1, 1.12], '8.0': [1, 1, 1] } },
-    } },
-    // Mirror Lake: the water ripples (the disc swells and settles).
-    ripple: { loop: true, animation_length: 1.2, bones: {
-      mirror: { scale: { '0.0': [1, 1, 1], '0.6': [1.06, 1.06, 1], '1.2': [1, 1, 1] } },
-    } },
     // The full moon turns its face slowly, its halo the other way.
     turn: { loop: true, animation_length: 20, bones: {
       moon: { rotation: { '0.0': [0, 0, 0], '10.0': [0, 180, 0], '20.0': [0, 360, 0] } },

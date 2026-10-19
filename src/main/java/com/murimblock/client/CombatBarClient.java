@@ -99,8 +99,7 @@ public final class CombatBarClient {
     static boolean heldToAim(Optional<ResourceLocation> technique) {
         return technique.filter(id -> id.equals(MartialArts.CLOUD_STEP_SLASH.id()) || id.equals(MartialArts.BLOOD_CRYSTAL.id())
                 || id.equals(MartialArts.SPINNING_RAMPART.id()) || id.equals(MartialArts.HEAVENS_DRUM.id())
-                || id.equals(MartialArts.SEVERING_FLASH.id()) || id.equals(MartialArts.TYRANTS_THRUST.id())
-                || id.equals(MartialArts.MIRROR_LAKE_STANCE.id())).isPresent();
+                || id.equals(MartialArts.SEVERING_FLASH.id()) || id.equals(MartialArts.TYRANTS_THRUST.id())).isPresent();
     }
 
     /** How long a held technique may be held before it goes (or stops) by itself. */
@@ -110,7 +109,6 @@ public final class CombatBarClient {
         if (technique.filter(MartialArts.HEAVENS_DRUM.id()::equals).isPresent()) return MartialArts.HEAVENS_DRUM_MAX_TICKS;
         if (technique.filter(MartialArts.SEVERING_FLASH.id()::equals).isPresent()) return MartialArts.SEVERING_FLASH_MAX_CHARGE;
         if (technique.filter(MartialArts.TYRANTS_THRUST.id()::equals).isPresent()) return MartialArts.TYRANTS_THRUST_MAX_CHARGE;
-        if (technique.filter(MartialArts.MIRROR_LAKE_STANCE.id()::equals).isPresent()) return MartialArts.MIRROR_MAX_TICKS;
         return MartialArts.CLOUD_STEP_AIM_MAX_TICKS;
     }
 

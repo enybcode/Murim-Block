@@ -82,12 +82,12 @@ import javax.imageio.ImageIO;
  *   pride_of_the_sun: the passive, a fist wrapped in flame under a small sun.
  * And the Crescent Moon Halberd's, "lake night": a deep blue night over still water, a silver frame, the halberd in
  * night-blue lacquer and silver, every move in white and pale blue moonlight:
- *   moonlit_circle: the halberd swept low round a ring of moon-water on the ground, ripples going out;
- *   tide_hook: the halberd level, its crescent hooked round a dark figure drawn in toward it;
- *   falling_crescent: three crescents of light flying off in a fan;
- *   mirror_lake_stance: the halberd upright behind a disc of still water, an arrow sunk in it, a crescent going back;
+ *   twin_reflection: a dark foe between the halberd and a water-blue reflection striking it from behind;
+ *   shattered_mirror: a reflection bursting into shards of water-glass flying out all round;
+ *   swap: the halberd's bearer and a reflection, two curved arrows between them;
+ *   hall_of_mirrors: four water-blue reflections round the bearer, each pointing at a foe;
  *   night_of_the_full_moon: a great full moon over the ground, beams of moonlight falling from it (the ultimate);
- *   waxing_moon: the passive, the moon's phases filling in a row, the last full and shining.
+ *   mirror_image: the passive, a figure dodging aside, its reflection of water left where it stood.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -104,7 +104,7 @@ public class TechniqueIcons {
             "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
             "breaking_the_cauldrons", "conquerors_weight",
             "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict", "kagune_shift",
-            "moonlit_circle", "tide_hook", "falling_crescent", "mirror_lake_stance", "night_of_the_full_moon", "waxing_moon"};
+            "twin_reflection", "shattered_mirror", "swap", "hall_of_mirrors", "night_of_the_full_moon", "mirror_image"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
     static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67, MOON = 75;
 
@@ -1457,34 +1457,58 @@ public class TechniqueIcons {
         crescent(g, cx + nx * 0.4, cy + ny * 0.4, 3.0, -nx * 1.9, -ny * 1.9, MOON_WHITE);
     }
 
+    /** A small standing figure (a body, a head), its feet at (x, y), in one colour. */
+    static void figureAt(Graphics2D g, double x, double y, Color col) {
+        g.setColor(col);
+        g.fill(new Ellipse2D.Double(x - 2, y - 13, 4, 4));
+        g.fill(new Rectangle2D.Double(x - 2.5, y - 9, 5, 6));
+        g.fill(new Rectangle2D.Double(x - 2.2, y - 3, 1.8, 3));
+        g.fill(new Rectangle2D.Double(x + 0.4, y - 3, 1.8, 3));
+    }
+
+    static final Color WATER = c(110, 190, 255, 190), WATER_RIM = c(220, 240, 255), FOE = c(16, 20, 34);
+
+    /** A reflection: a figure of translucent water with a bright rim. */
+    static void reflection(Graphics2D g, double x, double y) {
+        figureAt(g, x, y, c(220, 240, 255, 110));
+        figureAt(g, x, y - 0.4, WATER);
+    }
+
     static void moon(Graphics2D g, BufferedImage img, int i) {
         moonBack(img, g);
         switch (i) {
-            case 0 -> { // Moonlit Circle: the halberd swept low round a ring of moon-water.
-                g.setColor(c(60, 120, 210, 110)); g.fill(new Ellipse2D.Double(3, 20, 26, 9));
-                g.setColor(MOON_BLUE); g.setStroke(new BasicStroke(1.2f)); g.draw(new Ellipse2D.Double(3, 20, 26, 9));
-                g.setColor(c(244, 251, 255, 120)); g.setStroke(new BasicStroke(0.7f)); g.draw(new Ellipse2D.Double(7, 22, 18, 5));
-                g.setColor(c(159, 216, 255, 160)); g.draw(new Arc2D.Double(2, 6, 28, 18, 200, 140, Arc2D.OPEN));
-                halberd(g, img, 4, 22, 27, 13);
+            case 0 -> { // Twin Reflection: the foe between the halberd and a reflection striking it from behind.
+                figureAt(g, 16, 25, FOE);
+                reflection(g, 25, 25);
+                line(g, 24, 13, 18, 18, 1.2f, WATER_RIM);
+                halberd(g, img, 1, 22, 12, 13);
+                g.setColor(c(244, 251, 255, 160)); g.draw(new Arc2D.Double(10, 8, 12, 12, 30, 120, Arc2D.OPEN));
             }
-            case 1 -> { // Tide Hook: the halberd level, its crescent round a dark figure drawn in.
-                g.setColor(c(16, 20, 34)); g.fill(new Ellipse2D.Double(23, 9, 4, 4)); g.fill(new Rectangle2D.Double(22.5, 13, 5, 9));
-                for (int k = 0; k < 3; k++) line(g, 28, 12 + k * 4, 31, 12 + k * 4, 0.8f, c(159, 216, 255, 150));
-                halberd(g, img, 2, 21, 24, 16);
+            case 1 -> { // Shattered Mirror: a reflection bursting into shards.
+                reflection(g, 16, 25);
+                double[][] shards = {{5, 8}, {27, 7}, {4, 20}, {28, 21}, {9, 3}, {23, 3}, {16, 2}, {3, 14}, {29, 14}};
+                for (double[] p : shards) {
+                    Path2D sh = new Path2D.Double();
+                    sh.moveTo(p[0], p[1]); sh.lineTo(p[0] + 2.4, p[1] + 1); sh.lineTo(p[0] + 0.6, p[1] + 2.8); sh.closePath();
+                    g.setColor(MOON_BLUE); g.fill(sh);
+                    line(g, 16, 16, p[0] + 1, p[1] + 1, 0.5f, c(220, 240, 255, 90));
+                }
+                disc(g, 16, 16, 3, c(244, 251, 255, 200));
             }
-            case 2 -> { // Falling Crescent: three crescents flying off in a fan.
-                crescent(g, 22, 8, 4.5, -2.4, 1.2, MOON_BLUE);
-                crescent(g, 25, 16, 4.5, -2.6, 0, MOON_WHITE);
-                crescent(g, 22, 24, 4.5, -2.4, -1.2, MOON_BLUE);
-                for (int k = 0; k < 3; k++) line(g, 4, 9 + k * 7, 12, 9 + k * 7.5, 0.7f, c(159, 216, 255, 120));
-                halberd(g, img, 3, 28, 13, 8);
+            case 2 -> { // Swap: the bearer and a reflection, two curved arrows between them.
+                figureAt(g, 8, 26, LACQUER);
+                line(g, 11, 14, 11, 26, 1.2f, MOON_SILVER);
+                reflection(g, 24, 26);
+                g.setColor(MOON_WHITE); g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Arc2D.Double(8, 4, 16, 10, 20, 140, Arc2D.OPEN));
+                g.draw(new Arc2D.Double(8, 12, 16, 8, 200, 140, Arc2D.OPEN));
+                line(g, 21, 6, 23, 8, 1.2f, MOON_WHITE); line(g, 23, 8, 20.5, 9, 1.2f, MOON_WHITE);
+                line(g, 11, 18, 9, 16, 1.2f, MOON_WHITE); line(g, 9, 16, 11.5, 15, 1.2f, MOON_WHITE);
             }
-            case 3 -> { // Mirror Lake Stance: the halberd upright behind a disc of water; an arrow sunk in it, a crescent going back.
-                halberd(g, img, 10, 30, 10, 2);
-                g.setColor(c(40, 90, 170, 170)); g.fill(new Ellipse2D.Double(12, 8, 13, 16));
-                g.setColor(MOON_WHITE); g.setStroke(new BasicStroke(1f)); g.draw(new Ellipse2D.Double(12, 8, 13, 16));
-                line(g, 31, 13, 24, 15, 0.8f, c(200, 180, 150)); px(img, 31, 12, c(220, 220, 220)); px(img, 31, 14, c(220, 220, 220));
-                crescent(g, 27, 24, 3.2, 1.6, -0.6, MOON_WHITE);
+            case 3 -> { // Hall of Mirrors: four reflections round the bearer.
+                figureAt(g, 16, 22, LACQUER);
+                reflection(g, 6, 16); reflection(g, 26, 16); reflection(g, 9, 30); reflection(g, 23, 30);
+                g.setColor(c(159, 216, 255, 140)); g.setStroke(new BasicStroke(0.8f)); g.draw(new Ellipse2D.Double(3, 9, 26, 20));
             }
             case 4 -> { // Night of the Full Moon: a great moon, beams falling from it.
                 disc(g, 16, 9, 7.5, c(159, 216, 255, 70));
@@ -1496,14 +1520,11 @@ public class TechniqueIcons {
                 for (double x : new double[]{6, 16, 26}) g.fill(new Ellipse2D.Double(x - 3, 27, 6, 2.4));
                 px(img, 30, 30, c(220, 60, 60));
             }
-            default -> { // Waxing Moon: the phases in a row filling, the last full.
-                for (int k = 0; k < 4; k++) {
-                    double x = 6 + k * 6.8;
-                    disc(g, x, 9, 2.8, c(30, 48, 80));
-                    if (k < 3) crescent(g, x, 9, 2.8, -(1 + k) * 1.6, 0, MOON_BLUE);
-                    else { disc(g, x, 9, 3.6, c(159, 216, 255, 90)); disc(g, x, 9, 2.8, MOON_WHITE); }
-                }
-                halberd(g, img, 3, 29, 28, 15);
+            default -> { // Mirror Image: a figure dodging aside, its reflection left where it stood.
+                reflection(g, 12, 27);
+                figureAt(g, 23, 27, LACQUER);
+                for (int k = 0; k < 3; k++) line(g, 15, 18 + k * 3, 20, 18 + k * 3, 0.8f, c(159, 216, 255, 150));
+                g.setColor(c(110, 190, 255, 120)); g.fill(new Ellipse2D.Double(6, 26, 12, 3));
             }
         }
     }

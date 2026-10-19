@@ -51,9 +51,8 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 /**
  * Development-only real-client film of the Crescent Moon Halberd (gradlew -PgameTests runCrescentMoonTour): at night, the
- * halberd in hand, zombies before it; the passive's crescent off a full moon, Moonlit Circle and its ring, Tide Hook,
- * Falling Crescent's fan, Mirror Lake Stance sending a blow back, filmed from the side, then the full moon filmed from
- * afar. Its moonlight is GeckoLib's models and Photon's lights. Report in crescent-moon-tour-report.txt, frames in
+ * halberd in hand, zombies before it; Mirror Image's reflection at a dodge, Twin Reflection, Shattered Mirror, Swap and
+ * Hall of Mirrors filmed from the side, then the full moon filmed from afar (GeckoLib's moon, Photon's lights). Report in crescent-moon-tour-report.txt, frames in
  * build/crescent-moon-tour-run/screenshots.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -100,8 +99,8 @@ public final class CrescentMoonTour {
         }
     }
 
-    private static final MartialArts.Technique[] ALL = {MartialArts.MOONLIT_CIRCLE, MartialArts.TIDE_HOOK, MartialArts.FALLING_CRESCENT,
-            MartialArts.MIRROR_LAKE_STANCE, MartialArts.NIGHT_OF_THE_FULL_MOON};
+    private static final MartialArts.Technique[] ALL = {MartialArts.TWIN_REFLECTION, MartialArts.SHATTERED_MIRROR, MartialArts.SWAP,
+            MartialArts.HALL_OF_MIRRORS, MartialArts.NIGHT_OF_THE_FULL_MOON};
 
     private static void cast(MinecraftServer server, int slot) {
         server.execute(() -> { var r = MartialService.castSlot(self(server), slot); check(r == MartialService.CastResult.CAST, "cast " + ALL[slot].id().getPath() + " (" + r + ")"); });
@@ -164,41 +163,30 @@ public final class CrescentMoonTour {
                 line(server, 2.0, 9.0);
             }
             case 56 -> placeSideCamera(mc);
-            // Waxing Moon: a full moon, then a strike: the crescent flies down the line.
-            case 60 -> server.execute(() -> {
-                com.murimblock.martial.CrescentMoonHalberd.setPhasesForTests(self(server), com.murimblock.martial.CrescentMoonHalberd.PHASES);
-                com.murimblock.integration.epicfight.EpicFightBridge.patch(self(server)).playAnimationSynchronized(Animations.SPEAR_TWOHAND_AUTO1, 0.0F);
-            });
-            case 96 -> server.execute(() -> check(zombies.stream().anyMatch(z -> z.getHealth() < z.getMaxHealth()), "the passive's crescent struck"));
-            // Moonlit Circle, all round, and its ring.
-            case 104 -> line(server, 2.5, -2.5, 4.0);
+            // Mirror Image: a step aside, the reflection left where the cultivator stood.
+            case 60 -> server.execute(() -> com.murimblock.integration.epicfight.EpicFightBridge.patch(self(server)).playAnimationSynchronized(Animations.BIPED_STEP_LEFT, 0.0F));
+            case 80 -> server.execute(() -> check(com.murimblock.martial.CrescentMoonHalberd.reflections(self(server)).size() == 1, "the dodge left a reflection"));
+            // Twin Reflection on one ahead.
+            case 104 -> line(server, 3.0);
             case 108 -> placeSideCamera(mc);
             case 110 -> cast(server, 0);
-            case 170 -> server.execute(() -> check(zombies.stream().filter(z -> z.getHealth() < z.getMaxHealth()).count() >= 2, "the circle struck all round"));
-            // Tide Hook on one ahead.
-            case 180 -> {
-                line(server, 6.0);
-                // A light foe, to be pulled in (a heavy one is tripped where it stands).
-                server.execute(() -> { Zombie z = zombies.get(0); z.getAttribute(Attributes.MAX_HEALTH).setBaseValue(20); z.setHealth(20); });
-            }
-            case 184 -> placeSideCamera(mc);
-            case 186 -> cast(server, 1);
-            case 220 -> server.execute(() -> check(zombies.get(0).distanceTo(self(server)) < 3.5, "the hook pulled its catch in"));
-            // Falling Crescent's fan.
-            case 230 -> {
-                line(server, 7.0);
-                server.execute(() -> { zombie(server, 2.4, 7.5); zombie(server, -2.4, 7.5); });
-            }
-            case 234 -> placeSideCamera(mc);
-            case 236 -> cast(server, 2);
-            case 270 -> server.execute(() -> check(zombies.stream().filter(z -> z.getHealth() < z.getMaxHealth()).count() >= 2, "the crescents struck"));
-            // Mirror Lake Stance: held, a zombie's blow from the front sent back.
-            case 280 -> line(server, 2.2);
-            case 284 -> placeSideCamera(mc);
-            case 286 -> server.execute(() -> check(MartialService.aim(self(server), 3), "the mirror rose"));
-            case 300 -> server.execute(() -> { ServerPlayer p = self(server); p.invulnerableTime = 0; p.hurt(p.damageSources().mobAttack(zombies.get(0)), 3); });
-            case 318 -> server.execute(() -> check(zombies.get(0).getHealth() < zombies.get(0).getMaxHealth(), "the mirror sent the blow back"));
-            case 330 -> server.execute(() -> MartialService.castSlot(self(server), 3));
+            case 140 -> server.execute(() -> check(zombies.get(0).getHealth() < zombies.get(0).getMaxHealth(), "the twin struck from behind"));
+            // Shattered Mirror: the reflection left by the twin bursts among two zombies.
+            case 150 -> server.execute(() -> { zombie(server, 1.5, 4.5); zombie(server, -1.5, 4.5); });
+            case 156 -> cast(server, 1);
+            case 190 -> server.execute(() -> check(zombies.stream().filter(z -> z.getHealth() < z.getMaxHealth()).count() >= 2, "the shards cut round the reflection"));
+            // Swap: a step aside leaves a reflection; it is sent off, then the places change.
+            case 200 -> line(server, 6.0);
+            case 204 -> placeSideCamera(mc);
+            case 206 -> server.execute(() -> com.murimblock.integration.epicfight.EpicFightBridge.patch(self(server)).playAnimationSynchronized(Animations.BIPED_STEP_BACKWARD, 0.0F));
+            case 222 -> server.execute(() -> { var list = com.murimblock.martial.CrescentMoonHalberd.reflections(self(server)); if (!list.isEmpty()) { var r = list.get(list.size() - 1); r.moveTo(r.getX() + 4, r.getY(), r.getZ() + 3); } });
+            case 228 -> cast(server, 2);
+            // Hall of Mirrors among four zombies.
+            case 250 -> line(server, 3.5, 6.0);
+            case 252 -> server.execute(() -> { zombie(server, 3.5, 2.5); zombie(server, -3.5, 3.0); });
+            case 256 -> placeSideCamera(mc);
+            case 258 -> cast(server, 3);
+            case 330 -> server.execute(() -> check(zombies.stream().filter(z -> z.getHealth() < z.getMaxHealth()).count() >= 3, "the hall struck its foes"));
             // The full moon, filmed from afar.
             case 350 -> line(server, 6, 8, 10);
             case 352 -> server.execute(() -> { zombie(server, 5, 6); zombie(server, -6, 7); });
@@ -211,11 +199,11 @@ public final class CrescentMoonTour {
             }
             default -> { }
         }
-        record(mc, "01-waxing-moon", 60, 96, 2);
-        record(mc, "02-moonlit-circle", 110, 170, 2);
-        record(mc, "03-tide-hook", 186, 220, 2);
-        record(mc, "04-falling-crescent", 236, 270, 2);
-        record(mc, "05-mirror-lake", 286, 330, 2);
+        record(mc, "01-mirror-image", 60, 96, 2);
+        record(mc, "02-twin-reflection", 110, 146, 2);
+        record(mc, "03-shattered-mirror", 156, 190, 2);
+        record(mc, "04-swap", 206, 246, 2);
+        record(mc, "05-hall-of-mirrors", 258, 340, 2);
         record(mc, "06-full-moon", 356, 520, 3);
     }
 

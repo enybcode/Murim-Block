@@ -34,6 +34,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.MoonQiEntity>> MOON_QI =
             TYPES.register("moon_qi", () -> EntityType.Builder.<com.murimblock.martial.MoonQiEntity>of(com.murimblock.martial.MoonQiEntity::new, MobCategory.MISC)
                     .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:moon_qi"));
+    /** A Crescent Moon Halberd cultivator's reflection of water: draws the blows, shatters at the first. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.ReflectionEntity>> REFLECTION =
+            TYPES.register("reflection", () -> EntityType.Builder.<com.murimblock.martial.ReflectionEntity>of(com.murimblock.martial.ReflectionEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.8F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:reflection"));
     public static final DeferredHolder<EntityType<?>, EntityType<TrainingOpponentEntity>> TRAINING_OPPONENT =
             TYPES.register("training_opponent", () -> EntityType.Builder.of(TrainingOpponentEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("murimblock:training_opponent"));
@@ -156,6 +160,7 @@ public final class MurimEntities {
     }
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(TRAINING_OPPONENT.get(), TrainingOpponentEntity.createTrainingAttributes().build());
+        event.put(REFLECTION.get(), com.murimblock.martial.ReflectionEntity.createAttributes().build());
         event.put(ARMORED_CRAB.get(), EpicFightMobSupport.creatureAttributes(ArmoredCrabEntity.createCrabAttributes()).build());
         event.put(CRAB_MAN.get(), EpicFightMobSupport.creatureAttributes(CrabManEntity.createCrabManAttributes())
                 .add(EpicFightAttributes.IMPACT, 1.5).build());

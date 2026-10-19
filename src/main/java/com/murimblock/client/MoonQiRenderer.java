@@ -19,9 +19,8 @@ import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 import software.bernie.geckolib.util.Color;
 
 /**
- * The Crescent Moon Halberd's shapes of moonlight (martial/MoonQiEntity), in one palette texture
- * (scripts/animation/crescent-moon-fx.cjs): the flying crescent, Moonlit Circle's ring, Mirror Lake's mirror, the full
- * moon and its beams. All shine (full light, their glowmask), are partly see-through, grow in and fade out.
+ * The Crescent Moon Halberd's ultimate's moonlight (martial/MoonQiEntity), in one palette texture
+ * (scripts/animation/crescent-moon-fx.cjs): the full moon and its beams. Both shine (full light, their glowmask), are partly see-through, grow in and fade out.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MoonQiRenderer extends GeoEntityRenderer<MoonQiEntity> {
@@ -66,11 +65,8 @@ public final class MoonQiRenderer extends GeoEntityRenderer<MoonQiEntity> {
 
         @Override public ResourceLocation getModelResource(MoonQiEntity qi) {
             return asset(switch (qi.kind()) {
-                case MoonQiEntity.RING -> "geo/moon_ring.geo.json";
-                case MoonQiEntity.MIRROR -> "geo/moon_mirror.geo.json";
-                case MoonQiEntity.MOON -> "geo/moon_full.geo.json";
                 case MoonQiEntity.BEAM -> "geo/moon_beam.geo.json";
-                default -> "geo/moon_crescent.geo.json";
+                default -> "geo/moon_full.geo.json";
             });
         }
 

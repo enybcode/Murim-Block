@@ -3,8 +3,6 @@ package com.murimblock.client;
 import com.lowdragmc.photon.client.light.DynamicLight;
 import com.lowdragmc.photon.client.light.PhotonLights;
 import com.murimblock.Murimblock;
-import com.murimblock.cultivation.MeditationService;
-import com.murimblock.martial.MartialArts;
 import com.murimblock.network.CrescentMoonPayloads;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,13 +16,11 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 
 /**
  * The Crescent Moon Halberd on this client (martial/CrescentMoonHalberd): its moonlight (Photon lights: a pale flash at
- * each impact, the steady light of the full moon), night falling round the ultimate (the sky and the screen darkened
- * deep blue, then the light coming back), and the moon by the crosshair: a small disc that fills, phase by phase, as
- * the halberd's blows land (Waxing Moon), white and glowing when full.
+ * each impact, a reflection appearing or shattering, the steady light of the full moon), and night falling round the
+ * ultimate (the sky and the screen darkened deep blue, then the light coming back).
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CrescentMoonClient {
-    private static int phases;
     private static long nightUntil, nightFrom;
     private static Vec3 nightAt = Vec3.ZERO;
     private static float nightRange;
@@ -32,14 +28,6 @@ public final class CrescentMoonClient {
     private static final int NIGHT_FADE = 20;
 
     private CrescentMoonClient() {
-    }
-
-    public static void phases(CrescentMoonPayloads.Phases p) {
-        phases = p.phases();
-    }
-
-    public static int phasesForTests() {
-        return phases;
     }
 
     public static void fx(CrescentMoonPayloads.Fx p) {
@@ -89,37 +77,14 @@ public final class CrescentMoonClient {
 
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
-        phases = 0;
         nightUntil = 0;
     }
 
-    /** The HUD: the night's veil over the screen, and the moon by the crosshair for whoever fights with the art. */
+    /** The HUD: the night's veil over the screen. */
     public static void renderLayer(GuiGraphics g) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.options.hideGui) return;
-        int w = g.guiWidth(), h = g.guiHeight();
         float n = night();
-        if (n > 0) g.fill(0, 0, w, h, ((int) (n * 120) << 24) | 0x040A24);
-        boolean art = MeditationService.aura(mc.player).mainArt().filter(MartialArts.CRESCENT_MOON_HALBERD::equals).isPresent();
-        if (!art || phases <= 0 || !com.murimblock.martial.CelestialPeakSpear.holdsSpear(mc.player)) return;
-        moon(g, w / 2 + 10, h / 2 - 4, phases);
-    }
-
-    /** A small moon of radius 4: lit from the right, phase by phase; full, it shines white with a halo. */
-    static void moon(GuiGraphics g, int cx, int cy, int lit) {
-        int full = com.murimblock.martial.CrescentMoonHalberd.PHASES;
-        boolean whole = lit >= full;
-        for (int y = -4; y <= 4; y++) for (int x = -4; x <= 4; x++) {
-            double d = Math.hypot(x, y);
-            if (d > 4.3) {
-                if (whole && d <= 5.6) g.fill(cx + x, cy + y, cx + x + 1, cy + y + 1, 0x559FD8FF);
-                continue;
-            }
-            // The terminator moves from the right edge to the left as the phases fill.
-            double edge = 4 - 8.0 * lit / full;
-            boolean on = x >= edge * Math.sqrt(Math.max(0, 1 - (y * y) / 16.0));
-            int c = on ? (whole ? 0xFFF4FBFF : 0xFFBFE4FF) : 0x88203050;
-            g.fill(cx + x, cy + y, cx + x + 1, cy + y + 1, c);
-        }
+        if (n > 0) g.fill(0, 0, g.guiWidth(), g.guiHeight(), ((int) (n * 120) << 24) | 0x040A24);
     }
 }

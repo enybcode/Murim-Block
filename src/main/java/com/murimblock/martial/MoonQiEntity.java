@@ -17,15 +17,14 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * A shape of the Crescent Moon Halberd's moonlight (CrescentMoonHalberd), shown only: a flying crescent
- * (geo/moon_crescent), Moonlit Circle's ring on the ground (geo/moon_ring, turning), Mirror Lake's mirror (geo/moon_mirror,
- * rippling), the ultimate's full moon (geo/moon_full, turning) or one of its beams (geo/moon_beam, stretched down). It
+ * The Crescent Moon Halberd's ultimate's moonlight (CrescentMoonHalberd), shown only: the full moon over the
+ * cultivator's head (geo/moon_full, turning) or one of its beams (geo/moon_beam, stretched down). It
  * touches nothing and is never saved; the server moves it and takes it away when its time is over. Drawn by
  * client/MoonQiRenderer, turned by {@link #turn()}, scaled by {@link #size()} (a beam by its length too), grown over its
  * first ticks and faded over its last.
  */
 public class MoonQiEntity extends Entity implements GeoEntity {
-    public static final byte CRESCENT = 0, RING = 1, MIRROR = 2, MOON = 3, BEAM = 4;
+    public static final byte MOON = 3, BEAM = 4;
 
     private static final EntityDataAccessor<Byte> KIND = SynchedEntityData.defineId(MoonQiEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> SIZE = SynchedEntityData.defineId(MoonQiEntity.class, EntityDataSerializers.FLOAT);
@@ -36,8 +35,7 @@ public class MoonQiEntity extends Entity implements GeoEntity {
     /** How many of its last ticks it fades over. */
     public static final int FADE_TICKS = 6;
 
-    private static final RawAnimation SPIN = RawAnimation.begin().thenLoop("spin"), RIPPLE = RawAnimation.begin().thenLoop("ripple"),
-            TURNING = RawAnimation.begin().thenLoop("turn");
+    private static final RawAnimation TURNING = RawAnimation.begin().thenLoop("turn");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public MoonQiEntity(EntityType<? extends MoonQiEntity> type, Level level) {
@@ -46,7 +44,7 @@ public class MoonQiEntity extends Entity implements GeoEntity {
     }
 
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(KIND, CRESCENT).define(SIZE, 1.0F).define(LENGTH, 1.0F).define(GROW_TICKS, 0).define(LIFE, 20).define(TURN, new Quaternionf());
+        builder.define(KIND, MOON).define(SIZE, 1.0F).define(LENGTH, 1.0F).define(GROW_TICKS, 0).define(LIFE, 20).define(TURN, new Quaternionf());
     }
 
     /** Sets what it is, its size, its length (a beam's), the ticks it grows over, its turn and its life. */
@@ -104,8 +102,6 @@ public class MoonQiEntity extends Entity implements GeoEntity {
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "moon", 0, state -> switch (kind()) {
-            case RING -> state.setAndContinue(SPIN);
-            case MIRROR -> state.setAndContinue(RIPPLE);
             case MOON -> state.setAndContinue(TURNING);
             default -> PlayState.STOP;
         }));
