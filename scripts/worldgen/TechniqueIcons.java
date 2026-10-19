@@ -103,10 +103,10 @@ public class TechniqueIcons {
             "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun",
             "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
             "breaking_the_cauldrons", "conquerors_weight",
-            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict",
+            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict", "kagune_shift",
             "moonlit_circle", "tide_hook", "falling_crescent", "mirror_lake_stance", "night_of_the_full_moon", "waxing_moon"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67, MOON = 74;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67, MOON = 75;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -1397,6 +1397,18 @@ public class TechniqueIcons {
                 // The head, its red fangs.
                 line(g, 25, 10, 28, 8, 1.2f, FLESH_LIGHT);
                 line(g, 25, 10, 28, 12, 1.2f, FLESH_LIGHT);
+            }
+            case 7 -> { // Kagune Shift: red tentacles on the left, a purple centipede on the right, a turning arrow between.
+                taper(g, 6, 28, 3, 17, 7, 6, 3.6, 0.8, FLESH_DARK);
+                taper(g, 6, 28, 3, 17, 7, 6, 2.2, 0.5, FLESH);
+                taper(g, 9, 28, 10, 18, 13, 10, 3.0, 0.7, FLESH_DARK);
+                taper(g, 9, 28, 10, 18, 13, 10, 1.8, 0.4, FLESH_LIGHT);
+                centipede(g, 24, 29, 30, 16, 23, 6, 8);
+                g.setColor(c(240, 220, 210));
+                g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Arc2D.Double(11, 9, 10, 10, 30, 240, Arc2D.OPEN));
+                line(g, 19.5, 17, 21.5, 14.5, 1.2f, c(240, 220, 210));
+                line(g, 19.5, 17, 17, 16, 1.2f, c(240, 220, 210));
             }
             default -> { }
         }

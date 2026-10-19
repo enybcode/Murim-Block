@@ -48,7 +48,7 @@ Tous les effets de lune sont des **modèles GeckoLib** générés (`scripts/anim
 - la **pleine lune** : sphère de pierre de lune aux mers grises, halo qui tourne (animation `turn`) ;
 - les **rayons de lune** : colonnes de lumière de la lune au sol.
 
-Les lumières sont celles de **Photon** (`CrescentMoonPayloads.Fx`, protocole 38) : un éclair bleu pâle à chaque impact,
+Les lumières sont celles de **Photon** (`CrescentMoonPayloads.Fx`, protocole 39) : un éclair bleu pâle à chaque impact,
 la lumière froide et durable de la pleine lune, et la nuit qui tombe. Aura : gouttes de lune qui montent en cercle autour
 des pieds.
 

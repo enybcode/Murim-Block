@@ -83,7 +83,7 @@ public final class KaguneStrikes {
         float yaw = Mth.wrapDegrees(Mth.lerp(partial, player.yHeadRotO, player.yHeadRot) - Mth.lerp(partial, player.yBodyRotO, player.yBodyRot));
         float pitch = player.getViewXRot(partial);
         Vector3f up = new Vector3f(0, 1, 0);
-        if (state.strike() == KaguneState.STRIKE_LASH && t < LASH_SECONDS && model.bone("kagune") == from) {
+        if (KaguneState.has(state.strike(), KaguneState.STRIKE_LASH) && t < LASH_SECONDS && model.bone("kagune") == from) {
             // Enzo, 18/10/2026: the kagune stretches out and strikes, never through him. The four rise behind his
             // shoulders, coiled short like scorpions' tails, then lunge one after the other, right to left, each to its
             // own point of the arc in front of him: the upper two arch high over his shoulders and head, the lower two
@@ -104,10 +104,10 @@ public final class KaguneStrikes {
                 bowTo(model, bone, raised, root, target, lower ? new Vector3f(side, 0, 0) : new Vector3f(0, 1, 0), lower ? LASH_BOW_SIDE : LASH_BOW_OVER,
                         k, t, lower ? 18 : 10, weight, TENTACLE_SEGMENT, from, animation, time, bend, base);
             }
-        } else if (state.strike() == KaguneState.STRIKE_GRAPPLE && t < GRAPPLE_SECONDS && model.bone("kagune") == from) {
+        } else if (KaguneState.has(state.strike(), KaguneState.STRIKE_GRAPPLE) && t < GRAPPLE_SECONDS && model.bone("kagune") == from) {
             // One tentacle (over his right shoulder) shoots at what he looks at, the foe or the wall, stretching as long as
             // it must; it holds on while it pulls (the foe in, or him there), then draws back in.
-            Vec3 world = KaguneGrabs.targetOf(player, state.strike(), state.strikeSince(), partial);
+            Vec3 world = KaguneGrabs.targetOf(player, KaguneState.STRIKE_GRAPPLE, state.strikeSince(), partial);
             if (world != null) {
                 int bone = model.bone("upper_right_0");
                 float hit = DevouringDemon.GRAPPLE_HIT_TICK / 20F, until = (DevouringDemon.GRAPPLE_HIT_TICK + DevouringDemon.GRAPPLE_PULL_TICKS) / 20F;
@@ -119,9 +119,9 @@ public final class KaguneStrikes {
                 bowTo(model, bone, direction(150, -58), root, target, new Vector3f(0, 1, 0), bow,
                         k, t, 10, weight, TENTACLE_SEGMENT, from, animation, time, bend, base);
             }
-        } else if (state.strike() == KaguneState.STRIKE_CONSTRICT && t < CONSTRICT_SECONDS && model.bone("kakuja") == from) {
+        } else if (KaguneState.has(state.strike(), KaguneState.STRIKE_CONSTRICT) && t < CONSTRICT_SECONDS && model.bone("kakuja") == from) {
             // A centipede rears, shoots at the foe and stays on it while its coils crush it (KaguneGrabs), then draws back.
-            Vec3 world = KaguneGrabs.targetOf(player, state.strike(), state.strikeSince(), partial);
+            Vec3 world = KaguneGrabs.targetOf(player, KaguneState.STRIKE_CONSTRICT, state.strikeSince(), partial);
             if (world != null) {
                 int bone = model.bone("centipede_right_0");
                 float hit = DevouringDemon.CONSTRICT_HIT_TICK / 20F, until = (DevouringDemon.CONSTRICT_HIT_TICK + DevouringDemon.CONSTRICT_HOLD_TICKS) / 20F;
@@ -131,7 +131,7 @@ public final class KaguneStrikes {
                 bowTo(model, bone, direction(15, -74), root, toModel(player, world, partial), new Vector3f(0, 1, 0), GRAPPLE_BOW,
                         k, t, 16, weight, SEGMENT, from, animation, time, bend, base);
             }
-        } else if (state.strike() == KaguneState.STRIKE_THORNS && t < THORNS_SECONDS && model.bone("kagune") == from) {
+        } else if (KaguneState.has(state.strike(), KaguneState.STRIKE_THORNS) && t < THORNS_SECONDS && model.bone("kagune") == from) {
             // The four rise behind him, then drive into the ground in front of him, round him (over his head, round his
             // sides), one after the other; they stay in it while the thorns burst out under the foe (KaguneEruptions),
             // then come back out the way they went.
@@ -150,7 +150,7 @@ public final class KaguneStrikes {
                         k, t, lower ? 18 : 10, weight, TENTACLE_SEGMENT, from, animation, time, bend, base);
                 if (k > 0.05F) model.dive(bone);
             }
-        } else if (state.strike() == KaguneState.STRIKE_BURROW && t < BURROW_SECONDS && model.bone("kakuja") == from) {
+        } else if (KaguneState.has(state.strike(), KaguneState.STRIKE_BURROW) && t < BURROW_SECONDS && model.bone("kakuja") == from) {
             // Both centipedes rear up over his back, then arch over his head and dive into the ground ahead; they stay in
             // it while they burst out under the foes (KaguneEruptions), then come back out.
             Vector3f root = base.transformPosition(new Vector3f(0, 12, 2));
@@ -164,7 +164,7 @@ public final class KaguneStrikes {
                         k, t, 16, weight, SEGMENT, from, animation, time, bend, base);
                 if (k > 0.05F) model.dive(bone);
             }
-        } else if (state.strike() == KaguneState.STRIKE_BITE && t < BITE_SECONDS && model.bone("kakuja") == from) {
+        } else if (KaguneState.has(state.strike(), KaguneState.STRIKE_BITE) && t < BITE_SECONDS && model.bone("kakuja") == from) {
             String root = (state.strikeSince() & 1) == 0 ? "centipede_right_0" : "centipede_left_0";
             float weight = envelope(t, 0.12F, 0.55F, BITE_SECONDS);
             Vector3f dir;

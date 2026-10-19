@@ -267,6 +267,14 @@ public final class KaguneModel {
         }
     }
 
+    /** Scales what is drawn next by {@code s} about bone i's own rest position (it grows out of its root, or shrinks into it). */
+    public void scaleAtRoot(int i, float s, PoseStack stack) {
+        var pos = bones.get(i).pos();
+        stack.translate(pos[0], pos[1], pos[2]);
+        stack.scale(s, s, s);
+        stack.translate(-pos[0], -pos[1], -pos[2]);
+    }
+
     /** Whether bone i is shrunk out of sight now (a hidden form): nothing under it is drawn. */
     public boolean hidden(int i, String animation, float t) {
         float[] l = local(i, animations.get(animation), t);

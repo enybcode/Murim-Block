@@ -26,29 +26,46 @@ import net.neoforged.neoforge.registries.RegisterEvent;
  * The server drives it (DevouringDemon); the operator command {@code /kagune off|hunger|transform|demon} and
  * {@code /kagune fury <0-100>} set it by hand. Not saved: a reloaded player has his kagune put away.
  */
-public record KaguneState(Form form, long since, int fury, int strike, long strikeSince) {
+public record KaguneState(Form form, long since, int fury, int strike, long strikeSince, Form from) {
     public enum Form {
         /** Put away: nothing drawn. */
         NONE,
         /** 0 to 99 Fury: the four tentacles. */
         HUNGER,
-        /** Full Fury: the tentacles draw back, the centipedes burst out (then DEMON). */
+        /** Full Fury: the centipedes (or the tentacles) burst out beside the others, the mask grows (then DEMON). */
         TRANSFORM,
-        /** The demon form: the two centipedes and the mask. */
-        DEMON
+        /** The demon form: the four tentacles and the two centipedes at once, the mask, on all fours. */
+        DEMON,
+        /** 0 to 99 Fury, the kagune switched (Kagune Shift, Enzo 19/10/2026): the two centipedes, standing. */
+        CENTIPEDE
     }
 
     public static final int MAX_FURY = 100;
-    /** The kagune's strikes, for the clients (client/KaguneStrikes): none, Lash, Centipede Bite, Impaling Thorns, Burrow, Grapple, Constrict. */
+    /**
+     * The kagune's strikes, for the clients (client/KaguneStrikes): none, Lash, Centipede Bite, Impaling Thorns, Burrow,
+     * Grapple, Constrict. In the demon form the tentacles and the centipedes strike at once: {@link #strike} holds the
+     * tentacles' in its low byte, the centipedes' in the next ({@link #strikes}, {@link #has}).
+     */
     public static final int STRIKE_NONE = 0, STRIKE_LASH = 1, STRIKE_BITE = 2, STRIKE_THORNS = 3, STRIKE_BURROW = 4, STRIKE_GRAPPLE = 5, STRIKE_CONSTRICT = 6;
 
-    public static final KaguneState NONE = new KaguneState(Form.NONE, 0, 0, STRIKE_NONE, 0);
+    /** The strike field for a tentacles' strike and a centipedes' one at once (either may be none). */
+    public static int strikes(int tentacles, int centipedes) {
+        return (tentacles & 0xFF) | (centipedes & 0xFF) << 8;
+    }
+
+    /** Whether this strike is under way in the strike field (the tentacles' or the centipedes'). */
+    public static boolean has(int strike, int code) {
+        return code != STRIKE_NONE && ((strike & 0xFF) == code || (strike >> 8 & 0xFF) == code);
+    }
+
+    public static final KaguneState NONE = new KaguneState(Form.NONE, 0, 0, STRIKE_NONE, 0, Form.NONE);
     public static final StreamCodec<ByteBuf, KaguneState> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT.map(i -> Form.values()[i], Form::ordinal), KaguneState::form,
             ByteBufCodecs.VAR_LONG, KaguneState::since,
             ByteBufCodecs.VAR_INT, KaguneState::fury,
             ByteBufCodecs.VAR_INT, KaguneState::strike,
             ByteBufCodecs.VAR_LONG, KaguneState::strikeSince,
+            ByteBufCodecs.VAR_INT.map(i -> Form.values()[i], Form::ordinal), KaguneState::from,
             KaguneState::new);
     public static final AttachmentType<KaguneState> TYPE = AttachmentType.builder(() -> NONE)
             .sync((holder, recipient) -> true, STREAM_CODEC).build();
@@ -57,10 +74,24 @@ public record KaguneState(Form form, long since, int fury, int strike, long stri
         return player.getData(TYPE);
     }
 
-    /** Takes out (or changes) the form, from now; the Fury and the strike stay. */
+    /** Takes out (or changes) the form, from now, the one it was kept (for the change's look); the Fury and the strike stay. */
     public static void set(Player player, Form form) {
         var s = of(player);
-        put(player, new KaguneState(form, player.level().getGameTime(), form == Form.NONE ? 0 : s.fury(), s.strike(), s.strikeSince()));
+        put(player, new KaguneState(form, player.level().getGameTime(), form == Form.NONE ? 0 : s.fury(), s.strike(), s.strikeSince(), s.form()));
+    }
+
+    /** This state in another form, from {@code now}, the one it was kept. */
+    public KaguneState into(Form next, long now) {
+        return new KaguneState(next, now, fury, strike, strikeSince, form);
+    }
+
+    /** Whether the tentacles are out in this form (or coming), and the centipedes. */
+    public static boolean tentacles(Form form) {
+        return form == Form.HUNGER || form == Form.TRANSFORM || form == Form.DEMON;
+    }
+
+    public static boolean centipedes(Form form) {
+        return form == Form.CENTIPEDE || form == Form.TRANSFORM || form == Form.DEMON;
     }
 
     static void put(Player player, KaguneState state) {
@@ -68,11 +99,11 @@ public record KaguneState(Form form, long since, int fury, int strike, long stri
     }
 
     public KaguneState withFury(int value) {
-        return new KaguneState(form, since, Math.clamp(value, 0, MAX_FURY), strike, strikeSince);
+        return new KaguneState(form, since, Math.clamp(value, 0, MAX_FURY), strike, strikeSince, from);
     }
 
     public KaguneState withStrike(int code, long now) {
-        return new KaguneState(form, since, fury, code, now);
+        return new KaguneState(form, since, fury, code, now, from);
     }
 
     /** How long the transformation lasts (s): the animation's own length (art/blockbench/kagune_forms.bbmodel). */

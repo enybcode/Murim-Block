@@ -182,8 +182,11 @@ public final class KaguneTour {
             com.murimblock.martial.MartialService.assign(player, 1, com.murimblock.martial.MartialArts.IMPALING_THORNS.id());
             com.murimblock.martial.MartialService.unlock(player, com.murimblock.martial.MartialArts.GRAPPLE);
             com.murimblock.martial.MartialService.assign(player, 2, com.murimblock.martial.MartialArts.GRAPPLE.id());
-            // The art's own realm, its Qi Max halfway to the next stage: no breakthrough (and its ring) while filming.
-            com.murimblock.cultivation.CultivationService.setCultivation(player, com.murimblock.cultivation.CultivationRealm.FOUNDATION_ESTABLISHMENT,
+            com.murimblock.martial.MartialService.unlock(player, com.murimblock.martial.MartialArts.KAGUNE_SHIFT);
+            com.murimblock.martial.MartialService.assign(player, 3, com.murimblock.martial.MartialArts.KAGUNE_SHIFT.id());
+            // The realm under the art's (Foundation Establishment shows its aura's pressure all round: not to be confused with
+            // the art), its Qi Max halfway to the next stage: no breakthrough (and its ring) while filming.
+            com.murimblock.cultivation.CultivationService.setCultivation(player, com.murimblock.cultivation.CultivationRealm.QI_CRYSTALLIZATION,
                     com.murimblock.cultivation.CultivationStage.MIDDLE);
             var cultivation = com.murimblock.cultivation.CultivationService.getCultivation(player);
             double floor = com.murimblock.cultivation.CultivationRules.floorOf(cultivation);
@@ -201,6 +204,9 @@ public final class KaguneTour {
                 // Standing still and harmless, but they can be moved (a mob without AI cannot: Grapple must drag one).
                 zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(0);
                 zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).setBaseValue(0);
+                // Nor do they strike: a blow, even of nothing, staggers him and the next technique would be refused.
+                zombie.goalSelector.removeAllGoals(goal -> true);
+                zombie.targetSelector.removeAllGoals(goal -> true);
                 zombie.setPersistenceRequired();
                 zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.LEATHER_HELMET));
                 zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(400);
@@ -229,33 +235,28 @@ public final class KaguneTour {
         if (ticks == 60) capture(mc, "art-02-fury-25.png");
         if (ticks == 70) capture(mc, "art-03-fury-50.png");
         if (ticks == 80) capture(mc, "art-04-fury-75.png");
-        // Slowed to 5 ticks a second while filming: every tick gets its own frame. Lash (90), Impaling Thorns (118),
-        // Grapple (140), the Fury full (165) and the transformation, Centipede Bite (230), Burrow (255), Constrict (285).
+        // Slowed to 5 ticks a second while filming: every tick gets its own frame. With the tentacles: Lash (90), Impaling
+        // Thorns (118), Grapple (140); Kagune Shift to the centipedes (170) and a bite standing (182), Shift back (205); the
+        // Fury full (215) and the transformation; in the demon form, both at once: Lash and Bite (282), Thorns and Burrow
+        // (307), Grapple and Constrict (335).
         if (ticks == 84) server.execute(() -> server.tickRateManager().setTickRate(5));
-        if (ticks == 336) server.execute(() -> server.tickRateManager().setTickRate(20));
-        if (ticks == 140) cast(server, 2);
-        if (ticks == 285) cast(server, 2);
-        if (ticks == 140 + 22) server.execute(() -> {
-            var z = server.overworld().getEntity(zombies.get(0));
-            double d = z == null ? 99 : z.distanceTo(self(server));
-            mc.execute(() -> check(d < 3, "Grapple dragged the zombie in: " + String.format("%.1f", d) + " blocks off"));
-        });
-        if (ticks == 285 + com.murimblock.martial.DevouringDemon.CONSTRICT_HIT_TICK + 8) server.execute(() -> {
-            boolean held = false;
-            for (var id : zombies) if (server.overworld().getEntity(id) instanceof net.minecraft.world.entity.LivingEntity z && com.murimblock.martial.DevouringDemon.constricted(z)) held = true;
-            boolean h = held;
-            mc.execute(() -> check(h, "Constrict coiled round a zombie"));
-        });
+        if (ticks == 386) server.execute(() -> server.tickRateManager().setTickRate(20));
         if (ticks == 90) cast(server, 0);
-        if (ticks == 117 || ticks == 254) server.execute(() -> healthBefore = health(server));
         if (ticks == 118) cast(server, 1);
-        if (ticks == 165) server.execute(() -> com.murimblock.martial.DevouringDemon.setFury(self(server), KaguneState.MAX_FURY));
-        // The blows throw the zombies about: back to their places before each of the demon form's techniques.
-        if (ticks == 228 || ticks == 253 || ticks == 283) server.execute(() -> placeZombies(server));
-        if (ticks == 226) capture(mc, "art-05-demon.png");
-        if (ticks == 230) cast(server, 0);
-        if (ticks == 255) cast(server, 1);
-        if (ticks >= 86 && ticks <= 336) capture(mc, String.format("art/%03d.png", ticks - 86));
+        if (ticks == 140) cast(server, 2);
+        if (ticks == 170) cast(server, 3);
+        if (ticks == 182) cast(server, 0);
+        if (ticks == 205) cast(server, 3);
+        if (ticks == 215) server.execute(() -> com.murimblock.martial.DevouringDemon.setFury(self(server), KaguneState.MAX_FURY));
+        if (ticks == 282) cast(server, 0);
+        if (ticks == 307) cast(server, 1);
+        if (ticks == 335) cast(server, 2);
+        // The blows throw the zombies about: back to their places before the techniques that need them there.
+        if (ticks == 180 || ticks == 280 || ticks == 305 || ticks == 333) server.execute(() -> placeZombies(server));
+        if (ticks == 117 || ticks == 306) server.execute(() -> healthBefore = health(server));
+        if (ticks == 178) capture(mc, "art-05-centipedes.png");
+        if (ticks == 276) capture(mc, "art-06-demon.png");
+        if (ticks >= 86 && ticks <= 386) capture(mc, String.format("art/%03d.png", ticks - 86));
         if (ticks == 100) server.execute(() -> {
             float total = 0;
             for (float h : health(server)) total += 400 - h;
@@ -269,19 +270,39 @@ public final class KaguneTour {
             int n = struck;
             mc.execute(() -> check(n == 1, "Impaling Thorns impaled the zombie he looked at, alone: " + n));
         });
-        if (ticks == 245) server.execute(() -> {
-            boolean ahead = server.overworld().getEntity(zombies.get(0)) instanceof net.minecraft.world.entity.LivingEntity z && z.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN);
-            mc.execute(() -> check(ahead, "Centipede Bite bit the zombie ahead"));
+        if (ticks == 140 + 22) server.execute(() -> {
+            var z = server.overworld().getEntity(zombies.get(0));
+            double d = z == null ? 99 : z.distanceTo(self(server));
+            mc.execute(() -> check(d < 3, "Grapple dragged the zombie in: " + String.format("%.1f", d) + " blocks off"));
         });
-        if (ticks == 255 + com.murimblock.martial.DevouringDemon.BURROW_HIT_TICK + 3) server.execute(() -> {
+        if (ticks == 176) {
+            var form = KaguneState.of(mc.player).form();
+            check(form == KaguneState.Form.CENTIPEDE && !KaguneState.beast(mc.player), "Kagune Shift: the centipedes out, standing: " + form);
+        }
+        if (ticks == 195) server.execute(() -> {
+            boolean ahead = server.overworld().getEntity(zombies.get(0)) instanceof net.minecraft.world.entity.LivingEntity z && z.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN);
+            mc.execute(() -> check(ahead, "standing, the centipede bit the zombie ahead"));
+        });
+        if (ticks == 210) check(KaguneState.of(mc.player).form() == KaguneState.Form.HUNGER, "Kagune Shift back: the tentacles out");
+        if (ticks == 283) {
+            int strike = KaguneState.of(mc.player).strike();
+            check(KaguneState.has(strike, KaguneState.STRIKE_LASH) && KaguneState.has(strike, KaguneState.STRIKE_BITE), "the demon form struck with both: " + strike);
+        }
+        if (ticks == 307 + com.murimblock.martial.DevouringDemon.BURROW_HIT_TICK + 3) server.execute(() -> {
             float[] now = health(server);
             int struck = 0;
             for (int i = 0; i < now.length; i++) if (now[i] < healthBefore[i]) struck++;
             int n = struck;
-            mc.execute(() -> check(n == 2, "Burrow came up under the two nearest zombies: " + n));
+            mc.execute(() -> check(n >= 2, "Thorns and Burrow came up under the zombies: " + n));
         });
-        if (ticks == 340) {
-            check(casts.equals(List.of("CAST", "CAST", "CAST", "CAST", "CAST", "CAST")), "the six techniques were cast: " + casts);
+        if (ticks == 335 + com.murimblock.martial.DevouringDemon.CONSTRICT_HIT_TICK + 8) server.execute(() -> {
+            boolean held = false;
+            for (var id : zombies) if (server.overworld().getEntity(id) instanceof net.minecraft.world.entity.LivingEntity z && com.murimblock.martial.DevouringDemon.constricted(z)) held = true;
+            boolean h = held;
+            mc.execute(() -> check(h, "Constrict coiled round a zombie"));
+        });
+        if (ticks == 390) {
+            check(casts.equals(java.util.Collections.nCopies(9, "CAST")), "the nine casts went: " + casts);
             check(com.murimblock.client.KaguneStrikes.jointsSeenInBody() == 0, "the tentacles never went through him: " + com.murimblock.client.KaguneStrikes.jointsSeenInBody() + " joints at worst");
             check(com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() == 0, "the centipedes never went through him: " + com.murimblock.client.KaguneStrikes.biteJointsSeenInBody() + " joints at worst");
             finish(mc);
@@ -296,6 +317,8 @@ public final class KaguneTour {
             if (server.overworld().getEntity(zombies.get(i)) instanceof net.minecraft.world.entity.LivingEntity z) {
                 z.teleportTo(ZOMBIE_SPOTS[i][0], -60, ZOMBIE_SPOTS[i][1]);
                 z.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                // And whole again: in the demon form every key strikes twice.
+                z.setHealth(z.getMaxHealth());
             }
     }
 

@@ -29,7 +29,8 @@ import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClie
  * The Devouring Demon Art's kagune on the player's skin, like the Sanguine Art's blood crystals: an overlay carried by
  * the Epic Fight skeleton, no armour and no item (docs/combat/styles/devouring-demon-art.md). The tentacles and the
  * centipedes ride the Torso joint, the mask the Head joint. The model and its animations are the Blockbench mock-up's
- * (KaguneModel): idle_hunger for the four tentacles, transform when the bar fills, then idle_demon.
+ * (KaguneModel): idle_hunger for the four tentacles, idle_demon for the two centipedes (and the mask), each drawn when
+ * it is out (partOf): Kagune Shift trades one for the other, the demon form has both.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class KaguneOverlay {
@@ -70,21 +71,41 @@ public final class KaguneOverlay {
                            float limb, float amount, float partial, float age, float headYaw, float headPitch) { }
     }
 
-    /** Which animation plays now, and how far into it (s): the transformation once, then the demon's idle. */
-    static String animationOf(KaguneState state, long now, float partial, float[] time) {
+    /** How one part of the kagune is drawn now: its animation, how far into it (s), and how far out of his back (0 to 1). */
+    record Part(String animation, float time, float out) { }
+
+    /** How long a kagune takes to come out of his back, and to draw back into it (s): Kagune Shift, the demon form's end. */
+    private static final float COME_OUT = 0.35F, DRAW_BACK = 0.25F;
+
+    /**
+     * The part of the kagune under {@code root} ("kagune": the tentacles, "kakuja": the centipedes, "mask_group"), now, or
+     * null if it is not out: each its own idle; the transformation bursts out what was not out (the centipedes with the
+     * Blockbench animation, the tentacles growing out) and grows the mask; a part coming out or drawing back (Kagune
+     * Shift, the demon form ending) grows out of his back or shrinks into it.
+     */
+    static Part partOf(String root, KaguneState state, long now, float partial) {
         float t = (now - state.since() + partial) / 20F;
-        var model = KaguneModel.get();
-        return switch (state.form()) {
-            case HUNGER -> { time[0] = t; yield "idle_hunger"; }
-            case TRANSFORM -> {
-                float length = model.length("transform");
-                if (t < length) { time[0] = t; yield "transform"; }
-                time[0] = t - length;
-                yield "idle_demon";
-            }
-            case DEMON -> { time[0] = t; yield "idle_demon"; }
-            default -> null;
-        };
+        var form = state.form();
+        boolean mask = root.equals("mask_group"), tentacles = root.equals("kagune");
+        boolean present = mask ? form == KaguneState.Form.TRANSFORM || form == KaguneState.Form.DEMON
+                : tentacles ? KaguneState.tentacles(form) : KaguneState.centipedes(form);
+        var from = state.from();
+        boolean was = mask ? from == KaguneState.Form.DEMON || from == KaguneState.Form.TRANSFORM
+                : tentacles ? KaguneState.tentacles(from) : KaguneState.centipedes(from);
+        String idle = tentacles ? "idle_hunger" : "idle_demon";
+        // Bursting out in the transformation: the centipedes and the mask as the mock-up has it.
+        if (form == KaguneState.Form.TRANSFORM && !tentacles && !was) {
+            float length = KaguneModel.get().length("transform");
+            return t < length ? new Part("transform", t, 1) : new Part(idle, t - length, 1);
+        }
+        if (present) return new Part(idle, t, was ? 1 : ease(t / COME_OUT));
+        if (was && t < DRAW_BACK) return new Part(idle, t, 1 - ease(t / DRAW_BACK));
+        return null;
+    }
+
+    private static float ease(float x) {
+        x = Math.clamp(x, 0, 1);
+        return x * x * (3 - 2 * x);
     }
 
     private static final class Layer<E extends AbstractClientPlayer, P extends AbstractClientPlayerPatch<E>>
@@ -94,10 +115,8 @@ public final class KaguneOverlay {
                                    MultiBufferSource buffers, int light, OpenMatrix4f[] poses, float age, float headYaw, float headPitch, float partial) {
             if (player.isInvisible() || player.isSpectator()) return;
             var state = KaguneState.of(player);
-            if (state.form() == KaguneState.Form.NONE) return;
-            float[] time = new float[1];
-            String animation = animationOf(state, player.level().getGameTime(), partial, time);
-            if (animation == null) return;
+            if (state.form() == KaguneState.Form.NONE && state.from() == KaguneState.Form.NONE) return;
+            long now = player.level().getGameTime();
             var model = KaguneModel.get();
             var out = buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
             var armature = patch.getArmature();
@@ -107,7 +126,10 @@ public final class KaguneOverlay {
             var torsoPose = OpenMatrix4f.mulMatrices(poses[torsoJoint.getId()], torsoJoint.getToOrigin());
             for (String root : new String[]{"kagune", "kakuja"}) {
                 int bone = model.bone(root);
-                if (bone < 0) continue;
+                Part part = partOf(root, state, now, partial);
+                if (bone < 0 || part == null || part.out() <= 0.01F) continue;
+                String animation = part.animation();
+                float[] time = {part.time()};
                 stack.pushPose();
                 MathUtils.mulStack(stack, torsoPose);
                 stack.scale(-PIXEL, PIXEL, PIXEL);
@@ -121,6 +143,8 @@ public final class KaguneOverlay {
                 // The other form, shrunk out of sight: nothing to draw, keep clear or check.
                 if (model.hidden(bone, animation, time[0])) { stack.popPose(); continue; }
                 model.toParentAtRest(bone, stack);
+                // Coming out of his back, or drawing back into it: grown from (or shrunk to) its root.
+                if (part.out() < 1) model.scaleAtRoot(bone, part.out(), stack);
                 float[] bend = KaguneTail.bend(player, partial);
                 // The same transforms from the model's own space (no camera), where the ground is at the player's feet
                 // (y 0, in blocks): every chain is kept above it.
@@ -140,20 +164,22 @@ public final class KaguneOverlay {
                 // In the transformation the tentacles are meant to draw back into his back: not kept out of it then.
                 float[] body = state.form() == KaguneState.Form.TRANSFORM && !beast ? null : beast ? KaguneStrikes.ON_ALL_FOURS : KaguneStrikes.STANDING;
                 model.keepClear(bone, animation, time[0], bend[0], bend[1], base.last().pose(), GROUND_CLEARANCE, body);
-                if (body != null && KaguneStrikes.checking() && player == net.minecraft.client.Minecraft.getInstance().player)
+                if (body != null && part.out() >= 1 && KaguneStrikes.checking() && player == net.minecraft.client.Minecraft.getInstance().player)
                     KaguneStrikes.seen(beast, model.jointsInside(bone, animation, time[0], bend[0], bend[1], base.last().pose(), body));
                 model.draw(bone, animation, time[0], bend[0], bend[1], stack, out, light, OverlayTexture.NO_OVERLAY);
                 stack.popPose();
             }
             // The mask, on the Head joint.
             int mask = model.bone("mask_group");
-            if (mask >= 0) {
+            Part maskPart = partOf("mask_group", state, now, partial);
+            if (mask >= 0 && maskPart != null && maskPart.out() > 0.01F) {
                 stack.pushPose();
                 var head = armature.searchJointByName("Head");
                 MathUtils.mulStack(stack, OpenMatrix4f.mulMatrices(poses[head.getId()], head.getToOrigin()));
                 stack.scale(-PIXEL, PIXEL, PIXEL);
                 model.toParentAtRest(mask, stack);
-                model.draw(mask, animation, time[0], stack, out, light, OverlayTexture.NO_OVERLAY);
+                if (maskPart.out() < 1) model.scaleAtRoot(mask, maskPart.out(), stack);
+                model.draw(mask, maskPart.animation(), maskPart.time(), stack, out, light, OverlayTexture.NO_OVERLAY);
                 stack.popPose();
             }
         }

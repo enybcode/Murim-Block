@@ -29,7 +29,8 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 /**
  * The Devouring Demon Art in play (docs/combat/styles/devouring-demon-art.md, Enzo 18/10/2026), bare hands, its main
- * style. In combat mode the kagune comes out: the four tentacles (KaguneState.Form.HUNGER).
+ * style. In combat mode the kagune comes out: the four tentacles (KaguneState.Form.HUNGER); <b>Kagune Shift</b> trades
+ * them for the two centipedes, standing (CENTIPEDE), and back; the keys then cast the centipedes' versions.
  * <ul>
  *   <li><b>The Fury</b> (0 to {@link KaguneState#MAX_FURY}, the ring of the combat bar's dantian): every blow he lands
  *   gives {@link #HIT_FURY}, every blow he takes {@link #HURT_FURY} (once a tick); after {@link #CALM_TICKS} without either
@@ -79,7 +80,7 @@ public final class DevouringDemon {
     private record Pending(MartialArts.Technique technique, long at, List<Vec3> points) {
         Pending(MartialArts.Technique technique, long at) { this(technique, at, List.of()); }
     }
-    private static final Map<UUID, Pending> PENDING = new HashMap<>();
+    private static final Map<UUID, List<Pending>> PENDING = new HashMap<>();
     /** When each player last gained Fury (game time), and the tick he last did (once a tick). */
     private static final Map<UUID, Long> LAST_GAIN = new HashMap<>();
     /** Players whose kagune this art took out (it puts it away for them). */
@@ -151,7 +152,7 @@ public final class DevouringDemon {
         }
         USERS.put(id, player);
         switch (state.form()) {
-            case HUNGER -> {
+            case HUNGER, CENTIPEDE -> {
                 if (!out) { forget(player); return; }
                 if (state.fury() >= KaguneState.MAX_FURY) { transform(player); return; }
                 long calm = now - LAST_GAIN.getOrDefault(id, now);
@@ -159,7 +160,7 @@ public final class DevouringDemon {
             }
             case TRANSFORM -> {
                 if (KaguneState.beast(player)) {
-                    var demon = new KaguneState(KaguneState.Form.DEMON, now, state.fury(), state.strike(), state.strikeSince());
+                    var demon = new KaguneState(KaguneState.Form.DEMON, now, state.fury(), state.strike(), state.strikeSince(), state.from());
                     KaguneState.put(player, demon);
                 }
             }
@@ -175,31 +176,39 @@ public final class DevouringDemon {
             default -> { }
         }
         holdTick(player, now);
-        Pending p = PENDING.get(id);
-        if (p != null && now >= p.at()) {
-            PENDING.remove(id);
-            if (p.technique() == MartialArts.LASH) lashHits(player);
-            else if (p.technique() == MartialArts.CENTIPEDE_BITE) biteHits(player);
-            else eruptionHits(player, p.technique(), p.points());
+        var pending = PENDING.get(id);
+        if (pending != null) {
+            for (Pending p : List.copyOf(pending)) {
+                if (now < p.at()) continue;
+                pending.remove(p);
+                if (p.technique() == MartialArts.LASH) lashHits(player);
+                else if (p.technique() == MartialArts.CENTIPEDE_BITE) biteHits(player);
+                else eruptionHits(player, p.technique(), p.points());
+            }
+            if (pending.isEmpty()) PENDING.remove(id);
         }
     }
 
-    /** Full Fury: the transformation (the clients play it from the state; the hitbox and the gait follow at its end). */
+    /**
+     * Full Fury: the transformation (the clients play it from the state; the hitbox and the gait follow at its end): the
+     * kagune that was not out bursts out beside the other, the mask grows. It keeps which was out, to go back to it.
+     */
     static void transform(ServerPlayer player) {
         var state = KaguneState.of(player);
         long now = player.level().getGameTime();
-        KaguneState.put(player, new KaguneState(KaguneState.Form.TRANSFORM, now, KaguneState.MAX_FURY, KaguneState.STRIKE_NONE, now));
+        KaguneState.put(player, new KaguneState(KaguneState.Form.TRANSFORM, now, KaguneState.MAX_FURY, KaguneState.STRIKE_NONE, now, state.form()));
         PENDING.remove(player.getUUID());
         ServerLevel level = player.serverLevel();
         level.playSound(null, player.blockPosition(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 1.6F, 0.7F);
         level.playSound(null, player.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.PLAYERS, 1.3F, 0.55F);
     }
 
-    /** The Fury spent: himself again, the tentacles back (or put away), and if it ran out, spent for a moment. */
+    /** The Fury spent: himself again, with the kagune he had out before (or it put away), and if it ran out, spent a moment. */
     static void spent(ServerPlayer player, boolean tired) {
         long now = player.level().getGameTime();
-        var back = out(player) ? KaguneState.Form.HUNGER : KaguneState.Form.NONE;
-        KaguneState.put(player, new KaguneState(back, now, 0, KaguneState.STRIKE_NONE, now));
+        var before = KaguneState.of(player).from();
+        var back = !out(player) ? KaguneState.Form.NONE : before == KaguneState.Form.CENTIPEDE ? KaguneState.Form.CENTIPEDE : KaguneState.Form.HUNGER;
+        KaguneState.put(player, new KaguneState(back, now, 0, KaguneState.STRIKE_NONE, now, KaguneState.Form.DEMON));
         LAST_GAIN.put(player.getUUID(), now);
         PENDING.remove(player.getUUID());
         if (back == KaguneState.Form.NONE) USERS.remove(player.getUUID());
@@ -212,27 +221,72 @@ public final class DevouringDemon {
 
     // ---------------------------------------------------------------- techniques
 
+    /**
+     * A technique's key: with the tentacles out its own version, with the centipedes out (Kagune Shift, standing) the
+     * centipedes' (MartialArts.DEMON_VERSIONS), in the demon form both at once (Enzo, 19/10/2026), the body moving as the
+     * centipedes' if they strike. Cast if either went.
+     */
     static boolean perform(ServerPlayer player, PlayerPatch<?> patch, MartialArts.Technique technique) {
         var state = KaguneState.of(player);
         if (state.form() == KaguneState.Form.NONE || !out(player) && state.form() != KaguneState.Form.DEMON) return false;
-        // Nothing while the centipedes burst out.
+        // Nothing while the kagune bursts out.
         if (state.form() == KaguneState.Form.TRANSFORM) return false;
-        MartialArts.Technique cast = state.form() == KaguneState.Form.DEMON ? MartialArts.DEMON_VERSIONS.getOrDefault(technique, technique) : technique;
         long now = player.level().getGameTime();
+        if (technique == MartialArts.KAGUNE_SHIFT) return shift(player, state, now);
+        MartialArts.Technique demon = MartialArts.DEMON_VERSIONS.get(technique);
+        boolean beast = state.form() == KaguneState.Form.DEMON;
+        int tentacles = KaguneState.tentacles(state.form()) ? start(player, technique, now) : KaguneState.STRIKE_NONE;
+        int centipedes = KaguneState.centipedes(state.form()) && demon != null ? start(player, demon, now) : KaguneState.STRIKE_NONE;
+        if (tentacles == KaguneState.STRIKE_NONE && centipedes == KaguneState.STRIKE_NONE) return false;
+        patch.playAnimationSynchronized(centipedes != KaguneState.STRIKE_NONE ? body(demon, beast) : body(technique, false), 0.0F);
+        KaguneState.put(player, KaguneState.of(player).withStrike(KaguneState.strikes(tentacles, centipedes), now));
+        return true;
+    }
+
+    /** The body under a technique: the centipedes' on all fours in the demon form, else the standing one of its pair. */
+    private static yesman.epicfight.api.animation.AnimationManager.AnimationAccessor<? extends yesman.epicfight.api.animation.types.StaticAnimation> body(
+            MartialArts.Technique t, boolean beast) {
+        if (t == MartialArts.CENTIPEDE_BITE) return beast ? DemonArtAnimations.BITE : DemonArtAnimations.LASH;
+        if (t == MartialArts.BURROW) return beast ? DemonArtAnimations.BURROW : DemonArtAnimations.THORNS;
+        if (t == MartialArts.CONSTRICT) return beast ? DemonArtAnimations.CONSTRICT : DemonArtAnimations.GRAPPLE;
+        if (t == MartialArts.IMPALING_THORNS) return DemonArtAnimations.THORNS;
+        if (t == MartialArts.GRAPPLE) return DemonArtAnimations.GRAPPLE;
+        return DemonArtAnimations.LASH;
+    }
+
+    /** Kagune Shift: the tentacles draw back into his back and the centipedes come out, or the other way (not at full Fury). */
+    private static boolean shift(ServerPlayer player, KaguneState state, long now) {
+        KaguneState.Form next = state.form() == KaguneState.Form.HUNGER ? KaguneState.Form.CENTIPEDE
+                : state.form() == KaguneState.Form.CENTIPEDE ? KaguneState.Form.HUNGER : null;
+        if (next == null) return false;
+        KaguneState.put(player, state.into(next, now).withStrike(KaguneState.STRIKE_NONE, now));
+        PENDING.remove(player.getUUID());
+        HOLDS.remove(player.getUUID());
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.PLAYERS, 1.4F, 0.5F);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.ARMOR_EQUIP_LEATHER.value(), SoundSource.PLAYERS, 1.0F, 0.6F);
+        return true;
+    }
+
+    private static void pending(ServerPlayer player, Pending p) {
+        PENDING.computeIfAbsent(player.getUUID(), id -> new java.util.ArrayList<>()).add(p);
+    }
+
+    private static void hold(ServerPlayer player, Hold h) {
+        HOLDS.computeIfAbsent(player.getUUID(), id -> new java.util.ArrayList<>()).add(h);
+    }
+
+    /** Starts one technique's strike (targets, the blow's tick, what the clients are told): its strike code, or none. */
+    private static int start(ServerPlayer player, MartialArts.Technique cast, long now) {
         ServerLevel level = player.serverLevel();
         if (cast == MartialArts.LASH) {
-            patch.playAnimationSynchronized(DemonArtAnimations.LASH, 0.0F);
-            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_LASH, now));
-            PENDING.put(player.getUUID(), new Pending(cast, now + LASH_HIT_TICK));
+            pending(player, new Pending(cast, now + LASH_HIT_TICK));
             level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.2F, 0.55F);
-            return true;
+            return KaguneState.STRIKE_LASH;
         }
         if (cast == MartialArts.CENTIPEDE_BITE) {
-            patch.playAnimationSynchronized(DemonArtAnimations.BITE, 0.0F);
-            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_BITE, now));
-            PENDING.put(player.getUUID(), new Pending(cast, now + BITE_HIT_TICK));
+            pending(player, new Pending(cast, now + BITE_HIT_TICK));
             level.playSound(null, player.blockPosition(), SoundEvents.SILVERFISH_AMBIENT, SoundSource.PLAYERS, 1.4F, 0.5F);
-            return true;
+            return KaguneState.STRIKE_BITE;
         }
         if (cast == MartialArts.GRAPPLE) {
             // A foe looked at, or else the block looked at: the tentacle goes for it.
@@ -240,48 +294,40 @@ public final class DevouringDemon {
             Vec3 anchor = null;
             if (target == null) {
                 var hit = player.pick(GRAPPLE_REACH, 1, false);
-                if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return false;
+                if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return KaguneState.STRIKE_NONE;
                 anchor = hit.getLocation();
             }
-            patch.playAnimationSynchronized(DemonArtAnimations.GRAPPLE, 0.0F);
-            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_GRAPPLE, now));
-            HOLDS.put(player.getUUID(), new Hold(cast, target, anchor, now + GRAPPLE_HIT_TICK, now + GRAPPLE_HIT_TICK + GRAPPLE_PULL_TICKS));
+            hold(player, new Hold(cast, target, anchor, now + GRAPPLE_HIT_TICK, now + GRAPPLE_HIT_TICK + GRAPPLE_PULL_TICKS));
             grab(player, KaguneState.STRIKE_GRAPPLE, target, anchor == null ? target.position() : anchor);
             level.playSound(null, player.blockPosition(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.PLAYERS, 1.4F, 0.5F);
-            return true;
+            return KaguneState.STRIKE_GRAPPLE;
         }
         if (cast == MartialArts.CONSTRICT) {
             LivingEntity target = lookedAt(player, CONSTRICT_REACH, CONSTRICT_CONE);
-            if (target == null) return false;
-            patch.playAnimationSynchronized(DemonArtAnimations.CONSTRICT, 0.0F);
-            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_CONSTRICT, now));
-            HOLDS.put(player.getUUID(), new Hold(cast, target, null, now + CONSTRICT_HIT_TICK, now + CONSTRICT_HIT_TICK + CONSTRICT_HOLD_TICKS));
+            if (target == null) return KaguneState.STRIKE_NONE;
+            hold(player, new Hold(cast, target, null, now + CONSTRICT_HIT_TICK, now + CONSTRICT_HIT_TICK + CONSTRICT_HOLD_TICKS));
             grab(player, KaguneState.STRIKE_CONSTRICT, target, target.position());
             level.playSound(null, player.blockPosition(), SoundEvents.SILVERFISH_AMBIENT, SoundSource.PLAYERS, 1.4F, 0.4F);
-            return true;
+            return KaguneState.STRIKE_CONSTRICT;
         }
         if (cast == MartialArts.IMPALING_THORNS) {
             LivingEntity target = thornsTarget(player);
-            if (target == null) return false;
+            if (target == null) return KaguneState.STRIKE_NONE;
             List<Vec3> at = List.of(target.position());
-            patch.playAnimationSynchronized(DemonArtAnimations.THORNS, 0.0F);
-            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_THORNS, now));
-            PENDING.put(player.getUUID(), new Pending(cast, now + THORNS_HIT_TICK, at));
+            pending(player, new Pending(cast, now + THORNS_HIT_TICK, at));
             erupt(player, KaguneState.STRIKE_THORNS, at);
             level.playSound(null, player.blockPosition(), SoundEvents.ROOTED_DIRT_BREAK, SoundSource.PLAYERS, 1.4F, 0.6F);
-            return true;
+            return KaguneState.STRIKE_THORNS;
         }
         if (cast == MartialArts.BURROW) {
             List<Vec3> at = burrowTargets(player).stream().map(LivingEntity::position).toList();
-            if (at.isEmpty()) return false;
-            patch.playAnimationSynchronized(DemonArtAnimations.BURROW, 0.0F);
-            KaguneState.put(player, state.withStrike(KaguneState.STRIKE_BURROW, now));
-            PENDING.put(player.getUUID(), new Pending(cast, now + BURROW_HIT_TICK, at));
+            if (at.isEmpty()) return KaguneState.STRIKE_NONE;
+            pending(player, new Pending(cast, now + BURROW_HIT_TICK, at));
             erupt(player, KaguneState.STRIKE_BURROW, at);
             level.playSound(null, player.blockPosition(), SoundEvents.RAVAGER_STEP, SoundSource.PLAYERS, 1.4F, 0.6F);
-            return true;
+            return KaguneState.STRIKE_BURROW;
         }
-        return false;
+        return KaguneState.STRIKE_NONE;
     }
 
     /** Tells the clients round him where the kagune will burst out of the ground (client/KaguneEruptions). */
@@ -430,7 +476,7 @@ public final class DevouringDemon {
      * crushed in Constrict's coils) or, for Grapple with no foe, to a point of a wall it pulls him to.
      */
     private record Hold(MartialArts.Technique technique, @Nullable LivingEntity target, @Nullable Vec3 anchor, long from, long until) { }
-    private static final Map<UUID, Hold> HOLDS = new HashMap<>();
+    private static final Map<UUID, List<Hold>> HOLDS = new HashMap<>();
 
     /** Tells the clients round him what the kagune goes for (client/KaguneGrabs): a foe, or a point. */
     private static void grab(ServerPlayer player, int strike, @Nullable LivingEntity target, Vec3 at) {
@@ -458,17 +504,24 @@ public final class DevouringDemon {
 
     /** Whether a foe is held in Constrict's coils now. */
     public static boolean constricted(LivingEntity e) {
-        for (Hold h : HOLDS.values()) if (h.technique() == MartialArts.CONSTRICT && h.target() == e) return true;
+        for (var holds : HOLDS.values()) for (Hold h : holds) if (h.technique() == MartialArts.CONSTRICT && h.target() == e) return true;
         return false;
     }
 
     private static void holdTick(ServerPlayer player, long now) {
-        Hold h = HOLDS.get(player.getUUID());
-        if (h == null || now < h.from()) return;
+        var holds = HOLDS.get(player.getUUID());
+        if (holds == null) return;
+        // The centipede's coils first, the tentacle's pull after: a foe coiled and hooked at once is still dragged in.
+        for (int i = holds.size() - 1; i >= 0; i--) if (!holdStep(player, holds.get(i), now)) holds.remove(i);
+        if (holds.isEmpty()) HOLDS.remove(player.getUUID());
+    }
+
+    /** One hold's tick: false when it lets go. */
+    private static boolean holdStep(ServerPlayer player, Hold h, long now) {
+        if (now < h.from()) return true;
         LivingEntity target = h.target();
         boolean gone = target != null && (!target.isAlive() || target.level() != player.level());
         if (now > h.until() || gone) {
-            HOLDS.remove(player.getUUID());
             // Let go: Constrict throws the crushed foe off.
             if (h.technique() == MartialArts.CONSTRICT && target != null && target.isAlive()) {
                 Vec3 away = target.position().subtract(player.position()).multiply(1, 0, 1);
@@ -476,7 +529,7 @@ public final class DevouringDemon {
                 target.setDeltaMovement(away.x * CONSTRICT_TOSS, 0.45, away.z * CONSTRICT_TOSS);
                 target.hurtMarked = true;
             }
-            return;
+            return false;
         }
         long t = now - h.from();
         if (h.technique() == MartialArts.GRAPPLE) {
@@ -490,19 +543,19 @@ public final class DevouringDemon {
                     MartialProgress.addMastery(player, art(), MartialArts.GRAPPLE.id(), 1);
                 }
                 Vec3 to = player.position().add(Vec3.directionFromRotation(0, player.getYRot()).scale(GRAPPLE_PULL_TO)).subtract(target.position());
-                if (to.length() < 0.6) { HOLDS.remove(player.getUUID()); return; }
+                if (to.length() < 0.6) return false;
                 target.setDeltaMovement(to.scale(GRAPPLE_PULL_RATE).add(0, 0.08, 0));
                 target.hurtMarked = true;
             } else if (h.anchor() != null) {
                 // Hooked into the wall: pulled to it, never hurt by the fall it saves.
                 Vec3 to = h.anchor().subtract(player.position().add(0, 0.6, 0));
-                if (to.length() < 1.2) { HOLDS.remove(player.getUUID()); player.fallDistance = 0; return; }
+                if (to.length() < 1.2) { player.fallDistance = 0; return false; }
                 if (t == 0) player.serverLevel().playSound(null, net.minecraft.core.BlockPos.containing(h.anchor()), SoundEvents.ROOTED_DIRT_BREAK, SoundSource.PLAYERS, 1.2F, 0.6F);
                 player.setDeltaMovement(to.normalize().scale(Math.min(GRAPPLE_SPEED, to.length() * 0.35)).add(0, 0.06, 0));
                 player.hurtMarked = true;
                 player.fallDistance = 0;
             }
-            return;
+            return true;
         }
         if (h.technique() == MartialArts.CONSTRICT && target != null) {
             // Coiled round: held where it is, crushed again and again.
@@ -518,6 +571,7 @@ public final class DevouringDemon {
                 player.serverLevel().playSound(null, target.blockPosition(), SoundEvents.TURTLE_EGG_CRACK, SoundSource.PLAYERS, 1.2F, 0.5F);
             }
         }
+        return true;
     }
 
     // ---------------------------------------------------------------- blows

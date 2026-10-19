@@ -1211,7 +1211,7 @@
   "art.murimblock.devouring_demon": "Devouring Demon Art",
   "item.murimblock.devouring_demon_scroll": "Devouring Demon Art Scroll",
   "passive.murimblock.devouring_hunger": "Devouring Hunger",
-  "passive.murimblock.devouring_hunger.desc": "In combat, bare-handed, your kagune comes out of your back: four red tentacles. Every blow you land or take feeds your Fury, the ring of blood round your dantian. Full, you become the demon: two centipedes and a mask, on all fours, faster, striking harder and taking less, and every technique changes. The Fury drains in that form; spent, you are yourself again, out of breath.",
+  "passive.murimblock.devouring_hunger.desc": "In combat, bare-handed, your kagune comes out of your back: four red tentacles. Every blow you land or take feeds your Fury, the ring of blood round your dantian. Full, you become the demon: the tentacles and the two centipedes at once, a mask, on all fours, faster, striking harder and taking less, and every key strikes with both. The Fury drains in that form; spent, you are yourself again, out of breath.",
   "gui.murimblock.techniques.strikes_fixed.devouring_demon": "Epic Fight's bare-hand strikes for now; each blow feeds the Fury. Nothing to choose here.",
   "technique.murimblock.lash": "Lash",
   "technique.murimblock.lash.desc": "Your four tentacles wind back and whip through the arc in front of you, 4.5 blocks out: every foe there is struck and thrown back. In the demon form, this key is Centipede Bite.",
@@ -1224,5 +1224,7 @@
   "technique.murimblock.grapple": "Grapple",
   "technique.murimblock.grapple.desc": "A tentacle shoots at what you look at, up to 14 blocks away. A foe is hooked and dragged in to just in front of you; anything else, it hooks into and pulls you there, and the fall it saves you never hurts. In the demon form, this key is Constrict.",
   "technique.murimblock.constrict": "Constrict",
-  "technique.murimblock.constrict.desc": "The demon form's Grapple: a centipede shoots at the foe you look at, up to 8 blocks away, and coils three times round it. It is held fast for two seconds, crushed four times, then thrown off."
+  "technique.murimblock.constrict.desc": "The demon form's Grapple: a centipede shoots at the foe you look at, up to 8 blocks away, and coils three times round it. It is held fast for two seconds, crushed four times, then thrown off.",
+  "technique.murimblock.kagune_shift": "Kagune Shift",
+  "technique.murimblock.kagune_shift.desc": "Your tentacles draw back into your back and your two centipedes come out, or the other way round. Free; standing, without Fury. With the centipedes out, your keys cast their techniques: Centipede Bite, Burrow, Constrict. At full Fury both kagune come out at once and every key strikes with both."
 }

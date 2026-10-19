@@ -31,19 +31,24 @@ import org.joml.Vector3f;
 public final class KaguneGrabs {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/entity/kagune_forms.png");
     private record Grab(int strike, int target, Vec3 point, long since) { }
-    private static final Map<Integer, Grab> GRABS = new HashMap<>();
+    /** By striker and strike (in the demon form Grapple and Constrict go at once). */
+    private static final Map<Long, Grab> GRABS = new HashMap<>();
+
+    private static long key(int attacker, int strike) {
+        return (long) attacker << 8 | strike;
+    }
 
     private KaguneGrabs() { }
 
     public static void grab(KaguneGrabPayload p) {
         var level = Minecraft.getInstance().level;
-        if (level != null) GRABS.put(p.attacker(), new Grab(p.strike(), p.target(), new Vec3(p.x(), p.y(), p.z()), level.getGameTime()));
+        if (level != null) GRABS.put(key(p.attacker(), p.strike()), new Grab(p.strike(), p.target(), new Vec3(p.x(), p.y(), p.z()), level.getGameTime()));
     }
 
     /** Where this player's kagune is going now (world): the foe's middle, or the point of the wall; null for none. */
     @Nullable static Vec3 targetOf(Player player, int strike, long strikeSince, float partial) {
-        Grab g = GRABS.get(player.getId());
-        if (g == null || g.strike() != strike || Math.abs(g.since() - strikeSince) > 3) return null;
+        Grab g = GRABS.get(key(player.getId(), strike));
+        if (g == null || Math.abs(g.since() - strikeSince) > 3) return null;
         Entity e = g.target() < 0 ? null : player.level().getEntity(g.target());
         if (e != null) return e.getPosition(partial).add(0, e.getBbHeight() * 0.55, 0);
         return g.target() < 0 ? g.point() : null;
