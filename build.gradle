@@ -480,6 +480,13 @@ neoForge {
         }
 
         // Development-only: a film of the Overlord Spear's techniques in a real client (see OverlordTour).
+        crescentMoonTour {
+            client()
+            gameDirectory = project.file('build/crescent-moon-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.crescentMoonTour', 'true'
+            disableIdeRun()
+        }
         overlordTour {
             client()
             gameDirectory = project.file('build/overlord-tour-run')
@@ -1036,6 +1043,21 @@ tasks.named('runOverlordTour').configure {
     doLast {
         def report = overlordTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Overlord tour failed; see build/overlord-tour-run/overlord-tour-report.txt')
+    }
+}
+def crescentMoonTourSave = layout.buildDirectory.dir('crescent-moon-tour-run/saves/murim-crescent-moon')
+def crescentMoonTourShots = layout.buildDirectory.dir('crescent-moon-tour-run/screenshots')
+def crescentMoonTourReport = layout.buildDirectory.file('crescent-moon-tour-run/crescent-moon-tour-report.txt')
+tasks.named('runCrescentMoonTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Crescent Moon tour.')
+        crescentMoonTourSave.get().asFile.deleteDir()
+        crescentMoonTourShots.get().asFile.deleteDir()
+        crescentMoonTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = crescentMoonTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Crescent Moon tour failed; see build/crescent-moon-tour-run/crescent-moon-tour-report.txt')
     }
 }
 def ruinSpearTourSave = layout.buildDirectory.dir('ruin-spear-tour-run/saves/murim-ruin-spear')

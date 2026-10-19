@@ -13,6 +13,8 @@ import javax.imageio.ImageIO;
  *   of gold ink (the Son of the Demon's art);
  *   overlord_spear_scroll: black silk, knobs of gold, a band of burning ember round the middle, strokes of blood-red ink
  *   (the Overlord Spear, after the Spear of Ruin);
+ *   crescent_moon_halberd_scroll: night-blue silk, knobs of silver, a band of pale moonlight round the middle, strokes of
+ *   silver ink (the Crescent Moon Halberd);
  * and the cultivation methods' (written alone with a second argument, methods):
  *   azure_sky_breathing_scroll: pale sky-blue silk, knobs of white jade, a band of bright sky blue, strokes of deep blue ink;
  *   frost_lotus_heart_scroll: white paper tinged with ice, knobs of silver, a band of pale ice, strokes of cold blue ink;
@@ -40,6 +42,9 @@ public class ScrollTexture {
     static final Look OVERLORD = new Look(0xFF4A4A52, 0xFF2E2E34, 0xFF1E1E22, 0xFF101012, 0xFFFFE08A, 0xFFD9A83F, 0xFF8A6420,
             0xFFFFD27A, 0xFFFF6A24, 0xFFB0300E, 0xFFC82428, 0, false);
 
+    static final Look MOON = new Look(0xFF3A4E86, 0xFF26366A, 0xFF1A2650, 0xFF0E1630, 0xFFF0F6FF, 0xFFB8C2D6, 0xFF6E7A92,
+            0xFFF4FBFF, 0xFF9FD8FF, 0xFF4A86D0, 0xFFD8E2F2, 0, false);
+
     static final Look AZURE_SKY = new Look(0xFFE6F4FF, 0xFFBFE0FA, 0xFF93C4EA, 0xFF6A9FCB, 0xFFFFFFFF, 0xFFE4ECEA, 0xFFAEBDBA,
             0xFFB6E6FF, 0xFF4CB8FF, 0xFF1E7EC8, 0xFF1A3A6A, 0, false);
     static final Look FROST_LOTUS = new Look(0xFFFFFFFF, 0xFFEAF6FA, 0xFFC4DDE6, 0xFF9DBCC8, 0xFFF2F4F6, 0xFFB8C0C8, 0xFF7A848E,
@@ -59,6 +64,7 @@ public class ScrollTexture {
         write(args[0], "mountain_shattering_fist_scroll", MOUNTAIN);
         write(args[0], "majin_fist_scroll", MAJIN);
         write(args[0], "overlord_spear_scroll", OVERLORD);
+        write(args[0], "crescent_moon_halberd_scroll", MOON);
     }
 
     static void write(String dir, String name, Look k) throws Exception {

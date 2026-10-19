@@ -357,7 +357,7 @@ public final class MurimProfileScreen extends Screen {
             Map.entry(MartialArts.SANGUINE_ART, 0xFF5E1E22), Map.entry(MartialArts.SEVEN_STARS_SWORD, 0xFF27305E), Map.entry(MartialArts.THUNDER_SABER, 0xFF3E2A5E),
             Map.entry(MartialArts.TRAVELLER_STAFF, 0xFF4C4A28), Map.entry(MartialArts.CELESTIAL_PEAK_SPEAR, 0xFF2E4A62),
             Map.entry(MartialArts.MOUNTAIN_SHATTERING_FIST, 0xFF5A4630), Map.entry(MartialArts.MAJIN_FIST, 0xFF3A1A2A),
-            Map.entry(MartialArts.OVERLORD_SPEAR, 0xFF2A1A1C));
+            Map.entry(MartialArts.OVERLORD_SPEAR, 0xFF2A1A1C), Map.entry(MartialArts.CRESCENT_MOON_HALBERD, 0xFF22305A));
 
     /** A colour a little lighter (a card under the pointer). */
     private static int lighter(int argb) {

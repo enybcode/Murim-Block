@@ -25,6 +25,7 @@ style principal reconstruit l'île à la visite suivante. Sans style principal :
 | Sanguine Art | sang | lac de sang, flèches de cristal de sang, arbres pourpres, ciel cramoisi, brume rouge |
 | Devouring Demon | démon, vide | île rongée sur ses bords, débris qui tombent dans le vide, grandes arches de côtes, sculk, œil rouge qui regarde depuis le nord |
 | Majin Fist | fureur | arène de pierre noire fendue de rouge, chaînes suspendues dans le vide, braseros aux flammes sombres |
+| Crescent Moon Halberd | lune, eau | lac noir et immobile cerclé de pierre sombre, passerelle à lanternes, pavillons sur pilotis, saules, chemin de lune sous l'eau, lune immense basse sur le lac (brume repoussée) |
 
 **On ne mine rien dans le monde intérieur** (Enzo, 19/10 ; `InnerWorldGuard`), quel que soit le mode de jeu : aucun bloc ne
 se casse ni ne commence à se fendre. Vérifié par `runInnerWorldsTour` (un bloc cassé en créatif reste en place).

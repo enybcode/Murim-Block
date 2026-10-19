@@ -34,7 +34,9 @@ public enum InnerTheme {
     /** The demon and the void: an island devoured at its edges, great arches of ribs, a red eye watching from the sky. */
     DEVOURING_DEMON(MartialArts.DEVOURING_DEMON, 0x120608),
     /** Fury: an arena of black stone cracked with red, chains hanging in the air, black flames. */
-    MAJIN_FIST(MartialArts.MAJIN_FIST, 0x1E0A12);
+    MAJIN_FIST(MartialArts.MAJIN_FIST, 0x1E0A12),
+    /** The moon and water: a black lake, still, that mirrors a huge moon; pavilions on stilts; a path of moonlight on the water. */
+    CRESCENT_MOON(MartialArts.CRESCENT_MOON_HALBERD, 0x0B1636);
 
     private final ResourceLocation art;
     /** Its sky's colour (0xRRGGBB), toward which a full reserve's void turns. */

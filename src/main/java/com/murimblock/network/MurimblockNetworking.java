@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 38: the Crescent Moon Halberd (the moon's phases shown to its player, its moonlight).
      * 37: the aura released or held in at will (its key).
      * 36: flying on the sword (the jump held to mount it, its state to all who see the flyer).
      * 35: the aura's pressure seen by all (its reach in the aura every client sees).
@@ -24,7 +25,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "37";
+    private static final String NETWORK_VERSION = "38";
 
     private MurimblockNetworking() {
     }
@@ -121,6 +122,11 @@ public final class MurimblockNetworking {
                 (payload, context) -> com.murimblock.client.KaguneEruptions.erupt(payload));
         registrar.playToClient(KaguneImpactPayload.TYPE, KaguneImpactPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.KaguneImpactFx.impact(payload));
+        // The Crescent Moon Halberd: its moon's phases by the crosshair, its moonlight (Photon lights, night falling).
+        registrar.playToClient(CrescentMoonPayloads.Phases.TYPE, CrescentMoonPayloads.Phases.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.CrescentMoonClient.phases(payload));
+        registrar.playToClient(CrescentMoonPayloads.Fx.TYPE, CrescentMoonPayloads.Fx.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.CrescentMoonClient.fx(payload));
         registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }

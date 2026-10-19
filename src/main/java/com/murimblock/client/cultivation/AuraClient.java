@@ -70,6 +70,7 @@ public final class AuraClient {
         if (art.filter(MartialArts.MAJIN_FIST::equals).isPresent()) return new float[]{0.7F, 0.1F, 0.12F};
         if (art.filter(MartialArts.GOLDEN_BELL::equals).isPresent()) return new float[]{1.0F, 0.78F, 0.22F};
         if (art.filter(MartialArts.OVERLORD_SPEAR::equals).isPresent()) return new float[]{0.95F, 0.2F, 0.1F};
+        if (art.filter(MartialArts.CRESCENT_MOON_HALBERD::equals).isPresent()) return new float[]{0.62F, 0.85F, 1.0F};
         return new float[]{0.95F, 0.96F, 1.0F};
     }
 
@@ -190,6 +191,13 @@ public final class AuraClient {
                 level.addParticle(net.minecraft.core.particles.ParticleTypes.SMALL_FLAME, feet.x + Math.cos(a) * r, feet.y + 0.1, feet.z + Math.sin(a) * r,
                         0, 0.04 + random.nextDouble() * 0.05, 0);
             }
+        } else if (id.equals(MartialArts.CRESCENT_MOON_HALBERD)) {
+            // Drops of moonlight rising in a slow circle round the feet, as from still water.
+            double a = age * 0.08 + random.nextDouble() * 0.2;
+            AuraParticle p = spark(level, feet.x + Math.cos(a) * r * 1.1, feet.y + 0.15, feet.z + Math.sin(a) * r * 1.1,
+                    0, 0.02 + random.nextDouble() * 0.02, 0, new float[]{0.75F, 0.9F, 1.0F}, false);
+            if (p != null) p.big(0.06F, 30);
+            if (age % 6 == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.SPLASH, feet.x + Math.cos(a + 3) * r, feet.y + 0.1, feet.z + Math.sin(a + 3) * r, 0, 0.05, 0);
         } else if (id.equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) {
             if (age % 4 == 0) {
                 double a = random.nextDouble() * Math.PI * 2;

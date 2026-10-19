@@ -116,6 +116,11 @@ public final class MartialService {
         }
         // The golden form's key again while in it: it ends, free.
         if (technique == MartialArts.GOLDEN_BELL_FORM && data(player).hasTechnique(id) && GoldenBell.leaveIfIn(player)) return CastResult.CAST;
+        // Mirror Lake Stance's key let go: the halberd lowered (it ended by itself just before: nothing more to say).
+        if (technique == MartialArts.MIRROR_LAKE_STANCE && data(player).hasTechnique(id)) {
+            if (CrescentMoonHalberd.mirroring(player)) { CrescentMoonHalberd.endMirror(player, true); return CastResult.CAST; }
+            if (CrescentMoonHalberd.mirrorJustEnded(player)) return CastResult.CAST;
+        }
         // The Spinning Rampart's key let go: it stops (it stopped by itself just before: nothing more to say).
         if (technique == MartialArts.SPINNING_RAMPART && data(player).hasTechnique(id)) {
             if (TravellerStaff.spinning(player)) { TravellerStaff.endRampart(player, true); return CastResult.CAST; }
@@ -124,7 +129,7 @@ public final class MartialService {
         CastResult check = check(player, technique);
         if (check != CastResult.CAST) return check;
         // Not let go but tapped and refused at its start: say why (check), never cast it here.
-        if (technique == MartialArts.SPINNING_RAMPART || technique == MartialArts.HEAVENS_DRUM) return CastResult.FAILED;
+        if (technique == MartialArts.SPINNING_RAMPART || technique == MartialArts.HEAVENS_DRUM || technique == MartialArts.MIRROR_LAKE_STANCE) return CastResult.FAILED;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player);
         boolean twinComet = technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player)
@@ -160,6 +165,8 @@ public final class MartialService {
         if (TravellerStaff.spinning(player)) return CastResult.HINDERED;
         // Heaven's Drum takes the hands too.
         if (ThunderSaberMoves.drumming(player)) return CastResult.HINDERED;
+        // Mirror Lake Stance takes the hands too.
+        if (CrescentMoonHalberd.mirroring(player)) return CastResult.HINDERED;
         MartialCombat.Riposte riposte = MartialCombat.riposte(player);
         if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || MeditationService.isMeditating(player)) return CastResult.HINDERED;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
@@ -197,6 +204,13 @@ public final class MartialService {
         if (technique == MartialArts.TYRANTS_THRUST) return OverlordSpear.aimThrust(player);
         if (technique == MartialArts.HEAVENS_DRUM) {
             if (!ThunderSaberMoves.startDrum(player)) return false;
+            pay(player, technique.qiCost());
+            // Not again while it is held; its true cooldown starts at its end (startCooldown).
+            READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, Long.MAX_VALUE / 2);
+            return true;
+        }
+        if (technique == MartialArts.MIRROR_LAKE_STANCE) {
+            if (!CrescentMoonHalberd.startMirror(player)) return false;
             pay(player, technique.qiCost());
             // Not again while it is held; its true cooldown starts at its end (startCooldown).
             READY_AT.computeIfAbsent(player.getUUID(), k -> new HashMap<>()).put(id, Long.MAX_VALUE / 2);

@@ -125,6 +125,25 @@
           ]
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:empty",
+          "weight": 37
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:crescent_moon_halberd_scroll",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "murimblock:crescent_moon_halberd",
+          "weight": 1
+        }
+      ]
     }
   ]
 }

@@ -77,6 +77,7 @@ final class InnerWorlds {
             case OVERLORD_SPEAR -> n < 0.35 ? s(MurimBlocks.RED_LOESS.get()) : n < 0.6 ? s(Blocks.COARSE_DIRT) : s(Blocks.ROOTED_DIRT);
             case SANGUINE -> n < 0.3 ? s(Blocks.NETHER_WART_BLOCK) : s(Blocks.RED_TERRACOTTA);
             case DEVOURING_DEMON -> n < 0.3 ? s(Blocks.SCULK) : n < 0.5 ? s(Blocks.DEEPSLATE) : s(Blocks.BLACKSTONE);
+            case CRESCENT_MOON -> d > radius - 2.9 ? (n < 0.4 ? s(Blocks.POLISHED_DEEPSLATE) : s(Blocks.DEEPSLATE_TILES)) : s(Blocks.WATER);
             case MAJIN_FIST -> d < radius * 0.75 ? (vein(x, z) ? s(Blocks.RED_NETHER_BRICKS) : n < 0.3 ? s(Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS) : s(Blocks.POLISHED_BLACKSTONE_BRICKS)) : s(Blocks.BLACKSTONE);
         };
     }
@@ -95,6 +96,7 @@ final class InnerWorlds {
             case OVERLORD_SPEAR -> s(MurimBlocks.RED_LOESS.get());
             case SANGUINE -> s(Blocks.RED_TERRACOTTA);
             case DEVOURING_DEMON, SEVEN_STARS -> s(Blocks.DEEPSLATE);
+            case CRESCENT_MOON -> s(Blocks.BLACK_CONCRETE);
             default -> s(Blocks.DIRT);
         };
     }
@@ -111,6 +113,7 @@ final class InnerWorlds {
             case OVERLORD_SPEAR -> other ? s(Blocks.RED_SANDSTONE) : s(Blocks.TERRACOTTA);
             case SANGUINE -> other ? s(Blocks.REDSTONE_BLOCK) : s(Blocks.BLACKSTONE);
             case DEVOURING_DEMON, MAJIN_FIST -> other ? s(Blocks.CRYING_OBSIDIAN) : s(Blocks.BLACKSTONE);
+            case CRESCENT_MOON -> other ? s(Blocks.COBBLED_DEEPSLATE) : s(Blocks.DEEPSLATE);
         };
     }
 
@@ -149,6 +152,7 @@ final class InnerWorlds {
                 case SEVEN_STARS -> round(kit, x, z, s(MurimBlocks.DOVE_TREE.log().get()), leaves(MurimBlocks.DOVE_TREE), h);
                 case THUNDER_SABER, OVERLORD_SPEAR -> dead(kit, x, z, s(t == InnerTheme.THUNDER_SABER ? Blocks.BASALT : Blocks.DARK_OAK_LOG), h);
                 case SANGUINE -> round(kit, x, z, s(Blocks.CRIMSON_STEM), s(Blocks.NETHER_WART_BLOCK), h);
+                case CRESCENT_MOON -> round(kit, x, z, s(MurimBlocks.WILLOW.log().get()), leaves(MurimBlocks.WILLOW), h + 1);
                 case MOUNTAIN_SHATTERING, DEVOURING_DEMON, MAJIN_FIST -> { }
                 default -> { }
             }
@@ -195,6 +199,7 @@ final class InnerWorlds {
             case SANGUINE -> new BlockState[]{s(Blocks.BLACKSTONE), s(Blocks.REDSTONE_BLOCK)};
             case DEVOURING_DEMON -> new BlockState[]{s(Blocks.BLACKSTONE), s(Blocks.SCULK)};
             case MAJIN_FIST -> new BlockState[]{s(Blocks.BLACKSTONE), s(Blocks.RED_NETHER_BRICKS)};
+            case CRESCENT_MOON -> new BlockState[]{s(Blocks.DEEPSLATE), s(Blocks.SEA_LANTERN)};
         };
     }
 
@@ -214,6 +219,7 @@ final class InnerWorlds {
             case SANGUINE -> blood(kit, radius);
             case DEVOURING_DEMON -> devoured(kit, radius);
             case MAJIN_FIST -> arena(kit, radius);
+            case CRESCENT_MOON -> moonLake(kit, radius);
             default -> { }
         }
     }
@@ -493,6 +499,47 @@ final class InnerWorlds {
             if (!free(p[0], p[1], radius)) continue;
             kit.setRel(p[0], GROUND + 1, p[1], s(Blocks.POLISHED_BLACKSTONE));
             kit.setRel(p[0], GROUND + 2, p[1], s(Blocks.SOUL_CAMPFIRE).setValue(CampfireBlock.LIT, true));
+        }
+    }
+
+    /**
+     * The moon lake: a walk of dark planks from the platform to the rim, two pavilions on stilts over the water, a path
+     * of moonlight under the water toward the north, and the huge moon there, low over the lake.
+     */
+    private static void moonLake(BuildKit kit, int radius) {
+        for (int z = 4; z <= radius - 1; z++) for (int x = -1; x <= 1; x++) {
+            kit.setRel(x, GROUND, z, s(Blocks.DARK_OAK_PLANKS));
+            kit.setRel(x, GROUND + 1, z, s(Blocks.AIR));
+        }
+        for (int z = 6; z <= radius - 2; z += 4) {
+            kit.setRel(2, GROUND + 1, z, s(Blocks.DARK_OAK_FENCE));
+            kit.setRel(2, GROUND + 2, z, s(Blocks.LANTERN));
+        }
+        // The path of moonlight: sea lanterns under the water from the platform to the north rim.
+        for (int z = -4; z >= -(radius - 2); z--) for (int x = -1; x <= 1; x++) if (x == 0 || noise(x, z, 95) < 0.5) kit.setRel(x, GROUND - 1, z, s(Blocks.SEA_LANTERN));
+        for (double a : new double[]{0.75, 2.4}) {
+            int[] c = at(a, 0.6, radius);
+            if (!free(c[0], c[1], radius)) continue;
+            int x = c[0], z = c[1];
+            for (int[] p : new int[][]{{-2, -2}, {2, -2}, {-2, 2}, {2, 2}}) {
+                kit.setRel(x + p[0], GROUND, z + p[1], s(Blocks.STRIPPED_DARK_OAK_LOG));
+                for (int y = 2; y <= 4; y++) kit.setRel(x + p[0], GROUND + y, z + p[1], s(Blocks.STRIPPED_DARK_OAK_LOG));
+            }
+            kit.fillRel(x - 2, GROUND + 1, z - 2, x + 2, GROUND + 1, z + 2, s(Blocks.DARK_OAK_PLANKS));
+            kit.roofRel(x - 2, z - 2, x + 2, z + 2, GROUND + 5, RoofTiles.GREY, true);
+            kit.setRel(x, GROUND + 4, z, hangingLantern());
+        }
+        // The moon, huge and low over the north of the lake: pale stone, grey seas, a thin halo.
+        int mz = -(radius + 5), my = GROUND + 15, mr = 8;
+        BlockState glow = s(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 15);
+        for (int dx = -mr - 2; dx <= mr + 2; dx++) for (int dy = -mr - 2; dy <= mr + 2; dy++) {
+            double d = Math.hypot(dx, dy);
+            if (d > mr + 2.3) continue;
+            if (d > mr + 1.2) { if (noise(dx, dy, 96) < 0.45) kit.setRel(dx, my + dy, mz, s(Blocks.LIGHT_BLUE_STAINED_GLASS)); continue; }
+            if (d > mr) continue;
+            boolean sea = Math.sin(dx * 0.5 + dy * 0.3) + Math.cos(dy * 0.45 - dx * 0.2) > 1.1;
+            kit.setRel(dx, my + dy, mz, sea ? s(Blocks.LIGHT_GRAY_CONCRETE) : d > mr - 1.2 ? s(Blocks.SNOW_BLOCK) : s(Blocks.WHITE_CONCRETE));
+            if ((dx + dy) % 3 == 0) kit.setRel(dx, my + dy, mz + 2, glow);
         }
     }
 

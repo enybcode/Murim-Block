@@ -426,6 +426,30 @@ public final class MartialArts {
     /** Its passive keeps Epic Fight's spear strikes; each that lands adds a charge of Domination, five make a battering ram. */
     public static final Passive CONQUERORS_WEIGHT = new Passive(id("conquerors_weight"), List.of(), List.of());
 
+    // ---------------------------------------------------------------- the Crescent Moon Halberd (docs/combat/styles/crescent-moon-halberd.md)
+
+    /**
+     * The Crescent Moon Halberd (月牙戟, Enzo 19/10/2026): an orthodox art of the halberd, of the moon and water, elegant,
+     * all in circles, at middle reach. A spear in hand (any Epic Fight spear; the Crescent Moon Halberd is its own),
+     * learnt from Qi Condensation. No quests: its scroll teaches its four techniques and its ultimate.
+     */
+    public static final ResourceLocation CRESCENT_MOON_HALBERD = id("crescent_moon_halberd");
+    public static final com.murimblock.cultivation.CultivationRealm CRESCENT_MOON_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    /** A whole turn low, then a ring of moon-water on the ground that slows whoever stands in it. */
+    public static final Technique MOONLIT_CIRCLE = new Technique(id("moonlit_circle"), CRESCENT_MOON_HALBERD, 45, 240);
+    /** The hook caught on a foe ahead: pulled in to the halberd, or, too heavy, tripped where it stands. */
+    public static final Technique TIDE_HOOK = new Technique(id("tide_hook"), CRESCENT_MOON_HALBERD, 35, 180);
+    /** A great slash down and across: three crescents of light fly off in a fan. */
+    public static final Technique FALLING_CRESCENT = new Technique(id("falling_crescent"), CRESCENT_MOON_HALBERD, 55, 260);
+    /** Held: the halberd upright before the body, a mirror of still water; what strikes it from the front is sent back as a crescent. */
+    public static final Technique MIRROR_LAKE_STANCE = new Technique(id("mirror_lake_stance"), CRESCENT_MOON_HALBERD, 30, 300);
+    public static final int MIRROR_MAX_TICKS = 60;
+    public static final double MIRROR_QI_PER_SECOND = 5;
+    /** The ultimate: night falls round the cultivator, a full moon rises and its beams strike the enemies; four minutes to recover. */
+    public static final Technique NIGHT_OF_THE_FULL_MOON = new Technique(id("night_of_the_full_moon"), CRESCENT_MOON_HALBERD, 180, 4800);
+    /** Its passive keeps Epic Fight's spear strikes; each that lands fills the moon, and a full moon sends a crescent off the next. */
+    public static final Passive WAXING_MOON = new Passive(id("waxing_moon"), List.of(), List.of());
+
     // ---------------------------------------------------------------- the Devouring Demon Art (docs/combat/styles/devouring-demon-art.md)
 
     /**
@@ -456,7 +480,7 @@ public final class MartialArts {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
                 : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : art.equals(THUNDER_SABER) ? THUNDER_SABER_REALM
                 : art.equals(MAJIN_FIST) ? MAJIN_REALM : art.equals(OVERLORD_SPEAR) ? OVERLORD_REALM
-                : art.equals(DEVOURING_DEMON) ? DEVOURING_DEMON_REALM : null;
+                : art.equals(DEVOURING_DEMON) ? DEVOURING_DEMON_REALM : art.equals(CRESCENT_MOON_HALBERD) ? CRESCENT_MOON_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -485,6 +509,10 @@ public final class MartialArts {
         // No quests (Enzo's design): the manual teaches the five techniques and the ultimate; the secret is found.
         add(new Art(OVERLORD_SPEAR, List.of(TYRANTS_THRUST, EARTH_SPLITTING_SWEEP, FALLING_MOUNTAIN, OVERLORDS_CHARGE, HUNDRED_BATTLES_RAMPAGE,
                 CONQUEROR_DESCENDS, BREAKING_THE_CAULDRONS), CONQUERORS_WEIGHT, List.of(), List.of()));
+
+        // No quests (Enzo's choice of design): the scroll teaches the four techniques and the ultimate.
+        add(new Art(CRESCENT_MOON_HALBERD, List.of(MOONLIT_CIRCLE, TIDE_HOOK, FALLING_CRESCENT, MIRROR_LAKE_STANCE, NIGHT_OF_THE_FULL_MOON),
+                WAXING_MOON, List.of(), List.of()));
 
         add(new Art(GOLDEN_BELL, List.of(GOLDEN_BELL_FORM, IRON_REBOUND, ROOTED_MOUNTAIN, BELL_TOLL), BELL_PALMS,
                 List.of(TAKE_THE_BLOW, RETURN_IT), List.of(STEADFAST_BELL, MIRROR_IRON, ANCIENT_MOUNTAIN)));

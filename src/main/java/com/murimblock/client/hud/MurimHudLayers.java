@@ -17,6 +17,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 public final class MurimHudLayers {
     public static final ResourceLocation COMBAT_BAR = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "combat_bar");
     public static final ResourceLocation QI_BAR = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "qi_bar");
+    public static final ResourceLocation CRESCENT_MOON = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crescent_moon");
 
     private MurimHudLayers() {
     }
@@ -25,5 +26,7 @@ public final class MurimHudLayers {
     public static void register(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.HOTBAR, COMBAT_BAR, (g, delta) -> CombatBarClient.renderLayer(g));
         event.registerAbove(VanillaGuiLayers.EXPERIENCE_BAR, QI_BAR, (g, delta) -> CombatQiHud.renderLayer(g));
+        // The Crescent Moon Halberd: its moon by the crosshair, the night of its ultimate over the screen.
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, CRESCENT_MOON, (g, delta) -> com.murimblock.client.CrescentMoonClient.renderLayer(g));
     }
 }

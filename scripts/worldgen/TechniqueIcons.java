@@ -80,6 +80,14 @@ import javax.imageio.ImageIO;
  *   the_one: a great sun filling the square, a small dark figure before it, arms flung wide (the ultimate);
  *   grand_noon: a column of white sunlight from the top of the square onto a fist (the secret; one red point);
  *   pride_of_the_sun: the passive, a fist wrapped in flame under a small sun.
+ * And the Crescent Moon Halberd's, "lake night": a deep blue night over still water, a silver frame, the halberd in
+ * night-blue lacquer and silver, every move in white and pale blue moonlight:
+ *   moonlit_circle: the halberd swept low round a ring of moon-water on the ground, ripples going out;
+ *   tide_hook: the halberd level, its crescent hooked round a dark figure drawn in toward it;
+ *   falling_crescent: three crescents of light flying off in a fan;
+ *   mirror_lake_stance: the halberd upright behind a disc of still water, an arrow sunk in it, a crescent going back;
+ *   night_of_the_full_moon: a great full moon over the ground, beams of moonlight falling from it (the ultimate);
+ *   waxing_moon: the passive, the moon's phases filling in a row, the last full and shining.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -95,9 +103,10 @@ public class TechniqueIcons {
             "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun",
             "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
             "breaking_the_cauldrons", "conquerors_weight",
-            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict"};
+            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict",
+            "moonlit_circle", "tide_hook", "falling_crescent", "mirror_lake_stance", "night_of_the_full_moon", "waxing_moon"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67, MOON = 74;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -117,7 +126,8 @@ public class TechniqueIcons {
             else if (i < SUN) bell(g, img, i - BELL);
             else if (i < RUIN) sun(g, img, i - SUN);
             else if (i < DEMON) ruin(g, img, i - RUIN);
-            else demon(g, img, i - DEMON);
+            else if (i < MOON) demon(g, img, i - DEMON);
+            else moon(g, img, i - MOON);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -1389,6 +1399,100 @@ public class TechniqueIcons {
                 line(g, 25, 10, 28, 12, 1.2f, FLESH_LIGHT);
             }
             default -> { }
+        }
+    }
+
+    // ------------------------------------------------------------ the Crescent Moon Halberd: lake night, moonlight, silver
+
+    static final Color MOON_WHITE = c(244, 251, 255), MOON_BLUE = c(159, 216, 255), MOON_DEEP = c(60, 120, 210), MOON_SILVER = c(200, 207, 221),
+            LACQUER = c(34, 48, 92);
+
+    static void moonBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.min(1, Math.hypot(x - 15.5, y - 13) / 22.0);
+            int water = y > 24 ? 10 : 0;
+            img.setRGB(x, y, c((int) (8 + 22 * (1 - d) * (1 - d)), (int) (12 + 30 * (1 - d) * (1 - d)) + water, (int) (30 + 60 * (1 - d) * (1 - d)) + water * 2).getRGB());
+        }
+        g.setColor(MOON_SILVER); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(30, 44, 80)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A crescent: the disc of radius r at (x, y), less the same disc shifted by (dx, dy). */
+    static void crescent(Graphics2D g, double x, double y, double r, double dx, double dy, Color col) {
+        Area a = new Area(new Ellipse2D.Double(x - r, y - r, r * 2, r * 2));
+        a.subtract(new Area(new Ellipse2D.Double(x - r + dx, y - r + dy, r * 2, r * 2)));
+        g.setColor(col); g.fill(a);
+    }
+
+    /** The Crescent Moon Halberd from its butt to its point: a lacquer shaft, a white tassel, a silver point, the crescent on its side. */
+    static void halberd(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+        double hx = x1 - ux * 7, hy = y1 - uy * 7;
+        line(g, x0, y0, hx, hy, 1.6f, LACQUER);
+        line(g, x0, y0, x0 + ux * 1.4, y0 + uy * 1.4, 1.8f, MOON_SILVER);
+        // The tassel, the collar.
+        line(g, hx - ux * 1.2, hy - uy * 1.2, hx - ux * 3 - nx * 2.4, hy - uy * 3 - ny * 2.4, 1.4f, MOON_WHITE);
+        line(g, hx - nx * 1.3, hy - ny * 1.3, hx + nx * 1.3, hy + ny * 1.3, 1.2f, MOON_SILVER);
+        // The point.
+        Path2D head = new Path2D.Double();
+        head.moveTo(hx, hy); head.lineTo(hx + ux * 2 + nx * 1.2, hy + uy * 2 + ny * 1.2); head.lineTo(x1, y1);
+        head.lineTo(hx + ux * 2 - nx * 1.2, hy + uy * 2 - ny * 1.2); head.closePath();
+        g.setColor(MOON_SILVER); g.fill(head);
+        line(g, hx + ux, hy + uy, x1 - ux, y1 - uy, 0.6f, MOON_WHITE);
+        // The crescent blade on its side, its edge glowing.
+        double cx = hx + ux * 1.2 + nx * 3.0, cy = hy + uy * 1.2 + ny * 3.0;
+        crescent(g, cx, cy, 3.4, -nx * 1.6, -ny * 1.6, MOON_BLUE);
+        crescent(g, cx + nx * 0.4, cy + ny * 0.4, 3.0, -nx * 1.9, -ny * 1.9, MOON_WHITE);
+    }
+
+    static void moon(Graphics2D g, BufferedImage img, int i) {
+        moonBack(img, g);
+        switch (i) {
+            case 0 -> { // Moonlit Circle: the halberd swept low round a ring of moon-water.
+                g.setColor(c(60, 120, 210, 110)); g.fill(new Ellipse2D.Double(3, 20, 26, 9));
+                g.setColor(MOON_BLUE); g.setStroke(new BasicStroke(1.2f)); g.draw(new Ellipse2D.Double(3, 20, 26, 9));
+                g.setColor(c(244, 251, 255, 120)); g.setStroke(new BasicStroke(0.7f)); g.draw(new Ellipse2D.Double(7, 22, 18, 5));
+                g.setColor(c(159, 216, 255, 160)); g.draw(new Arc2D.Double(2, 6, 28, 18, 200, 140, Arc2D.OPEN));
+                halberd(g, img, 4, 22, 27, 13);
+            }
+            case 1 -> { // Tide Hook: the halberd level, its crescent round a dark figure drawn in.
+                g.setColor(c(16, 20, 34)); g.fill(new Ellipse2D.Double(23, 9, 4, 4)); g.fill(new Rectangle2D.Double(22.5, 13, 5, 9));
+                for (int k = 0; k < 3; k++) line(g, 28, 12 + k * 4, 31, 12 + k * 4, 0.8f, c(159, 216, 255, 150));
+                halberd(g, img, 2, 21, 24, 16);
+            }
+            case 2 -> { // Falling Crescent: three crescents flying off in a fan.
+                crescent(g, 22, 8, 4.5, -2.4, 1.2, MOON_BLUE);
+                crescent(g, 25, 16, 4.5, -2.6, 0, MOON_WHITE);
+                crescent(g, 22, 24, 4.5, -2.4, -1.2, MOON_BLUE);
+                for (int k = 0; k < 3; k++) line(g, 4, 9 + k * 7, 12, 9 + k * 7.5, 0.7f, c(159, 216, 255, 120));
+                halberd(g, img, 3, 28, 13, 8);
+            }
+            case 3 -> { // Mirror Lake Stance: the halberd upright behind a disc of water; an arrow sunk in it, a crescent going back.
+                halberd(g, img, 10, 30, 10, 2);
+                g.setColor(c(40, 90, 170, 170)); g.fill(new Ellipse2D.Double(12, 8, 13, 16));
+                g.setColor(MOON_WHITE); g.setStroke(new BasicStroke(1f)); g.draw(new Ellipse2D.Double(12, 8, 13, 16));
+                line(g, 31, 13, 24, 15, 0.8f, c(200, 180, 150)); px(img, 31, 12, c(220, 220, 220)); px(img, 31, 14, c(220, 220, 220));
+                crescent(g, 27, 24, 3.2, 1.6, -0.6, MOON_WHITE);
+            }
+            case 4 -> { // Night of the Full Moon: a great moon, beams falling from it.
+                disc(g, 16, 9, 7.5, c(159, 216, 255, 70));
+                disc(g, 16, 9, 6, MOON_WHITE);
+                disc(g, 14, 7, 1.4, c(196, 206, 220)); disc(g, 18.5, 11, 1.1, c(196, 206, 220)); disc(g, 13, 11.5, 0.8, c(196, 206, 220));
+                g.setColor(c(159, 216, 255, 120));
+                for (double x : new double[]{6, 16, 26}) g.fill(new Rectangle2D.Double(x - 1, 15, 2, 13));
+                g.setColor(c(159, 216, 255, 200));
+                for (double x : new double[]{6, 16, 26}) g.fill(new Ellipse2D.Double(x - 3, 27, 6, 2.4));
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Waxing Moon: the phases in a row filling, the last full.
+                for (int k = 0; k < 4; k++) {
+                    double x = 6 + k * 6.8;
+                    disc(g, x, 9, 2.8, c(30, 48, 80));
+                    if (k < 3) crescent(g, x, 9, 2.8, -(1 + k) * 1.6, 0, MOON_BLUE);
+                    else { disc(g, x, 9, 3.6, c(159, 216, 255, 90)); disc(g, x, 9, 2.8, MOON_WHITE); }
+                }
+                halberd(g, img, 3, 29, 28, 15);
+            }
         }
     }
 }

@@ -211,6 +211,13 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.OVERLORD_SPEAR, credit, strike, false));
             return;
         }
+        credit = CrescentMoonHalberd.creditOf(player, animation);
+        if (credit != null) {
+            boolean strike = CrescentMoonHalberd.isStrike(animation);
+            if (strike) CrescentMoonHalberd.strikeBegan(player);
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CRESCENT_MOON_HALBERD, credit, strike, false));
+            return;
+        }
         credit = MountainShatteringFist.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.MOUNTAIN_SHATTERING_FIST, credit, MountainShatteringFist.isStrike(animation), false));
@@ -317,6 +324,7 @@ public final class MartialCombat {
         boolean mountain = swing.art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST);
         boolean overlord = swing.art.equals(MartialArts.OVERLORD_SPEAR);
         if (overlord) OverlordSpear.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.CRESCENT_MOON_HALBERD)) CrescentMoonHalberd.onHit(player, target, animation, enemy);
         else if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
         else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
         else if (swing.art.equals(MartialArts.MAJIN_FIST)) MajinFistArt.onHit(player, target, animation, enemy);
@@ -690,6 +698,7 @@ public final class MartialCombat {
         TravellerStaff.tick(player);
         MountainShatteringFist.tick(player);
         OverlordSpear.tick(player);
+        CrescentMoonHalberd.tick(player);
         MajinFistArt.tick(player);
         SevenStarsSword.tick(player);
         ThunderSaber.tick(player);
@@ -771,6 +780,10 @@ public final class MartialCombat {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onIncomingDamage);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onKnockBack);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, TravellerStaff::onProjectileImpact);
+        // Mirror Lake Stance stops what comes from the front and sends it back as a crescent.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, CrescentMoonHalberd::onIncomingDamage);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, CrescentMoonHalberd::onKnockBack);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, CrescentMoonHalberd::onProjectileImpact);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, SanguineArt::defend);
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((com.murimblock.api.combat.CombatModeChangedEvent event) -> {
             if (!event.enabled()) SanguineArt.leftCombat(event.getEntity().getUUID());
@@ -802,6 +815,7 @@ public final class MartialCombat {
         TravellerStaff.forget(id);
         MountainShatteringFist.forget(id);
         OverlordSpear.forget(id);
+        CrescentMoonHalberd.forget(id);
         MajinFistArt.forget(id);
         SevenStarsSword.forget(id);
         ThunderSaber.forget(id);
@@ -828,6 +842,7 @@ public final class MartialCombat {
         TravellerStaff.forget(null);
         MountainShatteringFist.forget(null);
         OverlordSpear.forget(null);
+        CrescentMoonHalberd.forget(null);
         MajinFistArt.forget(null);
         SevenStarsSword.forget(null);
         ThunderSaber.forget(null);

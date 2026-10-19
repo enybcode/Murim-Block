@@ -135,6 +135,7 @@ public final class MurimAnimations {
         buildSanguineArt(builder);
         buildCelestialPeakSpear(builder);
         buildOverlordSpear(builder);
+        buildCrescentMoonHalberd(builder);
         buildBanditChief(builder);
         BanditWarlordAnimations.build(builder);
         ColossusAnimations.build(builder);
@@ -502,6 +503,30 @@ public final class MurimAnimations {
     /** The sweep: a ring of four blocks round at the knees; the charge's point ahead of the body all along. */
     private static final OBBCollider OVERLORD_RING = new OBBCollider(4.0D, 0.8D, 4.0D, 0.0D, 0.6D, 0.0D);
     private static final OBBCollider OVERLORD_CHARGE_POINT = new OBBCollider(0.9D, 1.0D, 1.4D, 0.0D, 1.0D, -1.6D);
+
+    // ---------------------------------------------------------------- the Crescent Moon Halberd (scripts/animation/crescent-halberd.cjs)
+
+    public static AnimationAccessor<AttackAnimation> HALBERD_MOONLIT_CIRCLE;
+    public static AnimationAccessor<ActionAnimation> HALBERD_TIDE_HOOK, HALBERD_FALLING_CRESCENT, HALBERD_MIRROR, HALBERD_MIRROR_END, HALBERD_FULL_MOON;
+    /** Moonlit Circle's turn, Tide Hook's catch and pull, Falling Crescent's slash, the full moon's rise and the beams' fall (seconds). */
+    public static final float HALBERD_CIRCLE_FROM = 0.24F, HALBERD_CIRCLE_TO = 0.66F, HALBERD_HOOK_CATCH = 0.22F, HALBERD_HOOK_PULL = 0.44F,
+            HALBERD_CRESCENT_SLASH = 0.34F, HALBERD_MOON_RISE = 0.3F, HALBERD_MOON_STRIKE = 1.85F;
+    private static final OBBCollider HALBERD_RING = new OBBCollider(3.6D, 0.8D, 3.6D, 0.0D, 0.8D, 0.0D);
+
+    private static void buildCrescentMoonHalberd(AnimationBuilder builder) {
+        // A whole turn low from 0.24 s to 0.66 s: one hit each round the body (the ring of moon-water is the server's).
+        HALBERD_MOONLIT_CIRCLE = builder.nextAccessor("biped/murim/halberd_moonlit_circle", a -> technique(new AttackAnimation(0.06F, 0.2F, HALBERD_CIRCLE_FROM, HALBERD_CIRCLE_TO, 0.96F,
+                HALBERD_RING, root(), a, Armatures.BIPED), 1.0F)
+                .addProperty(AttackPhaseProperty.MAX_STRIKES_MODIFIER, ValueModifier.adder(10))
+                .addProperty(AttackPhaseProperty.STUN_TYPE, StunType.SHORT)
+                .addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLADE_HIT.get())
+                .addProperty(AttackPhaseProperty.SWING_SOUND, EpicFightSounds.WHOOSH_BIG.get()));
+        HALBERD_TIDE_HOOK = builder.nextAccessor("biped/murim/halberd_tide_hook", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        HALBERD_FALLING_CRESCENT = builder.nextAccessor("biped/murim/halberd_falling_crescent", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        HALBERD_MIRROR = builder.nextAccessor("biped/murim/halberd_mirror", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
+        HALBERD_MIRROR_END = builder.nextAccessor("biped/murim/halberd_mirror_end", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
+        HALBERD_FULL_MOON = builder.nextAccessor("biped/murim/halberd_full_moon", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+    }
 
     private static void buildOverlordSpear(AnimationBuilder builder) {
         OVERLORD_TYRANT_CHARGE = builder.nextAccessor("biped/murim/overlord_tyrant_charge", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));

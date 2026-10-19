@@ -39,7 +39,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 public final class InnerWorldsTour {
     private static final List<ResourceLocation> ARTS = List.of(MartialArts.AZURE_CLOUD_SWORD, MartialArts.LONG_FIST, MartialArts.GOLDEN_BELL,
             MartialArts.CELESTIAL_PEAK_SPEAR, MartialArts.TRAVELLER_STAFF, MartialArts.THUNDER_SABER, MartialArts.SEVEN_STARS_SWORD,
-            MartialArts.MOUNTAIN_SHATTERING_FIST, MartialArts.OVERLORD_SPEAR, MartialArts.SANGUINE_ART, MartialArts.DEVOURING_DEMON, MartialArts.MAJIN_FIST);
+            MartialArts.MOUNTAIN_SHATTERING_FIST, MartialArts.OVERLORD_SPEAR, MartialArts.SANGUINE_ART, MartialArts.DEVOURING_DEMON, MartialArts.MAJIN_FIST,
+            MartialArts.CRESCENT_MOON_HALBERD);
     private static final int REALM = 6, START = 160, EACH = 90;
     private static boolean creating, finished;
     private static int ticks;

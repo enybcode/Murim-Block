@@ -30,6 +30,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.OverlordQiEntity>> OVERLORD_QI =
             TYPES.register("overlord_qi", () -> EntityType.Builder.<com.murimblock.martial.OverlordQiEntity>of(com.murimblock.martial.OverlordQiEntity::new, MobCategory.MISC)
                     .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:overlord_qi"));
+    /** The Crescent Moon Halberd's shapes of moonlight: crescents, the ring, the mirror, the full moon and its beams (shown only). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.MoonQiEntity>> MOON_QI =
+            TYPES.register("moon_qi", () -> EntityType.Builder.<com.murimblock.martial.MoonQiEntity>of(com.murimblock.martial.MoonQiEntity::new, MobCategory.MISC)
+                    .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:moon_qi"));
     public static final DeferredHolder<EntityType<?>, EntityType<TrainingOpponentEntity>> TRAINING_OPPONENT =
             TYPES.register("training_opponent", () -> EntityType.Builder.of(TrainingOpponentEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("murimblock:training_opponent"));

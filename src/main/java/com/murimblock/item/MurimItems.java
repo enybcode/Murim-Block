@@ -253,6 +253,16 @@ public final class MurimItems {
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.OVERLORD_SPEAR));
     public static final DeferredItem<SwordItem> SPEAR_OF_RUIN = ITEMS.register("spear_of_ruin",
             () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.EPIC).attributes(SwordItem.createAttributes(Tiers.IRON, 4, -2.9F))));
+    /** The Crescent Moon Halberd's scroll: read (from Qi Condensation), it teaches the art; found in the Alliance arena's chests and the sites' caches. */
+    public static final DeferredItem<MartialManualItem> CRESCENT_MOON_HALBERD_SCROLL = ITEMS.register("crescent_moon_halberd_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.CRESCENT_MOON_HALBERD));
+    /**
+     * The Crescent Moon Halberd (月牙戟), the art's own: a ji of night-blue lacquer and silver, its crescent's edge glowing
+     * moonlight (scripts/animation/crescent-halberd-model.cjs). A spear for Epic Fight (capabilities/weapons), forged
+     * (recipe) or found with the scroll.
+     */
+    public static final DeferredItem<SwordItem> CRESCENT_MOON_HALBERD = ITEMS.register("crescent_moon_halberd",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.IRON, 4, -2.8F))));
 
     /**
      * The Peak Guard's armour, the captain's, on a man's build: a plumed iron helm with cheek guards and a neck curtain,
@@ -404,6 +414,8 @@ public final class MurimItems {
                         output.accept(CRIMSON_DRAGON_SPEAR.get());
                         output.accept(SPEAR_OF_RUIN.get());
                         output.accept(OVERLORD_SPEAR_SCROLL.get());
+                        output.accept(CRESCENT_MOON_HALBERD.get());
+                        output.accept(CRESCENT_MOON_HALBERD_SCROLL.get());
                         output.accept(PEAK_GUARD_HELM.get());
                         output.accept(PEAK_GUARD_LAMELLAR.get());
                         output.accept(PEAK_GUARD_TASSETS.get());

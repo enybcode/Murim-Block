@@ -87,8 +87,10 @@ public final class InnerWorldClient {
     public static void onFog(ViewportEvent.RenderFog event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !InnerWorldService.isInside(mc.player)) return;
-        event.setNearPlaneDistance(24);
-        event.setFarPlaneDistance(90);
+        // The moon lake sees its moon across the water: its mist lies farther off.
+        boolean far = theme(mc) == InnerTheme.CRESCENT_MOON;
+        event.setNearPlaneDistance(far ? 60 : 24);
+        event.setFarPlaneDistance(far ? 170 : 90);
         event.setCanceled(true);
     }
 
@@ -124,6 +126,12 @@ public final class InnerWorldClient {
             case SANGUINE -> level.addParticle(new DustParticleOptions(new Vector3f(0.6F, 0.04F, 0.06F), 2.0F), x, y - 4, z, 0, 0.005, 0);
             case DEVOURING_DEMON -> level.addParticle(ParticleTypes.SCULK_SOUL, x, at.y - 2 + random.nextDouble() * 4, z, 0, 0.02, 0);
             case MAJIN_FIST -> level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x, y - 3, z, 0, 0.02, 0);
+            case CRESCENT_MOON -> {
+                // Stars over the lake, drops of moonlight rising off the water.
+                level.addAlwaysVisibleParticle(ParticleTypes.END_ROD, true, at.x + (random.nextDouble() - 0.5) * 120, at.y + 30 + random.nextDouble() * 30,
+                        at.z + (random.nextDouble() - 0.5) * 120, 0, 0, 0);
+                level.addParticle(ParticleTypes.GLOW, x, com.murimblock.cultivation.inner.InnerIsland.GROUND + 1.1, z, 0, 0.01, 0);
+            }
             default -> { }
         }
     }

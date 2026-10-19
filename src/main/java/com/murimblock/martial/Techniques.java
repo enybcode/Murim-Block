@@ -29,6 +29,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.bareHanded(player);
         if (technique.art().equals(MartialArts.DEVOURING_DEMON)) return DevouringDemon.bareHanded(player);
         if (technique.art().equals(MartialArts.OVERLORD_SPEAR)) return OverlordSpear.holdsSpear(player);
+        if (technique.art().equals(MartialArts.CRESCENT_MOON_HALBERD)) return CrescentMoonHalberd.holdsHalberd(player);
         return true;
     }
 
@@ -55,6 +56,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.GOLDEN_BELL)) return GoldenBell.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.DEVOURING_DEMON)) return DevouringDemon.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.OVERLORD_SPEAR)) return OverlordSpear.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.CRESCENT_MOON_HALBERD)) return CrescentMoonHalberd.perform(player, patch, technique);
         return false;
     }
 }
