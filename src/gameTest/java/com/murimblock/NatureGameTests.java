@@ -60,8 +60,18 @@ public final class NatureGameTests {
         long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals(Murimblock.MOD_ID)
                 && com.murimblock.martial.SanguineBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
                 && com.murimblock.bloodsect.BloodSect.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
-                && MurimBlocks.buildingOrder().stream().noneMatch(b -> b.getId().equals(k))).count();
+                && MurimBlocks.buildingOrder().stream().noneMatch(b -> b.getId().equals(k))
+                && com.murimblock.world.plant.MurimFlora.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
+                && com.murimblock.alchemy.AlchemyItems.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))
+                && com.murimblock.world.raven.RavenBlocks.BLOCKS.getEntries().stream().noneMatch(e -> e.getId().equals(k))).count();
         helper.assertTrue(blocks == MurimBlocks.creativeOrder().size(), "Nature tab lists " + MurimBlocks.creativeOrder().size() + " of " + blocks + " blocks");
+        // The plants' own blocks (docs/cultivation/plants.md): every wild one has its item in the tab; the planted crop has none.
+        for (var entry : com.murimblock.world.plant.MurimFlora.BLOCKS.getEntries()) {
+            if (entry.getId().getPath().equals("murim_crop")) continue;
+            var item = BuiltInRegistries.ITEM.get(entry.getId());
+            helper.assertTrue(item != net.minecraft.world.item.Items.AIR, "No item for the plant " + entry.getId());
+            helper.assertTrue(com.murimblock.world.plant.MurimFlora.creativeItems().stream().anyMatch(s -> s.get() == item), "Plant not in the nature tab: " + entry.getId());
+        }
         // The building blocks (the main tab's) are checked the same way.
         for (var block : java.util.stream.Stream.concat(MurimBlocks.creativeOrder().stream(), MurimBlocks.buildingOrder().stream()).toList()) {
             helper.assertTrue(block.get().asItem() != Items.AIR, "No item for " + block.getId());

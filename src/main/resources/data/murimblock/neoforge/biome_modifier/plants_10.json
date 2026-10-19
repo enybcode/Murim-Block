@@ -1,0 +1,17 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:peach_blossom_valley",
+    "murimblock:cloud_sea_peaks",
+    "murimblock:wulingyuan_pillars"
+  ],
+  "features": [
+    "murimblock:plant_peony",
+    "murimblock:plant_cymbidium_orchid",
+    "murimblock:plant_camellia",
+    "murimblock:plant_balloon_flower",
+    "murimblock:plant_red_spider_lily",
+    "murimblock:plant_white_lily"
+  ],
+  "step": "vegetal_decoration"
+}

@@ -41,7 +41,8 @@ class CultivationRulesTest {
     @Test
     void meditationCondensesMoreInPlacesOfPowerAndLessOnceTheDayIsSpent() {
         double ordinary = CultivationRules.condensed(200, CultivationRealm.QI_SENSING, CultivationRules.Place.ORDINARY, 0, 1200);
-        assertEquals(200 * 0.012, ordinary, 1e-9);
+        // 1.2 % of Qi Max a minute, at the first realm's pace.
+        assertEquals(200 * 0.012 * CultivationRules.growth(CultivationRealm.QI_SENSING), ordinary, 1e-9);
         assertEquals(ordinary * 2, CultivationRules.condensed(200, CultivationRealm.QI_SENSING, CultivationRules.Place.POWER, 0, 1200), 1e-9);
         // Past the day's ten minutes: a quarter.
         assertEquals(ordinary * 0.25, CultivationRules.condensed(200, CultivationRealm.QI_SENSING, CultivationRules.Place.ORDINARY,
@@ -124,11 +125,11 @@ class CultivationRulesTest {
 
     /**
      * A typical player, minute by minute: each in-game day (20 min) three minutes of meditation in a Murim land (half
-     * a minute to fill the reserve), 5 Qi of techniques a minute (more with each realm), a kill a minute (better prey
+     * a minute to fill the reserve), the motes drawn in (`motes`: about four fifths more), 5 Qi of techniques a minute (more with each realm), a kill a minute (better prey
      * with each realm), a pill every hour, one mission every other day, the Bandit Chief beaten at an hour and a half;
      * the Heart Demon beaten at the first try. Returns the minutes it takes to reach each realm.
      */
-    static List<Integer> simulate(int realms) {
+    static List<Integer> simulate(int realms, double motes) {
         CultivationData data = CultivationData.initial();
         double qiMax = 100;
         int condensedToday = 0;
@@ -141,11 +142,11 @@ class CultivationRulesTest {
             if (ofDay >= 17 && ofDay < 20) {
                 // The first half minute fills the reserve; then it condenses.
                 int ticks = ofDay == 17 ? 600 : 1200;
-                gain += CultivationRules.condensed(qiMax, data.realm(), CultivationRules.Place.MURIM_LAND, condensedToday, ticks);
+                gain += CultivationRules.condensed(qiMax, data.realm(), CultivationRules.Place.MURIM_LAND, condensedToday, ticks) * motes;
                 condensedToday += ticks;
             } else {
-                gain += (5 + 2 * r) * CultivationRules.TECHNIQUE_SHARE;
-                gain += 5 * (1 + r) * CultivationRules.KILL_SHARE;
+                gain += (5 + 2 * r) * CultivationRules.TECHNIQUE_SHARE * CultivationRules.growth(data.realm());
+                gain += 5 * (1 + r) * CultivationRules.KILL_SHARE * CultivationRules.growth(data.realm());
             }
             if (minute % 60 == 0) gain += CultivationRules.PILL_QI_MAX;
             if (minute % 40 == 0) gain += CultivationRules.missionReward(data.realm(), CultivationRules.STORM_SHARE);
@@ -161,18 +162,25 @@ class CultivationRulesTest {
         return reached;
     }
 
+    /**
+     * The pace Enzo asked for (17/10/2026), for a player who draws in the motes: Qi Guiding in about half an hour, Qi
+     * Condensation in two hours, Qi Liquidation in five, Qi Crystallization in nine, Foundation Establishment in fifteen;
+     * each realm longer than the last; a player who lets the motes be is slower, but not by half.
+     */
     @Test
-    void theSecondRealmTakesAboutTwoHoursAndEachRealmLonger() {
-        List<Integer> reached = simulate(4);
-        System.out.println("Typical player reaches realms 2 to 5 at minutes " + reached);
-        assertEquals(4, reached.size(), "realms not reached: " + reached);
-        int first = reached.get(0);
-        assertTrue(first >= 100 && first <= 140, "Qi Guiding should take about two hours of play, took " + first + " min");
-        int previous = first;
+    void theRealmsComeAtThePaceAskedForAndEachTakesLonger() {
+        List<Integer> reached = simulate(5, 1.8), idle = simulate(5, 1.0);
+        System.out.println("Typical player reaches realms 2 to 6 at minutes " + reached + " (letting the motes be: " + idle + ")");
+        assertEquals(5, reached.size(), "realms not reached: " + reached);
+        int[] asked = {30, 120, 300, 540, 900};
+        for (int i = 0; i < asked.length; i++)
+            assertTrue(Math.abs(reached.get(i) - asked[i]) <= asked[i] * 0.15, "realm " + (i + 2) + " at " + reached.get(i) + " min, asked " + asked[i] + " (all: " + reached + ")");
+        int previous = reached.get(0);
         for (int i = 1; i < reached.size(); i++) {
             int took = reached.get(i) - reached.get(i - 1);
             assertTrue(took > previous, "realm " + (i + 2) + " took " + took + " min, not more than " + previous + " (all: " + reached + ")");
             previous = took;
         }
+        for (int i = 0; i < asked.length; i++) assertTrue(idle.get(i) < reached.get(i) * 1.5, "letting the motes be is too slow: " + idle);
     }
 }

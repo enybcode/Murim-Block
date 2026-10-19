@@ -21,5 +21,8 @@ public final class ProfileGuiClientHandler {
                 minecraft.setScreen(new MurimProfileScreen());
             }
         }
+        while (MurimblockKeyMappings.MURIM_MAP.consumeClick()) {
+            if (minecraft.player != null && minecraft.screen == null) MurimMapScreen.open();
+        }
     }
 }

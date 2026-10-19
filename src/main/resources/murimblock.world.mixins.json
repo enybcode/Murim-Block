@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "com.murimblock.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["SanctuaryLocateMixin"],
+  "mixins": ["SanctuaryLocateMixin", "WaterWalkMixin"],
   "injectors": {"defaultRequire": 1}
 }

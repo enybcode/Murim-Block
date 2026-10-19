@@ -80,6 +80,24 @@ import javax.imageio.ImageIO;
  *   the_one: a great sun filling the square, a small dark figure before it, arms flung wide (the ultimate);
  *   grand_noon: a column of white sunlight from the top of the square onto a fist (the secret; one red point);
  *   pride_of_the_sun: the passive, a fist wrapped in flame under a small sun.
+ * And the Crescent Moon Halberd's, "lake night": a deep blue night over still water, a silver frame, the halberd in
+ * night-blue lacquer and silver, every move in white and pale blue moonlight:
+ *   twin_reflection: a dark foe between the halberd and a water-blue reflection striking it from behind;
+ *   shattered_mirror: a reflection bursting into shards of water-glass flying out all round;
+ *   swap: the halberd's bearer and a reflection, two curved arrows between them;
+ *   hall_of_mirrors: four water-blue reflections round the bearer, each pointing at a foe;
+ *   night_of_the_full_moon: a great full moon over the ground, beams of moonlight falling from it (the ultimate);
+ *   mirror_image: the passive, a figure dodging aside, its reflection of water left where it stood.
+ * And the Raven Messenger Art's, "the halls at night": a violet-black night in a gold frame, every door a disc of shadow
+ * with an amber rim, black feathers:
+ *   raven_gate: a door open in the ground under a dark foe, its feet already in it;
+ *   halls_step: a door the bearer goes into, another far off it comes out of, a dotted path between;
+ *   exchange: two doors, a foe and the bearer in each, arrows crossing between them;
+ *   swallowing_gate: a standing door before an open fan, three arrows going into it;
+ *   closed_room: two figures shut in a square of paper walls and red posts;
+ *   halls_unfold: a great door under many small foes falling into it (the ultimate);
+ *   return_to_sender: a blow going into one door and the foe coming out of another behind the bearer (the secret);
+ *   between_worlds: the passive, three slits of shadow on a body, a feather falling.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -92,9 +110,14 @@ public class TechniqueIcons {
             "shooting_star", "dipper_steps", "orbiting_stars", "constellation_link", "falling_star_rain", "seven_stars_array", "polaris_riposte", "star_marks",
             "thunder_descends", "rolling_thunder", "heavens_drum", "severing_flash", "nine_heavens_wrath", "thunder_sovereign", "heaven_answers", "rolling_drums",
             "golden_bell", "iron_rebound", "rooted_mountain", "bell_toll", "bell_palms",
-            "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun"};
+            "sunfire_fist", "pride_flare", "cruel_sun", "noon_judgment", "midday_meteor", "the_one", "grand_noon", "pride_of_the_sun",
+            "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
+            "breaking_the_cauldrons", "conquerors_weight",
+            "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict", "kagune_shift",
+            "twin_reflection", "shattered_mirror", "swap", "hall_of_mirrors", "night_of_the_full_moon", "mirror_image",
+            "raven_gate", "halls_step", "exchange", "swallowing_gate", "closed_room", "halls_unfold", "return_to_sender", "between_worlds"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67, MOON = 75, RAVEN = 81;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -112,7 +135,11 @@ public class TechniqueIcons {
             else if (i < THUNDER) stars(g, img, i - STARS);
             else if (i < BELL) thunder(g, img, i - THUNDER);
             else if (i < SUN) bell(g, img, i - BELL);
-            else sun(g, img, i - SUN);
+            else if (i < RUIN) sun(g, img, i - SUN);
+            else if (i < DEMON) ruin(g, img, i - RUIN);
+            else if (i < MOON) demon(g, img, i - DEMON);
+            else if (i < RAVEN) moon(g, img, i - MOON);
+            else raven(g, img, i - RAVEN);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -1171,6 +1198,453 @@ public class TechniqueIcons {
                 sunDisc(g, 23, 8, 3.5, 10);
                 for (int k = 0; k < 5; k++) taper(g, 10 + k * 2.5, 26, 9 + k * 2.5, 18, 12 + k * 2, 11 + (k % 2) * 2, 2.4, 0.3, k % 2 == 0 ? SUN_DEEP : SUN_GOLD);
                 goldFist(g, img, 14, 21, 9, 1);
+            }
+        }
+    }
+    // ------------------------------------------------------------ the Overlord Spear: black iron, blood red, embers
+
+    static final Color RUIN_IRON = c(40, 40, 46), RUIN_EDGE = c(240, 236, 222), RUIN_EMBER = c(255, 106, 36), RUIN_HOT = c(255, 214, 122),
+            RUIN_BLOOD = c(176, 24, 24), RUIN_GOLD = c(217, 168, 63);
+
+    static void ruinBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.min(1, Math.hypot(x - 15.5, y - 16) / 21.0);
+            img.setRGB(x, y, c((int) (18 + 70 * (1 - d) * (1 - d)), (int) (10 + 10 * (1 - d)), (int) (12 + 8 * (1 - d))).getRGB());
+        }
+        g.setColor(RUIN_GOLD); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(70, 16, 14)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** The Spear of Ruin from its butt to its point: a black shaft with embers, a red mane, gold claws, a black head split by a burning seam. */
+    static void ruinSpear(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+        double hx = x1 - ux * 8, hy = y1 - uy * 8;
+        line(g, x0, y0, hx, hy, 1.8f, RUIN_IRON);
+        for (double t : new double[]{0.3, 0.6}) px(img, (int) Math.round(x0 + (hx - x0) * t), (int) Math.round(y0 + (hy - y0) * t), RUIN_EMBER);
+        // The mane, the claws.
+        line(g, hx - ux * 1.5, hy - uy * 1.5, hx - ux * 1.5 + nx * 3 - ux * 2, hy - uy * 1.5 + ny * 3 - uy * 2, 1.6f, RUIN_BLOOD);
+        line(g, hx - ux * 0.5 + nx, hy - uy * 0.5 + ny, hx + ux * 1.5 + nx * 1.6, hy + uy * 1.5 + ny * 1.6, 1f, RUIN_GOLD);
+        line(g, hx - ux * 0.5 - nx, hy - uy * 0.5 - ny, hx + ux * 1.5 - nx * 1.6, hy + uy * 1.5 - ny * 1.6, 1f, RUIN_GOLD);
+        // The head: a broad leaf of black steel, bright edges, the burning seam.
+        Path2D head = new Path2D.Double();
+        head.moveTo(hx, hy); head.lineTo(hx + ux * 3 + nx * 2.4, hy + uy * 3 + ny * 2.4); head.lineTo(x1, y1);
+        head.lineTo(hx + ux * 3 - nx * 2.4, hy + uy * 3 - ny * 2.4); head.closePath();
+        g.setColor(RUIN_EDGE); g.fill(head);
+        Path2D inner = new Path2D.Double();
+        inner.moveTo(hx + ux * 0.6, hy + uy * 0.6); inner.lineTo(hx + ux * 3 + nx * 1.5, hy + uy * 3 + ny * 1.5); inner.lineTo(x1 - ux * 1.2, y1 - uy * 1.2);
+        inner.lineTo(hx + ux * 3 - nx * 1.5, hy + uy * 3 - ny * 1.5); inner.closePath();
+        g.setColor(RUIN_IRON); g.fill(inner);
+        line(g, hx + ux * 0.8, hy + uy * 0.8, x1 - ux * 1.6, y1 - uy * 1.6, 0.8f, RUIN_EMBER);
+    }
+
+    static void ruin(Graphics2D g, BufferedImage img, int i) {
+        ruinBack(img, g);
+        switch (i) {
+            case 0 -> { // Tyrant's Thrust: the spear driven right, a beam of red light out of its point.
+                g.setColor(c(200, 30, 20, 120)); g.fill(new Rectangle2D.Double(17, 12, 14, 8));
+                g.setColor(c(255, 120, 60, 200)); g.fill(new Rectangle2D.Double(17, 14, 14, 4));
+                line(g, 17, 16, 31, 16, 1f, RUIN_HOT);
+                ruinSpear(g, img, 2, 20, 19, 16);
+            }
+            case 1 -> { // Earth-Splitting Sweep: the spear planted, a ring of cracks round it, stones thrown up.
+                g.setColor(c(50, 16, 10)); g.fill(new Rectangle2D.Double(2, 22, 28, 8));
+                g.setColor(RUIN_EMBER); g.setStroke(new BasicStroke(1.2f)); g.draw(new Ellipse2D.Double(3, 21, 26, 8));
+                cracks(g, 16, 25, new double[][]{{4, 24}, {28, 26}, {9, 29}, {24, 29}});
+                rock(g, img, 6, 14, 2); rock(g, img, 26, 12, 2); rock(g, img, 21, 7, 1.5);
+                ruinSpear(g, img, 17, 3, 15, 26);
+            }
+            case 2 -> { // Falling Mountain: the spear point down into a crater, cracks and dust.
+                g.setColor(c(50, 16, 10)); g.fill(new Rectangle2D.Double(2, 24, 28, 6));
+                g.setColor(c(20, 8, 6)); g.fill(new Arc2D.Double(7, 21, 18, 8, 180, 180, Arc2D.CHORD));
+                cracks(g, 16, 26, new double[][]{{3, 25}, {29, 25}, {8, 30}, {25, 30}});
+                for (int k = 0; k < 3; k++) line(g, 10 + k * 6, 2, 12 + k * 4, 9, 0.8f, c(255, 140, 60, 150));
+                ruinSpear(g, img, 20, 2, 16, 25);
+            }
+            case 3 -> { // Overlord's Charge: the spear level, three figures on the point, a wall cracking ahead.
+                g.setColor(c(80, 70, 66)); g.fill(new Rectangle2D.Double(27, 6, 4, 22));
+                cracks(g, 27, 16, new double[][]{{30, 8}, {30, 26}, {31, 16}});
+                for (int k = 0; k < 3; k++) { g.setColor(c(20, 12, 12)); g.fill(new Ellipse2D.Double(18 + k * 2.6, 11, 3, 3)); g.fill(new Rectangle2D.Double(18 + k * 2.6, 14, 3, 6)); }
+                for (int k = 0; k < 3; k++) line(g, 1, 14 + k * 3, 7, 14 + k * 3, 0.8f, c(255, 150, 80, 140));
+                ruinSpear(g, img, 3, 18, 27, 17);
+            }
+            case 4 -> { // Hundred Battles Rampage: a fan of thrusts, each ending in a small burst.
+                double[][] at = {{28, 8}, {30, 14}, {29, 20}, {26, 25}, {24, 5}};
+                for (double[] q : at) { line(g, 9, 17, q[0] - 3, q[1], 0.7f, c(240, 236, 222, 140)); disc(g, q[0], q[1], 2.2, c(255, 120, 40, 200)); disc(g, q[0], q[1], 1, RUIN_HOT); }
+                ruinSpear(g, img, 2, 21, 20, 15);
+            }
+            case 5 -> { // Conqueror Descends: a giant spear falling point first onto a red circle, a small figure under it.
+                g.setColor(RUIN_BLOOD); g.setStroke(new BasicStroke(1.4f)); g.draw(new Ellipse2D.Double(3, 23, 26, 7));
+                g.setColor(c(255, 90, 30, 90)); g.fill(new Ellipse2D.Double(6, 24, 20, 5));
+                ruinSpear(g, img, 16, -6, 16, 24);
+                g.setColor(c(20, 10, 10)); g.fill(new Ellipse2D.Double(25, 21, 2.4, 2.4)); g.fill(new Rectangle2D.Double(25, 23.4, 2.4, 4));
+            }
+            case 6 -> { // Breaking the Cauldrons: a cracked bronze cauldron, an enormous beam over it (the secret).
+                g.setColor(c(200, 30, 20, 140)); g.fill(new Rectangle2D.Double(2, 4, 28, 10));
+                g.setColor(c(255, 170, 90, 220)); g.fill(new Rectangle2D.Double(2, 7, 28, 4));
+                line(g, 2, 9, 30, 9, 1f, RUIN_HOT);
+                g.setColor(c(122, 90, 46)); g.fill(new Arc2D.Double(8, 15, 16, 14, 180, 180, Arc2D.CHORD));
+                g.fill(new Rectangle2D.Double(9, 19, 14, 2)); line(g, 11, 27, 10, 30, 1.4f, c(122, 90, 46)); line(g, 21, 27, 22, 30, 1.4f, c(122, 90, 46));
+                cracks(g, 16, 22, new double[][]{{12, 27}, {20, 28}, {16, 29}});
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Conqueror's Weight: five embers over the spear's head, the fifth blazing.
+                for (int k = 0; k < 5; k++) disc(g, 6 + k * 5, 6, k == 4 ? 2.4 : 1.6, k == 4 ? RUIN_HOT : RUIN_EMBER);
+                ruinSpear(g, img, 4, 28, 26, 12);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ the Devouring Demon Art: dried blood, red flesh, purple centipedes
+
+    static final Color FLESH = c(214, 36, 48), FLESH_LIGHT = c(255, 112, 112), FLESH_DARK = c(120, 14, 24),
+            CHITIN = c(132, 52, 196), CHITIN_LIGHT = c(190, 120, 240), CHITIN_DARK = c(58, 18, 92);
+
+    static void demonBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.hypot(x - 15.5, y - 17) / 22.0;
+            int r = (int) (22 + 34 * (1 - d)), gg = (int) (6 + 6 * (1 - d)), b = (int) (10 + 10 * (1 - d));
+            img.setRGB(x, y, c(r, gg, b).getRGB());
+        }
+        g.setColor(c(170, 40, 52));
+        g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(60, 10, 16));
+        g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A centipede along a quadratic curve: plates from tail to head, a leg each side, the head with its fangs. */
+    static void centipede(Graphics2D g, double x0, double y0, double cx, double cy, double x1, double y1, int plates) {
+        for (int i = 0; i <= plates; i++) {
+            double t = (double) i / plates, u = 1 - t;
+            double px = u * u * x0 + 2 * u * t * cx + t * t * x1, py = u * u * y0 + 2 * u * t * cy + t * t * y1;
+            double dx = 2 * u * (cx - x0) + 2 * t * (x1 - cx), dy = 2 * u * (cy - y0) + 2 * t * (y1 - cy), len = Math.hypot(dx, dy);
+            double nx = -dy / len, ny = dx / len, r = 1.7 + 1.3 * t;
+            line(g, px + nx * r, py + ny * r, px + nx * (r + 1.6), py + ny * (r + 1.6) + 0.6, 0.8f, CHITIN_DARK);
+            line(g, px - nx * r, py - ny * r, px - nx * (r + 1.6), py - ny * (r + 1.6) + 0.6, 0.8f, CHITIN_DARK);
+            disc(g, px, py, r, i % 2 == 0 ? CHITIN : CHITIN_DARK);
+            disc(g, px - nx * r * 0.35, py - ny * r * 0.35, r * 0.4, i % 2 == 0 ? CHITIN_LIGHT : FLESH);
+        }
+        // The fangs, red, open.
+        double dx = x1 - cx, dy = y1 - cy, len = Math.hypot(dx, dy), fx = dx / len, fy = dy / len;
+        line(g, x1, y1, x1 + fx * 3 - fy * 2.2, y1 + fy * 3 + fx * 2.2, 1.2f, FLESH_LIGHT);
+        line(g, x1, y1, x1 + fx * 3 + fy * 2.2, y1 + fy * 3 - fx * 2.2, 1.2f, FLESH_LIGHT);
+    }
+
+    static void demon(Graphics2D g, BufferedImage img, int i) {
+        demonBack(img, g);
+        switch (i) {
+            case 0 -> { // Lash: four tentacles whipping through an arc from the lower left, motion lines on the arc.
+                g.setColor(c(255, 150, 140, 110));
+                g.setStroke(new BasicStroke(1f));
+                g.draw(new Arc2D.Double(3, 3, 26, 26, 200, -140, Arc2D.OPEN));
+                g.draw(new Arc2D.Double(7, 7, 18, 18, 200, -130, Arc2D.OPEN));
+                double[][] tips = {{4, 9}, {12, 4}, {22, 5}, {28, 12}};
+                for (int k = 0; k < tips.length; k++) {
+                    double[] t = tips[k];
+                    taper(g, 7, 28, 4 + k * 5, 18 - k, t[0], t[1], 5.2, 1.6, FLESH_DARK);
+                    taper(g, 7, 28, 4 + k * 5, 18 - k, t[0], t[1], 3.4, 0.8, k % 2 == 0 ? FLESH : FLESH_LIGHT);
+                }
+                disc(g, 7, 28, 2.6, FLESH_DARK);
+            }
+            case 1 -> // Centipede Bite: a centipede arching over from the lower left, coming down fangs first on the right.
+                    centipede(g, 4, 28, 9, -1, 26, 21, 15);
+            case 2 -> { // Devouring Hunger: the ring of Fury, a demon's red eye in it.
+                for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+                    double r = Math.hypot(x - 15.5, y - 15.5), a = Math.atan2(Math.abs(x - 15.5), y - 15.5) / Math.PI;
+                    if (r >= 10 && r < 13.5 && a <= 0.82) px(img, x, y, r >= 12.5 ? FLESH_DARK : a > 0.5 ? FLESH : c(176, 18, 28));
+                    else if (r >= 10 && r < 13.5) px(img, x, y, c(40, 8, 12));
+                }
+                g.setColor(c(14, 4, 6));
+                g.fill(new Ellipse2D.Double(8.5, 12.5, 14, 7));
+                disc(g, 15.5, 16, 3, FLESH);
+                disc(g, 15.5, 16, 1.4, c(255, 220, 200));
+                line(g, 9, 11, 22, 13, 1.2f, CHITIN);
+            }
+            case 3 -> { // Impaling Thorns: the ground broken, red thorns bursting up out of it, leaning out.
+                g.setColor(c(46, 20, 16));
+                g.fillRect(2, 24, 28, 6);
+                g.setColor(c(92, 52, 36));
+                g.fillRect(2, 24, 28, 1);
+                double[][] thorns = {{9, 26, 5, 6}, {15, 26, 15, 3}, {21, 26, 25, 7}, {12, 26, 10, 12}, {19, 26, 21, 13}};
+                for (double[] t : thorns) {
+                    taper(g, t[0], t[1], (t[0] + t[2]) / 2, (t[1] + t[3]) / 2 + 2, t[2], t[3], 4.2, 0.6, FLESH_DARK);
+                    taper(g, t[0], t[1], (t[0] + t[2]) / 2, (t[1] + t[3]) / 2 + 2, t[2], t[3], 2.6, 0.4, FLESH);
+                }
+                // Clods thrown up.
+                for (int[] d : new int[][]{{5, 20}, {26, 18}, {8, 15}, {24, 12}}) px(img, d[0], d[1], c(110, 64, 44));
+            }
+            case 4 -> { // Burrow: a centipede bursting up out of a hole in the ground and arching over.
+                g.setColor(c(46, 20, 16));
+                g.fillRect(2, 25, 28, 5);
+                g.setColor(c(14, 6, 6));
+                g.fill(new Ellipse2D.Double(5, 23, 9, 4));
+                centipede(g, 10, 26, 6, 0, 22, 12, 13);
+                for (int[] d : new int[][]{{4, 20}, {15, 21}, {6, 16}}) px(img, d[0], d[1], c(110, 64, 44));
+            }
+            case 5 -> { // Grapple: a long tentacle shot out from the lower left, its hooked tip sunk in a foe's dark shape.
+                g.setColor(c(96, 74, 70));
+                g.fill(new Ellipse2D.Double(19, 4, 10, 14));
+                taper(g, 4, 28, 12, 14, 23, 10, 3.6, 1.2, FLESH_DARK);
+                taper(g, 4, 28, 12, 14, 23, 10, 2.2, 0.8, FLESH);
+                // The hook, curled back.
+                line(g, 23, 10, 26, 8, 1.4f, FLESH_LIGHT);
+                line(g, 26, 8, 25, 12, 1.2f, FLESH_LIGHT);
+                // Pulled taut: two lines of strain.
+                line(g, 9, 19, 12, 22, 0.8f, c(255, 150, 140));
+                line(g, 13, 15, 16, 18, 0.8f, c(255, 150, 140));
+            }
+            case 6 -> { // Constrict: a dark foe's shape, three turns of a centipede tight round it.
+                g.setColor(c(96, 74, 70));
+                g.fill(new Ellipse2D.Double(11, 3, 10, 8));
+                g.fillRect(11, 10, 10, 18);
+                for (int ring = 0; ring < 3; ring++) {
+                    double y = 12 + ring * 6, tilt = ring % 2 == 0 ? 2 : -2;
+                    g.setColor(CHITIN_DARK);
+                    g.setStroke(new BasicStroke(3.2f));
+                    g.draw(new Line2D.Double(7, y + tilt, 25, y - tilt));
+                    g.setColor(ring == 1 ? CHITIN_LIGHT : CHITIN);
+                    g.setStroke(new BasicStroke(1.6f));
+                    g.draw(new Line2D.Double(7, y + tilt, 25, y - tilt));
+                    for (int k = 0; k < 5; k++) px(img, 8 + k * 4, (int) Math.round(y + tilt - (k * 4 + 1) * tilt / 9) + 2, CHITIN_DARK);
+                }
+                // The head, its red fangs.
+                line(g, 25, 10, 28, 8, 1.2f, FLESH_LIGHT);
+                line(g, 25, 10, 28, 12, 1.2f, FLESH_LIGHT);
+            }
+            case 7 -> { // Kagune Shift: red tentacles on the left, a purple centipede on the right, a turning arrow between.
+                taper(g, 6, 28, 3, 17, 7, 6, 3.6, 0.8, FLESH_DARK);
+                taper(g, 6, 28, 3, 17, 7, 6, 2.2, 0.5, FLESH);
+                taper(g, 9, 28, 10, 18, 13, 10, 3.0, 0.7, FLESH_DARK);
+                taper(g, 9, 28, 10, 18, 13, 10, 1.8, 0.4, FLESH_LIGHT);
+                centipede(g, 24, 29, 30, 16, 23, 6, 8);
+                g.setColor(c(240, 220, 210));
+                g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Arc2D.Double(11, 9, 10, 10, 30, 240, Arc2D.OPEN));
+                line(g, 19.5, 17, 21.5, 14.5, 1.2f, c(240, 220, 210));
+                line(g, 19.5, 17, 17, 16, 1.2f, c(240, 220, 210));
+            }
+            default -> { }
+        }
+    }
+
+    // ------------------------------------------------------------ the Crescent Moon Halberd: lake night, moonlight, silver
+
+    static final Color MOON_WHITE = c(244, 251, 255), MOON_BLUE = c(159, 216, 255), MOON_DEEP = c(60, 120, 210), MOON_SILVER = c(200, 207, 221),
+            LACQUER = c(34, 48, 92);
+
+    static void moonBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.min(1, Math.hypot(x - 15.5, y - 13) / 22.0);
+            int water = y > 24 ? 10 : 0;
+            img.setRGB(x, y, c((int) (8 + 22 * (1 - d) * (1 - d)), (int) (12 + 30 * (1 - d) * (1 - d)) + water, (int) (30 + 60 * (1 - d) * (1 - d)) + water * 2).getRGB());
+        }
+        g.setColor(MOON_SILVER); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(30, 44, 80)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A crescent: the disc of radius r at (x, y), less the same disc shifted by (dx, dy). */
+    static void crescent(Graphics2D g, double x, double y, double r, double dx, double dy, Color col) {
+        Area a = new Area(new Ellipse2D.Double(x - r, y - r, r * 2, r * 2));
+        a.subtract(new Area(new Ellipse2D.Double(x - r + dx, y - r + dy, r * 2, r * 2)));
+        g.setColor(col); g.fill(a);
+    }
+
+    /** The Crescent Moon Halberd from its butt to its point: a lacquer shaft, a white tassel, a silver point, the crescent on its side. */
+    static void halberd(Graphics2D g, BufferedImage img, double x0, double y0, double x1, double y1) {
+        double dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+        double hx = x1 - ux * 7, hy = y1 - uy * 7;
+        line(g, x0, y0, hx, hy, 1.6f, LACQUER);
+        line(g, x0, y0, x0 + ux * 1.4, y0 + uy * 1.4, 1.8f, MOON_SILVER);
+        // The tassel, the collar.
+        line(g, hx - ux * 1.2, hy - uy * 1.2, hx - ux * 3 - nx * 2.4, hy - uy * 3 - ny * 2.4, 1.4f, MOON_WHITE);
+        line(g, hx - nx * 1.3, hy - ny * 1.3, hx + nx * 1.3, hy + ny * 1.3, 1.2f, MOON_SILVER);
+        // The point.
+        Path2D head = new Path2D.Double();
+        head.moveTo(hx, hy); head.lineTo(hx + ux * 2 + nx * 1.2, hy + uy * 2 + ny * 1.2); head.lineTo(x1, y1);
+        head.lineTo(hx + ux * 2 - nx * 1.2, hy + uy * 2 - ny * 1.2); head.closePath();
+        g.setColor(MOON_SILVER); g.fill(head);
+        line(g, hx + ux, hy + uy, x1 - ux, y1 - uy, 0.6f, MOON_WHITE);
+        // The crescent blade on its side, its edge glowing.
+        double cx = hx + ux * 1.2 + nx * 3.0, cy = hy + uy * 1.2 + ny * 3.0;
+        crescent(g, cx, cy, 3.4, -nx * 1.6, -ny * 1.6, MOON_BLUE);
+        crescent(g, cx + nx * 0.4, cy + ny * 0.4, 3.0, -nx * 1.9, -ny * 1.9, MOON_WHITE);
+    }
+
+    /** A small standing figure (a body, a head), its feet at (x, y), in one colour. */
+    static void figureAt(Graphics2D g, double x, double y, Color col) {
+        g.setColor(col);
+        g.fill(new Ellipse2D.Double(x - 2, y - 13, 4, 4));
+        g.fill(new Rectangle2D.Double(x - 2.5, y - 9, 5, 6));
+        g.fill(new Rectangle2D.Double(x - 2.2, y - 3, 1.8, 3));
+        g.fill(new Rectangle2D.Double(x + 0.4, y - 3, 1.8, 3));
+    }
+
+    static final Color WATER = c(110, 190, 255, 190), WATER_RIM = c(220, 240, 255), FOE = c(16, 20, 34);
+
+    /** A reflection: a figure of translucent water with a bright rim. */
+    static void reflection(Graphics2D g, double x, double y) {
+        figureAt(g, x, y, c(220, 240, 255, 110));
+        figureAt(g, x, y - 0.4, WATER);
+    }
+
+    static void moon(Graphics2D g, BufferedImage img, int i) {
+        moonBack(img, g);
+        switch (i) {
+            case 0 -> { // Twin Reflection: the foe between the halberd and a reflection striking it from behind.
+                figureAt(g, 16, 25, FOE);
+                reflection(g, 25, 25);
+                line(g, 24, 13, 18, 18, 1.2f, WATER_RIM);
+                halberd(g, img, 1, 22, 12, 13);
+                g.setColor(c(244, 251, 255, 160)); g.draw(new Arc2D.Double(10, 8, 12, 12, 30, 120, Arc2D.OPEN));
+            }
+            case 1 -> { // Shattered Mirror: a reflection bursting into shards.
+                reflection(g, 16, 25);
+                double[][] shards = {{5, 8}, {27, 7}, {4, 20}, {28, 21}, {9, 3}, {23, 3}, {16, 2}, {3, 14}, {29, 14}};
+                for (double[] p : shards) {
+                    Path2D sh = new Path2D.Double();
+                    sh.moveTo(p[0], p[1]); sh.lineTo(p[0] + 2.4, p[1] + 1); sh.lineTo(p[0] + 0.6, p[1] + 2.8); sh.closePath();
+                    g.setColor(MOON_BLUE); g.fill(sh);
+                    line(g, 16, 16, p[0] + 1, p[1] + 1, 0.5f, c(220, 240, 255, 90));
+                }
+                disc(g, 16, 16, 3, c(244, 251, 255, 200));
+            }
+            case 2 -> { // Swap: the bearer and a reflection, two curved arrows between them.
+                figureAt(g, 8, 26, LACQUER);
+                line(g, 11, 14, 11, 26, 1.2f, MOON_SILVER);
+                reflection(g, 24, 26);
+                g.setColor(MOON_WHITE); g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Arc2D.Double(8, 4, 16, 10, 20, 140, Arc2D.OPEN));
+                g.draw(new Arc2D.Double(8, 12, 16, 8, 200, 140, Arc2D.OPEN));
+                line(g, 21, 6, 23, 8, 1.2f, MOON_WHITE); line(g, 23, 8, 20.5, 9, 1.2f, MOON_WHITE);
+                line(g, 11, 18, 9, 16, 1.2f, MOON_WHITE); line(g, 9, 16, 11.5, 15, 1.2f, MOON_WHITE);
+            }
+            case 3 -> { // Hall of Mirrors: four reflections round the bearer.
+                figureAt(g, 16, 22, LACQUER);
+                reflection(g, 6, 16); reflection(g, 26, 16); reflection(g, 9, 30); reflection(g, 23, 30);
+                g.setColor(c(159, 216, 255, 140)); g.setStroke(new BasicStroke(0.8f)); g.draw(new Ellipse2D.Double(3, 9, 26, 20));
+            }
+            case 4 -> { // Night of the Full Moon: a great moon, beams falling from it.
+                disc(g, 16, 9, 7.5, c(159, 216, 255, 70));
+                disc(g, 16, 9, 6, MOON_WHITE);
+                disc(g, 14, 7, 1.4, c(196, 206, 220)); disc(g, 18.5, 11, 1.1, c(196, 206, 220)); disc(g, 13, 11.5, 0.8, c(196, 206, 220));
+                g.setColor(c(159, 216, 255, 120));
+                for (double x : new double[]{6, 16, 26}) g.fill(new Rectangle2D.Double(x - 1, 15, 2, 13));
+                g.setColor(c(159, 216, 255, 200));
+                for (double x : new double[]{6, 16, 26}) g.fill(new Ellipse2D.Double(x - 3, 27, 6, 2.4));
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Mirror Image: a figure dodging aside, its reflection left where it stood.
+                reflection(g, 12, 27);
+                figureAt(g, 23, 27, LACQUER);
+                for (int k = 0; k < 3; k++) line(g, 15, 18 + k * 3, 20, 18 + k * 3, 0.8f, c(159, 216, 255, 150));
+                g.setColor(c(110, 190, 255, 120)); g.fill(new Ellipse2D.Double(6, 26, 12, 3));
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ the Raven Messenger Art: the halls at night, amber doors
+
+    static final Color RAVEN_GOLD = c(217, 168, 63), R_AMBER = c(255, 190, 90), R_AMBER_DEEP = c(200, 100, 24), R_SHADOW = c(6, 6, 12),
+            VEIL = c(110, 70, 190), FEATHER = c(58, 66, 100), INK = c(14, 14, 22), RED_POST = c(150, 50, 40), PAPER = c(226, 214, 190), BEARER = c(214, 200, 168);
+
+    static void ravenBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.min(1, Math.hypot(x - 15.5, y - 15.5) / 22.0);
+            img.setRGB(x, y, c((int) (10 + 18 * (1 - d) * (1 - d)), (int) (8 + 10 * (1 - d) * (1 - d)), (int) (18 + 34 * (1 - d) * (1 - d))).getRGB());
+        }
+        g.setColor(RAVEN_GOLD); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(40, 26, 20)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A door of shadow: an ellipse (rx, ry) at (x, y), a violet veil, an amber rim, black feathers round it. */
+    static void ravenDoor(Graphics2D g, double x, double y, double rx, double ry, int feathers) {
+        for (int k = 0; k < feathers; k++) {
+            double a = k * Math.PI * 2 / feathers;
+            line(g, x + Math.cos(a) * rx, y + Math.sin(a) * ry, x + Math.cos(a) * (rx + 2.2), y + Math.sin(a) * (ry + 2.2), 1.2f, FEATHER);
+        }
+        g.setColor(R_AMBER_DEEP); g.fill(new Ellipse2D.Double(x - rx - 0.8, y - ry - 0.8, (rx + 0.8) * 2, (ry + 0.8) * 2));
+        g.setColor(R_AMBER); g.fill(new Ellipse2D.Double(x - rx - 0.3, y - ry - 0.3, (rx + 0.3) * 2, (ry + 0.3) * 2));
+        g.setColor(VEIL); g.fill(new Ellipse2D.Double(x - rx + 0.5, y - ry + 0.5, (rx - 0.5) * 2, (ry - 0.5) * 2));
+        g.setColor(R_SHADOW); g.fill(new Ellipse2D.Double(x - rx + 1.3, y - ry + 1.3, (rx - 1.3) * 2, (ry - 1.3) * 2));
+    }
+
+    /** An open fan, its pivot at (x, y), opened toward deg (degrees, 0 = right), in dark lacquer with gold ribs. */
+    static void openFan(Graphics2D g, double x, double y, double deg, double r) {
+        g.setColor(INK); g.fill(new Arc2D.Double(x - r, y - r, r * 2, r * 2, -deg - 50, 100, Arc2D.PIE));
+        g.setColor(RAVEN_GOLD);
+        for (int k = -2; k <= 2; k++) { double a = Math.toRadians(deg + k * 22); line(g, x, y, x + Math.cos(a) * r, y + Math.sin(a) * r, 0.6f, RAVEN_GOLD); }
+        g.draw(new Arc2D.Double(x - r, y - r, r * 2, r * 2, -deg - 50, 100, Arc2D.OPEN));
+    }
+
+    static void featherAt(Graphics2D g, double x, double y, double deg) {
+        double a = Math.toRadians(deg), ux = Math.cos(a), uy = Math.sin(a);
+        taper(g, x, y, x + ux * 2.5 - uy, y + uy * 2.5 + ux, x + ux * 5, y + uy * 5, 1.6, 0.4, FEATHER);
+        line(g, x, y, x + ux * 4.5, y + uy * 4.5, 0.4f, c(70, 84, 120));
+    }
+
+    static void raven(Graphics2D g, BufferedImage img, int i) {
+        ravenBack(img, g);
+        switch (i) {
+            case 0 -> { // Raven Gate: a door open in the ground, a dark foe half in it.
+                ravenDoor(g, 16, 25, 11, 3.6, 14);
+                figureAt(g, 16, 25, c(120, 124, 146));
+                g.setColor(R_SHADOW); g.fill(new Rectangle2D.Double(10, 25, 12, 4));
+                featherAt(g, 6, 8, 60); featherAt(g, 24, 6, 120);
+            }
+            case 1 -> { // Halls Step: into one door, out of another far off.
+                ravenDoor(g, 7, 20, 4, 6.5, 10);
+                ravenDoor(g, 25, 14, 3, 5, 10);
+                for (int k = 0; k < 4; k++) disc(g, 11.5 + k * 2.6, 18.5 - k * 1.2, 0.6, R_AMBER);
+                figureAt(g, 25, 19, BEARER);
+            }
+            case 2 -> { // Exchange: two doors, arrows crossing.
+                ravenDoor(g, 8, 20, 4, 6.5, 10);
+                ravenDoor(g, 24, 20, 4, 6.5, 10);
+                figureAt(g, 8, 25, c(120, 124, 146));
+                figureAt(g, 24, 25, BEARER);
+                g.setColor(R_AMBER); g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Arc2D.Double(8, 4, 16, 10, 20, 140, Arc2D.OPEN));
+                line(g, 21, 6, 23, 8, 1.2f, R_AMBER); line(g, 23, 8, 20.5, 9, 1.2f, R_AMBER);
+            }
+            case 3 -> { // Swallowing Gate: a standing door, arrows going into it, the fan behind.
+                ravenDoor(g, 18, 16, 6, 10, 14);
+                for (int k = 0; k < 3; k++) {
+                    double y = 9 + k * 7;
+                    line(g, 2, y + 2, 13, y, 1.0f, c(200, 190, 170));
+                    line(g, 2, y + 2, 4, y + 3.5, 0.8f, c(220, 220, 230)); line(g, 2, y + 2, 4, y, 0.8f, c(220, 220, 230));
+                }
+                openFan(g, 28, 26, 200, 5);
+            }
+            case 4 -> { // Closed Room: two figures shut in paper walls and red posts.
+                g.setColor(PAPER); g.fill(new Rectangle2D.Double(5, 6, 22, 21));
+                g.setColor(c(60, 40, 30)); g.setStroke(new BasicStroke(1f)); g.draw(new Rectangle2D.Double(5, 6, 22, 21));
+                line(g, 5, 16, 27, 16, 0.8f, c(90, 60, 40));
+                g.setColor(RED_POST);
+                for (double x : new double[]{4, 15.5, 27}) g.fill(new Rectangle2D.Double(x, 5, 2, 23));
+                figureAt(g, 11, 27, BEARER); figureAt(g, 21, 27, c(120, 124, 146));
+            }
+            case 5 -> { // The Halls Unfold: a great door under many small foes.
+                ravenDoor(g, 16, 22, 13, 6, 18);
+                for (double[] p : new double[][]{{9, 21}, {16, 23}, {23, 21}, {12, 15}, {20, 15}}) {
+                    g.setColor(c(120, 124, 146)); g.fill(new Ellipse2D.Double(p[0] - 1.3, p[1] - 6, 2.6, 2.6));
+                    g.fill(new Rectangle2D.Double(p[0] - 1.6, p[1] - 3.6, 3.2, 3.6));
+                }
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            case 6 -> { // Return to Sender: a blow into a door, the foe out of another behind the bearer.
+                ravenDoor(g, 9, 16, 4, 7, 10);
+                ravenDoor(g, 25, 18, 3.5, 6, 10);
+                figureAt(g, 17, 26, BEARER);
+                figureAt(g, 25, 25, c(120, 124, 146));
+                line(g, 2, 14, 7, 15, 1.4f, c(230, 230, 240));
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Between Worlds: three slits of shadow on a body, a feather falling.
+                figureAt(g, 15, 28, c(150, 154, 176));
+                for (int k = 0; k < 3; k++) {
+                    g.setColor(R_AMBER); g.fill(new Ellipse2D.Double(10 + k * 3.4, 12 + k * 3, 3.2, 6.4));
+                    g.setColor(R_SHADOW); g.fill(new Ellipse2D.Double(10.6 + k * 3.4, 12.8 + k * 3, 2.0, 4.8));
+                }
+                featherAt(g, 22, 4, 100);
             }
         }
     }

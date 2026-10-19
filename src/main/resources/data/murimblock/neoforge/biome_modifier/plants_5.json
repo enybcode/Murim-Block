@@ -1,0 +1,12 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:loess_plateau"
+  ],
+  "features": [
+    "murimblock:spirit_sea_buckthorn",
+    "murimblock:plant_goji_bush",
+    "murimblock:spirit_goji_bush"
+  ],
+  "step": "vegetal_decoration"
+}

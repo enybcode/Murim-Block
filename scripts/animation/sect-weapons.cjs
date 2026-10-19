@@ -290,7 +290,7 @@ const anims = {
   whip_idle, whip_auto1, whip_auto2, whip_auto3, whip_auto4, whip_dash, whip_air,
   needles_idle, needles_auto1, needles_auto2, needles_auto3, needles_auto4, needles_dash, needles_air,
 };
-module.exports = { anims };
+module.exports = { anims, poses: { HIP, look, LEGS_R, LEGS_L, LEGS_SOFT, SWEEP, FAN_GUARD, FAN_LEFT, FAN_OVER, FAN_DRAWN, FAN_LUNGE, AIR_LEGS } };
 
 if (require.main === module) {
   const out = path.join(__dirname, '..', '..', 'art', 'blockbench', 'sect_weapons.bbmodel');

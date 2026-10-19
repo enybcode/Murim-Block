@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "murimblock:block/chrysanthemum"
+    "layer0": "murimblock:item/herb/chrysanthemum"
   }
 }

@@ -69,6 +69,14 @@ public final class SiteGameTests {
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp", timeoutTicks = 1200)
     public static void banditCampIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", 7600, Rotation.CLOCKWISE_90, GROUND); }
 
+    @GameTest(template = "foundation_arena", batch = "site_raven_tower", timeoutTicks = 600)
+    public static void ravenTowerIsWholeAndCarried(GameTestHelper helper) {
+        check(helper, SitePlan.RAVEN_TOWER, "raven_tower", 8000, Z, Rotation.COUNTERCLOCKWISE_90, level -> {
+            var masters = level.getEntitiesOfClass(com.murimblock.mob.CrowMasterEntity.class, new net.minecraft.world.phys.AABB(8000 - 40, GROUND - 5, Z - 40, 8000 + 40, GROUND + 40, Z + 40));
+            helper.assertTrue(masters.size() == 1, "The Raven Tower should hold its Crow Master, holds " + masters.size());
+        }, GROUND);
+    }
+
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp_north", timeoutTicks = 1200)
     public static void theNorthsBanditCampIsDarkWoodUnderSnow(GameTestHelper helper) { regionalCamp(helper, "north", Blocks.DARK_OAK_LOG); }
 
@@ -227,6 +235,7 @@ public final class SiteGameTests {
             case STILT_VILLAGE -> Map.of("minecraft:villager", 3);
             case BANDIT_DEN -> Map.of("murimblock:bandit_chief", 1, "murimblock:mountain_bandit", 4);
             case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1, "murimblock:golden_bell_monk", 1);
+            case RAVEN_TOWER -> Map.of("murimblock:crow_master", 1);
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
@@ -249,7 +258,8 @@ public final class SiteGameTests {
         return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8, 48, 8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity
                 || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity
                 || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity
-                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.GoldenBellMonkEntity);
+                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.GoldenBellMonkEntity
+                || m instanceof com.murimblock.mob.CrowMasterEntity);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */
@@ -275,5 +285,46 @@ public final class SiteGameTests {
         for (int x = box.minX(); x <= box.maxX(); x++) for (int z = box.minZ(); z <= box.maxZ(); z++) for (int y = y0; y <= y1; y++)
             if (!level.getBlockState(p.set(x, y, z)).isAir() && !level.getBlockState(p).is(Blocks.STONE)) n++;
         return n;
+    }
+
+    /**
+     * Murim's townsfolk trade in Murim's money: a site's villager (a farmer, whose first offers buy crops for emeralds)
+     * is paid in strings of cash, no emerald left; and stays so a few seconds later.
+     */
+    @GameTest(template = "foundation_arena", batch = "site_trades", timeoutTicks = 200)
+    public static void siteVillagersTradeInMurimMoney(GameTestHelper helper) {
+        Villager villager = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.VILLAGER, new BlockPos(1, 2, 1));
+        villager.setVillagerData(villager.getVillagerData().setProfession(VillagerProfession.FARMER).setLevel(1));
+        com.murimblock.world.structure.site.MurimTrades.townsfolk(villager);
+        helper.runAfterDelay(com.murimblock.world.structure.site.MurimTrades.EVERY_FOR_TESTS + 5, () -> {
+            var offers = villager.getOffers();
+            helper.assertTrue(!offers.isEmpty(), "The farmer has nothing to trade");
+            for (var o : offers) {
+                boolean emerald = o.getItemCostA().item().value() == net.minecraft.world.item.Items.EMERALD || o.getResult().is(net.minecraft.world.item.Items.EMERALD)
+                        || o.getItemCostB().filter(c -> c.item().value() == net.minecraft.world.item.Items.EMERALD).isPresent();
+                helper.assertFalse(emerald, "A townsfolk still trades in emeralds: " + o.getItemCostA() + " -> " + o.getResult());
+            }
+            helper.assertTrue(offers.stream().anyMatch(o -> o.getResult().is(com.murimblock.item.MurimItems.CASH_STRING.get())), "The farmer does not pay in strings of cash");
+            helper.succeed();
+        });
+    }
+
+    /** Travellers: one or two named villagers trading in Murim's money, with a mule or donkey, both tagged to leave. */
+    @GameTest(template = "foundation_arena", batch = "site_travellers", timeoutTicks = 100)
+    public static void travellersWanderTradingInMurimMoney(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var at = helper.absolutePos(new BlockPos(3, 2, 3));
+        var travellers = com.murimblock.mob.AllianceWanderers.spawnTravellers(level, at, level.random);
+        helper.assertTrue(!travellers.isEmpty(), "No traveller came");
+        for (Villager v : travellers) {
+            helper.assertTrue(v.getCustomName() != null && v.getTags().contains(com.murimblock.world.structure.site.MurimTrades.TAG)
+                    && v.getTags().contains(com.murimblock.mob.AllianceWanderers.TRAVELLER), "A traveller is unnamed or not a townsfolk");
+        }
+        var beasts = level.getEntitiesOfClass(net.minecraft.world.entity.animal.horse.AbstractChestedHorse.class, new AABB(at).inflate(4),
+                b -> b.getTags().contains(com.murimblock.mob.AllianceWanderers.TRAVELLER));
+        helper.assertTrue(beasts.size() == 1, "The travellers have " + beasts.size() + " beasts, not 1");
+        travellers.forEach(Villager::discard);
+        beasts.forEach(b -> b.discard());
+        helper.succeed();
     }
 }

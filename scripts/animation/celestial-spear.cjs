@@ -289,7 +289,7 @@ const timings = {
   plum: [...Array(5)].map((_, i) => +(PLUM_GAP * (i + 1)).toFixed(3)), plumLast: +(PLUM_GAP * 5 + PLUM_LAST).toFixed(3),
   rain: [...Array(8)].map((_, i) => +(RAIN_GAP * (i + 1)).toFixed(3)), rainLast: +(RAIN_GAP * 8 + PLUM_LAST).toFixed(3),
 };
-module.exports = { anims, timings };
+module.exports = { anims, timings, hold, begin, GUARD, WIND, THRUST, DRAW, SWEEP, STANCE, LUNGE, CROUCH, TUCK, HIP, yawed, pitched, look, through, SHAFT, AIR_RAISE };
 
 if (require.main === module) {
   for (const [name, keys] of Object.entries(anims)) {

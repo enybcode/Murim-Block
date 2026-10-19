@@ -99,6 +99,8 @@ public final class MartialProgress {
         if (amount <= 0 || before.mastery(id) >= MartialData.MAX_MASTERY) return;
         MartialData after = before.withMastery(id, before.mastery(id) + amount);
         MartialService.set(player, after);
+        // The Celestial Peak Spear at mastery 50 brings the Overlord Spear's manual.
+        if (art.id().equals(MartialArts.CELESTIAL_PEAK_SPEAR)) OverlordSpear.celestialMastery(player, before.styleMastery(art), after.styleMastery(art));
         for (MartialArts.Evolution e : evolutionsReached(art, before, after)) {
             MartialArts.Technique t = MartialArts.technique(e.technique());
             player.sendSystemMessage(Component.translatable("evolution.murimblock.reached",

@@ -1,0 +1,23 @@
+{
+  "feature": "murimblock:plant_morning_glory",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 3
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE_WG"
+    },
+    {
+      "type": "minecraft:biome"
+    },
+    {
+      "type": "murimblock:away_from_sites",
+      "margin": 8
+    }
+  ]
+}

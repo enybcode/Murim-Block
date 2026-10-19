@@ -46,6 +46,9 @@ public final class Murimblock {
         MurimEntities.register(modEventBus);
         // Blocks first: they add their block items to MurimItems before its registry is attached.
         MurimBlocks.register(modEventBus);
+        com.murimblock.world.plant.MurimFlora.register(modEventBus);
+        com.murimblock.alchemy.AlchemyItems.register(modEventBus);
+        com.murimblock.alchemy.AlchemyEffects.register(modEventBus);
         com.murimblock.martial.SanguineBlocks.register(modEventBus);
         com.murimblock.martial.SanguineItems.register(modEventBus);
         com.murimblock.martial.CelestialPeakItems.register(modEventBus);
@@ -53,6 +56,7 @@ public final class Murimblock {
         com.murimblock.martial.SevenStarsItems.register(modEventBus);
         com.murimblock.martial.ThunderSaberItems.register(modEventBus);
         com.murimblock.martial.GoldenBellItems.register(modEventBus);
+        com.murimblock.world.raven.RavenBlocks.register(modEventBus);
         com.murimblock.bloodsect.BloodSect.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);
@@ -71,6 +75,7 @@ public final class Murimblock {
         com.murimblock.martial.SanguineParticles.register(modEventBus);
         com.murimblock.martial.SevenStarsParticles.register(modEventBus);
         com.murimblock.martial.ThunderSaberParticles.register(modEventBus);
+        com.murimblock.martial.RavenParticles.register(modEventBus);
         MurimAnimations.registerMotions();
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
         EpicFightBridge.registerHooks();

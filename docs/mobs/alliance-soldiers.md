@@ -49,6 +49,7 @@ sorte (les pièces qu'une sorte ne porte pas sont transparentes dans son atlas) 
 - **Avant-poste de l'Alliance** (`AllianceOutpost`, `docs/structures`) : deux gardes à la lance juste derrière la
   porte, deux disciples entre les mannequins d'entraînement, l'archer sur la vigie de la tour de guet, le sergent dans
   la grande salle près du commandant, le moine à l'infirmerie.
+- **Plus de vie** (19/10/2026, demande d'Enzo : « que le monde ne soit pas trop vide ») : patrouilles environ toutes les 4 minutes (au lieu de 10), moines toutes les 2 min 30 (au lieu de 5), et des **voyageurs** sur les routes des terres de l'Alliance : un colporteur, un pèlerin, un marchand de thé ou de tissu, une herboriste, un scribe, seul ou à deux, avec une mule ou un âne bâtés, villageois nommés qui commercent en monnaie Murim ; partis quand plus aucun joueur n'est à 128 blocs.
 - **Patrouilles** (`AllianceWanderers`, demande d'Enzo du 15/10/2026) : un sergent mène deux gardes à la lance, un
   disciple d'épée et un archer. Le sergent marche vers un point à 48-96 blocs, puis en choisit un autre ; les autres le
   suivent à moins de 5 blocs ; s'il tombe, l'un d'eux prend la tête. Dans les terres de l'Alliance (tag de biome

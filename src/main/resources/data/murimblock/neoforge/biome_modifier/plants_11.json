@@ -1,0 +1,16 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:hexi_frontier_desert",
+    "murimblock:loess_plateau"
+  ],
+  "features": [
+    "murimblock:plant_desert_candle",
+    "murimblock:plant_desert_iris",
+    "murimblock:plant_chinese_pink",
+    "murimblock:plant_field_poppy",
+    "murimblock:plant_caper_flower",
+    "murimblock:plant_harmal"
+  ],
+  "step": "vegetal_decoration"
+}

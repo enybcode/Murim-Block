@@ -68,3 +68,21 @@ Conséquence voulue : un coup « mortel » d'un joueur ne met K.O. qu'un adversa
 | Crystal Barrage | 0,4 par cristal (10 au plus) | ≈ 6,4 chacun, 64 la salve pleine |
 
 La limite anti-one-shot (60 % de la vie en 3 s contre un joueur) s'applique toujours.
+
+## Les arts de poing renforcent les M1 à mains nues (18/10/2026)
+
+Demande d'Enzo : « que les arts de poing boostent la mêlée, en fonction de leur puissance globale ». Quand le style
+principal est un art de poing et que la main principale est vide, chaque M1 (les coups d'Epic Fight et les frappes du
+passif, pas les techniques) reçoit un bonus fixe puis un multiplicateur (`martial/FistPower`, appliqué dans
+`MartialCombat.onDealDamagePre`) :
+
+| Art | Bonus | Multiplicateur |
+|---|---|---|
+| Golden Bell (départ, défensif) | +1 | ×1,10 |
+| Long Fist (départ) | +2 | ×1,15 |
+| Mountain-Shattering Fist (Qi Condensation) | +4 | ×1,30 |
+| Majin Fist (Qi Liquidation) | +5 | ×1,40 |
+
+Mesuré (`FistPowerGameTests`) : le premier coup de poing d'Epic Fight passe de 0,9 à 3,3 dégâts avec le Poing Long au
+premier royaume. Le déclin des combos, le bouclier des royaumes et `BurstGuard` s'appliquent ensuite comme avant. Une
+arme en main ne reçoit rien.

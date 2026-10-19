@@ -14,6 +14,7 @@
 - [Bandit Chief](mobs/bandit-chief.md): the bandits' mini-boss, his great axe and attacks.
 - [Bandit ecology](mobs/bandit-ecology.md): surface bandits, faction hostility, art scroll drops and spawn protection for structures and WorldEdit bases.
 - [Sensei Yun](mobs/azure-sensei.md): the Azure Cloud Sect's master in the Misty Bamboo Temple, his sword and his manual.
+- [Raven Master](mobs/raven-master.md): the Raven Art's wandering master, who watches from afar and fights whoever meets his eyes (19 October, validated by Enzo).
 - [Crab King](mobs/crab-king.md): the crab art's boss, an infected martial artist with long pincers; waits in a structure to come.
 - [Alliance Merchant](mobs/alliance-merchant.md): the Orthodox Alliance's merchant, his trades and the silver taels.
 - [Alliance soldiers](mobs/alliance-soldiers.md): the five kinds of Alliance soldier, their weapons and the outpost garrison.
@@ -21,6 +22,7 @@
 - [Murim biomes](biomes/README.md): the seven biomes, their blocks and textures (redrawn 14 October).
 - [Murim structures](structures/README.md): the Cloud Cliff Sanctuary and the six sites with their technical sheets.
 - [Murim lore](lore/README.md): the world bible: the Murim, its history, regions, powers and mysteries; the player has no lore of his own (15 October, proposal awaiting Enzo).
+- [Murim families](lore/families.md): sixteen families by region, with the legends of their arts, drawing on murim manhwa and manhua (18 October, proposal awaiting Enzo).
 - [Murim factions](factions/README.md): proposal for the beta: Orthodox Alliance (centre) and Heavenly Demon Cult (desert), 12 arts, bosses, mobs (15 October, awaiting Enzo).
 
 ## Development And Delivery

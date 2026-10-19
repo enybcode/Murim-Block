@@ -94,6 +94,7 @@ validée le 17/10 (« parfait »), icônes des livres refaites en pixel art à s
 | Guide : Celestial Peak Spear | 2 | 6 |
 | Guide : Azure Cloud Sword | 3 | 10 |
 | Guide : Mountain-Shattering Fist | 4 | 16 |
+| Guide : Overlord Spear | 4 | 18 |
 | Guide : Seven Stars Sword | 4 | 20 |
 | Guide : Majin Fist | 4 | 20 |
 | Guide : Purple Heaven Thunder Saber | 4 | 24 |

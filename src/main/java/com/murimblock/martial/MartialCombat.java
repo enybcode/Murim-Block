@@ -122,6 +122,7 @@ public final class MartialCombat {
         SevenStarsSword.onPerfectParry(player, attacker);
         ThunderSaber.onPerfectParry(player, attacker);
         GoldenBell.onPerfectParry(player, attacker);
+        RavenArt.onPerfectParry(player, attacker);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -188,6 +189,10 @@ public final class MartialCombat {
             SWINGS.put(player.getUUID(), pending);
             return;
         }
+        // Mirror Image (the Crescent Moon Halberd): a dodge leaves a reflection where it began.
+        if (CrescentMoonHalberd.isDodge(animation)) CrescentMoonHalberd.dodged(player);
+        // Between Worlds (the Raven Art): the roll goes through the halls.
+        if (CrescentMoonHalberd.isDodge(animation)) RavenArt.rolled(player);
         // With Scarlet Tear's blood sword out, its cuts (the sword strikes) belong to the Sanguine Art.
         ResourceLocation credit = SanguineArt.holdsSword(player) ? SanguineArt.creditOf(player, animation) : null;
         if (credit != null) {
@@ -202,6 +207,23 @@ public final class MartialCombat {
         credit = LongFist.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.LONG_FIST, credit, LongFist.isStrike(animation), false));
+            return;
+        }
+        credit = OverlordSpear.creditOf(player, animation);
+        if (credit != null) {
+            boolean strike = OverlordSpear.isStrike(animation);
+            if (strike) OverlordSpear.strikeBegan(player);
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.OVERLORD_SPEAR, credit, strike, false));
+            return;
+        }
+        credit = CrescentMoonHalberd.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CRESCENT_MOON_HALBERD, credit, CrescentMoonHalberd.isStrike(animation), false));
+            return;
+        }
+        credit = RavenArt.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.RAVEN_ART, credit, true, false));
             return;
         }
         credit = MountainShatteringFist.creditOf(player, animation);
@@ -262,6 +284,11 @@ public final class MartialCombat {
         if (isHeldUp(event.getTarget()) && event.getDamageSource().getStunType() == yesman.epicfight.world.damagesource.StunType.KNOCKDOWN)
             event.getDamageSource().setStunType(yesman.epicfight.world.damagesource.StunType.LONG);
         Swing swing = swing(player, event.getDamageSource().getAnimation());
+        // A fist art as main style strengthens the bare hands' plain blows (M1), not the techniques (FistPower).
+        if (swing == null || swing.strike) FistPower.boost(player).ifPresent(b -> {
+            event.getDamageSource().attachDamageModifier(ValueModifier.adder(b.extra()));
+            event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(b.factor()));
+        });
         if (swing == null) return;
         Combo c = COMBOS.get(event.getTarget().getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && player.level().getGameTime() - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
@@ -280,6 +307,8 @@ public final class MartialCombat {
         if (swing.art.equals(MartialArts.THUNDER_SABER)) factor *= ThunderSaber.factorBefore(player, event.getTarget());
         // Pride of the Sun: a strike by day under the sky lands harder.
         if (swing.art.equals(MartialArts.MAJIN_FIST)) factor *= MajinFistArt.factorBefore(player, swing.animation);
+        // Conqueror's Weight: the battering ram strikes x1.8.
+        if (swing.art.equals(MartialArts.OVERLORD_SPEAR) && swing.strike && OverlordSpear.ramming(player)) factor *= OverlordSpear.RAM_FACTOR;
         // Epic Fight keeps the modifiers attached to the damage source (not the event's modified damage).
         if (factor != 1.0F) event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(factor));
     }
@@ -301,7 +330,11 @@ public final class MartialCombat {
         boolean sanguine = swing.art.equals(MartialArts.SANGUINE_ART);
         boolean spear = swing.art.equals(MartialArts.CELESTIAL_PEAK_SPEAR);
         boolean mountain = swing.art.equals(MartialArts.MOUNTAIN_SHATTERING_FIST);
-        if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
+        boolean overlord = swing.art.equals(MartialArts.OVERLORD_SPEAR);
+        if (overlord) OverlordSpear.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.CRESCENT_MOON_HALBERD)) CrescentMoonHalberd.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.RAVEN_ART)) RavenArt.onHit(player, target, enemy);
+        else if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
         else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
         else if (swing.art.equals(MartialArts.MAJIN_FIST)) MajinFistArt.onHit(player, target, animation, enemy);
         else if (fist) LongFist.onHit(player, target, animation, enemy);
@@ -315,7 +348,8 @@ public final class MartialCombat {
         Combo c = COMBOS.get(target.getUUID());
         int prior = c != null && c.attacker.equals(player.getUUID()) && now - c.last <= COMBO_GAP_TICKS ? c.hits : 0;
         if (fist ? LongFist.knocksDown(animation) : spear ? CelestialPeakSpear.knocksDown(animation)
-                : mountain ? MountainShatteringFist.knocksDown(animation) : !sanguine && AzureCloudSword.knocksDown(animation)) {
+                : mountain ? MountainShatteringFist.knocksDown(animation) : overlord ? OverlordSpear.knocksDown(animation)
+                : !sanguine && AzureCloudSword.knocksDown(animation)) {
             COMBOS.remove(target.getUUID());
             if (enemy && prior >= COMPLETE_COMBO_HITS) MartialProgress.count(player, MartialArts.SEA_OF_CLOUDS_COMBOS, 1);
         } else {
@@ -672,6 +706,9 @@ public final class MartialCombat {
         AzureCloudSword.tickAim(player, now);
         TravellerStaff.tick(player);
         MountainShatteringFist.tick(player);
+        OverlordSpear.tick(player);
+        CrescentMoonHalberd.tick(player);
+        RavenArt.tick(player);
         MajinFistArt.tick(player);
         SevenStarsSword.tick(player);
         ThunderSaber.tick(player);
@@ -783,6 +820,9 @@ public final class MartialCombat {
         SanguineArt.forget(id);
         TravellerStaff.forget(id);
         MountainShatteringFist.forget(id);
+        OverlordSpear.forget(id);
+        CrescentMoonHalberd.forget(id);
+        RavenArt.forget(id);
         MajinFistArt.forget(id);
         SevenStarsSword.forget(id);
         ThunderSaber.forget(id);
@@ -808,6 +848,9 @@ public final class MartialCombat {
         BloodIceberg.forget(null);
         TravellerStaff.forget(null);
         MountainShatteringFist.forget(null);
+        OverlordSpear.forget(null);
+        CrescentMoonHalberd.forget(null);
+        RavenArt.forget(null);
         MajinFistArt.forget(null);
         SevenStarsSword.forget(null);
         ThunderSaber.forget(null);

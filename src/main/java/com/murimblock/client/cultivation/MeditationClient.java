@@ -12,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Marker;
 import net.minecraft.world.phys.Vec3;
@@ -42,7 +43,7 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class MeditationClient {
-    /** How long the key is held to open the inner world (15 s), or to leave it, in ticks. */
+    /** How long the key is held to open the inner world (7 s), or to leave it, in ticks. */
     public static final int HOLD_TICKS = MeditationService.ENTER_HOLD_TICKS, LEAVE_TICKS = MeditationService.LEAVE_HOLD_TICKS;
     private static int held;
     private static boolean wasDown, holdSent;
@@ -50,6 +51,20 @@ public final class MeditationClient {
 
     private static Marker camera;
     private static double orbit;
+    /**
+     * The view turns round the body only while sitting down, a short cinematic (Enzo, 17/10/2026: "on reste à la première
+     * personne, les cinématiques seulement durant la première partie"); then the meditation is seen through one's own
+     * eyes, looking about freely, the crosshair drawing the motes in.
+     */
+    static final int CINEMATIC_TICKS = 60;
+    private static int cinematic;
+    private static boolean cinematicDone;
+    /** The mote under the crosshair (its entity id, -1: none), for how many ticks, and those already asked for. */
+    private static int focused = -1, focusTicks;
+    private static final java.util.Set<Integer> drawn = new java.util.HashSet<>();
+    /** How long the gaze rests on a mote before it comes (ticks), and how close to the crosshair it must be (degrees). */
+    static final int FOCUS_TICKS = 5;
+    static final double FOCUS_ANGLE = 7;
     private static float lockedYaw;
 
     private MeditationClient() {
@@ -96,8 +111,63 @@ public final class MeditationClient {
             holdSent = false;
         }
         wasDown = down;
-        if (meditating) ensureCamera(mc, player);
-        else releaseCamera(mc);
+        if (meditating && !cinematicDone) {
+            ensureCamera(mc, player);
+            if (++cinematic >= CINEMATIC_TICKS) {
+                releaseCamera(mc);
+                cinematicDone = true;
+                // Back in one's eyes, looking where the body faces.
+                player.setYRot(lockedYaw);
+                player.setXRot(10);
+            }
+        } else if (!meditating) {
+            releaseCamera(mc);
+            cinematic = 0;
+            cinematicDone = false;
+        }
+        gaze(mc, player, meditating);
+    }
+
+    /**
+     * Seated, the movement speed is locked to nothing, which Minecraft would show as a narrowing of the view (as under
+     * Slowness): the view keeps its width while meditating.
+     */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
+    public static void onFov(net.neoforged.neoforge.client.event.ComputeFovModifierEvent event) {
+        if (MeditationService.isMeditating(event.getPlayer())) event.setNewFovModifier(1.0F);
+    }
+
+    /** The mote of Qi a meditating player's view rests on (MeditationOrbs), or -1: the renderer brightens it. */
+    public static int focusedMote() {
+        return focused;
+    }
+
+    /** Each tick: which of one's own waiting motes lies under the crosshair; held there long enough, it is drawn in. */
+    private static void gaze(Minecraft mc, LocalPlayer player, boolean meditating) {
+        if (!meditating || orbiting() || mc.level == null) {
+            focused = -1;
+            focusTicks = 0;
+            drawn.clear();
+            return;
+        }
+        var view = mc.gameRenderer.getMainCamera();
+        Vec3 eye = view.getPosition(), look = new Vec3(view.getLookVector());
+        double best = Math.cos(Math.toRadians(FOCUS_ANGLE));
+        int found = -1;
+        for (Entity e : mc.level.getEntities(player, player.getBoundingBox().inflate(com.murimblock.cultivation.MeditationOrbs.REACH))) {
+            if (!(e instanceof com.murimblock.cultivation.inner.QiMoteEntity mote) || !mote.meditation() || mote.pulled()
+                    || !player.getUUID().equals(mote.owner()) || drawn.contains(mote.getId())) continue;
+            double cos = mote.position().add(0, 0.25, 0).subtract(eye).normalize().dot(look);
+            if (cos > best) { best = cos; found = mote.getId(); }
+        }
+        focusTicks = found == focused && found >= 0 ? focusTicks + 1 : 0;
+        focused = found;
+        if (found >= 0 && focusTicks >= FOCUS_TICKS && mc.getConnection() != null) {
+            PacketDistributor.sendToServer(new CultivationPayloads.Absorb(found));
+            drawn.add(found);
+            focused = -1;
+            focusTicks = 0;
+        }
     }
 
     /** Moving gets up; meanwhile the body does not move. */

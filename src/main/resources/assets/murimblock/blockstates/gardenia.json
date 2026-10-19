@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/gardenia",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/gardenia",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/gardenia",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/gardenia",
+        "y": 270
+      }
+    ]
+  }
+}

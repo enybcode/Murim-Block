@@ -2,6 +2,7 @@
 
 > **Statut : proposition, rien n'est en jeu.** Rédigée le 15/10/2026. Décisions d'Enzo :
 > - **le joueur n'a aucun lore** : pas d'élu, pas de passé, pas de destin ;
+> - 18/10 : plus tard, **le joueur naîtra dans une famille** qui lui donne un héritage (arme, passif ou technique), sans destin pour autant : voir [families.md](families.md) ;
 > - **le plus important, c'est le world-building** : le monde a son histoire, et le joueur y entre ;
 > - **pour la bêta, on met le monde en place** ; plus tard, les actions des joueurs auront un impact sur lui.
 >

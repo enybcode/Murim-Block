@@ -5,6 +5,17 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 40: the Crescent Moon Halberd remade (its reflections; the moon's phases gone, its moonlight kept).
+     * 39: the Crescent Moon Halberd (the moon's phases shown to its player, its moonlight).
+     * 38: the Devouring Demon Art's Kagune Shift and both kagune at once (the kagune's state keeps its last form).
+     * 37: the aura released or held in at will (its key).
+     * 36: flying on the sword (the jump held to mount it, its state to all who see the flyer).
+     * 35: the aura's pressure seen by all (its reach in the aura every client sees).
+     * 34: the cultivation methods (one practised, chosen in the Cultivation tab).
+     * 33: the Devouring Demon Art's Grapple and Constrict.
+     * 32: Qi vision's hidden (the trails of the powerful).
+     * 31: Qi vision's vital points (lit after a perfect parry, struck).
+     * 30: the Overlord Spear's flashes of blood red and gold.
      * 26: the Golden Dragon's scroll of wares (unrolled for a player, a ware bought).
      * 25: the Purple Heaven Thunder Saber (its drums, the electrified, its lightning).
      * 24: the Golden Bell (the body's matter shown to everyone round, the bell's ring, a blow sent back).
@@ -16,7 +27,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "26";
+    private static final String NETWORK_VERSION = "40";
 
     private MurimblockNetworking() {
     }
@@ -25,7 +36,14 @@ public final class MurimblockNetworking {
         PayloadRegistrar registrar = event.registrar(NETWORK_VERSION);
         // Cultivation: meditation (and the inner world), Qi Sense, breakthroughs shown.
         registrar.playToServer(CultivationPayloads.Meditate.TYPE, CultivationPayloads.Meditate.STREAM_CODEC, CultivationPayloads.Meditate::handle);
+        registrar.playToServer(CultivationPayloads.Absorb.TYPE, CultivationPayloads.Absorb.STREAM_CODEC, CultivationPayloads.Absorb::handle);
+        registrar.playToServer(CultivationPayloads.Leap.TYPE, CultivationPayloads.Leap.STREAM_CODEC, CultivationPayloads.Leap::handle);
         registrar.playToServer(CultivationPayloads.Sense.TYPE, CultivationPayloads.Sense.STREAM_CODEC, CultivationPayloads.Sense::handle);
+        registrar.playToServer(CultivationPayloads.TogglePressure.TYPE, CultivationPayloads.TogglePressure.STREAM_CODEC, CultivationPayloads.TogglePressure::handle);
+        registrar.playToServer(CultivationPayloads.SwordFlight.TYPE, CultivationPayloads.SwordFlight.STREAM_CODEC, CultivationPayloads.SwordFlight::handle);
+        registrar.playToClient(CultivationPayloads.SwordFlightState.TYPE, CultivationPayloads.SwordFlightState.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.cultivation.SwordFlightClient.state(payload));
+        registrar.playToServer(CultivationPayloads.PractiseMethod.TYPE, CultivationPayloads.PractiseMethod.STREAM_CODEC, CultivationPayloads.PractiseMethod::handle);
         // Conversations: a page shown, an answer chosen.
         registrar.playToClient(DialoguePayloads.Page.TYPE, DialoguePayloads.Page.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.DialogueScreen.open(payload));
@@ -34,8 +52,16 @@ public final class MurimblockNetworking {
         registrar.playToClient(ScrollShopPayloads.Open.TYPE, ScrollShopPayloads.Open.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.ScrollShopScreen.open(payload));
         registrar.playToServer(ScrollShopPayloads.Buy.TYPE, ScrollShopPayloads.Buy.STREAM_CODEC, ScrollShopPayloads.Buy::handle);
+        // The Murim map: asked for by a player, sent to them.
+        registrar.playToServer(MurimMapPayloads.Request.TYPE, MurimMapPayloads.Request.STREAM_CODEC, MurimMapPayloads.Request::handle);
+        registrar.playToClient(MurimMapPayloads.View.TYPE, MurimMapPayloads.View.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.MurimMapScreen.receive(payload));
         registrar.playToClient(CultivationPayloads.SenseReadings.TYPE, CultivationPayloads.SenseReadings.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.QiSenseClient.readings(payload));
+        registrar.playToClient(CultivationPayloads.Vital.TYPE, CultivationPayloads.Vital.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.cultivation.VitalPointsClient.receive(payload));
+        registrar.playToClient(CultivationPayloads.Traces.TYPE, CultivationPayloads.Traces.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.cultivation.QiHiddenClient.traces(payload));
         registrar.playToClient(CultivationPayloads.Breakthrough.TYPE, CultivationPayloads.Breakthrough.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.AuraClient.breakthrough(payload.entityId(), payload.kind()));
         registrar.playToServer(
@@ -88,6 +114,19 @@ public final class MurimblockNetworking {
         // A Majin Fist impact's flash of sunlight (a Photon light).
         registrar.playToClient(SunFlashPayload.TYPE, SunFlashPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.CruelSunRenderer.flash(payload));
+        // The Overlord Spear's impacts: a flash of blood red and gold (a Photon light).
+        registrar.playToClient(OverlordFlashPayload.TYPE, OverlordFlashPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.OverlordFxClient.flash(payload));
+        // A kagune's blow landing (the Devouring Demon Art): its light, blood, shake and hit-stop.
+        registrar.playToClient(KaguneGrabPayload.TYPE, KaguneGrabPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.KaguneGrabs.grab(payload));
+        registrar.playToClient(KaguneEruptPayload.TYPE, KaguneEruptPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.KaguneEruptions.erupt(payload));
+        registrar.playToClient(KaguneImpactPayload.TYPE, KaguneImpactPayload.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.KaguneImpactFx.impact(payload));
+        // The Crescent Moon Halberd: its moon's phases by the crosshair, its moonlight (Photon lights, night falling).
+        registrar.playToClient(CrescentMoonPayloads.Fx.TYPE, CrescentMoonPayloads.Fx.STREAM_CODEC,
+                (payload, context) -> com.murimblock.client.CrescentMoonClient.fx(payload));
         registrar.playToClient(TransformationPayload.TYPE, TransformationPayload.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.TransformationCinematic.start(payload));
     }

@@ -106,6 +106,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the Raven Master, perched far off, met in the eyes, fought (see RavenMasterTour).
+        ravenMasterTour {
+            client()
+            gameDirectory = project.file('build/raven-master-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ravenMasterTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client tour of the Murim biomes in a fresh normal world (see BiomeTour).
         biomeTour {
             client()
@@ -121,6 +130,123 @@ neoForge {
             gameDirectory = project.file('build/star-peak-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.starPeakTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at Qi vision's hidden (see QiHiddenTour).
+        qiHiddenTour {
+            client()
+            gameDirectory = project.file('build/qi-hidden-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiHiddenTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at Qi vision's tiring eyes (see QiFatigueTour).
+        qiFatigueTour {
+            client()
+            gameDirectory = project.file('build/qi-fatigue-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiFatigueTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the cultivation methods in the Cultivation tab (see MethodsTour).
+        methodsTour {
+            client()
+            gameDirectory = project.file('build/methods-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.methodsTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the aura's pressure (see AuraPressureTour).
+        auraPressureTour {
+            client()
+            gameDirectory = project.file('build/aura-pressure-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.auraPressureTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at flying on the sword (see SwordFlightTour).
+        swordFlightTour {
+            client()
+            gameDirectory = project.file('build/sword-flight-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.swordFlightTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at running on water (see WaterWalkTour).
+        waterWalkTour {
+            client()
+            gameDirectory = project.file('build/water-walk-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.waterWalkTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at Qi vision through walls (see QiThroughWallsTour).
+        qiThroughWallsTour {
+            client()
+            gameDirectory = project.file('build/qi-through-walls-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiThroughWallsTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at Qi vision's vital points (see VitalPointsTour).
+        vitalPointsTour {
+            client()
+            gameDirectory = project.file('build/vital-points-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.vitalPointsTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the mock-up of Qi vision's foresight (see QiForesightTour).
+        qiForesightTour {
+            client()
+            gameDirectory = project.file('build/qi-foresight-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiForesightTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the mock-up of Qi vision (see QiVisionTour).
+        qiVisionTour {
+            client()
+            gameDirectory = project.file('build/qi-vision-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qiVisionTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at Qinggong's leap in the air (see QinggongTour).
+        qinggongTour {
+            client()
+            gameDirectory = project.file('build/qinggong-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.qinggongTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the meditation's aura, by art and by Qi (see AuraTour).
+        auraTour {
+            client()
+            gameDirectory = project.file('build/aura-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.auraTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: real client look at the motes of Qi round a meditation (see MeditationOrbsTour).
+        meditationOrbsTour {
+            client()
+            gameDirectory = project.file('build/meditation-orbs-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.meditationOrbsTour', 'true'
             disableIdeRun()
         }
 
@@ -196,6 +322,38 @@ neoForge {
             gameDirectory = project.file('build/thunder-saber-pose-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.thunderSaberPoseTour', 'true'
+            disableIdeRun()
+        }
+        // The Murim map in a new Murim world (MurimMapTour).
+        murimMapTour {
+            client()
+            gameDirectory = project.file('build/murim-map-tour-run')
+            programArguments.addAll('--width', '1920', '--height', '1080')
+            systemProperty 'murimblock.murimMapTour', 'true'
+            disableIdeRun()
+        }
+        // The martial arts' inner worlds (InnerWorldsTour).
+        innerWorldsTour {
+            client()
+            gameDirectory = project.file('build/inner-worlds-tour-run')
+            programArguments.addAll('--width', '1600', '--height', '900')
+            systemProperty 'murimblock.innerWorldsTour', 'true'
+            disableIdeRun()
+        }
+        // The pill furnace at work (FurnaceTour).
+        furnaceTour {
+            client()
+            gameDirectory = project.file('build/furnace-tour-run')
+            programArguments.addAll('--width', '1600', '--height', '900')
+            systemProperty 'murimblock.furnaceTour', 'true'
+            disableIdeRun()
+        }
+        // The Murim's plants, wild and planted (GardenTour).
+        gardenTour {
+            client()
+            gameDirectory = project.file('build/garden-tour-run')
+            programArguments.addAll('--width', '1600', '--height', '900')
+            systemProperty 'murimblock.gardenTour', 'true'
             disableIdeRun()
         }
         // The HUD and the Techniques page at full screen (HudTour).
@@ -327,6 +485,58 @@ neoForge {
             gameDirectory = project.file('build/sage-shop-tour-run')
             programArguments.addAll('--width', '1280', '--height', '720')
             systemProperty 'murimblock.sageShopTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a film of the Overlord Spear's techniques in a real client (see OverlordTour).
+        crescentMoonTour {
+            client()
+            gameDirectory = project.file('build/crescent-moon-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.crescentMoonTour', 'true'
+            disableIdeRun()
+        }
+        overlordTour {
+            client()
+            gameDirectory = project.file('build/overlord-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.overlordTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: the raven familiar and the Raven Tower in a real client (see RavenFamiliarTour).
+        ravenFamiliarTour {
+            client()
+            gameDirectory = project.file('build/raven-familiar-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ravenFamiliarTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: the Raven Art's techniques filmed in a real client (see RavenSkillsTour).
+        ravenSkillsTour {
+            client()
+            gameDirectory = project.file('build/raven-skills-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ravenSkillsTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: the Raven Halls in a real client (see RavenTour).
+        ravenTour {
+            client()
+            gameDirectory = project.file('build/raven-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ravenTour', 'true'
+            disableIdeRun()
+        }
+
+        // Development-only: a look at the Spear of Ruin in a real client (see RuinSpearTour).
+        ruinSpearTour {
+            client()
+            gameDirectory = project.file('build/ruin-spear-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ruinSpearTour', 'true'
             disableIdeRun()
         }
 
@@ -856,6 +1066,96 @@ tasks.named('runSageShopTour').configure {
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Sage shop tour failed; see build/sage-shop-tour-run/sage-shop-tour-report.txt')
     }
 }
+def overlordTourSave = layout.buildDirectory.dir('overlord-tour-run/saves/murim-overlord')
+def overlordTourReport = layout.buildDirectory.file('overlord-tour-run/overlord-tour-report.txt')
+def overlordTourShots = layout.buildDirectory.dir('overlord-tour-run/screenshots')
+tasks.named('runOverlordTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Overlord tour.')
+        overlordTourSave.get().asFile.deleteDir()
+        overlordTourShots.get().asFile.deleteDir()
+        overlordTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = overlordTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Overlord tour failed; see build/overlord-tour-run/overlord-tour-report.txt')
+    }
+}
+def crescentMoonTourSave = layout.buildDirectory.dir('crescent-moon-tour-run/saves/murim-crescent-moon')
+def crescentMoonTourShots = layout.buildDirectory.dir('crescent-moon-tour-run/screenshots')
+def crescentMoonTourReport = layout.buildDirectory.file('crescent-moon-tour-run/crescent-moon-tour-report.txt')
+tasks.named('runCrescentMoonTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Crescent Moon tour.')
+        crescentMoonTourSave.get().asFile.deleteDir()
+        crescentMoonTourShots.get().asFile.deleteDir()
+        crescentMoonTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = crescentMoonTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Crescent Moon tour failed; see build/crescent-moon-tour-run/crescent-moon-tour-report.txt')
+    }
+}
+def ravenFamiliarTourSave = layout.buildDirectory.dir('raven-familiar-tour-run/saves/murim-raven-familiar')
+def ravenFamiliarTourReport = layout.buildDirectory.file('raven-familiar-tour-run/raven-familiar-tour-report.txt')
+def ravenFamiliarTourShots = layout.buildDirectory.dir('raven-familiar-tour-run/screenshots')
+tasks.named('runRavenFamiliarTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only raven familiar tour.')
+        ravenFamiliarTourSave.get().asFile.deleteDir()
+        ravenFamiliarTourShots.get().asFile.deleteDir()
+        ravenFamiliarTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ravenFamiliarTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Raven familiar tour failed; see build/raven-familiar-tour-run/raven-familiar-tour-report.txt')
+    }
+}
+def ravenSkillsTourSave = layout.buildDirectory.dir('raven-skills-tour-run/saves/murim-raven-skills')
+def ravenSkillsTourReport = layout.buildDirectory.file('raven-skills-tour-run/raven-skills-tour-report.txt')
+def ravenSkillsTourShots = layout.buildDirectory.dir('raven-skills-tour-run/screenshots')
+tasks.named('runRavenSkillsTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only raven skills tour.')
+        ravenSkillsTourSave.get().asFile.deleteDir()
+        ravenSkillsTourShots.get().asFile.deleteDir()
+        ravenSkillsTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ravenSkillsTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Raven skills tour failed; see build/raven-skills-tour-run/raven-skills-tour-report.txt')
+    }
+}
+def ravenTourSave = layout.buildDirectory.dir('raven-tour-run/saves/murim-raven')
+def ravenTourReport = layout.buildDirectory.file('raven-tour-run/raven-tour-report.txt')
+def ravenTourShots = layout.buildDirectory.dir('raven-tour-run/screenshots')
+tasks.named('runRavenTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only raven tour.')
+        ravenTourSave.get().asFile.deleteDir()
+        ravenTourShots.get().asFile.deleteDir()
+        ravenTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ravenTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Raven tour failed; see build/raven-tour-run/raven-tour-report.txt')
+    }
+}
+def ruinSpearTourSave = layout.buildDirectory.dir('ruin-spear-tour-run/saves/murim-ruin-spear')
+def ruinSpearTourReport = layout.buildDirectory.file('ruin-spear-tour-run/ruin-spear-tour-report.txt')
+def ruinSpearTourShots = layout.buildDirectory.dir('ruin-spear-tour-run/screenshots')
+tasks.named('runRuinSpearTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only ruin spear tour.')
+        ruinSpearTourSave.get().asFile.deleteDir()
+        ruinSpearTourShots.get().asFile.deleteDir()
+        ruinSpearTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ruinSpearTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Ruin spear tour failed; see build/ruin-spear-tour-run/ruin-spear-tour-report.txt')
+    }
+}
 def knifeTourSave = layout.buildDirectory.dir('knife-tour-run/saves/murim-knife')
 def knifeTourReport = layout.buildDirectory.file('knife-tour-run/knife-tour-report.txt')
 def knifeTourShots = layout.buildDirectory.dir('knife-tour-run/screenshots')
@@ -973,5 +1273,21 @@ tasks.named('runMpServer').configure {
             if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only multiplayer check.')
             new File(workingDir, 'mp-tour-client.txt').delete()
         }
+    }
+}
+
+def ravenMasterTourSave = layout.buildDirectory.dir('raven-master-tour-run/saves/murim-raven-master')
+def ravenMasterTourReport = layout.buildDirectory.file('raven-master-tour-run/raven-master-tour-report.txt')
+def ravenMasterTourShots = layout.buildDirectory.dir('raven-master-tour-run/screenshots')
+tasks.named('runRavenMasterTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Raven Master tour.')
+        ravenMasterTourSave.get().asFile.deleteDir()
+        ravenMasterTourShots.get().asFile.deleteDir()
+        ravenMasterTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ravenMasterTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Raven Master tour failed; see build/raven-master-tour-run/raven-master-tour-report.txt')
     }
 }

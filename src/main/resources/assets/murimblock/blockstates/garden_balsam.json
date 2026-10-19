@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/garden_balsam",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/garden_balsam",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/garden_balsam",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/garden_balsam",
+        "y": 270
+      }
+    ]
+  }
+}

@@ -401,10 +401,116 @@ public final class MartialArts {
             List.of(new QuestStep(CRIMSON_PEAK_FORMS, 3)));
 
     /** The realm an art's manual asks of its reader, if any. */
+    // ---------------------------------------------------------------- the Overlord Spear (docs/combat/styles/overlord-spear.md)
+
+    /**
+     * The Overlord Spear (Enzo, 18/10/2026: an intermediate spear art "with a certain destructive power"): one does not
+     * pierce, one pulverises. A spear in hand, learnt from Qi Condensation; its manual comes to whoever brings the
+     * Celestial Peak Spear to mastery 50. No quests: the manual teaches its five techniques and its ultimate.
+     */
+    public static final ResourceLocation OVERLORD_SPEAR = id("overlord_spear");
+    public static final com.murimblock.cultivation.CultivationRealm OVERLORD_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    /** The Celestial Peak Spear's mastery that brings the manual. */
+    public static final int OVERLORD_FROM_MASTERY = 50;
+    /** Held to charge (0.5 to 1.5 s), let go: a beam of Qi through all in its line. */
+    public static final Technique TYRANTS_THRUST = new Technique(id("tyrants_thrust"), OVERLORD_SPEAR, 35, 160);
+    public static final int TYRANTS_THRUST_MAX_CHARGE = 30;
+    public static final Technique EARTH_SPLITTING_SWEEP = new Technique(id("earth_splitting_sweep"), OVERLORD_SPEAR, 50, 240);
+    public static final Technique FALLING_MOUNTAIN = new Technique(id("falling_mountain"), OVERLORD_SPEAR, 60, 300);
+    public static final Technique OVERLORDS_CHARGE = new Technique(id("overlords_charge"), OVERLORD_SPEAR, 55, 280);
+    public static final Technique HUNDRED_BATTLES_RAMPAGE = new Technique(id("hundred_battles_rampage"), OVERLORD_SPEAR, 75, 440);
+    /** The ultimate: a giant spear of Qi falls from the sky; four minutes to recover. */
+    public static final Technique CONQUEROR_DESCENDS = new Technique(id("conqueror_descends"), OVERLORD_SPEAR, 180, 4800);
+    /** The secret: Tyrant's Thrust under a fifth of one's health, its beam three blocks wide and twice as strong. */
+    public static final Technique BREAKING_THE_CAULDRONS = new Technique(id("breaking_the_cauldrons"), OVERLORD_SPEAR, 0, 0, true);
+    /** Its passive keeps Epic Fight's spear strikes; each that lands adds a charge of Domination, five make a battering ram. */
+    public static final Passive CONQUERORS_WEIGHT = new Passive(id("conquerors_weight"), List.of(), List.of());
+
+    // ---------------------------------------------------------------- the Crescent Moon Halberd (docs/combat/styles/crescent-moon-halberd.md)
+
+    /**
+     * The Crescent Moon Halberd (月牙戟, Enzo 19/10/2026): an orthodox art of the halberd, of the moon and water: an art of
+     * cunning, its reflections of water deceiving the foe (Enzo chose its techniques on 19/10/2026, Series D). A spear in hand (any Epic Fight spear; the Crescent Moon Halberd is its own),
+     * learnt from Qi Condensation. No quests: its scroll teaches its four techniques and its ultimate.
+     */
+    public static final ResourceLocation CRESCENT_MOON_HALBERD = id("crescent_moon_halberd");
+    public static final com.murimblock.cultivation.CultivationRealm CRESCENT_MOON_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    /** A reflection of water steps out on the far side of the foe ahead and strikes with the cultivator, from behind it. */
+    public static final Technique TWIN_REFLECTION = new Technique(id("twin_reflection"), CRESCENT_MOON_HALBERD, 40, 200);
+    /** The halberd turned round: every reflection of the cultivator bursts into shards of water-glass that cut round it. */
+    public static final Technique SHATTERED_MIRROR = new Technique(id("shattered_mirror"), CRESCENT_MOON_HALBERD, 50, 240);
+    /** The cultivator and their nearest reflection change places. */
+    public static final Technique SWAP = new Technique(id("swap"), CRESCENT_MOON_HALBERD, 25, 120);
+    /** Four reflections round the cultivator, each going for a foe of its own, for six seconds. */
+    public static final Technique HALL_OF_MIRRORS = new Technique(id("hall_of_mirrors"), CRESCENT_MOON_HALBERD, 90, 600);
+    /** The ultimate: night falls round the cultivator, a full moon rises and its beams strike the enemies; four minutes to recover. */
+    public static final Technique NIGHT_OF_THE_FULL_MOON = new Technique(id("night_of_the_full_moon"), CRESCENT_MOON_HALBERD, 180, 4800);
+    /** Its passive keeps Epic Fight's spear strikes; a dodge leaves a reflection of water behind that draws the blows. */
+    public static final Passive MIRROR_IMAGE = new Passive(id("mirror_image"), List.of(), List.of());
+
+    // ---------------------------------------------------------------- the Devouring Demon Art (docs/combat/styles/devouring-demon-art.md)
+
+    /**
+     * A high art of the kagune (Enzo, 18/10/2026), bare hands: four tentacles under 100 Fury, the demon form on all fours
+     * at 100 (DevouringDemon). Eight techniques, none costing Fury, each changing in the demon form on the same key
+     * (DEMON_VERSIONS); built one pair at a time. Proposed realm: Foundation Establishment.
+     */
+    public static final ResourceLocation DEVOURING_DEMON = id("devouring_demon");
+    public static final com.murimblock.cultivation.CultivationRealm DEVOURING_DEMON_REALM = com.murimblock.cultivation.CultivationRealm.FOUNDATION_ESTABLISHMENT;
+    /** The four tentacles whip in a fan in front of him. In the demon form: Centipede Bite. */
+    public static final Technique LASH = new Technique(id("lash"), DEVOURING_DEMON, 160, 100);
+    /** A centipede shoots at the foe ahead, up to 7 blocks, and bites: the key of Lash, in the demon form. */
+    public static final Technique CENTIPEDE_BITE = new Technique(id("centipede_bite"), DEVOURING_DEMON, 160, 100);
+    /** The tentacles plunge into the ground and burst out under the foe looked at, up to 12 blocks: impaled, lifted, held. */
+    public static final Technique IMPALING_THORNS = new Technique(id("impaling_thorns"), DEVOURING_DEMON, 220, 160);
+    /** In the demon form: the centipedes dive into the ground and burst out under the two nearest foes ahead. */
+    public static final Technique BURROW = new Technique(id("burrow"), DEVOURING_DEMON, 220, 160);
+    /** A tentacle shoots at what he looks at (14 blocks): a foe is pulled in to him; else it hooks the block and pulls him there. */
+    public static final Technique GRAPPLE = new Technique(id("grapple"), DEVOURING_DEMON, 140, 120);
+    /**
+     * Trades the four tentacles for the two centipedes, standing, or back (Enzo, 19/10/2026): free, a second to recover; the
+     * keys then cast the centipedes' versions. Not at full Fury: the demon form has both at once.
+     */
+    public static final Technique KAGUNE_SHIFT = new Technique(id("kagune_shift"), DEVOURING_DEMON, 0, 20);
+    /** In the demon form: a centipede coils round the foe looked at (8 blocks), holds it 2 s and crushes it four times. */
+    public static final Technique CONSTRICT = new Technique(id("constrict"), DEVOURING_DEMON, 140, 120);
+    /** Epic Fight's bare-hand strikes for now; the tentacles' own M1 come next. Each blow feeds the Fury. */
+    public static final Passive DEVOURING_HUNGER = new Passive(id("devouring_hunger"), List.of(), List.of());
+    /** Each technique's version in the demon form, cast by its key there (its cost and cooldown are the key's). */
+    public static final Map<Technique, Technique> DEMON_VERSIONS = Map.of(LASH, CENTIPEDE_BITE, IMPALING_THORNS, BURROW, GRAPPLE, CONSTRICT);
+
+    // ---------------------------------------------------------------- the Raven Messenger Art (docs/combat/styles/raven-art.md)
+
+    /**
+     * The Raven Messenger Art (Enzo, 19/10/2026: a familiar raven and an inner world, "everything based round changing
+     * dimension"): the iron fan in hand, a raven at one's side that opens doors between the world and the Raven Halls,
+     * one's own world and base. Learnt from Qi Condensation, from the Crow Master. No quests: the scroll teaches all.
+     */
+    public static final ResourceLocation RAVEN_ART = id("raven_art");
+    public static final com.murimblock.cultivation.CultivationRealm RAVEN_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    /** A door under the target: it falls into the halls for 4 s, then is dropped from 10 blocks up where it was. */
+    public static final Technique RAVEN_GATE = new Technique(id("raven_gate"), RAVEN_ART, 40, 280);
+    /** Through a door, out where the raven flies (or where one looks). */
+    public static final Technique HALLS_STEP = new Technique(id("halls_step"), RAVEN_ART, 30, 160);
+    /** Two doors at once: places swapped with the target (crouching: an enemy with an ally). */
+    public static final Technique EXCHANGE = new Technique(id("exchange"), RAVEN_ART, 35, 240);
+    /** A door before one for 3 s swallows every projectile, then sends them back to their shooters. */
+    public static final Technique SWALLOWING_GATE = new Technique(id("swallowing_gate"), RAVEN_ART, 30, 300);
+    /** A duel of 20 s in a closed room of the halls; crouching, home to one's own world. */
+    public static final Technique CLOSED_ROOM = new Technique(id("closed_room"), RAVEN_ART, 60, 1200);
+    /** The ultimate: the halls laid over the world, every enemy within 30 blocks scattered into a room of its own. */
+    public static final Technique HALLS_UNFOLD = new Technique(id("halls_unfold"), RAVEN_ART, 180, 6000);
+    /** The secret: after a perfect parry, the attacker swallowed and set down behind, stunned. */
+    public static final Technique RETURN_TO_SENDER = new Technique(id("return_to_sender"), RAVEN_ART, 0, 0, true);
+    /** Its passive keeps the iron fan's strikes; each that lands opens a rift on its target, three tip it into the halls. */
+    public static final Passive BETWEEN_WORLDS = new Passive(id("between_worlds"), List.of(), List.of());
+
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
                 : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : art.equals(THUNDER_SABER) ? THUNDER_SABER_REALM
-                : art.equals(MAJIN_FIST) ? MAJIN_REALM : null;
+                : art.equals(MAJIN_FIST) ? MAJIN_REALM : art.equals(OVERLORD_SPEAR) ? OVERLORD_REALM
+                : art.equals(DEVOURING_DEMON) ? DEVOURING_DEMON_REALM : art.equals(CRESCENT_MOON_HALBERD) ? CRESCENT_MOON_REALM
+                : art.equals(RAVEN_ART) ? RAVEN_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -430,10 +536,24 @@ public final class MartialArts {
         add(new Art(MAJIN_FIST, List.of(SUNFIRE_FIST, PRIDE_FLARE, CRUEL_SUN, NOON_JUDGMENT, MIDDAY_METEOR, THE_ONE, GRAND_NOON),
                 PRIDE_OF_THE_SUN, List.of(KINDLING, SPREADING_FLAME, SUNS_WRATH, HIGH_NOON, PRIDE_INCARNATE), List.of(SOLAR_FIST, INFERNO_FLARE, TWIN_SUNS)));
 
+        // No quests (Enzo's design): the manual teaches the five techniques and the ultimate; the secret is found.
+        add(new Art(OVERLORD_SPEAR, List.of(TYRANTS_THRUST, EARTH_SPLITTING_SWEEP, FALLING_MOUNTAIN, OVERLORDS_CHARGE, HUNDRED_BATTLES_RAMPAGE,
+                CONQUEROR_DESCENDS, BREAKING_THE_CAULDRONS), CONQUERORS_WEIGHT, List.of(), List.of()));
+
+        // No quests (Enzo's choice of design): the scroll teaches the four techniques and the ultimate.
+        add(new Art(CRESCENT_MOON_HALBERD, List.of(TWIN_REFLECTION, SHATTERED_MIRROR, SWAP, HALL_OF_MIRRORS, NIGHT_OF_THE_FULL_MOON),
+                MIRROR_IMAGE, List.of(), List.of()));
+
+        // No quests: the scroll teaches the five techniques and the ultimate; the secret is found.
+        add(new Art(RAVEN_ART, List.of(RAVEN_GATE, HALLS_STEP, EXCHANGE, SWALLOWING_GATE, CLOSED_ROOM, HALLS_UNFOLD, RETURN_TO_SENDER),
+                BETWEEN_WORLDS, List.of(), List.of()));
+
         add(new Art(GOLDEN_BELL, List.of(GOLDEN_BELL_FORM, IRON_REBOUND, ROOTED_MOUNTAIN, BELL_TOLL), BELL_PALMS,
                 List.of(TAKE_THE_BLOW, RETURN_IT), List.of(STEADFAST_BELL, MIRROR_IRON, ANCIENT_MOUNTAIN)));
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
+        // No quests yet: the scroll teaches every technique built so far.
+        add(new Art(DEVOURING_DEMON, List.of(LASH, IMPALING_THORNS, GRAPPLE, KAGUNE_SHIFT), DEVOURING_HUNGER, List.of(), List.of()));
     }
 
     private MartialArts() {

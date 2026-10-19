@@ -1,0 +1,10 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:peach_blossom_valley"
+  ],
+  "features": [
+    "murimblock:spirit_chrysanthemum"
+  ],
+  "step": "vegetal_decoration"
+}

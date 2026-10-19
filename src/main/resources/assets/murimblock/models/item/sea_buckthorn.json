@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "murimblock:block/sea_buckthorn"
+    "layer0": "murimblock:item/herb/sea_buckthorn_berries"
   }
 }

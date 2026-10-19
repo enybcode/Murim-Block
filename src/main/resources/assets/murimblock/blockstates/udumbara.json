@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/udumbara",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/udumbara",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/udumbara",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/udumbara",
+        "y": 270
+      }
+    ]
+  }
+}

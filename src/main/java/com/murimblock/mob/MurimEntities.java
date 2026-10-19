@@ -26,6 +26,26 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.ScarletPieceEntity>> SCARLET_PIECE =
             TYPES.register("scarlet_piece", () -> EntityType.Builder.<com.murimblock.martial.ScarletPieceEntity>of(com.murimblock.martial.ScarletPieceEntity::new, MobCategory.MISC)
                     .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(8).updateInterval(1).build("murimblock:scarlet_piece"));
+    /** The Overlord Spear's shapes of Qi: Tyrant's Thrust's beam, the ultimate's giant spear (shown only). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.OverlordQiEntity>> OVERLORD_QI =
+            TYPES.register("overlord_qi", () -> EntityType.Builder.<com.murimblock.martial.OverlordQiEntity>of(com.murimblock.martial.OverlordQiEntity::new, MobCategory.MISC)
+                    .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:overlord_qi"));
+    /** The Raven Messenger Art's familiar, the Shadow Raven (never saved: the art calls it back). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.RavenFamiliarEntity>> RAVEN_FAMILIAR =
+            TYPES.register("raven_familiar", () -> EntityType.Builder.<com.murimblock.martial.RavenFamiliarEntity>of(com.murimblock.martial.RavenFamiliarEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.6F).noSave().fireImmune().clientTrackingRange(8).updateInterval(1).build("murimblock:raven_familiar"));
+    /** The Raven Messenger Art's doors between the worlds (shown only). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.RavenGateEntity>> RAVEN_GATE =
+            TYPES.register("raven_gate", () -> EntityType.Builder.<com.murimblock.martial.RavenGateEntity>of(com.murimblock.martial.RavenGateEntity::new, MobCategory.MISC)
+                    .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(2).build("murimblock:raven_gate"));
+    /** The Crescent Moon Halberd's shapes of moonlight: crescents, the ring, the mirror, the full moon and its beams (shown only). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.MoonQiEntity>> MOON_QI =
+            TYPES.register("moon_qi", () -> EntityType.Builder.<com.murimblock.martial.MoonQiEntity>of(com.murimblock.martial.MoonQiEntity::new, MobCategory.MISC)
+                    .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:moon_qi"));
+    /** A Crescent Moon Halberd cultivator's reflection of water: draws the blows, shatters at the first. */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.ReflectionEntity>> REFLECTION =
+            TYPES.register("reflection", () -> EntityType.Builder.<com.murimblock.martial.ReflectionEntity>of(com.murimblock.martial.ReflectionEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.8F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:reflection"));
     public static final DeferredHolder<EntityType<?>, EntityType<TrainingOpponentEntity>> TRAINING_OPPONENT =
             TYPES.register("training_opponent", () -> EntityType.Builder.of(TrainingOpponentEntity::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).clientTrackingRange(8).build("murimblock:training_opponent"));
@@ -69,6 +89,17 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<AllianceMerchantEntity>> ALLIANCE_MERCHANT =
             TYPES.register("alliance_merchant", () -> EntityType.Builder.of(AllianceMerchantEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:alliance_merchant"));
+    /** The Crow Master, hermit of the Raven Tower, who sells the Raven Messenger Art's scroll: a man's size (an egg, /summon). */
+    public static final DeferredHolder<EntityType<?>, EntityType<CrowMasterEntity>> CROW_MASTER =
+            TYPES.register("crow_master", () -> EntityType.Builder.of(CrowMasterEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:crow_master"));
+    /**
+     * The Raven Master, the wandering master of the Raven Messenger Art: a man's size, a hostile boss never spawned
+     * naturally (RavenMasterSightings shows him to players; or an egg, /summon). Seen from far off: tracked from 10 chunks.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<RavenMasterEntity>> RAVEN_MASTER =
+            TYPES.register("raven_master", () -> EntityType.Builder.of(RavenMasterEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:raven_master"));
     /** The Golden Bell monk, who sells the Golden Bell's sutra: a man's size, placed in the Misty Bamboo Temple (or an egg, /summon). */
     public static final DeferredHolder<EntityType<?>, EntityType<GoldenBellMonkEntity>> GOLDEN_BELL_MONK =
             TYPES.register("golden_bell_monk", () -> EntityType.Builder.of(GoldenBellMonkEntity::new, MobCategory.CREATURE)
@@ -148,6 +179,7 @@ public final class MurimEntities {
     }
     private static void attributes(EntityAttributeCreationEvent event) {
         event.put(TRAINING_OPPONENT.get(), TrainingOpponentEntity.createTrainingAttributes().build());
+        event.put(REFLECTION.get(), com.murimblock.martial.ReflectionEntity.createAttributes().build());
         event.put(ARMORED_CRAB.get(), EpicFightMobSupport.creatureAttributes(ArmoredCrabEntity.createCrabAttributes()).build());
         event.put(CRAB_MAN.get(), EpicFightMobSupport.creatureAttributes(CrabManEntity.createCrabManAttributes())
                 .add(EpicFightAttributes.IMPACT, 1.5).build());
@@ -163,6 +195,8 @@ public final class MurimEntities {
         event.put(ALLIANCE_MERCHANT.get(), AllianceMerchantEntity.createMerchantAttributes().build());
         event.put(SCARLET_GUARDIAN.get(), ScarletGuardianEntity.attributes().build());
         event.put(GOLDEN_BELL_MONK.get(), GoldenBellMonkEntity.createMonkAttributes().build());
+        event.put(CROW_MASTER.get(), CrowMasterEntity.createAttributes().build());
+        event.put(RAVEN_MASTER.get(), RavenMasterEntity.createRavenMasterAttributes().build());
         event.put(GOLDEN_DRAGON_SAGE.get(), GoldenDragonSageEntity.createSageAttributes().build());
         event.put(PEAK_CAPTAIN.get(), PeakCaptainEntity.createCaptainAttributes().build());
         for (AllianceSoldierEntity.Kind kind : AllianceSoldierEntity.Kind.values())

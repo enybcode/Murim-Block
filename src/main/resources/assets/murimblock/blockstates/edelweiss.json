@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "murimblock:block/plant/edelweiss",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/edelweiss",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/edelweiss",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/edelweiss",
+        "y": 270
+      }
+    ]
+  }
+}

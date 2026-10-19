@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "murimblock:block/bamboo_shoot"
-    }
+    "": [
+      {
+        "model": "murimblock:block/plant/bamboo_shoot",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/bamboo_shoot",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/bamboo_shoot",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/bamboo_shoot",
+        "y": 270
+      }
+    ]
   }
 }

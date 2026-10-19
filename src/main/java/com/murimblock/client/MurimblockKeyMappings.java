@@ -47,6 +47,22 @@ public final class MurimblockKeyMappings {
             CATEGORY
     );
 
+    /** The aura's pressure: released, or held in (from Foundation Establishment). */
+    public static final KeyMapping AURA_PRESSURE = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".aura_pressure",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_H,
+            CATEGORY
+    );
+
+    /** The Murim map: the bubble and its regions, where the player stands. */
+    public static final KeyMapping MURIM_MAP = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".murim_map",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_M,
+            CATEGORY
+    );
+
     /** Tenth slot of the combat bar (Minecraft has nine hotbar keys; the first nine slots use them). */
     public static final KeyMapping COMBAT_SLOT_10 = new KeyMapping(
             "key." + Murimblock.MOD_ID + ".combat_slot_10",
@@ -66,5 +82,7 @@ public final class MurimblockKeyMappings {
         event.register(OPEN_PROFILE);
         event.register(EXECUTE);
         event.register(COMBAT_SLOT_10);
+        event.register(MURIM_MAP);
+        event.register(AURA_PRESSURE);
     }
 }

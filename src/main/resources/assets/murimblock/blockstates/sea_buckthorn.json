@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "murimblock:block/sea_buckthorn"
-    }
+    "": [
+      {
+        "model": "murimblock:block/plant/sea_buckthorn",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/sea_buckthorn",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/sea_buckthorn",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/sea_buckthorn",
+        "y": 270
+      }
+    ]
   }
 }

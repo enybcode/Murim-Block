@@ -45,11 +45,12 @@ public final class TechniquePayloads {
                 case NO_QI -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_qi", name, (int) technique.qiCost()), true);
                 case NOT_IN_COMBAT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.not_in_combat"), true);
                 case NO_WEAPON -> player.displayClientMessage(Component.translatable(technique.art().equals(MartialArts.LONG_FIST) || technique.art().equals(MartialArts.SANGUINE_ART) || technique.art().equals(MartialArts.MOUNTAIN_SHATTERING_FIST) || technique.art().equals(MartialArts.MAJIN_FIST)
-                        ? "technique.murimblock.cast.bare_hands" : technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR)
+                        ? "technique.murimblock.cast.bare_hands" : technique.art().equals(MartialArts.CELESTIAL_PEAK_SPEAR) || technique.art().equals(MartialArts.OVERLORD_SPEAR) || technique.art().equals(MartialArts.CRESCENT_MOON_HALBERD)
                         ? "technique.murimblock.cast.no_spear" : technique.art().equals(MartialArts.TRAVELLER_STAFF)
                         ? "technique.murimblock.cast.no_staff" : technique.art().equals(MartialArts.SEVEN_STARS_SWORD)
                         ? "technique.murimblock.cast.no_florett" : technique.art().equals(MartialArts.THUNDER_SABER)
-                        ? "technique.murimblock.cast.no_greatsword" : "technique.murimblock.cast.no_weapon", name), true);
+                        ? "technique.murimblock.cast.no_greatsword" : technique.art().equals(MartialArts.RAVEN_ART)
+                        ? "technique.murimblock.cast.no_fan" : "technique.murimblock.cast.no_weapon", name), true);
                 case NO_ROOM -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_room", name), true);
                 case SWORD_OUT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.sword_out", name), true);
                 case NO_TARGET -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_target", name), true);

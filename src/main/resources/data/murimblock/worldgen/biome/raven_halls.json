@@ -1,0 +1,29 @@
+{
+  "has_precipitation": false,
+  "temperature": 0.5,
+  "downfall": 0,
+  "effects": {
+    "sky_color": 328714,
+    "fog_color": 789012,
+    "water_color": 2105400,
+    "water_fog_color": 526344,
+    "grass_color": 3355443,
+    "foliage_color": 2631720,
+    "particle": {
+      "options": {
+        "type": "minecraft:ash"
+      },
+      "probability": 0.002
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": [
+    [],
+    [],
+    [
+      "murimblock:raven_castle"
+    ]
+  ]
+}

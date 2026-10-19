@@ -59,12 +59,23 @@ public final class AuraClient {
 
     /** The aura's colour for a main style (r, g, b in 0..1). */
     public static float[] colour(Optional<ResourceLocation> art) {
-        if (art.filter(MartialArts.AZURE_CLOUD_SWORD::equals).isPresent()) return new float[]{0.62F, 0.86F, 1.0F};
-        if (art.filter(MartialArts.LONG_FIST::equals).isPresent()) return new float[]{1.0F, 0.72F, 0.3F};
+        if (art.filter(MartialArts.AZURE_CLOUD_SWORD::equals).isPresent()) return new float[]{0.3F, 0.72F, 1.0F};
+        if (art.filter(MartialArts.LONG_FIST::equals).isPresent()) return new float[]{1.0F, 0.65F, 0.18F};
+        if (art.filter(MartialArts.SANGUINE_ART::equals).isPresent()) return new float[]{1.0F, 0.16F, 0.42F};
+        if (art.filter(MartialArts.CELESTIAL_PEAK_SPEAR::equals).isPresent()) return new float[]{1.0F, 0.86F, 0.3F};
+        if (art.filter(MartialArts.TRAVELLER_STAFF::equals).isPresent()) return new float[]{0.45F, 0.92F, 0.3F};
+        if (art.filter(MartialArts.MOUNTAIN_SHATTERING_FIST::equals).isPresent()) return new float[]{1.0F, 0.45F, 0.14F};
+        if (art.filter(MartialArts.SEVEN_STARS_SWORD::equals).isPresent()) return new float[]{0.32F, 0.4F, 1.0F};
+        if (art.filter(MartialArts.THUNDER_SABER::equals).isPresent()) return new float[]{0.62F, 0.4F, 1.0F};
+        if (art.filter(MartialArts.MAJIN_FIST::equals).isPresent()) return new float[]{0.7F, 0.1F, 0.12F};
+        if (art.filter(MartialArts.GOLDEN_BELL::equals).isPresent()) return new float[]{1.0F, 0.78F, 0.22F};
+        if (art.filter(MartialArts.OVERLORD_SPEAR::equals).isPresent()) return new float[]{0.95F, 0.2F, 0.1F};
+        if (art.filter(MartialArts.CRESCENT_MOON_HALBERD::equals).isPresent()) return new float[]{0.62F, 0.85F, 1.0F};
+        if (art.filter(MartialArts.RAVEN_ART::equals).isPresent()) return new float[]{1.0F, 0.66F, 0.25F};
         return new float[]{0.95F, 0.96F, 1.0F};
     }
 
-    static Optional<ResourceLocation> artOf(String id) {
+    public static Optional<ResourceLocation> artOf(String id) {
         return id == null || id.isEmpty() ? Optional.empty() : Optional.ofNullable(ResourceLocation.tryParse(id));
     }
 
@@ -87,11 +98,15 @@ public final class AuraClient {
         for (AbstractClientPlayer player : level.players()) {
             if (player.distanceToSqr(mc.player) > 64 * 64 || player.isInvisible()) continue;
             AuraState aura = MeditationService.aura(player);
-            if (aura.meditating()) aura(level, random, player.position(), aura.fill(), colour(aura.mainArt()), player.tickCount);
+            // One's own, seen through one's eyes: kept round and below, never across the view.
+            boolean eyes = player == mc.player && mc.getCameraEntity() == player && mc.options.getCameraType().isFirstPerson();
+            if (!aura.meditating()) continue;
+            aura(level, random, player.position(), aura.fill(), colour(aura.auraArt()), player.tickCount, eyes, qiScale(aura.qi()));
+            if (!eyes) artEffect(level, random, player.position(), aura.auraArt(), qiScale(aura.qi()), player.tickCount);
         }
         AABB near = mc.player.getBoundingBox().inflate(48);
         for (Entity e : level.getEntities((Entity) null, near, e -> e instanceof MeditatingBodyEntity || e instanceof HeartDemonEntity || e instanceof QiMoteEntity)) {
-            if (e instanceof MeditatingBodyEntity body) aura(level, random, body.position(), 1.0F, colour(artOf(body.art())), body.tickCount);
+            if (e instanceof MeditatingBodyEntity body) aura(level, random, body.position(), 1.0F, colour(artOf(body.art())), body.tickCount, false, 1.0F);
             else if (e instanceof HeartDemonEntity demon) demonAura(level, random, demon);
             else if (random.nextInt(3) == 0) spark(level, e.getX() + (random.nextDouble() - 0.5) * 0.4, e.getY() + 0.25, e.getZ() + (random.nextDouble() - 0.5) * 0.4,
                     0, 0.02, 0, new float[]{0.75F, 0.92F, 1.0F}, true);
@@ -99,26 +114,129 @@ public final class AuraClient {
     }
 
     /**
-     * One tick of an aura round a seated body at `feet`: sparks rising round it (more with a fuller reserve), drawn in
-     * and swirling; full, flames climbing higher and a ring of light on the ground every half second.
+     * One tick of an aura round a seated body at {@code feet} (Enzo, 17/10/2026, after the manhwa auras he showed): a
+     * volume of flames in the colour of the art mastered best, as big as the Qi held ({@code scale}). Seen through the
+     * meditator's own eyes ({@code eyes}), only an ember now and then, further out, so none crosses the view.
      */
-    static void aura(ClientLevel level, RandomSource random, Vec3 feet, float fill, float[] c, int age) {
-        int count = 1 + Math.round(fill * 4);
-        for (int i = 0; i < count; i++) {
-            double a = random.nextDouble() * Math.PI * 2, r = 0.45 + random.nextDouble() * 0.35;
-            double x = feet.x + Math.cos(a) * r, z = feet.z + Math.sin(a) * r, y = feet.y + random.nextDouble() * 1.1;
-            // Turning round the body as it rises.
-            double swirl = 0.025;
-            spark(level, x, y, z, -Math.sin(a) * swirl - Math.cos(a) * 0.006, 0.025 + random.nextDouble() * 0.04, Math.cos(a) * swirl - Math.sin(a) * 0.006, c, false);
+    static void aura(ClientLevel level, RandomSource random, Vec3 feet, float fill, float[] c, int age, boolean eyes, float scale) {
+        if (!eyes) {
+            volume(level, random, feet, fill, c, scale);
+            return;
         }
-        if (fill >= 0.98F) {
-            for (int i = 0; i < 2; i++) {
-                double a = random.nextDouble() * Math.PI * 2, r = 0.3 + random.nextDouble() * 0.3;
-                AuraParticle p = spark(level, feet.x + Math.cos(a) * r, feet.y + 0.2 + random.nextDouble() * 0.6, feet.z + Math.sin(a) * r,
-                        0, 0.08 + random.nextDouble() * 0.06, 0, c, false);
-                if (p != null) p.big(0.12F + random.nextFloat() * 0.08F, 22);
+        if (random.nextInt(3) != 0) return;
+        double a = random.nextDouble() * Math.PI * 2, r = 1.2 + random.nextDouble() * 0.5;
+        AuraParticle p = spark(level, feet.x + Math.cos(a) * r, feet.y + 0.1 + random.nextDouble() * 0.4, feet.z + Math.sin(a) * r,
+                (random.nextDouble() - 0.5) * 0.03, 0.09 + random.nextDouble() * 0.08 * (0.5 + fill), (random.nextDouble() - 0.5) * 0.03, c, false);
+        if (p != null) p.big(0.035F + random.nextFloat() * 0.035F, 24 + random.nextInt(18));
+    }
+
+    /**
+     * How big an aura is for the Qi one holds (Enzo, 17/10/2026: "en fonction du nombre de Qi, plus ou moins gros, plus
+     * ou moins grand, plus ou moins haut"): 0.6 at 100 Qi, 0.9 at 1 000, 1.2 at 10 000, 1.5 at 90 000; between 0.5 and 1.6.
+     */
+    public static float qiScale(float qi) {
+        return (float) Math.max(0.5, Math.min(1.6, 0.6 + 0.3 * Math.log10(Math.max(1, qi) / 100.0)));
+    }
+
+    /**
+     * The volume of flames (chosen by Enzo among four looks, 17/10/2026): many soft glowing flames all round the body,
+     * rising and swaying, overlapping; thicker as the reserve fills, and as a whole wider, bigger and climbing higher
+     * with the Qi one holds ({@code scale}).
+     */
+    static void volume(ClientLevel level, RandomSource random, Vec3 feet, float fill, float[] c, float scale) {
+        int count = Math.round((4 + fill * 6) * scale * scale);
+        for (int i = 0; i < count; i++) {
+            double a = random.nextDouble() * Math.PI * 2, r = (0.15 + random.nextDouble() * 0.5) * scale;
+            double x = feet.x + Math.cos(a) * r, z = feet.z + Math.sin(a) * r, y = feet.y + random.nextDouble() * 0.9 * scale;
+            double rise = (0.05 + random.nextDouble() * 0.05 * (0.6 + fill)) * scale;
+            AuraParticle p = spark(level, x, y, z, Math.cos(a) * 0.012 * scale + (random.nextDouble() - 0.5) * 0.02, rise,
+                    Math.sin(a) * 0.012 * scale + (random.nextDouble() - 0.5) * 0.02, c, false);
+            if (p != null) p.big((0.16F + random.nextFloat() * (0.12F + 0.12F * fill)) * scale, Math.round((16 + random.nextInt(12) + 8 * fill) * (0.7F + 0.3F * scale)));
+        }
+    }
+
+    /**
+     * Each art's little touch in its aura (Enzo, 17/10/2026), the art one has mastered best: clouds for the Azure Cloud,
+     * a ring blown along the ground for the Long Fist, golden streaks shooting up for the spear, green leaves of light
+     * swirling for the staff, stones lifting for the Mountain-Shattering Fist, seven stars turning over the head for the
+     * Seven Stars, sparks of lightning for the Thunder Saber, black smoke for the Majin Fist, a golden bell-ring of light
+     * for the Golden Bell, drops of blood for the Sanguine Art.
+     */
+    static void artEffect(ClientLevel level, RandomSource random, Vec3 feet, Optional<ResourceLocation> art, float scale, int age) {
+        if (art.isEmpty()) return;
+        ResourceLocation id = art.get();
+        float[] c = colour(art);
+        double r = 0.7 * scale;
+        if (id.equals(MartialArts.AZURE_CLOUD_SWORD)) {
+            if (age % 5 == 0) {
+                double a = random.nextDouble() * Math.PI * 2;
+                level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD, feet.x + Math.cos(a) * r, feet.y + 0.3 + random.nextDouble() * scale, feet.z + Math.sin(a) * r,
+                        -Math.sin(a) * 0.02, 0.01, Math.cos(a) * 0.02);
             }
-            if (age % 10 == 0) ring(level, feet.add(0, 0.05, 0), 1.1, 20, c, 0.0);
+        } else if (id.equals(MartialArts.LONG_FIST)) {
+            if (age % 30 == 0) ring(level, feet.add(0, 0.08, 0), 0.5 * scale, 24, c, 0.12 * scale);
+        } else if (id.equals(MartialArts.CELESTIAL_PEAK_SPEAR)) {
+            if (age % 6 == 0) {
+                AuraParticle p = spark(level, feet.x + (random.nextDouble() - 0.5) * r, feet.y + 0.4, feet.z + (random.nextDouble() - 0.5) * r, 0, 0.45 * scale, 0, c, false);
+                if (p != null) p.big(0.05F, 10);
+            }
+        } else if (id.equals(MartialArts.TRAVELLER_STAFF)) {
+            double a = age * 0.15 + random.nextDouble() * 0.3;
+            AuraParticle p = spark(level, feet.x + Math.cos(a) * r * 1.2, feet.y + 0.3 + (age % 40) / 40.0 * 1.2 * scale, feet.z + Math.sin(a) * r * 1.2,
+                    -Math.sin(a) * 0.04, 0.01, Math.cos(a) * 0.04, new float[]{0.45F, 0.95F, 0.4F}, false);
+            if (p != null) p.big(0.07F, 18);
+        } else if (id.equals(MartialArts.OVERLORD_SPEAR)) {
+            // Embers rising round the feet, as from cracked, burning ground.
+            if (age % 3 == 0) {
+                double a = random.nextDouble() * Math.PI * 2;
+                level.addParticle(net.minecraft.core.particles.ParticleTypes.SMALL_FLAME, feet.x + Math.cos(a) * r, feet.y + 0.1, feet.z + Math.sin(a) * r,
+                        0, 0.04 + random.nextDouble() * 0.05, 0);
+            }
+        } else if (id.equals(MartialArts.RAVEN_ART)) {
+            // Black feathers drifting down round the shoulders.
+            if (age % 6 == 0) {
+                double a = random.nextDouble() * Math.PI * 2;
+                level.addParticle(com.murimblock.martial.RavenParticles.FEATHER.get(), feet.x + Math.cos(a) * r, feet.y + 1.6 * scale, feet.z + Math.sin(a) * r,
+                        0, 0.01, 0);
+            }
+        } else if (id.equals(MartialArts.CRESCENT_MOON_HALBERD)) {
+            // Drops of moonlight rising in a slow circle round the feet, as from still water.
+            double a = age * 0.08 + random.nextDouble() * 0.2;
+            AuraParticle p = spark(level, feet.x + Math.cos(a) * r * 1.1, feet.y + 0.15, feet.z + Math.sin(a) * r * 1.1,
+                    0, 0.02 + random.nextDouble() * 0.02, 0, new float[]{0.75F, 0.9F, 1.0F}, false);
+            if (p != null) p.big(0.06F, 30);
+            if (age % 6 == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.SPLASH, feet.x + Math.cos(a + 3) * r, feet.y + 0.1, feet.z + Math.sin(a + 3) * r, 0, 0.05, 0);
+        } else if (id.equals(MartialArts.MOUNTAIN_SHATTERING_FIST)) {
+            if (age % 4 == 0) {
+                double a = random.nextDouble() * Math.PI * 2;
+                level.addParticle(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK,
+                                net.minecraft.world.level.block.Blocks.STONE.defaultBlockState()),
+                        feet.x + Math.cos(a) * r, feet.y + 0.1, feet.z + Math.sin(a) * r, 0, 0.35 + random.nextDouble() * 0.2, 0);
+            }
+        } else if (id.equals(MartialArts.SEVEN_STARS_SWORD)) {
+            // The Dipper's seven stars, turning slowly over the head.
+            double[][] dipper = {{-0.9, 0.1}, {-0.55, 0.15}, {-0.25, 0.05}, {0.05, -0.05}, {0.15, -0.35}, {0.55, -0.35}, {0.6, -0.05}};
+            double turn = age * 0.03, h = feet.y + 1.4 + 0.6 * scale;
+            for (double[] st : dipper) {
+                double x = st[0] * Math.cos(turn) - st[1] * Math.sin(turn), z = st[0] * Math.sin(turn) + st[1] * Math.cos(turn);
+                AuraParticle p = spark(level, feet.x + x * scale, h, feet.z + z * scale, 0, 0, 0, new float[]{0.9F, 0.94F, 1.0F}, false);
+                if (p != null) p.big(0.06F + (random.nextInt(8) == 0 ? 0.04F : 0), 2);
+            }
+        } else if (id.equals(MartialArts.THUNDER_SABER)) {
+            if (random.nextInt(3) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
+                    feet.x + (random.nextDouble() - 0.5) * r * 2, feet.y + random.nextDouble() * 1.6 * scale, feet.z + (random.nextDouble() - 0.5) * r * 2,
+                    (random.nextDouble() - 0.5) * 0.3, (random.nextDouble() - 0.5) * 0.3, (random.nextDouble() - 0.5) * 0.3);
+        } else if (id.equals(MartialArts.MAJIN_FIST)) {
+            if (age % 2 == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,
+                    feet.x + (random.nextDouble() - 0.5) * r, feet.y + 0.2 + random.nextDouble() * scale, feet.z + (random.nextDouble() - 0.5) * r, 0, 0.04, 0);
+        } else if (id.equals(MartialArts.GOLDEN_BELL)) {
+            if (age % 20 == 0) {
+                ring(level, feet.add(0, 0.9 * scale, 0), 0.55 * scale, 28, c, 0.0);
+                ring(level, feet.add(0, 0.2, 0), 0.75 * scale, 32, c, 0.0);
+            }
+        } else if (id.equals(MartialArts.SANGUINE_ART)) {
+            if (age % 3 == 0) level.addParticle(com.murimblock.bloodsect.BloodSect.BLOOD_DROPLET.get(),
+                    feet.x + (random.nextDouble() - 0.5) * r * 1.6, feet.y + 0.6 + random.nextDouble() * 1.2 * scale, feet.z + (random.nextDouble() - 0.5) * r * 1.6, 0, -0.02, 0);
         }
     }
 

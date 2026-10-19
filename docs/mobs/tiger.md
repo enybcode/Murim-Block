@@ -24,7 +24,7 @@ serrées en escalier qui se fourchent, pattes baguées, ventre, poitrail, museau
 
 - **Où** : uniquement dans la **région du centre** de la carte Murim (n'importe quel biome Murim), au sol à ciel
   ouvert, **de jour comme de nuit** ; par un ou deux ; jamais en Paisible (`TigerEntity.checkTigerSpawnRules`,
-  `neoforge/biome_modifier/tiger_spawns.json`, poids 25). Un œuf d'apparition dans l'onglet Murimblock.
+  `neoforge/biome_modifier/tiger_spawns.json`, poids 3, seul ; et une tentative sur trois seulement : rare, demande d'Enzo du 19/10/2026, il y en avait beaucoup trop ; avant : poids 25, un ou deux). Un œuf d'apparition dans l'onglet Murimblock.
 - **Agressif** : il chasse les joueurs qu'il voit (32 blocs), et riposte à qui le frappe.
 - **Combat** (Epic Fight) : au contact, coup de griffe et morsure, parfois la double griffe, rarement le déchirement ;
   de 3,5 à 7 blocs, s'il voit sa proie, le **bond** (il est vraiment projeté en avant, recharge 8 s). Coups parables.

@@ -1,0 +1,26 @@
+{
+  "loader": "neoforge:separate_transforms",
+  "base": {
+    "parent": "murimblock:item/crescent_moon_halberd_3d"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/crescent_moon_halberd"
+      }
+    },
+    "ground": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/crescent_moon_halberd"
+      }
+    },
+    "fixed": {
+      "parent": "minecraft:item/handheld",
+      "textures": {
+        "layer0": "murimblock:item/crescent_moon_halberd"
+      }
+    }
+  }
+}

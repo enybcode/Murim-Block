@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
-      "model": "murimblock:block/cistanche"
-    }
+    "": [
+      {
+        "model": "murimblock:block/plant/cistanche",
+        "y": 0
+      },
+      {
+        "model": "murimblock:block/plant/cistanche",
+        "y": 90
+      },
+      {
+        "model": "murimblock:block/plant/cistanche",
+        "y": 180
+      },
+      {
+        "model": "murimblock:block/plant/cistanche",
+        "y": 270
+      }
+    ]
   }
 }

@@ -110,8 +110,8 @@ public final class CultivationGameTests {
         QiService.setQi(player, 100);
         MeditationService.condense(player, 1200);
         double gained = QiService.getQiMax(player) - 100;
-        // One minute in an ordinary place at Qi Sensing: 1.2 % of Qi Max.
-        helper.assertTrue(Math.abs(gained - 1.2) < 0.01, "A minute of condensation should give 1.2 Qi Max, gave " + gained);
+        // One minute in an ordinary place at Qi Sensing: 1.2 % of Qi Max, at the first realm's pace (×6).
+        helper.assertTrue(Math.abs(gained - 7.2) < 0.01, "A minute of condensation should give 7.2 Qi Max, gave " + gained);
         helper.assertTrue(CultivationService.getStage(player) == CultivationStage.MIDDLE, "The first gain is a small breakthrough");
         helper.assertTrue(CultivationService.journal(player).condensedOn(player.level().getGameTime()) == 1200, "The day's condensation not counted");
         helper.assertTrue(MeditationService.stop(player, true), "Could not get up");
@@ -139,12 +139,13 @@ public final class CultivationGameTests {
         CastResult cast = MartialService.castSlot(player, 0);
         helper.assertTrue(cast == CastResult.CAST, "Tiger Step was refused: " + cast);
         double fromTechnique = QiService.getQiMax(player) - before;
-        helper.assertTrue(Math.abs(fromTechnique - 0.5) < 1e-6, "10 Qi spent should give 0.5 Qi Max, gave " + fromTechnique);
+        // 5 % of the Qi spent, at the first realm's pace (×6).
+        helper.assertTrue(Math.abs(fromTechnique - 3.0) < 1e-6, "10 Qi spent should give 3 Qi Max, gave " + fromTechnique);
         Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 1, 4));
         before = QiService.getQiMax(player);
         QiRewardManager.awardKillReward(player, zombie);
         double fromKill = QiService.getQiMax(player) - before;
-        helper.assertTrue(Math.abs(fromKill - 0.2) < 1e-6, "A zombie (4 Qi) should give 0.2 Qi Max, gave " + fromKill);
+        helper.assertTrue(Math.abs(fromKill - 1.2) < 1e-6, "A zombie (4 Qi) should give 1.2 Qi Max, gave " + fromKill);
         zombie.discard();
         end(helper, player);
     }
@@ -154,13 +155,17 @@ public final class CultivationGameTests {
         ServerPlayer player = cultivator(helper);
         com.murimblock.mob.AzureSenseiEntity sensei = helper.spawn(com.murimblock.mob.MurimEntities.AZURE_SENSEI.get(), new BlockPos(2, 1, 4));
         double before = QiService.getQiMax(player);
+        double share = QiRewardManager.calculateQiReward(player, sensei).finalReward() * com.murimblock.cultivation.CultivationRules.KILL_SHARE
+                * com.murimblock.cultivation.CultivationRules.growth(CultivationService.getRealm(player));
         QiRewardManager.awardKillReward(player, sensei);
         double first = QiService.getQiMax(player) - before;
-        // +30 for the first victory, and the usual 5 % of the kill's Qi on top.
-        helper.assertTrue(first >= 30 && first < 40, "The first victory over Sensei Yun should give about 30 Qi Max, gave " + first);
+        // +30 for the first victory, and the usual share of the kill's Qi on top.
+        helper.assertTrue(Math.abs(first - 30 - share) < 0.01, "The first victory over Sensei Yun should give 30 Qi Max and " + share + ", gave " + first);
         before = QiService.getQiMax(player);
+        double again = QiRewardManager.calculateQiReward(player, sensei).finalReward() * com.murimblock.cultivation.CultivationRules.KILL_SHARE
+                * com.murimblock.cultivation.CultivationRules.growth(CultivationService.getRealm(player));
         QiRewardManager.awardKillReward(player, sensei);
-        helper.assertTrue(QiService.getQiMax(player) - before < 5, "A second victory gave the first victory's Qi Max again");
+        helper.assertTrue(QiService.getQiMax(player) - before < again + 0.01, "A second victory gave the first victory's Qi Max again");
         sensei.discard();
         end(helper, player);
     }
@@ -407,12 +412,13 @@ public final class CultivationGameTests {
     }
 
     @GameTest(template = "foundation_arena", batch = "cultivation_hold")
-    public static void theInnerWorldOpensOnlyAfterFifteenSecondsSeated(GameTestHelper helper) {
+    public static void theInnerWorldOpensOnlyAfterSevenSecondsSeated(GameTestHelper helper) {
         ServerPlayer player = seated(helper);
         // A client claiming a full hold right after sitting down is not heard.
         MeditationService.held(player);
-        helper.assertTrue(!InnerWorldService.isInside(player), "The inner world opened without the fifteen seconds");
-        helper.assertTrue(MeditationService.ENTER_HOLD_TICKS == 300, "Entering should take fifteen seconds");
+        helper.assertTrue(!InnerWorldService.isInside(player), "The inner world opened without the seven seconds");
+        helper.assertTrue(MeditationService.ENTER_HOLD_TICKS == 140, "Entering should take seven seconds");
+        helper.assertTrue(InnerWorldService.ENTRY_QI_SHARE == 0.8, "Entering should need 80% of the Qi");
         end(helper, player);
     }
 
@@ -512,7 +518,334 @@ public final class CultivationGameTests {
         });
     }
 
+    // ---------------------------------------------------------------- Flying on the sword
+
+    /**
+     * Flying on the sword: not below Core Formation, not without a sword; the jump held too short, no flight; held three
+     * seconds, onto the sword (off the ground allowed); a second costs 15 Qi; the sword let go, set down gently.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_flight", timeoutTicks = 200)
+    public static void flyingOnTheSwordFromCoreFormation(GameTestHelper helper) {
+        com.murimblock.cultivation.SwordFlight.clearForTests();
+        ServerPlayer player = cultivator(helper);
+        CultivationService.setCultivation(player, CultivationRealm.NASCENT_SOUL, CultivationStage.EARLY);
+        QiService.setQiMax(player, 30000);
+        QiService.refillQi(player);
+        helper.assertFalse(com.murimblock.cultivation.SwordFlight.able(player), "Flies without a sword");
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
+        CultivationService.setCultivation(player, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.PEAK);
+        helper.assertFalse(com.murimblock.cultivation.SwordFlight.able(player), "Foundation Establishment flies on the sword");
+        CultivationService.setCultivation(player, CultivationRealm.CORE_FORMATION, CultivationStage.EARLY);
+        com.murimblock.cultivation.SwordFlight.charge(player);
+        com.murimblock.cultivation.SwordFlight.mount(player);
+        helper.assertFalse(com.murimblock.cultivation.SwordFlight.flying(player), "Onto the sword at once, without holding the jump");
+        com.murimblock.cultivation.SwordFlight.charge(player);
+        helper.runAfterDelay(com.murimblock.cultivation.SwordFlight.CHARGE_TICKS, () -> {
+            com.murimblock.cultivation.SwordFlight.mount(player);
+            helper.assertTrue(com.murimblock.cultivation.SwordFlight.flying(player), "Not onto the sword after holding the jump three seconds");
+            helper.assertTrue(player.getAbilities().mayfly, "The flyer would be kicked for flying");
+            double before = QiService.getQi(player);
+            player.setOnGround(false);
+            player.tickCount = 20;
+            com.murimblock.cultivation.SwordFlight.tick(player);
+            helper.assertTrue(Math.abs(before - QiService.getQi(player) - com.murimblock.cultivation.SwordFlight.QI_PER_SECOND) < 1e-6, "A second of flight did not cost 15 Qi");
+            // The sword let go in the air: set down gently.
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.tickCount = 40;
+            com.murimblock.cultivation.SwordFlight.tick(player);
+            helper.assertFalse(com.murimblock.cultivation.SwordFlight.flying(player), "Still flying, the sword let go");
+            helper.assertTrue(player.hasEffect(MobEffects.SLOW_FALLING), "Not set down gently");
+            helper.assertFalse(player.getAbilities().mayfly, "Still allowed to fly after the sword");
+            com.murimblock.cultivation.SwordFlight.clearForTests();
+            end(helper, player);
+        });
+    }
+
+    // ---------------------------------------------------------------- Running on water
+
+    /**
+     * Running on water: from Qi Liquidation, sprinting, a source of water under open air is solid ground for a player, at
+     * its surface (not walking, not below that realm, not without Qi); each second on it costs 3 Qi.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_water")
+    public static void cultivatorsRunOnWaterFromQiLiquidation(GameTestHelper helper) {
+        ServerPlayer player = cultivator(helper);
+        CultivationService.setCultivation(player, CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
+        QiService.setQiMax(player, 1500);
+        QiService.refillQi(player);
+        BlockPos pool = player.blockPosition().offset(0, 3, 0);
+        helper.getLevel().setBlockAndUpdate(pool, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+        player.moveTo(pool.getX() + 0.5, pool.getY() + 1.2, pool.getZ() + 0.5);
+        var water = helper.getLevel().getBlockState(pool);
+        java.util.function.BooleanSupplier solid = () -> !water.getCollisionShape(helper.getLevel(), pool,
+                net.minecraft.world.phys.shapes.CollisionContext.of(player)).isEmpty();
+        player.setSprinting(false);
+        helper.assertFalse(solid.getAsBoolean(), "Water holds a walking player up");
+        player.setSprinting(true);
+        helper.assertTrue(solid.getAsBoolean(), "Water does not hold a sprinting player at Qi Liquidation up");
+        helper.assertTrue(water.getCollisionShape(helper.getLevel(), pool, net.minecraft.world.phys.shapes.CollisionContext.of(player)).max(net.minecraft.core.Direction.Axis.Y) > 0.889,
+                "The runner is held in the water, not above it");
+        CultivationService.setCultivation(player, CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
+        helper.assertFalse(solid.getAsBoolean(), "Water holds Qi Condensation up");
+        CultivationService.setCultivation(player, CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
+        // On its surface, a second costs 3 Qi.
+        player.moveTo(pool.getX() + 0.5, pool.getY() + 0.9, pool.getZ() + 0.5);
+        player.setOnGround(true);
+        double before = QiService.getQi(player);
+        player.tickCount = 20;
+        com.murimblock.cultivation.WaterWalking.tick(player);
+        helper.assertTrue(Math.abs(before - QiService.getQi(player) - com.murimblock.cultivation.WaterWalking.QI_PER_SECOND) < 1e-6, "A second on water did not cost 3 Qi");
+        QiService.setQi(player, 0);
+        player.moveTo(pool.getX() + 0.5, pool.getY() + 1.2, pool.getZ() + 0.5);
+        helper.assertFalse(solid.getAsBoolean(), "Water holds a player without Qi up");
+        helper.getLevel().setBlockAndUpdate(pool, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        end(helper, player);
+    }
+
+    // ---------------------------------------------------------------- Aura pressure
+
+    /**
+     * The aura's pressure: at Foundation Establishment, released (its key), a zombie near is crushed to the ground (far
+     * weaker); not at Qi Crystallization, not held in, not while sneaking, never one's own wolf.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_pressure")
+    public static void theAurasPressureSlowsTheWeakerNear(GameTestHelper helper) {
+        ServerPlayer player = cultivator(helper);
+        Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(3, 2, 3));
+        var wolf = helper.spawnWithNoFreeWill(EntityType.WOLF, new BlockPos(1, 2, 3));
+        wolf.tame(player);
+        player.tickCount = 10;
+        CultivationService.setCultivation(player, CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Qi Crystallization weighs on the zombie");
+        CultivationService.setCultivation(player, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);
+        // Held in at first: no pressure until released (its key).
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The aura weighs before it is released");
+        com.murimblock.cultivation.AuraPressure.toggle(player);
+        helper.assertTrue(com.murimblock.cultivation.AuraPressure.released(player), "The key does not release the aura");
+        player.setShiftKeyDown(true);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "A sneaking player's aura weighs on the zombie");
+        player.setShiftKeyDown(false);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        var slow = zombie.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        helper.assertTrue(slow != null && slow.getAmplifier() == 3, "The zombie, far weaker, is not crushed to the ground");
+        helper.assertFalse(wolf.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "One's own wolf is slowed");
+        // Held in again: no more.
+        com.murimblock.cultivation.AuraPressure.toggle(player);
+        zombie.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The aura held in still weighs");
+        end(helper, player);
+    }
+
+    // ---------------------------------------------------------------- Methods
+
+    /**
+     * Methods: Ordinary Breath from the start; an unknown method cannot be practised; a scroll's method once learned can,
+     * and the change puts the Qi out of tune (meditation halved); Frost Lotus Heart slows a melee attacker, once in a while.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_methods")
+    public static void methodsAreLearnedPractisedAndPutTheQiOutOfTune(GameTestHelper helper) {
+        com.murimblock.cultivation.MethodService.clearForTests();
+        ServerPlayer player = cultivator(helper);
+        CultivationService.setCultivation(player, CultivationRealm.QI_CONDENSATION, CultivationStage.EARLY);
+        var frost = com.murimblock.cultivation.CultivationMethod.FROST_LOTUS_HEART;
+        helper.assertTrue(com.murimblock.cultivation.MethodService.method(player) == com.murimblock.cultivation.CultivationMethod.ORDINARY_BREATH,
+                "Ordinary Breath is not practised from the start");
+        helper.assertTrue(com.murimblock.cultivation.MethodService.factor(player) == 1, "Ordinary Breath does not cultivate x1");
+        helper.assertTrue(com.murimblock.cultivation.MethodService.practise(player, frost) == com.murimblock.cultivation.MethodService.Change.UNKNOWN,
+                "An unknown method was practised");
+        ItemStack scroll = new ItemStack(MurimItems.FROST_LOTUS_HEART_SCROLL.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, scroll);
+        scroll.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(com.murimblock.cultivation.MethodService.data(player).knows(frost), "The scroll did not teach Frost Lotus Heart");
+        helper.assertTrue(player.getMainHandItem().isEmpty(), "The scroll was not used up");
+        helper.assertTrue(com.murimblock.cultivation.MethodService.practise(player, frost) == com.murimblock.cultivation.MethodService.Change.CHANGED,
+                "A known method could not be practised");
+        double expected = frost.factor(player) * com.murimblock.cultivation.MethodService.DISCORD_FACTOR;
+        helper.assertTrue(Math.abs(com.murimblock.cultivation.MethodService.factor(player) - expected) < 1e-9, "The Qi is not out of tune after a change");
+        // Struck in melee: the attacker is slowed; struck again at once, not (once every 8 s).
+        Zombie attacker = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+        player.hurt(player.damageSources().mobAttack(attacker), 1);
+        helper.assertTrue(attacker.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Frost Lotus Heart did not slow the attacker");
+        attacker.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        player.invulnerableTime = 0;
+        player.hurt(player.damageSources().mobAttack(attacker), 1);
+        helper.assertFalse(attacker.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Frost Lotus Heart slowed twice in a row");
+        com.murimblock.cultivation.MethodService.clearForTests();
+        end(helper, player);
+    }
+
     // ---------------------------------------------------------------- Qi Sense
+
+    /**
+     * Qi Sense's cost grows with its reach (2 Qi a second at Qi Condensation, 8 at Core Formation); held 40 s it closes
+     * by itself, and cannot open again while the eyes rest (10 s).
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_tired")
+    public static void qiSenseCostsMoreFurtherAndTiresTheEyes(GameTestHelper helper) {
+        QiSense.clearForTests();
+        ServerPlayer reader = cultivator(helper);
+        helper.assertTrue(CultivationRules.senseQiPerSecond(CultivationRealm.QI_CONDENSATION) == 2
+                && CultivationRules.senseQiPerSecond(CultivationRealm.CORE_FORMATION) == 8, "Qi Sense's cost does not follow its reach");
+        CultivationService.setCultivation(reader, CultivationRealm.CORE_FORMATION, CultivationStage.EARLY);
+        QiService.setQiMax(reader, 5000);
+        QiService.refillQi(reader);
+        QiSense.setActive(reader, true);
+        helper.assertTrue(QiSense.isActive(reader), "Qi Sense does not open");
+        QiSense.backdateForTests(reader, CultivationRules.SENSE_HOLD_MAX - 5);
+        QiSense.tick(reader);
+        helper.assertTrue(QiSense.isActive(reader), "Qi Sense closed before 40 s");
+        QiSense.backdateForTests(reader, 5);
+        QiSense.tick(reader);
+        helper.assertFalse(QiSense.isActive(reader), "Qi Sense still open after 40 s");
+        QiSense.setActive(reader, true);
+        helper.assertFalse(QiSense.isActive(reader), "Qi Sense opened again while the eyes rest");
+        QiSense.clearForTests();
+        end(helper, reader);
+    }
+
+    /** Hidden caches: a buried chest with something in it is felt; a buried empty one is not, nor a full one in sight. */
+    @GameTest(template = "foundation_arena", batch = "cultivation_caches")
+    public static void hiddenCachesWithSomethingInsideAreFelt(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper);
+        CultivationService.setCultivation(reader, CultivationRealm.NASCENT_SOUL, CultivationStage.EARLY);
+        BlockPos at = reader.blockPosition();
+        BlockPos full = at.offset(4, -4, 0), empty = at.offset(-4, -4, 0), seen = at.offset(0, 0, 3);
+        ServerLevel level = helper.getLevel();
+        for (BlockPos b : BlockPos.betweenClosed(at.offset(-6, -6, -2), at.offset(6, -1, 2))) level.setBlockAndUpdate(b, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        for (BlockPos b : List.of(full, empty, seen)) level.setBlockAndUpdate(b, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
+        ((net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(full)).setItem(0, new ItemStack(Items.DIAMOND));
+        ((net.minecraft.world.level.block.entity.ChestBlockEntity) level.getBlockEntity(seen)).setItem(0, new ItemStack(Items.DIAMOND));
+        List<BlockPos> caches = com.murimblock.cultivation.QiTraces.caches(reader);
+        helper.assertTrue(caches.stream().anyMatch(c -> c.getX() == full.getX() && c.getZ() == full.getZ()), "The buried chest with a diamond is not felt");
+        helper.assertTrue(caches.stream().noneMatch(c -> c.getX() == empty.getX() && c.getZ() == empty.getZ()), "The buried empty chest is felt");
+        helper.assertTrue(caches.stream().noneMatch(c -> c.getX() == seen.getX() && c.getZ() == seen.getZ()), "The chest in sight is felt");
+        for (BlockPos b : BlockPos.betweenClosed(at.offset(-6, -6, -2), at.offset(6, -1, 2))) level.setBlockAndUpdate(b, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(seen, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        end(helper, reader);
+    }
+
+    /**
+     * Hidden traces: a cultivator from Qi Condensation leaves a point of trail each stride, a weaker one none; a reader at
+     * Nascent Soul is sent the others' (in their art, one walker), never their own.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_traces")
+    public static void thePowerfulLeaveTracesSeenFromNascentSoul(GameTestHelper helper) {
+        com.murimblock.cultivation.QiTraces.clearForTests();
+        ServerPlayer reader = cultivator(helper), strong = player(helper), weak = player(helper);
+        CultivationService.setCultivation(reader, CultivationRealm.NASCENT_SOUL, CultivationStage.EARLY);
+        CultivationService.setCultivation(strong, CultivationRealm.QI_CONDENSATION, CultivationStage.EARLY);
+        CultivationService.setCultivation(weak, CultivationRealm.QI_GUIDING, CultivationStage.PEAK);
+        helper.assertTrue(com.murimblock.cultivation.QiTraces.leavesTraces(strong), "Qi Condensation leaves no traces");
+        helper.assertFalse(com.murimblock.cultivation.QiTraces.leavesTraces(weak), "Qi Guiding leaves traces");
+        long now = helper.getLevel().getGameTime();
+        double x = reader.getX(), y = reader.getY(), z = reader.getZ();
+        for (int i = 0; i < 4; i++) {
+            strong.moveTo(x + 2, y, z + i * 8.5);
+            com.murimblock.cultivation.QiTraces.step(strong, now);
+            // Less than a stride: no new footprint.
+            strong.moveTo(x + 2, y, z + i * 8.5 + 3.5);
+            com.murimblock.cultivation.QiTraces.step(strong, now);
+        }
+        com.murimblock.cultivation.QiTraces.step(reader, now);
+        var seen = com.murimblock.cultivation.QiTraces.seen(reader);
+        helper.assertTrue(seen.size() == 4, "The reader sees " + seen.size() + " points of trail, not 4");
+        helper.assertTrue(seen.stream().allMatch(t -> t.art().equals("none") && t.walker() == 0), "The trail is not the walker's");
+        com.murimblock.cultivation.QiTraces.clearForTests();
+        end(helper, reader, strong, weak);
+    }
+
+    /**
+     * Through walls: a weaker aura 8 blocks off behind a stone wall is not read at Foundation Establishment, and is from
+     * Core Formation (within 24 blocks); 30 blocks off behind it, still not.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_walls")
+    public static void qiSenseReadsThroughWallsFromCoreFormation(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper), hidden = player(helper);
+        CultivationService.setCultivation(hidden, CultivationRealm.QI_SENSING, CultivationStage.LATE);
+        double x = reader.getX(), y = reader.getY(), z = reader.getZ();
+        hidden.moveTo(x, y, z + 8);
+        BlockPos base = BlockPos.containing(x, y, z + 4);
+        for (int dx = -3; dx <= 3; dx++) for (int dy = -2; dy <= 4; dy++)
+            helper.getLevel().setBlockAndUpdate(base.offset(dx, dy, 0), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        helper.assertFalse(reader.hasLineOfSight(hidden), "The wall does not hide the other player");
+        CultivationService.setCultivation(reader, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.PEAK);
+        helper.assertTrue(QiSense.readings(reader).stream().noneMatch(r -> r.entityId() == hidden.getId()), "Read through a wall at Foundation Establishment");
+        CultivationService.setCultivation(reader, CultivationRealm.CORE_FORMATION, CultivationStage.EARLY);
+        helper.assertTrue(QiSense.readings(reader).stream().anyMatch(r -> r.entityId() == hidden.getId()), "Not read through a wall at Core Formation");
+        hidden.moveTo(x, y, z + 30);
+        helper.assertTrue(QiSense.readings(reader).stream().noneMatch(r -> r.entityId() == hidden.getId()), "Read through walls beyond 24 blocks");
+        for (int dx = -3; dx <= 3; dx++) for (int dy = -2; dy <= 4; dy++)
+            helper.getLevel().setBlockAndUpdate(base.offset(dx, dy, 0), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        end(helper, reader, hidden);
+    }
+
+    /**
+     * Vital points: a perfect parry at Foundation Establishment, Qi Sense open, lights some of the attacker's points (not
+     * below that realm); a blow aimed at one does 1.5x and puts it out, a blow aimed elsewhere does not.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_vital")
+    public static void vitalPointsLightAfterAParryAndAStrikeOnOneHurtsMore(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper);
+        Zombie target = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 3));
+        target.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, ItemStack.EMPTY);
+        target.getAttribute(Attributes.ARMOR).setBaseValue(0);
+        CultivationService.setCultivation(reader, CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
+        QiSense.setActive(reader, true);
+        com.murimblock.cultivation.VitalPoints.onPerfectParry(reader, target);
+        helper.assertTrue(com.murimblock.cultivation.VitalPoints.open(reader, target) == 0, "Vital points light up below Foundation Establishment");
+        CultivationService.setCultivation(reader, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);
+        QiSense.setActive(reader, true);
+        com.murimblock.cultivation.VitalPoints.onPerfectParry(reader, target);
+        int mask = com.murimblock.cultivation.VitalPoints.open(reader, target);
+        helper.assertTrue(Integer.bitCount(mask) == com.murimblock.cultivation.VitalPoints.COUNT, "The parry lit " + Integer.bitCount(mask) + " points");
+        int point = Integer.numberOfTrailingZeros(mask);
+        reader.moveTo(target.getX(), target.getY(), target.getZ() - 2.5, 0, 0);
+        target.setYRot(180);
+        target.setYBodyRot(180);
+        reader.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, com.murimblock.cultivation.VitalPoints.position(target, point));
+        float before = target.getHealth();
+        target.hurt(reader.damageSources().playerAttack(reader), 4);
+        float struck = before - target.getHealth();
+        helper.assertTrue(struck > 5.9F, "A blow on a vital point did " + struck + ", not 6");
+        helper.assertTrue((com.murimblock.cultivation.VitalPoints.open(reader, target) & 1 << point) == 0, "The point struck is still lit");
+        // Aimed at the sky: an ordinary blow.
+        target.invulnerableTime = 0;
+        reader.setXRot(-80);
+        before = target.getHealth();
+        target.hurt(reader.damageSources().playerAttack(reader), 4);
+        helper.assertTrue(before - target.getHealth() < 4.1F, "A blow aimed elsewhere was made stronger");
+        com.murimblock.cultivation.VitalPoints.clearForTests();
+        end(helper, reader);
+    }
+
+    /**
+     * Beyond the sense's reach (16 blocks at Qi Condensation), only the powerful are felt, through walls, out to its far
+     * reach (48): one as strong or stronger is read, a weaker one is not.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_sense")
+    public static void qiSenseFeelsThePowerfulFromFarAndThroughWalls(GameTestHelper helper) {
+        ServerPlayer reader = cultivator(helper);
+        ServerPlayer strong = player(helper), weak = player(helper);
+        CultivationService.setCultivation(reader, CultivationRealm.QI_CONDENSATION, CultivationStage.MIDDLE);
+        CultivationService.setCultivation(strong, CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
+        CultivationService.setCultivation(weak, CultivationRealm.QI_SENSING, CultivationStage.LATE);
+        double x = reader.getX(), y = reader.getY(), z = reader.getZ();
+        helper.assertTrue(CultivationRules.senseRange(CultivationRealm.QI_CONDENSATION) == 16 && CultivationRules.farSenseRange(CultivationRealm.QI_CONDENSATION) == 48,
+                "Qi Condensation's reaches are not 16 and 48");
+        strong.moveTo(x + 30, y, z);
+        weak.moveTo(x - 30, y, z);
+        var readings = QiSense.readings(reader);
+        helper.assertTrue(readings.stream().anyMatch(r -> r.entityId() == strong.getId()), "The stronger one, 30 blocks off, is not felt");
+        helper.assertTrue(readings.stream().noneMatch(r -> r.entityId() == weak.getId()), "The weaker one, 30 blocks off, is felt");
+        // A far stronger cultivator reaches much further.
+        helper.assertTrue(CultivationRules.farSenseRange(CultivationRealm.CORE_FORMATION) > CultivationRules.farSenseRange(CultivationRealm.QI_LIQUIDATION),
+                "A higher realm does not feel further");
+        end(helper, reader, strong, weak);
+    }
 
     @GameTest(template = "foundation_arena", batch = "cultivation_sense")
     public static void qiSenseShowsEachReaderOnlyWhatTheirRealmAllows(GameTestHelper helper) {

@@ -55,6 +55,8 @@ final class MurimProfileLayout {
     final Box cultivationQiFill;
     final Box stagePips;
     final Box infoSettings;
+    /** Info: the button that opens the Murim map, at the bottom of the status panel. */
+    final Box infoMap;
     final Box settingsHeader;
     final Box settingsStatus;
     final Box keybinds;
@@ -146,6 +148,7 @@ final class MurimProfileLayout {
             put(Page.INFOS, keys[i], controls.right() - 42, y, 36, 17);
         }
         infoSettings = new Box(controls.x() + 6, controls.bottom() - 22, controls.width() - 12, 16);
+        infoMap = new Box(status.x() + 6, status.bottom() - 22, status.width() - 12, 16);
         put(Page.INFOS, Field.STATUS, status.x() + 6, cy + 26, status.width() - 12, 9);
         put(Page.INFOS, Field.QI_VALUE, status.x() + 6, cy + 42, status.width() - 12, 9);
 

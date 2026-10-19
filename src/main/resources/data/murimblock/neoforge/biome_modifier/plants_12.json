@@ -1,0 +1,17 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:jade_karst_forest",
+    "murimblock:shu_bamboo_sea",
+    "murimblock:camphor_hills"
+  ],
+  "features": [
+    "murimblock:plant_hydrangea",
+    "murimblock:plant_gardenia",
+    "murimblock:plant_hibiscus",
+    "murimblock:plant_garden_balsam",
+    "murimblock:plant_ginger_lily",
+    "murimblock:plant_blue_flag_iris"
+  ],
+  "step": "vegetal_decoration"
+}

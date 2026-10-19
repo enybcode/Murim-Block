@@ -1,0 +1,12 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "murimblock:cloud_sea_peaks",
+    "murimblock:peach_blossom_valley"
+  ],
+  "features": [
+    "murimblock:plant_ginseng",
+    "murimblock:spirit_ginseng"
+  ],
+  "step": "vegetal_decoration"
+}

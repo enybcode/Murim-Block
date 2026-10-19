@@ -238,9 +238,11 @@ public class ScrollShopArt {
         {"..#..", ".###.", "#####", ".###.", ".#.#."},   // a star
         {"..#..", ".###.", ".###.", "#####", "..#.."},   // a bell
         {"#.#.#", ".###.", "#####", ".###.", "#.#.#"},   // a sun
-        {"...##", "..##.", ".####", "..##.", ".##.."}};  // a bolt of lightning
-    static final String[] ARTS = {"long_fist", "traveller_staff", "celestial_peak_spear", "azure_cloud_sword", "mountain_shattering_fist", "seven_stars_sword", "golden_bell", "majin_fist", "thunder_saber"};
-    static final int[] COVERS = {0xb02a22, 0x7a4a22, 0x2a5aa0, 0x2f78c8, 0x5a3a20, 0x232a5a, 0xb0561c, 0x5a1e6a, 0x4a2a7a};
+        {"...##", "..##.", ".####", "..##.", ".##.."},   // a bolt of lightning
+        {"..#..", ".###.", "#####", ".#.#.", "..#.."},   // a broad spearhead
+        {".##..", "####.", ".####", "..###", "..#.#"}};  // a raven
+    static final String[] ARTS = {"long_fist", "traveller_staff", "celestial_peak_spear", "azure_cloud_sword", "mountain_shattering_fist", "seven_stars_sword", "golden_bell", "majin_fist", "thunder_saber", "overlord_spear", "raven_art"};
+    static final int[] COVERS = {0xb02a22, 0x7a4a22, 0x2a5aa0, 0x2f78c8, 0x5a3a20, 0x232a5a, 0xb0561c, 0x5a1e6a, 0x4a2a7a, 0x4a1414, 0x1e1a2a};
 
     static void guides() throws Exception {
         for (int i = 0; i < ARTS.length; i++) {

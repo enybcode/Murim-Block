@@ -46,6 +46,18 @@ Les frontières entre régions ondulent sur des milliers de blocs (un bruit tir�
 
 **Vérifié** : tests unitaires (`MurimMapTest` : sur 64 graines, un même point lointain tombe dans chacune des quatre régions extérieures selon le monde, le cœur de chaque région est bien dans sa région ; sur quatre graines, chaque région tient entre un septième et un quart de la terre) ; GameTests (`MurimMapGameTests` : chaque biome dans sa région, régions de surface égale, environ 30 000 points de terre chacune) ; visite des biomes en vrai client (`runBiomeTour`).
 
+## La carte en jeu (17/10/2026)
+
+Demande d'Enzo : « un moyen de voir la forme du Murim et l'emplacement de chaque région ». Touche **M** (Murim Map,
+réglable dans les contrôles) ou bouton **Murim Map** de la page Info : la bulle vue de haut (nord en haut), son littoral
+encré, l'océan, chaque région dans sa couleur (les mêmes que les images ci-dessus) avec son nom au milieu de ses terres,
+et le joueur en sceau rouge clignotant avec sa direction. À droite, la légende et la région où l'on se trouve ; au
+survol, la région et les coordonnées du point. Le serveur dessine la grille (`world/map/MurimMapView`, 160 × 160 cases
+d'environ 310 blocs) à partir de la disposition du monde et l'envoie au joueur qui ouvre la carte
+(`network/MurimMapPayloads`, protocole 27) : la graine ne quitte jamais le serveur. Dans un monde sans carte Murim,
+l'écran le dit. Écran : `client/MurimMapScreen`. Vérifié par `MurimMapViewTest` et en vrai client
+(`gradlew -PgameTests runMurimMapTour`, monde de graine 42).
+
 ## Les montagnes de glace du nord
 
 Demande d'Enzo : « de vrais biomes avec d'immenses montagnes de glace cachant de grands mystères ».
@@ -62,7 +74,7 @@ Demande d'Enzo : « de vrais biomes avec d'immenses montagnes de glace cachant d
 - **`MurimContinents`** remplace la « continentalité » de vanilla (`data/minecraft/worldgen/density_function/overworld/continents.json`) : de la terre partout dans la bulle, une côte au bord, l'océan profond dans l'anneau, puis le relief vanilla. Le relief et le choix des biomes de vanilla voient donc la même carte.
 - **Le préréglage de monde « normal »** (`data/minecraft/worldgen/world_preset/normal.json`) met cette source sur l'Overworld. Il ne s'applique qu'aux **nouveaux mondes** (un monde existant garde sa génération). Les mondes plats et les « grands biomes » ne sont pas concernés ; le mode « amplifié » garde ses biomes vanilla mais reçoit la bulle de terre et l'anneau d'océan.
 - **TerraBlender** ne place plus les biomes Murim (sa région Murim est retirée) ; il applique encore leurs règles de surface (choisies selon l'espace de noms du biome), qu'il n'allume que pour ses propres sources de biomes : `MurimSurface` les allume pour la carte Murim au démarrage du serveur.
-- **Le point d'apparition** (`MurimSpawn`) : tiré au hasard à la création du monde, à moins de 12 000 blocs du centre, sur la terre d'un biome Murim, ni dans l'eau ni au-dessus de y = 140. Plus tard, il dépendra de la famille du joueur.
+- **Le point d'apparition** (`MurimSpawn`) : tiré au hasard à la création du monde **dans la région du centre** (demande d'Enzo du 19/10/2026 ; avant, n'importe où à moins de 12 000 blocs), à moins de 6 000 blocs de l'origine, sur la terre d'un biome Murim, ni dans l'eau ni au-dessus de y = 140. Plus tard, il dépendra de la famille du joueur.
 - **Les structures** (les sites Murim, le sanctuaire) gardent leurs règles : chacune dans son biome, à un endroit tiré au hasard.
 - **L'avant-poste de l'Alliance** (15/10) suit la carte : n'importe quel biome Murim, mais seulement au centre ou à moins de 1 500 blocs d'une frontière entre régions (`MurimMap.centreOrFrontier`, [fiche](../structures/alliance-outpost.md)).
 

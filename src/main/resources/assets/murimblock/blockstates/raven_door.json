@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "index=0": {
+      "model": "murimblock:block/raven_door"
+    },
+    "index=1": {
+      "model": "murimblock:block/raven_door"
+    },
+    "index=2": {
+      "model": "murimblock:block/raven_door"
+    },
+    "index=3": {
+      "model": "murimblock:block/raven_door"
+    }
+  }
+}

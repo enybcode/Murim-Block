@@ -9,13 +9,13 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
 /**
- * Where a new Murim world is entered (decision of 14/10/2026: at random for now; later by one's family): a point drawn
- * from the world's seed anywhere on the land of the bubble, on a Murim biome, neither in water nor on a peak. Worlds of
- * other kinds (flat, the GameTest server's) keep vanilla's spawn.
+ * Where a new Murim world is entered: a point drawn from the world's seed in the centre region (Enzo, 19/10/2026: "qu'on
+ * spawn au centre"; till then anywhere in the bubble), on a Murim biome, neither in water nor on a peak; later by one's
+ * family. Worlds of other kinds (flat, the GameTest server's) keep vanilla's spawn; worlds made before keep theirs.
  */
 public final class MurimSpawn {
-    /** How far from the centre the spawn may be drawn, and the highest ground it may stand on. */
-    public static final int REACH = MurimMap.RADIUS * 3 / 5, HIGHEST = 140;
+    /** How far from the origin the spawn may be drawn (well inside the centre region), and the highest ground it may stand on. */
+    public static final int REACH = (int) (MurimMap.RADIUS * MurimMap.CENTER_SHARE * 0.6), HIGHEST = 140;
     private static final int TRIES = 200;
 
     private MurimSpawn() {
@@ -40,6 +40,7 @@ public final class MurimSpawn {
             int y = source.getBaseHeight(x, z, Heightmap.Types.OCEAN_FLOOR_WG, level, randomState);
             int surface = source.getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, level, randomState);
             if (surface != y || y <= level.getSeaLevel() + 1 || y > HIGHEST) continue; // water over it, or too high
+            if (MurimMap.region(x, z) != MurimMap.Region.CENTER) continue;
             var biome = biomes.getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(y), QuartPos.fromBlock(z), randomState.sampler());
             if (biome.is(MurimBiomes.MURIM_TAG)) return new BlockPos(x, y, z);
         }

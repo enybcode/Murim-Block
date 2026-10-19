@@ -190,9 +190,11 @@ public final class MurimItems {
     public static final DeferredItem<MartialGuideItem> CELESTIAL_PEAK_SPEAR_GUIDE = guide("celestial_peak_spear", com.murimblock.martial.MartialArts.CELESTIAL_PEAK_SPEAR, "alliance_arena");
     public static final DeferredItem<MartialGuideItem> AZURE_CLOUD_SWORD_GUIDE = guide("azure_cloud_sword", com.murimblock.martial.MartialArts.AZURE_CLOUD_SWORD, "misty_bamboo_temple");
     public static final DeferredItem<MartialGuideItem> MOUNTAIN_SHATTERING_FIST_GUIDE = guide("mountain_shattering_fist", com.murimblock.martial.MartialArts.MOUNTAIN_SHATTERING_FIST, "bandit_camp");
+    public static final DeferredItem<MartialGuideItem> OVERLORD_SPEAR_GUIDE = guide("overlord_spear", com.murimblock.martial.MartialArts.OVERLORD_SPEAR, "alliance_arena");
     public static final DeferredItem<MartialGuideItem> MAJIN_FIST_GUIDE = guide("majin_fist", com.murimblock.martial.MartialArts.MAJIN_FIST, "bandit_camp");
     public static final DeferredItem<MartialGuideItem> SEVEN_STARS_SWORD_GUIDE = guide("seven_stars_sword", com.murimblock.martial.MartialArts.SEVEN_STARS_SWORD, MartialGuideItem.STAR_PEAK);
     public static final DeferredItem<MartialGuideItem> THUNDER_SABER_GUIDE = guide("thunder_saber", com.murimblock.martial.MartialArts.THUNDER_SABER, MartialGuideItem.NOWHERE);
+    public static final DeferredItem<MartialGuideItem> RAVEN_ART_GUIDE = guide("raven_art", com.murimblock.martial.MartialArts.RAVEN_ART, "raven_tower");
 
     private static DeferredItem<MartialGuideItem> guide(String art, net.minecraft.resources.ResourceLocation id, String place) {
         return ITEMS.register(art + "_guide", () -> new MartialGuideItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), id, place));
@@ -201,7 +203,7 @@ public final class MurimItems {
     /** Every martial guide, in the Golden Dragon's order (easiest first). */
     public static java.util.List<DeferredItem<MartialGuideItem>> guides() {
         return java.util.List.of(LONG_FIST_GUIDE, GOLDEN_BELL_GUIDE, TRAVELLER_STAFF_GUIDE, CELESTIAL_PEAK_SPEAR_GUIDE, AZURE_CLOUD_SWORD_GUIDE,
-                MOUNTAIN_SHATTERING_FIST_GUIDE, SEVEN_STARS_SWORD_GUIDE, MAJIN_FIST_GUIDE, THUNDER_SABER_GUIDE);
+                MOUNTAIN_SHATTERING_FIST_GUIDE, RAVEN_ART_GUIDE, OVERLORD_SPEAR_GUIDE, SEVEN_STARS_SWORD_GUIDE, MAJIN_FIST_GUIDE, THUNDER_SABER_GUIDE);
     }
     public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",
@@ -210,6 +212,12 @@ public final class MurimItems {
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> SCARLET_GUARDIAN_SPAWN_EGG = ITEMS.register("scarlet_guardian_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.SCARLET_GUARDIAN, 0x20191D, 0x86192A, new Item.Properties()));
+    /** The Crow Master's egg: black and gold, his robe and its trim. */
+    public static final DeferredItem<DeferredSpawnEggItem> CROW_MASTER_SPAWN_EGG = ITEMS.register("crow_master_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.CROW_MASTER, 0x1D1F2A, 0xD9A83F, new Item.Properties()));
+    /** The Raven Master's egg: the black lacquer of his mask and the amber of its eye rings. */
+    public static final DeferredItem<DeferredSpawnEggItem> RAVEN_MASTER_SPAWN_EGG = ITEMS.register("raven_master_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.RAVEN_MASTER, 0x141318, 0xF2B33D, new Item.Properties()));
     /** The Golden Bell monk's egg: saffron and brown, his robe and sash. */
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_BELL_MONK_SPAWN_EGG = ITEMS.register("golden_bell_monk_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_BELL_MONK, 0xE2861F, 0x6B4226, new Item.Properties()));
@@ -241,6 +249,30 @@ public final class MurimItems {
             () -> new SwordItem(Tiers.WOOD, new Item.Properties().attributes(SwordItem.createAttributes(Tiers.WOOD, 3, -2.6F))));
     public static final DeferredItem<SwordItem> CRIMSON_DRAGON_SPEAR = ITEMS.register("crimson_dragon_spear",
             () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.IRON, 3, -2.8F))));
+    /**
+     * The Spear of Ruin (灭世枪), the Overlord Spear Art's weapon (docs/combat/styles/overlord-spear.md, concept chosen by Enzo
+     * on 18/10/2026): black steel cracked with veins of burning Qi that glow in the dark, three gold claws on the head, a red
+     * mane. A spear for Epic Fight (data/murimblock/capabilities/weapons/spear_of_ruin.json), heavier and stronger than the
+     * captain's: 8 damage. Model from scripts/animation/ruin-spear-model.cjs.
+     */
+    /** The Overlord Spear's scroll: read (from Qi Condensation), it teaches the art; given at the Celestial Peak Spear's mastery 50. */
+    public static final DeferredItem<MartialManualItem> OVERLORD_SPEAR_SCROLL = ITEMS.register("overlord_spear_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.OVERLORD_SPEAR));
+    public static final DeferredItem<SwordItem> SPEAR_OF_RUIN = ITEMS.register("spear_of_ruin",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.EPIC).attributes(SwordItem.createAttributes(Tiers.IRON, 4, -2.9F))));
+    /** The Crescent Moon Halberd's scroll: read (from Qi Condensation), it teaches the art; found in the Alliance arena's chests and the sites' caches. */
+    public static final DeferredItem<MartialManualItem> CRESCENT_MOON_HALBERD_SCROLL = ITEMS.register("crescent_moon_halberd_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.CRESCENT_MOON_HALBERD));
+    /** The Raven Messenger Art's scroll: read (from Qi Condensation), it teaches the art; the Crow Master's (to come). */
+    public static final DeferredItem<MartialManualItem> RAVEN_ART_SCROLL = ITEMS.register("raven_art_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.RAVEN_ART));
+    /**
+     * The Crescent Moon Halberd (月牙戟), the art's own: a ji of night-blue lacquer and silver, its crescent's edge glowing
+     * moonlight (scripts/animation/crescent-halberd-model.cjs). A spear for Epic Fight (capabilities/weapons), forged
+     * (recipe) or found with the scroll.
+     */
+    public static final DeferredItem<SwordItem> CRESCENT_MOON_HALBERD = ITEMS.register("crescent_moon_halberd",
+            () -> new SwordItem(Tiers.IRON, new Item.Properties().rarity(Rarity.RARE).attributes(SwordItem.createAttributes(Tiers.IRON, 4, -2.8F))));
 
     /**
      * The Peak Guard's armour, the captain's, on a man's build: a plumed iron helm with cheek guards and a neck curtain,
@@ -320,6 +352,17 @@ public final class MurimItems {
 
     public static final DeferredItem<MartialManualItem> SANGUINE_ART_SCROLL = ITEMS.register("sanguine_art_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.SANGUINE_ART));
+    /** The Devouring Demon Art's scroll (docs/combat/styles/devouring-demon-art.md); where it is found is still to decide. */
+    public static final DeferredItem<MartialManualItem> DEVOURING_DEMON_SCROLL = ITEMS.register("devouring_demon_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), MartialArts.DEVOURING_DEMON));
+
+    /** The cultivation methods' scrolls (CultivationMethod): where each is found is still to decide. */
+    public static final DeferredItem<com.murimblock.cultivation.MethodScrollItem> AZURE_SKY_BREATHING_SCROLL = ITEMS.register("azure_sky_breathing_scroll",
+            () -> new com.murimblock.cultivation.MethodScrollItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), com.murimblock.cultivation.CultivationMethod.AZURE_SKY_BREATHING));
+    public static final DeferredItem<com.murimblock.cultivation.MethodScrollItem> FROST_LOTUS_HEART_SCROLL = ITEMS.register("frost_lotus_heart_scroll",
+            () -> new com.murimblock.cultivation.MethodScrollItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), com.murimblock.cultivation.CultivationMethod.FROST_LOTUS_HEART));
+    public static final DeferredItem<com.murimblock.cultivation.MethodScrollItem> BLAZING_SUN_SCRIPTURE_SCROLL = ITEMS.register("blazing_sun_scripture_scroll",
+            () -> new com.murimblock.cultivation.MethodScrollItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), com.murimblock.cultivation.CultivationMethod.BLAZING_SUN_SCRIPTURE));
 
     /** Elixirs of cultivation (docs/cultivation/qi-cultivation.md), made from the flora of the Murim lands. */
     public static final DeferredItem<com.murimblock.cultivation.PillItem> QI_GATHERING_PILL = ITEMS.register("qi_gathering_pill",
@@ -352,12 +395,15 @@ public final class MurimItems {
                         output.accept(FLYING_KNIFE.get());
                         output.accept(RATTAN_SHIELD.get());
                         output.accept(IRON_FAN.get());
+                        output.accept(com.murimblock.world.raven.RavenBlocks.RAVEN_PERCH_ITEM.get());
                         output.accept(CHAIN_WHIP.get());
                         output.accept(FLYING_NEEDLES.get());
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
                         output.accept(GOLDEN_BELL_MONK_SPAWN_EGG.get());
+                        output.accept(CROW_MASTER_SPAWN_EGG.get());
+                        output.accept(RAVEN_MASTER_SPAWN_EGG.get());
                         output.accept(SCARLET_GUARDIAN_SPAWN_EGG.get());
                         output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
                         output.accept(NETHER_TALISMAN.get());
@@ -379,6 +425,11 @@ public final class MurimItems {
                         output.accept(CHIEF_FUR_BOOTS.get());
                         output.accept(PEAK_CAPTAIN_SPAWN_EGG.get());
                         output.accept(CRIMSON_DRAGON_SPEAR.get());
+                        output.accept(SPEAR_OF_RUIN.get());
+                        output.accept(OVERLORD_SPEAR_SCROLL.get());
+                        output.accept(CRESCENT_MOON_HALBERD.get());
+                        output.accept(CRESCENT_MOON_HALBERD_SCROLL.get());
+                        output.accept(RAVEN_ART_SCROLL.get());
                         output.accept(PEAK_GUARD_HELM.get());
                         output.accept(PEAK_GUARD_LAMELLAR.get());
                         output.accept(PEAK_GUARD_TASSETS.get());
@@ -395,8 +446,14 @@ public final class MurimItems {
                         output.accept(MOUNTAIN_SHATTERING_FIST_SCROLL.get());
                         output.accept(MAJIN_FIST_SCROLL.get());
                         output.accept(SANGUINE_ART_SCROLL.get());
+                        output.accept(DEVOURING_DEMON_SCROLL.get());
+                        output.accept(AZURE_SKY_BREATHING_SCROLL.get());
+                        output.accept(FROST_LOTUS_HEART_SCROLL.get());
+                        output.accept(BLAZING_SUN_SCRIPTURE_SCROLL.get());
                         output.accept(QI_GATHERING_PILL.get());
                         output.accept(REALM_BREAKING_PILL.get());
+                        // The alchemy: the pill furnace, its manual and scrolls, its pills (docs/cultivation/alchemy.md).
+                        com.murimblock.alchemy.AlchemyItems.creativeItems().forEach(item -> output.accept(item.get()));
                     })
                     .build());
 
@@ -406,8 +463,11 @@ public final class MurimItems {
                     .title(Component.translatable("itemGroup.murimblock_nature"))
                     .icon(() -> new ItemStack(MurimBlocks.PEACH.sapling().get()))
                     .withTabsBefore(MURIMBLOCK_TAB.getKey())
-                    .displayItems((parameters, output) -> MurimBlocks.creativeOrder()
-                            .forEach(block -> output.accept(block.get())))
+                    .displayItems((parameters, output) -> {
+                        MurimBlocks.creativeOrder().forEach(block -> output.accept(block.get()));
+                        // The plants' herbs, what they grow from, and the new wild plants (docs/cultivation/plants.md).
+                        com.murimblock.world.plant.MurimFlora.creativeItems().forEach(item -> output.accept(item.get()));
+                    })
                     .build());
     /** Every weapon of every mod installed, Murimblock's first (WeaponsTab). */
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> WEAPONS_TAB = TABS.register("murimblock_weapons",

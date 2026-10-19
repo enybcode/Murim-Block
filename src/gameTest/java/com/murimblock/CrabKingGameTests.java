@@ -92,7 +92,11 @@ public final class CrabKingGameTests {
         king.setNoAi(true);
         king.setHealth(king.getMaxHealth() * 0.4F);
         king.enrage(helper.getLevel());
-        helper.runAfterDelay(2, () -> {
+        // Entities just added may not be found by area for a few ticks (a slow server, the CI): wait for them.
+        helper.startSequence().thenWaitUntil(() -> {
+            int n = helper.getLevel().getEntitiesOfClass(ArmoredCrabEntity.class, king.getBoundingBox().inflate(6)).size();
+            helper.assertTrue(n >= CrabKingEntity.CRABS_CALLED, "He should have called two crabs, not " + n);
+        }).thenExecute(() -> {
             var crabs = helper.getLevel().getEntitiesOfClass(ArmoredCrabEntity.class, king.getBoundingBox().inflate(6));
             helper.assertTrue(crabs.size() == CrabKingEntity.CRABS_CALLED, "He should have called two crabs, not " + crabs.size());
             helper.assertTrue(king.isEnraged(), "He did not keep his rage");

@@ -1,0 +1,43 @@
+{
+    "targets": [
+        "swap",
+        "swap2",
+        "depthcopy"
+    ],
+    "passes": [
+        {
+            "name": "box_blur",
+            "use_linear_filter": true,
+            "intarget": "minecraft:main",
+            "outtarget": "swap",
+            "uniforms": [
+                { "name": "BlurDir", "values": [ 1.0, 0.0 ] },
+                { "name": "Radius", "values": [ 6.0 ] }
+            ]
+        },
+        {
+            "name": "box_blur",
+            "use_linear_filter": true,
+            "intarget": "swap",
+            "outtarget": "swap2",
+            "uniforms": [
+                { "name": "BlurDir", "values": [ 0.0, 1.0 ] },
+                { "name": "Radius", "values": [ 6.0 ] }
+            ]
+        },
+        {
+            "name": "murimblock:qi_vision",
+            "intarget": "minecraft:main",
+            "outtarget": "swap",
+            "auxtargets": [
+                { "name": "SoftSampler", "id": "swap2" },
+                { "name": "DepthSampler", "id": "depthcopy:depth" }
+            ]
+        },
+        {
+            "name": "blit",
+            "intarget": "swap",
+            "outtarget": "minecraft:main"
+        }
+    ]
+}

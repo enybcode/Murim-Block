@@ -71,6 +71,8 @@ public final class KnockdownService {
                 case FinishCinematicPayload.LONG_FIST -> LongFist.FINISH_HIT_TICK;
                 case FinishCinematicPayload.SCARLET_BLOOM -> com.murimblock.martial.ScarletBloom.HIT_TICK;
                 case FinishCinematicPayload.MOUNTAIN_BURIAL -> com.murimblock.martial.MountainShatteringFist.FINISH_HIT_TICK;
+                case FinishCinematicPayload.OVERLORD_VERDICT -> com.murimblock.martial.OverlordSpear.FINISH_HIT_TICK;
+                case FinishCinematicPayload.LAST_MESSAGE -> com.murimblock.martial.RavenArt.FINISH_HIT_TICK;
                 case FinishCinematicPayload.SEVEN_STARS -> com.murimblock.martial.SevenStarsMoves.FINISH_HIT_TICK;
                 case FinishCinematicPayload.THUNDER_SABER -> com.murimblock.martial.ThunderSaberMoves.FINISH_HIT_TICK;
                 case FinishCinematicPayload.NOON_SENTENCE -> com.murimblock.martial.MajinFistArt.FINISH_HIT_TICK;
@@ -235,6 +237,8 @@ public final class KnockdownService {
                 : AzureCloudSword.finishes(executor) ? FinishCinematicPayload.AZURE_CLOUD
                 : LongFist.finishes(executor) ? FinishCinematicPayload.LONG_FIST
                 : com.murimblock.martial.MountainShatteringFist.finishes(executor) ? FinishCinematicPayload.MOUNTAIN_BURIAL
+                : com.murimblock.martial.OverlordSpear.finishes(executor) ? FinishCinematicPayload.OVERLORD_VERDICT
+                : com.murimblock.martial.RavenArt.finishes(executor) ? FinishCinematicPayload.LAST_MESSAGE
                 : com.murimblock.martial.MajinFistArt.finishes(executor) ? FinishCinematicPayload.NOON_SENTENCE
                 : com.murimblock.martial.SevenStarsMoves.finishes(executor) ? FinishCinematicPayload.SEVEN_STARS
                 : com.murimblock.martial.ThunderSaberMoves.finishes(executor) ? FinishCinematicPayload.THUNDER_SABER
@@ -246,6 +250,8 @@ public final class KnockdownService {
             case FinishCinematicPayload.LONG_FIST -> MurimAnimations.FINISH_LONG_FIST;
             case FinishCinematicPayload.SCARLET_BLOOM -> MurimAnimations.FINISH_SCARLET_BLOOM;
             case FinishCinematicPayload.MOUNTAIN_BURIAL -> MurimAnimations.FINISH_MOUNTAIN_BURIAL;
+            case FinishCinematicPayload.OVERLORD_VERDICT -> MurimAnimations.FINISH_OVERLORD_VERDICT;
+            case FinishCinematicPayload.LAST_MESSAGE -> MurimAnimations.FINISH_LAST_MESSAGE;
             case FinishCinematicPayload.SEVEN_STARS -> MurimAnimations.FINISH_SEVEN_STARS;
             case FinishCinematicPayload.THUNDER_SABER -> MurimAnimations.FINISH_THUNDER_SABER;
             case FinishCinematicPayload.NOON_SENTENCE -> MurimAnimations.FINISH_MAJIN;
@@ -275,6 +281,8 @@ public final class KnockdownService {
             if (entry.getValue().finish == FinishCinematicPayload.AZURE_CLOUD) AzureCloudSword.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.LONG_FIST) LongFist.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.MOUNTAIN_BURIAL) com.murimblock.martial.MountainShatteringFist.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.OVERLORD_VERDICT) com.murimblock.martial.OverlordSpear.finishTick(executor, victim, elapsed);
+            if (entry.getValue().finish == FinishCinematicPayload.LAST_MESSAGE) com.murimblock.martial.RavenArt.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.SEVEN_STARS) com.murimblock.martial.SevenStarsMoves.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.THUNDER_SABER) com.murimblock.martial.ThunderSaberMoves.finishTick(executor, victim, elapsed);
             if (entry.getValue().finish == FinishCinematicPayload.NOON_SENTENCE) com.murimblock.martial.MajinFistArt.finishTick(executor, victim, elapsed);

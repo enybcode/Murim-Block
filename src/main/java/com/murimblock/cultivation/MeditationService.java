@@ -96,8 +96,8 @@ public final class MeditationService {
         return true;
     }
 
-    /** How long the meditation key is held, seated, to open the inner world (15 s), and anywhere inside to leave it (ticks). */
-    public static final int ENTER_HOLD_TICKS = 15 * 20, LEAVE_HOLD_TICKS = 30;
+    /** How long the meditation key is held, seated, to open the inner world (7 s, Enzo 18/10), and anywhere inside to leave it (ticks). */
+    public static final int ENTER_HOLD_TICKS = 7 * 20, LEAVE_HOLD_TICKS = 30;
 
     /**
      * The key held down while seated (or anywhere in the inner world): into the inner world, or back out of it. One
@@ -120,6 +120,8 @@ public final class MeditationService {
         player.setSprinting(false);
         lock(player, true);
         if (now % 20 == 0) condense(player, 20);
+        // The Qi of the place gathers round the body, as motes to draw in with one's gaze.
+        MeditationOrbs.tick(player, seatedFor(player));
         // On the Star-Plucking Peak's summit, three minutes give the Seven Stars Sword (from Qi Liquidation).
         com.murimblock.world.structure.StarPeakPlacement.meditating(player, seatedFor(player));
     }
@@ -132,7 +134,8 @@ public final class MeditationService {
         if (CultivationRules.atBottleneck(data, qiMax)) return;
         long now = player.level().getGameTime();
         CultivationJournal journal = CultivationService.journal(player);
-        double amount = CultivationRules.condensed(qiMax, data.realm(), CultivationService.placeOf(player), journal.condensedOn(now), ticks);
+        // The method practised: more in its element's places, half while out of tune after a change.
+        double amount = CultivationRules.condensed(qiMax, data.realm(), CultivationService.placeOf(player), journal.condensedOn(now), ticks) * MethodService.factor(player);
         CultivationService.setJournal(player, journal.condensed(now, ticks));
         CultivationService.gainQiMax(player, amount, CultivationService.Source.MEDITATION);
     }
@@ -159,17 +162,44 @@ public final class MeditationService {
         return max <= 0 ? 0 : (float) Math.min(1, QiService.getQi(player) / max);
     }
 
-    /** Tells the clients that see this player how full their reserve is and their main style, when it changed. */
+    /**
+     * Tells the clients that see this player how full their reserve is, their main style, the art their aura shows and
+     * how much Qi they hold and how far their aura weighs on those around, when it changed (the Qi by a twentieth at least).
+     */
     public static void refreshAura(ServerPlayer player) {
         AuraState now = aura(player);
         float fill = fill(player);
-        var art = MartialService.data(player).mainArt();
+        var data = MartialService.data(player);
+        var art = data.mainArt();
+        var auraArt = auraArt(data);
+        float qi = (float) QiService.getQi(player);
         boolean meditating = SEATED.containsKey(player.getUUID());
         int place = CultivationService.placeOf(player).ordinal();
-        if (now.meditating() != meditating || Math.abs(now.fill() - fill) >= FILL_STEP || (fill >= 1 && now.fill() < 1)
-                || !Objects.equals(now.mainArt(), art) || now.place() != place) {
-            setAura(player, new AuraState(meditating, fill, art, place));
+        float pressure = AuraPressure.active(player) ? (float) AuraPressure.reach(CultivationService.getRealm(player)) : 0;
+        if (now.pressure() != pressure || now.meditating() != meditating || Math.abs(now.fill() - fill) >= FILL_STEP || (fill >= 1 && now.fill() < 1)
+                || !Objects.equals(now.mainArt(), art) || now.place() != place || !Objects.equals(now.auraArt(), auraArt)
+                || Math.abs(qi - now.qi()) > Math.max(1, now.qi() * 0.05)) {
+            setAura(player, new AuraState(meditating, fill, art, place, auraArt, qi, pressure));
         }
+    }
+
+    /**
+     * The art an aura shows (Enzo, 17/10/2026: "par rapport à la mastery"): of the arts one knows, the one mastered best
+     * (MartialData.styleMastery); on a tie, the main style; none known, none.
+     */
+    public static java.util.Optional<net.minecraft.resources.ResourceLocation> auraArt(com.murimblock.martial.MartialData data) {
+        net.minecraft.resources.ResourceLocation best = null;
+        int bestMastery = -1;
+        for (var id : data.arts()) {
+            var art = com.murimblock.martial.MartialArts.art(id);
+            if (art == null) continue;
+            int m = data.styleMastery(art);
+            if (m > bestMastery || m == bestMastery && data.mainArt().filter(id::equals).isPresent()) {
+                best = id;
+                bestMastery = m;
+            }
+        }
+        return java.util.Optional.ofNullable(best);
     }
 
     private static void setAura(ServerPlayer player, AuraState state) {

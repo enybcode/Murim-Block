@@ -20,7 +20,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  */
 public final class RealmBonuses {
     static final ResourceLocation HEALTH = id("realm_health"), DAMAGE = id("realm_damage"), SPEED = id("realm_speed"), FIST = id("realm_fist"),
-            ARMOR = id("realm_armor"), TOUGHNESS = id("realm_toughness");
+            ARMOR = id("realm_armor"), TOUGHNESS = id("realm_toughness"), JUMP = id("realm_jump"), SAFE_FALL = id("realm_safe_fall");
 
     private RealmBonuses() {
     }
@@ -38,6 +38,10 @@ public final class RealmBonuses {
         set(player, Attributes.MOVEMENT_SPEED, SPEED, b.speed(), AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         set(player, Attributes.ARMOR, ARMOR, b.armor(), AttributeModifier.Operation.ADD_VALUE);
         set(player, Attributes.ARMOR_TOUGHNESS, TOUGHNESS, b.toughness(), AttributeModifier.Operation.ADD_VALUE);
+        // Qinggong: a higher jump, a longer fall unhurt.
+        CultivationRealm realm = CultivationService.getRealm(player);
+        set(player, Attributes.JUMP_STRENGTH, JUMP, Qinggong.jump(realm), AttributeModifier.Operation.ADD_VALUE);
+        set(player, Attributes.SAFE_FALL_DISTANCE, SAFE_FALL, Qinggong.safeFall(realm), AttributeModifier.Operation.ADD_VALUE);
         if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
         else if (healthBefore > 0 && player.getHealth() < healthBefore) player.setHealth(healthBefore);
         updateFist(player);

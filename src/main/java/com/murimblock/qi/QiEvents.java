@@ -52,8 +52,10 @@ public final class QiEvents {
     /** How fast the reserve comes back (share of Qi Max a minute): fast in meditation, slow in combat, none in a deviation. */
     public static double regenerationRate(ServerPlayer player) {
         if (player.hasEffect(CultivationRegistries.QI_DEVIATION)) return 0;
-        if (MeditationService.isMeditating(player)) return CultivationRules.REGEN_MEDITATION;
-        return CombatService.isInCombatMode(player) ? CultivationRules.REGEN_COMBAT : CultivationRules.REGEN_IDLE;
+        // Out of combat, Azure Sky Breathing brings more back.
+        double calm = 1 + com.murimblock.cultivation.MethodService.regenBonus(player);
+        if (MeditationService.isMeditating(player)) return CultivationRules.REGEN_MEDITATION * calm;
+        return CombatService.isInCombatMode(player) ? CultivationRules.REGEN_COMBAT : CultivationRules.REGEN_IDLE * calm;
     }
 
     public static void onLivingDeath(LivingDeathEvent event) {

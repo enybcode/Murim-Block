@@ -57,13 +57,26 @@ public final class CultivationRules {
     }
 
     /**
+     * The pace of the realms (Enzo, 17/10/2026: a quicker start, then a climb that slows): how much faster than the
+     * first balance every gain of Qi Max through one's own effort is in each realm (meditation and its motes, techniques,
+     * kills; not pills, missions or bosses). A typical player who draws in the motes reaches Qi Guiding in half an hour,
+     * Qi Condensation in two hours, Qi Liquidation in five, Qi Crystallization in nine, Foundation Establishment in
+     * fifteen (CultivationRulesTest.simulate).
+     */
+    static final double[] GROWTH = {6, 2.2, 1.4, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5};
+
+    public static double growth(CultivationRealm realm) {
+        return GROWTH[Math.min(realm.ordinal(), GROWTH.length - 1)];
+    }
+
+    /**
      * Qi Max condensed over `ticks` of meditation with a full reserve, `condensedToday` ticks of condensation already
      * done this in-game day.
      */
     public static double condensed(double qiMax, CultivationRealm realm, Place place, int condensedToday, int ticks) {
         int full = Math.max(0, Math.min(ticks, DAILY_FULL_TICKS - condensedToday));
         double weighted = full + (ticks - full) * TIRED_FACTOR;
-        return qiMax * CONDENSATION * place.condensation * realmEfficiency(realm) * weighted / QiConstants.TICKS_PER_MINUTE;
+        return qiMax * CONDENSATION * place.condensation * realmEfficiency(realm) * growth(realm) * weighted / QiConstants.TICKS_PER_MINUTE;
     }
 
     // ---------------------------------------------------------------- Qi Max: combat, elixirs, missions
@@ -78,6 +91,7 @@ public final class CultivationRules {
             case "murimblock:bandit_warlord" -> 40;
             case "murimblock:son_of_the_demon" -> 60;
             case "murimblock:azure_sensei" -> 30;
+            case "murimblock:raven_master" -> 40;
             case "murimblock:crab_king" -> 30;
             case "minecraft:elder_guardian" -> 100;
             case "minecraft:warden" -> 250;
@@ -259,6 +273,42 @@ public final class CultivationRules {
     /** How far Qi Sense reaches (blocks), and what it costs (Qi per second). */
     public static final double SENSE_RANGE = 16, SENSE_QI_PER_SECOND = 1;
 
+    /**
+     * How far Qi Sense reaches with each realm (Enzo, 18/10/2026: "en fonction de notre stade de puissance, on voit plus
+     * ou moins loin"): the auras in sight, and the outlines of the world in Qi vision (blocks; from Qi Condensation, where
+     * the sense opens).
+     */
+    static final double[] SENSE_REACH = {16, 16, 16, 24, 32, 48, 64, 96, 128};
+
+    public static double senseRange(CultivationRealm realm) {
+        return SENSE_REACH[realm.ordinal()];
+    }
+
+    /** What Qi Sense costs each second: more as it reaches further (2 Qi up to Qi Condensation, 16 at Void Enlightenment). */
+    public static double senseQiPerSecond(CultivationRealm realm) {
+        return senseRange(realm) / 8;
+    }
+
+    /**
+     * The eyes tire (Qi vision, 18/10/2026): held open past {@link #SENSE_TIRES_AFTER} ticks, the sight blurs; at
+     * {@link #SENSE_HOLD_MAX} it closes by itself, and cannot open again for {@link #SENSE_REST}.
+     */
+    public static final int SENSE_TIRES_AFTER = 30 * 20, SENSE_HOLD_MAX = 40 * 20, SENSE_REST = 10 * 20;
+
+    /** From Core Formation, the auras near enough are read through walls (Qi vision, 18/10/2026): this realm, this far. */
+    public static final CultivationRealm THROUGH_WALLS_REALM = CultivationRealm.CORE_FORMATION;
+    public static final double THROUGH_WALLS_REACH = 24;
+
+    /** Whether this reader reads an aura this far off unseen, behind a wall. */
+    public static boolean readsThroughWalls(CultivationRealm realm, double distanceSqr) {
+        return realm.ordinal() >= THROUGH_WALLS_REALM.ordinal() && distanceSqr <= THROUGH_WALLS_REACH * THROUGH_WALLS_REACH;
+    }
+
+    /** How far a powerful aura (as strong as one's own or stronger) is felt, through anything: three times the sense, 160 at most. */
+    public static double farSenseRange(CultivationRealm realm) {
+        return Math.min(160, senseRange(realm) * 3);
+    }
+
     /** What a cultivator reads of another's aura. */
     public enum Reading {
         /** The seal and the exact stage. */
@@ -281,6 +331,7 @@ public final class CultivationRules {
             case "murimblock:bandit_warlord" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
             case "murimblock:son_of_the_demon" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
             case "murimblock:crab_king" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.LATE);
+            case "murimblock:raven_master" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
             case "minecraft:elder_guardian" -> new CultivationData(CultivationRealm.QI_LIQUIDATION, CultivationStage.MIDDLE);
             case "minecraft:warden" -> new CultivationData(CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
             case "minecraft:wither" -> new CultivationData(CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);

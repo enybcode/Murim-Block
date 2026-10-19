@@ -9,6 +9,8 @@
     "murimblock:raw_white_jade",
     "murimblock:azure_roof_tiles",
     "murimblock:azure_roof_tile_stairs",
-    "murimblock:azure_roof_tile_slab"
+    "murimblock:azure_roof_tile_slab",
+    "murimblock:alchemy_furnace",
+    "murimblock:raven_perch"
   ]
 }

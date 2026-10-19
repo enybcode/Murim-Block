@@ -164,7 +164,8 @@ public final class MartialService {
         if (KnockdownService.isHindered(player) || KnockdownService.isCarried(player) || MeditationService.isMeditating(player)) return CastResult.HINDERED;
         boolean counter = riposte != null || LongFist.countersParry(player, technique);
         if (EpicFightBridge.isBusy(player) && !(counter && guardRecoil(player)) && !AzureCloudSword.aiming(player) && !SanguineArt.charging(player)
-                && !(technique == MartialArts.SEVERING_FLASH && ThunderSaberMoves.charging(player))) return CastResult.HINDERED;
+                && !(technique == MartialArts.SEVERING_FLASH && ThunderSaberMoves.charging(player))
+                && !(technique == MartialArts.TYRANTS_THRUST && OverlordSpear.charging(player))) return CastResult.HINDERED;
         ResourceLocation id = technique.id();
         boolean secondStep = technique == MartialArts.CLOUD_STEP_SLASH && cooldownLeft(player, id) > 0 && MartialCombat.secondStepOpen(player)
                 || technique == MartialArts.SHOOTING_STAR && cooldownLeft(player, id) > 0 && SevenStarsSword.recastOpen(player)
@@ -192,6 +193,8 @@ public final class MartialService {
         if (technique == MartialArts.BLOOD_CRYSTAL) return SanguineArt.aim(player, slot);
         // Severing Flash charges while held; its Qi is paid when it is let go (castSlot).
         if (technique == MartialArts.SEVERING_FLASH) return ThunderSaberMoves.aimFlash(player);
+        // Tyrant's Thrust charges while held; its Qi is paid when it is let go (castSlot).
+        if (technique == MartialArts.TYRANTS_THRUST) return OverlordSpear.aimThrust(player);
         if (technique == MartialArts.HEAVENS_DRUM) {
             if (!ThunderSaberMoves.startDrum(player)) return false;
             pay(player, technique.qiCost());
@@ -212,7 +215,8 @@ public final class MartialService {
     /** Spends a technique's Qi; the meridians widen with use: a share of the Qi spent goes to Qi Max. */
     static void pay(ServerPlayer player, double cost) {
         QiService.removeQi(player, cost);
-        CultivationService.gainQiMax(player, cost * CultivationRules.TECHNIQUE_SHARE, CultivationService.Source.TECHNIQUE);
+        CultivationService.gainQiMax(player, cost * CultivationRules.TECHNIQUE_SHARE * CultivationRules.growth(CultivationService.getRealm(player)),
+                CultivationService.Source.TECHNIQUE);
     }
 
     /** A technique's cooldown from now (the Spinning Rampart's, at its end), on the server and on the player's bar. */

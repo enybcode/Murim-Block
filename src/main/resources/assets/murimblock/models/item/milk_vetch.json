@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "murimblock:block/milk_vetch"
+    "layer0": "murimblock:item/herb/astragalus_root"
   }
 }

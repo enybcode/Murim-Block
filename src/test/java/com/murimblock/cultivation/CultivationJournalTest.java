@@ -46,7 +46,8 @@ class CultivationJournalTest {
 
     @Test
     void theAuraStateGivesNoRealmAway() {
-        AuraState a = new AuraState(true, 0.5F, Optional.of(ResourceLocation.fromNamespaceAndPath("murimblock", "long_fist")), 2);
+        var fist = Optional.of(ResourceLocation.fromNamespaceAndPath("murimblock", "long_fist"));
+        AuraState a = new AuraState(true, 0.5F, fist, 2, fist, 640F, 8F);
         assertEquals(CultivationRules.Place.HIGH, a.placeKind());
         var json = AuraState.CODEC.encodeStart(JsonOps.INSTANCE, a).getOrThrow().toString();
         assertFalse(json.contains("realm"), "the aura everyone sees must not carry a realm: " + json);

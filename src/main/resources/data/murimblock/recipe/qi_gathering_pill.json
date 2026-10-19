@@ -1,1 +1,1 @@
-{"type":"minecraft:crafting_shapeless","category":"misc","ingredients":[{"item":"murimblock:lotus_blossom"},{"item":"murimblock:chrysanthemum"},{"item":"murimblock:sea_buckthorn"}],"result":{"id":"murimblock:qi_gathering_pill","count":2}}
+{"type":"minecraft:crafting_shapeless","category":"misc","ingredients":[{"item":"murimblock:lotus_seed_pod"},{"item":"murimblock:chrysanthemum_flower"},{"item":"murimblock:sea_buckthorn_berries"}],"result":{"id":"murimblock:qi_gathering_pill","count":2}}

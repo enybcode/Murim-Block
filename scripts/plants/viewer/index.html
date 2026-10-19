@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Herb Viewer</title>
+<style>
+  :root { --bg: #9fc3e0; --ink: #f0e6cc; --panel: #2b2721; }
+  html, body { margin: 0; height: 100%; background: var(--bg); font: 14px sans-serif; color: var(--ink); }
+  #grid { display: grid; gap: 4px; padding: 4px; }
+  .cell { position: relative; background: var(--bg); }
+  .cell canvas { display: block; width: 100%; height: 100%; }
+  .cell span { position: absolute; left: 0; right: 0; bottom: 4px; text-align: center; font-weight: bold;
+    text-shadow: 0 1px 2px #000; color: #fff; }
+</style>
+</head>
+<body>
+<div id="grid"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// A viewer of the herbs' GeckoLib models (scripts/plants): each cell a herb (?plants=name:colour:stage:label,...),
+// its geometry's cubes (rotations about one axis, as plant-kit writes them), its texture nearest-filtered, its looping
+// animations played (sampled rotation / position / scale keys, interpolated). ?t=<seconds> freezes every cell at a
+// moment (for filming frame by frame); ?cols=<n>, ?size=<px>.
+const q = new URLSearchParams(location.search);
+const ASSETS = q.get('assets') || '../../../src/main/resources/assets/murimblock/';
+const cols = +(q.get('cols') || 2), size = +(q.get('size') || 360);
+const frozen = q.has('t') ? +q.get('t') : null;
+const list = (q.get('plants') || 'lingzhi:default:0:Lingzhi').split(',').map(s => { const [name, colour, stage, label, anim] = s.split(':'); return { name, colour, stage: +stage, label: label || name, anim }; });
+const grid = document.getElementById('grid');
+grid.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
+
+const DEG = Math.PI / 180;
+function keysAt(keys, t) {
+  const times = Object.keys(keys).map(Number).sort((a, b) => a - b);
+  if (t <= times[0]) return keys[times[0].toFixed(2)];
+  for (let i = 0; i < times.length - 1; i++) if (t <= times[i + 1]) {
+    const a = keys[times[i].toFixed(2)], b = keys[times[i + 1].toFixed(2)], f = (t - times[i]) / (times[i + 1] - times[i]);
+    return a.map((v, k) => v + (b[k] - v) * f);
+  }
+  return keys[times[times.length - 1].toFixed(2)];
+}
+
+async function cell(p) {
+  const div = document.createElement('div'); div.className = 'cell'; div.style.height = size + 'px';
+  const label = document.createElement('span'); label.textContent = p.label; div.appendChild(label);
+  grid.appendChild(div);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
+  renderer.setSize(size, size); renderer.setClearColor(0x9fc3e0, q.has('clear') ? 0 : 1);
+  div.insertBefore(renderer.domElement, label);
+  const scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(-0.4, 1, -0.7); scene.add(sun);
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 500);
+  const zoom = +(q.get('zoom') || 1), ty = +(q.get('ty') || 6.5);
+  camera.position.set(-17 * zoom, ty + 8.5 * zoom, -22 * zoom); camera.lookAt(0, ty, 0);
+  // The ground: a block's top.
+  const ground = new THREE.Mesh(new THREE.BoxGeometry(16, 1, 16), new THREE.MeshLambertMaterial({ color: 0x5b8a3a }));
+  ground.position.y = -0.5; if (!q.has('noground')) scene.add(ground);
+
+  const geo = await (await fetch(`${ASSETS}geo/block/plant/${p.name}_stage${p.stage}.geo.json`)).json();
+  const anims = (await (await fetch(`${ASSETS}animations/block/plant/${p.name}.animation.json`)).json()).animations;
+  const tex = new THREE.TextureLoader().load(`${ASSETS}textures/block/plant/${p.name}_${p.colour}.png`);
+  tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+  const glowTex = new THREE.TextureLoader().load(`${ASSETS}textures/block/plant/${p.name}_${p.colour}_glowmask.png`, undefined, undefined, () => {});
+  glowTex.magFilter = THREE.NearestFilter;
+  const mat = new THREE.MeshLambertMaterial({ map: tex, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide,
+    emissive: 0xffffff, emissiveMap: glowTex, emissiveIntensity: 0.0 });
+  glowTex.onUpdate = () => { mat.emissiveIntensity = 0.9; };
+  const g = geo['minecraft:geometry'][0], TW = g.description.texture_width, TH = g.description.texture_height;
+  const bones = {};
+  for (const b of g.bones) {
+    const pivot = new THREE.Group(); pivot.position.set(...b.pivot); pivot.userData.pivot = b.pivot;
+    const inner = new THREE.Group(); inner.position.set(-b.pivot[0], -b.pivot[1], -b.pivot[2]); pivot.add(inner);
+    bones[b.name] = { pivot, inner, def: b };
+  }
+  for (const b of g.bones) {
+    const parent = b.parent && bones[b.parent] ? bones[b.parent].inner : scene;
+    parent.add(bones[b.name].pivot);
+    for (const c of b.cubes || []) {
+      const [w, h, d] = c.size.map(v => Math.max(v, 0.001));
+      const box = new THREE.BoxGeometry(w, h, d);
+      // UVs per face: three's box faces are +x, -x, +y, -y, +z, -z = east, west, up, down, south, north.
+      const order = ['east', 'west', 'up', 'down', 'south', 'north'], uv = box.attributes.uv;
+      order.forEach((f, i) => {
+        const u = c.uv[f]; if (!u) return;
+        const u0 = u.uv[0] / TW, v0 = 1 - u.uv[1] / TH, u1 = (u.uv[0] + u.uv_size[0]) / TW, v1 = 1 - (u.uv[1] + u.uv_size[1]) / TH;
+        uv.setXY(i * 4 + 0, u0, v0); uv.setXY(i * 4 + 1, u1, v0); uv.setXY(i * 4 + 2, u0, v1); uv.setXY(i * 4 + 3, u1, v1);
+      });
+      const mesh = new THREE.Mesh(box, mat);
+      const centre = c.origin.map((o, i) => o + c.size[i] / 2);
+      if (c.rotation) {
+        const holder = new THREE.Group(); holder.position.set(...c.pivot);
+        holder.rotation.set(-c.rotation[0] * DEG, -c.rotation[1] * DEG, c.rotation[2] * DEG);
+        mesh.position.set(centre[0] - c.pivot[0], centre[1] - c.pivot[1], centre[2] - c.pivot[2]);
+        holder.add(mesh); bones[b.name].inner.add(holder);
+      } else { mesh.position.set(...centre); bones[b.name].inner.add(mesh); }
+    }
+  }
+  const start = performance.now();
+  function pose(at) {
+    for (const [an, a] of Object.entries(anims)) {
+      if (p.anim && an !== p.anim) continue;
+      const t = at % a.animation_length;
+      for (const [name, ch] of Object.entries(a.bones)) {
+        const b = bones[name]; if (!b) continue;
+        if (ch.rotation) { const r = keysAt(ch.rotation, t); b.pivot.rotation.set(-r[0] * DEG, -r[1] * DEG, r[2] * DEG); }
+        if (ch.position) { const v = keysAt(ch.position, t); b.pivot.position.set(b.def.pivot[0] + v[0], b.def.pivot[1] + v[1], b.def.pivot[2] + v[2]); }
+        if (ch.scale) { const s = keysAt(ch.scale, t); b.pivot.scale.set(...s); }
+      }
+    }
+    renderer.render(scene, camera);
+  }
+  function frame() {
+    pose(frozen != null ? frozen : (performance.now() - start) / 1000);
+    if (frozen == null && !window.__filming) requestAnimationFrame(frame);
+  }
+  CELLS.push({ pose, canvas: renderer.domElement, label: p.label });
+  if (frozen == null) frame(); else setTimeout(frame, 400);
+}
+const CELLS = [];
+/** Films every cell together: `frames` moments over `length` seconds, a picture of the grid each, sent to /save. */
+async function film(frames, length) {
+  window.__filming = true;
+  await new Promise(r => setTimeout(r, 600));
+  const rows = Math.ceil(CELLS.length / cols), out = document.createElement('canvas');
+  out.width = cols * size; out.height = rows * size;
+  const g = out.getContext('2d');
+  for (let f = 0; f < frames; f++) {
+    const t = length * f / frames;
+    CELLS.forEach((c, i) => {
+      c.pose(t);
+      g.drawImage(c.canvas, (i % cols) * size, Math.floor(i / cols) * size);
+      g.font = 'bold 18px sans-serif'; g.fillStyle = '#fff'; g.textAlign = 'center'; g.shadowColor = '#000'; g.shadowBlur = 3;
+      g.fillText(c.label, (i % cols) * size + size / 2, Math.floor(i / cols) * size + size - 10); g.shadowBlur = 0;
+    });
+    await fetch('/save?name=' + (q.get('film') || 'film') + '-' + String(f).padStart(3, '0') + '.png', { method: 'POST', body: out.toDataURL('image/png') });
+  }
+  document.title = 'filmed';
+}
+(async () => {
+  for (const p of list) await cell(p);
+  document.title = 'ready';
+  if (q.has('frames')) await film(+q.get('frames'), +(q.get('length') || 4));
+})();
+</script>
+</body>
+</html>

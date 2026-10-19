@@ -31,7 +31,11 @@ import java.util.List;
  *   <li><b>warrior monks</b> on the mountain roads (biome tag warrior_monks: the cloud-sea peaks, the jade karst, the
  *   Tianshan and the Kunlun), alone or two together, about one every five minutes near a player with fewer than two
  *   monks about him.</li>
+ *   <li><b>travellers</b> on the roads (Enzo, 19/10/2026: "que le monde ne soit pas trop vide"): a peddler with his
+ *   pack mule, or a pilgrim, or two merchants with a donkey, named villagers trading in Murim's money (MurimTrades),
+ *   about one every ten minutes near a player with none about him, in the Alliance's lands.</li>
  * </ul>
+ * Patrols come about one every four minutes near a player with none within 128 blocks, monks every two and a half.
  * They come 24 to 48 blocks from the player, on the surface, and are gone again once nobody is near (not persistent).
  * Neutral like every soldier. They need doMobSpawning, as any mob.
  */
@@ -40,7 +44,9 @@ public final class AllianceWanderers {
     public static final TagKey<Biome> PATROL_BIOMES = TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "alliance_patrols"));
     public static final TagKey<Biome> MONK_BIOMES = TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "warrior_monks"));
     /** How often each player's surroundings are rolled for (ticks), and the odds then. */
-    static final int INTERVAL = 600, PATROL_ODDS = 20, MONK_ODDS = 10;
+    static final int INTERVAL = 600, PATROL_ODDS = 8, MONK_ODDS = 6, TRAVELLER_ODDS = 6;
+    /** How far around the player travellers already count (blocks). */
+    static final int TRAVELLER_SPACE = 96;
     /** How far from the player they come (blocks), and how far around him one already counts. */
     static final int NEAR = 24, FAR = 48, PATROL_SPACE = 128, MONK_SPACE = 96;
 
@@ -56,6 +62,11 @@ public final class AllianceWanderers {
             if (random.nextInt(PATROL_ODDS) == 0 && around(level, player, PATROL_SPACE, AllianceSoldierEntity::onPatrol) == 0) {
                 BlockPos at = spot(level, player, random);
                 if (at != null && level.getBiome(at).is(PATROL_BIOMES)) spawnPatrol(level, at);
+            }
+            if (random.nextInt(TRAVELLER_ODDS) == 0 && level.getEntitiesOfClass(net.minecraft.world.entity.npc.Villager.class,
+                    new AABB(player.blockPosition()).inflate(TRAVELLER_SPACE), v -> v.getTags().contains(TRAVELLER)).isEmpty()) {
+                BlockPos at = spot(level, player, random);
+                if (at != null && level.getBiome(at).is(PATROL_BIOMES)) spawnTravellers(level, at, random);
             }
             if (random.nextInt(MONK_ODDS) == 0 && around(level, player, MONK_SPACE, s -> s.kind() == AllianceSoldierEntity.Kind.WARRIOR_MONK && !s.isPersistenceRequired()) < 2) {
                 BlockPos at = spot(level, player, random);
@@ -112,6 +123,51 @@ public final class AllianceWanderers {
             if (monk != null) monks.add(monk);
         }
         return monks;
+    }
+
+    /** A traveller's tag (and a townsfolk's: they trade in Murim's money). */
+    public static final String TRAVELLER = "murimblock.traveller";
+    /** The travellers: their name's key and trade. */
+    private static final String[][] TRAVELLERS = {{"peddler", "toolsmith"}, {"pilgrim", "cleric"}, {"tea_merchant", "farmer"},
+            {"cloth_merchant", "shepherd"}, {"herbalist", "cleric"}, {"scribe", "librarian"}};
+
+    /** How far the nearest player may be before travellers (and their beast) go on their way, gone (blocks). */
+    static final int TRAVELLER_GONE = 128;
+
+    /** Travellers never stay: with nobody within 128 blocks, they and their beast are gone (villagers would never leave by themselves). */
+    @SubscribeEvent
+    public static void onEntityTick(net.neoforged.neoforge.event.tick.EntityTickEvent.Post event) {
+        var e = event.getEntity();
+        if (e.level().isClientSide || e.tickCount % 200 != 0 || !e.getTags().contains(TRAVELLER)) return;
+        if (e.level().getNearestPlayer(e, TRAVELLER_GONE) == null) e.discard();
+    }
+
+    /** One traveller with a pack mule, or two with a donkey: named villagers wandering on, never kept. */
+    public static List<net.minecraft.world.entity.npc.Villager> spawnTravellers(ServerLevel level, BlockPos at, RandomSource random) {
+        List<net.minecraft.world.entity.npc.Villager> out = new ArrayList<>();
+        int count = random.nextInt(3) == 0 ? 2 : 1;
+        for (int i = 0; i < count; i++) {
+            String[] who = TRAVELLERS[random.nextInt(TRAVELLERS.length)];
+            var villager = EntityType.VILLAGER.create(level);
+            if (villager == null) continue;
+            villager.moveTo(at.getX() + 0.5 + i, at.getY(), at.getZ() + 0.5, random.nextFloat() * 360, 0);
+            var profession = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION.get(ResourceLocation.withDefaultNamespace(who[1]));
+            villager.setVillagerData(villager.getVillagerData().setProfession(profession).setLevel(2));
+            villager.setCustomName(net.minecraft.network.chat.Component.translatable("villager.murimblock.traveller." + who[0]));
+            villager.addTag(TRAVELLER);
+            com.murimblock.world.structure.site.MurimTrades.townsfolk(villager);
+            level.addFreshEntity(villager);
+            out.add(villager);
+        }
+        var beast = (random.nextBoolean() ? EntityType.MULE : EntityType.DONKEY).create(level);
+        if (beast != null && !out.isEmpty()) {
+            beast.moveTo(at.getX() - 0.5, at.getY(), at.getZ() + 0.5, random.nextFloat() * 360, 0);
+            beast.setChest(true);
+            beast.addTag(TRAVELLER);
+            level.addFreshEntity(beast);
+            beast.setLeashedTo(out.get(0), true);
+        }
+        return out;
     }
 
     private static AllianceSoldierEntity spawn(ServerLevel level, EntityType<AllianceSoldierEntity> type, BlockPos at) {
