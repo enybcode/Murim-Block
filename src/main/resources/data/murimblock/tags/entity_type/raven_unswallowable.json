@@ -1,0 +1,52 @@
+{
+  "values": [
+    {
+      "id": "minecraft:wither",
+      "required": false
+    },
+    {
+      "id": "minecraft:ender_dragon",
+      "required": false
+    },
+    {
+      "id": "minecraft:warden",
+      "required": false
+    },
+    {
+      "id": "minecraft:elder_guardian",
+      "required": false
+    },
+    {
+      "id": "murimblock:bandit_chief",
+      "required": false
+    },
+    {
+      "id": "murimblock:bandit_warlord",
+      "required": false
+    },
+    {
+      "id": "murimblock:son_of_the_demon",
+      "required": false
+    },
+    {
+      "id": "murimblock:crab_king",
+      "required": false
+    },
+    {
+      "id": "murimblock:azure_sensei",
+      "required": false
+    },
+    {
+      "id": "murimblock:peak_captain",
+      "required": false
+    },
+    {
+      "id": "murimblock:scarlet_guardian",
+      "required": false
+    },
+    {
+      "id": "murimblock:heart_demon",
+      "required": false
+    }
+  ]
+}
