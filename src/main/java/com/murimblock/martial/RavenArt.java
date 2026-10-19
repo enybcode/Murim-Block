@@ -2,11 +2,13 @@ package com.murimblock.martial;
 
 import com.murimblock.Murimblock;
 import com.murimblock.cultivation.CultivationService;
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.integration.epicfight.MurimGuardSkill;
 import com.murimblock.integration.epicfight.MurimWeaponCategories;
 import com.murimblock.integration.epicfight.SectWeaponAnimations;
 import com.murimblock.item.MurimItems;
 import com.murimblock.world.raven.RavenHalls;
+import net.minecraft.ChatFormatting;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,40 +98,100 @@ public final class RavenArt {
 
     // ---------------------------------------------------------------- techniques
 
+    /** The finish's door opens under the fallen (tick), and the fan shuts on them: the blow (tick). */
+    public static final int FINISH_OPEN_TICK = ticks(MurimAnimations.RAVEN_MESSAGE_OPEN), FINISH_HIT_TICK = ticks(MurimAnimations.RAVEN_MESSAGE_SHUT);
+
+    static int ticks(float seconds) {
+        return Math.round(seconds * 20);
+    }
+
+    private static void play(ServerPlayer player, PlayerPatch<?> patch, AnimationAccessor<? extends StaticAnimation> animation, MartialArts.Technique technique) {
+        MartialCombat.expect(player, animation, technique.id(), false);
+        patch.playAnimationSynchronized(animation, 0.0F);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 0.5F, 1.6F);
+    }
+
+    private static MartialArts.Art art() {
+        return MartialArts.art(MartialArts.RAVEN_ART);
+    }
+
+    /**
+     * Starts one of the art's techniques: what it needs is checked now (a target, a place, the halls), and it costs only
+     * when it can be done; its doors open on the fan's gesture.
+     */
     static boolean perform(ServerPlayer player, PlayerPatch<?> patch, MartialArts.Technique technique) {
         if (RavenHalls.dueling(player) && technique != MartialArts.SWALLOWING_GATE) return false;
+        if (RavenHalls.halls(player.server) == null && technique != MartialArts.HALLS_STEP && technique != MartialArts.EXCHANGE
+                && technique != MartialArts.SWALLOWING_GATE) return false;
         if (technique == MartialArts.RAVEN_GATE) {
+            if (RavenHalls.isHalls(player.level())) return false;
             LivingEntity target = AzureCloudSword.targetAhead(player, GATE_REACH);
             if (target == null || !canSwallow(player, target)) return false;
-            return RavenHalls.swallow(target, GATE_TICKS, GATE_DROP);
+            play(player, patch, MurimAnimations.RAVEN_GATE, technique);
+            int open = ticks(MurimAnimations.RAVEN_GATE_OPEN);
+            MartialCombat.later(player, open, () -> {
+                if (target.isAlive()) RavenFx.pit(player.serverLevel(), target.position(), pitRadius(target), 16);
+            });
+            // It falls in a moment after the door opens under it.
+            MartialCombat.later(player, open + 4, () -> {
+                if (target.isAlive() && canSwallow(player, target) && RavenHalls.swallow(target, GATE_TICKS, GATE_DROP))
+                    MartialProgress.addMastery(player, art(), MartialArts.RAVEN_GATE.id(), 1);
+            });
+            return true;
         }
-        if (technique == MartialArts.HALLS_STEP) return step(player);
-        if (technique == MartialArts.EXCHANGE) return exchange(player);
+        if (technique == MartialArts.HALLS_STEP) {
+            if (RavenHalls.isHalls(player.level())) return false;
+            Vec3 to = stepTarget(player);
+            if (to == null) return false;
+            play(player, patch, MurimAnimations.RAVEN_HALLS_STEP, technique);
+            MartialCombat.later(player, ticks(MurimAnimations.RAVEN_STEP_THROUGH), () -> step(player, to));
+            return true;
+        }
+        if (technique == MartialArts.EXCHANGE) {
+            LivingEntity target = AzureCloudSword.targetAhead(player, EXCHANGE_REACH);
+            if (target == null || !canSwallow(player, target)) return false;
+            LivingEntity other = player.isShiftKeyDown() ? nearestAlly(player) : player;
+            if (other == null) return false;
+            play(player, patch, MurimAnimations.RAVEN_EXCHANGE, technique);
+            MartialCombat.later(player, ticks(MurimAnimations.RAVEN_EXCHANGE_SWAP), () -> exchange(player, target, other));
+            return true;
+        }
         if (technique == MartialArts.SWALLOWING_GATE) {
-            GATES.put(player.getUUID(), new Gate(player.level().getGameTime() + SWALLOW_TICKS, new ArrayList<>()));
-            RavenHalls.gateFx(player.serverLevel(), player.position().add(look(player).scale(1.5)));
+            play(player, patch, MurimAnimations.RAVEN_SWALLOWING_GATE, technique);
+            MartialCombat.later(player, ticks(MurimAnimations.RAVEN_SWALLOW_OPEN), () -> openSwallowingGate(player));
             return true;
         }
         if (technique == MartialArts.CLOSED_ROOM) {
+            int clap = ticks(MurimAnimations.RAVEN_ROOM_CLAP);
             if (player.isShiftKeyDown()) {
-                if (RavenHalls.isHalls(player.level())) {
-                    RavenHalls.leave(player);
-                    return true;
-                }
-                return RavenHalls.home(player);
+                boolean inHalls = RavenHalls.isHalls(player.level());
+                play(player, patch, MurimAnimations.RAVEN_CLOSED_ROOM, technique);
+                MartialCombat.later(player, clap, () -> {
+                    if (inHalls) RavenHalls.leave(player);
+                    else RavenHalls.home(player);
+                });
+                return true;
             }
             if (RavenHalls.isHalls(player.level())) return false;
             LivingEntity target = AzureCloudSword.targetAhead(player, ROOM_REACH);
             if (target == null || !canSwallow(player, target)) return false;
-            return RavenHalls.duel(player, target, DUEL_TICKS);
+            play(player, patch, MurimAnimations.RAVEN_CLOSED_ROOM, technique);
+            MartialCombat.later(player, clap, () -> {
+                if (target.isAlive() && !RavenHalls.isHalls(player.level()) && RavenHalls.duel(player, target, DUEL_TICKS))
+                    MartialProgress.addMastery(player, art(), MartialArts.CLOSED_ROOM.id(), 1);
+            });
+            return true;
         }
         if (technique == MartialArts.HALLS_UNFOLD) {
-            if (RavenHalls.isHalls(player.level())) return false;
-            List<LivingEntity> foes = player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(UNFOLD_RADIUS),
-                    e -> e != player && MartialCombat.isEnemy(e, player) && e.distanceTo(player) <= UNFOLD_RADIUS && canSwallow(player, e));
-            if (foes.isEmpty()) return false;
-            for (LivingEntity e : foes) RavenHalls.swallow(e, UNFOLD_TICKS, 0);
-            player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5F, 1.6F);
+            if (RavenHalls.isHalls(player.level()) || unfoldable(player).isEmpty()) return false;
+            play(player, patch, MurimAnimations.RAVEN_HALLS_UNFOLD, technique);
+            ServerLevel level = player.serverLevel();
+            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, ticks(MurimAnimations.RAVEN_UNFOLD_CALL), 2, false, false));
+            MartialCombat.later(player, 6, () -> RavenFx.gate(level, player.position().add(0, 0.05, 0), RavenGateEntity.PIT, 7.0F, 0,
+                    ticks(MurimAnimations.RAVEN_UNFOLD_CALL) + 8));
+            MartialCombat.later(player, ticks(MurimAnimations.RAVEN_UNFOLD_CALL), () -> unfold(player));
+            level.playSound(null, player.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5F, 1.6F);
+            player.displayClientMessage(Component.translatable("technique.murimblock.halls_unfold.called").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
             return true;
         }
         return false;
@@ -139,100 +201,160 @@ public final class RavenArt {
         return Vec3.directionFromRotation(0, player.getYRot());
     }
 
-    /** Halls Step: out where one looks, up to 16 blocks, on the near side of a wall. */
-    private static boolean step(ServerPlayer player) {
-        if (RavenHalls.isHalls(player.level())) return false;
+    /** A body's pit: a little wider than it. */
+    static float pitRadius(LivingEntity body) {
+        return Math.max(0.9F, body.getBbWidth() * 0.9F + 0.5F);
+    }
+
+    /** Where Halls Step comes out: where one looks, up to 16 blocks, on the near side of a wall, on the ground below; null if there is no room. */
+    @Nullable private static Vec3 stepTarget(ServerPlayer player) {
         Vec3 eye = player.getEyePosition(), dir = player.getLookAngle();
         BlockHitResult hit = player.level().clip(new ClipContext(eye, eye.add(dir.scale(STEP_REACH)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         Vec3 at = hit.getType() == HitResult.Type.MISS ? hit.getLocation() : hit.getLocation().subtract(dir.scale(0.7));
         // Feet on the ground below (at most 6 blocks down), or where it is if nothing is below.
         BlockHitResult ground = player.level().clip(new ClipContext(at, at.add(0, -6, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         Vec3 feet = ground.getType() == HitResult.Type.MISS ? at.subtract(0, player.getEyeHeight(), 0) : ground.getLocation();
-        if (!player.level().noCollision(player, player.getBoundingBox().move(feet.subtract(player.position())))) return false;
-        RavenHalls.gateFx(player.serverLevel(), player.position());
-        player.teleportTo(feet.x, feet.y, feet.z);
-        player.fallDistance = 0;
-        RavenHalls.gateFx(player.serverLevel(), feet);
-        return true;
+        if (feet.distanceTo(player.position()) < 2) return null;
+        return player.level().noCollision(player, player.getBoundingBox().move(feet.subtract(player.position()))) ? feet : null;
     }
 
-    /** Exchange: two doors at once. */
-    private static boolean exchange(ServerPlayer player) {
-        LivingEntity target = AzureCloudSword.targetAhead(player, EXCHANGE_REACH);
-        if (target == null || !canSwallow(player, target)) return false;
-        LivingEntity other = player;
-        if (player.isShiftKeyDown()) {
-            other = null;
-            double best = EXCHANGE_REACH;
-            for (Player p : player.level().players()) {
-                if (p == player || !p.isAlive() || p.isSpectator() || MartialCombat.isEnemy(p, player)) continue;
-                double d = p.distanceTo(player);
-                if (d <= best) {
-                    best = d;
-                    other = p;
-                }
+    /** Halls Step: a door where one stands, one where one comes out, the same way. */
+    private static void step(ServerPlayer player, Vec3 feet) {
+        if (!player.isAlive() || !player.level().noCollision(player, player.getBoundingBox().move(feet.subtract(player.position())))) return;
+        ServerLevel level = player.serverLevel();
+        RavenFx.door(level, player.position(), player.getYRot(), 14);
+        player.teleportTo(feet.x, feet.y, feet.z);
+        player.resetFallDistance();
+        RavenFx.door(level, feet, player.getYRot() + 180, 14);
+        MartialProgress.addMastery(player, art(), MartialArts.HALLS_STEP.id(), 1);
+    }
+
+    @Nullable private static LivingEntity nearestAlly(ServerPlayer player) {
+        LivingEntity ally = null;
+        double best = EXCHANGE_REACH;
+        for (Player p : player.level().players()) {
+            if (p == player || !p.isAlive() || p.isSpectator() || MartialCombat.isEnemy(p, player)) continue;
+            double d = p.distanceTo(player);
+            if (d <= best) {
+                best = d;
+                ally = p;
             }
-            if (other == null) return false;
         }
+        return ally;
+    }
+
+    /** Exchange: two doors at once, the places changed. */
+    private static void exchange(ServerPlayer player, LivingEntity target, LivingEntity other) {
+        if (!target.isAlive() || !other.isAlive() || target.level() != player.level() || other.level() != player.level()) return;
         Vec3 a = target.position(), b = other.position();
         ServerLevel level = player.serverLevel();
-        RavenHalls.gateFx(level, a);
-        RavenHalls.gateFx(level, b);
+        RavenFx.door(level, a, target.getYRot(), 14);
+        RavenFx.door(level, b, other.getYRot(), 14);
         place(target, b);
         place(other, a);
-        return true;
+        MartialProgress.addMastery(player, art(), MartialArts.EXCHANGE.id(), 1);
     }
 
     private static void place(LivingEntity e, Vec3 at) {
         if (e instanceof ServerPlayer p) p.teleportTo(p.serverLevel(), at.x, at.y, at.z, p.getYRot(), p.getXRot());
         else e.teleportTo(at.x, at.y, at.z);
-        e.fallDistance = 0;
+        e.resetFallDistance();
+    }
+
+    /** The enemies the ultimate would take now. */
+    private static List<LivingEntity> unfoldable(ServerPlayer player) {
+        return player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(UNFOLD_RADIUS),
+                e -> e != player && MartialCombat.isEnemy(e, player) && e.distanceTo(player) <= UNFOLD_RADIUS && canSwallow(player, e));
+    }
+
+    /** The Halls Unfold: a door under every enemy in reach, each to a room of its own. */
+    private static void unfold(ServerPlayer player) {
+        if (!player.isAlive() || RavenHalls.isHalls(player.level())) return;
+        ServerLevel level = player.serverLevel();
+        int taken = 0;
+        for (LivingEntity e : unfoldable(player)) {
+            RavenFx.pit(level, e.position(), pitRadius(e), 14);
+            if (RavenHalls.swallow(e, UNFOLD_TICKS, 0)) taken++;
+        }
+        level.playSound(null, player.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.PLAYERS, 0.8F, 1.4F);
+        RavenFx.feathers(level, player.position().add(0, 1, 0), 60, 6);
+        if (taken > 0) MartialProgress.addMastery(player, art(), MartialArts.HALLS_UNFOLD.id(), 1);
     }
 
     // ---------------------------------------------------------------- the Swallowing Gate
 
-    private record Gate(long until, List<UUID> shooters) { }
+    /** A gate standing at `centre`, facing `facing` (flat), open until `until`; what it swallowed, by shooter. */
+    private record Gate(long until, Vec3 centre, Vec3 facing, List<UUID> shooters) { }
 
     private static final Map<UUID, Gate> GATES = new HashMap<>();
+    static final double GATE_REACH_SWALLOW = 2.2;
 
     /** Whether a Swallowing Gate stands before this player now. */
     public static boolean gateOpen(ServerPlayer player) {
         return GATES.containsKey(player.getUUID());
     }
 
+    private static void openSwallowingGate(ServerPlayer player) {
+        if (!player.isAlive()) return;
+        Vec3 facing = look(player), feet = player.position().add(facing.scale(1.4));
+        RavenFx.door(player.serverLevel(), feet, player.getYRot(), SWALLOW_TICKS + 4).shape(RavenGateEntity.DOOR, 1.5F, player.getYRot(), SWALLOW_TICKS + 4);
+        GATES.put(player.getUUID(), new Gate(player.level().getGameTime() + SWALLOW_TICKS, feet.add(0, 1.6, 0), facing, new ArrayList<>()));
+    }
+
     private static void gateTick(ServerPlayer player, Gate gate) {
         ServerLevel level = player.serverLevel();
-        if (level.getGameTime() >= gate.until || !player.isAlive()) {
+        if (level.getGameTime() >= gate.until || !player.isAlive() || player.level() != level) {
             GATES.remove(player.getUUID());
-            sendBack(player, gate.shooters);
+            sendBack(player, gate);
             return;
         }
-        Vec3 look = look(player), front = player.position().add(0, 1, 0).add(look.scale(1.5));
-        for (Projectile p : level.getEntitiesOfClass(Projectile.class, new AABB(front, front).inflate(2.5),
+        for (Projectile p : level.getEntitiesOfClass(Projectile.class, new AABB(gate.centre, gate.centre).inflate(GATE_REACH_SWALLOW + 1),
                 p -> p.getOwner() != player && p.isAlive())) {
-            Vec3 to = p.position().subtract(player.position());
-            if (new Vec3(to.x, 0, to.z).normalize().dot(look) < 0.2) continue;
+            Vec3 to = p.position().subtract(gate.centre);
+            // Only from the front: a projectile on the gate's far side, coming at it.
+            if (to.length() > GATE_REACH_SWALLOW || to.dot(gate.facing) < -0.3) continue;
             Entity owner = p.getOwner();
             gate.shooters.add(owner != null ? owner.getUUID() : null);
-            level.sendParticles(net.minecraft.core.particles.ParticleTypes.SQUID_INK, p.getX(), p.getY(), p.getZ(), 6, 0.1, 0.1, 0.1, 0.02);
+            RavenFx.feathers(level, p.position(), 4, 0.2);
             p.discard();
         }
     }
 
-    /** The swallowed projectiles come back out, at those who shot them (straight ahead if they are gone). */
-    private static void sendBack(ServerPlayer player, List<UUID> shooters) {
-        if (shooters.isEmpty()) return;
+    /** The swallowed projectiles come back out of the gate, at those who shot them (straight ahead if they are gone). */
+    private static void sendBack(ServerPlayer player, Gate gate) {
+        if (gate.shooters.isEmpty()) return;
         ServerLevel level = player.serverLevel();
-        Vec3 from = player.getEyePosition().add(look(player).scale(1.2));
-        RavenHalls.gateFx(level, from.subtract(0, 1, 0));
-        for (UUID id : shooters) {
+        Vec3 from = gate.centre.add(gate.facing.scale(0.6));
+        level.playSound(null, from.x, from.y, from.z, SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.PLAYERS, 0.8F, 1.4F);
+        for (UUID id : gate.shooters) {
             Entity shooter = id == null ? null : level.getEntity(id);
             Arrow arrow = new Arrow(level, player, new ItemStack(net.minecraft.world.item.Items.ARROW), null);
             arrow.setPos(from.x, from.y, from.z);
             arrow.pickup = Arrow.Pickup.DISALLOWED;
-            Vec3 aim = shooter != null && shooter.isAlive() ? shooter.position().add(0, shooter.getBbHeight() * 0.6, 0).subtract(from) : player.getLookAngle();
+            Vec3 aim = shooter != null && shooter.isAlive() ? shooter.position().add(0, shooter.getBbHeight() * 0.6, 0).subtract(from) : gate.facing;
             arrow.shoot(aim.x, aim.y + aim.horizontalDistance() * 0.05, aim.z, 2.6F, 1.0F);
             level.addFreshEntity(arrow);
+        }
+        MartialProgress.addMastery(player, art(), MartialArts.SWALLOWING_GATE.id(), 1);
+    }
+
+    // ---------------------------------------------------------------- the finish: Last Message
+
+    /** The art's finish is the executor's when it is their main style, an iron fan in hand. */
+    public static boolean finishes(ServerPlayer executor) {
+        return stanceActive(executor) && holdsFan(executor);
+    }
+
+    /** Last Message: a door opens under the fallen, feathers rise round them, and the fan shuts on them. */
+    public static void finishTick(ServerPlayer executor, ServerPlayer victim, int elapsed) {
+        ServerLevel level = executor.serverLevel();
+        if (elapsed == FINISH_OPEN_TICK) RavenFx.pit(level, victim.position(), 1.4F, FINISH_HIT_TICK - FINISH_OPEN_TICK + 8);
+        if (elapsed > FINISH_OPEN_TICK && elapsed < FINISH_HIT_TICK && elapsed % 3 == 0)
+            RavenFx.feathers(level, victim.position().add(0, 0.4, 0), 6, 1.2);
+        if (elapsed == FINISH_HIT_TICK) {
+            RavenFx.feathers(level, victim.position().add(0, 0.8, 0), 50, 1.6);
+            level.playSound(null, victim.blockPosition(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 1.2F, 0.6F);
+            level.playSound(null, victim.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 0.4F);
         }
     }
 
@@ -262,11 +384,11 @@ public final class RavenArt {
             MartialCombat.later(player, 1, () -> {
                 if (target.isAlive()) setBehind(player, target, StunType.LONG);
             });
+            MartialProgress.addMastery(player, art(), MartialArts.BETWEEN_WORLDS.id(), 1);
             return;
         }
         RIFTS_ON.put(target.getUUID(), new Rift(player.getUUID(), Math.min(RIFTS, count + 1), now));
-        player.serverLevel().sendParticles(net.minecraft.core.particles.ParticleTypes.SQUID_INK, target.getX(), target.getY() + target.getBbHeight() / 2,
-                target.getZ(), 4 + 3 * count, 0.2, 0.3, 0.2, 0.01);
+        RavenFx.feathers(player.serverLevel(), target.position().add(0, target.getBbHeight() / 2, 0), 3 + 3 * count, 0.4);
     }
 
     /** Through a door and out of another behind the player, facing away, stunned. */
@@ -274,11 +396,11 @@ public final class RavenArt {
         Vec3 back = look(player).scale(-1.8);
         Vec3 to = player.position().add(back.x, 0, back.z);
         if (!player.level().noCollision(body, body.getBoundingBox().move(to.subtract(body.position())))) to = player.position();
-        RavenHalls.gateFx(player.serverLevel(), body.position());
+        RavenFx.door(player.serverLevel(), body.position(), body.getYRot(), 12);
         body.teleportTo(to.x, to.y, to.z);
         body.setYRot(player.getYRot());
         body.setYHeadRot(player.getYRot());
-        RavenHalls.gateFx(player.serverLevel(), to);
+        RavenFx.door(player.serverLevel(), to, player.getYRot() + 180, 12);
         LivingEntityPatch<?> patch = EpicFightCapabilities.getEntityPatch(body, LivingEntityPatch.class);
         if (patch != null) patch.applyStun(stun, 1.5F);
     }
@@ -291,7 +413,7 @@ public final class RavenArt {
         if (push.lengthSqr() < 1e-4) push = look(player);
         Vec3 to = player.position().add(push.normalize().scale(2));
         if (player.level().noCollision(player, player.getBoundingBox().move(to.subtract(player.position())))) {
-            RavenHalls.gateFx(player.serverLevel(), player.position());
+            RavenFx.feathers(player.serverLevel(), player.position().add(0, 1, 0), 14, 0.6);
             player.teleportTo(to.x, to.y, to.z);
         }
     }

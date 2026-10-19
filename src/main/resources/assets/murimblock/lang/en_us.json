@@ -1259,5 +1259,8 @@
   "message.murimblock.raven_halls.no_perch": "No perch behind door %s yet. Set down a Raven Perch in the world.",
   "message.murimblock.raven_perch.mute": "The stone raven stays silent: only a student of the Raven Art can wake it.",
   "message.murimblock.raven_perch.set": "Perch awakened (%s/%s). A door of your hall now leads here.",
-  "item.murimblock.raven_art_scroll": "Raven Messenger Art Scroll"
+  "item.murimblock.raven_art_scroll": "Raven Messenger Art Scroll",
+  "technique.murimblock.cast.no_fan": "%s needs an iron fan in hand",
+  "technique.murimblock.halls_unfold.called": "THE HALLS UNFOLD",
+  "entity.murimblock.raven_gate": "Raven Gate"
 }

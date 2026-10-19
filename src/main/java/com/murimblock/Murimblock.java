@@ -75,6 +75,7 @@ public final class Murimblock {
         com.murimblock.martial.SanguineParticles.register(modEventBus);
         com.murimblock.martial.SevenStarsParticles.register(modEventBus);
         com.murimblock.martial.ThunderSaberParticles.register(modEventBus);
+        com.murimblock.martial.RavenParticles.register(modEventBus);
         MurimAnimations.registerMotions();
         modEventBus.addListener(MurimblockNetworking::onRegisterPayloadHandlers);
         EpicFightBridge.registerHooks();

@@ -49,7 +49,8 @@ public final class TechniquePayloads {
                         ? "technique.murimblock.cast.no_spear" : technique.art().equals(MartialArts.TRAVELLER_STAFF)
                         ? "technique.murimblock.cast.no_staff" : technique.art().equals(MartialArts.SEVEN_STARS_SWORD)
                         ? "technique.murimblock.cast.no_florett" : technique.art().equals(MartialArts.THUNDER_SABER)
-                        ? "technique.murimblock.cast.no_greatsword" : "technique.murimblock.cast.no_weapon", name), true);
+                        ? "technique.murimblock.cast.no_greatsword" : technique.art().equals(MartialArts.RAVEN_ART)
+                        ? "technique.murimblock.cast.no_fan" : "technique.murimblock.cast.no_weapon", name), true);
                 case NO_ROOM -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_room", name), true);
                 case SWORD_OUT -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.sword_out", name), true);
                 case NO_TARGET -> player.displayClientMessage(Component.translatable("technique.murimblock.cast.no_target", name), true);

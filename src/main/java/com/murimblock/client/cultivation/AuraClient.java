@@ -71,6 +71,7 @@ public final class AuraClient {
         if (art.filter(MartialArts.GOLDEN_BELL::equals).isPresent()) return new float[]{1.0F, 0.78F, 0.22F};
         if (art.filter(MartialArts.OVERLORD_SPEAR::equals).isPresent()) return new float[]{0.95F, 0.2F, 0.1F};
         if (art.filter(MartialArts.CRESCENT_MOON_HALBERD::equals).isPresent()) return new float[]{0.62F, 0.85F, 1.0F};
+        if (art.filter(MartialArts.RAVEN_ART::equals).isPresent()) return new float[]{1.0F, 0.66F, 0.25F};
         return new float[]{0.95F, 0.96F, 1.0F};
     }
 
@@ -190,6 +191,13 @@ public final class AuraClient {
                 double a = random.nextDouble() * Math.PI * 2;
                 level.addParticle(net.minecraft.core.particles.ParticleTypes.SMALL_FLAME, feet.x + Math.cos(a) * r, feet.y + 0.1, feet.z + Math.sin(a) * r,
                         0, 0.04 + random.nextDouble() * 0.05, 0);
+            }
+        } else if (id.equals(MartialArts.RAVEN_ART)) {
+            // Black feathers drifting down round the shoulders.
+            if (age % 6 == 0) {
+                double a = random.nextDouble() * Math.PI * 2;
+                level.addParticle(com.murimblock.martial.RavenParticles.FEATHER.get(), feet.x + Math.cos(a) * r, feet.y + 1.6 * scale, feet.z + Math.sin(a) * r,
+                        0, 0.01, 0);
             }
         } else if (id.equals(MartialArts.CRESCENT_MOON_HALBERD)) {
             // Drops of moonlight rising in a slow circle round the feet, as from still water.

@@ -136,6 +136,7 @@ public final class MurimAnimations {
         buildCelestialPeakSpear(builder);
         buildOverlordSpear(builder);
         buildCrescentMoonHalberd(builder);
+        buildRavenArt(builder);
         buildBanditChief(builder);
         BanditWarlordAnimations.build(builder);
         ColossusAnimations.build(builder);
@@ -526,6 +527,27 @@ public final class MurimAnimations {
         HALBERD_MIRROR = builder.nextAccessor("biped/murim/halberd_mirror", a -> new ActionAnimation(0.06F, a, Armatures.BIPED));
         HALBERD_MIRROR_END = builder.nextAccessor("biped/murim/halberd_mirror_end", a -> new ActionAnimation(0.02F, a, Armatures.BIPED));
         HALBERD_FULL_MOON = builder.nextAccessor("biped/murim/halberd_full_moon", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+    }
+
+    // ---------------------------------------------------------------- the Raven Messenger Art (scripts/animation/raven-art.cjs)
+
+    public static AnimationAccessor<ActionAnimation> RAVEN_GATE, RAVEN_HALLS_STEP, RAVEN_EXCHANGE, RAVEN_SWALLOWING_GATE, RAVEN_CLOSED_ROOM,
+            RAVEN_HALLS_UNFOLD, FINISH_LAST_MESSAGE;
+    /**
+     * When each move's door opens (seconds): the fan pointed at the ground, swept across, pointed at the target, opened
+     * wide, clapped shut; the ultimate's fan brought down; the finish's fan opened over the fallen and shut.
+     */
+    public static final float RAVEN_GATE_OPEN = 0.26F, RAVEN_STEP_THROUGH = 0.18F, RAVEN_EXCHANGE_SWAP = 0.3F, RAVEN_SWALLOW_OPEN = 0.22F,
+            RAVEN_ROOM_CLAP = 0.42F, RAVEN_UNFOLD_CALL = 1.9F, RAVEN_MESSAGE_OPEN = 0.45F, RAVEN_MESSAGE_SHUT = 1.72F;
+
+    private static void buildRavenArt(AnimationBuilder builder) {
+        RAVEN_GATE = builder.nextAccessor("biped/murim/raven_gate", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        RAVEN_HALLS_STEP = builder.nextAccessor("biped/murim/halls_step", a -> new ActionAnimation(0.03F, a, Armatures.BIPED));
+        RAVEN_EXCHANGE = builder.nextAccessor("biped/murim/raven_exchange", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        RAVEN_SWALLOWING_GATE = builder.nextAccessor("biped/murim/swallowing_gate", a -> new ActionAnimation(0.04F, a, Armatures.BIPED));
+        RAVEN_CLOSED_ROOM = builder.nextAccessor("biped/murim/closed_room", a -> new ActionAnimation(0.05F, a, Armatures.BIPED));
+        RAVEN_HALLS_UNFOLD = builder.nextAccessor("biped/murim/halls_unfold", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
+        FINISH_LAST_MESSAGE = builder.nextAccessor("biped/murim/last_message", a -> new ActionAnimation(0.1F, a, Armatures.BIPED));
     }
 
     private static void buildOverlordSpear(AnimationBuilder builder) {

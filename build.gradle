@@ -495,6 +495,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: the Raven Art's techniques filmed in a real client (see RavenSkillsTour).
+        ravenSkillsTour {
+            client()
+            gameDirectory = project.file('build/raven-skills-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ravenSkillsTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: the Raven Halls in a real client (see RavenTour).
         ravenTour {
             client()
@@ -1067,6 +1076,21 @@ tasks.named('runCrescentMoonTour').configure {
     doLast {
         def report = crescentMoonTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Crescent Moon tour failed; see build/crescent-moon-tour-run/crescent-moon-tour-report.txt')
+    }
+}
+def ravenSkillsTourSave = layout.buildDirectory.dir('raven-skills-tour-run/saves/murim-raven-skills')
+def ravenSkillsTourReport = layout.buildDirectory.file('raven-skills-tour-run/raven-skills-tour-report.txt')
+def ravenSkillsTourShots = layout.buildDirectory.dir('raven-skills-tour-run/screenshots')
+tasks.named('runRavenSkillsTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only raven skills tour.')
+        ravenSkillsTourSave.get().asFile.deleteDir()
+        ravenSkillsTourShots.get().asFile.deleteDir()
+        ravenSkillsTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ravenSkillsTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Raven skills tour failed; see build/raven-skills-tour-run/raven-skills-tour-report.txt')
     }
 }
 def ravenTourSave = layout.buildDirectory.dir('raven-tour-run/saves/murim-raven')

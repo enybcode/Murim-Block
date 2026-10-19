@@ -88,6 +88,16 @@ import javax.imageio.ImageIO;
  *   hall_of_mirrors: four water-blue reflections round the bearer, each pointing at a foe;
  *   night_of_the_full_moon: a great full moon over the ground, beams of moonlight falling from it (the ultimate);
  *   mirror_image: the passive, a figure dodging aside, its reflection of water left where it stood.
+ * And the Raven Messenger Art's, "the halls at night": a violet-black night in a gold frame, every door a disc of shadow
+ * with an amber rim, black feathers:
+ *   raven_gate: a door open in the ground under a dark foe, its feet already in it;
+ *   halls_step: a door the bearer goes into, another far off it comes out of, a dotted path between;
+ *   exchange: two doors, a foe and the bearer in each, arrows crossing between them;
+ *   swallowing_gate: a standing door before an open fan, three arrows going into it;
+ *   closed_room: two figures shut in a square of paper walls and red posts;
+ *   halls_unfold: a great door under many small foes falling into it (the ultimate);
+ *   return_to_sender: a blow going into one door and the foe coming out of another behind the bearer (the secret);
+ *   between_worlds: the passive, three slits of shadow on a body, a feather falling.
  */
 public class TechniqueIcons {
     static final int W = 32;
@@ -104,9 +114,10 @@ public class TechniqueIcons {
             "tyrants_thrust", "earth_splitting_sweep", "falling_mountain", "overlords_charge", "hundred_battles_rampage", "conqueror_descends",
             "breaking_the_cauldrons", "conquerors_weight",
             "lash", "centipede_bite", "devouring_hunger", "impaling_thorns", "burrow", "grapple", "constrict", "kagune_shift",
-            "twin_reflection", "shattered_mirror", "swap", "hall_of_mirrors", "night_of_the_full_moon", "mirror_image"};
+            "twin_reflection", "shattered_mirror", "swap", "hall_of_mirrors", "night_of_the_full_moon", "mirror_image",
+            "raven_gate", "halls_step", "exchange", "swallowing_gate", "closed_room", "halls_unfold", "return_to_sender", "between_worlds"};
     /** Where the Long Fist's and the Sanguine Art's icons start in NAMES. */
-    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67, MOON = 75;
+    static final int FIST = 5, BLOOD = 10, SPEAR = 16, STAFF = 20, MOUNTAIN = 24, STARS = 30, THUNDER = 38, BELL = 46, SUN = 51, RUIN = 59, DEMON = 67, MOON = 75, RAVEN = 81;
 
     public static void main(String[] args) throws Exception {
         File dir = new File(args[0]);
@@ -127,7 +138,8 @@ public class TechniqueIcons {
             else if (i < RUIN) sun(g, img, i - SUN);
             else if (i < DEMON) ruin(g, img, i - RUIN);
             else if (i < MOON) demon(g, img, i - DEMON);
-            else moon(g, img, i - MOON);
+            else if (i < RAVEN) moon(g, img, i - MOON);
+            else raven(g, img, i - RAVEN);
             g.dispose();
             File f = new File(dir, NAMES[i] + ".png");
             ImageIO.write(img, "png", f);
@@ -1525,6 +1537,114 @@ public class TechniqueIcons {
                 figureAt(g, 23, 27, LACQUER);
                 for (int k = 0; k < 3; k++) line(g, 15, 18 + k * 3, 20, 18 + k * 3, 0.8f, c(159, 216, 255, 150));
                 g.setColor(c(110, 190, 255, 120)); g.fill(new Ellipse2D.Double(6, 26, 12, 3));
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ the Raven Messenger Art: the halls at night, amber doors
+
+    static final Color RAVEN_GOLD = c(217, 168, 63), R_AMBER = c(255, 190, 90), R_AMBER_DEEP = c(200, 100, 24), R_SHADOW = c(6, 6, 12),
+            VEIL = c(110, 70, 190), FEATHER = c(58, 66, 100), INK = c(14, 14, 22), RED_POST = c(150, 50, 40), PAPER = c(226, 214, 190), BEARER = c(214, 200, 168);
+
+    static void ravenBack(BufferedImage img, Graphics2D g) {
+        for (int y = 0; y < W; y++) for (int x = 0; x < W; x++) {
+            double d = Math.min(1, Math.hypot(x - 15.5, y - 15.5) / 22.0);
+            img.setRGB(x, y, c((int) (10 + 18 * (1 - d) * (1 - d)), (int) (8 + 10 * (1 - d) * (1 - d)), (int) (18 + 34 * (1 - d) * (1 - d))).getRGB());
+        }
+        g.setColor(RAVEN_GOLD); g.drawRect(0, 0, W - 1, W - 1);
+        g.setColor(c(40, 26, 20)); g.drawRect(1, 1, W - 3, W - 3);
+    }
+
+    /** A door of shadow: an ellipse (rx, ry) at (x, y), a violet veil, an amber rim, black feathers round it. */
+    static void ravenDoor(Graphics2D g, double x, double y, double rx, double ry, int feathers) {
+        for (int k = 0; k < feathers; k++) {
+            double a = k * Math.PI * 2 / feathers;
+            line(g, x + Math.cos(a) * rx, y + Math.sin(a) * ry, x + Math.cos(a) * (rx + 2.2), y + Math.sin(a) * (ry + 2.2), 1.2f, FEATHER);
+        }
+        g.setColor(R_AMBER_DEEP); g.fill(new Ellipse2D.Double(x - rx - 0.8, y - ry - 0.8, (rx + 0.8) * 2, (ry + 0.8) * 2));
+        g.setColor(R_AMBER); g.fill(new Ellipse2D.Double(x - rx - 0.3, y - ry - 0.3, (rx + 0.3) * 2, (ry + 0.3) * 2));
+        g.setColor(VEIL); g.fill(new Ellipse2D.Double(x - rx + 0.5, y - ry + 0.5, (rx - 0.5) * 2, (ry - 0.5) * 2));
+        g.setColor(R_SHADOW); g.fill(new Ellipse2D.Double(x - rx + 1.3, y - ry + 1.3, (rx - 1.3) * 2, (ry - 1.3) * 2));
+    }
+
+    /** An open fan, its pivot at (x, y), opened toward deg (degrees, 0 = right), in dark lacquer with gold ribs. */
+    static void openFan(Graphics2D g, double x, double y, double deg, double r) {
+        g.setColor(INK); g.fill(new Arc2D.Double(x - r, y - r, r * 2, r * 2, -deg - 50, 100, Arc2D.PIE));
+        g.setColor(RAVEN_GOLD);
+        for (int k = -2; k <= 2; k++) { double a = Math.toRadians(deg + k * 22); line(g, x, y, x + Math.cos(a) * r, y + Math.sin(a) * r, 0.6f, RAVEN_GOLD); }
+        g.draw(new Arc2D.Double(x - r, y - r, r * 2, r * 2, -deg - 50, 100, Arc2D.OPEN));
+    }
+
+    static void featherAt(Graphics2D g, double x, double y, double deg) {
+        double a = Math.toRadians(deg), ux = Math.cos(a), uy = Math.sin(a);
+        taper(g, x, y, x + ux * 2.5 - uy, y + uy * 2.5 + ux, x + ux * 5, y + uy * 5, 1.6, 0.4, FEATHER);
+        line(g, x, y, x + ux * 4.5, y + uy * 4.5, 0.4f, c(70, 84, 120));
+    }
+
+    static void raven(Graphics2D g, BufferedImage img, int i) {
+        ravenBack(img, g);
+        switch (i) {
+            case 0 -> { // Raven Gate: a door open in the ground, a dark foe half in it.
+                ravenDoor(g, 16, 25, 11, 3.6, 14);
+                figureAt(g, 16, 25, c(120, 124, 146));
+                g.setColor(R_SHADOW); g.fill(new Rectangle2D.Double(10, 25, 12, 4));
+                featherAt(g, 6, 8, 60); featherAt(g, 24, 6, 120);
+            }
+            case 1 -> { // Halls Step: into one door, out of another far off.
+                ravenDoor(g, 7, 20, 4, 6.5, 10);
+                ravenDoor(g, 25, 14, 3, 5, 10);
+                for (int k = 0; k < 4; k++) disc(g, 11.5 + k * 2.6, 18.5 - k * 1.2, 0.6, R_AMBER);
+                figureAt(g, 25, 19, BEARER);
+            }
+            case 2 -> { // Exchange: two doors, arrows crossing.
+                ravenDoor(g, 8, 20, 4, 6.5, 10);
+                ravenDoor(g, 24, 20, 4, 6.5, 10);
+                figureAt(g, 8, 25, c(120, 124, 146));
+                figureAt(g, 24, 25, BEARER);
+                g.setColor(R_AMBER); g.setStroke(new BasicStroke(1.2f));
+                g.draw(new Arc2D.Double(8, 4, 16, 10, 20, 140, Arc2D.OPEN));
+                line(g, 21, 6, 23, 8, 1.2f, R_AMBER); line(g, 23, 8, 20.5, 9, 1.2f, R_AMBER);
+            }
+            case 3 -> { // Swallowing Gate: a standing door, arrows going into it, the fan behind.
+                ravenDoor(g, 18, 16, 6, 10, 14);
+                for (int k = 0; k < 3; k++) {
+                    double y = 9 + k * 7;
+                    line(g, 2, y + 2, 13, y, 1.0f, c(200, 190, 170));
+                    line(g, 2, y + 2, 4, y + 3.5, 0.8f, c(220, 220, 230)); line(g, 2, y + 2, 4, y, 0.8f, c(220, 220, 230));
+                }
+                openFan(g, 28, 26, 200, 5);
+            }
+            case 4 -> { // Closed Room: two figures shut in paper walls and red posts.
+                g.setColor(PAPER); g.fill(new Rectangle2D.Double(5, 6, 22, 21));
+                g.setColor(c(60, 40, 30)); g.setStroke(new BasicStroke(1f)); g.draw(new Rectangle2D.Double(5, 6, 22, 21));
+                line(g, 5, 16, 27, 16, 0.8f, c(90, 60, 40));
+                g.setColor(RED_POST);
+                for (double x : new double[]{4, 15.5, 27}) g.fill(new Rectangle2D.Double(x, 5, 2, 23));
+                figureAt(g, 11, 27, BEARER); figureAt(g, 21, 27, c(120, 124, 146));
+            }
+            case 5 -> { // The Halls Unfold: a great door under many small foes.
+                ravenDoor(g, 16, 22, 13, 6, 18);
+                for (double[] p : new double[][]{{9, 21}, {16, 23}, {23, 21}, {12, 15}, {20, 15}}) {
+                    g.setColor(c(120, 124, 146)); g.fill(new Ellipse2D.Double(p[0] - 1.3, p[1] - 6, 2.6, 2.6));
+                    g.fill(new Rectangle2D.Double(p[0] - 1.6, p[1] - 3.6, 3.2, 3.6));
+                }
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            case 6 -> { // Return to Sender: a blow into a door, the foe out of another behind the bearer.
+                ravenDoor(g, 9, 16, 4, 7, 10);
+                ravenDoor(g, 25, 18, 3.5, 6, 10);
+                figureAt(g, 17, 26, BEARER);
+                figureAt(g, 25, 25, c(120, 124, 146));
+                line(g, 2, 14, 7, 15, 1.4f, c(230, 230, 240));
+                px(img, 30, 30, c(220, 60, 60));
+            }
+            default -> { // Between Worlds: three slits of shadow on a body, a feather falling.
+                figureAt(g, 15, 28, c(150, 154, 176));
+                for (int k = 0; k < 3; k++) {
+                    g.setColor(R_AMBER); g.fill(new Ellipse2D.Double(10 + k * 3.4, 12 + k * 3, 3.2, 6.4));
+                    g.setColor(R_SHADOW); g.fill(new Ellipse2D.Double(10.6 + k * 3.4, 12.8 + k * 3, 2.0, 4.8));
+                }
+                featherAt(g, 22, 4, 100);
             }
         }
     }

@@ -10,7 +10,9 @@ import com.murimblock.martial.MartialCombat;
 import com.murimblock.martial.MartialData;
 import com.murimblock.martial.MartialService;
 import com.murimblock.martial.MartialService.CastResult;
+import com.murimblock.integration.epicfight.MurimAnimations;
 import com.murimblock.martial.RavenArt;
+import com.murimblock.martial.RavenGateEntity;
 import com.murimblock.mob.MurimEntities;
 import com.murimblock.qi.QiService;
 import com.murimblock.world.raven.RavenBlocks;
@@ -103,7 +105,12 @@ public final class RavenArtGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = "spear_arena", batch = "raven_home", timeoutTicks = 40)
+    /** Ticks after a cast when its door has opened (the gesture played out, a little margin). */
+    private static int after(float seconds) {
+        return Math.round(seconds * 20) + 3;
+    }
+
+    @GameTest(template = "spear_arena", batch = "raven_home", timeoutTicks = 80)
     public static void theCrouchingClosedRoomTakesHomeToOnesOwnHallAndBack(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         double x = player.getX(), z = player.getZ();
@@ -113,27 +120,35 @@ public final class RavenArtGameTests {
         CastResult home = MartialService.castSlot(player, 4);
         helper.assertTrue(home == CastResult.CAST, "Could not go home: " + home);
         ServerLevel halls = standIn(helper);
-        helper.assertTrue(player.level() == halls, "Not in the halls");
-        player.hasChangedDimension();
-        BlockPos hall = RavenHalls.hallOf(player);
-        helper.assertTrue(Math.abs(player.getZ() - hall.getZ()) < 10 && Math.abs(player.getX() - hall.getX()) < 10, "Not in one's own hall");
-        helper.assertFalse(halls.getBlockState(player.blockPosition().below()).isAir(), "No floor under the feet in the hall");
-        int doors = 0;
-        for (BlockPos p : BlockPos.betweenClosed(hall.offset(-12, 0, -12), hall.offset(12, 6, 12)))
-            if (halls.getBlockState(p).is(RavenBlocks.RAVEN_DOOR.get())) doors++;
-        helper.assertTrue(doors >= 4 * 9, "The hall should have four doors of shadow, found " + doors + " blocks");
-        // Going home from home does nothing; crouching again leads back where one came in from.
-        MartialService.clearCooldownsForTests(player);
-        CastResult back = MartialService.castSlot(player, 4);
-        helper.assertTrue(back == CastResult.CAST, "Could not go back: " + back);
-        player.hasChangedDimension();
-        helper.assertTrue(player.level() == helper.getLevel(), "Not back in the world");
-        helper.assertTrue(Math.abs(player.getX() - x) < 0.01 && Math.abs(player.getZ() - z) < 0.01, "Not back where one left");
-        player.setShiftKeyDown(false);
-        end(helper, player);
+        int there = after(MurimAnimations.RAVEN_ROOM_CLAP);
+        tickFor(helper, player, 60);
+        helper.runAfterDelay(there, () -> {
+            player.hasChangedDimension();
+            helper.assertTrue(player.level() == halls, "Not in the halls");
+            BlockPos hall = RavenHalls.hallOf(player);
+            helper.assertTrue(Math.abs(player.getZ() - hall.getZ()) < 10 && Math.abs(player.getX() - hall.getX()) < 10, "Not in one's own hall");
+            helper.assertFalse(halls.getBlockState(player.blockPosition().below()).isAir(), "No floor under the feet in the hall");
+            int doors = 0;
+            for (BlockPos p : BlockPos.betweenClosed(hall.offset(-12, 0, -12), hall.offset(12, 6, 12)))
+                if (halls.getBlockState(p).is(RavenBlocks.RAVEN_DOOR.get())) doors++;
+            helper.assertTrue(doors >= 4 * 9, "The hall should have four doors of shadow, found " + doors + " blocks");
+        });
+        // Crouching again, once the clap is over, leads back where one came in from.
+        helper.runAfterDelay(there + 16, () -> {
+            MartialService.clearCooldownsForTests(player);
+            CastResult back = MartialService.castSlot(player, 4);
+            helper.assertTrue(back == CastResult.CAST, "Could not go back: " + back);
+        });
+        helper.runAfterDelay(there + 16 + there, () -> {
+            player.hasChangedDimension();
+            helper.assertTrue(player.level() == helper.getLevel(), "Not back in the world");
+            helper.assertTrue(Math.abs(player.getX() - x) < 0.01 && Math.abs(player.getZ() - z) < 0.01, "Not back where one left");
+            player.setShiftKeyDown(false);
+            end(helper, player);
+        });
     }
 
-    @GameTest(template = "spear_arena", batch = "raven_gate", timeoutTicks = 120)
+    @GameTest(template = "spear_arena", batch = "raven_gate", timeoutTicks = 140)
     public static void theRavenGateSwallowsTheTargetThenDropsItFromTenBlocks(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie zombie = dummy(helper, player, 0, 2.5);
@@ -141,8 +156,14 @@ public final class RavenArtGameTests {
         double y = zombie.getY();
         CastResult cast = MartialService.castSlot(player, 0);
         helper.assertTrue(cast == CastResult.CAST, "The gate did not open: " + cast);
-        helper.assertTrue(helper.getLevel().getEntity(id) == null, "The target is still in the world");
-        helper.runAfterDelay(RavenArt.GATE_TICKS + 2, () -> {
+        int in = after(MurimAnimations.RAVEN_GATE_OPEN) + 4;
+        tickFor(helper, player, in + 2);
+        helper.runAfterDelay(in, () -> {
+            helper.assertTrue(helper.getLevel().getEntity(id) == null, "The target is still in the world");
+            helper.assertFalse(helper.getLevel().getEntitiesOfClass(RavenGateEntity.class, new AABB(zombie.blockPosition()).inflate(4)).isEmpty(),
+                    "No door opened under the target");
+        });
+        helper.runAfterDelay(in + RavenArt.GATE_TICKS + 2, () -> {
             Entity back = helper.getLevel().getEntity(id);
             helper.assertTrue(back != null, "The target did not come back");
             helper.assertTrue(back.getY() > y + 7, "The target was not dropped from above: " + (back.getY() - y));
@@ -150,7 +171,7 @@ public final class RavenArtGameTests {
         });
     }
 
-    @GameTest(template = "spear_arena", batch = "raven_duel", timeoutTicks = 60)
+    @GameTest(template = "spear_arena", batch = "raven_duel", timeoutTicks = 120)
     public static void theClosedRoomShutsBothInARoomUntilOneFalls(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie zombie = dummy(helper, player, 0, 2.5);
@@ -158,24 +179,81 @@ public final class RavenArtGameTests {
         double x = player.getX(), z = player.getZ();
         CastResult cast = MartialService.castSlot(player, 4);
         helper.assertTrue(cast == CastResult.CAST, "No duel: " + cast);
-        player.hasChangedDimension();
         ServerLevel halls = standIn(helper);
-        helper.assertTrue(player.level() == halls && helper.getLevel().getEntity(id) == null, "Both should be in the room");
-        helper.assertTrue(RavenHalls.dueling(player), "No duel under way");
-        MartialService.clearCooldownsForTests(player);
-        helper.assertFalse(MartialService.castSlot(player, 0) == CastResult.CAST, "The Raven Gate opened inside a duel");
-        // The foe stands in the room, before the player, then falls.
-        tickFor(helper, player, 10);
-        helper.runAfterDelay(6, () -> {
-            Entity foe = RavenHalls.duelFoe(player);
-            helper.assertTrue(foe != null && foe.level() == halls && foe.distanceTo(player) < 10, "The foe is not in the room with the player");
-            ((LivingEntity) foe).kill();
+        int in = after(MurimAnimations.RAVEN_ROOM_CLAP);
+        tickFor(helper, player, in + 60);
+        // Under load the clap may land a few ticks late: wait (up to 30 ticks) until both are in the room.
+        int[] at = {-1};
+        for (int t = in; t <= in + 30; t++) {
+            int now = t;
+            helper.runAfterDelay(t, () -> {
+                if (at[0] >= 0) return;
+                player.hasChangedDimension();
+                if (player.level() != halls || !RavenHalls.dueling(player)) {
+                    helper.assertTrue(now < in + 30, "Both should be in the room");
+                    return;
+                }
+                at[0] = now;
+                helper.assertTrue(helper.getLevel().getEntity(id) == null, "The foe stayed in the world");
+                MartialService.clearCooldownsForTests(player);
+                helper.assertFalse(MartialService.castSlot(player, 0) == CastResult.CAST, "The Raven Gate opened inside a duel");
+                // The foe stands in the room, before the player, then falls.
+                Entity foe = RavenHalls.duelFoe(player);
+                helper.assertTrue(foe != null && foe.level() == halls && foe.distanceTo(player) < 10, "The foe is not in the room with the player");
+                ((LivingEntity) foe).kill();
+                helper.runAfterDelay(now + 4, () -> {
+                    player.hasChangedDimension();
+                    helper.assertFalse(RavenHalls.dueling(player), "The duel did not end with the fall");
+                    helper.assertTrue(player.level() == helper.getLevel(), "The player did not come back");
+                    helper.assertTrue(Math.abs(player.getX() - x) < 0.01 && Math.abs(player.getZ() - z) < 0.01, "Not back in place");
+                    end(helper, player);
+                });
+            });
+        }
+    }
+
+    @GameTest(template = "spear_arena", batch = "raven_step", timeoutTicks = 40)
+    public static void hallsStepComesOutWhereOneLooks(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        double z = player.getZ();
+        player.setXRot(25);
+        CastResult cast = MartialService.castSlot(player, 1);
+        helper.assertTrue(cast == CastResult.CAST, "No step: " + cast);
+        int out = after(MurimAnimations.RAVEN_STEP_THROUGH);
+        tickFor(helper, player, out + 2);
+        helper.runAfterDelay(out, () -> {
+            helper.assertTrue(player.getZ() > z + 2, "The player did not step through (moved " + (player.getZ() - z) + ")");
+            end(helper, player);
         });
-        helper.runAfterDelay(10, () -> {
-            player.hasChangedDimension();
-            helper.assertFalse(RavenHalls.dueling(player), "The duel did not end with the fall");
-            helper.assertTrue(player.level() == helper.getLevel(), "The player did not come back");
-            helper.assertTrue(Math.abs(player.getX() - x) < 0.01 && Math.abs(player.getZ() - z) < 0.01, "Not back in place");
+    }
+
+    @GameTest(template = "spear_arena", batch = "raven_exchange", timeoutTicks = 40)
+    public static void exchangeSwapsPlacesWithTheTarget(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        Zombie zombie = dummy(helper, player, 0, 3.5);
+        double pz = player.getZ(), zz = zombie.getZ();
+        CastResult cast = MartialService.castSlot(player, 2);
+        helper.assertTrue(cast == CastResult.CAST, "No exchange: " + cast);
+        int swap = after(MurimAnimations.RAVEN_EXCHANGE_SWAP);
+        tickFor(helper, player, swap + 2);
+        helper.runAfterDelay(swap, () -> {
+            helper.assertTrue(Math.abs(player.getZ() - zz) < 0.2 && Math.abs(zombie.getZ() - pz) < 0.2,
+                    "Places not changed: player " + (player.getZ() - zz) + ", target " + (zombie.getZ() - pz));
+            end(helper, player, zombie);
+        });
+    }
+
+    @GameTest(template = "spear_arena", batch = "raven_unfold", timeoutTicks = 80)
+    public static void theHallsUnfoldScatterEveryEnemyNear(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        Zombie a = dummy(helper, player, -2, 3), b = dummy(helper, player, 2, -3);
+        CastResult cast = MartialService.castSlot(player, 5);
+        helper.assertTrue(cast == CastResult.CAST, "No ultimate: " + cast);
+        int call = after(MurimAnimations.RAVEN_UNFOLD_CALL);
+        tickFor(helper, player, call + 2);
+        helper.runAfterDelay(call, () -> {
+            helper.assertTrue(helper.getLevel().getEntity(a.getUUID()) == null && helper.getLevel().getEntity(b.getUUID()) == null,
+                    "Not every enemy was taken into the halls");
             end(helper, player);
         });
     }
@@ -211,20 +289,23 @@ public final class RavenArtGameTests {
         });
     }
 
-    @GameTest(template = "spear_arena", batch = "raven_swallow", timeoutTicks = 100)
+    @GameTest(template = "spear_arena", batch = "raven_swallow", timeoutTicks = 120)
     public static void theSwallowingGateTakesArrowsAndSendsThemBack(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie shooter = dummy(helper, player, 0, 4);
         CastResult cast = MartialService.castSlot(player, 3);
         helper.assertTrue(cast == CastResult.CAST, "The gate did not open: " + cast);
         Arrow arrow = new Arrow(helper.getLevel(), shooter, new ItemStack(Items.ARROW), null);
-        arrow.setPos(player.getX(), player.getY() + 1, player.getZ() + 2);
-        arrow.setDeltaMovement(0, 0, -0.01);
-        arrow.setNoGravity(true);
-        helper.getLevel().addFreshEntity(arrow);
-        tickFor(helper, player, 70);
-        helper.runAfterDelay(3, () -> helper.assertFalse(arrow.isAlive(), "The gate did not swallow the arrow"));
-        helper.runAfterDelay(66, () -> {
+        int open = after(MurimAnimations.RAVEN_SWALLOW_OPEN);
+        helper.runAfterDelay(open, () -> {
+            arrow.setPos(player.getX(), player.getY() + 1.5, player.getZ() + 2);
+            arrow.setDeltaMovement(0, 0, -0.01);
+            arrow.setNoGravity(true);
+            helper.getLevel().addFreshEntity(arrow);
+        });
+        tickFor(helper, player, open + 70);
+        helper.runAfterDelay(open + 3, () -> helper.assertFalse(arrow.isAlive(), "The gate did not swallow the arrow"));
+        helper.runAfterDelay(open + RavenArt.SWALLOW_TICKS + 4, () -> {
             boolean returned = !helper.getLevel().getEntitiesOfClass(Arrow.class, new AABB(player.blockPosition()).inflate(12),
                     a -> a.getOwner() == player).isEmpty() || shooter.getHealth() < 300;
             helper.assertTrue(returned, "The arrow was not sent back");

@@ -30,6 +30,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.OverlordQiEntity>> OVERLORD_QI =
             TYPES.register("overlord_qi", () -> EntityType.Builder.<com.murimblock.martial.OverlordQiEntity>of(com.murimblock.martial.OverlordQiEntity::new, MobCategory.MISC)
                     .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:overlord_qi"));
+    /** The Raven Messenger Art's doors between the worlds (shown only). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.RavenGateEntity>> RAVEN_GATE =
+            TYPES.register("raven_gate", () -> EntityType.Builder.<com.murimblock.martial.RavenGateEntity>of(com.murimblock.martial.RavenGateEntity::new, MobCategory.MISC)
+                    .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(2).build("murimblock:raven_gate"));
     /** The Crescent Moon Halberd's shapes of moonlight: crescents, the ring, the mirror, the full moon and its beams (shown only). */
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.MoonQiEntity>> MOON_QI =
             TYPES.register("moon_qi", () -> EntityType.Builder.<com.murimblock.martial.MoonQiEntity>of(com.murimblock.martial.MoonQiEntity::new, MobCategory.MISC)

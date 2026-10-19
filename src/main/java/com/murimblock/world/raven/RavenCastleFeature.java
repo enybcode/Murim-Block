@@ -69,6 +69,8 @@ public class RavenCastleFeature extends Feature<NoneFeatureConfiguration> {
         WorldGenLevel level = context.level();
         BlockPos o = context.origin();
         Piece p = new Piece(level, o.getX() & ~15, o.getZ() & ~15);
+        // The row of closed rooms (RavenHalls) is sealed: no castle round it, so that a room is quick to open.
+        if (Math.abs(p.z0 - RavenHalls.ROOM_ROW_Z) < 96) return true;
         p.water();
         for (int k = 0; BASE + k * LEVEL <= TOP; k++) p.level(k, BASE + k * LEVEL);
         if (hash(p.cx, 0, p.cz, 7) % 6 == 0) p.column();

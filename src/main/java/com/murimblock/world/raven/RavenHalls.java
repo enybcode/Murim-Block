@@ -200,7 +200,7 @@ public final class RavenHalls {
         ServerLevel halls = halls(server);
         if (halls != null) {
             ChunkPos c = new ChunkPos(roomAt(server, index));
-            halls.getChunkSource().addRegionTicket(ROOM_TICKET, c, 2, c);
+            halls.getChunkSource().addRegionTicket(ROOM_TICKET, c, 0, c);
             RavenHallBuilder.room(halls, roomAt(server, index));
         }
         return index;
@@ -209,7 +209,7 @@ public final class RavenHalls {
     private static void freeRoom(MinecraftServer server, int index) {
         ServerLevel halls = halls(server);
         ChunkPos c = new ChunkPos(roomAt(server, index));
-        if (halls != null) halls.getChunkSource().removeRegionTicket(ROOM_TICKET, c, 2, c);
+        if (halls != null) halls.getChunkSource().removeRegionTicket(ROOM_TICKET, c, 0, c);
     }
 
     /** Nothing kept in the halls despawns there (no player is near enough to keep a mob). */
@@ -230,7 +230,6 @@ public final class RavenHalls {
         Vec3 back = body.position();
         ResourceKey<Level> from = body.level().dimension();
         float yaw = body.getYRot();
-        gateFx((ServerLevel) body.level(), back);
         Entity moved = move(body, halls, Vec3.atBottomCenterOf(roomAt(server, room)), yaw);
         if (moved == null) return false;
         CAPTIVES.add(new Captive(moved.getUUID(), moved, from, back, yaw, drop, server.overworld().getGameTime() + ticks, room));
@@ -306,7 +305,8 @@ public final class RavenHalls {
             if (e == null || from == null || !e.isAlive()) continue;
             Vec3 at = c.back.add(0, c.drop, 0);
             move(e, from, at, c.yaw);
-            gateFx(from, at);
+            if (c.drop > 0) com.murimblock.martial.RavenFx.sky(from, at.add(0, e.getBbHeight() + 0.4, 0), Math.max(0.9F, e.getBbWidth() * 0.9F + 0.5F), 16);
+            else com.murimblock.martial.RavenFx.door(from, at, c.yaw, 14);
         }
         for (Iterator<Duel> it = DUELS.iterator(); it.hasNext(); ) {
             Duel d = it.next();
@@ -343,10 +343,8 @@ public final class RavenHalls {
         return e.changeDimension(new DimensionTransition(to, at, Vec3.ZERO, yaw, e.getXRot(), DimensionTransition.DO_NOTHING));
     }
 
-    /** A door opening there: black feathers whirling, a deep sound. */
+    /** A door opening there (a door of the Raven Art standing, facing south), its feathers and its sound. */
     public static void gateFx(ServerLevel level, Vec3 at) {
-        level.sendParticles(ParticleTypes.SQUID_INK, at.x, at.y + 1, at.z, 24, 0.4, 0.8, 0.4, 0.05);
-        level.sendParticles(ParticleTypes.ASH, at.x, at.y + 1, at.z, 30, 0.6, 1.0, 0.6, 0.02);
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 0.6F);
+        com.murimblock.martial.RavenFx.door(level, at, 0, 14);
     }
 }
