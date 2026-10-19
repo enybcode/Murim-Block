@@ -56,6 +56,7 @@ public final class GoldenDragonShop {
                     guide(MurimItems.CELESTIAL_PEAK_SPEAR_GUIDE, 2, 6),
                     guide(MurimItems.AZURE_CLOUD_SWORD_GUIDE, 3, 10),
                     guide(MurimItems.MOUNTAIN_SHATTERING_FIST_GUIDE, 4, 16),
+                    guide(MurimItems.RAVEN_ART_GUIDE, 4, 16),
                     guide(MurimItems.OVERLORD_SPEAR_GUIDE, 4, 18),
                     guide(MurimItems.SEVEN_STARS_SWORD_GUIDE, 4, 20),
                     guide(MurimItems.MAJIN_FIST_GUIDE, 4, 20),
@@ -63,7 +64,6 @@ public final class GoldenDragonShop {
                     unwritten(MurimItems.SANGUINE_ART_SCROLL),
                     unwritten(MurimItems.DEVOURING_DEMON_SCROLL),
                     unwritten(MurimItems.CRESCENT_MOON_HALBERD_SCROLL),
-                    unwritten(MurimItems.RAVEN_ART_SCROLL),
                     talisman(MurimItems.NETHER_TALISMAN),
                     talisman(MurimItems.END_TALISMAN),
                     talisman(MurimItems.MURIM_TALISMAN));

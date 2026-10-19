@@ -1262,5 +1262,21 @@
   "item.murimblock.raven_art_scroll": "Raven Messenger Art Scroll",
   "technique.murimblock.cast.no_fan": "%s needs an iron fan in hand",
   "technique.murimblock.halls_unfold.called": "THE HALLS UNFOLD",
-  "entity.murimblock.raven_gate": "Raven Gate"
+  "entity.murimblock.raven_gate": "Raven Gate",
+  "item.murimblock.raven_art_guide": "Guide: Raven Messenger Art",
+  "guide.murimblock.raven_art.target": "The nearest Raven Tower",
+  "guide.murimblock.raven_art.page.0": "RAVEN MESSENGER ART\n\nAn iron fan, a black raven, and doors between this world and the Raven Halls: what you strike falls through them, and you go home through them.\n\nDifficulty: four drops of ink. Read from Qi Condensation.",
+  "guide.murimblock.raven_art.page.1": "WHERE IT IS KEPT\n\nAn old hermit keeps it, the Crow Master, in a black tower on the high peaks, the karst or the stone pillars. He sells the scroll for silver, to whoever finds him.\n\nDo not strike him: you will only meet feathers.",
+  "guide.murimblock.raven_art.page.2": "THE WAY\n\nHold this guide and read it: it writes in your mind the way to the nearest Raven Tower, and how far.\n\nFollow the ravens.",
+  "entity.murimblock.crow_master": "Crow Master",
+  "item.murimblock.crow_master_spawn_egg": "Crow Master Spawn Egg",
+  "entity.murimblock.raven_familiar": "Shadow Raven",
+  "entity.murimblock.crow_master.says": "%s: %s",
+  "entity.murimblock.crow_master.line.0": "You climbed all this way for an old man and his birds? Then you are looking for a door. I sell the way to open them.",
+  "entity.murimblock.crow_master.line.1": "Every door has two sides. Most people only ever see one.",
+  "entity.murimblock.crow_master.line.2": "My raven saw you on the road three days ago. You walk loudly.",
+  "entity.murimblock.crow_master.line.3": "A message always arrives. The question is who is left to read it.",
+  "entity.murimblock.crow_master.line.4": "The halls go on for ever. I stopped counting the rooms a long time ago.",
+  "entity.murimblock.crow_master.struck": "Your blow meets only feathers. The Crow Master is behind you.",
+  "entity.murimblock.crow_master.sulk": "The Crow Master turns his back on you. Come back when you have learnt some manners."
 }

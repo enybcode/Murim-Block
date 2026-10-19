@@ -495,6 +495,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: the raven familiar and the Raven Tower in a real client (see RavenFamiliarTour).
+        ravenFamiliarTour {
+            client()
+            gameDirectory = project.file('build/raven-familiar-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ravenFamiliarTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: the Raven Art's techniques filmed in a real client (see RavenSkillsTour).
         ravenSkillsTour {
             client()
@@ -1076,6 +1085,21 @@ tasks.named('runCrescentMoonTour').configure {
     doLast {
         def report = crescentMoonTourReport.get().asFile
         if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Crescent Moon tour failed; see build/crescent-moon-tour-run/crescent-moon-tour-report.txt')
+    }
+}
+def ravenFamiliarTourSave = layout.buildDirectory.dir('raven-familiar-tour-run/saves/murim-raven-familiar')
+def ravenFamiliarTourReport = layout.buildDirectory.file('raven-familiar-tour-run/raven-familiar-tour-report.txt')
+def ravenFamiliarTourShots = layout.buildDirectory.dir('raven-familiar-tour-run/screenshots')
+tasks.named('runRavenFamiliarTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only raven familiar tour.')
+        ravenFamiliarTourSave.get().asFile.deleteDir()
+        ravenFamiliarTourShots.get().asFile.deleteDir()
+        ravenFamiliarTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ravenFamiliarTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Raven familiar tour failed; see build/raven-familiar-tour-run/raven-familiar-tour-report.txt')
     }
 }
 def ravenSkillsTourSave = layout.buildDirectory.dir('raven-skills-tour-run/saves/murim-raven-skills')

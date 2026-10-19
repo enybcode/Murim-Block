@@ -144,6 +144,8 @@ public final class RavenArt {
             Vec3 to = stepTarget(player);
             if (to == null) return false;
             play(player, patch, MurimAnimations.RAVEN_HALLS_STEP, technique);
+            RavenFamiliarEntity raven = familiar(player);
+            if (raven != null) raven.sendTo(to, ticks(MurimAnimations.RAVEN_STEP_THROUGH));
             MartialCombat.later(player, ticks(MurimAnimations.RAVEN_STEP_THROUGH), () -> step(player, to));
             return true;
         }
@@ -432,18 +434,57 @@ public final class RavenArt {
         }
     }
 
+    // ---------------------------------------------------------------- the familiar
+
+    private static final Map<UUID, RavenFamiliarEntity> FAMILIARS = new HashMap<>();
+
+    /** This student's raven now, or null (it keeps by them while the Raven Art is their main style). */
+    @Nullable public static RavenFamiliarEntity familiar(ServerPlayer player) {
+        RavenFamiliarEntity raven = FAMILIARS.get(player.getUUID());
+        return raven != null && !raven.isRemoved() && raven.level() == player.level() ? raven : null;
+    }
+
+    /** Calls the raven to a student of the art (out of the halls, by their shoulder), or sends it away when they no longer follow it. */
+    private static void keepFamiliar(ServerPlayer player) {
+        boolean wanted = player.isAlive() && !player.isSpectator() && stanceActive(player);
+        RavenFamiliarEntity raven = familiar(player);
+        if (!wanted) {
+            if (raven != null) {
+                RavenFx.feathers(player.serverLevel(), raven.position(), 10, 0.4);
+                raven.discard();
+            }
+            FAMILIARS.remove(player.getUUID());
+            return;
+        }
+        if (raven != null || player.tickCount % 10 != 0) return;
+        RavenFamiliarEntity old = FAMILIARS.remove(player.getUUID());
+        if (old != null) old.discard();
+        raven = com.murimblock.mob.MurimEntities.RAVEN_FAMILIAR.get().create(player.serverLevel());
+        if (raven == null) return;
+        Vec3 at = player.position().add(0, player.getBbHeight() + 0.4, 0);
+        raven.owner(player.getUUID()).setPos(at.x, at.y, at.z);
+        player.serverLevel().addFreshEntity(raven);
+        RavenFx.feathers(player.serverLevel(), at, 8, 0.3);
+        FAMILIARS.put(player.getUUID(), raven);
+    }
+
     // ---------------------------------------------------------------- ticks
 
     static void tick(ServerPlayer player) {
+        keepFamiliar(player);
         Gate gate = GATES.get(player.getUUID());
         if (gate != null) gateTick(player, gate);
     }
 
     static void forget(@Nullable UUID id) {
         if (id == null) {
+            FAMILIARS.values().forEach(Entity::discard);
+            FAMILIARS.clear();
             GATES.clear();
             RIFTS_ON.clear();
         } else {
+            RavenFamiliarEntity raven = FAMILIARS.remove(id);
+            if (raven != null) raven.discard();
             GATES.remove(id);
             RIFTS_ON.remove(id);
         }

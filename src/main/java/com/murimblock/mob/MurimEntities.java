@@ -30,6 +30,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.OverlordQiEntity>> OVERLORD_QI =
             TYPES.register("overlord_qi", () -> EntityType.Builder.<com.murimblock.martial.OverlordQiEntity>of(com.murimblock.martial.OverlordQiEntity::new, MobCategory.MISC)
                     .sized(0.2F, 0.2F).noSave().fireImmune().clientTrackingRange(10).updateInterval(1).build("murimblock:overlord_qi"));
+    /** The Raven Messenger Art's familiar, the Shadow Raven (never saved: the art calls it back). */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.RavenFamiliarEntity>> RAVEN_FAMILIAR =
+            TYPES.register("raven_familiar", () -> EntityType.Builder.<com.murimblock.martial.RavenFamiliarEntity>of(com.murimblock.martial.RavenFamiliarEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.6F).noSave().fireImmune().clientTrackingRange(8).updateInterval(1).build("murimblock:raven_familiar"));
     /** The Raven Messenger Art's doors between the worlds (shown only). */
     public static final DeferredHolder<EntityType<?>, EntityType<com.murimblock.martial.RavenGateEntity>> RAVEN_GATE =
             TYPES.register("raven_gate", () -> EntityType.Builder.<com.murimblock.martial.RavenGateEntity>of(com.murimblock.martial.RavenGateEntity::new, MobCategory.MISC)
@@ -85,6 +89,10 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<AllianceMerchantEntity>> ALLIANCE_MERCHANT =
             TYPES.register("alliance_merchant", () -> EntityType.Builder.of(AllianceMerchantEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:alliance_merchant"));
+    /** The Crow Master, hermit of the Raven Tower, who sells the Raven Messenger Art's scroll: a man's size (an egg, /summon). */
+    public static final DeferredHolder<EntityType<?>, EntityType<CrowMasterEntity>> CROW_MASTER =
+            TYPES.register("crow_master", () -> EntityType.Builder.of(CrowMasterEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:crow_master"));
     /** The Golden Bell monk, who sells the Golden Bell's sutra: a man's size, placed in the Misty Bamboo Temple (or an egg, /summon). */
     public static final DeferredHolder<EntityType<?>, EntityType<GoldenBellMonkEntity>> GOLDEN_BELL_MONK =
             TYPES.register("golden_bell_monk", () -> EntityType.Builder.of(GoldenBellMonkEntity::new, MobCategory.CREATURE)
@@ -180,6 +188,7 @@ public final class MurimEntities {
         event.put(ALLIANCE_MERCHANT.get(), AllianceMerchantEntity.createMerchantAttributes().build());
         event.put(SCARLET_GUARDIAN.get(), ScarletGuardianEntity.attributes().build());
         event.put(GOLDEN_BELL_MONK.get(), GoldenBellMonkEntity.createMonkAttributes().build());
+        event.put(CROW_MASTER.get(), CrowMasterEntity.createAttributes().build());
         event.put(GOLDEN_DRAGON_SAGE.get(), GoldenDragonSageEntity.createSageAttributes().build());
         event.put(PEAK_CAPTAIN.get(), PeakCaptainEntity.createCaptainAttributes().build());
         for (AllianceSoldierEntity.Kind kind : AllianceSoldierEntity.Kind.values())

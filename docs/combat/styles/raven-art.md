@@ -122,27 +122,30 @@ Intermédiaire (Qi Condensation), éventail de fer, source : le Maître des Corb
 
 - L'objet qui permet à un allié d'entrer dans ton monde avec toi.
 
-## État (19/10, étapes 1 et 3 sur 5)
+## État (19/10 : terminé)
 
 Fait :
 - le monde : la dimension `murimblock:raven_halls` remplie du château sans fin, ton hall à mi-hauteur, Closed Room
   accroupi pour y aller et en revenir (sans éventail en main), les portes d'ombre du hall (sud : retour ; ouest, est,
   nord : tes 3 perchoirs), le perchoir, les salles closes (avalés et duels ; pas de château sur leur rangée, pour
   qu'elles s'ouvrent sans à-coup) ;
+- le familier : le Corbeau d'ombre (`RavenFamiliarEntity`, modèle et animations GeckoLib
+  `scripts/animation/raven-familiar.cjs`), tant que l'art est ton style principal : il vole à ton épaule quand tu bouges,
+  se pose au sol à côté de toi quand tu restes immobile ; Halls Step l'envoie d'abord là où tu sortiras ;
 - les techniques, chacune avec son geste d'éventail (`scripts/animation/raven-art.cjs`) et ses portes :
   Raven Gate (une fosse sous la cible, puis une bouche dans le ciel 10 blocs au-dessus), Halls Step (une porte debout au
   départ et à l'arrivée), Exchange, Swallowing Gate (une grande porte debout 3 s, les projectiles renvoyés aux tireurs),
   Closed Room (claquement de l'éventail, la salle), The Halls Unfold (une porte de 7 blocs, puis une fosse sous chaque
   ennemi à 30 blocs), passif Between Worlds (failles en plumes, la cible passe derrière toi à la 4e), secret Return to
   Sender, finish Last Message (une fosse sous l'abattu, les plumes montent, l'éventail se referme) ;
-- la porte : entité GeckoLib `RavenGateEntity` (`scripts/animation/raven-fx.cjs` : disque d'ombre, voile violet, bord
-  ambre moucheté d'or, 16 plumes, tourbillon), couchée, tournée vers le bas ou debout, qui s'ouvre, tourne et se
-  referme ; lumière ambrée et violette Photon tant qu'elle est ouverte ; plumes noires (particule `raven_feather`) ;
-- icônes des 8 (« les couloirs la nuit »), couleur d'aura ambre et plumes autour des épaules, message « needs an iron fan ».
-Tests `RavenArtGameTests` (9), visites `runRavenTour` (le monde) et `runRavenSkillsTour` (les techniques).
+- la porte : entité GeckoLib `RavenGateEntity` (`scripts/animation/raven-fx.cjs`), lumières Photon, plumes noires
+  (particule `raven_feather`) ; icônes des 8, aura ambre et plumes, message « needs an iron fan » ;
+- la source : le Maître des Corbeaux (`docs/mobs/crow-master.md`) dans la Tour du Corbeau
+  (`docs/structures/raven-tower.md`), qui vend le rouleau 64 taels ; le guide du Dragon d'Or mène à la tour.
+Tests `RavenArtGameTests` (12) et `SiteGameTests.ravenTowerIsWholeAndCarried` ; visites `runRavenTour` (le monde),
+`runRavenSkillsTour` (les techniques), `runRavenFamiliarTour` (le corbeau, la tour, le Maître).
 
 Limites : chaque passage d'un monde à l'autre montre l'écran « Loading terrain » de Minecraft (environ une seconde) ;
 le finish n'a pas été filmé (il faut deux joueurs).
 
-À venir : 2. le corbeau familier (modèle GeckoLib, animations, suivi ; Halls Step sortira là où il vole) ; 5. le Maître
-des Corbeaux (PNJ, tour, épreuve), le rouleau à sa source, le guide du Dragon d'Or.
+Reste à décider : l'objet qui permet à un allié d'entrer dans ton monde avec toi.

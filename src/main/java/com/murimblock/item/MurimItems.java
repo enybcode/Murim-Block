@@ -194,6 +194,7 @@ public final class MurimItems {
     public static final DeferredItem<MartialGuideItem> MAJIN_FIST_GUIDE = guide("majin_fist", com.murimblock.martial.MartialArts.MAJIN_FIST, "bandit_camp");
     public static final DeferredItem<MartialGuideItem> SEVEN_STARS_SWORD_GUIDE = guide("seven_stars_sword", com.murimblock.martial.MartialArts.SEVEN_STARS_SWORD, MartialGuideItem.STAR_PEAK);
     public static final DeferredItem<MartialGuideItem> THUNDER_SABER_GUIDE = guide("thunder_saber", com.murimblock.martial.MartialArts.THUNDER_SABER, MartialGuideItem.NOWHERE);
+    public static final DeferredItem<MartialGuideItem> RAVEN_ART_GUIDE = guide("raven_art", com.murimblock.martial.MartialArts.RAVEN_ART, "raven_tower");
 
     private static DeferredItem<MartialGuideItem> guide(String art, net.minecraft.resources.ResourceLocation id, String place) {
         return ITEMS.register(art + "_guide", () -> new MartialGuideItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), id, place));
@@ -202,7 +203,7 @@ public final class MurimItems {
     /** Every martial guide, in the Golden Dragon's order (easiest first). */
     public static java.util.List<DeferredItem<MartialGuideItem>> guides() {
         return java.util.List.of(LONG_FIST_GUIDE, GOLDEN_BELL_GUIDE, TRAVELLER_STAFF_GUIDE, CELESTIAL_PEAK_SPEAR_GUIDE, AZURE_CLOUD_SWORD_GUIDE,
-                MOUNTAIN_SHATTERING_FIST_GUIDE, OVERLORD_SPEAR_GUIDE, SEVEN_STARS_SWORD_GUIDE, MAJIN_FIST_GUIDE, THUNDER_SABER_GUIDE);
+                MOUNTAIN_SHATTERING_FIST_GUIDE, RAVEN_ART_GUIDE, OVERLORD_SPEAR_GUIDE, SEVEN_STARS_SWORD_GUIDE, MAJIN_FIST_GUIDE, THUNDER_SABER_GUIDE);
     }
     public static final DeferredItem<Item> GOLD_YUANBAO = ITEMS.register("gold_yuanbao", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_DRAGON_SAGE_SPAWN_EGG = ITEMS.register("golden_dragon_sage_spawn_egg",
@@ -211,6 +212,9 @@ public final class MurimItems {
             () -> new DeferredSpawnEggItem(MurimEntities.ALLIANCE_MERCHANT, 0x2B5FA8, 0xE9D9A6, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> SCARLET_GUARDIAN_SPAWN_EGG = ITEMS.register("scarlet_guardian_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.SCARLET_GUARDIAN, 0x20191D, 0x86192A, new Item.Properties()));
+    /** The Crow Master's egg: black and gold, his robe and its trim. */
+    public static final DeferredItem<DeferredSpawnEggItem> CROW_MASTER_SPAWN_EGG = ITEMS.register("crow_master_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.CROW_MASTER, 0x1D1F2A, 0xD9A83F, new Item.Properties()));
     /** The Golden Bell monk's egg: saffron and brown, his robe and sash. */
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_BELL_MONK_SPAWN_EGG = ITEMS.register("golden_bell_monk_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_BELL_MONK, 0xE2861F, 0x6B4226, new Item.Properties()));
@@ -395,6 +399,7 @@ public final class MurimItems {
                         output.accept(AZURE_CLOUD_SWORD.get());
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
                         output.accept(GOLDEN_BELL_MONK_SPAWN_EGG.get());
+                        output.accept(CROW_MASTER_SPAWN_EGG.get());
                         output.accept(SCARLET_GUARDIAN_SPAWN_EGG.get());
                         output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
                         output.accept(NETHER_TALISMAN.get());

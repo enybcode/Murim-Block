@@ -97,10 +97,10 @@ public final class RavenArtGameTests {
 
     private static void end(GameTestHelper helper, ServerPlayer player, Entity... others) {
         for (Entity e : others) if (e != null) e.discard();
-        RavenHalls.clearForTests();
-        RavenHalls.useStandInForTests(null, 0);
+        // Only this test's own state: the batches run side by side, and the stand-in halls stay for the other raven tests.
+        if (RavenHalls.dueling(player)) RavenHalls.endDuel(player);
         EpicFightBridge.patch(player).resetHolding();
-        MartialCombat.clearForTests();
+        MartialCombat.forget(player);
         cleanup(player);
         helper.succeed();
     }
@@ -184,13 +184,18 @@ public final class RavenArtGameTests {
         tickFor(helper, player, in + 60);
         // Under load the clap may land a few ticks late: wait (up to 30 ticks) until both are in the room.
         int[] at = {-1};
-        for (int t = in; t <= in + 30; t++) {
+        for (int t = in; t <= in + 40; t++) {
             int now = t;
             helper.runAfterDelay(t, () -> {
                 if (at[0] >= 0) return;
                 player.hasChangedDimension();
                 if (player.level() != halls || !RavenHalls.dueling(player)) {
-                    helper.assertTrue(now < in + 30, "Both should be in the room");
+                    helper.assertTrue(now < in + 40, "Both should be in the room");
+                    // Another test running beside this one may clear every scheduled move (MartialCombat.clearForTests): cast again once.
+                    if (now == in + 10 && player.level() != halls) {
+                        MartialService.clearCooldownsForTests(player);
+                        MartialService.castSlot(player, 4);
+                    }
                     return;
                 }
                 at[0] = now;
@@ -312,5 +317,65 @@ public final class RavenArtGameTests {
             helper.getLevel().getEntitiesOfClass(Arrow.class, new AABB(player.blockPosition()).inflate(12)).forEach(Entity::discard);
             end(helper, player, shooter);
         });
+    }
+
+    // ---------------------------------------------------------------- the familiar and the Crow Master
+
+    private static java.util.List<com.murimblock.martial.RavenFamiliarEntity> ravens(GameTestHelper helper, ServerPlayer player) {
+        return helper.getLevel().getEntitiesOfClass(com.murimblock.martial.RavenFamiliarEntity.class, player.getBoundingBox().inflate(30),
+                r -> r.ownerId().filter(player.getUUID()::equals).isPresent());
+    }
+
+    @GameTest(template = "spear_arena", batch = "raven_familiar", timeoutTicks = 80)
+    public static void theRavenKeepsByItsStudentAndLeavesWhenTheArtIsLaidDown(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        tickFor(helper, player, 60);
+        helper.runAfterDelay(24, () -> {
+            var ravens = ravens(helper, player);
+            helper.assertTrue(ravens.size() == 1, "One raven should keep by the student, found " + ravens.size());
+            helper.assertTrue(ravens.getFirst().distanceTo(player) < 4, "The raven is not by its student");
+            MartialService.setForTests(player, MartialService.data(player).learn(MartialArts.art(MartialArts.LONG_FIST)).withMainArt(MartialArts.LONG_FIST));
+        });
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(ravens(helper, player).isEmpty(), "The raven stayed once the art was laid down");
+            end(helper, player);
+        });
+    }
+
+    @GameTest(template = "spear_arena", batch = "raven_familiar_step", timeoutTicks = 80)
+    public static void hallsStepSendsTheRavenAheadFirst(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        tickFor(helper, player, 60);
+        helper.runAfterDelay(24, () -> {
+            player.setXRot(25);
+            CastResult cast = MartialService.castSlot(player, 1);
+            helper.assertTrue(cast == CastResult.CAST, "No step: " + cast);
+        });
+        helper.runAfterDelay(24 + after(MurimAnimations.RAVEN_STEP_THROUGH), () -> {
+            var ravens = ravens(helper, player);
+            helper.assertTrue(!ravens.isEmpty() && ravens.getFirst().distanceTo(player) < 3, "The raven was not where the student came out");
+            end(helper, player);
+        });
+    }
+
+    @GameTest(template = "spear_arena", batch = "raven_master", timeoutTicks = 40)
+    public static void theCrowMasterSellsTheScrollAndMeetsBlowsWithFeathers(GameTestHelper helper) {
+        ServerPlayer player = adept(helper);
+        com.murimblock.mob.CrowMasterEntity master = com.murimblock.mob.MurimEntities.CROW_MASTER.get().create(helper.getLevel());
+        master.moveTo(player.getX(), player.getY(), player.getZ() + 3, 180, 0);
+        master.setNoAi(true);
+        helper.getLevel().addFreshEntity(master);
+        var scroll = master.getOffers().stream().filter(o -> o.getResult().is(MurimItems.RAVEN_ART_SCROLL.get())).findFirst();
+        helper.assertTrue(scroll.isPresent() && scroll.get().getCostA().getCount() == com.murimblock.mob.CrowMasterEntity.SCROLL_PRICE,
+                "The Crow Master does not sell the scroll for its price");
+        float health = master.getHealth();
+        master.hurt(helper.getLevel().damageSources().playerAttack(player), 10);
+        helper.assertTrue(master.getHealth() == health, "A blow hurt the Crow Master");
+        helper.assertTrue(master.sulking(), "Struck, the Crow Master should not trade for a while");
+        helper.assertTrue(master.getZ() < player.getZ(), "The Crow Master did not step out behind whoever struck him");
+        // The Golden Dragon sells a guide to his tower.
+        helper.assertTrue(com.murimblock.mob.GoldenDragonShop.wares().stream().anyMatch(w -> w.item().get().is(MurimItems.RAVEN_ART_GUIDE.get()) && w.forSale()),
+                "The Golden Dragon does not sell the Raven Messenger Art's guide");
+        end(helper, player, master);
     }
 }

@@ -14,7 +14,8 @@ public enum SitePlan implements StringRepresentable {
     PEACH_HAMLET("peach_hamlet", PeachHamlet::new),
     ALLIANCE_OUTPOST("alliance_outpost", AllianceOutpost::new),
     ALLIANCE_ARENA("alliance_arena", AllianceArena::new),
-    BANDIT_CAMP("bandit_camp", BanditCamp::new);
+    BANDIT_CAMP("bandit_camp", BanditCamp::new),
+    RAVEN_TOWER("raven_tower", RavenTower::new);
 
     /** The largest reach of any site, in blocks. */
     public static final int MAX_REACH = 60;

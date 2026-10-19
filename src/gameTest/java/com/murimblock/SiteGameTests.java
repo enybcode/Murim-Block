@@ -69,6 +69,14 @@ public final class SiteGameTests {
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp", timeoutTicks = 1200)
     public static void banditCampIsWholeAndCarried(GameTestHelper helper) { check(helper, SitePlan.BANDIT_CAMP, "bandit_camp", 7600, Rotation.CLOCKWISE_90, GROUND); }
 
+    @GameTest(template = "foundation_arena", batch = "site_raven_tower", timeoutTicks = 600)
+    public static void ravenTowerIsWholeAndCarried(GameTestHelper helper) {
+        check(helper, SitePlan.RAVEN_TOWER, "raven_tower", 8000, Z, Rotation.COUNTERCLOCKWISE_90, level -> {
+            var masters = level.getEntitiesOfClass(com.murimblock.mob.CrowMasterEntity.class, new net.minecraft.world.phys.AABB(8000 - 40, GROUND - 5, Z - 40, 8000 + 40, GROUND + 40, Z + 40));
+            helper.assertTrue(masters.size() == 1, "The Raven Tower should hold its Crow Master, holds " + masters.size());
+        }, GROUND);
+    }
+
     @GameTest(template = "foundation_arena", batch = "site_bandit_camp_north", timeoutTicks = 1200)
     public static void theNorthsBanditCampIsDarkWoodUnderSnow(GameTestHelper helper) { regionalCamp(helper, "north", Blocks.DARK_OAK_LOG); }
 
@@ -227,6 +235,7 @@ public final class SiteGameTests {
             case STILT_VILLAGE -> Map.of("minecraft:villager", 3);
             case BANDIT_DEN -> Map.of("murimblock:bandit_chief", 1, "murimblock:mountain_bandit", 4);
             case BAMBOO_TEMPLE -> Map.of("murimblock:azure_sensei", 1, "murimblock:golden_bell_monk", 1);
+            case RAVEN_TOWER -> Map.of("murimblock:crow_master", 1);
             case PEACH_HAMLET -> Map.of("murimblock:crab_man", 3);
             case BEACON_POST -> Map.of("murimblock:mountain_bandit", 4);
             case LOTUS_GARDEN -> Map.of("minecraft:villager", 3);
@@ -249,7 +258,8 @@ public final class SiteGameTests {
         return level.getEntitiesOfClass(Mob.class, AABB.of(box).inflate(8, 48, 8), m -> m instanceof Villager || m instanceof MountainBanditEntity || m instanceof BanditChiefEntity
                 || m instanceof com.murimblock.mob.AzureSenseiEntity || m instanceof com.murimblock.mob.CrabManEntity || m instanceof com.murimblock.mob.ArmoredCrabEntity
                 || m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse || m instanceof com.murimblock.mob.AllianceSoldierEntity
-                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.GoldenBellMonkEntity);
+                || m instanceof com.murimblock.mob.PeakCaptainEntity || m instanceof com.murimblock.mob.GoldenBellMonkEntity
+                || m instanceof com.murimblock.mob.CrowMasterEntity);
     }
 
     /** Clears the box and lays a thick stone floor whose top is GROUND - 1. */
