@@ -1,8 +1,8 @@
 # La Hallebarde du Croissant de Lune (月牙戟, *Crescent Moon Halberd*)
 
-> **État : en jeu sur `test` le 19/10/2026** (choisie par Enzo parmi quatre propositions, faite en autonomie la nuit
+> **État : en jeu sur `test` le 19/10/2026, validé par Enzo le 19/10 (« oui valider », série D)** (choisie par Enzo parmi quatre propositions, faite en autonomie la nuit
 > du 19/10, techniques refaites le 19/10 au matin (série D) ; demandes d'Enzo : « une arme pour l'art martial comme d'habitude », « utilise Photon et GeckoLib et crée un
-> art original en termes d'effets »). À valider en jeu par Enzo. Noms en jeu en anglais.
+> art original en termes d'effets »). Validé par Enzo sur les captures ; reste à l'essayer en vraie partie. Noms en jeu en anglais.
 
 Art **orthodoxe**, élément **la lune et l'eau**. Élégant, tout en cercles, à distance moyenne. Une hallebarde chinoise
 (*ji*) : une lance avec une lame en croissant sur le côté. Il s'apprend à **Qi Condensation** ; son rouleau enseigne
