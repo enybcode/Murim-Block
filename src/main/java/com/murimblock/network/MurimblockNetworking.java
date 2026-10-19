@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 38: the Devouring Demon Art's Kagune Shift and both kagune at once (the kagune's state keeps its last form).
      * 37: the aura released or held in at will (its key).
      * 36: flying on the sword (the jump held to mount it, its state to all who see the flyer).
      * 35: the aura's pressure seen by all (its reach in the aura every client sees).
@@ -24,7 +25,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "37";
+    private static final String NETWORK_VERSION = "38";
 
     private MurimblockNetworking() {
     }

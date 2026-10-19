@@ -445,6 +445,11 @@ public final class MartialArts {
     public static final Technique BURROW = new Technique(id("burrow"), DEVOURING_DEMON, 220, 160);
     /** A tentacle shoots at what he looks at (14 blocks): a foe is pulled in to him; else it hooks the block and pulls him there. */
     public static final Technique GRAPPLE = new Technique(id("grapple"), DEVOURING_DEMON, 140, 120);
+    /**
+     * Trades the four tentacles for the two centipedes, standing, or back (Enzo, 19/10/2026): free, a second to recover; the
+     * keys then cast the centipedes' versions. Not at full Fury: the demon form has both at once.
+     */
+    public static final Technique KAGUNE_SHIFT = new Technique(id("kagune_shift"), DEVOURING_DEMON, 0, 20);
     /** In the demon form: a centipede coils round the foe looked at (8 blocks), holds it 2 s and crushes it four times. */
     public static final Technique CONSTRICT = new Technique(id("constrict"), DEVOURING_DEMON, 140, 120);
     /** Epic Fight's bare-hand strikes for now; the tentacles' own M1 come next. Each blow feeds the Fury. */
@@ -491,7 +496,7 @@ public final class MartialArts {
         add(new Art(SANGUINE_ART, List.of(BLOOD_CRYSTAL, SCARLET_TEAR, BLOOD_CRYSTAL_FORM, CRYSTAL_BARRAGE, BLOOD_ICEBERG),
                 CRIMSON_STANCE, List.of(CRIMSON_CONTACT, SCARLET_RELEASE, CRYSTAL_MASTERY, CRIMSON_PEAK), List.of()));
         // No quests yet: the scroll teaches every technique built so far.
-        add(new Art(DEVOURING_DEMON, List.of(LASH, IMPALING_THORNS, GRAPPLE), DEVOURING_HUNGER, List.of(), List.of()));
+        add(new Art(DEVOURING_DEMON, List.of(LASH, IMPALING_THORNS, GRAPPLE, KAGUNE_SHIFT), DEVOURING_HUNGER, List.of(), List.of()));
     }
 
     private MartialArts() {

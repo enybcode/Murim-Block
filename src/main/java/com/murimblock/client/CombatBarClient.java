@@ -230,8 +230,8 @@ public final class CombatBarClient {
             g.fill(x - 1, y - 1, x + SLOT + 1, y + SLOT + 1, HELD[i] >= 0 ? HELD_EDGE : WELL_EDGE);
             g.fill(x, y, x + SLOT, y + SLOT, WELL);
             if (technique != null) {
-                // The Devouring Demon's techniques change in the demon form, on the same key: its version's icon.
-                MartialArts.Technique shown = KaguneState.demon(player) ? MartialArts.DEMON_VERSIONS.getOrDefault(technique, technique) : technique;
+                // The Devouring Demon's techniques change with the centipedes out (Kagune Shift, the demon form): their icon.
+                MartialArts.Technique shown = KaguneState.centipedes(KaguneState.of(player).form()) ? MartialArts.DEMON_VERSIONS.getOrDefault(technique, technique) : technique;
                 TechniqueIcons.draw(g, shown, x, y, SLOT);
                 // Hanging at the top of the crescent: its slot glows, pulsing azure, "Slam" beside the bar.
                 if (technique == MartialArts.HEAVEN_SPLITTING_CRESCENT && slamReady() && mc.level != null) {

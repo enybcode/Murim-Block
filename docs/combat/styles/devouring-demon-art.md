@@ -69,9 +69,21 @@ l'écran de la victime se décolore et l'on entend un battement de cœur.
 - **La kagune sort toute seule** en mode combat, art principal, mains vides (pas de touche pour l'instant) ; une arme en
   main ou la sortie du mode combat la range, et la rage est perdue.
 - **La rage (Fury)**, sur 100 : +4 par coup porté, +3 par coup reçu (une fois par tick) ; après 6 s sans rien, −2 par
-  seconde. À 100, **transformation automatique** (2,6 s, aucune technique pendant), puis forme du démon à quatre pattes :
+  seconde. À 100, **transformation automatique** (2,6 s, aucune technique pendant), puis forme du démon à quatre pattes,
+  tentacules et scolopendres à la fois :
   dégâts ×1,25, dégâts reçus ×0,75, −3 de rage par seconde, +2 par coup porté. À 0 : retour aux tentacules, essoufflé
   4 s (lenteur II, faiblesse). La forme du démon tient hors combat jusqu'à épuisement ; un K.O. ou une arme la finit.
+- **Les deux kagune** (Enzo, 19/10/2026 : « avoir les deux en même temps », d'après sa capture Blockbench) :
+  - **Kagune Shift** (touche 4, gratuite, 1 s de recharge) : les tentacules rentrent dans son dos et les deux scolopendres
+    sortent, debout, ou l'inverse (`KaguneState.Form.CENTIPEDE`). Les touches lancent alors les versions des scolopendres
+    (Centipede Bite, Burrow, Constrict), debout et sans rage. Pas en forme du démon.
+  - **À 100 de rage**, la transformation fait sortir la kagune qui manquait à côté de l'autre, et le masque : **les deux à
+    la fois**, à quatre pattes. **Chaque touche frappe avec les deux** : Lash + Bite, Thorns + Burrow, Grapple + Constrict
+    (l'ennemi enlacé est encore tiré par la tentacule). La rage épuisée, il revient à la kagune qu'il avait sortie.
+  - Le champ `strike` de `KaguneState` porte les deux coups à la fois (tentacules dans l'octet bas, scolopendres dans le
+    suivant : `KaguneState.strikes`, `has`) ; `KaguneState.from` garde la forme d'avant (protocole 38).
+  - Le dessin (`KaguneOverlay.partOf`) : chaque partie (tentacules, scolopendres, masque) avec son idle ; une kagune qui
+    sort grandit depuis sa racine (0,35 s), une qui rentre rapetisse (0,25 s).
 - **Le HUD**, combiné à la barre de combat (`CombatBarClient.furyRing`) : un anneau de sang autour du dantian, qui monte
   des deux côtés depuis le bas et se ferme en haut à 100 ; au-delà de 75 il bat comme un cœur ; en forme du démon il
   devient violet veiné de rouge, qui coule, et le cerclage d'or du dantian passe au cramoisi ; les icônes des

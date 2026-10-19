@@ -38,7 +38,7 @@ public final class DevouringDemonGameTests {
     private static final BlockPos CENTRE = new BlockPos(4, 1, 4);
     private static final int TRANSFORM_TICKS = (int) Math.ceil(KaguneState.TRANSFORM_SECONDS * 20) + 2;
 
-    /** A student of the art, bare-handed, combat on, facing south (+z), Lash in slot 0, Impaling Thorns in slot 1, Grapple in 2. */
+    /** A student of the art, bare-handed, combat on, facing south (+z), Lash in slot 0, Impaling Thorns in slot 1, Grapple in 2, Kagune Shift in 3. */
     private static ServerPlayer student(GameTestHelper helper) {
         ServerPlayer player = player(helper);
         EpicFightCombatDefaults.enforce(player);
@@ -49,6 +49,8 @@ public final class DevouringDemonGameTests {
         MartialService.assign(player, 1, MartialArts.IMPALING_THORNS.id());
         MartialService.unlock(player, MartialArts.GRAPPLE);
         MartialService.assign(player, 2, MartialArts.GRAPPLE.id());
+        MartialService.unlock(player, MartialArts.KAGUNE_SHIFT);
+        MartialService.assign(player, 3, MartialArts.KAGUNE_SHIFT.id());
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         BlockPos p = helper.absolutePos(CENTRE);
         player.moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
@@ -151,16 +153,16 @@ public final class DevouringDemonGameTests {
         });
     }
 
-    /** In the demon form Lash's key bites: the foe he looks at, 6 blocks off, struck, slowed; he devours some of it. */
-    @GameTest(template = "spear_arena", batch = "demon_bite", timeoutTicks = 200)
+    /** With the centipedes out (Kagune Shift) Lash's key bites: the foe he looks at, 6 blocks off, struck, slowed; he devours some of it. */
+    @GameTest(template = "spear_arena", batch = "demon_bite")
     public static void inTheDemonFormLashBites(GameTestHelper helper) {
         ServerPlayer player = student(helper);
-        int cast = 4 + TRANSFORM_TICKS, hit = cast + DevouringDemon.BITE_HIT_TICK + 2;
+        int cast = 6, hit = cast + DevouringDemon.BITE_HIT_TICK + 2;
         ticking(helper, player, hit + 2);
-        helper.runAfterDelay(2, () -> DevouringDemon.setFury(player, KaguneState.MAX_FURY));
+        helper.runAfterDelay(2, () -> MartialService.castSlot(player, 3));
         Zombie[] zombies = new Zombie[2];
         helper.runAfterDelay(cast, () -> {
-            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.DEMON, "Not in the demon form: " + KaguneState.of(player).form());
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.CENTIPEDE, "The centipedes are not out: " + KaguneState.of(player).form());
             // Back to the arena's north side, so the far foe is still in it.
             player.teleportTo(player.getX(), player.getY(), player.getZ() - 3);
             zombies[0] = dummy(helper, player, 0, 6);
@@ -168,7 +170,7 @@ public final class DevouringDemonGameTests {
             player.setHealth(10);
             MartialService.clearCooldownsForTests(player);
             helper.assertTrue(MartialService.castSlot(player, 0) == MartialService.CastResult.CAST, "Centipede Bite was not cast");
-            helper.assertTrue(KaguneState.of(player).strike() == KaguneState.STRIKE_BITE, "The kagune does not bite: " + KaguneState.of(player).strike());
+            helper.assertTrue(KaguneState.has(KaguneState.of(player).strike(), KaguneState.STRIKE_BITE), "The kagune does not bite: " + KaguneState.of(player).strike());
         });
         helper.runAfterDelay(hit, () -> {
             Zombie far = zombies[0], aside = zombies[1];
@@ -193,7 +195,7 @@ public final class DevouringDemonGameTests {
             zombies[0] = dummy(helper, player, 0, 7);
             zombies[1] = dummy(helper, player, 3, 2);
             helper.assertTrue(MartialService.castSlot(player, 1) == MartialService.CastResult.CAST, "Impaling Thorns was not cast");
-            helper.assertTrue(KaguneState.of(player).strike() == KaguneState.STRIKE_THORNS, "The kagune does not go into the ground");
+            helper.assertTrue(KaguneState.has(KaguneState.of(player).strike(), KaguneState.STRIKE_THORNS), "The kagune does not go into the ground");
         });
         helper.runAfterDelay(hit, () -> {
             Zombie far = zombies[0], aside = zombies[1];
@@ -217,23 +219,23 @@ public final class DevouringDemonGameTests {
         });
     }
 
-    /** In the demon form the key burrows: the two nearest foes ahead struck from under the ground, not the farther one. */
-    @GameTest(template = "spear_arena", batch = "demon_burrow", timeoutTicks = 200)
+    /** With the centipedes out (Kagune Shift) the key burrows: the two nearest foes ahead struck from under the ground, not the farther one. */
+    @GameTest(template = "spear_arena", batch = "demon_burrow")
     public static void burrowStrikesTheTwoNearest(GameTestHelper helper) {
         ServerPlayer player = student(helper);
-        int cast = 4 + TRANSFORM_TICKS, hit = cast + DevouringDemon.BURROW_HIT_TICK + 2;
+        int cast = 6, hit = cast + DevouringDemon.BURROW_HIT_TICK + 2;
         ticking(helper, player, hit + 2);
-        helper.runAfterDelay(2, () -> DevouringDemon.setFury(player, KaguneState.MAX_FURY));
+        helper.runAfterDelay(2, () -> MartialService.castSlot(player, 3));
         Zombie[] zombies = new Zombie[3];
         helper.runAfterDelay(cast, () -> {
-            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.DEMON, "Not in the demon form: " + KaguneState.of(player).form());
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.CENTIPEDE, "The centipedes are not out: " + KaguneState.of(player).form());
             player.teleportTo(player.getX(), player.getY(), player.getZ() - 3);
             zombies[0] = dummy(helper, player, -2, 3);
             zombies[1] = dummy(helper, player, 2, 3);
             zombies[2] = dummy(helper, player, 0, 7);
             MartialService.clearCooldownsForTests(player);
             helper.assertTrue(MartialService.castSlot(player, 1) == MartialService.CastResult.CAST, "Burrow was not cast");
-            helper.assertTrue(KaguneState.of(player).strike() == KaguneState.STRIKE_BURROW, "The centipedes do not burrow");
+            helper.assertTrue(KaguneState.has(KaguneState.of(player).strike(), KaguneState.STRIKE_BURROW), "The centipedes do not burrow");
         });
         helper.runAfterDelay(hit, () -> {
             helper.assertTrue(zombies[0].getHealth() < 400 && zombies[1].getHealth() < 400, "Burrow missed the two nearest: "
@@ -290,19 +292,19 @@ public final class DevouringDemonGameTests {
         });
     }
 
-    /** Constrict, in the demon form: the foe held where it stands and crushed again and again, then thrown off. */
-    @GameTest(template = "spear_arena", batch = "demon_constrict", timeoutTicks = 260)
+    /** Constrict, with the centipedes out (Kagune Shift): the foe held where it stands and crushed again and again, then thrown off. */
+    @GameTest(template = "spear_arena", batch = "demon_constrict")
     public static void constrictHoldsAndCrushes(GameTestHelper helper) {
         ServerPlayer player = student(helper);
-        int cast = 4 + TRANSFORM_TICKS, coiled = cast + DevouringDemon.CONSTRICT_HIT_TICK;
+        int cast = 6, coiled = cast + DevouringDemon.CONSTRICT_HIT_TICK;
         int early = coiled + DevouringDemon.CONSTRICT_CRUSH_EVERY / 2 + 1, late = coiled + DevouringDemon.CONSTRICT_HOLD_TICKS - 1;
         ticking(helper, player, late + 4);
-        helper.runAfterDelay(2, () -> DevouringDemon.setFury(player, KaguneState.MAX_FURY));
+        helper.runAfterDelay(2, () -> MartialService.castSlot(player, 3));
         Zombie[] zombie = new Zombie[1];
         float[] firstCrush = new float[1];
         double[] where = new double[3];
         helper.runAfterDelay(cast, () -> {
-            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.DEMON, "Not in the demon form: " + KaguneState.of(player).form());
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.CENTIPEDE, "The centipedes are not out: " + KaguneState.of(player).form());
             zombie[0] = standing(helper, player, 0, 4);
             MartialService.clearCooldownsForTests(player);
             helper.assertTrue(MartialService.castSlot(player, 2) == MartialService.CastResult.CAST, "Constrict was not cast");
@@ -320,6 +322,77 @@ public final class DevouringDemonGameTests {
         helper.runAfterDelay(late + 3, () -> {
             helper.assertTrue(!DevouringDemon.constricted(zombie[0]), "The coils never let go");
             end(helper, player, zombie[0]);
+        });
+    }
+
+    /**
+     * Kagune Shift: the centipedes out in place of the tentacles, standing (not on all fours), and the keys cast their
+     * techniques (Lash's: a bite); again, the tentacles back; full Fury from the centipedes, then spent: back to them.
+     */
+    @GameTest(template = "spear_arena", batch = "demon_shift", timeoutTicks = 260)
+    public static void kaguneShiftTradesTheKagune(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        Zombie[] zombie = new Zombie[1];
+        int shift = 3, bite = shift + 2, back = bite + 18, full = back + 4, demon = full + TRANSFORM_TICKS + 1, spent = demon + 25;
+        ticking(helper, player, spent + 3);
+        helper.runAfterDelay(shift, () -> {
+            helper.assertTrue(MartialService.castSlot(player, 3) == MartialService.CastResult.CAST, "Kagune Shift was not cast");
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.CENTIPEDE, "The centipedes are not out: " + KaguneState.of(player).form());
+            helper.assertTrue(!KaguneState.beast(player), "On all fours without Fury");
+        });
+        helper.runAfterDelay(bite, () -> {
+            zombie[0] = dummy(helper, player, 0, 4);
+            MartialService.clearCooldownsForTests(player);
+            helper.assertTrue(MartialService.castSlot(player, 0) == MartialService.CastResult.CAST, "Lash's key cast nothing with the centipedes out");
+            int strike = KaguneState.of(player).strike();
+            helper.assertTrue(KaguneState.has(strike, KaguneState.STRIKE_BITE) && !KaguneState.has(strike, KaguneState.STRIKE_LASH),
+                    "With the centipedes out the key is not a bite alone: " + strike);
+        });
+        helper.runAfterDelay(back, () -> {
+            helper.assertTrue(zombie[0].getHealth() < 400, "The standing bite missed");
+            MartialService.clearCooldownsForTests(player);
+            helper.assertTrue(MartialService.castSlot(player, 3) == MartialService.CastResult.CAST, "Kagune Shift back was not cast");
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.HUNGER, "The tentacles are not back: " + KaguneState.of(player).form());
+            MartialService.clearCooldownsForTests(player);
+            MartialService.castSlot(player, 3);
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.CENTIPEDE, "Not shifted to the centipedes again");
+        });
+        helper.runAfterDelay(full, () -> DevouringDemon.setFury(player, KaguneState.MAX_FURY));
+        helper.runAfterDelay(demon, () -> {
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.DEMON, "Not in the demon form: " + KaguneState.of(player).form());
+            MartialService.clearCooldownsForTests(player);
+            helper.assertTrue(MartialService.castSlot(player, 3) != MartialService.CastResult.CAST, "Kagune Shift was cast in the demon form");
+            DevouringDemon.setFury(player, DevouringDemon.DEMON_DRAIN_PER_SECOND);
+        });
+        helper.runAfterDelay(spent, () -> {
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.CENTIPEDE, "Not back to the centipedes he had out: " + KaguneState.of(player).form());
+            end(helper, player, zombie[0]);
+        });
+    }
+
+    /** The demon form has both kagune: each key strikes with both, Lash and Centipede Bite at once. */
+    @GameTest(template = "spear_arena", batch = "demon_both", timeoutTicks = 200)
+    public static void inTheDemonFormEachKeyStrikesWithBoth(GameTestHelper helper) {
+        ServerPlayer player = student(helper);
+        int cast = 4 + TRANSFORM_TICKS, hit = cast + Math.max(DevouringDemon.LASH_HIT_TICK, DevouringDemon.BITE_HIT_TICK) + 2;
+        ticking(helper, player, hit + 2);
+        helper.runAfterDelay(2, () -> DevouringDemon.setFury(player, KaguneState.MAX_FURY));
+        Zombie[] zombies = new Zombie[2];
+        helper.runAfterDelay(cast, () -> {
+            helper.assertTrue(KaguneState.of(player).form() == KaguneState.Form.DEMON, "Not in the demon form: " + KaguneState.of(player).form());
+            player.teleportTo(player.getX(), player.getY(), player.getZ() - 3);
+            // One in Lash's arc beside him, one far ahead for the bite.
+            zombies[0] = dummy(helper, player, -3, 1.5);
+            zombies[1] = dummy(helper, player, 0, 6);
+            MartialService.clearCooldownsForTests(player);
+            helper.assertTrue(MartialService.castSlot(player, 0) == MartialService.CastResult.CAST, "The key cast nothing");
+            int strike = KaguneState.of(player).strike();
+            helper.assertTrue(KaguneState.has(strike, KaguneState.STRIKE_LASH) && KaguneState.has(strike, KaguneState.STRIKE_BITE), "Not both at once: " + strike);
+        });
+        helper.runAfterDelay(hit, () -> {
+            helper.assertTrue(zombies[0].getHealth() < 400, "The tentacles' Lash missed the foe beside him");
+            helper.assertTrue(zombies[1].hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The centipede's bite missed the foe ahead");
+            end(helper, player, zombies);
         });
     }
 }
