@@ -106,6 +106,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at the Raven Master, perched far off, met in the eyes, fought (see RavenMasterTour).
+        ravenMasterTour {
+            client()
+            gameDirectory = project.file('build/raven-master-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.ravenMasterTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client tour of the Murim biomes in a fresh normal world (see BiomeTour).
         biomeTour {
             client()
@@ -1264,5 +1273,21 @@ tasks.named('runMpServer').configure {
             if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only multiplayer check.')
             new File(workingDir, 'mp-tour-client.txt').delete()
         }
+    }
+}
+
+def ravenMasterTourSave = layout.buildDirectory.dir('raven-master-tour-run/saves/murim-raven-master')
+def ravenMasterTourReport = layout.buildDirectory.file('raven-master-tour-run/raven-master-tour-report.txt')
+def ravenMasterTourShots = layout.buildDirectory.dir('raven-master-tour-run/screenshots')
+tasks.named('runRavenMasterTour').configure {
+    doFirst {
+        if (!gameTestsEnabled) throw new GradleException('Use -PgameTests for the development-only Raven Master tour.')
+        ravenMasterTourSave.get().asFile.deleteDir()
+        ravenMasterTourShots.get().asFile.deleteDir()
+        ravenMasterTourReport.get().asFile.delete()
+    }
+    doLast {
+        def report = ravenMasterTourReport.get().asFile
+        if (!report.isFile() || !report.text.contains('PASSED')) throw new GradleException('Raven Master tour failed; see build/raven-master-tour-run/raven-master-tour-report.txt')
     }
 }

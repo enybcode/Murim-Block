@@ -1278,5 +1278,10 @@
   "entity.murimblock.crow_master.line.3": "A message always arrives. The question is who is left to read it.",
   "entity.murimblock.crow_master.line.4": "The halls go on for ever. I stopped counting the rooms a long time ago.",
   "entity.murimblock.crow_master.struck": "Your blow meets only feathers. The Crow Master is behind you.",
-  "entity.murimblock.crow_master.sulk": "The Crow Master turns his back on you. Come back when you have learnt some manners."
+  "entity.murimblock.crow_master.sulk": "The Crow Master turns his back on you. Come back when you have learnt some manners.",
+  "entity.murimblock.raven_master": "Raven Master",
+  "item.murimblock.raven_master_spawn_egg": "Raven Master Spawn Egg",
+  "message.murimblock.raven_master.met_eyes": "You met the Raven Master's eyes.",
+  "message.murimblock.raven_master.second_phase": "Raven Master: \"You have looked long enough. Now the ravens will have your eyes.\"",
+  "message.murimblock.raven_master.dispersed": "The Raven Master scatters into ravens. He is gone."
 }

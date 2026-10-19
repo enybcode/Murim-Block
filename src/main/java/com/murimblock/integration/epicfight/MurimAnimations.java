@@ -676,6 +676,12 @@ public final class MurimAnimations {
      */
     public static AnimationAccessor<StaticAnimation> SENSEI_IDLE;
     public static AnimationAccessor<MovementAnimation> SENSEI_WALK;
+    /**
+     * The Raven Master at rest and walking (scripts/animation/raven-master-motions.cjs): four seconds of watching that
+     * loop, the fan open before his chest, the head cocking as a bird's; one long quiet stride in 1.1 s.
+     */
+    public static AnimationAccessor<StaticAnimation> RAVEN_MASTER_IDLE;
+    public static AnimationAccessor<MovementAnimation> RAVEN_MASTER_WALK;
 
     /**
      * The Alliance's reinforcements dropping from the sky (scripts/animation/sky-drop.cjs; the Peak Captain's summons):
@@ -737,6 +743,8 @@ public final class MurimAnimations {
     private static void buildAzureSensei(AnimationBuilder builder) {
         SENSEI_IDLE = builder.nextAccessor("biped/murim/sensei_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));
         SENSEI_WALK = builder.nextAccessor("biped/murim/sensei_walk", a -> new MovementAnimation(true, a, Armatures.BIPED));
+        RAVEN_MASTER_IDLE = builder.nextAccessor("biped/murim/raven_master_idle", a -> new StaticAnimation(true, a, Armatures.BIPED));
+        RAVEN_MASTER_WALK = builder.nextAccessor("biped/murim/raven_master_walk", a -> new MovementAnimation(true, a, Armatures.BIPED));
     }
 
     private static void buildBanditChief(AnimationBuilder builder) {

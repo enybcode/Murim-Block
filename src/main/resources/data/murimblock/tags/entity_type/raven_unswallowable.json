@@ -47,6 +47,10 @@
     {
       "id": "murimblock:heart_demon",
       "required": false
+    },
+    {
+      "id": "murimblock:raven_master",
+      "required": false
     }
   ]
 }

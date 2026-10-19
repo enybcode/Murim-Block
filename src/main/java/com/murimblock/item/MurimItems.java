@@ -215,6 +215,9 @@ public final class MurimItems {
     /** The Crow Master's egg: black and gold, his robe and its trim. */
     public static final DeferredItem<DeferredSpawnEggItem> CROW_MASTER_SPAWN_EGG = ITEMS.register("crow_master_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.CROW_MASTER, 0x1D1F2A, 0xD9A83F, new Item.Properties()));
+    /** The Raven Master's egg: the black lacquer of his mask and the amber of its eye rings. */
+    public static final DeferredItem<DeferredSpawnEggItem> RAVEN_MASTER_SPAWN_EGG = ITEMS.register("raven_master_spawn_egg",
+            () -> new DeferredSpawnEggItem(MurimEntities.RAVEN_MASTER, 0x141318, 0xF2B33D, new Item.Properties()));
     /** The Golden Bell monk's egg: saffron and brown, his robe and sash. */
     public static final DeferredItem<DeferredSpawnEggItem> GOLDEN_BELL_MONK_SPAWN_EGG = ITEMS.register("golden_bell_monk_spawn_egg",
             () -> new DeferredSpawnEggItem(MurimEntities.GOLDEN_BELL_MONK, 0xE2861F, 0x6B4226, new Item.Properties()));
@@ -400,6 +403,7 @@ public final class MurimItems {
                         output.accept(ALLIANCE_MERCHANT_SPAWN_EGG.get());
                         output.accept(GOLDEN_BELL_MONK_SPAWN_EGG.get());
                         output.accept(CROW_MASTER_SPAWN_EGG.get());
+                        output.accept(RAVEN_MASTER_SPAWN_EGG.get());
                         output.accept(SCARLET_GUARDIAN_SPAWN_EGG.get());
                         output.accept(GOLDEN_DRAGON_SAGE_SPAWN_EGG.get());
                         output.accept(NETHER_TALISMAN.get());

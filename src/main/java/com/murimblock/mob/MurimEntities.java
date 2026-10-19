@@ -93,6 +93,13 @@ public final class MurimEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<CrowMasterEntity>> CROW_MASTER =
             TYPES.register("crow_master", () -> EntityType.Builder.of(CrowMasterEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:crow_master"));
+    /**
+     * The Raven Master, the wandering master of the Raven Messenger Art: a man's size, a hostile boss never spawned
+     * naturally (RavenMasterSightings shows him to players; or an egg, /summon). Seen from far off: tracked from 10 chunks.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<RavenMasterEntity>> RAVEN_MASTER =
+            TYPES.register("raven_master", () -> EntityType.Builder.of(RavenMasterEntity::new, MobCategory.MONSTER)
+                    .sized(0.6F, 1.95F).eyeHeight(1.62F).clientTrackingRange(10).build("murimblock:raven_master"));
     /** The Golden Bell monk, who sells the Golden Bell's sutra: a man's size, placed in the Misty Bamboo Temple (or an egg, /summon). */
     public static final DeferredHolder<EntityType<?>, EntityType<GoldenBellMonkEntity>> GOLDEN_BELL_MONK =
             TYPES.register("golden_bell_monk", () -> EntityType.Builder.of(GoldenBellMonkEntity::new, MobCategory.CREATURE)
@@ -189,6 +196,7 @@ public final class MurimEntities {
         event.put(SCARLET_GUARDIAN.get(), ScarletGuardianEntity.attributes().build());
         event.put(GOLDEN_BELL_MONK.get(), GoldenBellMonkEntity.createMonkAttributes().build());
         event.put(CROW_MASTER.get(), CrowMasterEntity.createAttributes().build());
+        event.put(RAVEN_MASTER.get(), RavenMasterEntity.createRavenMasterAttributes().build());
         event.put(GOLDEN_DRAGON_SAGE.get(), GoldenDragonSageEntity.createSageAttributes().build());
         event.put(PEAK_CAPTAIN.get(), PeakCaptainEntity.createCaptainAttributes().build());
         for (AllianceSoldierEntity.Kind kind : AllianceSoldierEntity.Kind.values())

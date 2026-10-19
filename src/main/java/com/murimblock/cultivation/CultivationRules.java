@@ -88,6 +88,7 @@ public final class CultivationRules {
             case "murimblock:bandit_warlord" -> 40;
             case "murimblock:son_of_the_demon" -> 60;
             case "murimblock:azure_sensei" -> 30;
+            case "murimblock:raven_master" -> 40;
             case "murimblock:crab_king" -> 30;
             case "minecraft:elder_guardian" -> 100;
             case "minecraft:warden" -> 250;
@@ -327,6 +328,7 @@ public final class CultivationRules {
             case "murimblock:bandit_warlord" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
             case "murimblock:son_of_the_demon" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
             case "murimblock:crab_king" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.LATE);
+            case "murimblock:raven_master" -> new CultivationData(CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
             case "minecraft:elder_guardian" -> new CultivationData(CultivationRealm.QI_LIQUIDATION, CultivationStage.MIDDLE);
             case "minecraft:warden" -> new CultivationData(CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
             case "minecraft:wither" -> new CultivationData(CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);

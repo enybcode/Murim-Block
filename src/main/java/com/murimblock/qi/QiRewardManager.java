@@ -138,6 +138,10 @@ public final class QiRewardManager {
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_king"))) {
             return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null, originMultiplier);
         }
+        // The Raven Master, the Raven Art's wandering master: the first victory over him counts (and gives its Qi Max).
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "raven_master"))) {
+            return new RewardTarget(entityTypeId, baseReward, 120, entityTypeId, null, originMultiplier);
+        }
         if (entity.getType() == EntityType.WARDEN) {
             return new RewardTarget(entityTypeId, baseReward, 600, entityTypeId, null, originMultiplier);
         }
@@ -166,6 +170,9 @@ public final class QiRewardManager {
         if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_king"))) {
             return new RewardTarget(entityTypeId, baseReward, 100, entityTypeId, null);
         }
+        if (entityTypeId.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "raven_master"))) {
+            return new RewardTarget(entityTypeId, baseReward, 120, entityTypeId, null);
+        }
         if (entityType == EntityType.WARDEN) {
             return new RewardTarget(entityTypeId, baseReward, 600, entityTypeId, null);
         }
@@ -191,6 +198,7 @@ public final class QiRewardManager {
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "son_of_the_demon"))) return 60;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "azure_sensei"))) return 30;
         if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "crab_king"))) return 30;
+        if (id.equals(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "raven_master"))) return 35;
         return FIXED_REWARDS.getOrDefault(type, 1);
     }
 

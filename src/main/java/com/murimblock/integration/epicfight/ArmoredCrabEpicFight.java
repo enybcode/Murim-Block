@@ -96,6 +96,9 @@ public final class ArmoredCrabEpicFight {
             // The Crow Master: the same skeleton, his own model, no fighting.
             event.registerEntityPatch(MurimEntities.CROW_MASTER.get(), CrowMasterPatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.CROW_MASTER.get(), Armatures.BIPED);
+            // The Raven Master: the same skeleton, his own model, the iron fan in hand.
+            event.registerEntityPatch(MurimEntities.RAVEN_MASTER.get(), RavenMasterPatch::new);
+            Armatures.registerEntityTypeArmature(MurimEntities.RAVEN_MASTER.get(), Armatures.BIPED);
             Armatures.registerEntityTypeArmature(MurimEntities.GOLDEN_BELL_MONK.get(), Armatures.BIPED);
             event.registerEntityPatch(MurimEntities.GOLDEN_DRAGON_SAGE.get(), GoldenDragonSagePatch::new);
             Armatures.registerEntityTypeArmature(MurimEntities.GOLDEN_DRAGON_SAGE.get(), Armatures.BIPED);
