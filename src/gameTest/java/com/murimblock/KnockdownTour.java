@@ -324,6 +324,7 @@ public final class KnockdownTour {
             case DEMON_BEAST -> com.murimblock.integration.epicfight.DemonArtAnimations.BEAST_IDLE;
             case DEMON_BEAST_WALK -> com.murimblock.integration.epicfight.DemonArtAnimations.BEAST_WALK;
             case DEMON_BEAST_RUN -> com.murimblock.integration.epicfight.DemonArtAnimations.BEAST_RUN;
+            case SWORD_RIDE -> MurimAnimations.SWORD_RIDE;
         };
         check(motion == expected && playing != null && playing.registryName().equals(wanted.registryName()),
                 what + ": motion " + motion + ", playing " + (playing == null ? null : playing.registryName()));

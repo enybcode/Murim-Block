@@ -144,6 +144,7 @@ public final class MurimAnimations {
         buildThunderSaber(builder);
         buildGoldenBell(builder);
         buildMeditation(builder);
+        buildSwordRide(builder);
         buildAzureSensei(builder);
         buildSkyDrop(builder);
         buildStaffArt(builder);
@@ -863,6 +864,15 @@ public final class MurimAnimations {
         MEDITATE_DEVIATION = builder.nextAccessor("biped/murim/meditate_deviation", a -> new ActionAnimation(0.08F, a, Armatures.BIPED));
     }
 
+    // ---------------------------------------------------------------- riding a flying sword (scripts/animation/sword-flight.cjs)
+
+    /** Riding the sword (SwordFlight): side-on, like a skater (Enzo's choice), a slight sway. */
+    public static AnimationAccessor<StaticAnimation> SWORD_RIDE;
+
+    private static void buildSwordRide(AnimationBuilder builder) {
+        SWORD_RIDE = builder.nextAccessor("biped/murim/sword_ride", a -> new StaticAnimation(0.2F, true, a, Armatures.BIPED));
+    }
+
     /** Murim's living motions: what a knocked-down, carrying or carried player is doing. */
     public enum Motions implements LivingMotion {
         DOWNED, CRAWL, CARRY, CARRY_WALK, CARRIED,
@@ -874,7 +884,9 @@ public final class MurimAnimations {
         /** The Traveller's Staff spun before the chest (the Spinning Rampart held). */
         STAFF_RAMPART,
         /** The Devouring Demon Art's demon form, on all fours: still, walking, running (DemonArtAnimations). */
-        DEMON_BEAST, DEMON_BEAST_WALK, DEMON_BEAST_RUN;
+        DEMON_BEAST, DEMON_BEAST_WALK, DEMON_BEAST_RUN,
+        /** Riding a flying sword (SwordFlight). */
+        SWORD_RIDE;
 
         final int id;
 

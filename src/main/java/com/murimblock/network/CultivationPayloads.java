@@ -77,6 +77,37 @@ public final class CultivationPayloads {
         }
     }
 
+    /** Client: flying on the sword: the second jump held (CHARGE), let go too soon (CANCEL), held long enough (MOUNT), off it (LAND). */
+    public record SwordFlight(int action) implements CustomPacketPayload {
+        public static final int CHARGE = 0, CANCEL = 1, MOUNT = 2, LAND = 3;
+        public static final Type<SwordFlight> TYPE = new Type<>(id("sword_flight"));
+        public static final StreamCodec<ByteBuf, SwordFlight> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(SwordFlight::new, SwordFlight::action);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(SwordFlight payload, IPayloadContext context) {
+            if (!(context.player() instanceof ServerPlayer player)) return;
+            switch (payload.action) {
+                case CHARGE -> com.murimblock.cultivation.SwordFlight.charge(player);
+                case CANCEL -> com.murimblock.cultivation.SwordFlight.cancel(player);
+                case MOUNT -> com.murimblock.cultivation.SwordFlight.mount(player);
+                case LAND -> com.murimblock.cultivation.SwordFlight.land(player, false);
+                default -> { }
+            }
+        }
+    }
+
+    /** Server to those who see a player (and to them): they fly on their sword now, or not. */
+    public record SwordFlightState(int entityId, boolean flying) implements CustomPacketPayload {
+        public static final Type<SwordFlightState> TYPE = new Type<>(id("sword_flight_state"));
+        public static final StreamCodec<ByteBuf, SwordFlightState> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, SwordFlightState::entityId,
+                ByteBufCodecs.BOOL, SwordFlightState::flying,
+                SwordFlightState::new);
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     /** Client: the Qi Sense key held down (true) or let go. */
     public record Sense(boolean active) implements CustomPacketPayload {
         public static final Type<Sense> TYPE = new Type<>(id("qi_sense"));

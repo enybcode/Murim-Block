@@ -160,6 +160,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at flying on the sword (see SwordFlightTour).
+        swordFlightTour {
+            client()
+            gameDirectory = project.file('build/sword-flight-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.swordFlightTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at running on water (see WaterWalkTour).
         waterWalkTour {
             client()

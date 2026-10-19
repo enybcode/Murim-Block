@@ -100,7 +100,7 @@ méditation active, les veines et la méthode qui accélèrent.
 | 4. Qi Liquidation | **Marcher sur l'eau** en courant. **Fait le 19/10** (`WaterWalking`) : en sprintant, l'eau calme porte à sa surface, 3 Qi par seconde ; on coule en ralentissant ou accroupi |
 | 5. Qi Crystallization | ~~Courir sur les murs (trois pas)~~ : **abandonné** par Enzo le 19/10 (« j'aime pas l'idée ») |
 | 6. Foundation Establishment | **La pression d'aura** : les mobs plus faibles hésitent et ralentissent près de soi. **Fait le 18/10** (`AuraPressure`), d'après Bleach : les bien plus faibles écrasés au sol, l'aura visible à l'œil nu jusqu'à la limite de sa zone ; au-delà de 10 000 Qi, le sol se fissure à chaque pas et l'espace ondule |
-| 7. Core Formation | **Le vol sur l'épée** (御剑飞行), qui coûte du Qi chaque seconde |
+| 7. Core Formation | **Le vol sur l'épée** (御剑飞行), qui coûte du Qi chaque seconde. **Fait le 19/10** (`SwordFlight`) : sauter, rappuyer et tenir 3 s ; l'épée du mod sous les pieds, pose skate ; très vite au sprint |
 | 8. Nascent Soul | Projeter son âme pour éclairer au loin (repérage) |
 | 9. Void Enlightenment | Un pas à travers le vide (courte téléportation) |
 

@@ -33,12 +33,15 @@ public final class AuraPressureClient {
         for (Player p : mc.level.players()) {
             var aura = MeditationService.aura(p);
             float reach = aura.pressure();
-            if (reach <= 0 || p.isSpectator() || p.isInvisible() || p.distanceToSqr(mc.player) > NEAR * NEAR) continue;
+            // Not on the sword: its trail stands for the aura (flames left in the air would fill the view behind).
+            if (reach <= 0 || p.isSpectator() || p.isInvisible() || p.distanceToSqr(mc.player) > NEAR * NEAR || SwordFlightClient.flying(p)) continue;
             float[] c = aura.auraArt().isPresent() ? AuraClient.colour(aura.auraArt()) : new float[]{0.35F, 0.75F, 1.0F};
             Vec3 feet = p.position();
             // The body's aura, as Qi vision shows it (one's own in first person would only veil the view).
             if (!(p == mc.getCameraEntity() && mc.options.getCameraType().isFirstPerson()))
                 AuraClient.volume(mc.level, random, feet, 0.6F, c, AuraClient.qiScale(aura.qi()));
+            // On the ground only (in the air, flying on a sword, there is no ground for it to spread over).
+            if (!p.onGround()) continue;
             // Its edge on the ground, where it stops weighing: a low ring of flames all round.
             for (int i = 0; i < 6; i++) {
                 double a = random.nextDouble() * Math.PI * 2;

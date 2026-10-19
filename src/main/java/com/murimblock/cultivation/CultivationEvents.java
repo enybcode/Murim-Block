@@ -40,6 +40,7 @@ public final class CultivationEvents {
         MeditationService.forget(player);
         QiSense.setActive(player, false);
         AuraPressure.forget(player.getUUID());
+        SwordFlight.forget(player);
         InnerWorldService.onLogout(player);
     }
 
@@ -50,6 +51,7 @@ public final class CultivationEvents {
         QiSense.tick(player);
         AuraPressure.tick(player);
         WaterWalking.tick(player);
+        SwordFlight.tick(player);
         InnerWorldService.tick(player);
     }
 

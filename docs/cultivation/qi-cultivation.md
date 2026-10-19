@@ -187,6 +187,25 @@ Valeurs à l'étape Early de chaque royaume :
 
 **Le faible contre le fort** (demande d'Enzo du 14/10) : un coup porté à un joueur par plus faible que lui perd **5 % par étape d'écart, 20 % par royaume, au plus 75 %** (`CultivationRules.shield`, appliqué avant l'armure). L'attaquant est un joueur (son royaume et son étape), un mob Murim ou un boss (le royaume que lit la perception du Qi), ou n'importe quelle autre créature, comptée comme Qi Sensing Early. Exemple : en Qi Condensation Early, un zombie fait 40 % de dégâts en moins, le Bandit Chief (Qi Guiding Peak) 5 %. Rien contre un égal ou un plus fort, ni pour les chutes, le feu ou le vide (pas d'attaquant). Le démon du cœur et l'ombre ont le royaume de leur maître : aucun effet.
 
+**Le vol sur l'épée** (御剑飞行, dès Core Formation, 19/10/2026, `SwordFlight`, `SwordFlightClient`, `FlyingSwordRenderer`,
+réglé avec Enzo sur maquettes) :
+- **monter** : une épée en main (le tag `murimblock:flying_swords` : les épées de Minecraft, l'épée du Nuage Azur, le Snow
+  Plum Jian, le dao des bandits, le fleuret des Sept Étoiles, le zhanmadao du Ciel Pourpre ; pas les lances, le bâton,
+  l'éventail, le fouet, les aiguilles ni les couteaux), sauter, rappuyer sur Saut en l'air et tenir 3 s : on plane pendant
+  que le Qi se rassemble sous les pieds ;
+- **l'épée** quitte la main et passe sous les pieds : son propre modèle 3D, couché, pointe en avant, les pieds au milieu de
+  la lame, éclairé par son Qi, une lueur de l'aura dessous, une traînée derrière ; vue par tous ;
+- **la pose** : de profil comme sur un skate, pieds écartés le long de la lame, genoux souples (animation `sword_ride`,
+  `scripts/animation/sword-flight.cjs`, choisie par Enzo parmi skate, surf, grab et classique) ;
+- **voler** : Avancer va où l'on regarde (16 blocs/s), Saut monte, Accroupi descend, sinon sur place ; **très vite** en
+  tenant Sprint (environ 45 blocs/s, atteint en 2 s) : lignes de vitesse façon manga, champ de vision élargi, l'écran qui
+  tremble, un anneau d'air et un bruit de fusée au départ, un souffle de vent ;
+- **coût** : 15 Qi par seconde, 60 très vite ; sans Qi (ou l'épée lâchée), elle dépose doucement (Chute lente) ;
+- **descendre** : deux appuis rapides sur Saut (en l'air, Chute lente), ou se poser au sol ;
+- le serveur laisse le volant hors du sol (pas d'expulsion pour vol) ; il accepte la montée dès la moitié des 3 s comptée
+  de son côté (un serveur en retard compte moins de ticks).
+- Paquets `SwordFlight` et `SwordFlightState` (protocole 36). Test `CultivationGameTests`, film `runSwordFlightTour`.
+
 **Courir sur l'eau** (dès Qi Liquidation, 19/10/2026, `WaterWalking`, `WaterWalkMixin`) : en sprintant, l'eau calme (une source
 sous l'air libre : lacs, mers, la plupart des rivières) porte le joueur à sa surface, un rien au-dessus de l'eau ;
 ralentir au pas, s'arrêter, s'accroupir ou manquer de Qi fait couler (pour plonger exprès) ; 3 Qi par seconde sur

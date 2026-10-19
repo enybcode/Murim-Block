@@ -502,6 +502,49 @@ public final class CultivationGameTests {
         });
     }
 
+    // ---------------------------------------------------------------- Flying on the sword
+
+    /**
+     * Flying on the sword: not below Core Formation, not without a sword; the jump held too short, no flight; held three
+     * seconds, onto the sword (off the ground allowed); a second costs 15 Qi; the sword let go, set down gently.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_flight", timeoutTicks = 200)
+    public static void flyingOnTheSwordFromCoreFormation(GameTestHelper helper) {
+        com.murimblock.cultivation.SwordFlight.clearForTests();
+        ServerPlayer player = cultivator(helper);
+        CultivationService.setCultivation(player, CultivationRealm.NASCENT_SOUL, CultivationStage.EARLY);
+        QiService.setQiMax(player, 30000);
+        QiService.refillQi(player);
+        helper.assertFalse(com.murimblock.cultivation.SwordFlight.able(player), "Flies without a sword");
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
+        CultivationService.setCultivation(player, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.PEAK);
+        helper.assertFalse(com.murimblock.cultivation.SwordFlight.able(player), "Foundation Establishment flies on the sword");
+        CultivationService.setCultivation(player, CultivationRealm.CORE_FORMATION, CultivationStage.EARLY);
+        com.murimblock.cultivation.SwordFlight.charge(player);
+        com.murimblock.cultivation.SwordFlight.mount(player);
+        helper.assertFalse(com.murimblock.cultivation.SwordFlight.flying(player), "Onto the sword at once, without holding the jump");
+        com.murimblock.cultivation.SwordFlight.charge(player);
+        helper.runAfterDelay(com.murimblock.cultivation.SwordFlight.CHARGE_TICKS, () -> {
+            com.murimblock.cultivation.SwordFlight.mount(player);
+            helper.assertTrue(com.murimblock.cultivation.SwordFlight.flying(player), "Not onto the sword after holding the jump three seconds");
+            helper.assertTrue(player.getAbilities().mayfly, "The flyer would be kicked for flying");
+            double before = QiService.getQi(player);
+            player.setOnGround(false);
+            player.tickCount = 20;
+            com.murimblock.cultivation.SwordFlight.tick(player);
+            helper.assertTrue(Math.abs(before - QiService.getQi(player) - com.murimblock.cultivation.SwordFlight.QI_PER_SECOND) < 1e-6, "A second of flight did not cost 15 Qi");
+            // The sword let go in the air: set down gently.
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            player.tickCount = 40;
+            com.murimblock.cultivation.SwordFlight.tick(player);
+            helper.assertFalse(com.murimblock.cultivation.SwordFlight.flying(player), "Still flying, the sword let go");
+            helper.assertTrue(player.hasEffect(MobEffects.SLOW_FALLING), "Not set down gently");
+            helper.assertFalse(player.getAbilities().mayfly, "Still allowed to fly after the sword");
+            com.murimblock.cultivation.SwordFlight.clearForTests();
+            end(helper, player);
+        });
+    }
+
     // ---------------------------------------------------------------- Running on water
 
     /**

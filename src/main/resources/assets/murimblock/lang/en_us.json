@@ -48,6 +48,7 @@
   "cultivation.murimblock.sense.locked": "Qi Sense opens at %s",
   "cultivation.murimblock.sense.no_qi": "Not enough Qi to sense",
   "cultivation.murimblock.sense.tired": "Your eyes need rest",
+  "cultivation.murimblock.sword_flight.spent": "Your Qi runs out: the sword sets you down",
   "cultivation.murimblock.pill.poisoned": "Too much toxicity: the pill poisons you",
   "cultivation.murimblock.pill.gathering": "+%s Qi Max, reserve filled (toxicity %s)",
   "cultivation.murimblock.pill.breaking": "Your next Heart Demon will be weaker (toxicity %s)",
