@@ -276,4 +276,26 @@ public final class SiteGameTests {
             if (!level.getBlockState(p.set(x, y, z)).isAir() && !level.getBlockState(p).is(Blocks.STONE)) n++;
         return n;
     }
+
+    /**
+     * Murim's townsfolk trade in Murim's money: a site's villager (a farmer, whose first offers buy crops for emeralds)
+     * is paid in strings of cash, no emerald left; and stays so a few seconds later.
+     */
+    @GameTest(template = "foundation_arena", batch = "site_trades", timeoutTicks = 200)
+    public static void siteVillagersTradeInMurimMoney(GameTestHelper helper) {
+        Villager villager = helper.spawnWithNoFreeWill(net.minecraft.world.entity.EntityType.VILLAGER, new BlockPos(1, 2, 1));
+        villager.setVillagerData(villager.getVillagerData().setProfession(VillagerProfession.FARMER).setLevel(1));
+        com.murimblock.world.structure.site.MurimTrades.townsfolk(villager);
+        helper.runAfterDelay(com.murimblock.world.structure.site.MurimTrades.EVERY_FOR_TESTS + 5, () -> {
+            var offers = villager.getOffers();
+            helper.assertTrue(!offers.isEmpty(), "The farmer has nothing to trade");
+            for (var o : offers) {
+                boolean emerald = o.getItemCostA().item().value() == net.minecraft.world.item.Items.EMERALD || o.getResult().is(net.minecraft.world.item.Items.EMERALD)
+                        || o.getItemCostB().filter(c -> c.item().value() == net.minecraft.world.item.Items.EMERALD).isPresent();
+                helper.assertFalse(emerald, "A townsfolk still trades in emeralds: " + o.getItemCostA() + " -> " + o.getResult());
+            }
+            helper.assertTrue(offers.stream().anyMatch(o -> o.getResult().is(com.murimblock.item.MurimItems.CASH_STRING.get())), "The farmer does not pay in strings of cash");
+            helper.succeed();
+        });
+    }
 }

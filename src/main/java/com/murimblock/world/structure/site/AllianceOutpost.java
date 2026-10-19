@@ -393,6 +393,7 @@ final class AllianceOutpost extends Site {
             villager.setVillagerData(villager.getVillagerData().setType(VillagerType.PLAINS).setProfession(trade).setLevel(1));
             villager.setVillagerXp(1); // keeps the trade even if the workstation is moved
             villager.setCustomName(Component.translatable("villager.murimblock.alliance_outpost." + title));
+            MurimTrades.townsfolk(villager);
         });
     }
 
