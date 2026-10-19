@@ -479,11 +479,38 @@ public final class MartialArts {
     /** Each technique's version in the demon form, cast by its key there (its cost and cooldown are the key's). */
     public static final Map<Technique, Technique> DEMON_VERSIONS = Map.of(LASH, CENTIPEDE_BITE, IMPALING_THORNS, BURROW, GRAPPLE, CONSTRICT);
 
+    // ---------------------------------------------------------------- the Raven Messenger Art (docs/combat/styles/raven-art.md)
+
+    /**
+     * The Raven Messenger Art (Enzo, 19/10/2026: a familiar raven and an inner world, "everything based round changing
+     * dimension"): the iron fan in hand, a raven at one's side that opens doors between the world and the Raven Halls,
+     * one's own world and base. Learnt from Qi Condensation, from the Crow Master. No quests: the scroll teaches all.
+     */
+    public static final ResourceLocation RAVEN_ART = id("raven_art");
+    public static final com.murimblock.cultivation.CultivationRealm RAVEN_REALM = com.murimblock.cultivation.CultivationRealm.QI_CONDENSATION;
+    /** A door under the target: it falls into the halls for 4 s, then is dropped from 10 blocks up where it was. */
+    public static final Technique RAVEN_GATE = new Technique(id("raven_gate"), RAVEN_ART, 40, 280);
+    /** Through a door, out where the raven flies (or where one looks). */
+    public static final Technique HALLS_STEP = new Technique(id("halls_step"), RAVEN_ART, 30, 160);
+    /** Two doors at once: places swapped with the target (crouching: an enemy with an ally). */
+    public static final Technique EXCHANGE = new Technique(id("exchange"), RAVEN_ART, 35, 240);
+    /** A door before one for 3 s swallows every projectile, then sends them back to their shooters. */
+    public static final Technique SWALLOWING_GATE = new Technique(id("swallowing_gate"), RAVEN_ART, 30, 300);
+    /** A duel of 20 s in a closed room of the halls; crouching, home to one's own world. */
+    public static final Technique CLOSED_ROOM = new Technique(id("closed_room"), RAVEN_ART, 60, 1200);
+    /** The ultimate: the halls laid over the world, every enemy within 30 blocks scattered into a room of its own. */
+    public static final Technique HALLS_UNFOLD = new Technique(id("halls_unfold"), RAVEN_ART, 180, 6000);
+    /** The secret: after a perfect parry, the attacker swallowed and set down behind, stunned. */
+    public static final Technique RETURN_TO_SENDER = new Technique(id("return_to_sender"), RAVEN_ART, 0, 0, true);
+    /** Its passive keeps the iron fan's strikes; each that lands opens a rift on its target, three tip it into the halls. */
+    public static final Passive BETWEEN_WORLDS = new Passive(id("between_worlds"), List.of(), List.of());
+
     @Nullable public static com.murimblock.cultivation.CultivationRealm requiredRealm(ResourceLocation art) {
         return art.equals(SANGUINE_ART) ? SANGUINE_REALM : art.equals(MOUNTAIN_SHATTERING_FIST) ? MOUNTAIN_FIST_REALM
                 : art.equals(SEVEN_STARS_SWORD) ? SEVEN_STARS_REALM : art.equals(THUNDER_SABER) ? THUNDER_SABER_REALM
                 : art.equals(MAJIN_FIST) ? MAJIN_REALM : art.equals(OVERLORD_SPEAR) ? OVERLORD_REALM
-                : art.equals(DEVOURING_DEMON) ? DEVOURING_DEMON_REALM : art.equals(CRESCENT_MOON_HALBERD) ? CRESCENT_MOON_REALM : null;
+                : art.equals(DEVOURING_DEMON) ? DEVOURING_DEMON_REALM : art.equals(CRESCENT_MOON_HALBERD) ? CRESCENT_MOON_REALM
+                : art.equals(RAVEN_ART) ? RAVEN_REALM : null;
     }
 
     private static final Map<ResourceLocation, Art> ARTS = new LinkedHashMap<>();
@@ -516,6 +543,10 @@ public final class MartialArts {
         // No quests (Enzo's choice of design): the scroll teaches the four techniques and the ultimate.
         add(new Art(CRESCENT_MOON_HALBERD, List.of(TWIN_REFLECTION, SHATTERED_MIRROR, SWAP, HALL_OF_MIRRORS, NIGHT_OF_THE_FULL_MOON),
                 MIRROR_IMAGE, List.of(), List.of()));
+
+        // No quests: the scroll teaches the five techniques and the ultimate; the secret is found.
+        add(new Art(RAVEN_ART, List.of(RAVEN_GATE, HALLS_STEP, EXCHANGE, SWALLOWING_GATE, CLOSED_ROOM, HALLS_UNFOLD, RETURN_TO_SENDER),
+                BETWEEN_WORLDS, List.of(), List.of()));
 
         add(new Art(GOLDEN_BELL, List.of(GOLDEN_BELL_FORM, IRON_REBOUND, ROOTED_MOUNTAIN, BELL_TOLL), BELL_PALMS,
                 List.of(TAKE_THE_BLOW, RETURN_IT), List.of(STEADFAST_BELL, MIRROR_IRON, ANCIENT_MOUNTAIN)));

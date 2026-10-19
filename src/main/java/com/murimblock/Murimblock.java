@@ -56,6 +56,7 @@ public final class Murimblock {
         com.murimblock.martial.SevenStarsItems.register(modEventBus);
         com.murimblock.martial.ThunderSaberItems.register(modEventBus);
         com.murimblock.martial.GoldenBellItems.register(modEventBus);
+        com.murimblock.world.raven.RavenBlocks.register(modEventBus);
         com.murimblock.bloodsect.BloodSect.register(modEventBus);
         MurimItems.register(modEventBus);
         MurimWorldgen.register(modEventBus);

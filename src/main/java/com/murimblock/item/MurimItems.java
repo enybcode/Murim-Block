@@ -256,6 +256,9 @@ public final class MurimItems {
     /** The Crescent Moon Halberd's scroll: read (from Qi Condensation), it teaches the art; found in the Alliance arena's chests and the sites' caches. */
     public static final DeferredItem<MartialManualItem> CRESCENT_MOON_HALBERD_SCROLL = ITEMS.register("crescent_moon_halberd_scroll",
             () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.CRESCENT_MOON_HALBERD));
+    /** The Raven Messenger Art's scroll: read (from Qi Condensation), it teaches the art; the Crow Master's (to come). */
+    public static final DeferredItem<MartialManualItem> RAVEN_ART_SCROLL = ITEMS.register("raven_art_scroll",
+            () -> new MartialManualItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE), MartialArts.RAVEN_ART));
     /**
      * The Crescent Moon Halberd (月牙戟), the art's own: a ji of night-blue lacquer and silver, its crescent's edge glowing
      * moonlight (scripts/animation/crescent-halberd-model.cjs). A spear for Epic Fight (capabilities/weapons), forged
@@ -385,6 +388,7 @@ public final class MurimItems {
                         output.accept(FLYING_KNIFE.get());
                         output.accept(RATTAN_SHIELD.get());
                         output.accept(IRON_FAN.get());
+                        output.accept(com.murimblock.world.raven.RavenBlocks.RAVEN_PERCH_ITEM.get());
                         output.accept(CHAIN_WHIP.get());
                         output.accept(FLYING_NEEDLES.get());
                         output.accept(AZURE_SENSEI_SPAWN_EGG.get());
@@ -416,6 +420,7 @@ public final class MurimItems {
                         output.accept(OVERLORD_SPEAR_SCROLL.get());
                         output.accept(CRESCENT_MOON_HALBERD.get());
                         output.accept(CRESCENT_MOON_HALBERD_SCROLL.get());
+                        output.accept(RAVEN_ART_SCROLL.get());
                         output.accept(PEAK_GUARD_HELM.get());
                         output.accept(PEAK_GUARD_LAMELLAR.get());
                         output.accept(PEAK_GUARD_TASSETS.get());

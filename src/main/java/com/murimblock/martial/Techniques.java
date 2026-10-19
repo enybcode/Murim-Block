@@ -30,6 +30,8 @@ final class Techniques {
         if (technique.art().equals(MartialArts.DEVOURING_DEMON)) return DevouringDemon.bareHanded(player);
         if (technique.art().equals(MartialArts.OVERLORD_SPEAR)) return OverlordSpear.holdsSpear(player);
         if (technique.art().equals(MartialArts.CRESCENT_MOON_HALBERD)) return CrescentMoonHalberd.holdsHalberd(player);
+        // Home (the crouching Closed Room) needs no fan in hand.
+        if (technique.art().equals(MartialArts.RAVEN_ART)) return RavenArt.holdsFan(player) || technique == MartialArts.CLOSED_ROOM && player.isShiftKeyDown();
         return true;
     }
 
@@ -57,6 +59,7 @@ final class Techniques {
         if (technique.art().equals(MartialArts.DEVOURING_DEMON)) return DevouringDemon.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.OVERLORD_SPEAR)) return OverlordSpear.perform(player, patch, technique);
         if (technique.art().equals(MartialArts.CRESCENT_MOON_HALBERD)) return CrescentMoonHalberd.perform(player, patch, technique);
+        if (technique.art().equals(MartialArts.RAVEN_ART)) return RavenArt.perform(player, patch, technique);
         return false;
     }
 }

@@ -122,6 +122,7 @@ public final class MartialCombat {
         SevenStarsSword.onPerfectParry(player, attacker);
         ThunderSaber.onPerfectParry(player, attacker);
         GoldenBell.onPerfectParry(player, attacker);
+        RavenArt.onPerfectParry(player, attacker);
         if (!AzureCloudSword.stanceActive(player)) return;
         QiService.addQi(player, PARRY_QI);
         RIPOSTES.put(player.getUUID(), new Riposte(attacker.getUUID(), player.level().getGameTime()));
@@ -190,6 +191,8 @@ public final class MartialCombat {
         }
         // Mirror Image (the Crescent Moon Halberd): a dodge leaves a reflection where it began.
         if (CrescentMoonHalberd.isDodge(animation)) CrescentMoonHalberd.dodged(player);
+        // Between Worlds (the Raven Art): the roll goes through the halls.
+        if (CrescentMoonHalberd.isDodge(animation)) RavenArt.rolled(player);
         // With Scarlet Tear's blood sword out, its cuts (the sword strikes) belong to the Sanguine Art.
         ResourceLocation credit = SanguineArt.holdsSword(player) ? SanguineArt.creditOf(player, animation) : null;
         if (credit != null) {
@@ -216,6 +219,11 @@ public final class MartialCombat {
         credit = CrescentMoonHalberd.creditOf(player, animation);
         if (credit != null) {
             SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.CRESCENT_MOON_HALBERD, credit, CrescentMoonHalberd.isStrike(animation), false));
+            return;
+        }
+        credit = RavenArt.creditOf(player, animation);
+        if (credit != null) {
+            SWINGS.put(player.getUUID(), new Swing(animation, MartialArts.RAVEN_ART, credit, true, false));
             return;
         }
         credit = MountainShatteringFist.creditOf(player, animation);
@@ -325,6 +333,7 @@ public final class MartialCombat {
         boolean overlord = swing.art.equals(MartialArts.OVERLORD_SPEAR);
         if (overlord) OverlordSpear.onHit(player, target, animation, enemy);
         else if (swing.art.equals(MartialArts.CRESCENT_MOON_HALBERD)) CrescentMoonHalberd.onHit(player, target, animation, enemy);
+        else if (swing.art.equals(MartialArts.RAVEN_ART)) RavenArt.onHit(player, target, enemy);
         else if (swing.art.equals(MartialArts.TRAVELLER_STAFF)) TravellerStaff.onHit(player, target, animation);
         else if (mountain) MountainShatteringFist.onHit(player, target, animation, enemy);
         else if (swing.art.equals(MartialArts.MAJIN_FIST)) MajinFistArt.onHit(player, target, animation, enemy);
@@ -699,6 +708,7 @@ public final class MartialCombat {
         MountainShatteringFist.tick(player);
         OverlordSpear.tick(player);
         CrescentMoonHalberd.tick(player);
+        RavenArt.tick(player);
         MajinFistArt.tick(player);
         SevenStarsSword.tick(player);
         ThunderSaber.tick(player);
@@ -812,6 +822,7 @@ public final class MartialCombat {
         MountainShatteringFist.forget(id);
         OverlordSpear.forget(id);
         CrescentMoonHalberd.forget(id);
+        RavenArt.forget(id);
         MajinFistArt.forget(id);
         SevenStarsSword.forget(id);
         ThunderSaber.forget(id);
@@ -839,6 +850,7 @@ public final class MartialCombat {
         MountainShatteringFist.forget(null);
         OverlordSpear.forget(null);
         CrescentMoonHalberd.forget(null);
+        RavenArt.forget(null);
         MajinFistArt.forget(null);
         SevenStarsSword.forget(null);
         ThunderSaber.forget(null);

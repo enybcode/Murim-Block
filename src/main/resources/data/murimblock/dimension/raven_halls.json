@@ -1,0 +1,11 @@
+{
+  "type": "murimblock:raven_halls",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "murimblock:raven_halls",
+      "layers": [{ "block": "minecraft:air", "height": 1 }],
+      "lakes": false, "features": false, "structure_overrides": []
+    }
+  }
+}

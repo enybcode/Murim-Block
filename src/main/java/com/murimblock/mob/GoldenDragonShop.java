@@ -63,6 +63,7 @@ public final class GoldenDragonShop {
                     unwritten(MurimItems.SANGUINE_ART_SCROLL),
                     unwritten(MurimItems.DEVOURING_DEMON_SCROLL),
                     unwritten(MurimItems.CRESCENT_MOON_HALBERD_SCROLL),
+                    unwritten(MurimItems.RAVEN_ART_SCROLL),
                     talisman(MurimItems.NETHER_TALISMAN),
                     talisman(MurimItems.END_TALISMAN),
                     talisman(MurimItems.MURIM_TALISMAN));
