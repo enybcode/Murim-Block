@@ -298,4 +298,23 @@ public final class SiteGameTests {
             helper.succeed();
         });
     }
+
+    /** Travellers: one or two named villagers trading in Murim's money, with a mule or donkey, both tagged to leave. */
+    @GameTest(template = "foundation_arena", batch = "site_travellers", timeoutTicks = 100)
+    public static void travellersWanderTradingInMurimMoney(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var at = helper.absolutePos(new BlockPos(3, 2, 3));
+        var travellers = com.murimblock.mob.AllianceWanderers.spawnTravellers(level, at, level.random);
+        helper.assertTrue(!travellers.isEmpty(), "No traveller came");
+        for (Villager v : travellers) {
+            helper.assertTrue(v.getCustomName() != null && v.getTags().contains(com.murimblock.world.structure.site.MurimTrades.TAG)
+                    && v.getTags().contains(com.murimblock.mob.AllianceWanderers.TRAVELLER), "A traveller is unnamed or not a townsfolk");
+        }
+        var beasts = level.getEntitiesOfClass(net.minecraft.world.entity.animal.horse.AbstractChestedHorse.class, new AABB(at).inflate(4),
+                b -> b.getTags().contains(com.murimblock.mob.AllianceWanderers.TRAVELLER));
+        helper.assertTrue(beasts.size() == 1, "The travellers have " + beasts.size() + " beasts, not 1");
+        travellers.forEach(Villager::discard);
+        beasts.forEach(b -> b.discard());
+        helper.succeed();
+    }
 }

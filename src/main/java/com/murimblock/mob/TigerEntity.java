@@ -81,14 +81,21 @@ public final class TigerEntity extends Monster {
         return 0.0F;
     }
 
-    /** Only in the centre of the Murim map, on open ground, at any hour, never on Peaceful. */
+    /**
+     * Only in the centre of the Murim map, on open ground, at any hour, never on Peaceful; and rare (Enzo, 19/10/2026:
+     * "il y en a beaucoup trop, ça doit être rare"): a light weight among the monsters, alone, and one try in
+     * {@link #RARITY} only.
+     */
     public static boolean checkTigerSpawnRules(EntityType<TigerEntity> type, ServerLevelAccessor level,
                                                MobSpawnType reason, BlockPos pos, RandomSource random) {
         if (level.getDifficulty() == Difficulty.PEACEFUL) return false;
         if (!Mob.checkMobSpawnRules(type, level, reason, pos, random)) return false;
         if (reason == MobSpawnType.SPAWNER || reason == MobSpawnType.STRUCTURE) return true;
-        return inItsLands(pos.getX(), pos.getZ()) && level.canSeeSky(pos);
+        return inItsLands(pos.getX(), pos.getZ()) && level.canSeeSky(pos) && random.nextInt(RARITY) == 0;
     }
+
+    /** One natural try in this many becomes a tiger. */
+    public static final int RARITY = 3;
 
     /** The centre of the Murim map. */
     public static boolean inItsLands(int x, int z) {
