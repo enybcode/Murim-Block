@@ -29,6 +29,15 @@ public final class CultivationAttachments {
                     .build()
     );
 
+    /** Whether the aura is released (AuraPressure, its key): saved, kept through death, never sent (the aura tells the rest). */
+    static final Supplier<AttachmentType<Boolean>> PLAYER_PRESSURE_RELEASED = ATTACHMENT_TYPES.register(
+            "player_pressure_released",
+            () -> AttachmentType.builder(() -> false)
+                    .serialize(com.mojang.serialization.Codec.BOOL)
+                    .copyOnDeath()
+                    .build()
+    );
+
     /** The cultivation methods known and practised (MethodData): saved, kept through death, sent to the player alone. */
     static final Supplier<AttachmentType<MethodData>> PLAYER_METHOD = ATTACHMENT_TYPES.register(
             "player_cultivation_method",

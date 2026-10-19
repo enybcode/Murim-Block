@@ -47,6 +47,14 @@ public final class MurimblockKeyMappings {
             CATEGORY
     );
 
+    /** The aura's pressure: released, or held in (from Foundation Establishment). */
+    public static final KeyMapping AURA_PRESSURE = new KeyMapping(
+            "key." + Murimblock.MOD_ID + ".aura_pressure",
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_H,
+            CATEGORY
+    );
+
     /** The Murim map: the bubble and its regions, where the player stands. */
     public static final KeyMapping MURIM_MAP = new KeyMapping(
             "key." + Murimblock.MOD_ID + ".murim_map",
@@ -75,5 +83,6 @@ public final class MurimblockKeyMappings {
         event.register(EXECUTE);
         event.register(COMBAT_SLOT_10);
         event.register(MURIM_MAP);
+        event.register(AURA_PRESSURE);
     }
 }

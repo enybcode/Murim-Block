@@ -108,6 +108,18 @@ public final class CultivationPayloads {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    /** Client: the aura's key pressed: release it, or hold it in (AuraPressure). */
+    public record TogglePressure() implements CustomPacketPayload {
+        public static final Type<TogglePressure> TYPE = new Type<>(id("toggle_pressure"));
+        public static final StreamCodec<ByteBuf, TogglePressure> STREAM_CODEC = StreamCodec.unit(new TogglePressure());
+
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+
+        public static void handle(TogglePressure payload, IPayloadContext context) {
+            if (context.player() instanceof ServerPlayer player) com.murimblock.cultivation.AuraPressure.toggle(player);
+        }
+    }
+
     /** Client: the Qi Sense key held down (true) or let go. */
     public record Sense(boolean active) implements CustomPacketPayload {
         public static final Type<Sense> TYPE = new Type<>(id("qi_sense"));

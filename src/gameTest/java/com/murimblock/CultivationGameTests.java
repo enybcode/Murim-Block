@@ -589,8 +589,8 @@ public final class CultivationGameTests {
     // ---------------------------------------------------------------- Aura pressure
 
     /**
-     * The aura's pressure: at Foundation Establishment a zombie near is crushed to the ground (far weaker); not at Qi
-     * Crystallization, not while sneaking, never one's own wolf.
+     * The aura's pressure: at Foundation Establishment, released (its key), a zombie near is crushed to the ground (far
+     * weaker); not at Qi Crystallization, not held in, not while sneaking, never one's own wolf.
      */
     @GameTest(template = "foundation_arena", batch = "cultivation_pressure")
     public static void theAurasPressureSlowsTheWeakerNear(GameTestHelper helper) {
@@ -603,6 +603,11 @@ public final class CultivationGameTests {
         com.murimblock.cultivation.AuraPressure.tick(player);
         helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "Qi Crystallization weighs on the zombie");
         CultivationService.setCultivation(player, CultivationRealm.FOUNDATION_ESTABLISHMENT, CultivationStage.EARLY);
+        // Held in at first: no pressure until released (its key).
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The aura weighs before it is released");
+        com.murimblock.cultivation.AuraPressure.toggle(player);
+        helper.assertTrue(com.murimblock.cultivation.AuraPressure.released(player), "The key does not release the aura");
         player.setShiftKeyDown(true);
         com.murimblock.cultivation.AuraPressure.tick(player);
         helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "A sneaking player's aura weighs on the zombie");
@@ -611,6 +616,11 @@ public final class CultivationGameTests {
         var slow = zombie.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
         helper.assertTrue(slow != null && slow.getAmplifier() == 3, "The zombie, far weaker, is not crushed to the ground");
         helper.assertFalse(wolf.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "One's own wolf is slowed");
+        // Held in again: no more.
+        com.murimblock.cultivation.AuraPressure.toggle(player);
+        zombie.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        com.murimblock.cultivation.AuraPressure.tick(player);
+        helper.assertFalse(zombie.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "The aura held in still weighs");
         end(helper, player);
     }
 

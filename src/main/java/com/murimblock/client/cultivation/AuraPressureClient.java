@@ -28,6 +28,9 @@ public final class AuraPressureClient {
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        // Its key: released, or held in (the server decides and says so).
+        while (mc.player != null && mc.screen == null && com.murimblock.client.MurimblockKeyMappings.AURA_PRESSURE.consumeClick())
+            if (mc.getConnection() != null) net.neoforged.neoforge.network.PacketDistributor.sendToServer(new com.murimblock.network.CultivationPayloads.TogglePressure());
         if (mc.level == null || mc.player == null || mc.isPaused() || QiSenseClient.open()) return;
         RandomSource random = mc.level.random;
         for (Player p : mc.level.players()) {

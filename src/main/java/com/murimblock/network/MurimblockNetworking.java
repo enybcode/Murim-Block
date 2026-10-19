@@ -5,6 +5,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class MurimblockNetworking {
     /**
+     * 37: the aura released or held in at will (its key).
      * 36: flying on the sword (the jump held to mount it, its state to all who see the flyer).
      * 35: the aura's pressure seen by all (its reach in the aura every client sees).
      * 34: the cultivation methods (one practised, chosen in the Cultivation tab).
@@ -23,7 +24,7 @@ public final class MurimblockNetworking {
      * 16: cultivation (meditation and the inner world, Qi Sense, breakthroughs; the charge's payload gone). 15: the Long Fist (its finish in the cinematic, the main style set from the Techniques tab). 14: the crescent's
      * slam ready on the bar; 13: Thousand Drizzle's delayed cuts; 12: Cloud Step Slash held to aim.
      */
-    private static final String NETWORK_VERSION = "36";
+    private static final String NETWORK_VERSION = "37";
 
     private MurimblockNetworking() {
     }
@@ -35,6 +36,7 @@ public final class MurimblockNetworking {
         registrar.playToServer(CultivationPayloads.Absorb.TYPE, CultivationPayloads.Absorb.STREAM_CODEC, CultivationPayloads.Absorb::handle);
         registrar.playToServer(CultivationPayloads.Leap.TYPE, CultivationPayloads.Leap.STREAM_CODEC, CultivationPayloads.Leap::handle);
         registrar.playToServer(CultivationPayloads.Sense.TYPE, CultivationPayloads.Sense.STREAM_CODEC, CultivationPayloads.Sense::handle);
+        registrar.playToServer(CultivationPayloads.TogglePressure.TYPE, CultivationPayloads.TogglePressure.STREAM_CODEC, CultivationPayloads.TogglePressure::handle);
         registrar.playToServer(CultivationPayloads.SwordFlight.TYPE, CultivationPayloads.SwordFlight.STREAM_CODEC, CultivationPayloads.SwordFlight::handle);
         registrar.playToClient(CultivationPayloads.SwordFlightState.TYPE, CultivationPayloads.SwordFlightState.STREAM_CODEC,
                 (payload, context) -> com.murimblock.client.cultivation.SwordFlightClient.state(payload));

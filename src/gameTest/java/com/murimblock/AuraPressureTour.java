@@ -79,6 +79,7 @@ public final class AuraPressureTour {
                 ServerPlayer p = server.getPlayerList().getPlayers().get(0);
                 p.teleportTo(level, 0.5, -60, 0.5, 0, 10);
                 CultivationService.setCultivation(p, CultivationRealm.QI_CRYSTALLIZATION, CultivationStage.PEAK);
+                com.murimblock.cultivation.AuraPressure.release(p, true);
                 QiService.setQiMax(p, 5000);
                 QiService.refillQi(p);
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 120, 4, false, false));

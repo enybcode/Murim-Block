@@ -217,7 +217,10 @@ réglée avec Enzo sur maquettes) :
 - les mobs plus faibles (d'un royaume plus bas ; les mobs ordinaires comptent royaume 0) dans un rayon de 8 blocs à
   Foundation, 10 à Core Formation, 12 à Nascent Soul, 16 au-delà : **un peu plus faibles**, ralentis (Lenteur II) et
   hésitants ; **bien plus faibles** (trois royaumes ou plus), **écrasés au sol** (Lenteur IV, plaqués s'ils le quittent,
-  la poussière se soulève sous eux) ; ni les joueurs, ni ses propres animaux ; **accroupi**, on retient son aura ;
+  la poussière se soulève sous eux) ; ni les joueurs, ni ses propres animaux ;
+- **on la libère ou la retient** avec sa touche (H par défaut, « Release / Hold In Aura », 19/10/2026, demande d'Enzo) :
+  retenue au départ, le choix gardé (même après la mort) ; **accroupi**, on la retient aussi ; paquet `TogglePressure`
+  (protocole 37) ;
 - **visible à l'œil nu** par tous à 48 blocs (`AuraPressureClient`) : l'aura de la vision du Qi en flammes autour du
   corps, à la couleur de l'art le mieux maîtrisé et à la taille du Qi, et un anneau de flammes au sol à la limite de la
   zone ; la portée part avec l'état d'aura que tout le monde reçoit (`AuraState.pressure`, protocole 35), jamais le

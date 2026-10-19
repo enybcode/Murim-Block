@@ -11,7 +11,9 @@ import net.minecraft.world.entity.player.Player;
  * The aura's pressure, from Foundation Establishment (docs/cultivation/refonte-cultivation.md, 18/10/2026), after Bleach's
  * spiritual pressure (Enzo): the weaker mobs near (of a lower realm, the ordinary ones realm 0) falter, slowed and stopping
  * short now and then; the far weaker (three realms below or more) are crushed to the ground: barely moving, pressed down
- * if they leave it, the dust lifting at their feet. Not players, not one's own animals. Sneaking holds the aura in.
+ * if they leave it, the dust lifting at their feet. Not players, not one's own animals.
+ * <p>Released or held in at will (Enzo, 19/10/2026: its key, H; held in at first; the choice kept); sneaking holds it in
+ * too.
  * <p>Overflowing (Enzo: like the Overlord Spear's blows, the ground giving under the power): with
  * {@link #OVERWHELMING_QI} Qi held or more, the ground cracks at every step (Epic Fight's own fracture, put back by
  * itself), and where one stands still it stays broken (broken again, quietly, before it mends); space ripples on the
@@ -50,9 +52,33 @@ public final class AuraPressure {
         };
     }
 
-    /** Whether this player weighs on those around now (realm reached, not sneaking). */
+    /** Whether this player weighs on those around now (realm reached, the aura released, not sneaking). */
     public static boolean active(Player player) {
-        return reach(CultivationService.getRealm(player)) > 0 && !player.isShiftKeyDown() && !player.isSpectator();
+        return reach(CultivationService.getRealm(player)) > 0 && released(player) && !player.isShiftKeyDown() && !player.isSpectator();
+    }
+
+    /** Whether this player has released their aura (its key); on a client, only one's own is known (the aura tells the rest). */
+    public static boolean released(Player player) {
+        return player.getData(CultivationAttachments.PLAYER_PRESSURE_RELEASED);
+    }
+
+    public static void release(Player player, boolean on) {
+        player.setData(CultivationAttachments.PLAYER_PRESSURE_RELEASED, on);
+    }
+
+    /** Its key pressed: released, or held in (below Foundation, too weak to weigh on anyone). */
+    public static void toggle(ServerPlayer player) {
+        if (reach(CultivationService.getRealm(player)) <= 0) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("cultivation.murimblock.pressure.locked",
+                    net.minecraft.network.chat.Component.translatable("gui.murimblock.realm." + REALM.serializedName())), true);
+            return;
+        }
+        boolean on = !released(player);
+        release(player, on);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable(on ? "cultivation.murimblock.pressure.released" : "cultivation.murimblock.pressure.held"), true);
+        player.level().playSound(null, player.blockPosition(), on ? net.minecraft.sounds.SoundEvents.WARDEN_SONIC_CHARGE : net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE,
+                net.minecraft.sounds.SoundSource.PLAYERS, on ? 0.5F : 0.6F, on ? 1.4F : 1.2F);
+        MeditationService.refreshAura(player);
     }
 
     /** A mob's realm (an ordinary one: 0, the mortals'). */
