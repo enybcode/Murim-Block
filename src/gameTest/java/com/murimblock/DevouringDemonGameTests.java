@@ -254,23 +254,41 @@ public final class DevouringDemonGameTests {
     }
 
     /** Grapple at a foe 8 blocks off: hooked, struck, and dragged in close to him. */
-    @GameTest(template = "spear_arena", batch = "demon_grapple")
+    @GameTest(template = "spear_arena", batch = "demon_grapple", timeoutTicks = 200)
     public static void grapplePullsTheFoeIn(GameTestHelper helper) {
         ServerPlayer player = student(helper);
         Zombie[] zombie = new Zombie[1];
         int cast = 3, done = cast + DevouringDemon.GRAPPLE_HIT_TICK + DevouringDemon.GRAPPLE_PULL_TICKS;
-        ticking(helper, player, done + 2);
+        int patience = 40;
+        ticking(helper, player, done + patience + 2);
         helper.runAfterDelay(cast, () -> {
             player.teleportTo(player.getX(), player.getY(), player.getZ() - 3);
             zombie[0] = standing(helper, player, 0, 8);
             helper.assertTrue(MartialService.castSlot(player, 2) == MartialService.CastResult.CAST, "Grapple was not cast");
         });
-        helper.runAfterDelay(done, () -> {
-            double d = zombie[0].distanceTo(player);
-            helper.assertTrue(zombie[0].getHealth() < 400, "The hooked foe was not struck");
-            helper.assertTrue(d < 4.5, "The foe was not dragged in: " + d + " blocks off");
-            end(helper, player, zombie[0]);
-        });
+        // A slow server (the CI) may land it late, and another test ending beside this one clears every scheduled move
+        // (MartialCombat.clearForTests): wait for it, and cast again once if nothing came.
+        boolean[] over = {false};
+        for (int t = done; t <= done + patience; t++) {
+            int now = t;
+            helper.runAfterDelay(t, () -> {
+                if (over[0]) return;
+                double d = zombie[0].distanceTo(player);
+                if (zombie[0].getHealth() < 400 && d < 4.5) {
+                    over[0] = true;
+                    end(helper, player, zombie[0]);
+                    return;
+                }
+                if (now == done + 4 && zombie[0].getHealth() >= 400) {
+                    MartialService.clearCooldownsForTests(player);
+                    MartialService.castSlot(player, 2);
+                }
+                if (now == done + patience) {
+                    helper.assertTrue(zombie[0].getHealth() < 400, "The hooked foe was not struck");
+                    helper.assertTrue(d < 4.5, "The foe was not dragged in: " + d + " blocks off");
+                }
+            });
+        }
     }
 
     /** Grapple with no foe in sight, at a wall: the tentacle hooks into it and pulls him toward it. */

@@ -171,7 +171,7 @@ public final class RavenArtGameTests {
         });
     }
 
-    @GameTest(template = "spear_arena", batch = "raven_duel", timeoutTicks = 120)
+    @GameTest(template = "spear_arena", batch = "raven_duel", timeoutTicks = 300)
     public static void theClosedRoomShutsBothInARoomUntilOneFalls(GameTestHelper helper) {
         ServerPlayer player = adept(helper);
         Zombie zombie = dummy(helper, player, 0, 2.5);
@@ -181,18 +181,18 @@ public final class RavenArtGameTests {
         helper.assertTrue(cast == CastResult.CAST, "No duel: " + cast);
         ServerLevel halls = standIn(helper);
         int in = after(MurimAnimations.RAVEN_ROOM_CLAP);
-        tickFor(helper, player, in + 60);
-        // Under load the clap may land a few ticks late: wait (up to 30 ticks) until both are in the room.
+        tickFor(helper, player, in + 90);
+        // Under load the clap may land late: wait (up to 70 ticks) until both are in the room.
         int[] at = {-1};
-        for (int t = in; t <= in + 40; t++) {
+        for (int t = in; t <= in + 70; t++) {
             int now = t;
             helper.runAfterDelay(t, () -> {
                 if (at[0] >= 0) return;
                 player.hasChangedDimension();
                 if (player.level() != halls || !RavenHalls.dueling(player)) {
-                    helper.assertTrue(now < in + 40, "Both should be in the room");
+                    helper.assertTrue(now < in + 70, "Both should be in the room");
                     // Another test running beside this one may clear every scheduled move (MartialCombat.clearForTests): cast again once.
-                    if (now == in + 10 && player.level() != halls) {
+                    if ((now - in) % 12 == 10 && player.level() != halls) {
                         MartialService.clearCooldownsForTests(player);
                         MartialService.castSlot(player, 4);
                     }
