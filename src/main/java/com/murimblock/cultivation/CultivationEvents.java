@@ -49,6 +49,7 @@ public final class CultivationEvents {
         if (player.tickCount % 5 == 0) RealmBonuses.updateFist(player);
         QiSense.tick(player);
         AuraPressure.tick(player);
+        WaterWalking.tick(player);
         InnerWorldService.tick(player);
     }
 

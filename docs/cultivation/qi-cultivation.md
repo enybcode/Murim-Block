@@ -187,6 +187,12 @@ Valeurs à l'étape Early de chaque royaume :
 
 **Le faible contre le fort** (demande d'Enzo du 14/10) : un coup porté à un joueur par plus faible que lui perd **5 % par étape d'écart, 20 % par royaume, au plus 75 %** (`CultivationRules.shield`, appliqué avant l'armure). L'attaquant est un joueur (son royaume et son étape), un mob Murim ou un boss (le royaume que lit la perception du Qi), ou n'importe quelle autre créature, comptée comme Qi Sensing Early. Exemple : en Qi Condensation Early, un zombie fait 40 % de dégâts en moins, le Bandit Chief (Qi Guiding Peak) 5 %. Rien contre un égal ou un plus fort, ni pour les chutes, le feu ou le vide (pas d'attaquant). Le démon du cœur et l'ombre ont le royaume de leur maître : aucun effet.
 
+**Courir sur l'eau** (dès Qi Liquidation, 19/10/2026, `WaterWalking`, `WaterWalkMixin`) : en sprintant, l'eau calme (une source
+sous l'air libre : lacs, mers, la plupart des rivières) porte le joueur à sa surface, un rien au-dessus de l'eau ;
+ralentir au pas, s'arrêter, s'accroupir ou manquer de Qi fait couler (pour plonger exprès) ; 3 Qi par seconde sur
+l'eau ; éclaboussures et cercle de bulles à chaque foulée (`WaterWalkClient`). Les eaux qui coulent ne portent pas.
+Test `CultivationGameTests`, film `runWaterWalkTour`.
+
 **La pression d'aura** (dès Foundation Establishment, 18/10/2026, `AuraPressure`, d'après la pression spirituelle de Bleach,
 réglée avec Enzo sur maquettes) :
 - les mobs plus faibles (d'un royaume plus bas ; les mobs ordinaires comptent royaume 0) dans un rayon de 8 blocs à

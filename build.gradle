@@ -160,6 +160,15 @@ neoForge {
             disableIdeRun()
         }
 
+        // Development-only: real client look at running on water (see WaterWalkTour).
+        waterWalkTour {
+            client()
+            gameDirectory = project.file('build/water-walk-tour-run')
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'murimblock.waterWalkTour', 'true'
+            disableIdeRun()
+        }
+
         // Development-only: real client look at Qi vision through walls (see QiThroughWallsTour).
         qiThroughWallsTour {
             client()

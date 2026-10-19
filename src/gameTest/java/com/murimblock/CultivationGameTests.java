@@ -502,6 +502,47 @@ public final class CultivationGameTests {
         });
     }
 
+    // ---------------------------------------------------------------- Running on water
+
+    /**
+     * Running on water: from Qi Liquidation, sprinting, a source of water under open air is solid ground for a player, at
+     * its surface (not walking, not below that realm, not without Qi); each second on it costs 3 Qi.
+     */
+    @GameTest(template = "foundation_arena", batch = "cultivation_water")
+    public static void cultivatorsRunOnWaterFromQiLiquidation(GameTestHelper helper) {
+        ServerPlayer player = cultivator(helper);
+        CultivationService.setCultivation(player, CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
+        QiService.setQiMax(player, 1500);
+        QiService.refillQi(player);
+        BlockPos pool = player.blockPosition().offset(0, 3, 0);
+        helper.getLevel().setBlockAndUpdate(pool, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+        player.moveTo(pool.getX() + 0.5, pool.getY() + 1.2, pool.getZ() + 0.5);
+        var water = helper.getLevel().getBlockState(pool);
+        java.util.function.BooleanSupplier solid = () -> !water.getCollisionShape(helper.getLevel(), pool,
+                net.minecraft.world.phys.shapes.CollisionContext.of(player)).isEmpty();
+        player.setSprinting(false);
+        helper.assertFalse(solid.getAsBoolean(), "Water holds a walking player up");
+        player.setSprinting(true);
+        helper.assertTrue(solid.getAsBoolean(), "Water does not hold a sprinting player at Qi Liquidation up");
+        helper.assertTrue(water.getCollisionShape(helper.getLevel(), pool, net.minecraft.world.phys.shapes.CollisionContext.of(player)).max(net.minecraft.core.Direction.Axis.Y) > 0.889,
+                "The runner is held in the water, not above it");
+        CultivationService.setCultivation(player, CultivationRealm.QI_CONDENSATION, CultivationStage.PEAK);
+        helper.assertFalse(solid.getAsBoolean(), "Water holds Qi Condensation up");
+        CultivationService.setCultivation(player, CultivationRealm.QI_LIQUIDATION, CultivationStage.EARLY);
+        // On its surface, a second costs 3 Qi.
+        player.moveTo(pool.getX() + 0.5, pool.getY() + 0.9, pool.getZ() + 0.5);
+        player.setOnGround(true);
+        double before = QiService.getQi(player);
+        player.tickCount = 20;
+        com.murimblock.cultivation.WaterWalking.tick(player);
+        helper.assertTrue(Math.abs(before - QiService.getQi(player) - com.murimblock.cultivation.WaterWalking.QI_PER_SECOND) < 1e-6, "A second on water did not cost 3 Qi");
+        QiService.setQi(player, 0);
+        player.moveTo(pool.getX() + 0.5, pool.getY() + 1.2, pool.getZ() + 0.5);
+        helper.assertFalse(solid.getAsBoolean(), "Water holds a player without Qi up");
+        helper.getLevel().setBlockAndUpdate(pool, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        end(helper, player);
+    }
+
     // ---------------------------------------------------------------- Aura pressure
 
     /**
