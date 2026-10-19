@@ -37,7 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 /**
- * The inner world (docs/cultivation/qi-cultivation.md): seated in meditation with a full reserve, a cultivator holding
+ * The inner world (docs/cultivation/qi-cultivation.md): seated in meditation with at least 80% Qi, a cultivator holding
  * the meditation key leaves their body in the lotus and opens their eyes on their own island, built to their image
  * ({@link InnerIsland}). At the bottleneck of a realm, the remnant soul offers them the trial (SoulDialogue): their
  * Heart Demon, a double with all their strength, rises before them; slain, the great breakthrough happens when they

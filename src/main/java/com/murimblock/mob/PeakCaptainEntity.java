@@ -118,9 +118,10 @@ public class PeakCaptainEntity extends PathfinderMob implements NeutralMob {
         goalSelector.addGoal(5, new ReturnToPostGoal(this));
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 10));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        // Only whoever strikes him (and whoever he is still angry at); Epic Fight installs his spear's attack and chase.
+        // Retaliation takes priority; he also defends against tigers. Epic Fight installs his spear's attack and chase.
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, TigerEntity.class, 5, true, false, null));
         targetSelector.addGoal(3, new ResetUniversalAngerTargetGoal<>(this, false));
     }
 
