@@ -80,6 +80,17 @@ un cercle d'ombre bordé d'ambre, d'où sortent des plumes ; on la voit s'ouvrir
 - Les **salles** : des pièces vides et fermées, à part de ta base, où vont les ennemis avalés (Raven Gate, Closed Room,
   l'ultime) ; ils ne voient jamais ta base.
 
+## Le château sans fin (19/10, demande d'Enzo : « vraiment un effet d'infini »)
+
+La dimension est remplie partout, dans les trois directions, d'un même palais sans fin (`RavenCastleFeature`, une
+pièce par chunk et par étage, tous les 14 blocs, de l'eau noire du fond jusqu'en haut, 384 blocs) : longues galeries
+couvertes ou à balustrade qui traversent des rangées entières de chunks, grandes colonnes rouges cerclées d'or à travers
+tous les étages, planchers, pavillons droits ou pendus à l'envers sous l'étage du dessus, escaliers d'un étage à l'autre,
+planchers posés sur le côté comme des murs, lanternes au bout de longues chaînes, et des vides pour voir les étages
+continuer en haut et en bas. Un brouillard sombre et proche (`client/RavenHallsClient`) avale le lointain : on ne
+voit jamais de fin. Bois sombre, laque rouge, papier, tuiles, touches d'or. Ton hall est un pavillon du même style, sur
+une terrasse suspendue dans un espace dégagé du palais, à mi-hauteur.
+
 ## Les effets
 
 - Le corbeau : modèle 3D animé (vol, posé, cri, plongée), yeux d'ambre qui brillent dans le noir.

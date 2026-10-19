@@ -121,33 +121,47 @@ public final class RavenTour {
             }
             case 90 -> server.execute(() -> check(RavenHalls.isHalls(self(server).level()), "in the Raven Halls"));
             case 92 -> mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
-            case 100 -> capture(mc, "02-hall-north.png");
+            case 100 -> capture(mc, "02-hall-inside.png");
+            // Out on the terrace's edge, looking out over the rail into the castle.
             case 102 -> server.execute(() -> {
                 ServerPlayer self = self(server);
-                self.teleportTo(self.serverLevel(), self.getX(), self.getY(), self.getZ() - 12, 0, 0);
+                BlockPos hall = RavenHalls.hallOf(self);
+                self.teleportTo(self.serverLevel(), hall.getX() + 0.5, hall.getY(), hall.getZ() + 18.5, 0, -4);
             });
-            case 114 -> capture(mc, "03-hall-south.png");
-            case 116 -> {
+            case 150 -> capture(mc, "03-terrace-edge.png");
+            case 152 -> {
                 BlockPos hall = RavenHalls.hallOf(self(server));
                 Vec3 c = Vec3.atBottomCenterOf(hall);
-                look(mc, c.add(17, 13, 19), c.add(0, 3, 0));
+                look(mc, c.add(34, 16, 38), c.add(0, 2, 0));
             }
-            case 130 -> capture(mc, "04-hall-outside.png");
-            case 132 -> {
+            case 175 -> capture(mc, "04-hall-in-the-castle.png");
+            // Deep in the castle, away from the hall: ahead, up, down.
+            case 177 -> {
                 mc.setCameraEntity(mc.player);
-                // Through the west door (the first perch's).
                 server.execute(() -> {
                     ServerPlayer self = self(server);
+                    self.setGameMode(GameType.SPECTATOR);
                     BlockPos hall = RavenHalls.hallOf(self);
-                    self.teleportTo(self.serverLevel(), hall.getX() - 10.5, hall.getY(), hall.getZ() + 0.5, 90, 0);
+                    self.teleportTo(self.serverLevel(), hall.getX() + 150.5, hall.getY() + 5, hall.getZ() + 150.5, 135, 0);
                 });
             }
-            case 160 -> server.execute(() -> {
+            case 260 -> capture(mc, "05-castle-ahead.png");
+            case 262 -> server.execute(() -> { ServerPlayer self = self(server); self.teleportTo(self.serverLevel(), self.getX(), self.getY(), self.getZ(), 45, -55); });
+            case 275 -> capture(mc, "06-castle-up.png");
+            case 277 -> server.execute(() -> { ServerPlayer self = self(server); self.teleportTo(self.serverLevel(), self.getX(), self.getY(), self.getZ(), 225, 60); });
+            case 290 -> capture(mc, "07-castle-down.png");
+            case 292 -> server.execute(() -> {
+                ServerPlayer self = self(server);
+                self.setGameMode(GameType.SURVIVAL);
+                // Through the west door (the first perch's).
+                BlockPos hall = RavenHalls.hallOf(self);
+                self.teleportTo(self.serverLevel(), hall.getX() - 10.5, hall.getY(), hall.getZ() + 0.5, 90, 0);
+            });
+            case 330 -> server.execute(() -> {
                 ServerPlayer self = self(server);
                 check(self.level() == server.overworld() && self.blockPosition().closerThan(perch, 3), "the west door leads to the perch (at " + self.blockPosition() + ")");
             });
-            case 170 -> capture(mc, "05-out-at-the-perch.png");
-            case 180 -> finish(mc);
+            case 340 -> finish(mc);
             default -> { }
         }
     }

@@ -46,7 +46,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class RavenHalls {
     public static final ResourceKey<Level> HALLS = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "raven_halls"));
     /** The halls are this far apart (blocks); the rooms stand in a row far from all of them. */
-    public static final int SPACING = 4096, ROOM_SPACING = 48, ROOMS = 256, ROOM_ROW_Z = 300_000, FLOOR = 64;
+    public static final int SPACING = 4096, ROOM_SPACING = 48, ROOMS = 256, ROOM_ROW_Z = 300_000, FLOOR = 192;
     /** Where a player stood before coming home (their saved data). */
     static final String RETURN = "murimblock:raven_return";
     /** A door is used at most once in this many ticks by the same player. */

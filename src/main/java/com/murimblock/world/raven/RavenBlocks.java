@@ -7,6 +7,9 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -16,6 +19,9 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class RavenBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Murimblock.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Murimblock.MOD_ID);
+    public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Murimblock.MOD_ID);
+    /** The endless castle that fills the Raven Halls (placed in every chunk by its biome). */
+    public static final DeferredHolder<Feature<?>, RavenCastleFeature> CASTLE = FEATURES.register("raven_castle", () -> new RavenCastleFeature());
 
     /** A door of shadow: walked through, unbreakable, a dim amber light. */
     public static final DeferredBlock<RavenDoorBlock> RAVEN_DOOR = BLOCKS.register("raven_door", () -> new RavenDoorBlock(BlockBehaviour.Properties.of()
@@ -32,5 +38,6 @@ public final class RavenBlocks {
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
+        FEATURES.register(bus);
     }
 }
