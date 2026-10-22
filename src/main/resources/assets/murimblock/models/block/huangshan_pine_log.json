@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_column",
-  "textures": {
-    "side": "murimblock:block/huangshan_pine_log",
-    "end": "murimblock:block/huangshan_pine_log_top"
-  }
-}

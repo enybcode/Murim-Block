@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "murimblock:item/frost_lotus_heart_scroll"
-  }
-}

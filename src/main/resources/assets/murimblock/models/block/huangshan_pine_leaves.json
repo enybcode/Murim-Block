@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "murimblock:block/huangshan_pine_leaves"
-  },
-  "render_type": "minecraft:cutout_mipped"
-}

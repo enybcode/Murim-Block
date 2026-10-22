@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "murimblock:block/kunlun_sedge"
-  },
-  "render_type": "minecraft:cutout"
-}

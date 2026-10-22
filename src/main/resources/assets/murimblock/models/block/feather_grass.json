@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "murimblock:block/feather_grass"
-  },
-  "render_type": "minecraft:cutout"
-}

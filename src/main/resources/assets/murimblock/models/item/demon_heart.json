@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_column",
-  "textures": {
-    "end": "murimblock:item/demon_heart_top",
-    "side": "murimblock:item/demon_heart"
-  }
-}

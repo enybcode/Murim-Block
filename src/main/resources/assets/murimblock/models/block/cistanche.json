@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "murimblock:block/cistanche"
-  },
-  "render_type": "minecraft:cutout"
-}

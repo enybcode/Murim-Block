@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "murimblock:block/arrow_bamboo"
-  },
-  "render_type": "minecraft:cutout"
-}

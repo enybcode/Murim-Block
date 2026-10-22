@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_column",
-  "textures": {
-    "side": "murimblock:block/camphor_log",
-    "end": "murimblock:block/camphor_log_top"
-  }
-}

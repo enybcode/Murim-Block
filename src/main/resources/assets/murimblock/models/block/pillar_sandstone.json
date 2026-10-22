@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_column",
-  "textures": {
-    "side": "murimblock:block/pillar_sandstone",
-    "end": "murimblock:block/pillar_sandstone_top"
-  }
-}

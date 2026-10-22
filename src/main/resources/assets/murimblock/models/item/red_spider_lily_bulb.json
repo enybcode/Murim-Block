@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "murimblock:item/seed/red_spider_lily_bulb"
-  }
-}

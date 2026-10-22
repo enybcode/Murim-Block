@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "murimblock:item/crescent_moon_halberd_scroll"
-  }
-}

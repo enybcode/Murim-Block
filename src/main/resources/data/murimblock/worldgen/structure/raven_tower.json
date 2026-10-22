@@ -1,8 +1,0 @@
-{
-  "type": "murimblock:site",
-  "plan": "raven_tower",
-  "biomes": "#murimblock:has_structure/raven_tower",
-  "spawn_overrides": {},
-  "step": "surface_structures",
-  "terrain_adaptation": "beard_thin"
-}

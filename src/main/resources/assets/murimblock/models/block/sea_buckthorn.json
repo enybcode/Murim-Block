@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "murimblock:block/sea_buckthorn"
-  },
-  "render_type": "minecraft:cutout"
-}

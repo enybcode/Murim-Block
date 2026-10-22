@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "murimblock:block/milk_vetch"
-  },
-  "render_type": "minecraft:cutout"
-}

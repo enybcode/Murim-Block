@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "murimblock:item/yellow_river_bandit_den_pendant_05"
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/slab_top",
-  "textures": {
-    "bottom": "murimblock:block/azure_roof_tiles",
-    "top": "murimblock:block/azure_roof_tiles",
-    "side": "murimblock:block/azure_roof_tiles"
-  }
-}
