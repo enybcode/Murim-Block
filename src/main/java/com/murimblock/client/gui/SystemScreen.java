@@ -2,17 +2,22 @@ package com.murimblock.client.gui;
 
 import com.murimblock.client.MurimKeys;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 /** The System window: one frame, four page tabs; each page draws inside {@link SystemLayout#content}. */
 public class SystemScreen extends Screen {
     private SystemPage page;
+    private SystemPageView view;
     private SystemLayout.Rect window = new SystemLayout.Rect(0, 0, 0, 0);
 
     public SystemScreen(SystemPage page) {
         super(Component.translatable("screen.murimblock.system"));
         this.page = page;
+        this.view = page.createView();
     }
 
     public SystemPage page() {
@@ -22,8 +27,14 @@ public class SystemScreen extends Screen {
     public void showPage(SystemPage page) {
         if (this.page != page) {
             this.page = page;
+            this.view = page.createView();
             rebuildWidgets();
         }
+    }
+
+    /** Lets a page add its own widgets. */
+    public <T extends GuiEventListener & Renderable & NarratableEntry> T addPageWidget(T widget) {
+        return addRenderableWidget(widget);
     }
 
     @Override
@@ -41,6 +52,7 @@ public class SystemScreen extends Screen {
                     SystemLayout.tabWidth(labelWidths[i]), SystemLayout.TAB_HEIGHT, target.tab(),
                     SystemButton.Style.TAB, () -> showPage(target)).selected(target == page));
         }
+        view.init(this, SystemLayout.content(window));
     }
 
     @Override
@@ -48,9 +60,7 @@ public class SystemScreen extends Screen {
         super.renderBackground(g, mouseX, mouseY, partialTick);
         SystemTheme.window(g, window);
         SystemTheme.titleTag(g, font, page.title(), window.centerX(), window.y());
-        SystemLayout.Rect content = SystemLayout.content(window);
-        Component soon = Component.translatable("gui.murimblock.page.next");
-        g.drawCenteredString(font, soon, content.centerX(), content.y() + content.height() / 2 - 4, SystemTheme.TEXT_MUTED);
+        view.render(g, font, SystemLayout.content(window), mouseX, mouseY, partialTick);
     }
 
     @Override

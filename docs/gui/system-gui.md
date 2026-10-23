@@ -23,10 +23,14 @@ Opened with **K** (`key.murimblock.open_system`, rebindable); K or Escape closes
 - `client/gui/SystemTheme`: colours and drawing (window, boxes, title tag, glowing and letter-spaced text, bars).
 - `client/gui/SystemButton`: every control, in the styles TAB, SUB_TAB, ACTION and ROW.
 - `client/gui/SystemScreen` + `SystemPage`: the window and its four tabs; pages draw inside `SystemLayout.content`.
+- `client/gui/page/*Page`: one `SystemPageView` per page (`ProfilePage` done; the others are placeholders).
+- `client/gui/data/*Data`: what each page shows. `ProfileData`: real name and health; Qi, realm, sect and art
+  are placeholders until the Qi system exists.
 - `client/MurimKeys`: the key binding.
 
 ## Checks
 
 - `gradlew build` compiles and runs the unit tests.
-- `gradlew runGuiShots` (dev only, gated by the `murimblock.guiShots` property) opens each page from the title
-  screen at 1920 x 1080, GUI scale 3, saves `run/screenshots/murim_<page>.png`, then quits.
+- `gradlew runGuiShots` (dev only, gated by the `murimblock.guiShots` property) opens (or creates) the creative
+  test world `murim-gui-shots`, shows each page at 1920 x 1080, GUI scale 3, saves
+  `run/screenshots/murim_<page>.png`, then quits.

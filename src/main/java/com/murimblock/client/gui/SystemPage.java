@@ -1,5 +1,7 @@
 package com.murimblock.client.gui;
 
+import com.murimblock.client.gui.page.PlaceholderPage;
+import com.murimblock.client.gui.page.ProfilePage;
 import net.minecraft.network.chat.Component;
 
 /** The four pages of the System, in tab order. */
@@ -13,6 +15,13 @@ public enum SystemPage {
 
     SystemPage(String id) {
         this.id = id;
+    }
+
+    public SystemPageView createView() {
+        return switch (this) {
+            case PROFILE -> new ProfilePage();
+            default -> new PlaceholderPage();
+        };
     }
 
     public Component tab() {
