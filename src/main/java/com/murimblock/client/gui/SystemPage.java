@@ -1,5 +1,6 @@
 package com.murimblock.client.gui;
 
+import com.murimblock.client.gui.page.CultivationPage;
 import com.murimblock.client.gui.page.PlaceholderPage;
 import com.murimblock.client.gui.page.ProfilePage;
 import com.murimblock.client.gui.page.TechniquesPage;
@@ -22,6 +23,7 @@ public enum SystemPage {
         return switch (this) {
             case PROFILE -> new ProfilePage();
             case TECHNIQUES -> new TechniquesPage();
+            case CULTIVATION -> new CultivationPage(false);
             default -> new PlaceholderPage();
         };
     }

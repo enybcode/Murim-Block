@@ -15,9 +15,14 @@ public class SystemScreen extends Screen {
     private SystemLayout.Rect window = new SystemLayout.Rect(0, 0, 0, 0);
 
     public SystemScreen(SystemPage page) {
+        this(page, page.createView());
+    }
+
+    /** Opens a page in a given state, such as a sub-tab. */
+    public SystemScreen(SystemPage page, SystemPageView view) {
         super(Component.translatable("screen.murimblock.system"));
         this.page = page;
-        this.view = page.createView();
+        this.view = view;
     }
 
     public SystemPage page() {

@@ -23,8 +23,11 @@ Opened with **K** (`key.murimblock.open_system`, rebindable); K or Escape closes
 - `client/gui/SystemTheme`: colours and drawing (window, boxes, title tag, glowing and letter-spaced text, bars).
 - `client/gui/SystemButton`: every control, in the styles TAB, SUB_TAB, ACTION and ROW.
 - `client/gui/SystemScreen` + `SystemPage`: the window and its four tabs; pages draw inside `SystemLayout.content`.
-- `client/gui/page/*Page`: one `SystemPageView` per page (Profile and Techniques done; the others are
-  placeholders).
+- `client/gui/page/*Page`: one `SystemPageView` per page (Profile, Techniques and Cultivation done; Info is a
+  placeholder). Cultivation's Meridians view draws the body itself (`MeridianBody`) in screen pixels from a
+  gliding camera (`MeridianCamera`), so squares stay sharp at any zoom.
+- `CultivationData`: realms, the 12 meridians + Small Heavenly Circuit with their real acupoints (positions on a
+  160 x 320 front view of the player), and placeholder progress (stage 3, 620 / 1000 Qi, 4 open meridians).
 - `client/gui/data/*Data`: what each page shows. `ProfileData`: real name and health; Qi, realm and sect are
   placeholders until the Qi system exists. `MartialArtsData`: the mockup's three example arts, the active one
   kept for the client session only; `inCombat()` is always false until combat exists.

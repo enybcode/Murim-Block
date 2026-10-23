@@ -2,8 +2,11 @@ package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.gui.SystemPage;
+import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
-import java.util.Locale;
+import com.murimblock.client.gui.page.CultivationPage;
+import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -35,6 +38,16 @@ public final class GuiScreenshots {
     private static final int GUI_SCALE = 3;
 
     private enum Step { TITLE, LOADING, PAGES, DONE }
+
+    private record Shot(String name, SystemPage page, Supplier<SystemPageView> view) {
+    }
+
+    private static final List<Shot> SHOTS = List.of(
+            new Shot("profile", SystemPage.PROFILE, SystemPage.PROFILE::createView),
+            new Shot("techniques", SystemPage.TECHNIQUES, SystemPage.TECHNIQUES::createView),
+            new Shot("cultivation", SystemPage.CULTIVATION, () -> new CultivationPage(false)),
+            new Shot("cultivation_meridians", SystemPage.CULTIVATION, () -> new CultivationPage(true)),
+            new Shot("info", SystemPage.INFO, SystemPage.INFO::createView));
 
     private static Step step = Step.TITLE;
     private static int page;
@@ -71,11 +84,10 @@ public final class GuiScreenshots {
                 if (++frames < SETTLE_FRAMES) {
                     return;
                 }
-                SystemPage current = SystemPage.values()[page];
-                String name = "murim_" + current.name().toLowerCase(Locale.ROOT) + ".png";
+                String name = "murim_" + SHOTS.get(page).name() + ".png";
                 Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(),
                         message -> Murimblock.LOGGER.info("GUI shot: {}", message.getString()));
-                if (page + 1 < SystemPage.values().length) {
+                if (page + 1 < SHOTS.size()) {
                     open(mc, page + 1);
                 } else {
                     // The game draws a few more frames while stopping: no second shot of the last page.
@@ -102,6 +114,7 @@ public final class GuiScreenshots {
     private static void open(Minecraft mc, int index) {
         page = index;
         frames = 0;
-        mc.setScreen(new SystemScreen(SystemPage.values()[index]));
+        Shot shot = SHOTS.get(index);
+        mc.setScreen(new SystemScreen(shot.page(), shot.view().get()));
     }
 }
