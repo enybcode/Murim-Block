@@ -28,8 +28,10 @@ at V1's inner worlds on `main` for the idea only; nothing was copied.
 - Guard: block breaking (and cracking), placing, using items on blocks, buckets, trampling, explosions and creative
   pick-block are all cancelled there.
 
-- Known: any added dimension makes vanilla mark the world "experimental", so opening a world asks for a backup each
-  time (NeoForge only adds a note). Harmless; it can be skipped later if Enzo wants (client-side, or a mixin).
+- Any added dimension makes vanilla mark the world "experimental": a warning when creating it and a backup question
+  on its first opening (NeoForge then remembers it). Hidden at Enzo's request (24 Oct): `InnerWorldClient` answers
+  both screens (yes, no backup), and logs `Skipped the experimental world warning`. It also hides that warning for
+  other mods' experimental settings.
 
 ## Island layout (`InnerIsland`, version 1)
 

@@ -5,11 +5,18 @@ import com.murimblock.innerworld.InnerWorld;
 import com.murimblock.innerworld.InnerWorldEvents;
 import com.murimblock.registry.MurimEntities;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.BackupConfirmScreen;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /** Client side of the inner world: the body's renderer, the travel request, and no pick-block copies inside. */
@@ -30,6 +37,34 @@ public final class InnerWorldClient {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(MurimEntities.MEDITATING_BODY.get(), MeditatingBodyRenderer::new);
+    }
+
+    /**
+     * The inner world dimension makes vanilla call every world "experimental": a warning when creating one and a
+     * backup question on its first opening. Both are answered for the player (no backup), as if they had clicked.
+     */
+    @SubscribeEvent
+    public static void onScreenInit(ScreenEvent.Init.Post event) {
+        String button = event.getScreen() instanceof BackupConfirmScreen && isTitled(event.getScreen(), "selectWorld.backupQuestion.experimental")
+                ? "selectWorld.backupJoinSkipButton"
+                : event.getScreen() instanceof ConfirmScreen && isTitled(event.getScreen(), "selectWorld.warning.experimental.title")
+                ? "gui.yes" : null;
+        if (button == null) {
+            return;
+        }
+        for (GuiEventListener child : event.getScreen().children()) {
+            if (child instanceof Button b && b.getMessage().getContents() instanceof TranslatableContents t
+                    && t.getKey().equals(button)) {
+                Murimblock.LOGGER.info("Skipped the experimental world warning ({})", button);
+                // Not during init: pressing replaces the screen being set up.
+                Minecraft.getInstance().tell(b::onPress);
+                return;
+            }
+        }
+    }
+
+    private static boolean isTitled(Screen screen, String key) {
+        return screen.getTitle().getContents() instanceof TranslatableContents t && t.getKey().equals(key);
     }
 
     /** Creative pick-block would hand out a copy of the island's blocks. */

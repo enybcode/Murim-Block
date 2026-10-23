@@ -14,11 +14,7 @@ import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.page.CultivationPage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
@@ -83,16 +79,6 @@ public final class InnerWorldTour {
                 Murimblock.LOGGER.info("Inner world tour: waiting for the title screen, on {}", mc.screen);
             }
             return;
-        }
-        // Any added dimension marks the world experimental: vanilla asks for a backup on every opening.
-        if (mc.screen instanceof BackupConfirmScreen backup) {
-            for (GuiEventListener child : backup.children()) {
-                if (child instanceof Button button && button.getMessage().getContents() instanceof TranslatableContents t
-                        && t.getKey().equals("selectWorld.backupJoinSkipButton")) {
-                    button.onPress();
-                    return;
-                }
-            }
         }
         if (mc.player == null || mc.screen != null && !(mc.screen instanceof SystemScreen)) {
             return;
