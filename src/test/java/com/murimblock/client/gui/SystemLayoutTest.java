@@ -28,9 +28,11 @@ class SystemLayoutTest {
     void displayFactorIsWholeOnCommonScreensAndAlwaysFits() {
         assertEquals(2f, SystemLayout.displayFactor(1920, 1080));
         assertEquals(4f, SystemLayout.displayFactor(3840, 2160));
-        float small = SystemLayout.displayFactor(1366, 768);
-        assertEquals(0f, small * 2 % 1, 0.0001f, "half steps below 2: " + small);
-        for (int[] screen : new int[][] {{1366, 768}, {1280, 720}, {854, 480}, {2560, 1440}}) {
+        assertEquals(2f, SystemLayout.displayFactor(1366, 768));
+        assertEquals(2f, SystemLayout.displayFactor(1280, 720));
+        assertEquals(1f, SystemLayout.displayFactor(854, 480));
+        assertTrue(SystemLayout.displayFactor(400, 240) < 1, "a tiny screen gets a fraction");
+        for (int[] screen : new int[][] {{1366, 768}, {1280, 720}, {854, 480}, {2560, 1440}, {1600, 900}, {400, 240}}) {
             float f = SystemLayout.displayFactor(screen[0], screen[1]);
             assertTrue((SystemLayout.MAX_WIDTH + 2 * SystemLayout.MARGIN) * f <= screen[0], "too wide at " + screen[0]);
             assertTrue((SystemLayout.MAX_HEIGHT + 2 * SystemLayout.MARGIN + SystemLayout.TITLE_ROOM) * f <= screen[1],

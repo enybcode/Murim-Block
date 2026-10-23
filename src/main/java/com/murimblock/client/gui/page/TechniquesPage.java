@@ -168,7 +168,7 @@ public final class TechniquesPage implements SystemPageView {
     private static void stat(GuiGraphics g, Font font, int x, int y, int w, String labelKey, Component value) {
         g.renderOutline(x, y, w, 28, SystemTheme.CYAN_FAINT);
         g.drawString(font, Component.translatable(labelKey), x + 6, y + 5, SystemTheme.TEXT_MUTED, false);
-        SystemTheme.glowText(g, font, value, x + 6, y + 16, SystemTheme.TEXT);
+        SystemTheme.crispText(g, font, value, x + 6, y + 16, SystemTheme.TEXT);
     }
 
     private static void label(GuiGraphics g, Font font, int x, int y, String key) {

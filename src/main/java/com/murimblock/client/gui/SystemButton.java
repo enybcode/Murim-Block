@@ -94,7 +94,7 @@ public class SystemButton extends AbstractButton {
                 int tx = x + (w - tw) / 2;
                 if (selected) {
                     g.fill(x, y + h - 2, x + w, y + h, SystemTheme.CYAN);
-                    SystemTheme.glowSpaced(g, font, label, tx, textY, SystemTheme.TEXT, 1);
+                    SystemTheme.crispSpaced(g, font, label, tx, textY, SystemTheme.TEXT, 1);
                 } else {
                     SystemTheme.spaced(g, font, label, tx, textY, hot ? SystemTheme.TEXT : SystemTheme.TEXT_MUTED, 1);
                 }

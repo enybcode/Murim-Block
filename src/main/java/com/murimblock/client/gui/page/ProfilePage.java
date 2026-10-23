@@ -152,7 +152,7 @@ public final class ProfilePage implements SystemPageView {
         g.drawString(font, Component.translatable(labelKey), r.x(), y + 4, 0xFFB5DCF2, false);
         int x = r.right() - font.width(value);
         if (glow) {
-            SystemTheme.glowText(g, font, value, x, y + 4, SystemTheme.TEXT);
+            SystemTheme.crispText(g, font, value, x, y + 4, SystemTheme.TEXT);
         } else {
             g.drawString(font, value, x, y + 4, SystemTheme.TEXT, false);
         }

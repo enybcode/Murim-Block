@@ -31,10 +31,12 @@ neoForge {
         }
 
         // Dev only: screenshots every System page into run/screenshots, then quits.
+        // Window size: -PshotWidth=1280 -PshotHeight=720 (default 1920 x 1080).
         guiShots {
             client()
             systemProperty 'murimblock.guiShots', 'true'
-            programArguments.addAll('--width', '1920', '--height', '1080')
+            programArguments.addAll('--width', (project.findProperty('shotWidth') ?: '1920').toString(),
+                    '--height', (project.findProperty('shotHeight') ?: '1080').toString())
         }
     }
 

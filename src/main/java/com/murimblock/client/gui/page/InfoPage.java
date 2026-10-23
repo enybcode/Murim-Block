@@ -142,7 +142,7 @@ public final class InfoPage implements SystemPageView {
         for (Goal goal : q.goals()) {
             g.drawString(font, goal.label(), x, y, SystemTheme.TEXT, false);
             Component count = Component.translatable("gui.murimblock.amount", goal.done(), goal.total());
-            SystemTheme.glowText(g, font, count, r.right() - 10 - font.width(count), y, SystemTheme.TEXT);
+            SystemTheme.crispText(g, font, count, r.right() - 10 - font.width(count), y, SystemTheme.TEXT);
             SystemTheme.bar(g, x, y + 11, r.width() - 20, 6, (float) goal.done() / goal.total(), SystemTheme.CYAN);
             y += 24;
         }

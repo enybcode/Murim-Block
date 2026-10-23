@@ -192,7 +192,7 @@ public final class CultivationPage implements SystemPageView {
         }
         Component percent = Component.translatable("gui.murimblock.percent", Math.round(fraction * 100))
                 .withStyle(s -> s.withBold(true));
-        SystemTheme.glowText(g, font, percent, cx - font.width(percent) / 2, cy - 9, SystemTheme.TEXT);
+        SystemTheme.crispText(g, font, percent, cx - font.width(percent) / 2, cy - 9, SystemTheme.TEXT);
         Component amount = Component.translatable("gui.murimblock.cultivation.qi_amount", CultivationData.qi(), CultivationData.qiToFill());
         g.drawCenteredString(font, amount, cx, cy + 4, SystemTheme.TEXT_MUTED);
 

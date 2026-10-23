@@ -41,26 +41,34 @@ public final class SystemLayout {
         }
     }
 
-    /** Share of the real screen the window may take, across and down. */
+    /** Share of the real screen the window takes when there is room, across and down. */
     public static final float SCREEN_SHARE_X = 0.7f;
     public static final float SCREEN_SHARE_Y = 0.75f;
+    /** Share it may take on a small screen, to stay readable. */
+    public static final float SMALL_SCREEN_SHARE = 0.95f;
 
     /**
-     * Real pixels per design pixel. The System ignores Minecraft's GUI scale: it is drawn whole, at a whole factor
-     * when the screen allows it (2 on a 1080p screen, 4 on a 4K one) so the pixel font stays even, otherwise in
-     * half steps, so it never overflows nor fills the screen.
+     * Real pixels per design pixel. The System ignores Minecraft's GUI scale and is drawn whole, always at a whole
+     * factor when one fits, because the pixel font turns uneven (blurry) at fractional ones: about 70 % of the
+     * screen when that allows x2 or more (x2 at 1080p, x4 at 4K); on smaller screens the largest whole factor that
+     * still fits (x2 at 720p, x1 at 480p); only a screen too small for x1 gets a fraction.
      */
     public static float displayFactor(int screenPixelsX, int screenPixelsY) {
-        float fitX = screenPixelsX * SCREEN_SHARE_X / (MAX_WIDTH + 2 * MARGIN);
-        float fitY = screenPixelsY * SCREEN_SHARE_Y / (MAX_HEIGHT + 2 * MARGIN + TITLE_ROOM);
-        float fit = Math.min(fitX, fitY);
-        if (fit >= 2) {
-            return (float) Math.floor(fit);
+        float comfortable = fit(screenPixelsX, screenPixelsY, SCREEN_SHARE_X, SCREEN_SHARE_Y);
+        if (comfortable >= 2) {
+            return (float) Math.floor(comfortable);
         }
-        if (fit >= 0.5f) {
-            return (float) Math.floor(fit * 2) / 2;
+        float most = fit(screenPixelsX, screenPixelsY, SMALL_SCREEN_SHARE, SMALL_SCREEN_SHARE);
+        if (most >= 1) {
+            return (float) Math.floor(most);
         }
-        return Math.max(0.1f, fit);
+        return Math.max(0.1f, most);
+    }
+
+    private static float fit(int screenPixelsX, int screenPixelsY, float shareX, float shareY) {
+        float fitX = screenPixelsX * shareX / (MAX_WIDTH + 2 * MARGIN);
+        float fitY = screenPixelsY * shareY / (MAX_HEIGHT + 2 * MARGIN + TITLE_ROOM);
+        return Math.min(fitX, fitY);
     }
 
     /** The window, centred, shrunk to fit small screens or large GUI scales. */

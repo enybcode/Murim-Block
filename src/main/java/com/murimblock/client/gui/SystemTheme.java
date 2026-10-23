@@ -84,6 +84,20 @@ public final class SystemTheme {
         g.drawString(font, text, x, y, color, false);
     }
 
+    /**
+     * Text with one cyan drop shadow: still lit, but sharp. For numbers, which the halo of
+     * {@link #glowText} blurs.
+     */
+    public static void crispText(GuiGraphics g, Font font, Component text, int x, int y, int color) {
+        g.drawString(font, text, x + 1, y + 1, withAlpha(CYAN, 0x90), false);
+        g.drawString(font, text, x, y, color, false);
+    }
+
+    public static void crispSpaced(GuiGraphics g, Font font, String text, int x, int y, int color, int spacing) {
+        spaced(g, font, text, x + 1, y + 1, withAlpha(CYAN, 0x90), spacing);
+        spaced(g, font, text, x, y, color, spacing);
+    }
+
     /** Letter-spaced text, used for labels and titles. */
     public static void spaced(GuiGraphics g, Font font, String text, int x, int y, int color, int spacing) {
         for (int i = 0; i < text.length(); i++) {
