@@ -120,6 +120,12 @@ public final class GuiScreenshots {
                 if (frames < MEDITATION_FRAMES + 40) {
                     return;
                 }
+                if (frames < MEDITATION_FRAMES + 41) {
+                    // A three-quarter view of the pose: turn the body, not the camera.
+                    mc.player.setYBodyRot(mc.player.getYRot() + 45);
+                    mc.player.yBodyRotO = mc.player.yBodyRot;
+                    return;
+                }
                 shoot(mc, "murim_breath_full.png");
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 open(mc, 0);
@@ -208,6 +214,7 @@ public final class GuiScreenshots {
             Meditation.breathe(player, true);
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.MERIDIAN_PILL.get()));
             player.getMainHandItem().use(player.level(), player, InteractionHand.MAIN_HAND);
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             Murimblock.LOGGER.info("GUI shots: meditating {}, meridians {}", c.meditating(), c.meridians());
         });
     }
