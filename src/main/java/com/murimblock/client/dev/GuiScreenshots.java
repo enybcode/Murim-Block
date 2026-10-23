@@ -7,6 +7,7 @@ import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.page.CultivationPage;
 import com.murimblock.client.gui.page.InfoPage;
 import com.murimblock.client.cultivation.BreathingHud;
+import com.murimblock.client.cultivation.QiAura;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.Meditation;
 import com.murimblock.registry.MurimItems;
@@ -107,6 +108,10 @@ public final class GuiScreenshots {
                     startMeditation(mc);
                 }
                 // The breathing HUD in its four mockup states: neutral, good beat, miss, gauge full.
+                if (frames == MEDITATION_FRAMES - 20) {
+                    // A good breath's Qi ring, so it is on its way in for the good-beat shot.
+                    QiAura.burst(mc.player);
+                }
                 if (frames == MEDITATION_FRAMES) {
                     shoot(mc, "murim_meditation.png");
                     BreathingHud.showFeedback(true);
