@@ -23,9 +23,11 @@ Opened with **K** (`key.murimblock.open_system`, rebindable); K or Escape closes
 - `client/gui/SystemTheme`: colours and drawing (window, boxes, title tag, glowing and letter-spaced text, bars).
 - `client/gui/SystemButton`: every control, in the styles TAB, SUB_TAB, ACTION and ROW.
 - `client/gui/SystemScreen` + `SystemPage`: the window and its four tabs; pages draw inside `SystemLayout.content`.
-- `client/gui/page/*Page`: one `SystemPageView` per page (`ProfilePage` done; the others are placeholders).
-- `client/gui/data/*Data`: what each page shows. `ProfileData`: real name and health; Qi, realm, sect and art
-  are placeholders until the Qi system exists.
+- `client/gui/page/*Page`: one `SystemPageView` per page (Profile and Techniques done; the others are
+  placeholders).
+- `client/gui/data/*Data`: what each page shows. `ProfileData`: real name and health; Qi, realm and sect are
+  placeholders until the Qi system exists. `MartialArtsData`: the mockup's three example arts, the active one
+  kept for the client session only; `inCombat()` is always false until combat exists.
 - `client/MurimKeys`: the key binding.
 
 ## Checks

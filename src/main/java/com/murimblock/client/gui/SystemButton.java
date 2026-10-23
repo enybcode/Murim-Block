@@ -20,9 +20,16 @@ public class SystemButton extends AbstractButton {
         ROW
     }
 
+    /** Draws the inside of a ROW button, for rows richer than one line of text. */
+    @FunctionalInterface
+    public interface RowContent {
+        void draw(GuiGraphics g, Font font, int x, int y, int width, int height);
+    }
+
     private final Style style;
     private final Runnable onPress;
     private boolean selected;
+    private RowContent content;
 
     public SystemButton(int x, int y, int width, int height, Component label, Style style, Runnable onPress) {
         super(x, y, width, height, label);
@@ -32,6 +39,16 @@ public class SystemButton extends AbstractButton {
 
     public SystemButton selected(boolean selected) {
         this.selected = selected;
+        return this;
+    }
+
+    public SystemButton content(RowContent content) {
+        this.content = content;
+        return this;
+    }
+
+    public SystemButton enabled(boolean enabled) {
+        this.active = enabled;
         return this;
     }
 
@@ -99,7 +116,11 @@ public class SystemButton extends AbstractButton {
                     g.fill(x, y, x + w, y + h, SystemTheme.withAlpha(SystemTheme.CYAN, 0x14));
                 }
                 g.renderOutline(x, y, w, h, selected || hot ? SystemTheme.CYAN : SystemTheme.CYAN_FAINT);
-                g.drawString(font, getMessage(), x + 6, textY, SystemTheme.TEXT, false);
+                if (content != null) {
+                    content.draw(g, font, x, y, w, h);
+                } else {
+                    g.drawString(font, getMessage(), x + 6, textY, SystemTheme.TEXT, false);
+                }
             }
         }
     }

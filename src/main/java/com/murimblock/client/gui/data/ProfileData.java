@@ -34,7 +34,7 @@ public record ProfileData(
                 Component.translatable("murimblock.realm.third_rate_warrior"),
                 none,
                 Component.translatable("gui.murimblock.profile.unaffiliated"),
-                none,
+                MartialArtsData.active().name(),
                 health,
                 maxHealth,
                 62,

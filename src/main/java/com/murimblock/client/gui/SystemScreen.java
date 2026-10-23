@@ -32,6 +32,11 @@ public class SystemScreen extends Screen {
         }
     }
 
+    /** Rebuilds the page's widgets after its state changed. */
+    public void refresh() {
+        rebuildWidgets();
+    }
+
     /** Lets a page add its own widgets. */
     public <T extends GuiEventListener & Renderable & NarratableEntry> T addPageWidget(T widget) {
         return addRenderableWidget(widget);

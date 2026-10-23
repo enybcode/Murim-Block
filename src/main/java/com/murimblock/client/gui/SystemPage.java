@@ -2,6 +2,7 @@ package com.murimblock.client.gui;
 
 import com.murimblock.client.gui.page.PlaceholderPage;
 import com.murimblock.client.gui.page.ProfilePage;
+import com.murimblock.client.gui.page.TechniquesPage;
 import net.minecraft.network.chat.Component;
 
 /** The four pages of the System, in tab order. */
@@ -20,6 +21,7 @@ public enum SystemPage {
     public SystemPageView createView() {
         return switch (this) {
             case PROFILE -> new ProfilePage();
+            case TECHNIQUES -> new TechniquesPage();
             default -> new PlaceholderPage();
         };
     }
