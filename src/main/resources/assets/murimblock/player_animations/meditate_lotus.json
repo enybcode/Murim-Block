@@ -8,14 +8,6 @@
         "body": {
           "position": [0, -10, 0]
         },
-        "right_leg": {
-          "position": [-2, 0, 0],
-          "rotation": [-90, -18, 0]
-        },
-        "left_leg": {
-          "position": [2, 0, 0],
-          "rotation": [-90, 18, 0]
-        },
         "torso": {
           "rotation": {
             "0.0": [0, 0, 0],
@@ -24,10 +16,10 @@
           }
         },
         "right_arm": {
-          "rotation": [-32, 0, 16]
+          "rotation": [-18, 0, 14]
         },
         "left_arm": {
-          "rotation": [-32, 0, -16]
+          "rotation": [-18, 0, -14]
         },
         "head": {
           "rotation": {

@@ -8,6 +8,8 @@ import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import com.zigythebird.playeranim.api.PlayerAnimationFactory;
 import com.zigythebird.playeranimcore.enums.PlayState;
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
@@ -26,6 +28,7 @@ public final class ClientCultivation {
     private static final int LAYER_PRIORITY = 1000;
 
     private static Cultivation.Snapshot current = Cultivation.Snapshot.START;
+    private static final Set<Integer> MEDITATING = new HashSet<>();
 
     private ClientCultivation() {
     }
@@ -50,7 +53,17 @@ public final class ClientCultivation {
                 != CultivationRules.gaugeFull(b.realm(), b.stage(), b.stageQi());
     }
 
+    /** Whether this player sits in meditation, as last told by the server. */
+    public static boolean isMeditating(Entity player) {
+        return MEDITATING.contains(player.getId());
+    }
+
     public static void pose(int entityId, boolean meditating) {
+        if (meditating) {
+            MEDITATING.add(entityId);
+        } else {
+            MEDITATING.remove(entityId);
+        }
         Minecraft mc = Minecraft.getInstance();
         Entity entity = mc.level == null ? null : mc.level.getEntity(entityId);
         if (entity instanceof AbstractClientPlayer player
@@ -77,6 +90,7 @@ public final class ClientCultivation {
         @SubscribeEvent
         public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
             current = Cultivation.Snapshot.START;
+            MEDITATING.clear();
         }
     }
 }

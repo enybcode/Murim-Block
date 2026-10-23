@@ -56,8 +56,10 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
 - `cultivation/`: `CultivationRules` (numbers), `Cultivation` (player data, plain Java, unit tested), `CultivationCodecs`
   (save + network), `Meditation` (server rules), `CultivationEvents`, `CultivationCommands`, `MeridianPillItem`.
 - Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `1`: sync, pose, toggle, advance, breath.
-- Key C (placeholder) starts meditation; seated cross-legged pose, hands on the knees (Enzo's reference photo,
-  23 Oct), `player_animations/meditate_lotus.json` played through PAL and
+- Key C (placeholder) starts meditation; seated cross-legged, knees bent out, shins crossed, hands on the knees
+  (Enzo's reference photo, 23 Oct). Legs have no knee in Minecraft or PAL: `MeditationLegsLayer` hides them and draws
+  a thigh and a shin per leg from the skin. Rest of the pose
+  in `player_animations/meditate_lotus.json`, played through PAL and
   sent to everyone tracking the player. The Cultivation page has Advance and Stop/Meditate; Profile reads the real Qi.
 - Breathing HUD `client/cultivation/BreathingHud` (validated mockup, Design canvas board "Meditation — breathing
   mini-game"): while meditating, C is a breath (good within 0.15 of the circle, `BreathCycle`), sneak stands up.

@@ -122,11 +122,21 @@ public final class GuiScreenshots {
                 }
                 if (frames < MEDITATION_FRAMES + 41) {
                     // A three-quarter view of the pose: turn the body, not the camera.
-                    mc.player.setYBodyRot(mc.player.getYRot() + 45);
+                    mc.player.setYBodyRot(mc.player.getYRot() + 90);
                     mc.player.yBodyRotO = mc.player.yBodyRot;
                     return;
                 }
-                shoot(mc, "murim_breath_full.png");
+                if (frames == MEDITATION_FRAMES + 41) {
+                    shoot(mc, "murim_breath_full.png");
+                    mc.options.hideGui = true;
+                    return;
+                }
+                if (frames < MEDITATION_FRAMES + 44) {
+                    return;
+                }
+                // The pose alone, without the HUD.
+                shoot(mc, "murim_meditation_pose.png");
+                mc.options.hideGui = false;
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 open(mc, 0);
                 step = Step.PAGES;
