@@ -58,8 +58,10 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
 - Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `1`: sync, pose, toggle, advance, breath.
 - Key C (placeholder) toggles meditation; lotus pose `player_animations/meditate_lotus.json` played through PAL and
   sent to everyone tracking the player. The Cultivation page has Advance and Stop/Meditate; Profile reads the real Qi.
-- Breath beats are accepted at most every 15 ticks; the HUD of the mini-game waits for its mockup (Design canvas,
-  board "Meditation — breathing mini-game"), so Harmony stays at 0 for now.
+- Breathing HUD `client/cultivation/BreathingHud` (validated mockup, Design canvas board "Meditation — breathing
+  mini-game"): while meditating, C is a breath (good within 0.15 of the circle, `BreathCycle`), sneak stands up.
+  The server accepts one breath per 15 ticks and keeps Harmony.
 - Commands: `/murim cultivation get|fill <player>`, `/murim cultivation set <player> <realm> <stage> <meridians>`.
 - Pill icon drawn by `scripts/pill-icon.cjs`. Meridian bonuses are shown but not applied yet.
-- Check: `gradlew runGuiShots` now also seats the player in lotus on a platform (`murim_meditation.png`).
+- Check: `gradlew runGuiShots` also seats the player in lotus on a platform and shoots the HUD states
+  (`murim_meditation`, `murim_breath_good`, `murim_breath_miss`, `murim_breath_full`).

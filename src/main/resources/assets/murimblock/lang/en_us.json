@@ -279,7 +279,7 @@
   "murimblock.technique.sweeping_arc.desc": "A wide sweep that trips the enemies in front of you.",
   "item.murimblock.meridian_opening_pill": "Meridian-Opening Pill",
   "item.murimblock.meridian_opening_pill.desc": "Swallow it while meditating to open your next meridian.",
-  "message.murimblock.meditation.start": "[!] You sit down and calm your breath.",
+  "message.murimblock.meditation.start": "[!] You sit down and calm your breath. Sneak to rise.",
   "message.murimblock.meditation.stop": "[!] You rise from meditation.",
   "message.murimblock.meditation.moved": "[!] Moving broke your meditation.",
   "message.murimblock.meditation.hit": "[!] A blow broke your meditation.",
@@ -295,5 +295,9 @@
   "message.murimblock.pill.meditate": "[!] Swallow the pill while meditating.",
   "message.murimblock.pill.all_open": "[!] All your meridians are already open.",
   "message.murimblock.pill.realm": "[!] Your realm cannot hold another open meridian yet.",
-  "message.murimblock.pill.opened": "[!] The %s meridian opens."
+  "message.murimblock.pill.opened": "[!] The %s meridian opens.",
+  "hud.murimblock.meditation.prompt": "Press [%s] when the ring meets the circle",
+  "hud.murimblock.meditation.full": "Your Qi is full. Open the System to Advance.",
+  "hud.murimblock.meditation.gauge_full": "Gauge full",
+  "hud.murimblock.meditation.stage": "%s %s"
 }

@@ -6,6 +6,7 @@ import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.page.CultivationPage;
 import com.murimblock.client.gui.page.InfoPage;
+import com.murimblock.client.cultivation.BreathingHud;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.Meditation;
 import com.murimblock.registry.MurimItems;
@@ -105,11 +106,21 @@ public final class GuiScreenshots {
                 if (++frames == PLATFORM_FRAMES) {
                     startMeditation(mc);
                 }
-                if (frames < MEDITATION_FRAMES) {
+                // The breathing HUD in its four mockup states: neutral, good beat, miss, gauge full.
+                if (frames == MEDITATION_FRAMES) {
+                    shoot(mc, "murim_meditation.png");
+                    BreathingHud.showFeedback(true);
+                } else if (frames == MEDITATION_FRAMES + 4) {
+                    shoot(mc, "murim_breath_good.png");
+                    BreathingHud.showFeedback(false);
+                } else if (frames == MEDITATION_FRAMES + 8) {
+                    shoot(mc, "murim_breath_miss.png");
+                    fillGauge(mc);
+                }
+                if (frames < MEDITATION_FRAMES + 40) {
                     return;
                 }
-                Screenshot.grab(mc.gameDirectory, "murim_meditation.png", mc.getMainRenderTarget(),
-                        message -> Murimblock.LOGGER.info("GUI shot: {}", message.getString()));
+                shoot(mc, "murim_breath_full.png");
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 open(mc, 0);
                 step = Step.PAGES;
@@ -168,6 +179,22 @@ public final class GuiScreenshots {
         });
     }
 
+    private static void shoot(Minecraft mc, String name) {
+        Screenshot.grab(mc.gameDirectory, name, mc.getMainRenderTarget(),
+                message -> Murimblock.LOGGER.info("GUI shot: {}", message.getString()));
+    }
+
+    private static void fillGauge(Minecraft mc) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            Cultivation c = Meditation.of(player);
+            c.set(c.realm(), c.stage(), c.gauge(), c.qi(), c.maxQi(), c.meridians());
+            Meditation.sync(player);
+        });
+    }
+
     private static void startMeditation(Minecraft mc) {
         MinecraftServer server = mc.getSingleplayerServer();
         UUID id = mc.player.getUUID();
@@ -175,8 +202,10 @@ public final class GuiScreenshots {
             ServerPlayer player = server.getPlayerList().getPlayer(id);
             Cultivation c = Meditation.of(player);
             c.set(0, 3, 0, c.maxQi(), c.maxQi(), 3);
-            c.set(0, 3, c.gauge(), c.maxQi(), c.maxQi(), 3);
+            c.set(0, 3, c.gauge() * 0.62, c.maxQi(), c.maxQi(), 3);
             Meditation.start(player);
+            Meditation.breathe(player, true);
+            Meditation.breathe(player, true);
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.MERIDIAN_PILL.get()));
             player.getMainHandItem().use(player.level(), player, InteractionHand.MAIN_HAND);
             Murimblock.LOGGER.info("GUI shots: meditating {}, meridians {}", c.meditating(), c.meridians());
