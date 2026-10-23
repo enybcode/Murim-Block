@@ -3,7 +3,6 @@ package com.murimblock.client.cultivation;
 import com.murimblock.Murimblock;
 import com.murimblock.registry.MurimParticles;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
@@ -12,38 +11,41 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
-/** Qi motes drawn into the dantian of every meditating player, and a rush of them on a good breath. */
+/** Qi smoke rising from every meditating player, and a ring of it blown out on a good breath. */
 public final class QiAura {
     /** Dantian height above the feet of a player seated in lotus. */
     private static final double DANTIAN = 0.55;
+    /** Puffs in a good breath's ring. */
+    private static final int RING = 20;
 
     private QiAura() {
     }
 
-    /** Motes in a good breath's ring. */
-    private static final int RING = 32;
-
-    /** A good breath: a flat ring of Qi at dantian height closes in at once. */
+    /** A good breath: a flat ring of Qi smoke rolls out from the dantian and lifts. */
     public static void burst(Player player) {
         RandomSource random = player.getRandom();
         for (int i = 0; i < RING; i++) {
-            double angle = (i + random.nextDouble() * 0.3) / RING * Math.PI * 2;
-            spawn(player, MurimParticles.QI_RING.get(), angle, 1.9 + random.nextDouble() * 0.2,
-                    random.nextDouble() * 0.1 - 0.05);
+            double angle = (i + random.nextDouble() * 0.4) / RING * Math.PI * 2;
+            double cos = Math.cos(angle);
+            double sin = Math.sin(angle);
+            double speed = 0.16 + random.nextDouble() * 0.04;
+            player.level().addParticle(MurimParticles.QI_RING.get(),
+                    player.getX() + cos * 0.4, player.getY() + DANTIAN, player.getZ() + sin * 0.4,
+                    cos * speed, 0.01, sin * speed);
         }
     }
 
-    private static void drift(Player player, RandomSource random) {
-        spawn(player, MurimParticles.QI.get(), random.nextDouble() * Math.PI * 2, 1.3 + random.nextDouble() * 0.9,
-                random.nextDouble() * 1.6 - 0.4);
-    }
-
-    private static void spawn(Player player, SimpleParticleType type, double angle, double radius, double dy) {
-        double x = player.getX();
-        double y = player.getY() + DANTIAN;
-        double z = player.getZ();
-        player.level().addParticle(type,
-                x + Math.cos(angle) * radius, y + dy, z + Math.sin(angle) * radius, x, y, z);
+    /** One puff leaving the body somewhere between the lap and the shoulders. */
+    private static void rise(Player player, RandomSource random) {
+        double angle = random.nextDouble() * Math.PI * 2;
+        double radius = 0.4 + random.nextDouble() * 0.3;
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double out = 0.004 + random.nextDouble() * 0.01;
+        player.level().addParticle(MurimParticles.QI.get(),
+                player.getX() + cos * radius, player.getY() + 0.1 + random.nextDouble() * 0.7,
+                player.getZ() + sin * radius,
+                cos * out, 0.02 + random.nextDouble() * 0.02, sin * out);
     }
 
     @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -65,9 +67,9 @@ public final class QiAura {
             }
             for (Player player : mc.level.players()) {
                 if (ClientCultivation.isMeditating(player)) {
-                    drift(player, player.getRandom());
+                    rise(player, player.getRandom());
                     if (player.getRandom().nextBoolean()) {
-                        drift(player, player.getRandom());
+                        rise(player, player.getRandom());
                     }
                 }
             }

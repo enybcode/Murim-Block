@@ -1,8 +1,10 @@
 {
   "textures": [
-    "murimblock:qi_0",
-    "murimblock:qi_1",
-    "murimblock:qi_2",
-    "murimblock:qi_3"
+    "murimblock:qi_smoke_0",
+    "murimblock:qi_smoke_1",
+    "murimblock:qi_smoke_2",
+    "murimblock:qi_smoke_3",
+    "murimblock:qi_smoke_4",
+    "murimblock:qi_smoke_5"
   ]
 }

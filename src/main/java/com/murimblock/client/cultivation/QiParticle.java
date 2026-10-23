@@ -10,71 +10,55 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
 /**
- * A glowing mote of Qi drawn from the air into a point (the meditator's dantian). It spirals in, speeding up, and
- * fades as it is absorbed. The spawn's speed arguments are the target point, not a velocity.
+ * A puff of Qi smoke: it rises from the meditator, swells, frays (its frames thin out with age) and fades away. The
+ * spawn's speed arguments are its starting velocity. Ring puffs, from a good breath, are bigger and brighter.
  */
 public final class QiParticle extends TextureSheetParticle {
-    private final double startX;
-    private final double startY;
-    private final double startZ;
-    private final double targetX;
-    private final double targetY;
-    private final double targetZ;
-    /** Radians the mote turns around the target on its way in. */
-    private final float swirl;
-    private final float baseSize;
+    private final SpriteSet sprites;
+    private final float startSize;
+    private final float endSize;
+    private final float maxAlpha;
+    private final float spin;
 
-    private QiParticle(ClientLevel level, double x, double y, double z, double tx, double ty, double tz, boolean ring) {
+    private QiParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd,
+            SpriteSet sprites, boolean ring) {
         super(level, x, y, z);
-        startX = x;
-        startY = y;
-        startZ = z;
-        targetX = tx;
-        targetY = ty;
-        targetZ = tz;
-        double distance = Math.sqrt((tx - x) * (tx - x) + (ty - y) * (ty - y) + (tz - z) * (tz - z));
-        lifetime = (int) (14 + distance * 14 + random.nextInt(8));
+        this.sprites = sprites;
+        this.xd = xd;
+        this.yd = yd;
+        this.zd = zd;
         hasPhysics = false;
-        gravity = 0;
+        // Lifts on its own (vanilla applies 0.04 × gravity per tick), up to about 0.1 block a tick.
+        gravity = ring ? -0.15f : -0.3f;
+        friction = 0.9f;
+        lifetime = (ring ? 30 : 40) + random.nextInt(20);
+        startSize = (ring ? 0.35f : 0.22f) + random.nextFloat() * 0.1f;
+        endSize = startSize * (ring ? 2.6f : 3.2f);
+        maxAlpha = ring ? 0.7f : 0.45f;
+        spin = (random.nextFloat() - 0.5f) * 0.08f;
+        roll = random.nextFloat() * Mth.TWO_PI;
+        oRoll = roll;
+        // Saturated cyan, some puffs paler; ring puffs nearly white at heart.
+        float white = ring ? 0.55f : random.nextFloat() < 0.3f ? 0.4f : random.nextFloat() * 0.15f;
+        setColor(0.1f + 0.7f * white, 0.75f + 0.25f * white, 1f);
+        quadSize = startSize;
         alpha = 0;
-        if (ring) {
-            // The ring holds its shape: one slow, even turn, bigger and brighter motes.
-            swirl = 0.4f;
-            baseSize = 0.17f + random.nextFloat() * 0.04f;
-            setColor(0.45f, 0.92f, 1f);
-        } else {
-            swirl = (random.nextBoolean() ? 1 : -1) * (0.6f + random.nextFloat() * 0.9f);
-            baseSize = 0.09f + random.nextFloat() * 0.07f;
-            // Saturated cyan, a few motes paler, so they read against a bright sky.
-            float white = random.nextFloat() < 0.25f ? 0.5f : random.nextFloat() * 0.15f;
-            setColor(0.1f + 0.6f * white, 0.75f + 0.25f * white, 1f);
-        }
-        quadSize = baseSize;
+        setSpriteFromAge(sprites);
     }
 
     @Override
     public void tick() {
-        xo = x;
-        yo = y;
-        zo = z;
-        if (age++ >= lifetime) {
-            remove();
+        super.tick();
+        if (removed) {
             return;
         }
         float t = (float) age / lifetime;
-        // Slow drift at first, then pulled in fast.
-        float pull = t * t * (3 - 2 * t) * (0.4f + 0.6f * t);
-        double ox = startX - targetX;
-        double oz = startZ - targetZ;
-        float angle = swirl * pull;
-        float cos = Mth.cos(angle);
-        float sin = Mth.sin(angle);
-        double keep = 1 - pull;
-        setPos(targetX + (ox * cos - oz * sin) * keep,
-                Mth.lerp(pull, startY, targetY) + Mth.sin(t * Mth.PI) * 0.15,
-                targetZ + (ox * sin + oz * cos) * keep);
-        alpha = Math.min(1, t * 10) * Math.min(1, (1 - t) * 4);
-        quadSize = baseSize * (1 - 0.5f * t);
+        oRoll = roll;
+        roll += spin;
+        quadSize = Mth.lerp(1 - (1 - t) * (1 - t), startSize, endSize);
+        // Faint while it leaves the body, so the face stays readable, thickest once clear of it.
+        alpha = maxAlpha * Math.min(1, t * 3) * (1 - t) * (1 - t) * 1.6f;
+        setSpriteFromAge(sprites);
     }
 
     @Override
@@ -98,10 +82,8 @@ public final class QiParticle extends TextureSheetParticle {
 
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
-                double tx, double ty, double tz) {
-            QiParticle particle = new QiParticle(level, x, y, z, tx, ty, tz, ring);
-            particle.pickSprite(sprites);
-            return particle;
+                double xd, double yd, double zd) {
+            return new QiParticle(level, x, y, z, xd, yd, zd, sprites, ring);
         }
     }
 }

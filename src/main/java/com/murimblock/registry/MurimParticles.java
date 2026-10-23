@@ -12,10 +12,10 @@ public final class MurimParticles {
     public static final DeferredRegister<ParticleType<?>> PARTICLES =
             DeferredRegister.create(Registries.PARTICLE_TYPE, Murimblock.MOD_ID);
 
-    /** A mote of Qi drawn toward a point; its speed arguments carry that point (see {@code QiParticle}). */
+    /** A puff of Qi smoke rising from a meditator. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QI =
             PARTICLES.register("qi", () -> new SimpleParticleType(true));
-    /** A larger, brighter mote of the ring a good breath pulls in; same arguments as {@link #QI}. */
+    /** A larger, brighter puff of the ring a good breath blows out. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QI_RING =
             PARTICLES.register("qi_ring", () -> new SimpleParticleType(true));
 
