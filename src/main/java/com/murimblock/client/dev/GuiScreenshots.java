@@ -108,17 +108,15 @@ public final class GuiScreenshots {
                     startMeditation(mc);
                 }
                 // The breathing HUD in its four mockup states: neutral, good beat, miss, gauge full.
-                if (frames == MEDITATION_FRAMES - 20) {
-                    // A good breath's Qi ring, so it is on its way in for the good-beat shot.
-                    QiAura.burst(mc.player);
-                }
                 if (frames == MEDITATION_FRAMES) {
                     shoot(mc, "murim_meditation.png");
                     BreathingHud.showFeedback(true);
-                } else if (frames == MEDITATION_FRAMES + 4) {
+                    // A good breath's Qi ring, given a few frames to fade in before the good-beat shot.
+                    QiAura.burst(mc.player);
+                } else if (frames == MEDITATION_FRAMES + 12) {
                     shoot(mc, "murim_breath_good.png");
                     BreathingHud.showFeedback(false);
-                } else if (frames == MEDITATION_FRAMES + 8) {
+                } else if (frames == MEDITATION_FRAMES + 16) {
                     shoot(mc, "murim_breath_miss.png");
                     fillGauge(mc);
                 }

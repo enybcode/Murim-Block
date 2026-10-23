@@ -15,6 +15,9 @@ public final class MurimParticles {
     /** A mote of Qi drawn toward a point; its speed arguments carry that point (see {@code QiParticle}). */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QI =
             PARTICLES.register("qi", () -> new SimpleParticleType(true));
+    /** A larger, brighter mote of the ring a good breath pulls in; same arguments as {@link #QI}. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QI_RING =
+            PARTICLES.register("qi_ring", () -> new SimpleParticleType(true));
 
     private MurimParticles() {
     }
