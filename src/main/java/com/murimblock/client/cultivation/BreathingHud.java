@@ -55,6 +55,9 @@ public final class BreathingHud {
         feedback = FEEDBACK_TICKS;
         cooldown = PRESS_COOLDOWN;
         PacketDistributor.sendToServer(new CultivationPayloads.Breath(lastGood));
+        if (lastGood && Minecraft.getInstance().player != null) {
+            QiAura.burst(Minecraft.getInstance().player);
+        }
     }
 
     /** Dev screenshots: light GOOD or MISS without a press. */
