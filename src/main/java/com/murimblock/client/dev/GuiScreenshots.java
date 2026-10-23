@@ -25,7 +25,7 @@ import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
 /**
  * Dev tool, off unless the {@code murimblock.guiShots} system property is set (run {@code gradlew runGuiShots}):
- * opens (or creates) a test world, shows each System page at GUI scale 3, saves a screenshot, then quits.
+ * opens (or creates) a test world, shows each System page at GUI scale Auto, saves a screenshot, then quits.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class GuiScreenshots {
@@ -36,7 +36,8 @@ public final class GuiScreenshots {
     private static final int WORLD_FRAMES = 120;
     /** Frames to wait on a page before the shot, so layout and blur have settled. */
     private static final int SETTLE_FRAMES = 20;
-    private static final int GUI_SCALE = 3;
+    /** Minecraft's own "Auto" GUI scale (4 at 1080p): the System must look the same whatever it is. */
+    private static final int GUI_SCALE = 0;
 
     private enum Step { TITLE, LOADING, PAGES, DONE }
 

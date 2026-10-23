@@ -1,6 +1,7 @@
 package com.murimblock.client.gui.page;
 
 import com.murimblock.client.gui.SystemLayout.Rect;
+import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.SystemTheme;
 import com.murimblock.client.gui.data.CultivationData;
 import com.murimblock.client.gui.data.CultivationData.Acupoint;
@@ -29,7 +30,7 @@ final class MeridianBody {
     }
 
     static void render(GuiGraphics g, Font font, Rect vp, MeridianCamera.View cam, int selected, long millis) {
-        g.enableScissor(vp.x() + 1, vp.y() + 1, vp.right() - 1, vp.bottom() - 1);
+        SystemScreen.scissor(g, vp.x() + 1, vp.y() + 1, vp.right() - 1, vp.bottom() - 1);
         for (int[] p : PARTS) {
             int x1 = sx(vp, cam, p[0]);
             int y1 = sy(vp, cam, p[1]);

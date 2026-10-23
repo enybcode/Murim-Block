@@ -2,6 +2,7 @@ package com.murimblock.client.gui.page;
 
 import com.murimblock.client.gui.SystemLayout.Rect;
 import com.murimblock.client.gui.SystemPageView;
+import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.SystemTheme;
 import com.murimblock.client.gui.data.ProfileData;
 import java.util.List;
@@ -34,9 +35,14 @@ public final class ProfilePage implements SystemPageView {
         Rect stage = r.inset(6, 6, 6, 18);
         Player player = Minecraft.getInstance().player;
         if (player != null) {
-            int scale = Math.max(10, stage.height() * 2 / 5);
-            InventoryScreen.renderEntityInInventoryFollowsMouse(g, stage.x(), stage.y(), stage.right(), stage.bottom(),
-                    scale, 0.0625F, mouseX, mouseY, player);
+            // Vanilla's entity drawing clips in GUI pixels, so it is given GUI pixels, outside the System's scale.
+            float s = SystemScreen.drawScale();
+            g.pose().pushPose();
+            g.pose().scale(1 / s, 1 / s, 1);
+            int size = Math.max(10, Math.round(stage.height() * 2 / 5f * s));
+            InventoryScreen.renderEntityInInventoryFollowsMouse(g, Math.round(stage.x() * s), Math.round(stage.y() * s),
+                    Math.round(stage.right() * s), Math.round(stage.bottom() * s), size, 0.0625F, mouseX * s, mouseY * s, player);
+            g.pose().popPose();
         } else {
             silhouette(g, stage);
         }

@@ -41,6 +41,28 @@ public final class SystemLayout {
         }
     }
 
+    /** Share of the real screen the window may take, across and down. */
+    public static final float SCREEN_SHARE_X = 0.7f;
+    public static final float SCREEN_SHARE_Y = 0.75f;
+
+    /**
+     * Real pixels per design pixel. The System ignores Minecraft's GUI scale: it is drawn whole, at a whole factor
+     * when the screen allows it (2 on a 1080p screen, 4 on a 4K one) so the pixel font stays even, otherwise in
+     * half steps, so it never overflows nor fills the screen.
+     */
+    public static float displayFactor(int screenPixelsX, int screenPixelsY) {
+        float fitX = screenPixelsX * SCREEN_SHARE_X / (MAX_WIDTH + 2 * MARGIN);
+        float fitY = screenPixelsY * SCREEN_SHARE_Y / (MAX_HEIGHT + 2 * MARGIN + TITLE_ROOM);
+        float fit = Math.min(fitX, fitY);
+        if (fit >= 2) {
+            return (float) Math.floor(fit);
+        }
+        if (fit >= 0.5f) {
+            return (float) Math.floor(fit * 2) / 2;
+        }
+        return Math.max(0.1f, fit);
+    }
+
     /** The window, centred, shrunk to fit small screens or large GUI scales. */
     public static Rect window(int screenWidth, int screenHeight) {
         int width = Math.max(0, Math.min(MAX_WIDTH, screenWidth - 2 * MARGIN));

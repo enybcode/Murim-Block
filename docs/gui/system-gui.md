@@ -38,5 +38,5 @@ Opened with **K** (`key.murimblock.open_system`, rebindable); K or Escape closes
 
 - `gradlew build` compiles and runs the unit tests.
 - `gradlew runGuiShots` (dev only, gated by the `murimblock.guiShots` property) opens (or creates) the creative
-  test world `murim-gui-shots`, shows each page at 1920 x 1080, GUI scale 3, saves
+  test world `murim-gui-shots`, shows each page at 1920 x 1080 with the GUI scale on Auto, saves
   `run/screenshots/murim_<page>[_<sub-tab>].png` (7 shots), then quits.

@@ -25,6 +25,20 @@ class SystemLayoutTest {
     }
 
     @Test
+    void displayFactorIsWholeOnCommonScreensAndAlwaysFits() {
+        assertEquals(2f, SystemLayout.displayFactor(1920, 1080));
+        assertEquals(4f, SystemLayout.displayFactor(3840, 2160));
+        float small = SystemLayout.displayFactor(1366, 768);
+        assertEquals(0f, small * 2 % 1, 0.0001f, "half steps below 2: " + small);
+        for (int[] screen : new int[][] {{1366, 768}, {1280, 720}, {854, 480}, {2560, 1440}}) {
+            float f = SystemLayout.displayFactor(screen[0], screen[1]);
+            assertTrue((SystemLayout.MAX_WIDTH + 2 * SystemLayout.MARGIN) * f <= screen[0], "too wide at " + screen[0]);
+            assertTrue((SystemLayout.MAX_HEIGHT + 2 * SystemLayout.MARGIN + SystemLayout.TITLE_ROOM) * f <= screen[1],
+                    "too tall at " + screen[1]);
+        }
+    }
+
+    @Test
     void tabRowIsCentredWithGaps() {
         int[] xs = SystemLayout.tabRow(300, new int[] {40, 60});
         int first = SystemLayout.tabWidth(40);
