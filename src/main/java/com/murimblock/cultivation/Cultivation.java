@@ -20,6 +20,7 @@ public final class Cultivation {
 
     private boolean meditating;
     private double harmony;
+    private int combo;
     private double anchorX;
     private double anchorY;
     private double anchorZ;
@@ -75,6 +76,11 @@ public final class Cultivation {
         return harmony;
     }
 
+    /** Breaths in a row without a miss since the last miss or the start of meditation. */
+    public int combo() {
+        return combo;
+    }
+
     /** How far a point is from where the player sat down. */
     public double driftFrom(double x, double y, double z) {
         return Math.sqrt((x - anchorX) * (x - anchorX) + (y - anchorY) * (y - anchorY) + (z - anchorZ) * (z - anchorZ));
@@ -119,7 +125,7 @@ public final class Cultivation {
     /** Gathers stage Qi (capped at the full gauge) and refills Qi for this many seconds. */
     public void gather(double seconds) {
         if (meditating) {
-            stageQi = Math.min(gauge(), stageQi + CultivationRules.meditationGain(harmony) * seconds);
+            stageQi = Math.min(gauge(), stageQi + CultivationRules.meditationGain(harmony, combo) * seconds);
         }
         qi = Math.min(maxQi, qi + (meditating ? CultivationRules.QI_REGEN_MEDITATING : CultivationRules.QI_REGEN) * seconds);
         dirty = true;
@@ -131,19 +137,22 @@ public final class Cultivation {
         anchorY = y;
         anchorZ = z;
         harmony = 0;
+        combo = 0;
         changed();
     }
 
     public void stopMeditation() {
         meditating = false;
         harmony = 0;
+        combo = 0;
         changed();
     }
 
-    /** A breath of the mini-game: a good beat raises Harmony, a miss lowers it more. */
-    public void breathe(boolean good, int tick) {
+    /** A breath of the QTE: perfect and good beats raise Harmony and the combo, a miss lowers Harmony and ends it. */
+    public void breathe(BreathResult result, int tick) {
         lastBreathTick = tick;
-        harmony = CultivationRules.clamp01(harmony + (good ? 0.15 : -0.25));
+        harmony = CultivationRules.clamp01(harmony + result.harmony());
+        combo = result == BreathResult.MISS ? 0 : combo + 1;
         changed();
     }
 

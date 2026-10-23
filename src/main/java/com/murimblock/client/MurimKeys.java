@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.murimblock.Murimblock;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemScreen;
-import com.murimblock.client.cultivation.BreathingHud;
 import com.murimblock.client.cultivation.ClientCultivation;
 import com.murimblock.cultivation.CultivationPayloads;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -51,15 +50,11 @@ public final class MurimKeys {
                     mc.setScreen(new SystemScreen(SystemPage.PROFILE));
                 }
             }
-            // While meditating the key is a breath of the mini-game, and sneaking stands up.
+            // While meditating the key is a breath of the QTE (read by BreathingHud), and sneaking stands up.
             boolean meditating = ClientCultivation.get().meditating();
             while (MEDITATE.consumeClick()) {
-                if (mc.screen == null && mc.player != null) {
-                    if (meditating) {
-                        BreathingHud.breathe();
-                    } else {
-                        PacketDistributor.sendToServer(new CultivationPayloads.ToggleMeditation());
-                    }
+                if (mc.screen == null && mc.player != null && !meditating) {
+                    PacketDistributor.sendToServer(new CultivationPayloads.ToggleMeditation());
                 }
             }
             boolean sneak = mc.options.keyShift.isDown();

@@ -13,8 +13,11 @@ public final class Meditation {
     public static final double ENEMY_RANGE = 8;
     /** Moving farther than this from where the player sat ends meditation. */
     public static final double MAX_DRIFT = 0.3;
-    /** Fewest ticks between two breaths of the mini-game, so a client cannot spam good beats. */
-    public static final int BREATH_INTERVAL = 15;
+    /**
+     * Fewest ticks between two breaths of the QTE, so a client cannot spam good beats. Two marks are at least 0.75 s
+     * apart and each may be pressed 0.16 s off, so honest breaths can come 0.43 s apart.
+     */
+    public static final int BREATH_INTERVAL = 8;
     private static final int SYNC_INTERVAL = 10;
 
     private Meditation() {
@@ -101,10 +104,10 @@ public final class Meditation {
         }
     }
 
-    public static void breathe(ServerPlayer player, boolean good) {
+    public static void breathe(ServerPlayer player, BreathResult result) {
         Cultivation c = of(player);
         if (c.meditating() && player.tickCount - c.lastBreathTick() >= BREATH_INTERVAL) {
-            c.breathe(good, player.tickCount);
+            c.breathe(result, player.tickCount);
         }
     }
 

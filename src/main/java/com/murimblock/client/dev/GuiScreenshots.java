@@ -8,6 +8,7 @@ import com.murimblock.client.gui.page.CultivationPage;
 import com.murimblock.client.gui.page.InfoPage;
 import com.murimblock.client.cultivation.BreathingHud;
 import com.murimblock.client.cultivation.QiAura;
+import com.murimblock.cultivation.BreathResult;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.Meditation;
 import com.murimblock.registry.MurimItems;
@@ -234,8 +235,9 @@ public final class GuiScreenshots {
             c.set(0, 3, 0, c.maxQi(), c.maxQi(), 3);
             c.set(0, 3, c.gauge() * 0.62, c.maxQi(), c.maxQi(), 3);
             Meditation.start(player);
-            Meditation.breathe(player, true);
-            Meditation.breathe(player, true);
+            for (int i = 0; i < 6; i++) {
+                c.breathe(BreathResult.PERFECT, player.tickCount);
+            }
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.MERIDIAN_PILL.get()));
             player.getMainHandItem().use(player.level(), player, InteractionHand.MAIN_HAND);
             player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);

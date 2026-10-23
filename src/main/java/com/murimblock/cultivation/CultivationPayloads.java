@@ -75,10 +75,11 @@ public final class CultivationPayloads {
         }
     }
 
-    /** Client to server: one beat of the breathing mini-game, good or missed. */
-    public record Breath(boolean good) implements CustomPacketPayload {
+    /** Client to server: one beat of the breathing QTE, perfect, good or missed. */
+    public record Breath(BreathResult result) implements CustomPacketPayload {
         public static final Type<Breath> TYPE = CultivationPayloads.payloadType("meditation_breath");
-        public static final StreamCodec<ByteBuf, Breath> STREAM_CODEC = ByteBufCodecs.BOOL.map(Breath::new, Breath::good);
+        public static final StreamCodec<ByteBuf, Breath> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(
+                id -> new Breath(BreathResult.byId(id)), b -> b.result().ordinal());
 
         @Override
         public Type<Breath> type() {

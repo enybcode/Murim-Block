@@ -35,10 +35,14 @@ Saved IDs stay stable once released. Commands (operators only) set each field fo
 - Key (placeholder C): sit in lotus (PAL animation), camera free, player rooted. Moving, attacking or taking damage
   ends it. Not usable in the air, in water or with a hostile mob closer than 8 blocks.
 - Base gain: 2 stage Qi per second, and `qi` refills 5× faster.
-- Breathing mini-game (HUD overlay, needs a validated mockup first): a ring grows (inhale) and shrinks (exhale); the
-  player presses the key when the ring crosses the target circle. Each good beat raises Harmony (0-100 %), a miss
-  lowers it. Gain = base × (1 + 1.5 × Harmony), so up to × 2.5. No penalty beyond losing Harmony in this slice
-  (Qi deviation could come with the trials).
+- Breathing QTE (V2, validated playable mockup "Breathing V2", artifact Kanzz5Vni8Jhd3CDPrxaNm, 24 Oct): marks
+  scroll left into a frame. ▲ inhale and ▼ exhale: press the key as the mark enters the frame. Bars are holds: keep
+  the key down from the bar's start, release at its end. Beats are short / normal / long (1.0 / 1.6 / 2.6 s), up to
+  25 % shorter at full Harmony, in random patterns (calm, box breathing, quick, deep, sip, stagger; the hard ones
+  need some Harmony).
+- Judging: perfect ±0.07 s (+6 % Harmony), good ±0.16 s (+4 %), miss -8 % and the combo ends. Combo tiers at 5, 10
+  and 20 breaths: Steady Breath x1.2, Flowing Qi x1.5, Still Heart x2. Gain = base × (1 + 1.5 × Harmony) × tier,
+  so up to × 5. No penalty beyond that in this slice (Qi deviation could come with the trials).
 
 ## Meridians
 
@@ -55,15 +59,20 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
 
 - `cultivation/`: `CultivationRules` (numbers), `Cultivation` (player data, plain Java, unit tested), `CultivationCodecs`
   (save + network), `Meditation` (server rules), `CultivationEvents`, `CultivationCommands`, `MeridianPillItem`.
-- Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `1`: sync, pose, toggle, advance, breath.
+- Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `2`: sync, pose, toggle, advance, breath.
 - Key C (placeholder) starts meditation; seated cross-legged, knees bent out, shins crossed, hands on the knees
   (Enzo's reference photo, 23 Oct). Legs have no knee in Minecraft or PAL: `MeditationLegsLayer` hides them and draws
   a thigh and a shin per leg from the skin. Rest of the pose
   in `player_animations/meditate_lotus.json`, played through PAL and
   sent to everyone tracking the player. The Cultivation page has Advance and Stop/Meditate; Profile reads the real Qi.
-- Breathing HUD `client/cultivation/BreathingHud` (validated mockup, Design canvas board "Meditation — breathing
-  mini-game"): while meditating, C is a breath (good within 0.15 of the circle, `BreathCycle`), sneak stands up.
-  The server accepts one breath per 15 ticks and keeps Harmony.
+- Breathing QTE: `client/cultivation/BreathTrack` (patterns and judging, plain Java, unit tested) and
+  `BreathingHud` (lane, frame, Combo and Harmony boxes, effects). Presses come from the input events, so they are
+  timed to the frame. The client judges and sends `Breath(BreathResult)`; the server accepts one per 8 ticks and keeps
+  Harmony and its own combo for the gain (`CultivationRules.meditationGain(harmony, combo)`). Sneak stands up.
+- Effects: hits flash the frame, send a rectangular wave out (perfect: two, gold, plus sparks) and climb a
+  pentatonic bell; misses shake the lane, redden the screen edges and thud (note block bass). Harmony tints the
+  edges in the tier colour (`textures/gui/breath_vignette.png`, drawn by `scripts/breath-vignette.cjs`), and above
+  50 % Qi motes drift to the frame. The world brightens a little on the inhale. Sounds are vanilla sound events.
 - Qi smoke `client/cultivation/QiAura` + `QiParticle`, `QiSparkParticle` (types `murimblock:qi`, `qi_ring`,
   `qi_spark`, options `QiParticleOptions` = power 0-1): cyan puffs and near-white twinkling specks leave the body of
   every meditating player, rise and fade (puffs swell and fray); a good breath blows a flat ring of them out.

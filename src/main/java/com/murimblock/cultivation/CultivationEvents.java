@@ -17,7 +17,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /** Hooks cultivation into the game: network, ticking, interruptions and commands. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CultivationEvents {
-    private static final String PROTOCOL = "1";
+    private static final String PROTOCOL = "2";
 
     private CultivationEvents() {
     }
@@ -36,7 +36,7 @@ public final class CultivationEvents {
         registrar.playToServer(CultivationPayloads.Advance.TYPE, CultivationPayloads.Advance.STREAM_CODEC,
                 (payload, context) -> Meditation.advance((ServerPlayer) context.player()));
         registrar.playToServer(CultivationPayloads.Breath.TYPE, CultivationPayloads.Breath.STREAM_CODEC,
-                (payload, context) -> Meditation.breathe((ServerPlayer) context.player(), payload.good()));
+                (payload, context) -> Meditation.breathe((ServerPlayer) context.player(), payload.result()));
     }
 
     @SubscribeEvent

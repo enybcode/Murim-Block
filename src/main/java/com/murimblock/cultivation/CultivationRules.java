@@ -12,6 +12,13 @@ public final class CultivationRules {
     public static final double MEDITATION_GAIN = 2.0;
     /** Full Harmony multiplies the meditation gain by 1 + this. */
     public static final double HARMONY_BONUS = 1.5;
+    /** Harmony won by a perfect and a good breath of the QTE, and lost by a miss (validated mockup, 24 Oct). */
+    public static final double HARMONY_PERFECT = 0.06;
+    public static final double HARMONY_GOOD = 0.04;
+    public static final double HARMONY_MISS = -0.08;
+    /** Breaths in a row without a miss that reach each combo tier, and each tier's gain multiplier. */
+    private static final int[] COMBO_TIERS = {0, 5, 10, 20};
+    private static final double[] COMBO_MULTIPLIERS = {1, 1.2, 1.5, 2};
     /** Qi refilled each second outside meditation, and while meditating. */
     public static final double QI_REGEN = 0.5;
     public static final double QI_REGEN_MEDITATING = 2.5;
@@ -30,6 +37,30 @@ public final class CultivationRules {
     /** Stage Qi gathered per second of meditation for a Harmony between 0 and 1. */
     public static double meditationGain(double harmony) {
         return MEDITATION_GAIN * (1 + HARMONY_BONUS * clamp01(harmony));
+    }
+
+    /** Stage Qi gathered per second of meditation for a Harmony between 0 and 1 and a combo of breaths. */
+    public static double meditationGain(double harmony, int combo) {
+        return meditationGain(harmony) * comboMultiplier(combo);
+    }
+
+    /** Combo tier, 0 (none) to 3, for this many breaths in a row without a miss. */
+    public static int comboTier(int combo) {
+        int tier = 0;
+        while (tier + 1 < COMBO_TIERS.length && combo >= COMBO_TIERS[tier + 1]) {
+            tier++;
+        }
+        return tier;
+    }
+
+    public static double comboMultiplier(int combo) {
+        return COMBO_MULTIPLIERS[comboTier(combo)];
+    }
+
+    /** Breaths in a row needed for the tier after this combo's, or -1 at the top tier. */
+    public static int nextComboTier(int combo) {
+        int tier = comboTier(combo);
+        return tier + 1 < COMBO_TIERS.length ? COMBO_TIERS[tier + 1] : -1;
     }
 
     /** Meridians a realm can hold open: four per realm reached, up to all thirteen. */
