@@ -10,7 +10,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
-/** {@code /murim cultivation get|fill|set <player>}, for operators and tests. */
+/** {@code /murim cultivation get|fill|set|qi <player>}, for operators and tests. */
 final class CultivationCommands {
     private CultivationCommands() {
     }
@@ -26,7 +26,20 @@ final class CultivationCommands {
                                 .then(Commands.argument("realm", IntegerArgumentType.integer(0, CultivationRealms.LADDER.size() - 1))
                                 .then(Commands.argument("stage", IntegerArgumentType.integer(1, CultivationRules.STAGES))
                                 .then(Commands.argument("meridians", IntegerArgumentType.integer(0, CultivationRules.MERIDIANS))
-                                        .executes(CultivationCommands::set))))))));
+                                        .executes(CultivationCommands::set))))))
+                        .then(Commands.literal("qi").then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("amount", IntegerArgumentType.integer(1, 1_000_000))
+                                        .executes(CultivationCommands::qi))))));
+    }
+
+    /** Sets the Qi held and its maximum, to see the Qi smoke at any size. */
+    private static int qi(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+        Cultivation c = Meditation.of(player);
+        int amount = IntegerArgumentType.getInteger(ctx, "amount");
+        c.set(c.realm(), c.stage(), c.stageQi(), amount, amount, c.meridians());
+        Meditation.sync(player);
+        return get(ctx);
     }
 
     private static int get(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
