@@ -144,13 +144,19 @@ public final class InnerWorldTour {
                 player.connection.teleport(center.getX() + 0.5, InnerIsland.SURFACE_Y + 30, center.getZ() + 58.5, 180, 30);
             });
             case 5 -> shoot(mc, "murim_inner_aerial.png");
-            case 6 -> server(mc, player -> {
+            case 6 -> view(mc, 6, 6, 22, 234, 15);
+            case 7 -> shoot(mc, "murim_inner_pond.png");
+            case 8 -> view(mc, 46, -14, 10, 90, -12);
+            case 9 -> shoot(mc, "murim_inner_underside.png");
+            case 10 -> view(mc, 0, 24, 0, 180, 90);
+            case 11 -> shoot(mc, "murim_inner_arena.png");
+            case 12 -> server(mc, player -> {
                 player.getAbilities().flying = false;
                 player.onUpdateAbilities();
                 BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
                 player.teleportTo(center.getX() + 0.5, InnerIsland.SURFACE_Y - 50, center.getZ() + 0.5);
             });
-            case 7 -> server(mc, player -> {
+            case 13 -> server(mc, player -> {
                 check("fall returns to body", !InnerWorld.state(player).inside() && !InnerWorld.isInnerWorld(player.level())
                         && player.blockPosition().distManhattan(sat) <= 2);
                 // The body seen from the front: seat one, then step back to look at it.
@@ -164,15 +170,15 @@ public final class InnerWorldTour {
                 Meditation.stop(player, null);
                 player.connection.teleport(sat.getX() + 0.5, sat.getY(), sat.getZ() - 2.5, 0, 25);
             });
-            case 8 -> {
+            case 14 -> {
                 mc.options.hideGui = true;
                 return;
             }
-            case 9 -> {
+            case 15 -> {
                 shoot(mc, "murim_inner_body.png");
                 mc.options.hideGui = false;
             }
-            case 10 -> server(mc, player -> {
+            case 16 -> server(mc, player -> {
                 UUID bodyId = InnerWorld.state(player).body();
                 if (player.serverLevel().getEntity(bodyId) instanceof MeditatingBody body) {
                     body.hurt(player.damageSources().playerAttack(player), 1);
@@ -185,6 +191,14 @@ public final class InnerWorldTour {
                 mc.stop();
             }
         }
+    }
+
+    /** Puts the (flying) camera at an offset from the island center, above the surface, looking this way. */
+    private static void view(Minecraft mc, int x, int y, int z, float yaw, float pitch) {
+        server(mc, player -> {
+            BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
+            player.connection.teleport(center.getX() + x + 0.5, InnerIsland.SURFACE_Y + y, center.getZ() + z + 0.5, yaw, pitch);
+        });
     }
 
     private static void check(String what, boolean ok) {
