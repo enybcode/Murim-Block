@@ -2,6 +2,7 @@ package com.murimblock;
 
 import com.mojang.logging.LogUtils;
 import com.murimblock.registry.MurimAttachments;
+import com.murimblock.registry.MurimEntities;
 import com.murimblock.registry.MurimItems;
 import com.murimblock.registry.MurimParticles;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -19,6 +20,7 @@ public final class Murimblock {
     public Murimblock(IEventBus modBus) {
         MurimAttachments.ATTACHMENTS.register(modBus);
         MurimItems.ITEMS.register(modBus);
+        MurimEntities.ENTITIES.register(modBus);
         MurimParticles.PARTICLES.register(modBus);
         modBus.addListener(Murimblock::fillCreativeTabs);
         LOGGER.info("Murimblock V2 loaded");

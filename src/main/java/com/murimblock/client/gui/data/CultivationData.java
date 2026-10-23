@@ -1,6 +1,8 @@
 package com.murimblock.client.gui.data;
 
 import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.client.innerworld.InnerWorldClient;
+import com.murimblock.innerworld.InnerWorld;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationPayloads;
 import com.murimblock.cultivation.CultivationRealms;
@@ -145,6 +147,23 @@ public final class CultivationData {
 
     public static float harmony() {
         return now().harmony();
+    }
+
+    public static boolean innerWorldUnlocked() {
+        return InnerWorld.unlocked(now().realm());
+    }
+
+    public static boolean inInnerWorld() {
+        return InnerWorldClient.inside();
+    }
+
+    /** Enter from meditation once unlocked; inside, always free to return. */
+    public static boolean canTravel() {
+        return inInnerWorld() || innerWorldUnlocked() && meditating();
+    }
+
+    public static void travel() {
+        InnerWorldClient.travel();
     }
 
     public static void toggleMeditation() {

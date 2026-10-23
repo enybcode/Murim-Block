@@ -38,6 +38,15 @@ neoForge {
             programArguments.addAll('--width', (project.findProperty('shotWidth') ?: '1920').toString(),
                     '--height', (project.findProperty('shotHeight') ?: '1080').toString())
         }
+
+        // Dev only: checks the inner world in a real client (PASS/FAIL in the log), shots in run/screenshots, quits.
+        innerWorldTour {
+            client()
+            systemProperty 'murimblock.innerWorldTour', 'true'
+            // Its own folder, so it can run while a normal client is open on run/.
+            gameDirectory = project.file('run/inner-world-tour')
+            programArguments.addAll('--width', '1920', '--height', '1080')
+        }
     }
 
     mods {

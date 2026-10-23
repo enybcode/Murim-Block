@@ -71,8 +71,16 @@ public final class CultivationPage implements SystemPageView {
                 : Component.translatable("gui.murimblock.cultivation.advance", Math.min(CultivationData.stage() + 1, CultivationData.STAGES));
         screen.addPageWidget(new SystemButton(center.x() + 10, center.bottom() - 46, center.width() - 20, 16, advance,
                 SystemButton.Style.ACTION, CultivationData::advance).enabled(CultivationData.canAdvance()));
+        Component inner = Component.translatable(CultivationData.inInnerWorld() ? "gui.murimblock.cultivation.inner_world.return"
+                : CultivationData.innerWorldUnlocked() ? "gui.murimblock.cultivation.inner_world.enter"
+                : "gui.murimblock.cultivation.inner_world.locked");
         // The trial itself comes in the next slice: the button shows what it will need.
         Rect trial = columns[2];
+        screen.addPageWidget(new SystemButton(trial.x(), trial.bottom() - 36, trial.width(), 16, inner,
+                SystemButton.Style.ACTION, () -> {
+                    CultivationData.travel();
+                    Minecraft.getInstance().setScreen(null);
+                }).enabled(CultivationData.canTravel()));
         screen.addPageWidget(new SystemButton(trial.x(), trial.bottom() - 16, trial.width(), 16,
                 Component.translatable("gui.murimblock.cultivation.begin_trial"), SystemButton.Style.ACTION, () -> {
                 }).enabled(false));
