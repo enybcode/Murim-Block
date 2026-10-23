@@ -18,6 +18,9 @@ public final class MurimParticles {
     /** A larger, brighter puff of the ring a good breath blows out. */
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QI_RING =
             PARTICLES.register("qi_ring", () -> new SimpleParticleType(true));
+    /** A bright speck of Qi carried up in the smoke. */
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> QI_SPARK =
+            PARTICLES.register("qi_spark", () -> new SimpleParticleType(true));
 
     private MurimParticles() {
     }
