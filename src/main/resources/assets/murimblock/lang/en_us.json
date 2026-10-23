@@ -1,2 +1,14 @@
 {
+  "key.categories.murimblock": "Murimblock",
+  "key.murimblock.open_system": "Open the System",
+  "screen.murimblock.system": "System",
+  "gui.murimblock.tab.profile": "PROFILE",
+  "gui.murimblock.tab.techniques": "TECHNIQUES",
+  "gui.murimblock.tab.cultivation": "CULTIVATION",
+  "gui.murimblock.tab.info": "INFO",
+  "gui.murimblock.title.profile": "STATUS",
+  "gui.murimblock.title.techniques": "MARTIAL ART",
+  "gui.murimblock.title.cultivation": "CULTIVATION",
+  "gui.murimblock.title.info": "INFO",
+  "gui.murimblock.page.next": "This page is built next."
 }

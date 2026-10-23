@@ -29,6 +29,13 @@ neoForge {
             server()
             programArgument '--nogui'
         }
+
+        // Dev only: screenshots every System page into run/screenshots, then quits.
+        guiShots {
+            client()
+            systemProperty 'murimblock.guiShots', 'true'
+            programArguments.addAll('--width', '1920', '--height', '1080')
+        }
     }
 
     mods {
@@ -54,6 +61,13 @@ dependencies {
     implementation("maven.modrinth:photon-editor:${photon_artifact}") { transitive = false }
     implementation("maven.modrinth:ldlib:${ldlib_artifact}") { transitive = false }
     implementation("maven.modrinth:kilagraph:${kilagraph_artifact}") { transitive = false }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
