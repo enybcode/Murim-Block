@@ -8,10 +8,16 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Enemy;
 
-/** {@code /murim cultivation get|fill|set|qi <player>}, for operators and tests. */
+/** {@code /murim cultivation get|fill|set|qi <player>} and {@code /murim prepare}, for operators and tests. */
 final class CultivationCommands {
+    private static final int PREPARED_QI = 10_000;
+
     private CultivationCommands() {
     }
 
@@ -29,7 +35,33 @@ final class CultivationCommands {
                                         .executes(CultivationCommands::set))))))
                         .then(Commands.literal("qi").then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("amount", IntegerArgumentType.integer(1, 1_000_000))
-                                        .executes(CultivationCommands::qi))))));
+                                        .executes(CultivationCommands::qi)))))
+                .then(Commands.literal("prepare").executes(CultivationCommands::prepare)));
+    }
+
+    /**
+     * Test setup in one go for the caller: the first realm that holds every meridian, last stage, all meridians open,
+     * a full gauge and 10 000 Qi; clear day, and no hostile mob near enough to stop meditation.
+     */
+    private static int prepare(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        int realm = 0;
+        while (CultivationRules.meridianCap(realm) < CultivationRules.MERIDIANS
+                && realm < CultivationRealms.LADDER.size() - 1) {
+            realm++;
+        }
+        Cultivation c = Meditation.of(player);
+        c.set(realm, CultivationRules.STAGES, 0, PREPARED_QI, PREPARED_QI, CultivationRules.MERIDIANS);
+        c.set(realm, CultivationRules.STAGES, c.gauge(), PREPARED_QI, PREPARED_QI, CultivationRules.MERIDIANS);
+        Meditation.sync(player);
+        ServerLevel level = player.serverLevel();
+        level.setDayTime(1000);
+        level.setWeatherParameters(6000, 0, false, false);
+        level.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(32), m -> m instanceof Enemy)
+                .forEach(Entity::discard);
+        ctx.getSource().sendSuccess(() -> Component.literal("Prepared: all meridians, full gauge, "
+                + PREPARED_QI + " Qi, clear day, no hostile mob within 32 blocks. Press C to meditate."), false);
+        return 1;
     }
 
     /** Sets the Qi held and its maximum, to see the Qi smoke at any size. */

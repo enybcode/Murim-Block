@@ -73,7 +73,8 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
   (10 000 Qi). Original textures: `textures/particle/qi_smoke_0..5.png` (16x16, thinning frames, Java noise
   script) and `qi_spark_0..2.png` (8x8).
 - Commands: `/murim cultivation get|fill <player>`, `/murim cultivation set <player> <realm> <stage> <meridians>`,
-  `/murim cultivation qi <player> <amount>` (Qi and max Qi).
+  `/murim cultivation qi <player> <amount>` (Qi and max Qi), `/murim prepare` (test setup: all meridians, full
+  gauge, 10 000 Qi, clear day, hostiles within 32 blocks removed).
 - Pill icon drawn by `scripts/pill-icon.cjs`. Meridian bonuses are shown but not applied yet.
 - Check: `gradlew runGuiShots` also seats the player in lotus on a platform and shoots the HUD states
   (`murim_meditation`, `murim_breath_good`, `murim_breath_miss`, `murim_breath_full`).
