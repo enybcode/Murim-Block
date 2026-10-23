@@ -4,6 +4,7 @@ import com.murimblock.client.gui.SystemButton;
 import com.murimblock.client.gui.SystemLayout.Rect;
 import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
+import com.murimblock.client.gui.SubTabs;
 import com.murimblock.client.gui.SystemTheme;
 import com.murimblock.client.gui.data.CultivationData;
 import com.murimblock.client.gui.data.CultivationData.Acupoint;
@@ -40,17 +41,10 @@ public final class CultivationPage implements SystemPageView {
     @Override
     public void init(SystemScreen screen, Rect area) {
         CultivationLayout layout = CultivationLayout.of(area);
-        Font font = Minecraft.getInstance().font;
-        Component realmTab = Component.translatable("gui.murimblock.cultivation.tab.realm");
-        Component meridianTab = Component.translatable("gui.murimblock.cultivation.tab.meridians",
-                Math.min(CultivationData.openMeridians(), 12), 12);
-        int realmWidth = SystemTheme.spacedWidth(font, realmTab.getString(), 1) + 20;
-        int meridianWidth = SystemTheme.spacedWidth(font, meridianTab.getString(), 1) + 20;
-        Rect tabs = layout.subTabs();
-        screen.addPageWidget(new SystemButton(tabs.x(), tabs.y(), realmWidth, tabs.height(), realmTab,
-                SystemButton.Style.SUB_TAB, () -> show(screen, false)).selected(!meridians));
-        screen.addPageWidget(new SystemButton(tabs.x() + realmWidth + 4, tabs.y(), meridianWidth, tabs.height(), meridianTab,
-                SystemButton.Style.SUB_TAB, () -> show(screen, true)).selected(meridians));
+        SubTabs.add(screen, layout.subTabs(), List.of(
+                Component.translatable("gui.murimblock.cultivation.tab.realm"),
+                Component.translatable("gui.murimblock.cultivation.tab.meridians", Math.min(CultivationData.openMeridians(), 12), 12)),
+                meridians ? 1 : 0, index -> show(screen, index == 1));
 
         if (meridians) {
             initMeridians(screen, layout.meridianColumns());

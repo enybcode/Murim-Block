@@ -5,6 +5,7 @@ import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.page.CultivationPage;
+import com.murimblock.client.gui.page.InfoPage;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
@@ -47,7 +48,9 @@ public final class GuiScreenshots {
             new Shot("techniques", SystemPage.TECHNIQUES, SystemPage.TECHNIQUES::createView),
             new Shot("cultivation", SystemPage.CULTIVATION, () -> new CultivationPage(false)),
             new Shot("cultivation_meridians", SystemPage.CULTIVATION, () -> new CultivationPage(true)),
-            new Shot("info", SystemPage.INFO, SystemPage.INFO::createView));
+            new Shot("info", SystemPage.INFO, () -> new InfoPage(InfoPage.QUESTS)),
+            new Shot("info_log", SystemPage.INFO, () -> new InfoPage(InfoPage.LOG)),
+            new Shot("info_guide", SystemPage.INFO, () -> new InfoPage(InfoPage.GUIDE)));
 
     private static Step step = Step.TITLE;
     private static int page;

@@ -1,7 +1,7 @@
 package com.murimblock.client.gui;
 
 import com.murimblock.client.gui.page.CultivationPage;
-import com.murimblock.client.gui.page.PlaceholderPage;
+import com.murimblock.client.gui.page.InfoPage;
 import com.murimblock.client.gui.page.ProfilePage;
 import com.murimblock.client.gui.page.TechniquesPage;
 import net.minecraft.network.chat.Component;
@@ -24,7 +24,7 @@ public enum SystemPage {
             case PROFILE -> new ProfilePage();
             case TECHNIQUES -> new TechniquesPage();
             case CULTIVATION -> new CultivationPage(false);
-            default -> new PlaceholderPage();
+            case INFO -> new InfoPage(InfoPage.QUESTS);
         };
     }
 
