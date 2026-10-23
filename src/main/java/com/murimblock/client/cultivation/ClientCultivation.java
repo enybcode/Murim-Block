@@ -8,8 +8,8 @@ import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import com.zigythebird.playeranim.api.PlayerAnimationFactory;
 import com.zigythebird.playeranimcore.enums.PlayState;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +28,8 @@ public final class ClientCultivation {
     private static final int LAYER_PRIORITY = 1000;
 
     private static Cultivation.Snapshot current = Cultivation.Snapshot.START;
-    private static final Set<Integer> MEDITATING = new HashSet<>();
+    /** Meditating players by entity id, with the Qi each holds. */
+    private static final Map<Integer, Integer> MEDITATING = new HashMap<>();
 
     private ClientCultivation() {
     }
@@ -55,12 +56,25 @@ public final class ClientCultivation {
 
     /** Whether this player sits in meditation, as last told by the server. */
     public static boolean isMeditating(Entity player) {
-        return MEDITATING.contains(player.getId());
+        return MEDITATING.containsKey(player.getId());
     }
 
-    public static void pose(int entityId, boolean meditating) {
+    /** Qi held by a meditating player: our own from the full sync, others' as last sent with their pose. */
+    public static double qiOf(Entity player) {
+        if (player == Minecraft.getInstance().player) {
+            return current.qi();
+        }
+        return MEDITATING.getOrDefault(player.getId(), 0);
+    }
+
+    /** The Qi a meditating player holds now, sent every second of meditation. */
+    public static void meditatorQi(int entityId, int qi) {
+        MEDITATING.computeIfPresent(entityId, (id, old) -> qi);
+    }
+
+    public static void pose(int entityId, boolean meditating, int qi) {
         if (meditating) {
-            MEDITATING.add(entityId);
+            MEDITATING.put(entityId, qi);
         } else {
             MEDITATING.remove(entityId);
         }

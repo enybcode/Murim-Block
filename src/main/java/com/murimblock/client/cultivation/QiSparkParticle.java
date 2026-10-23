@@ -1,12 +1,12 @@
 package com.murimblock.client.cultivation;
 
+import com.murimblock.cultivation.QiParticleOptions;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
 /**
@@ -16,8 +16,10 @@ import net.minecraft.util.Mth;
 public final class QiSparkParticle extends TextureSheetParticle {
     private final float baseSize;
     private final float phase;
+    private final float maxAlpha;
 
-    private QiSparkParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
+    private QiSparkParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd,
+            float power) {
         super(level, x, y, z);
         this.xd = xd;
         this.yd = yd;
@@ -27,7 +29,8 @@ public final class QiSparkParticle extends TextureSheetParticle {
         gravity = -0.25f;
         friction = 0.92f;
         lifetime = 30 + random.nextInt(25);
-        baseSize = 0.13f + random.nextFloat() * 0.07f;
+        baseSize = (0.13f + random.nextFloat() * 0.07f) * (0.5f + 0.6f * power);
+        maxAlpha = 0.5f + 0.5f * power;
         quadSize = baseSize;
         phase = random.nextFloat() * Mth.TWO_PI;
         // Near white, so the specks stand out of the cyan smoke.
@@ -46,7 +49,7 @@ public final class QiSparkParticle extends TextureSheetParticle {
         xd += Mth.sin(age * 0.3f + phase) * 0.003;
         zd += Mth.cos(age * 0.3f + phase) * 0.003;
         float twinkle = 0.85f + 0.15f * Mth.sin(age * 0.8f + phase);
-        alpha = Math.min(1, t * 8) * Math.min(1, (1 - t) * 3) * twinkle;
+        alpha = maxAlpha * Math.min(1, t * 8) * Math.min(1, (1 - t) * 3) * twinkle;
         quadSize = baseSize * (0.8f + 0.2f * twinkle);
     }
 
@@ -60,7 +63,7 @@ public final class QiSparkParticle extends TextureSheetParticle {
         return 0xF000F0;
     }
 
-    public static final class Provider implements ParticleProvider<SimpleParticleType> {
+    public static final class Provider implements ParticleProvider<QiParticleOptions> {
         private final SpriteSet sprites;
 
         public Provider(SpriteSet sprites) {
@@ -68,9 +71,9 @@ public final class QiSparkParticle extends TextureSheetParticle {
         }
 
         @Override
-        public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
+        public Particle createParticle(QiParticleOptions options, ClientLevel level, double x, double y, double z,
                 double xd, double yd, double zd) {
-            QiSparkParticle particle = new QiSparkParticle(level, x, y, z, xd, yd, zd);
+            QiSparkParticle particle = new QiSparkParticle(level, x, y, z, xd, yd, zd, options.power());
             particle.pickSprite(sprites);
             return particle;
         }

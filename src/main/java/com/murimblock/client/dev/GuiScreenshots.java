@@ -58,6 +58,8 @@ public final class GuiScreenshots {
     private static final int MEDITATION_FRAMES = 90;
     /** Frames to land on the platform before sitting down. */
     private static final int PLATFORM_FRAMES = 30;
+    /** Frames to let the full aura build up before its shot. */
+    private static final int STRONG_AURA_FRAMES = 150;
 
     private record Shot(String name, SystemPage page, Supplier<SystemPageView> view) {
     }
@@ -137,8 +139,17 @@ public final class GuiScreenshots {
                 if (frames < MEDITATION_FRAMES + 44) {
                     return;
                 }
-                // The pose alone, without the HUD.
-                shoot(mc, "murim_meditation_pose.png");
+                if (frames == MEDITATION_FRAMES + 44) {
+                    // The pose alone, without the HUD, with a beginner's Qi; then the aura of a great reserve.
+                    shoot(mc, "murim_meditation_pose.png");
+                    QiAura.previewQi = 10_000;
+                    return;
+                }
+                if (frames < MEDITATION_FRAMES + 44 + STRONG_AURA_FRAMES) {
+                    return;
+                }
+                shoot(mc, "murim_meditation_pose_strong.png");
+                QiAura.previewQi = -1;
                 mc.options.hideGui = false;
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 open(mc, 0);

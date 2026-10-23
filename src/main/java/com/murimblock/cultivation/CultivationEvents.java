@@ -28,7 +28,9 @@ public final class CultivationEvents {
         registrar.playToClient(CultivationPayloads.Sync.TYPE, CultivationPayloads.Sync.STREAM_CODEC,
                 (payload, context) -> ClientCultivation.receive(payload.snapshot()));
         registrar.playToClient(CultivationPayloads.Pose.TYPE, CultivationPayloads.Pose.STREAM_CODEC,
-                (payload, context) -> ClientCultivation.pose(payload.entityId(), payload.meditating()));
+                (payload, context) -> ClientCultivation.pose(payload.entityId(), payload.meditating(), payload.qi()));
+        registrar.playToClient(CultivationPayloads.MeditatorQi.TYPE, CultivationPayloads.MeditatorQi.STREAM_CODEC,
+                (payload, context) -> ClientCultivation.meditatorQi(payload.entityId(), payload.qi()));
         registrar.playToServer(CultivationPayloads.ToggleMeditation.TYPE, CultivationPayloads.ToggleMeditation.STREAM_CODEC,
                 (payload, context) -> Meditation.toggle((ServerPlayer) context.player()));
         registrar.playToServer(CultivationPayloads.Advance.TYPE, CultivationPayloads.Advance.STREAM_CODEC,
@@ -70,7 +72,7 @@ public final class CultivationEvents {
     public static void onStartTracking(PlayerEvent.StartTracking event) {
         if (event.getTarget() instanceof ServerPlayer target && event.getEntity() instanceof ServerPlayer watcher
                 && Meditation.of(target).meditating()) {
-            PacketDistributor.sendToPlayer(watcher, new CultivationPayloads.Pose(target.getId(), true));
+            PacketDistributor.sendToPlayer(watcher, Meditation.pose(target, true));
         }
     }
 

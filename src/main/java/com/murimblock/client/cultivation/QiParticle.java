@@ -1,12 +1,12 @@
 package com.murimblock.client.cultivation;
 
+import com.murimblock.cultivation.QiParticleOptions;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
 /**
@@ -21,7 +21,7 @@ public final class QiParticle extends TextureSheetParticle {
     private final float spin;
 
     private QiParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd,
-            SpriteSet sprites, boolean ring) {
+            SpriteSet sprites, boolean ring, float power) {
         super(level, x, y, z);
         this.sprites = sprites;
         this.xd = xd;
@@ -31,10 +31,11 @@ public final class QiParticle extends TextureSheetParticle {
         // Lifts on its own (vanilla applies 0.04 × gravity per tick), up to about 0.1 block a tick.
         gravity = ring ? -0.15f : -0.3f;
         friction = 0.9f;
-        lifetime = (ring ? 30 : 40) + random.nextInt(20);
-        startSize = (ring ? 0.35f : 0.22f) + random.nextFloat() * 0.1f;
+        // Little Qi: small, faint, short puffs; a great reserve: big, thick, lingering ones.
+        lifetime = (int) (((ring ? 30 : 40) + random.nextInt(20)) * (0.6f + 0.4f * power));
+        startSize = ((ring ? 0.35f : 0.22f) + random.nextFloat() * 0.1f) * (0.5f + 0.6f * power);
         endSize = startSize * (ring ? 2.6f : 3.2f);
-        maxAlpha = ring ? 0.7f : 0.45f;
+        maxAlpha = (ring ? 0.7f : 0.45f) * (0.4f + 0.6f * power);
         spin = (random.nextFloat() - 0.5f) * 0.08f;
         roll = random.nextFloat() * Mth.TWO_PI;
         oRoll = roll;
@@ -71,7 +72,7 @@ public final class QiParticle extends TextureSheetParticle {
         return 0xF000F0;
     }
 
-    public static final class Provider implements ParticleProvider<SimpleParticleType> {
+    public static final class Provider implements ParticleProvider<QiParticleOptions> {
         private final SpriteSet sprites;
         private final boolean ring;
 
@@ -81,9 +82,9 @@ public final class QiParticle extends TextureSheetParticle {
         }
 
         @Override
-        public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
+        public Particle createParticle(QiParticleOptions options, ClientLevel level, double x, double y, double z,
                 double xd, double yd, double zd) {
-            return new QiParticle(level, x, y, z, xd, yd, zd, sprites, ring);
+            return new QiParticle(level, x, y, z, xd, yd, zd, sprites, ring, options.power());
         }
     }
 }

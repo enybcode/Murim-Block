@@ -65,10 +65,13 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
   mini-game"): while meditating, C is a breath (good within 0.15 of the circle, `BreathCycle`), sneak stands up.
   The server accepts one breath per 15 ticks and keeps Harmony.
 - Qi smoke `client/cultivation/QiAura` + `QiParticle`, `QiSparkParticle` (types `murimblock:qi`, `qi_ring`,
-  `qi_spark`, client only): each tick 1-2 cyan puffs and one near-white twinkling speck leave the body of every
-  meditating player, rise and fade (puffs swell and fray); a good breath blows a flat ring of 20 brighter puffs and
-  10 specks out from the dantian. Original textures: `textures/particle/qi_smoke_0..5.png` (16x16, thinning frames,
-  Java noise script) and `qi_spark_0..2.png` (8x8).
+  `qi_spark`, options `QiParticleOptions` = power 0-1): cyan puffs and near-white twinkling specks leave the body of
+  every meditating player, rise and fade (puffs swell and fray); a good breath blows a flat ring of them out.
+  Everything scales with the Qi held, log scale: power = ln(1+qi/100) / ln(101), so 100 Qi ≈ 0.15 (a puff every
+  ~4 ticks, small and faint), 1000 ≈ 0.52, 10 000 = 1 (1.5 puffs + 1 speck a tick, ring of 20). Watchers learn the
+  Qi from `Pose` and `MeditatorQi` (every second). `gradlew runGuiShots` adds `murim_meditation_pose_strong`
+  (10 000 Qi). Original textures: `textures/particle/qi_smoke_0..5.png` (16x16, thinning frames, Java noise
+  script) and `qi_spark_0..2.png` (8x8).
 - Commands: `/murim cultivation get|fill <player>`, `/murim cultivation set <player> <realm> <stage> <meridians>`.
 - Pill icon drawn by `scripts/pill-icon.cjs`. Meridian bonuses are shown but not applied yet.
 - Check: `gradlew runGuiShots` also seats the player in lotus on a platform and shoots the HUD states

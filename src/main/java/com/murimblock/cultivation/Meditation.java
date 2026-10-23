@@ -40,7 +40,7 @@ public final class Meditation {
         }
         of(player).startMeditation(player.getX(), player.getY(), player.getZ());
         system(player, "message.murimblock.meditation.start", ChatFormatting.AQUA);
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new CultivationPayloads.Pose(player.getId(), true));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, pose(player, true));
         sync(player);
     }
 
@@ -53,7 +53,7 @@ public final class Meditation {
         if (reasonKey != null) {
             system(player, reasonKey, ChatFormatting.AQUA);
         }
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new CultivationPayloads.Pose(player.getId(), false));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, pose(player, false));
         sync(player);
     }
 
@@ -70,6 +70,9 @@ public final class Meditation {
                     stop(player, blocked);
                     return;
                 }
+                // Watchers size the Qi smoke on the Qi held.
+                PacketDistributor.sendToPlayersTrackingEntity(player,
+                        new CultivationPayloads.MeditatorQi(player.getId(), (int) c.qi()));
             }
         }
         boolean wasFull = c.gaugeFull();
@@ -119,6 +122,10 @@ public final class Meditation {
         boolean enemy = !player.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
                 player.getBoundingBox().inflate(ENEMY_RANGE), m -> m instanceof Enemy && m.isAlive()).isEmpty();
         return enemy ? "message.murimblock.meditation.enemy" : null;
+    }
+
+    public static CultivationPayloads.Pose pose(ServerPlayer player, boolean meditating) {
+        return new CultivationPayloads.Pose(player.getId(), meditating, (int) of(player).qi());
     }
 
     public static void sync(ServerPlayer player) {

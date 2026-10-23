@@ -28,14 +28,27 @@ public final class CultivationPayloads {
         }
     }
 
-    /** Server to everyone tracking a player (and the player): sits down in lotus or stands up. */
-    public record Pose(int entityId, boolean meditating) implements CustomPacketPayload {
+    /** Server to everyone tracking a player (and the player): sits down in lotus or stands up, with the Qi held. */
+    public record Pose(int entityId, boolean meditating, int qi) implements CustomPacketPayload {
         public static final Type<Pose> TYPE = CultivationPayloads.payloadType("meditation_pose");
         public static final StreamCodec<ByteBuf, Pose> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.VAR_INT, Pose::entityId, ByteBufCodecs.BOOL, Pose::meditating, Pose::new);
+                ByteBufCodecs.VAR_INT, Pose::entityId, ByteBufCodecs.BOOL, Pose::meditating, ByteBufCodecs.VAR_INT,
+                Pose::qi, Pose::new);
 
         @Override
         public Type<Pose> type() {
+            return TYPE;
+        }
+    }
+
+    /** Server to everyone tracking a meditating player, every second: the Qi held, which sizes the Qi smoke. */
+    public record MeditatorQi(int entityId, int qi) implements CustomPacketPayload {
+        public static final Type<MeditatorQi> TYPE = CultivationPayloads.payloadType("meditator_qi");
+        public static final StreamCodec<ByteBuf, MeditatorQi> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, MeditatorQi::entityId, ByteBufCodecs.VAR_INT, MeditatorQi::qi, MeditatorQi::new);
+
+        @Override
+        public Type<MeditatorQi> type() {
             return TYPE;
         }
     }
