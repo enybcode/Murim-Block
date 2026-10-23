@@ -1,0 +1,40 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "meditate_lotus": {
+      "loop": true,
+      "animation_length": 4,
+      "bones": {
+        "body": {
+          "position": [0, -11, 0]
+        },
+        "right_leg": {
+          "rotation": [-85, -35, 0]
+        },
+        "left_leg": {
+          "rotation": [-85, 35, 0]
+        },
+        "right_arm": {
+          "rotation": [-30, 0, 12]
+        },
+        "left_arm": {
+          "rotation": [-30, 0, -12]
+        },
+        "torso": {
+          "rotation": {
+            "0.0": [0, 0, 0],
+            "2.0": [2.5, 0, 0],
+            "4.0": [0, 0, 0]
+          }
+        },
+        "head": {
+          "rotation": {
+            "0.0": [4, 0, 0],
+            "2.0": [7, 0, 0],
+            "4.0": [4, 0, 0]
+          }
+        }
+      }
+    }
+  }
+}

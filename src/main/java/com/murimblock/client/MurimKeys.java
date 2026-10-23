@@ -4,6 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.murimblock.Murimblock;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemScreen;
+import com.murimblock.cultivation.CultivationPayloads;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -19,6 +21,8 @@ public final class MurimKeys {
     public static final String CATEGORY = "key.categories.murimblock";
     public static final KeyMapping OPEN_SYSTEM = new KeyMapping("key.murimblock.open_system",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, CATEGORY);
+    public static final KeyMapping MEDITATE = new KeyMapping("key.murimblock.meditate",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, CATEGORY);
 
     private MurimKeys() {
     }
@@ -32,6 +36,7 @@ public final class MurimKeys {
         @SubscribeEvent
         public static void register(RegisterKeyMappingsEvent event) {
             event.register(OPEN_SYSTEM);
+            event.register(MEDITATE);
         }
 
         @SubscribeEvent
@@ -40,6 +45,11 @@ public final class MurimKeys {
             while (OPEN_SYSTEM.consumeClick()) {
                 if (mc.screen == null && mc.player != null) {
                     mc.setScreen(new SystemScreen(SystemPage.PROFILE));
+                }
+            }
+            while (MEDITATE.consumeClick()) {
+                if (mc.screen == null && mc.player != null) {
+                    PacketDistributor.sendToServer(new CultivationPayloads.ToggleMeditation());
                 }
             }
         }

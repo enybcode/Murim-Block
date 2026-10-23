@@ -1,0 +1,65 @@
+# Cultivation (design, first slice)
+
+Status: validated by Enzo on 23 Oct 2026; the foundation is in the game (below). Numbers are tunable placeholders.
+
+## Decisions taken (Enzo, 23 Oct)
+
+- First slice = the Qi foundation: saved server data, sync, meditation, stage-up; the Cultivation page shows real
+  values. The breakthrough trial between realms comes in the next slice.
+- Stages 1-9 of a realm: when the stage gauge is full, the player presses a button to rise one stage.
+- Meridians open with items (pills), not automatically.
+- Meditation: the player sits in lotus and plays a breathing mini-game that speeds up the gain.
+
+## Player data (server, saved attachment, synced to its owner)
+
+| Field | Meaning |
+|---|---|
+| `realm` | index in the realm ladder (0 = Mortal / Body Tempering) |
+| `stage` | 1-9 inside the realm |
+| `stageQi` | Qi gathered toward the next stage |
+| `qi` / `maxQi` | Qi spent by techniques later; regenerates slowly, faster while meditating |
+| `meridians` | number opened, always in the Qi-flow order (0-13) |
+
+Saved IDs stay stable once released. Commands (operators only) set each field for tests.
+
+## Stage gauge
+
+- Gauge to fill: `100 × 1.25^(stage-1) × 3^realm` (Body Tempering 1 = 100, stage 9 ≈ 600; Qi Condensation 1 = 300).
+- Full gauge: the Cultivation page shows **Advance** (enabled only while meditating). Pressing it: stage + 1, gauge
+  reset, `maxQi` + 10 % (realm bonus to decide), a [!] System message.
+- Stage 9 full: the button reads **Trial required** (disabled) and lists the missing meridians
+  (`MERIDIANS_FOR_TRIAL`). The trial is the next slice.
+
+## Meditation
+
+- Key (placeholder C): sit in lotus (PAL animation), camera free, player rooted. Moving, attacking or taking damage
+  ends it. Not usable in the air, in water or with a hostile mob closer than 8 blocks.
+- Base gain: 2 stage Qi per second, and `qi` refills 5× faster.
+- Breathing mini-game (HUD overlay, needs a validated mockup first): a ring grows (inhale) and shrinks (exhale); the
+  player presses the key when the ring crosses the target circle. Each good beat raises Harmony (0-100 %), a miss
+  lowers it. Gain = base × (1 + 1.5 × Harmony), so up to × 2.5. No penalty beyond losing Harmony in this slice
+  (Qi deviation could come with the trials).
+
+## Meridians
+
+- One item, **Meridian-Opening Pill**, opens the next meridian in order when eaten while meditating; it fails
+  (pill kept) if the realm is too low for that meridian. Per-meridian pills are possible later if Enzo prefers.
+- Each open meridian gives its Qi bonus (texts already in `en_us.json`, values to set).
+- Source of the pill: dev command now; alchemy, loot or merchants later (to decide).
+
+## Not in this slice
+
+Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, realm names beyond Core Formation.
+
+## In the code (23 Oct)
+
+- `cultivation/`: `CultivationRules` (numbers), `Cultivation` (player data, plain Java, unit tested), `CultivationCodecs`
+  (save + network), `Meditation` (server rules), `CultivationEvents`, `CultivationCommands`, `MeridianPillItem`.
+- Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `1`: sync, pose, toggle, advance, breath.
+- Key C (placeholder) toggles meditation; lotus pose `player_animations/meditate_lotus.json` played through PAL and
+  sent to everyone tracking the player. The Cultivation page has Advance and Stop/Meditate; Profile reads the real Qi.
+- Breath beats are accepted at most every 15 ticks; the HUD of the mini-game waits for its mockup (Design canvas,
+  board "Meditation — breathing mini-game"), so Harmony stays at 0 for now.
+- Commands: `/murim cultivation get|fill <player>`, `/murim cultivation set <player> <realm> <stage> <meridians>`.
+- Pill icon drawn by `scripts/pill-icon.cjs`. Meridian bonuses are shown but not applied yet.
+- Check: `gradlew runGuiShots` now also seats the player in lotus on a platform (`murim_meditation.png`).

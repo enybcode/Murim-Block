@@ -149,14 +149,17 @@ public final class ProfilePage implements SystemPageView {
     }
 
     private static int stat(GuiGraphics g, Font font, Rect r, int y, String labelKey, Component value, boolean glow) {
-        g.drawString(font, Component.translatable(labelKey), r.x(), y + 4, 0xFFB5DCF2, false);
+        Component label = Component.translatable(labelKey);
+        g.drawString(font, label, r.x(), y + 4, 0xFFB5DCF2, false);
         int x = r.right() - font.width(value);
+        // A value too long to sit beside its label goes on the line below.
+        int valueY = x < r.x() + font.width(label) + 6 ? y + 15 : y + 4;
         if (glow) {
-            SystemTheme.crispText(g, font, value, x, y + 4, SystemTheme.TEXT);
+            SystemTheme.crispText(g, font, value, x, valueY, SystemTheme.TEXT);
         } else {
-            g.drawString(font, value, x, y + 4, SystemTheme.TEXT, false);
+            g.drawString(font, value, x, valueY, SystemTheme.TEXT, false);
         }
-        int bottom = y + 17;
+        int bottom = valueY + 13;
         g.fill(r.x(), bottom - 1, r.right(), bottom, SystemTheme.CYAN_FAINT);
         return bottom;
     }

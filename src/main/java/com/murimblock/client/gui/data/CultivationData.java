@@ -1,13 +1,19 @@
 package com.murimblock.client.gui.data;
 
+import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.cultivation.Cultivation;
+import com.murimblock.cultivation.CultivationPayloads;
+import com.murimblock.cultivation.CultivationRealms;
+import com.murimblock.cultivation.CultivationRules;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Realms and meridians. Each Murim rank holds a nine-stage cultivation realm; the twelve meridians open one after
  * another in the order Qi flows through them, then the Small Heavenly Circuit joins the Ren and Du vessels.
- * Placeholder progress (stage, Qi, open meridians) until the Qi system exists.
+ * Progress comes from the server ({@link ClientCultivation}).
  */
 public final class CultivationData {
     public record Realm(String rank, String realm) {
@@ -41,18 +47,10 @@ public final class CultivationData {
         }
     }
 
-    public static final List<Realm> REALMS = List.of(
-            new Realm("mortal", "body_tempering"),
-            new Realm("third_rate_warrior", "qi_condensation"),
-            new Realm("second_rate_warrior", "foundation_establishment"),
-            new Realm("first_rate_warrior", "core_formation"),
-            new Realm("peak_master", "unknown"),
-            new Realm("transcendent", "unknown"),
-            new Realm("unknown", "unknown"),
-            new Realm("unknown", "unknown"));
+    public static final List<Realm> REALMS = CultivationRealms.LADDER.stream()
+            .map(r -> new Realm(r.rank(), r.realm())).toList();
 
-    public static final int STAGES = 9;
-    public static final int MERIDIANS_FOR_TRIAL = 4;
+    public static final int STAGES = CultivationRules.STAGES;
 
     public static final List<Meridian> MERIDIANS = List.of(
             meridian("lung", "LU", "left_arm", p("LU1", 46, 92), p("LU5", 8, 140), p("LU7", 6, 176), p("LU9", 9, 186), p("LU11", 4, 196)),
@@ -73,14 +71,6 @@ public final class CultivationData {
     public static final int DANTIAN_X = 80;
     public static final int DANTIAN_Y = 172;
 
-    // Placeholder progress, kept for the client session only.
-    private static final int CURRENT_REALM = 1;
-    private static final int STAGE = 3;
-    private static final int QI = 620;
-    private static final int QI_TO_FILL = 1000;
-    private static int openMeridians = 4;
-    private static boolean meditating;
-
     private CultivationData() {
     }
 
@@ -92,53 +82,76 @@ public final class CultivationData {
         return new Meridian(id, code, region, List.of(points));
     }
 
+    private static Cultivation.Snapshot now() {
+        return ClientCultivation.get();
+    }
+
     public static int currentRealm() {
-        return CURRENT_REALM;
+        return now().realm();
     }
 
     /** Realms above the next one stay hidden as ???. */
     public static boolean revealed(int realmIndex) {
-        return realmIndex <= CURRENT_REALM + 1 && !REALMS.get(realmIndex).rank().equals("unknown");
+        return realmIndex <= currentRealm() + 1 && !REALMS.get(realmIndex).rank().equals("unknown");
     }
 
     public static int stage() {
-        return STAGE;
+        return now().stage();
     }
 
+    /** Stage Qi gathered toward the next stage. */
     public static int qi() {
-        return QI;
+        return (int) now().stageQi();
     }
 
     public static int qiToFill() {
-        return QI_TO_FILL;
+        return CultivationRules.gauge(now().realm(), now().stage());
+    }
+
+    public static boolean canAdvance() {
+        return now().meditating() && CultivationRules.canAdvance(now().realm(), now().stage(), now().stageQi());
+    }
+
+    /** Last stage with a full gauge: only the trial leads further. */
+    public static boolean trialReady() {
+        return now().stage() >= STAGES && CultivationRules.gaugeFull(now().realm(), now().stage(), now().stageQi());
+    }
+
+    public static int meridiansForTrial() {
+        return CultivationRules.meridiansForTrial(now().realm());
     }
 
     public static int openMeridians() {
-        return openMeridians;
+        return now().meridians();
     }
 
     public static boolean isOpen(int meridian) {
-        return meridian < openMeridians;
+        return meridian < openMeridians();
     }
 
     /** Meridians open in order: only the first sealed one can be opened. */
     public static boolean isNext(int meridian) {
-        return meridian == openMeridians;
+        return meridian == openMeridians();
     }
 
-    public static int openCost(int meridian) {
-        return 100 + meridian * 50;
-    }
-
-    public static void openNext() {
-        openMeridians = Math.min(MERIDIANS.size(), openMeridians + 1);
+    /** Whether the current realm lets this meridian open. */
+    public static boolean realmAllows(int meridian) {
+        return meridian < CultivationRules.meridianCap(now().realm());
     }
 
     public static boolean meditating() {
-        return meditating;
+        return now().meditating();
+    }
+
+    public static float harmony() {
+        return now().harmony();
     }
 
     public static void toggleMeditation() {
-        meditating = !meditating;
+        PacketDistributor.sendToServer(new CultivationPayloads.ToggleMeditation());
+    }
+
+    public static void advance() {
+        PacketDistributor.sendToServer(new CultivationPayloads.Advance());
     }
 }

@@ -65,14 +65,17 @@ public final class CultivationPage implements SystemPageView {
         screen.addPageWidget(new SystemButton(center.x() + 10, center.bottom() - 26, center.width() - 20, 16, meditate,
                 SystemButton.Style.ACTION, () -> {
                     CultivationData.toggleMeditation();
-                    screen.refresh();
                 }));
+        Component advance = CultivationData.trialReady()
+                ? Component.translatable("gui.murimblock.cultivation.trial_required")
+                : Component.translatable("gui.murimblock.cultivation.advance", Math.min(CultivationData.stage() + 1, CultivationData.STAGES));
+        screen.addPageWidget(new SystemButton(center.x() + 10, center.bottom() - 46, center.width() - 20, 16, advance,
+                SystemButton.Style.ACTION, CultivationData::advance).enabled(CultivationData.canAdvance()));
+        // The trial itself comes in the next slice: the button shows what it will need.
         Rect trial = columns[2];
-        boolean ready = CultivationData.qi() >= CultivationData.qiToFill()
-                && CultivationData.openMeridians() >= CultivationData.MERIDIANS_FOR_TRIAL;
         screen.addPageWidget(new SystemButton(trial.x(), trial.bottom() - 16, trial.width(), 16,
                 Component.translatable("gui.murimblock.cultivation.begin_trial"), SystemButton.Style.ACTION, () -> {
-                }).enabled(ready));
+                }).enabled(false));
     }
 
     private void initMeridians(SystemScreen screen, Rect[] columns) {
@@ -90,13 +93,12 @@ public final class CultivationPage implements SystemPageView {
         }
         if (CultivationData.isNext(picked)) {
             Rect detail = columns[2];
-            screen.addPageWidget(new SystemButton(detail.x() + 8, detail.bottom() - 24, detail.width() - 16, 16,
-                    Component.translatable("gui.murimblock.cultivation.open", CultivationData.openCost(picked)),
+            // Meridians open by swallowing a pill while meditating; the button only says so.
+            Component how = Component.translatable(CultivationData.realmAllows(picked)
+                    ? "gui.murimblock.cultivation.open_with_pill" : "gui.murimblock.cultivation.open_realm");
+            screen.addPageWidget(new SystemButton(detail.x() + 8, detail.bottom() - 24, detail.width() - 16, 16, how,
                     SystemButton.Style.ACTION, () -> {
-                        CultivationData.openNext();
-                        picked = Math.min(picked + 1, all.size() - 1);
-                        screen.refresh();
-                    }));
+                    }).enabled(false));
         }
     }
 
@@ -241,14 +243,13 @@ public final class CultivationPage implements SystemPageView {
         }
 
         y = card.bottom() + 8;
-        boolean full = CultivationData.qi() >= CultivationData.qiToFill();
-        check(g, font, r.x(), y, full, Component.translatable("gui.murimblock.cultivation.req_dantian",
-                CultivationData.qi(), CultivationData.qiToFill()));
+        check(g, font, r.x(), y, CultivationData.trialReady(), Component.translatable("gui.murimblock.cultivation.req_peak",
+                CultivationData.stage(), CultivationData.STAGES));
         y += 13;
         int open = CultivationData.openMeridians();
-        check(g, font, r.x(), y, open >= CultivationData.MERIDIANS_FOR_TRIAL, Component.translatable(
-                "gui.murimblock.cultivation.req_meridians", Math.min(open, CultivationData.MERIDIANS_FOR_TRIAL),
-                CultivationData.MERIDIANS_FOR_TRIAL));
+        int needed = CultivationData.meridiansForTrial();
+        check(g, font, r.x(), y, open >= needed, Component.translatable(
+                "gui.murimblock.cultivation.req_meridians", Math.min(open, needed), needed));
         y += 17;
 
         List<FormattedCharSequence> warning = font.split(Component.translatable("gui.murimblock.cultivation.trial_warning"),

@@ -6,7 +6,18 @@ import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.page.CultivationPage;
 import com.murimblock.client.gui.page.InfoPage;
+import com.murimblock.cultivation.Cultivation;
+import com.murimblock.cultivation.Meditation;
+import com.murimblock.registry.MurimItems;
 import java.util.List;
+import java.util.UUID;
+import net.minecraft.client.CameraType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
@@ -39,7 +50,12 @@ public final class GuiScreenshots {
     /** Minecraft's own "Auto" GUI scale (4 at 1080p): the System must look the same whatever it is. */
     private static final int GUI_SCALE = 0;
 
-    private enum Step { TITLE, LOADING, PAGES, DONE }
+    private enum Step { TITLE, LOADING, MEDITATION, PAGES, DONE }
+
+    /** Frames to let the lotus pose and the synced cultivation settle before the meditation shot. */
+    private static final int MEDITATION_FRAMES = 90;
+    /** Frames to land on the platform before sitting down. */
+    private static final int PLATFORM_FRAMES = 30;
 
     private record Shot(String name, SystemPage page, Supplier<SystemPageView> view) {
     }
@@ -80,9 +96,23 @@ public final class GuiScreenshots {
                 if (mc.player == null || mc.screen != null) {
                     frames = 0;
                 } else if (++frames >= WORLD_FRAMES) {
-                    open(mc, 0);
-                    step = Step.PAGES;
+                    standOnPlatform(mc);
+                    step = Step.MEDITATION;
+                    frames = 0;
                 }
+            }
+            case MEDITATION -> {
+                if (++frames == PLATFORM_FRAMES) {
+                    startMeditation(mc);
+                }
+                if (frames < MEDITATION_FRAMES) {
+                    return;
+                }
+                Screenshot.grab(mc.gameDirectory, "murim_meditation.png", mc.getMainRenderTarget(),
+                        message -> Murimblock.LOGGER.info("GUI shot: {}", message.getString()));
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                open(mc, 0);
+                step = Step.PAGES;
             }
             case PAGES -> {
                 if (++frames < SETTLE_FRAMES) {
@@ -113,6 +143,44 @@ public final class GuiScreenshots {
                 new GameRules(), WorldDataConfiguration.DEFAULT);
         mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(SEED, false, false),
                 WorldPresets::createNormalWorldDimensions, mc.screen);
+    }
+
+    /**
+     * Seats the player in lotus seen from the front, at Body Tempering 3 with 4 meridians and a full gauge, and has
+     * them swallow one Meridian-Opening Pill, so the shots show the real synced cultivation.
+     */
+    /** A small stone platform high in the sky, so the lotus pose stands out against it. */
+    private static void standOnPlatform(Minecraft mc) {
+        mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            BlockPos center = BlockPos.containing(player.getX(), 200, player.getZ());
+            for (BlockPos pos : BlockPos.betweenClosed(center.offset(-2, 0, -2), center.offset(2, 0, 2))) {
+                player.serverLevel().setBlockAndUpdate(pos, Blocks.SMOOTH_STONE.defaultBlockState());
+            }
+            player.getAbilities().flying = false;
+            player.onUpdateAbilities();
+            player.teleportTo(center.getX() + 0.5, center.getY() + 1, center.getZ() + 0.5);
+            player.setYRot(180);
+            player.setXRot(10);
+        });
+    }
+
+    private static void startMeditation(Minecraft mc) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            Cultivation c = Meditation.of(player);
+            c.set(0, 3, 0, c.maxQi(), c.maxQi(), 3);
+            c.set(0, 3, c.gauge(), c.maxQi(), c.maxQi(), 3);
+            Meditation.start(player);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.MERIDIAN_PILL.get()));
+            player.getMainHandItem().use(player.level(), player, InteractionHand.MAIN_HAND);
+            Murimblock.LOGGER.info("GUI shots: meditating {}, meridians {}", c.meditating(), c.meridians());
+        });
     }
 
     private static void open(Minecraft mc, int index) {
