@@ -55,6 +55,7 @@ public final class BreathingHud {
     /** The frame sits this far into the lane; marks scroll this many GUI pixels a second. */
     private static final int HIT_OFFSET = 36;
     private static final float PIXELS_PER_SECOND = 40;
+    private static final int HOLD_GAP = 7;
     private static final int MISS = 0xFFFFB067;
     private static final int GOLD = 0xFFFFD27A;
     private static final int WHITE = 0xFFFFFFFF;
@@ -335,10 +336,12 @@ public final class BreathingHud {
             int color = r == null ? SystemTheme.TEXT : SystemTheme.withAlpha(
                     r == BreathResult.PERFECT ? GOLD : r == BreathResult.GOOD ? WHITE : MISS, 0x80);
             if (b.kind() == Kind.HOLD) {
-                g.fill(xs, mid - 2, Math.max(xs + 1, xe), mid + 3, color);
+                // The bar starts a little after the mark before it, so that mark stays readable.
+                int from = xs + HOLD_GAP;
+                g.fill(from, mid - 2, Math.max(from + 1, xe), mid + 3, color);
                 g.fill(xe - 1, mid - 7, xe + 2, mid + 8, color);
-                if (r == null && b.start() <= t) {
-                    g.fill(xs, mid - 2, hitX, mid + 3, keyDown ? tierColor : SystemTheme.TEXT_MUTED);
+                if (r == null && b.start() <= t && hitX > from) {
+                    g.fill(from, mid - 2, hitX, mid + 3, keyDown ? tierColor : SystemTheme.TEXT_MUTED);
                 }
             } else {
                 // An inhale points up, an exhale down.
@@ -552,6 +555,8 @@ public final class BreathingHud {
             float t = seconds(0);
             if (!started || full(c)) {
                 TRACK.reset(t);
+                WAVES.clear();
+                SPARKS.clear();
                 started = true;
                 return;
             }
