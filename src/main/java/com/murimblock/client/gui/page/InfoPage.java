@@ -1,5 +1,6 @@
 package com.murimblock.client.gui.page;
 
+import com.murimblock.client.MurimClientConfig;
 import com.murimblock.client.gui.SubTabs;
 import com.murimblock.client.gui.SystemButton;
 import com.murimblock.client.gui.SystemLayout.Rect;
@@ -14,12 +15,16 @@ import com.murimblock.client.gui.data.InfoData.Quest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
-/** The INFO page: sub-tabs Quests (daily training, main quests), System log and Guide (controls, topics). */
+/**
+ * The INFO page: sub-tabs Quests (daily training, main quests), System log and Guide (controls, topics).
+ * A toggle at the right of the sub-tab row hides or shows the Guide ({@link MurimClientConfig#SHOW_GUIDE}).
+ */
 public final class InfoPage implements SystemPageView {
     public static final int QUESTS = 0;
     public static final int LOG = 1;
@@ -64,13 +69,29 @@ public final class InfoPage implements SystemPageView {
     @Override
     public void init(SystemScreen screen, Rect area) {
         InfoLayout layout = InfoLayout.of(area);
-        SubTabs.add(screen, layout.subTabs(), List.of(
+        boolean showGuide = MurimClientConfig.showGuide();
+        if (tab == GUIDE && !showGuide) {
+            tab = QUESTS;
+        }
+        List<Component> tabs = new ArrayList<>(List.of(
                 Component.translatable("gui.murimblock.info.tab.quests"),
-                Component.translatable("gui.murimblock.info.tab.log"),
-                Component.translatable("gui.murimblock.info.tab.guide")), tab, index -> {
-                    tab = index;
+                Component.translatable("gui.murimblock.info.tab.log")));
+        if (showGuide) {
+            tabs.add(Component.translatable("gui.murimblock.info.tab.guide"));
+        }
+        SubTabs.add(screen, layout.subTabs(), tabs, tab, index -> {
+            tab = index;
+            screen.refresh();
+        });
+        // The Guide toggle, right aligned on the sub-tab row.
+        Component toggle = Component.translatable(showGuide ? "gui.murimblock.info.guide.hide" : "gui.murimblock.info.guide.show");
+        int toggleWidth = SystemTheme.spacedWidth(Minecraft.getInstance().font, toggle.getString(), 1) + 2 * SubTabs.PADDING;
+        Rect row = layout.subTabs();
+        screen.addPageWidget(new SystemButton(row.right() - toggleWidth, row.y(), toggleWidth, row.height() - 2, toggle,
+                SystemButton.Style.ACTION, () -> {
+                    MurimClientConfig.setShowGuide(!showGuide);
                     screen.refresh();
-                });
+                }));
         if (tab == QUESTS) {
             Rect list = layout.questColumns()[0];
             for (QuestSlot slot : questSlots(list)) {

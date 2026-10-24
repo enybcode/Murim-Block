@@ -15,7 +15,7 @@ Opened with **K** (`key.murimblock.open_system`, rebindable); K or Escape closes
 | Profile | STATUS | 3D player, identity, HP and Qi bars, Qi panel. No attributes: everything comes from Qi. |
 | Techniques | MARTIAL ART | One active art with its passive, techniques and ultimate; other learned arts can be switched to outside combat. |
 | Cultivation | CULTIVATION | Sub-tabs Realm (Murim rank holding a 9-stage xianxia realm, dantian, Qi sources, breakthrough trial) and Meridians (cubic body, real acupoints, zoom on the chosen meridian). |
-| Info | INFO | Sub-tabs Quests (daily training, main quests), System log, Guide (controls, topics). |
+| Info | INFO | Sub-tabs Quests (daily training, main quests), System log, Guide (controls, topics). A HIDE GUIDE / SHOW GUIDE button on the right of the sub-tab row hides or brings back the Guide tab. |
 
 ## Code
 
@@ -33,6 +33,9 @@ Opened with **K** (`key.murimblock.open_system`, rebindable); K or Escape closes
   placeholders until the Qi system exists. `MartialArtsData`: the mockup's three example arts, the active one
   kept for the client session only; `inCombat()` is always false until combat exists.
 - `client/MurimKeys`: the key binding.
+- `client/MurimClientConfig`: client options in `config/murimblock-client.toml`; `showGuide` (default true) is
+  flipped by the Info page's Guide button and saved at once. `runGuiShots` shoots the Guide on and off
+  (`murim_info_guide`, `murim_info_guide_hidden`) and puts the option back afterwards.
 
 ## Checks
 

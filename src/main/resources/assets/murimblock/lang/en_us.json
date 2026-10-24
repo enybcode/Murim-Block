@@ -84,6 +84,8 @@
   "gui.murimblock.info.tab.quests": "QUESTS",
   "gui.murimblock.info.tab.log": "SYSTEM LOG",
   "gui.murimblock.info.tab.guide": "GUIDE",
+  "gui.murimblock.info.guide.hide": "HIDE GUIDE",
+  "gui.murimblock.info.guide.show": "SHOW GUIDE",
   "gui.murimblock.info.group.daily": "DAILY",
   "gui.murimblock.info.group.main": "MAIN QUESTS",
   "gui.murimblock.info.resets": "Resets in %s",

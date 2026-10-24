@@ -1,6 +1,7 @@
 package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
+import com.murimblock.client.MurimClientConfig;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
@@ -72,9 +73,12 @@ public final class GuiScreenshots {
             new Shot("cultivation_meridians", SystemPage.CULTIVATION, () -> new CultivationPage(true)),
             new Shot("info", SystemPage.INFO, () -> new InfoPage(InfoPage.QUESTS)),
             new Shot("info_log", SystemPage.INFO, () -> new InfoPage(InfoPage.LOG)),
-            new Shot("info_guide", SystemPage.INFO, () -> new InfoPage(InfoPage.GUIDE)));
+            new Shot("info_guide", SystemPage.INFO, () -> guide(true)),
+            new Shot("info_guide_hidden", SystemPage.INFO, () -> guide(false)));
 
     private static Step step = Step.TITLE;
+    /** The player's Guide option, put back after the shots. */
+    private static boolean showGuide = true;
     private static int page;
     private static int frames;
 
@@ -153,6 +157,7 @@ public final class GuiScreenshots {
                 QiAura.previewQi = -1;
                 mc.options.hideGui = false;
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
+                showGuide = MurimClientConfig.showGuide();
                 open(mc, 0);
                 step = Step.PAGES;
             }
@@ -168,6 +173,7 @@ public final class GuiScreenshots {
                 } else {
                     // The game draws a few more frames while stopping: no second shot of the last page.
                     step = Step.DONE;
+                    MurimClientConfig.setShowGuide(showGuide);
                     mc.stop();
                 }
             }
@@ -243,6 +249,12 @@ public final class GuiScreenshots {
             player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             Murimblock.LOGGER.info("GUI shots: meditating {}, meridians {}", c.meditating(), c.meridians());
         });
+    }
+
+    /** The Info page on its Guide tab, with the Guide option on or off. */
+    private static SystemPageView guide(boolean show) {
+        MurimClientConfig.setShowGuide(show);
+        return new InfoPage(InfoPage.GUIDE);
     }
 
     private static void open(Minecraft mc, int index) {
