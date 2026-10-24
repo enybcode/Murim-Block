@@ -34,8 +34,9 @@ Opened with **K** (`key.murimblock.open_system`, rebindable); K or Escape closes
   kept for the client session only; `inCombat()` is always false until combat exists.
 - `client/MurimKeys`: the key binding.
 - `client/MurimClientConfig`: client options in `config/murimblock-client.toml`; `showGuide` (default true) is
-  flipped by the Info page's Guide button and saved at once. `runGuiShots` shoots the Guide on and off
-  (`murim_info_guide`, `murim_info_guide_hidden`) and puts the option back afterwards.
+  flipped by the Info page's Guide button and saved at once. `runGuiShots` presses the real button: Guide
+  on (`murim_info_guide`), HIDE GUIDE (`murim_info_guide_hidden`), SHOW GUIDE (`murim_info_guide_back`), logging
+  each press, then puts the option back.
 
 ## Checks
 

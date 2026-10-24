@@ -2,6 +2,7 @@ package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.MurimClientConfig;
+import com.murimblock.client.gui.SystemButton;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
@@ -25,7 +26,9 @@ import net.minecraft.world.item.ItemStack;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
@@ -63,7 +66,11 @@ public final class GuiScreenshots {
     /** Frames to let the full aura build up before its shot. */
     private static final int STRONG_AURA_FRAMES = 150;
 
-    private record Shot(String name, SystemPage page, Supplier<SystemPageView> view) {
+    /** A page to shoot; {@code click}, if set, is the translation key of a button pressed before the shot. */
+    private record Shot(String name, SystemPage page, Supplier<SystemPageView> view, String click) {
+        Shot(String name, SystemPage page, Supplier<SystemPageView> view) {
+            this(name, page, view, null);
+        }
     }
 
     private static final List<Shot> SHOTS = List.of(
@@ -74,7 +81,8 @@ public final class GuiScreenshots {
             new Shot("info", SystemPage.INFO, () -> new InfoPage(InfoPage.QUESTS)),
             new Shot("info_log", SystemPage.INFO, () -> new InfoPage(InfoPage.LOG)),
             new Shot("info_guide", SystemPage.INFO, () -> guide(true)),
-            new Shot("info_guide_hidden", SystemPage.INFO, () -> guide(false)));
+            new Shot("info_guide_hidden", SystemPage.INFO, () -> guide(true), "gui.murimblock.info.guide.hide"),
+            new Shot("info_guide_back", SystemPage.INFO, () -> guide(false), "gui.murimblock.info.guide.show"));
 
     private static Step step = Step.TITLE;
     /** The player's Guide option, put back after the shots. */
@@ -162,7 +170,10 @@ public final class GuiScreenshots {
                 step = Step.PAGES;
             }
             case PAGES -> {
-                if (++frames < SETTLE_FRAMES) {
+                if (++frames == SETTLE_FRAMES / 2 && SHOTS.get(page).click() != null) {
+                    press(mc, SHOTS.get(page).click());
+                }
+                if (frames < SETTLE_FRAMES) {
                     return;
                 }
                 String name = "murim_" + SHOTS.get(page).name() + ".png";
@@ -255,6 +266,19 @@ public final class GuiScreenshots {
     private static SystemPageView guide(boolean show) {
         MurimClientConfig.setShowGuide(show);
         return new InfoPage(InfoPage.GUIDE);
+    }
+
+    /** Presses the System button labelled with this key, as a click would, and logs whether it was found. */
+    private static void press(Minecraft mc, String key) {
+        String label = Component.translatable(key).getString();
+        for (GuiEventListener child : List.copyOf(mc.screen.children())) {
+            if (child instanceof SystemButton button && button.getMessage().getString().equals(label)) {
+                button.onPress();
+                Murimblock.LOGGER.info("GUI shots: pressed {}, showGuide = {}", label, MurimClientConfig.showGuide());
+                return;
+            }
+        }
+        Murimblock.LOGGER.error("GUI shots: no button {}", label);
     }
 
     private static void open(Minecraft mc, int index) {
