@@ -51,3 +51,5 @@ world's guards apply: nothing breaks, nothing is placed.
 trial (−30 %, zombies gone), then five cleared waves and Third-Rate Warrior. Shots `murim_trial_page`, `murim_trial_dive`, `murim_trial_rise_1`, `_rise_2`, `murim_trial_title`,
 `murim_trial_arrival`, `murim_trial_island`, `murim_trial_won`. Unit tests: `CultivationTest` (realm breakthrough,
 scatter). Not yet played by hand with real fights.
+The tour also films the entry, one shot per tick in `screenshots/film/`; make the GIF (kept local, out of the
+repository) with `java scripts/frames-to-gif.java run/inner-world-tour/screenshots/film run/gifs/murim_trial_entry.gif`.

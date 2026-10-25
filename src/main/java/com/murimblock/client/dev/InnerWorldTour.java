@@ -14,6 +14,7 @@ import com.murimblock.innerworld.MeditatingBody;
 import com.murimblock.innerworld.MortalTrial;
 import com.murimblock.innerworld.OldMaster;
 import com.murimblock.innerworld.TrialZombie;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,9 @@ public final class InnerWorldTour {
     private static int failures;
     private static BlockPos sat;
     private static volatile boolean trialDone;
+    /** Next film frame of the trial entry, or -1 when not filming. */
+    private static int filmFrame = -1;
+    private static long filmTick;
     /** Pending breakthrough shots: effect age in ticks, file name. */
     private static final List<Map.Entry<Integer, String>> SHOTS = new ArrayList<>();
     /** Pending shots taken as soon as their condition holds. */
@@ -105,6 +109,14 @@ public final class InnerWorldTour {
         }
         if (mc.player == null || mc.screen != null && !(mc.screen instanceof SystemScreen || mc.screen instanceof OldMasterScreen)) {
             return;
+        }
+        // The trial entry is filmed one shot per game tick, from BEGIN TRIAL to the title (made into a GIF).
+        if (filmFrame >= 0 && mc.level.getGameTime() != filmTick) {
+            filmTick = mc.level.getGameTime();
+            shoot(mc, String.format("film/murim_trial_entry_%03d.png", filmFrame++));
+            if (TrialEntry.arrival() >= 49) {
+                filmFrame = -1;
+            }
         }
         // Breakthrough shots are timed on the effect's own ticks, not on frames.
         int age = StageBreakthrough.age(mc.player.getId());
@@ -286,6 +298,15 @@ public final class InnerWorldTour {
                 shoot(mc, "murim_trial_page.png");
                 mc.setScreen(null);
                 server(mc, MortalTrial::begin);
+                File film = new File(mc.gameDirectory, "screenshots/film");
+                film.mkdirs();
+                File[] old = film.listFiles();
+                if (old != null) {
+                    for (File f : old) {
+                        f.delete();
+                    }
+                }
+                filmFrame = 0;
                 TIMED.add(Map.entry(() -> TrialEntry.ownDive() >= 36, "murim_trial_dive.png"));
                 TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 12, "murim_trial_rise_1.png"));
                 TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 26, "murim_trial_rise_2.png"));
