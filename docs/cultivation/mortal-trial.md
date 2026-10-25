@@ -25,6 +25,12 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
 - The wave: 15 dead in all. Two climb out of the graves when it starts (7 s after arriving, the arrival plays
   meanwhile), then one every 3 s while fewer than 4 stand, always from graves away from the player, earth thrown up.
   The 15th is the **Grave Warden** (1.6x size, 30 health, 4 damage), out of the mausoleum once the 14 others are down.
+  It looks like a zombie gone wrong (Enzo, 25 Oct: "a bit mutant, do not change too much"): an original texture
+  (`scripts/grave-warden.cjs`: grey-green rotting skin with sores, bare ribs through a torn shirt, ragged trousers,
+  bare clawed hands and feet), red eyes glowing in the dark, and growths that follow its body and arm
+  (`GraveWardenMutationLayer`): three bone spikes down the spine, a hunch with bone nubs, a bone knot and spur on
+  the right shoulder, a swollen right forearm. `runRiseFilm` ends with shots of it from the front, three quarters,
+  the back and at night.
   Trial zombies are softer than vanilla ones (10 health, 2 damage, a little slower), hunt the player (follow range 64),
   drop nothing, give no experience, never burn or turn into drowned, stay in Peaceful (where they do no damage) and
   are never saved. The spirit arrives with full health and food.

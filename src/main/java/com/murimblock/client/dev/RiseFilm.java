@@ -3,6 +3,8 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.client.cultivation.ClientCultivation;
 import com.murimblock.client.innerworld.TrialEntry;
+import com.murimblock.innerworld.TrialZombie;
+import com.murimblock.registry.MurimEntities;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import java.io.File;
@@ -30,7 +32,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 /**
  * Dev tool, off unless {@code murimblock.riseFilm} is set (run {@code gradlew runRiseFilm}): stands the player on a
  * platform in the sky, plays the trial's getting-up animation seen from the side (body turned, not the camera),
- * saves one shot per tick to {@code screenshots/rise/}, then quits. For tuning {@code trial_rise.json} quickly.
+ * saves one shot per tick to {@code screenshots/rise/}, then shoots the Grave Warden from four sides (front, three
+ * quarters, back, at night) and quits. For tuning {@code trial_rise.json} and the Warden's look quickly.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class RiseFilm {
@@ -41,6 +44,7 @@ public final class RiseFilm {
 
     private static boolean started;
     private static int ticks = -1;
+    private static TrialZombie warden;
 
     private RiseFilm() {
     }
@@ -72,12 +76,13 @@ public final class RiseFilm {
             server.execute(() -> {
                 ServerPlayer player = server.getPlayerList().getPlayer(id);
                 BlockPos center = BlockPos.containing(player.getX(), 200, player.getZ());
-                for (BlockPos pos : BlockPos.betweenClosed(center.offset(-4, -1, -4), center.offset(4, -1, 4))) {
+                for (BlockPos pos : BlockPos.betweenClosed(center.offset(-12, -1, -12), center.offset(12, -1, 12))) {
                     player.serverLevel().setBlockAndUpdate(pos, Blocks.SMOOTH_STONE.defaultBlockState());
                 }
                 player.getAbilities().flying = false;
                 player.onUpdateAbilities();
                 player.connection.teleport(center.getX() + 0.5, center.getY(), center.getZ() + 0.5, 0, 12);
+                server.overworld().setDayTime(1000);
             });
             mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             mc.options.hideGui = true;
@@ -97,10 +102,60 @@ public final class RiseFilm {
             Screenshot.grab(mc.gameDirectory, String.format("rise/murim_rise_%02d.png", frame), mc.getMainRenderTarget(),
                     message -> { });
         }
-        if (frame == FRAMES + 5) {
-            Murimblock.LOGGER.info("Rise film: done");
-            mc.stop();
+        warden(mc, frame - FRAMES);
+    }
+
+    /** Then the Grave Warden, 5 blocks away: from the front, three quarters, the back, and at night. */
+    private static void warden(Minecraft mc, int step) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        switch (step) {
+            case 5 -> {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                server.execute(() -> {
+                    ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                    player.connection.teleport(player.getX(), player.getY(), player.getZ(), 0, 4);
+                    TrialZombie zombie = MurimEntities.TRIAL_ZOMBIE.get().create(player.serverLevel());
+                    zombie.makeWarden();
+                    zombie.setNoAi(true);
+                    zombie.moveTo(player.getX(), player.getY(), player.getZ() + 5, 180, 0);
+                    zombie.setYHeadRot(180);
+                    zombie.setYBodyRot(180);
+                    player.serverLevel().addFreshEntity(zombie);
+                    warden = zombie;
+                });
+            }
+            case 30 -> shoot(mc, "warden_front", 50);
+            case 40 -> shoot(mc, "warden_three_quarters", 180);
+            case 50 -> {
+                shoot(mc, "warden_back", 0);
+                server.execute(() -> server.overworld().setDayTime(18000));
+            }
+            case 70 -> shoot(mc, "warden_night", 0);
+            case 75 -> {
+                Murimblock.LOGGER.info("Rise film: done");
+                mc.stop();
+            }
+            default -> {
+            }
         }
+    }
+
+    /** Saves a shot, then walks the camera around the Warden to look at it from this angle (0 = its front). */
+    private static void shoot(Minecraft mc, String name, float around) {
+        Screenshot.grab(mc.gameDirectory, "rise/" + name + ".png", mc.getMainRenderTarget(), message -> { });
+        MinecraftServer server = mc.getSingleplayerServer();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+            if (warden == null) {
+                return;
+            }
+            // The Warden faces north (-z); its front is seen from the north.
+            double angle = Math.toRadians(around);
+            double x = warden.getX() + Math.sin(angle) * 5;
+            double z = warden.getZ() - Math.cos(angle) * 5;
+            float yaw = (float) Math.toDegrees(Math.atan2(-(warden.getX() - x), warden.getZ() - z));
+            player.connection.teleport(x, player.getY(), z, yaw, 4);
+        });
     }
 
     private static void openWorld(Minecraft mc) {

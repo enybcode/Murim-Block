@@ -1,6 +1,9 @@
 package com.murimblock.innerworld;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -18,9 +21,22 @@ public final class TrialZombie extends Zombie {
     private static final double DAMAGE = 2;
     private static final double SPEED = 0.21;
     private static final double WARDEN_HEALTH = 30;
+    private static final EntityDataAccessor<Boolean> WARDEN =
+            SynchedEntityData.defineId(TrialZombie.class, EntityDataSerializers.BOOLEAN);
 
     public TrialZombie(EntityType<? extends Zombie> type, Level level) {
         super(type, level);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(WARDEN, false);
+    }
+
+    /** Whether this is the Grave Warden; synced, so the client draws its own look. */
+    public boolean isWarden() {
+        return entityData.get(WARDEN);
     }
 
     public static AttributeSupplier.Builder attributes() {
@@ -30,6 +46,7 @@ public final class TrialZombie extends Zombie {
 
     /** Makes this one the Grave Warden: 1.6 times as big, three times the health, harder blows, hard to push back. */
     public void makeWarden() {
+        entityData.set(WARDEN, true);
         getAttribute(Attributes.SCALE).setBaseValue(1.6);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(WARDEN_HEALTH);
         getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4);
