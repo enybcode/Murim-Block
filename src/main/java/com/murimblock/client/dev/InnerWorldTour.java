@@ -75,6 +75,8 @@ public final class InnerWorldTour {
     private static int failures;
     private static BlockPos sat;
     private static volatile boolean trialDone;
+    private static volatile int mostStanding;
+    private static volatile int putDown;
     /** Next film frame of the trial entry, or -1 when not filming. */
     private static int filmFrame = -1;
     private static long filmTick;
@@ -326,7 +328,7 @@ public final class InnerWorldTour {
                     return;
                 }
                 server(mc, player -> {
-                    check("wave 1 climbs out of the graves", countZombies(player) == MortalTrial.WAVES[0]);
+                    check("the first dead climb out of the graves", countZombies(player) == MortalTrial.FIRST_RISE);
                     BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
                     player.getAbilities().flying = true;
                     player.onUpdateAbilities();
@@ -352,19 +354,24 @@ public final class InnerWorldTour {
             case 37 -> server(mc, MortalTrial::begin);
             case 38 -> server(mc, player -> {
                 if (InnerWorld.isTrial(player.level())) {
-                    player.serverLevel().getEntitiesOfClass(TrialZombie.class, player.getBoundingBox().inflate(80))
-                            .forEach(z -> z.kill());
+                    List<TrialZombie> standing = player.serverLevel().getEntitiesOfClass(TrialZombie.class,
+                            player.getBoundingBox().inflate(80));
+                    mostStanding = Math.max(mostStanding, standing.size());
+                    putDown += standing.size();
+                    standing.forEach(z -> z.kill());
                 }
                 trialDone = !InnerWorld.state(player).inside() && !MortalTrial.diving(player);
             });
             case 39 -> {
                 if (!trialDone) {
-                    step -= 2; // Clear the next wave.
+                    step -= 2; // Put down the next ones.
                     return;
                 }
                 server(mc, player -> {
                     Cultivation c = Meditation.of(player);
-                    check("five waves cleared: Third-Rate Warrior", c.realm() == 1 && c.stage() == 1 && c.stageQi() == 0);
+                    check("never more than " + MortalTrial.MAX_ALIVE + " dead at once", mostStanding <= MortalTrial.MAX_ALIVE);
+                    check("all " + MortalTrial.TOTAL + " put down: Third-Rate Warrior", putDown == MortalTrial.TOTAL
+                            && c.realm() == 1 && c.stage() == 1 && c.stageQi() == 0);
                 });
             }
             case 40 -> shoot(mc, "murim_trial_won.png");

@@ -22,7 +22,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
- * Client side of the mortal trial: the wave counter (a System window at the top center), and the graveyard's air,
+ * Client side of the mortal trial: the counter of the dead left (a System window at the top center), and the graveyard's air,
  * a close blue-grey fog and ash drifting down.
  */
 public final class TrialHud {
@@ -54,8 +54,7 @@ public final class TrialHud {
         }
         Font font = mc.font;
         boolean calm = status.calm() > 0;
-        int shown = calm ? status.wave() + 2 : status.wave() + 1;
-        Component main = Component.translatable("hud.murimblock.trial.wave", shown, status.waves());
+        Component main = Component.translatable("hud.murimblock.trial.wave");
         Component sub = calm
                 ? Component.translatable("hud.murimblock.trial.next", status.calm())
                 : Component.translatable("hud.murimblock.trial.left", status.left(), status.total());
@@ -67,7 +66,7 @@ public final class TrialHud {
         g.renderOutline(r.x(), r.y(), r.width(), r.height(), SystemTheme.CYAN_SOFT);
         g.drawString(font, main, r.x() + PAD, r.y() + 4, SystemTheme.TEXT, false);
         g.drawString(font, sub, r.right() - PAD - font.width(sub), r.y() + 4, SystemTheme.TEXT_MUTED, false);
-        float done = calm || status.total() == 0 ? 1 : 1 - (float) status.left() / status.total();
+        float done = calm || status.total() == 0 ? 0 : 1 - (float) status.left() / status.total();
         g.fill(r.x() + 1, r.bottom() - 2, r.x() + 1 + Math.round((r.width() - 2) * done), r.bottom() - 1,
                 calm ? SystemTheme.CYAN_SOFT : SystemTheme.CYAN);
     }

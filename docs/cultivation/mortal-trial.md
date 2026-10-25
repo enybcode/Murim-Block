@@ -6,7 +6,8 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
 
 ## Decisions (Enzo, 25 Oct)
 
-- BEGIN TRIAL opens the graveyard island; 5 waves of zombies.
+- BEGIN TRIAL opens the graveyard island; 5 waves of zombies. Changed the same day: one wave of 15 in all, arriving
+  little by little, the Grave Warden as the 15th; it must be possible for a mortal.
 - Victory: Third-Rate Warrior (Qi Condensation stage 1). Defeat: 30 % of the Qi lost.
 
 ## How it works
@@ -20,14 +21,16 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
     breathing lane hidden. Standing up or being struck cancels it, at no cost.
   - Arrival: a low bell, the screen opens on the graveyard; seen from behind, the player lies face down and gets up
     (seen three quarters from the side: the body turns 55° from the camera; PAL animation `player_animations/trial_rise.json`, 3.2 s, after the physiotherapists' way up from the floor: lying face down, onto hands and knees, one foot forward, upright on one knee, driving up through the front leg; earth thrown up), then back to first person and the
-    title **SURVIVE DEATH** (dark red) with "Mortal Trial · five waves of the dead". The first wave waits 7 s.
-- Waves: 3, 5, 7, 9, then 9 and the **Grave Warden** (1.6× size, 50 health, 6 damage) out of the mausoleum.
-  7 s of calm before the first (the arrival plays meanwhile), 4 s between waves. Zombies climb out of the grave mounds farthest from the player,
-  with earth thrown up; they hunt the player (follow range 64). Trial zombies have 14 health, drop nothing, give
-  no experience, never burn or turn into drowned, stay in Peaceful (where they do no damage) and are never saved.
-- Counter: one slim strip at the top center (made smaller at Enzo's request): "WAVE n/5" and "x/y left" (or the next
-  wave's countdown), progress along its bottom edge. Payload `trial_status`.
-- Win: back to the body, realm + 1 at stage 1 with an empty gauge and the stage Max Qi bonus, the spiral
+    title **SURVIVE DEATH** (dark red) with "Mortal Trial · fifteen of the dead". The dead rise 7 s after arriving.
+- The wave: 15 dead in all. Two climb out of the graves when it starts (7 s after arriving, the arrival plays
+  meanwhile), then one every 3 s while fewer than 4 stand, always from graves away from the player, earth thrown up.
+  The 15th is the **Grave Warden** (1.6x size, 30 health, 4 damage), out of the mausoleum once the 14 others are down.
+  Trial zombies are softer than vanilla ones (10 health, 2 damage, a little slower), hunt the player (follow range 64),
+  drop nothing, give no experience, never burn or turn into drowned, stay in Peaceful (where they do no damage) and
+  are never saved. The spirit arrives with full health and food.
+- Counter: one slim strip at the top center (made smaller at Enzo's request): "RISING DEAD" and "x/15 left" (or the
+  countdown before they rise), progress along its bottom edge. Payload `trial_status`.
+- Win (the 15th falls): back to the body, realm + 1 at stage 1 with an empty gauge and the stage Max Qi bonus, the spiral
   breakthrough and its window, and "[!] X broke through to Third-Rate Warrior!" to the whole server.
 - Loss: anything that ends the trip before the last zombie falls (a lethal blow, nobody dies there; falling off;
   RETURN TO BODY; a blow on the body; logging out). The trial's zombies vanish and 30 % of the gathered stage Qi
@@ -47,8 +50,8 @@ world's guards apply: nothing breaks, nothing is placed.
 
 ## Check
 
-`gradlew runInnerWorldTour` ends with the trial: the BEGIN TRIAL page, arrival, wave 1 out of the graves, a lost
-trial (−30 %, zombies gone), then five cleared waves and Third-Rate Warrior. Shots `murim_trial_page`, `murim_trial_dive`, `murim_trial_rise_1`, `_rise_2`, `murim_trial_title`,
+`gradlew runInnerWorldTour` ends with the trial: the BEGIN TRIAL page, arrival, the first two out of the graves, a lost
+trial (−30 %, zombies gone), then all 15 put down and Third-Rate Warrior. Shots `murim_trial_page`, `murim_trial_dive`, `murim_trial_rise_1`, `_rise_2`, `murim_trial_title`,
 `murim_trial_arrival`, `murim_trial_island`, `murim_trial_won`. Unit tests: `CultivationTest` (realm breakthrough,
 scatter). Not yet played by hand with real fights.
 The tour also films the entry, one shot per tick in `screenshots/film/`; make the GIF (kept local, out of the

@@ -28,7 +28,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -39,26 +38,32 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * meridians the realm asks for, BEGIN TRIAL starts a 3 s dive into the dantian (moving or being struck cancels it),
  * then sends the spirit to a graveyard island at night (the body stays seated), where it gets up and the title says
  * SURVIVE DEATH.
- * Five waves of zombies climb out of the graves; the last brings the Grave Warden out of the mausoleum. Clearing
- * them all breaks through to Third-Rate Warrior. Being struck down, falling off, leaving, logging out or a blow on
+ * One wave of 15 dead climbs out of the graves, a few at a time; the last is the Grave Warden, out of the
+ * mausoleum. Putting them all down breaks through to Third-Rate Warrior. Being struck down, falling off, leaving, logging out or a blow on
  * the body loses the trial and scatters 30 % of the gathered stage Qi. Runs live in memory only.
  */
 public final class MortalTrial {
-    /** Zombies per wave; the last one adds the Grave Warden. */
-    public static final int[] WAVES = {3, 5, 7, 9, 9};
+    /** The dead to put down (Enzo, 25 Oct): one wave of 15, the last of them the Grave Warden. */
+    public static final int TOTAL = 15;
+    /** At most this many climb out at once, so a mortal can face them. */
+    public static final int MAX_ALIVE = 4;
+    /** Climbing out together when the wave starts. */
+    public static final int FIRST_RISE = 2;
+    /** Ticks between two of the dead climbing out (while fewer than {@link #MAX_ALIVE} stand). */
+    private static final int RISE_EVERY = 60;
     public static final double LOSS = 0.30;
     /** The dive into the dantian before the spirit leaves, in ticks. */
     public static final int DIVE_TICKS = 60;
-    /** Calm before the first wave: the arrival, getting up and the title come first. */
+    /** Calm before the wave: the arrival, getting up and the title come first. */
     private static final int FIRST_CALM = 140;
-    private static final int CALM = 80;
     private static final int RETARGET = 20;
 
     /** One player's trial in progress. */
     private static final class Run {
-        int wave = -1;
         int calm = FIRST_CALM;
-        int total;
+        int risen;
+        int killed;
+        int cooldown;
         final List<UUID> alive = new ArrayList<>();
         Status sent;
     }
@@ -91,7 +96,7 @@ public final class MortalTrial {
                 ByteBufCodecs.BOOL, Status::active, ByteBufCodecs.VAR_INT, s -> s.wave() + 1, ByteBufCodecs.VAR_INT, Status::waves,
                 ByteBufCodecs.VAR_INT, Status::left, ByteBufCodecs.VAR_INT, Status::total, ByteBufCodecs.VAR_INT, Status::calm,
                 (active, wave, waves, left, total, calm) -> new Status(active, wave - 1, waves, left, total, calm));
-        public static final Status NONE = new Status(false, -1, WAVES.length, 0, 0, 0);
+        public static final Status NONE = new Status(false, -1, 1, 0, 0, 0);
 
         @Override
         public Type<Status> type() {
@@ -177,6 +182,11 @@ public final class MortalTrial {
         trial.getEntitiesOfClass(TrialZombie.class, new AABB(center).inflate(InnerIsland.CLEAR_RADIUS))
                 .forEach(Entity::discard);
         InnerWorld.sendSpirit(player, trial, center);
+        // The spirit arrives whole: full health and a full stomach, whatever the body went through.
+        player.setHealth(player.getMaxHealth());
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().setSaturation(5);
+        player.clearFire();
         RUNS.put(player.getUUID(), new Run());
         PacketDistributor.sendToPlayer(player, new Dive(player.getId(), Dive.ARRIVE));
         player.displayClientMessage(Component.translatable("message.murimblock.trial.begin").withStyle(ChatFormatting.DARK_AQUA), false);
@@ -190,50 +200,57 @@ public final class MortalTrial {
             return;
         }
         ServerLevel level = player.serverLevel();
+        int before = run.alive.size();
         run.alive.removeIf(id -> !(level.getEntity(id) instanceof TrialZombie z) || !z.isAlive());
+        run.killed += before - run.alive.size();
+        if (run.killed >= TOTAL) {
+            win(player);
+            return;
+        }
         if (run.calm > 0) {
             if (--run.calm == 0) {
-                spawnWave(player, level, run);
+                level.playSound(null, player.blockPosition(), SoundEvents.BELL_BLOCK, SoundSource.HOSTILE, 1.5f, 0.5f);
+                player.displayClientMessage(Component.translatable("message.murimblock.trial.wave", TOTAL)
+                        .withStyle(ChatFormatting.RED), true);
+                for (int i = 0; i < FIRST_RISE; i++) {
+                    rise(player, level, run);
+                }
+                run.cooldown = RISE_EVERY;
             }
-        } else if (run.alive.isEmpty()) {
-            if (run.wave >= WAVES.length - 1) {
-                win(player);
-                return;
+        } else {
+            if (run.cooldown > 0) {
+                run.cooldown--;
             }
-            run.calm = CALM;
-            player.displayClientMessage(Component.translatable("message.murimblock.trial.wave_cleared", run.wave + 1, WAVES.length)
-                    .withStyle(ChatFormatting.AQUA), true);
-        } else if (player.tickCount % RETARGET == 0) {
-            for (UUID id : run.alive) {
-                if (level.getEntity(id) instanceof TrialZombie z && z.getTarget() != player) {
-                    z.setTarget(player);
+            if (run.risen < TOTAL - 1 && run.cooldown == 0 && run.alive.size() < MAX_ALIVE) {
+                rise(player, level, run);
+                run.cooldown = RISE_EVERY;
+            } else if (run.risen == TOTAL - 1 && run.alive.isEmpty()) {
+                // The last of them: the Grave Warden leaves the mausoleum once all the others are down.
+                BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
+                BlockPos w = TrialIsland.WARDEN;
+                spawn(player, level, run, center.getX() + w.getX() + 0.5, w.getY(), center.getZ() + w.getZ() + 0.5, true);
+                level.playSound(null, player.blockPosition(), SoundEvents.BELL_BLOCK, SoundSource.HOSTILE, 1.5f, 0.4f);
+                player.displayClientMessage(Component.translatable("message.murimblock.trial.warden").withStyle(ChatFormatting.DARK_RED), true);
+            }
+            if (player.tickCount % RETARGET == 0) {
+                for (UUID id : run.alive) {
+                    if (level.getEntity(id) instanceof TrialZombie z && z.getTarget() != player) {
+                        z.setTarget(player);
+                    }
                 }
             }
         }
         status(player, run);
     }
 
-    private static void spawnWave(ServerPlayer player, ServerLevel level, Run run) {
-        run.wave++;
+    /** One of the dead climbs out of a grave, one away from the player when possible. */
+    private static void rise(ServerPlayer player, ServerLevel level, Run run) {
         BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
-        RandomSource random = player.getRandom();
-        // Graves away from the player first, so nothing climbs out at their feet.
         List<BlockPos> graves = new ArrayList<>(TrialIsland.GRAVES);
-        Collections.shuffle(graves, new Random(random.nextLong()));
+        Collections.shuffle(graves, new Random(player.getRandom().nextLong()));
         graves.sort((a, b) -> Boolean.compare(near(player, center, a), near(player, center, b)));
-        int count = WAVES[run.wave];
-        for (int i = 0; i < count; i++) {
-            BlockPos g = graves.get(i % graves.size());
-            spawn(player, level, run, center.getX() + g.getX() + 0.5, g.getY() + 1, center.getZ() + g.getZ() + 0.5, false);
-        }
-        if (run.wave == WAVES.length - 1) {
-            BlockPos w = TrialIsland.WARDEN;
-            spawn(player, level, run, center.getX() + w.getX() + 0.5, w.getY(), center.getZ() + w.getZ() + 0.5, true);
-        }
-        run.total = run.alive.size();
-        level.playSound(null, player.blockPosition(), SoundEvents.BELL_BLOCK, SoundSource.HOSTILE, 1.5f, 0.5f);
-        player.displayClientMessage(Component.translatable("message.murimblock.trial.wave", run.wave + 1, WAVES.length)
-                .withStyle(ChatFormatting.RED), true);
+        BlockPos g = graves.get(0);
+        spawn(player, level, run, center.getX() + g.getX() + 0.5, g.getY() + 1, center.getZ() + g.getZ() + 0.5, false);
     }
 
     private static boolean near(ServerPlayer player, BlockPos center, BlockPos grave) {
@@ -252,6 +269,7 @@ public final class MortalTrial {
         zombie.setTarget(player);
         level.addFreshEntity(zombie);
         run.alive.add(zombie.getUUID());
+        run.risen++;
         // Earth thrown up as it climbs out.
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.COARSE_DIRT.defaultBlockState()),
                 x, y + 0.2, z, warden ? 50 : 25, 0.35, 0.25, 0.35, 0.15);
@@ -262,7 +280,7 @@ public final class MortalTrial {
 
     private static void status(ServerPlayer player, Run run) {
         Status now = run == null ? Status.NONE
-                : new Status(true, run.wave, WAVES.length, run.alive.size(), run.total, (run.calm + 19) / 20);
+                : new Status(true, run.calm > 0 ? -1 : 0, 1, TOTAL - run.killed, TOTAL, (run.calm + 19) / 20);
         if (run == null || !now.equals(run.sent)) {
             if (run != null) {
                 run.sent = now;
