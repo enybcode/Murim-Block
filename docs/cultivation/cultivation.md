@@ -27,6 +27,15 @@ Saved IDs stay stable once released. Commands (operators only) set each field fo
 - Gauge to fill: `100 × 1.25^(stage-1) × 3^realm` (Body Tempering 1 = 100, stage 9 ≈ 600; Qi Condensation 1 = 300).
 - Full gauge: the Cultivation page shows **Advance** (enabled only while meditating). Pressing it: stage + 1, gauge
   reset, `maxQi` + 10 % (realm bonus to decide), a [!] System message.
+- Stage breakthrough (`client/cultivation/StageBreakthrough`, mockup "Spiral Breakthrough" chosen by Enzo, 25 Oct,
+  artifact 6x4Qok5t6ZRtcKrXVinTpz): the System closes and, in first person, the camera steps behind the player for
+  3.6 s. Qi specks gather in a ring at the feet (0-0.8 s), two strands spiral up to above the head with a rising
+  beacon sound (0.6-1.8 s), the seated body lifts a little like a deep breath, then the spiral bursts into falling
+  specks (`qi_fall`, one in eight gold) and a ring of Qi smoke, with a chime one pentatonic step higher per stage
+  (note-block chime and bell, amethyst shimmer). A **BREAKTHROUGH** System window slides down for 2.5 s: realm,
+  stage, Max Qi bonus, next gauge (stage 9: "the trial awaits"). The breathing lane pauses meanwhile. Everyone
+  tracking the player sees and hears it (payload `stage_breakthrough`); the window and camera are the player's own.
+  Checked by `runInnerWorldTour` (shots `murim_breakthrough_spiral`, `_burst`, `_window`).
 - Stage 9 full: the button reads **Trial required** (disabled) and lists the missing meridians
   (`MERIDIANS_FOR_TRIAL`). The trial is the next slice.
 

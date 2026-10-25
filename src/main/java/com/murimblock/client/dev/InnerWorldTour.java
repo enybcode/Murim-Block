@@ -1,7 +1,9 @@
 package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
+import com.murimblock.client.cultivation.StageBreakthrough;
 import com.murimblock.cultivation.Cultivation;
+import com.murimblock.cultivation.CultivationRules;
 import com.murimblock.cultivation.Meditation;
 import com.murimblock.innerworld.InnerIsland;
 import com.murimblock.innerworld.InnerIslands;
@@ -9,13 +11,16 @@ import com.murimblock.innerworld.InnerWorld;
 import com.murimblock.client.innerworld.OldMasterScreen;
 import com.murimblock.innerworld.MeditatingBody;
 import com.murimblock.innerworld.OldMaster;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.page.CultivationPage;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -47,7 +52,8 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Dev tool, off unless {@code murimblock.innerWorldTour} is set (run {@code gradlew runInnerWorldTour}): checks the
  * inner world in a real client (locked as a mortal, entry, island, nothing breakable or placeable, falling, the seated
- * body and a blow on it), logs PASS or FAIL for each, saves screenshots to run/screenshots, then quits.
+ * body and a blow on it, the Old Master), then a stage breakthrough; logs PASS or FAIL for each, saves screenshots
+ * to run/screenshots, then quits.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class InnerWorldTour {
@@ -61,6 +67,8 @@ public final class InnerWorldTour {
     private static int step;
     private static int failures;
     private static BlockPos sat;
+    /** Pending breakthrough shots: effect age in ticks, file name. */
+    private static final List<Map.Entry<Integer, String>> SHOTS = new ArrayList<>();
 
     private InnerWorldTour() {
     }
@@ -88,6 +96,11 @@ public final class InnerWorldTour {
         }
         if (mc.player == null || mc.screen != null && !(mc.screen instanceof SystemScreen || mc.screen instanceof OldMasterScreen)) {
             return;
+        }
+        // Breakthrough shots are timed on the effect's own ticks, not on frames.
+        int age = StageBreakthrough.age(mc.player.getId());
+        if (!SHOTS.isEmpty() && age >= SHOTS.get(0).getKey()) {
+            shoot(mc, SHOTS.remove(0).getValue());
         }
         if (++frames < WORLD_FRAMES || (frames - WORLD_FRAMES) % STEP_FRAMES != 0) {
             return;
@@ -226,6 +239,29 @@ public final class InnerWorldTour {
                 check("a blow on the body ends the trip", !InnerWorld.state(player).inside()
                         && player.serverLevel().getEntity(bodyId) == null);
             });
+            case 25 -> server(mc, player -> {
+                // A stage breakthrough on the sky platform: Third-rate stage 3, gauge full, meditating.
+                player.connection.teleport(sat.getX() + 0.5, sat.getY(), sat.getZ() + 0.5, 30, 10);
+                Cultivation c = Meditation.of(player);
+                c.set(1, 3, CultivationRules.gauge(1, 3), c.maxQi(), c.maxQi(), 4);
+                Meditation.start(player);
+                Meditation.sync(player);
+            });
+            case 26 -> {
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                server(mc, Meditation::advance);
+                SHOTS.add(Map.entry(20, "murim_breakthrough_spiral.png"));
+                SHOTS.add(Map.entry(39, "murim_breakthrough_burst.png"));
+                SHOTS.add(Map.entry(55, "murim_breakthrough_window.png"));
+            }
+            case 27 -> server(mc, player -> check("breakthrough rises one stage", Meditation.of(player).stage() == 4));
+            case 28 -> {
+                if (StageBreakthrough.age(mc.player.getId()) >= 0 || !SHOTS.isEmpty()) {
+                    step--; // Still playing: ask again at the next step.
+                    return;
+                }
+                check("camera back in first person", mc.options.getCameraType() == CameraType.FIRST_PERSON);
+            }
             default -> {
                 Murimblock.LOGGER.info("Inner world tour: done, {} failure(s)", failures);
                 mc.stop();

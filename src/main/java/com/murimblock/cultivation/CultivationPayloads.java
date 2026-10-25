@@ -53,6 +53,19 @@ public final class CultivationPayloads {
         }
     }
 
+    /** Server to everyone tracking a player (and the player): they just rose to this stage, play the breakthrough. */
+    public record Breakthrough(int entityId, int realm, int stage) implements CustomPacketPayload {
+        public static final Type<Breakthrough> TYPE = CultivationPayloads.payloadType("stage_breakthrough");
+        public static final StreamCodec<ByteBuf, Breakthrough> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, Breakthrough::entityId, ByteBufCodecs.VAR_INT, Breakthrough::realm,
+                ByteBufCodecs.VAR_INT, Breakthrough::stage, Breakthrough::new);
+
+        @Override
+        public Type<Breakthrough> type() {
+            return TYPE;
+        }
+    }
+
     /** Client to server: start or stop meditating. */
     public record ToggleMeditation() implements CustomPacketPayload {
         public static final Type<ToggleMeditation> TYPE = CultivationPayloads.payloadType("toggle_meditation");

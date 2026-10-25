@@ -349,5 +349,9 @@
   "hud.murimblock.breath.next_tier": "%s to x%s",
   "hud.murimblock.breath.tier.1": "STEADY BREATH",
   "hud.murimblock.breath.tier.2": "FLOWING QI",
-  "hud.murimblock.breath.tier.3": "STILL HEART"
+  "hud.murimblock.breath.tier.3": "STILL HEART",
+  "hud.murimblock.breakthrough.title": "BREAKTHROUGH",
+  "hud.murimblock.breakthrough.stage": "%s · Stage %s",
+  "hud.murimblock.breakthrough.next": "Max Qi +%s %%  ·  Next stage 0 / %s Qi",
+  "hud.murimblock.breakthrough.peak": "Max Qi +%s %%  ·  Peak reached, the trial awaits"
 }

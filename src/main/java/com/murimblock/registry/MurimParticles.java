@@ -22,6 +22,10 @@ public final class MurimParticles {
     public static final DeferredHolder<ParticleType<?>, ParticleType<QiParticleOptions>> QI_SPARK =
             PARTICLES.register("qi_spark", QiParticleOptions::newType);
 
+    /** A speck of Qi drifting down, from the burst of a breakthrough. */
+    public static final DeferredHolder<ParticleType<?>, ParticleType<QiParticleOptions>> QI_FALL =
+            PARTICLES.register("qi_fall", QiParticleOptions::newType);
+
     private MurimParticles() {
     }
 }

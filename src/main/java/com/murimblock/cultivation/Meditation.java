@@ -101,6 +101,8 @@ public final class Meditation {
                     Component.translatable("murimblock.cultivation_realm." + CultivationRealms.realmKey(c.realm())), c.stage())
                     .withStyle(ChatFormatting.AQUA), false);
             sync(player);
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player,
+                    new CultivationPayloads.Breakthrough(player.getId(), c.realm(), c.stage()));
         }
     }
 

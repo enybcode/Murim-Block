@@ -2,6 +2,7 @@ package com.murimblock.cultivation;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.client.cultivation.StageBreakthrough;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -17,7 +18,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /** Hooks cultivation into the game: network, ticking, interruptions and commands. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CultivationEvents {
-    private static final String PROTOCOL = "2";
+    private static final String PROTOCOL = "3";
 
     private CultivationEvents() {
     }
@@ -31,6 +32,8 @@ public final class CultivationEvents {
                 (payload, context) -> ClientCultivation.pose(payload.entityId(), payload.meditating(), payload.qi()));
         registrar.playToClient(CultivationPayloads.MeditatorQi.TYPE, CultivationPayloads.MeditatorQi.STREAM_CODEC,
                 (payload, context) -> ClientCultivation.meditatorQi(payload.entityId(), payload.qi()));
+        registrar.playToClient(CultivationPayloads.Breakthrough.TYPE, CultivationPayloads.Breakthrough.STREAM_CODEC,
+                (payload, context) -> StageBreakthrough.start(payload.entityId(), payload.realm(), payload.stage()));
         registrar.playToServer(CultivationPayloads.ToggleMeditation.TYPE, CultivationPayloads.ToggleMeditation.STREAM_CODEC,
                 (payload, context) -> Meditation.toggle((ServerPlayer) context.player()));
         registrar.playToServer(CultivationPayloads.Advance.TYPE, CultivationPayloads.Advance.STREAM_CODEC,

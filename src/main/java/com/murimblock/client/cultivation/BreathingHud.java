@@ -122,7 +122,8 @@ public final class BreathingHud {
     private static boolean playing() {
         Minecraft mc = Minecraft.getInstance();
         Cultivation.Snapshot c = ClientCultivation.get();
-        return c.meditating() && started && mc.screen == null && mc.player != null && !full(c);
+        return c.meditating() && started && mc.screen == null && mc.player != null && !full(c)
+                && !StageBreakthrough.playingOwn();
     }
 
     private static void press() {
@@ -212,7 +213,8 @@ public final class BreathingHud {
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         Cultivation.Snapshot c = ClientCultivation.get();
-        if (!c.meditating() || mc.options.hideGui || mc.player == null) {
+        // A breakthrough takes the screen: the lane steps aside until it ends.
+        if (!c.meditating() || mc.options.hideGui || mc.player == null || StageBreakthrough.playingOwn()) {
             return;
         }
         Font font = mc.font;
@@ -553,7 +555,7 @@ public final class BreathingHud {
             }
             meditationTicks++;
             float t = seconds(0);
-            if (!started || full(c)) {
+            if (!started || full(c) || StageBreakthrough.playingOwn()) {
                 TRACK.reset(t);
                 WAVES.clear();
                 SPARKS.clear();

@@ -92,7 +92,8 @@ public final class QiAura {
         public static void registerProviders(RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(MurimParticles.QI.get(), sprites -> new QiParticle.Provider(sprites, false));
             event.registerSpriteSet(MurimParticles.QI_RING.get(), sprites -> new QiParticle.Provider(sprites, true));
-            event.registerSpriteSet(MurimParticles.QI_SPARK.get(), QiSparkParticle.Provider::new);
+            event.registerSpriteSet(MurimParticles.QI_SPARK.get(), sprites -> new QiSparkParticle.Provider(sprites, false));
+            event.registerSpriteSet(MurimParticles.QI_FALL.get(), sprites -> new QiSparkParticle.Provider(sprites, true));
         }
 
         @SubscribeEvent
