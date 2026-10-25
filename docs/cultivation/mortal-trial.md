@@ -18,8 +18,8 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
   5 s of calm before the first, 4 s between waves. Zombies climb out of the grave mounds farthest from the player,
   with earth thrown up; they hunt the player (follow range 64). Trial zombies have 14 health, drop nothing, give
   no experience, never burn or turn into drowned, stay in Peaceful (where they do no damage) and are never saved.
-- Counter: a System window at the top center, "MORTAL TRIAL", wave n / 5, a bar, zombies left (or the next wave's
-  countdown). Payload `trial_status`.
+- Counter: one slim strip at the top center (made smaller at Enzo's request): "WAVE n/5" and "x/y left" (or the next
+  wave's countdown), progress along its bottom edge. Payload `trial_status`.
 - Win: back to the body, realm + 1 at stage 1 with an empty gauge and the stage Max Qi bonus, the spiral
   breakthrough and its window, and "[!] X broke through to Third-Rate Warrior!" to the whole server.
 - Loss: anything that ends the trip before the last zombie falls (a lethal blow, nobody dies there; falling off;

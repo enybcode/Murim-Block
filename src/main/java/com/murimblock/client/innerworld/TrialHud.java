@@ -27,7 +27,8 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  */
 public final class TrialHud {
     private static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "trial");
-    private static final int WIDTH = 120;
+    private static final int GAP = 10;
+    private static final int PAD = 5;
     private static final float FOG_NEAR = 6;
     private static final float FOG_FAR = 56;
     private static final float[] FOG_COLOR = {0.07f, 0.08f, 0.12f};
@@ -58,14 +59,17 @@ public final class TrialHud {
         Component sub = calm
                 ? Component.translatable("hud.murimblock.trial.next", status.calm())
                 : Component.translatable("hud.murimblock.trial.left", status.left(), status.total());
-        // Top center: the top right belongs to toasts.
-        Rect r = new Rect((g.guiWidth() - WIDTH) / 2, 14, WIDTH, 44);
-        SystemTheme.window(g, r);
-        SystemTheme.titleTag(g, font, Component.translatable("hud.murimblock.trial.title"), r.x() + WIDTH / 2, r.y());
-        SystemTheme.glowText(g, font, main, r.x() + (WIDTH - font.width(main)) / 2, r.y() + 11, SystemTheme.TEXT);
+        // One slim strip at the top center (the top right belongs to toasts): wave on the left, what is left on the
+        // right, progress along the bottom edge.
+        int w = PAD + font.width(main) + GAP + font.width(sub) + PAD;
+        Rect r = new Rect((g.guiWidth() - w) / 2, 6, w, 15);
+        g.fill(r.x(), r.y(), r.right(), r.bottom(), SystemTheme.PANEL);
+        g.renderOutline(r.x(), r.y(), r.width(), r.height(), SystemTheme.CYAN_SOFT);
+        g.drawString(font, main, r.x() + PAD, r.y() + 4, SystemTheme.TEXT, false);
+        g.drawString(font, sub, r.right() - PAD - font.width(sub), r.y() + 4, SystemTheme.TEXT_MUTED, false);
         float done = calm || status.total() == 0 ? 1 : 1 - (float) status.left() / status.total();
-        SystemTheme.bar(g, r.x() + 10, r.y() + 23, WIDTH - 20, 4, done, calm ? SystemTheme.CYAN_SOFT : SystemTheme.CYAN);
-        g.drawString(font, sub, r.x() + (WIDTH - font.width(sub)) / 2, r.y() + 31, SystemTheme.TEXT_MUTED, false);
+        g.fill(r.x() + 1, r.bottom() - 2, r.x() + 1 + Math.round((r.width() - 2) * done), r.bottom() - 1,
+                calm ? SystemTheme.CYAN_SOFT : SystemTheme.CYAN);
     }
 
     @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
