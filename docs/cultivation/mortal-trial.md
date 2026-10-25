@@ -14,8 +14,15 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
 - Ready: Body Tempering stage 9, full gauge, the realm's meridians open (4), meditating. Then System (K) >
   Cultivation > **BEGIN TRIAL** (the card reads "The Rising Dead"). The System closes, the body stays seated as for
   the inner world, the spirit arrives south of the arena facing north.
+- Entry (Enzo, 25 Oct: dive no. 1 of four proposals, plus getting up and a title; `client/innerworld/TrialEntry`):
+  - Dive, 3 s, still seated: Qi specks are drawn in from all around to the dantian (seen by those near, payload
+    `trial_dive`); for the player the screen darkens from the edges to black over a slowing Warden heartbeat, the
+    breathing lane hidden. Standing up or being struck cancels it, at no cost.
+  - Arrival: a low bell, the screen opens on the graveyard; seen from behind, the player lies face down and gets up
+    (PAL animation `player_animations/trial_rise.json`, 1.8 s, earth thrown up), then back to first person and the
+    title **SURVIVE DEATH** (dark red) with "Mortal Trial · five waves of the dead". The first wave waits 7 s.
 - Waves: 3, 5, 7, 9, then 9 and the **Grave Warden** (1.6× size, 50 health, 6 damage) out of the mausoleum.
-  5 s of calm before the first, 4 s between waves. Zombies climb out of the grave mounds farthest from the player,
+  7 s of calm before the first (the arrival plays meanwhile), 4 s between waves. Zombies climb out of the grave mounds farthest from the player,
   with earth thrown up; they hunt the player (follow range 64). Trial zombies have 14 health, drop nothing, give
   no experience, never burn or turn into drowned, stay in Peaceful (where they do no damage) and are never saved.
 - Counter: one slim strip at the top center (made smaller at Enzo's request): "WAVE n/5" and "x/y left" (or the next
@@ -41,6 +48,6 @@ world's guards apply: nothing breaks, nothing is placed.
 ## Check
 
 `gradlew runInnerWorldTour` ends with the trial: the BEGIN TRIAL page, arrival, wave 1 out of the graves, a lost
-trial (−30 %, zombies gone), then five cleared waves and Third-Rate Warrior. Shots `murim_trial_page`,
+trial (−30 %, zombies gone), then five cleared waves and Third-Rate Warrior. Shots `murim_trial_page`, `murim_trial_dive`, `murim_trial_rise_1`, `_rise_2`, `murim_trial_title`,
 `murim_trial_arrival`, `murim_trial_island`, `murim_trial_won`. Unit tests: `CultivationTest` (realm breakthrough,
 scatter). Not yet played by hand with real fights.

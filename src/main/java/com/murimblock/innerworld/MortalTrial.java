@@ -36,7 +36,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The trial out of the mortal realm (Enzo, 25 Oct 2026): from Body Tempering stage 9 with a full gauge and the
- * meridians the realm asks for, BEGIN TRIAL sends the spirit to a graveyard island at night (the body stays seated).
+ * meridians the realm asks for, BEGIN TRIAL starts a 3 s dive into the dantian (moving or being struck cancels it),
+ * then sends the spirit to a graveyard island at night (the body stays seated), where it gets up and the title says
+ * SURVIVE DEATH.
  * Five waves of zombies climb out of the graves; the last brings the Grave Warden out of the mausoleum. Clearing
  * them all breaks through to Third-Rate Warrior. Being struck down, falling off, leaving, logging out or a blow on
  * the body loses the trial and scatters 30 % of the gathered stage Qi. Runs live in memory only.
@@ -45,7 +47,10 @@ public final class MortalTrial {
     /** Zombies per wave; the last one adds the Grave Warden. */
     public static final int[] WAVES = {3, 5, 7, 9, 9};
     public static final double LOSS = 0.30;
-    private static final int FIRST_CALM = 100;
+    /** The dive into the dantian before the spirit leaves, in ticks. */
+    public static final int DIVE_TICKS = 60;
+    /** Calm before the first wave: the arrival, getting up and the title come first. */
+    private static final int FIRST_CALM = 140;
     private static final int CALM = 80;
     private static final int RETARGET = 20;
 
@@ -59,6 +64,24 @@ public final class MortalTrial {
     }
 
     private static final Map<UUID, Run> RUNS = new HashMap<>();
+    /** Players diving into their dantian, with the ticks left. */
+    private static final Map<UUID, Integer> DIVES = new HashMap<>();
+
+    /** Server to the player and those around: the dive starts or is cancelled; to the player: they arrived. */
+    public record Dive(int entityId, int phase) implements CustomPacketPayload {
+        public static final int START = 0;
+        public static final int CANCEL = 1;
+        public static final int ARRIVE = 2;
+        public static final Type<Dive> TYPE =
+                new Type<>(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "trial_dive"));
+        public static final StreamCodec<ByteBuf, Dive> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, Dive::entityId, ByteBufCodecs.VAR_INT, Dive::phase, Dive::new);
+
+        @Override
+        public Type<Dive> type() {
+            return TYPE;
+        }
+    }
 
     /** Server to the player: the wave counter (wave 0-based, -1 before the first; calm in seconds; inactive ends it). */
     public record Status(boolean active, int wave, int waves, int left, int total, int calm) implements CustomPacketPayload {
@@ -97,6 +120,10 @@ public final class MortalTrial {
                 && meridians >= CultivationRules.meridiansForTrial(realm);
     }
 
+    public static boolean diving(ServerPlayer player) {
+        return DIVES.containsKey(player.getUUID());
+    }
+
     public static boolean active(ServerPlayer player) {
         return RUNS.containsKey(player.getUUID());
     }
@@ -104,7 +131,8 @@ public final class MortalTrial {
     public static void begin(ServerPlayer player) {
         Cultivation c = Meditation.of(player);
         ServerLevel trial = player.server.getLevel(InnerWorld.TRIAL_LEVEL);
-        if (active(player) || InnerWorld.state(player).inside() || InnerWorld.isInnerWorld(player.level())) {
+        if (active(player) || DIVES.containsKey(player.getUUID()) || InnerWorld.state(player).inside()
+                || InnerWorld.isInnerWorld(player.level())) {
             return;
         }
         if (!ready(c.realm(), c.stage(), c.stageQi(), c.meridians())) {
@@ -119,13 +147,39 @@ public final class MortalTrial {
             InnerWorld.system(player, "message.murimblock.inner_world.unavailable", ChatFormatting.RED);
             return;
         }
+        DIVES.put(player.getUUID(), DIVE_TICKS);
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new Dive(player.getId(), Dive.START));
+    }
+
+    /** Every tick, anywhere: counts the dive down; standing up or being struck (which ends meditation) cancels it. */
+    static void tickDive(ServerPlayer player) {
+        Integer left = DIVES.get(player.getUUID());
+        if (left == null) {
+            return;
+        }
+        if (!Meditation.of(player).meditating()) {
+            DIVES.remove(player.getUUID());
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new Dive(player.getId(), Dive.CANCEL));
+        } else if (left > 1) {
+            DIVES.put(player.getUUID(), left - 1);
+        } else {
+            DIVES.remove(player.getUUID());
+            enter(player);
+        }
+    }
+
+    private static void enter(ServerPlayer player) {
+        ServerLevel trial = player.server.getLevel(InnerWorld.TRIAL_LEVEL);
+        if (trial == null) {
+            return;
+        }
         BlockPos center = InnerIslands.get(player.server).prepareTrial(player.getUUID(), trial);
         trial.getEntitiesOfClass(TrialZombie.class, new AABB(center).inflate(InnerIsland.CLEAR_RADIUS))
                 .forEach(Entity::discard);
         InnerWorld.sendSpirit(player, trial, center);
         RUNS.put(player.getUUID(), new Run());
+        PacketDistributor.sendToPlayer(player, new Dive(player.getId(), Dive.ARRIVE));
         player.displayClientMessage(Component.translatable("message.murimblock.trial.begin").withStyle(ChatFormatting.DARK_AQUA), false);
-        trial.playSound(null, player.blockPosition(), SoundEvents.BELL_RESONATE, SoundSource.HOSTILE, 1, 0.6f);
         status(player, RUNS.get(player.getUUID()));
     }
 
@@ -235,6 +289,7 @@ public final class MortalTrial {
 
     /** Leaving in any way but victory (called as the spirit leaves, or on logout): the trial is lost. */
     static void lose(ServerPlayer player) {
+        DIVES.remove(player.getUUID());
         Run run = RUNS.remove(player.getUUID());
         if (run == null) {
             return;
@@ -257,5 +312,6 @@ public final class MortalTrial {
     /** A stopped server forgets its runs (an integrated server can restart in the same game). */
     static void clear() {
         RUNS.clear();
+        DIVES.clear();
     }
 }

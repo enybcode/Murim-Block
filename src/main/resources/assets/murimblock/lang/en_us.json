@@ -320,6 +320,8 @@
   "message.murimblock.trial.wave_cleared": "[!] Wave %s / %s cleared. Catch your breath.",
   "message.murimblock.trial.won": "[!] %s broke through to %s!",
   "message.murimblock.trial.lost": "[!] You lost the trial. %s %% of your gathered Qi scatters.",
+  "title.murimblock.trial": "SURVIVE DEATH",
+  "title.murimblock.trial.subtitle": "Mortal Trial · five waves of the dead",
   "hud.murimblock.trial.wave": "WAVE %s/%s",
   "hud.murimblock.trial.left": "%s/%s left",
   "hud.murimblock.trial.next": "next in %ss",

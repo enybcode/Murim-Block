@@ -9,6 +9,7 @@ import com.murimblock.client.cultivation.BreathTrack.Kind;
 import com.murimblock.client.cultivation.BreathTrack.Word;
 import com.murimblock.client.gui.SystemLayout.Rect;
 import com.murimblock.client.gui.SystemTheme;
+import com.murimblock.client.innerworld.TrialEntry;
 import com.murimblock.cultivation.BreathResult;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationPayloads;
@@ -123,7 +124,7 @@ public final class BreathingHud {
         Minecraft mc = Minecraft.getInstance();
         Cultivation.Snapshot c = ClientCultivation.get();
         return c.meditating() && started && mc.screen == null && mc.player != null && !full(c)
-                && !StageBreakthrough.playingOwn();
+                && !StageBreakthrough.playingOwn() || TrialEntry.ownDive() >= 0;
     }
 
     private static void press() {
@@ -213,8 +214,8 @@ public final class BreathingHud {
     private static void render(GuiGraphics g, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         Cultivation.Snapshot c = ClientCultivation.get();
-        // A breakthrough takes the screen: the lane steps aside until it ends.
-        if (!c.meditating() || mc.options.hideGui || mc.player == null || StageBreakthrough.playingOwn()) {
+        // A breakthrough or the trial's dive takes the screen: the lane steps aside until it ends.
+        if (!c.meditating() || mc.options.hideGui || mc.player == null || StageBreakthrough.playingOwn() || TrialEntry.ownDive() >= 0) {
             return;
         }
         Font font = mc.font;
@@ -555,7 +556,7 @@ public final class BreathingHud {
             }
             meditationTicks++;
             float t = seconds(0);
-            if (!started || full(c) || StageBreakthrough.playingOwn()) {
+            if (!started || full(c) || StageBreakthrough.playingOwn() || TrialEntry.ownDive() >= 0) {
                 TRACK.reset(t);
                 WAVES.clear();
                 SPARKS.clear();

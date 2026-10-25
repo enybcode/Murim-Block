@@ -1,6 +1,7 @@
 package com.murimblock.innerworld;
 
 import com.murimblock.Murimblock;
+import com.murimblock.client.innerworld.TrialEntry;
 import com.murimblock.client.innerworld.TrialHud;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
@@ -32,7 +33,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class InnerWorldEvents {
-    private static final String PROTOCOL = "2";
+    private static final String PROTOCOL = "3";
 
     private InnerWorldEvents() {
     }
@@ -58,10 +59,15 @@ public final class InnerWorldEvents {
                 (payload, context) -> MortalTrial.begin((ServerPlayer) context.player()));
         registrar.playToClient(MortalTrial.Status.TYPE, MortalTrial.Status.STREAM_CODEC,
                 (payload, context) -> TrialHud.receive(payload));
+        registrar.playToClient(MortalTrial.Dive.TYPE, MortalTrial.Dive.STREAM_CODEC,
+                (payload, context) -> TrialEntry.receive(payload.entityId(), payload.phase()));
     }
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            MortalTrial.tickDive(player);
+        }
         if (event.getEntity() instanceof ServerPlayer player && InnerWorld.isInnerWorld(player.level())) {
             InnerWorld.tick(player);
             if (InnerWorld.isTrial(player.level())) {

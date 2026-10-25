@@ -2,6 +2,7 @@ package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.cultivation.StageBreakthrough;
+import com.murimblock.client.innerworld.TrialEntry;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationRules;
 import com.murimblock.cultivation.Meditation;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemScreen;
@@ -74,6 +76,8 @@ public final class InnerWorldTour {
     private static volatile boolean trialDone;
     /** Pending breakthrough shots: effect age in ticks, file name. */
     private static final List<Map.Entry<Integer, String>> SHOTS = new ArrayList<>();
+    /** Pending shots taken as soon as their condition holds. */
+    private static final List<Map.Entry<BooleanSupplier, String>> TIMED = new ArrayList<>();
 
     private InnerWorldTour() {
     }
@@ -106,6 +110,9 @@ public final class InnerWorldTour {
         int age = StageBreakthrough.age(mc.player.getId());
         if (!SHOTS.isEmpty() && age >= SHOTS.get(0).getKey()) {
             shoot(mc, SHOTS.remove(0).getValue());
+        }
+        if (!TIMED.isEmpty() && TIMED.get(0).getKey().getAsBoolean()) {
+            shoot(mc, TIMED.remove(0).getValue());
         }
         if (++frames < WORLD_FRAMES || (frames - WORLD_FRAMES) % STEP_FRAMES != 0) {
             return;
@@ -278,13 +285,20 @@ public final class InnerWorldTour {
             case 31 -> {
                 shoot(mc, "murim_trial_page.png");
                 mc.setScreen(null);
-                server(mc, player -> {
-                    MortalTrial.begin(player);
-                    check("trial begins on the graveyard island", InnerWorld.isTrial(player.level())
-                            && InnerWorld.state(player).inside());
-                });
+                server(mc, MortalTrial::begin);
+                TIMED.add(Map.entry(() -> TrialEntry.ownDive() >= 36, "murim_trial_dive.png"));
+                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 12, "murim_trial_rise_1.png"));
+                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 26, "murim_trial_rise_2.png"));
+                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 48, "murim_trial_title.png"));
             }
-            case 32 -> shoot(mc, "murim_trial_arrival.png");
+            case 32 -> {
+                if (!TIMED.isEmpty()) {
+                    step--; // The dive, the arrival and the title play first.
+                    return;
+                }
+                server(mc, player -> check("after the dive, the trial begins on the graveyard island",
+                        InnerWorld.isTrial(player.level()) && InnerWorld.state(player).inside()));
+            }
             case 33 -> {
                 if (trialZombies(mc) == 0) {
                     step--; // The first wave comes after a few seconds of calm.
@@ -320,7 +334,7 @@ public final class InnerWorldTour {
                     player.serverLevel().getEntitiesOfClass(TrialZombie.class, player.getBoundingBox().inflate(80))
                             .forEach(z -> z.kill());
                 }
-                trialDone = !InnerWorld.state(player).inside();
+                trialDone = !InnerWorld.state(player).inside() && !MortalTrial.diving(player);
             });
             case 39 -> {
                 if (!trialDone) {
