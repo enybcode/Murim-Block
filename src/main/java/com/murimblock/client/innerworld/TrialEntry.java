@@ -49,12 +49,15 @@ public final class TrialEntry {
     /** The last ticks of the dive are fully black. */
     private static final int BLACK_FROM = MortalTrial.DIVE_TICKS - 12;
     // The arrival, in ticks.
-    private static final int FADE_IN_START = 6;
-    private static final int FADE_IN_END = 26;
-    private static final int RISE_START = 4;
-    private static final int RISE_END = 44;
-    private static final int TITLE = 44;
-    private static final int ARRIVAL_END = 50;
+    // The screen opens on the player still lying; the getting up starts once the graveyard is in view.
+    private static final int FADE_IN_START = 4;
+    private static final int FADE_IN_END = 20;
+    private static final int LIE_DOWN = 2;
+    /** The push-up begins (the animation holds its lying pose 1.05 s): earth is thrown up. */
+    private static final int RISE_START = 23;
+    private static final int RISE_END = 52;
+    private static final int TITLE = 52;
+    private static final int ARRIVAL_END = 60;
     private static final double DANTIAN = 0.55;
 
     /** Players diving (ours included), by entity id, with the ticks since the dive began. */
@@ -152,8 +155,8 @@ public final class TrialEntry {
             sound(SoundEvents.BELL_BLOCK, 0.5f, 1);
             mc.level.addParticle(ParticleTypes.SOUL, mc.player.getX(), mc.player.getY() + 0.3, mc.player.getZ(), 0, 0.05, 0);
         }
-        if (arrival == RISE_START) {
-            // Seen from behind while getting up, then back to the player's own eyes.
+        if (arrival == LIE_DOWN) {
+            // Seen from behind, lying face down (the animation's first pose, held), then back to the player's eyes.
             if (mc.options.getCameraType() == CameraType.FIRST_PERSON) {
                 cameraBefore = CameraType.FIRST_PERSON;
                 mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
@@ -162,6 +165,8 @@ public final class TrialEntry {
                     instanceof PlayerAnimationController controller) {
                 controller.triggerAnimation(RISE);
             }
+        }
+        if (arrival == RISE_START) {
             RandomSource random = mc.player.getRandom();
             for (int i = 0; i < 30; i++) {
                 mc.level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.COARSE_DIRT.defaultBlockState()),
