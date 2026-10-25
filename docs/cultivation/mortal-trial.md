@@ -19,7 +19,7 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
     `trial_dive`); for the player the screen darkens from the edges to black over a slowing Warden heartbeat, the
     breathing lane hidden. Standing up or being struck cancels it, at no cost.
   - Arrival: a low bell, the screen opens on the graveyard; seen from behind, the player lies face down and gets up
-    (PAL animation `player_animations/trial_rise.json`, 3.2 s, after the physiotherapists' way up from the floor: lying face down, onto hands and knees, one foot forward, upright on one knee, driving up through the front leg; earth thrown up), then back to first person and the
+    (seen three quarters from the side: the body turns 55° from the camera; PAL animation `player_animations/trial_rise.json`, 3.2 s, after the physiotherapists' way up from the floor: lying face down, onto hands and knees, one foot forward, upright on one knee, driving up through the front leg; earth thrown up), then back to first person and the
     title **SURVIVE DEATH** (dark red) with "Mortal Trial · five waves of the dead". The first wave waits 7 s.
 - Waves: 3, 5, 7, 9, then 9 and the **Grave Warden** (1.6× size, 50 health, 6 damage) out of the mausoleum.
   7 s of calm before the first (the arrival plays meanwhile), 4 s between waves. Zombies climb out of the grave mounds farthest from the player,

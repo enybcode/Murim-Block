@@ -59,6 +59,8 @@ public final class TrialEntry {
     private static final int TITLE = 66;
     private static final int ARRIVAL_END = 74;
     private static final double DANTIAN = 0.55;
+    /** Degrees the body turns from the camera while getting up, as in {@code runRiseFilm}. */
+    private static final float THREE_QUARTERS = 55;
 
     /** Players diving (ours included), by entity id, with the ticks since the dive began. */
     private static final Map<Integer, Integer> DIVING = new HashMap<>();
@@ -173,6 +175,15 @@ public final class TrialEntry {
                         mc.player.getX() + (random.nextDouble() - 0.5) * 1.6, mc.player.getY() + 0.1,
                         mc.player.getZ() + (random.nextDouble() - 0.5) * 1.6, 0, 0.1, 0);
             }
+        }
+        // While getting up, the body is turned three quarters from the camera so both legs show; it faces the view
+        // again at the end.
+        if (arrival >= LIE_DOWN && arrival <= RISE_END) {
+            float body = arrival < RISE_END ? mc.player.getYRot() - THREE_QUARTERS : mc.player.getYRot();
+            mc.player.setYBodyRot(body);
+            mc.player.yBodyRotO = body;
+            mc.player.setYHeadRot(body);
+            mc.player.yHeadRotO = body;
         }
         if (arrival == RISE_END && cameraBefore != null) {
             if (mc.options.getCameraType() == CameraType.THIRD_PERSON_BACK) {
