@@ -6,7 +6,11 @@ import com.murimblock.cultivation.Meditation;
 import com.murimblock.innerworld.InnerIsland;
 import com.murimblock.innerworld.InnerIslands;
 import com.murimblock.innerworld.InnerWorld;
+import com.murimblock.client.innerworld.OldMasterScreen;
 import com.murimblock.innerworld.MeditatingBody;
+import com.murimblock.innerworld.OldMaster;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import com.murimblock.client.gui.SystemPage;
@@ -24,6 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.Difficulty;
@@ -37,6 +42,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * Dev tool, off unless {@code murimblock.innerWorldTour} is set (run {@code gradlew runInnerWorldTour}): checks the
@@ -80,7 +86,7 @@ public final class InnerWorldTour {
             }
             return;
         }
-        if (mc.player == null || mc.screen != null && !(mc.screen instanceof SystemScreen)) {
+        if (mc.player == null || mc.screen != null && !(mc.screen instanceof SystemScreen || mc.screen instanceof OldMasterScreen)) {
             return;
         }
         if (++frames < WORLD_FRAMES || (frames - WORLD_FRAMES) % STEP_FRAMES != 0) {
@@ -151,14 +157,48 @@ public final class InnerWorldTour {
             case 10 -> view(mc, 0, 24, 0, 180, 90);
             case 11 -> shoot(mc, "murim_inner_arena.png");
             case 12 -> server(mc, player -> {
+                BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
+                List<OldMaster> masters = player.serverLevel().getEntitiesOfClass(OldMaster.class, new AABB(center).inflate(InnerIsland.RADIUS));
+                check("old master seated in the NPC zone", masters.size() == 1
+                        && Math.abs(masters.get(0).getX() - center.getX()) < 1
+                        && Math.abs(masters.get(0).getZ() - center.getZ() - InnerIsland.NPC_Z - InnerIsland.NPC_SIZE / 2.0) < 1);
+                // Standing on the path south of him, a little to the side: he turns his head to look.
+                player.getAbilities().flying = true;
+                player.onUpdateAbilities();
+                player.connection.teleport(center.getX() + 1.5, InnerIsland.SURFACE_Y + 1, center.getZ() - 19.5, 170, 8);
+            });
+            case 13 -> {
+                mc.options.hideGui = true;
+                return;
+            }
+            case 14 -> {
+                shoot(mc, "murim_inner_master.png");
+                mc.options.hideGui = false;
+                master(mc).ifPresent(master -> mc.setScreen(new OldMasterScreen(master)));
+            }
+            case 15 -> mc.screen.keyPressed(GLFW.GLFW_KEY_SPACE, 0, 0);
+            case 16 -> {
+                shoot(mc, "murim_inner_master_greet.png");
+                mc.screen.keyPressed(GLFW.GLFW_KEY_1, 0, 0);
+            }
+            case 17 -> mc.screen.keyPressed(GLFW.GLFW_KEY_SPACE, 0, 0);
+            case 18 -> {
+                check("old master answers", mc.screen instanceof OldMasterScreen);
+                shoot(mc, "murim_inner_master_who.png");
+            }
+            case 19 -> mc.setScreen(null);
+            case 20 -> server(mc, player -> {
                 player.getAbilities().flying = false;
                 player.onUpdateAbilities();
                 BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
                 player.teleportTo(center.getX() + 0.5, InnerIsland.SURFACE_Y - 50, center.getZ() + 0.5);
             });
-            case 13 -> server(mc, player -> {
+            case 21 -> server(mc, player -> {
                 check("fall returns to body", !InnerWorld.state(player).inside() && !InnerWorld.isInnerWorld(player.level())
                         && player.blockPosition().distManhattan(sat) <= 2);
+                BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
+                check("old master leaves with the player", player.server.getLevel(InnerWorld.LEVEL)
+                        .getEntitiesOfClass(OldMaster.class, new AABB(center).inflate(InnerIsland.RADIUS)).isEmpty());
                 // The body seen from the front: seat one, then step back to look at it.
                 Meditation.start(player);
                 MeditatingBody body = MeditatingBody.seat(player);
@@ -170,15 +210,15 @@ public final class InnerWorldTour {
                 Meditation.stop(player, null);
                 player.connection.teleport(sat.getX() + 0.5, sat.getY(), sat.getZ() - 2.5, 0, 25);
             });
-            case 14 -> {
+            case 22 -> {
                 mc.options.hideGui = true;
                 return;
             }
-            case 15 -> {
+            case 23 -> {
                 shoot(mc, "murim_inner_body.png");
                 mc.options.hideGui = false;
             }
-            case 16 -> server(mc, player -> {
+            case 24 -> server(mc, player -> {
                 UUID bodyId = InnerWorld.state(player).body();
                 if (player.serverLevel().getEntity(bodyId) instanceof MeditatingBody body) {
                     body.hurt(player.damageSources().playerAttack(player), 1);
@@ -191,6 +231,10 @@ public final class InnerWorldTour {
                 mc.stop();
             }
         }
+    }
+
+    private static Optional<OldMaster> master(Minecraft mc) {
+        return mc.level.getEntitiesOfClass(OldMaster.class, mc.player.getBoundingBox().inflate(16)).stream().findFirst();
     }
 
     /** Puts the (flying) camera at an offset from the island center, above the surface, looking this way. */

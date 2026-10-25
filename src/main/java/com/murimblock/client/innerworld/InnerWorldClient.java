@@ -3,6 +3,7 @@ package com.murimblock.client.innerworld;
 import com.murimblock.Murimblock;
 import com.murimblock.innerworld.InnerWorld;
 import com.murimblock.innerworld.InnerWorldEvents;
+import com.murimblock.innerworld.OldMaster;
 import com.murimblock.registry.MurimEntities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -11,12 +12,15 @@ import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /** Client side of the inner world: the body's renderer, the travel request, and no pick-block copies inside. */
@@ -37,6 +41,19 @@ public final class InnerWorldClient {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(MurimEntities.MEDITATING_BODY.get(), MeditatingBodyRenderer::new);
+        event.registerEntityRenderer(MurimEntities.OLD_MASTER.get(), OldMasterRenderer::new);
+    }
+
+    /** Right-clicking the Old Master opens the talk; nothing is sent to the server. */
+    @SubscribeEvent
+    public static void onInteractEntity(PlayerInteractEvent.EntityInteract event) {
+        if (event.getLevel().isClientSide() && event.getTarget() instanceof OldMaster master) {
+            if (event.getHand() == InteractionHand.MAIN_HAND) {
+                Minecraft.getInstance().setScreen(new OldMasterScreen(master));
+            }
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+        }
     }
 
     /**

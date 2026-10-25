@@ -84,6 +84,7 @@ public final class InnerWorld {
         player.teleportTo(inner, center.getX() + 0.5, InnerIsland.SURFACE_Y + 1, center.getZ() + InnerIsland.ARRIVAL_Z + 0.5,
                 180, 0);
         player.fallDistance = 0;
+        OldMaster.summon(inner, center, player);
         system(player, "message.murimblock.inner_world.enter", ChatFormatting.AQUA);
     }
 

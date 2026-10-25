@@ -9,7 +9,7 @@ at V1's inner worlds on `main` for the idea only; nothing was copied.
   technique (themes per martial art can come later).
 - Big enough for a boss fight, but not too big: 64 blocks across, a flat 32-block arena in the middle.
 - Nothing can be broken, placed or taken inside, in any game mode.
-- An 8x8 zone to the north is kept for a future NPC: floor only, nothing implemented.
+- An 8x8 zone to the north for an NPC: the Old Master sits there (Enzo, 25 Oct).
 - Unlocked after the Mortal realm: from realm 1 (Third-rate Warrior, Qi Condensation) on, so after the first trial.
 - While inside, the player's body (or an avatar) stays seated in meditation where they sat.
 
@@ -41,7 +41,7 @@ at V1's inner worlds on `main` for the idea only; nothing was copied.
   tuff rings and eight spokes, a stone-brick rim with chiseled marks; eight lantern posts just outside.
 - South: arrival circle with two lantern posts, then a red gate (mangrove pillars, deepslate-tile roof with raised
   ends, two hanging lanterns) over a stone-brick path edged with gravel. North: path to the NPC zone (polished floor,
-  lanterns at the corners, still empty).
+  lanterns at the corners), where the Old Master sits.
 - Pond to the south-east: sand and clay bed, seagrass, lily pads, reeds, mossy stones.
 - Five pines on podzol, two cherry trees with pink petals below, a full-grown bamboo grove (it no longer grows), four
   flowering azalea bushes, four mossy boulders.
@@ -68,3 +68,18 @@ visit (all islands built in version 1 are rebuilt).
 out, a Third-rate enters on their own island with the body seated, an arena block cannot be broken, no block can be
 placed, falling returns to the body, a blow on the body ends the trip. PASS/FAIL in the log, shots
 `murim_inner_arrival`, `murim_inner_page`, `murim_inner_aerial`, `murim_inner_pond`, `murim_inner_underside`, `murim_inner_arena`, `murim_inner_body` in its `screenshots/`.
+
+## Old Master (25 Oct)
+
+- `innerworld/OldMaster` (entity `murimblock:old_master`, GeckoLib): an old master seated in the lotus on a crimson
+  cushion, floating a little, breathing, beard stirring, Qi specks rising; his head follows the player. Original
+  model, texture and animation built by `scripts/old-master.cjs` (`geo/`, `animations/`, `textures/entity/`).
+- Summoned at the center of the NPC zone, facing the arena, each time the owner enters; never saved, and gone once
+  the owner is no longer on the island. Invulnerable, cannot be pushed.
+- Right-click: `client/innerworld/OldMasterScreen`, a System panel at the bottom of the screen, his words written
+  letter by letter (click or Space to finish), numbered answers (click or 1-9): who he is, this place, how to grow
+  stronger (advice from the synced cultivation: trial, full gauge, meridians, breathing), the trial, farewell.
+  Client side only. Walking 8 blocks away closes it.
+- Not yet: missions, starting the trial from him.
+- Tour checks: seated in the NPC zone, answers, leaves with the player; shots `murim_inner_master`,
+  `murim_inner_master_greet`, `murim_inner_master_who`.
