@@ -6,7 +6,8 @@ worlds, game options) stay on each PC; everything that matters is in the repo (`
 
 ## Every session
 
-- Start: `git pull --ff-only origin main-V2` before any edit (written in `CLAUDE.md`, so Claude does it).
+- Start: `git pull --ff-only origin main-V2` before any edit. A SessionStart hook in `.claude/settings.json` does it
+  for every Claude session opened in the project (both PCs, since the file is committed); `CLAUDE.md` asks for it too.
 - End: every verified change is already pushed to `origin/main-V2` (project rule). Nothing stays local.
 - If a pull is refused because both PCs committed, rebase the local commits on `origin/main-V2`, never force-push.
 

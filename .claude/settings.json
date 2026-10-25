@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "timeout": 60,
+            "statusMessage": "Pulling main-V2",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" 2>/dev/null && if [ \"$(git branch --show-current)\" = main-V2 ]; then git pull --ff-only -q origin main-V2 >/dev/null 2>&1 && echo \"Session start: main-V2 pulled, now at $(git log --oneline -1)\" || echo \"Session start: git pull of main-V2 failed (offline, local changes or diverged); pull by hand before editing.\"; fi; true"
+          }
+        ]
+      }
+    ]
+  }
+}
