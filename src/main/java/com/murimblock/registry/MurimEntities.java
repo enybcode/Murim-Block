@@ -3,6 +3,7 @@ package com.murimblock.registry;
 import com.murimblock.Murimblock;
 import com.murimblock.innerworld.MeditatingBody;
 import com.murimblock.innerworld.OldMaster;
+import com.murimblock.innerworld.TrialZombie;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +27,10 @@ public final class MurimEntities {
             () -> EntityType.Builder.<OldMaster>of(OldMaster::new, MobCategory.MISC)
                     .sized(0.8f, 2.4f).fireImmune().clientTrackingRange(10).build("old_master"));
 
+    public static final Supplier<EntityType<TrialZombie>> TRIAL_ZOMBIE = ENTITIES.register("trial_zombie",
+            () -> EntityType.Builder.<TrialZombie>of(TrialZombie::new, MobCategory.MONSTER)
+                    .sized(0.6f, 1.95f).eyeHeight(1.74f).clientTrackingRange(8).build("trial_zombie"));
+
     private MurimEntities() {
     }
 
@@ -38,6 +43,7 @@ public final class MurimEntities {
         public static void attributes(EntityAttributeCreationEvent event) {
             event.put(MEDITATING_BODY.get(), LivingEntity.createLivingAttributes().build());
             event.put(OLD_MASTER.get(), OldMaster.attributes().build());
+            event.put(TRIAL_ZOMBIE.get(), TrialZombie.attributes().build());
         }
     }
 }

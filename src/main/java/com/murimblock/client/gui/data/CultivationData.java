@@ -3,6 +3,7 @@ package com.murimblock.client.gui.data;
 import com.murimblock.client.cultivation.ClientCultivation;
 import com.murimblock.client.innerworld.InnerWorldClient;
 import com.murimblock.innerworld.InnerWorld;
+import com.murimblock.innerworld.MortalTrial;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationPayloads;
 import com.murimblock.cultivation.CultivationRealms;
@@ -164,6 +165,15 @@ public final class CultivationData {
 
     public static void travel() {
         InnerWorldClient.travel();
+    }
+
+    /** The mortal trial: ready, meditating, and not already away from the body. */
+    public static boolean canBeginTrial() {
+        return now().meditating() && !inInnerWorld() && MortalTrial.ready(now().realm(), now().stage(), now().stageQi(), now().meridians());
+    }
+
+    public static void beginTrial() {
+        PacketDistributor.sendToServer(new MortalTrial.Begin());
     }
 
     public static void toggleMeditation() {

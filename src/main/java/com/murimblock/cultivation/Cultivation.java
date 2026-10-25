@@ -113,6 +113,24 @@ public final class Cultivation {
         return changed();
     }
 
+    /** A won trial: the next realm, stage 1, an empty gauge, and the stage's Max Qi bonus. */
+    public boolean breakRealm() {
+        if (realm >= CultivationRealms.LADDER.size() - 1) {
+            return false;
+        }
+        realm++;
+        stage = 1;
+        stageQi = 0;
+        maxQi = CultivationRules.maxQiAfterStage(maxQi);
+        return changed();
+    }
+
+    /** A lost trial: this share of the gathered stage Qi scatters, so the gauge is no longer full. */
+    public void scatter(double fraction) {
+        stageQi = Math.max(0, stageQi * (1 - fraction));
+        changed();
+    }
+
     /** Opens the next meridian if the realm allows it; returns whether it did. */
     public boolean openMeridian() {
         if (meridians >= CultivationRules.meridianCap(realm)) {

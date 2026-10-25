@@ -38,12 +38,12 @@ public final class InnerIsland {
     public static final int NPC_SIZE = 8;
     /** Half-size of the box cleared before a rebuild, floating islets included. */
     static final int CLEAR_RADIUS = 52;
-    private static final int CLEAR_BELOW = 40;
-    private static final int CLEAR_ABOVE = 30;
+    static final int CLEAR_BELOW = 40;
+    static final int CLEAR_ABOVE = 30;
     private static final int FLAGS = Block.UPDATE_CLIENTS;
 
     private static final double TAIJI_RADIUS = 6.6;
-    private static final int GATE_Z = 20;
+    static final int GATE_Z = 20;
     private static final int POND_X = 20;
     private static final int POND_Z = 12;
     private static final int[][] PINES = {{-22, -20, 9}, {-26, -6, 8}, {27, -9, 10}, {-12, 27, 7}, {-28, 8, 7}};
@@ -103,7 +103,7 @@ public final class InnerIsland {
     }
 
     /** A stable pseudo-random number in [0, 1) for a spot, different for each salt. */
-    private static double hash(int x, int z, int salt) {
+    static double hash(int x, int z, int salt) {
         long h = x * 73856093L ^ z * 19349663L ^ salt * 83492791L;
         h ^= h >>> 13;
         h *= 0x5bd1e995L;
@@ -253,7 +253,7 @@ public final class InnerIsland {
     }
 
     /** Light side of a taiji of this radius at offset (x, z): two halves, two swirls, two dots. */
-    private static boolean taiji(int x, int z, double r) {
+    static boolean taiji(int x, int z, double r) {
         double half = r / 2;
         double north = Math.hypot(x, z + half);
         double south = Math.hypot(x, z - half);

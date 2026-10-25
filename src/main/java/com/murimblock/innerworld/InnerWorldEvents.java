@@ -1,6 +1,7 @@
 package com.murimblock.innerworld;
 
 import com.murimblock.Murimblock;
+import com.murimblock.client.innerworld.TrialHud;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,12 +17,14 @@ import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /**
  * Hooks the inner world into the game: the travel message, the checks on players inside, and the rule that nothing in
@@ -29,7 +32,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class InnerWorldEvents {
-    private static final String PROTOCOL = "1";
+    private static final String PROTOCOL = "2";
 
     private InnerWorldEvents() {
     }
@@ -48,15 +51,36 @@ public final class InnerWorldEvents {
 
     @SubscribeEvent
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar(PROTOCOL).playToServer(Travel.TYPE, Travel.STREAM_CODEC,
+        PayloadRegistrar registrar = event.registrar(PROTOCOL);
+        registrar.playToServer(Travel.TYPE, Travel.STREAM_CODEC,
                 (payload, context) -> InnerWorld.travel((ServerPlayer) context.player()));
+        registrar.playToServer(MortalTrial.Begin.TYPE, MortalTrial.Begin.STREAM_CODEC,
+                (payload, context) -> MortalTrial.begin((ServerPlayer) context.player()));
+        registrar.playToClient(MortalTrial.Status.TYPE, MortalTrial.Status.STREAM_CODEC,
+                (payload, context) -> TrialHud.receive(payload));
     }
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player && InnerWorld.isInnerWorld(player.level())) {
             InnerWorld.tick(player);
+            if (InnerWorld.isTrial(player.level())) {
+                MortalTrial.tick(player);
+            }
         }
+    }
+
+    /** Logging out in the middle of a trial loses it; the login brings the spirit back to the body. */
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            MortalTrial.lose(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        MortalTrial.clear();
     }
 
     /** Logging in inside (server stopped or player left while in): wake in the body. */
@@ -71,7 +95,8 @@ public final class InnerWorldEvents {
     /** Taken out by other means (a command, a portal): the body has nobody to wait for. */
     @SubscribeEvent
     public static void onChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && event.getTo() != InnerWorld.LEVEL) {
+        if (event.getEntity() instanceof ServerPlayer player && event.getTo() != InnerWorld.LEVEL
+                && event.getTo() != InnerWorld.TRIAL_LEVEL) {
             InnerWorld.state(player).clear();
         }
     }

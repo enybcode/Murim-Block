@@ -10,7 +10,9 @@ import com.murimblock.innerworld.InnerIslands;
 import com.murimblock.innerworld.InnerWorld;
 import com.murimblock.client.innerworld.OldMasterScreen;
 import com.murimblock.innerworld.MeditatingBody;
+import com.murimblock.innerworld.MortalTrial;
 import com.murimblock.innerworld.OldMaster;
+import com.murimblock.innerworld.TrialZombie;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -52,7 +55,8 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Dev tool, off unless {@code murimblock.innerWorldTour} is set (run {@code gradlew runInnerWorldTour}): checks the
  * inner world in a real client (locked as a mortal, entry, island, nothing breakable or placeable, falling, the seated
- * body and a blow on it, the Old Master), then a stage breakthrough; logs PASS or FAIL for each, saves screenshots
+ * body and a blow on it, the Old Master), a stage breakthrough, then the mortal trial (lost once, then won); logs
+ * PASS or FAIL for each, saves screenshots
  * to run/screenshots, then quits.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -67,6 +71,7 @@ public final class InnerWorldTour {
     private static int step;
     private static int failures;
     private static BlockPos sat;
+    private static volatile boolean trialDone;
     /** Pending breakthrough shots: effect age in ticks, file name. */
     private static final List<Map.Entry<Integer, String>> SHOTS = new ArrayList<>();
 
@@ -262,11 +267,88 @@ public final class InnerWorldTour {
                 }
                 check("camera back in first person", mc.options.getCameraType() == CameraType.FIRST_PERSON);
             }
+            case 29 -> server(mc, player -> {
+                // The mortal trial: Body Tempering 9, full gauge, 4 meridians, meditating.
+                Cultivation c = Meditation.of(player);
+                c.set(0, 9, CultivationRules.gauge(0, 9), c.maxQi(), c.maxQi(), 4);
+                Meditation.start(player);
+                Meditation.sync(player);
+            });
+            case 30 -> mc.setScreen(new SystemScreen(SystemPage.CULTIVATION, new CultivationPage(false)));
+            case 31 -> {
+                shoot(mc, "murim_trial_page.png");
+                mc.setScreen(null);
+                server(mc, player -> {
+                    MortalTrial.begin(player);
+                    check("trial begins on the graveyard island", InnerWorld.isTrial(player.level())
+                            && InnerWorld.state(player).inside());
+                });
+            }
+            case 32 -> shoot(mc, "murim_trial_arrival.png");
+            case 33 -> {
+                if (trialZombies(mc) == 0) {
+                    step--; // The first wave comes after a few seconds of calm.
+                    return;
+                }
+                server(mc, player -> {
+                    check("wave 1 climbs out of the graves", countZombies(player) == MortalTrial.WAVES[0]);
+                    BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
+                    player.getAbilities().flying = true;
+                    player.onUpdateAbilities();
+                    player.connection.teleport(center.getX() + 0.5, InnerIsland.SURFACE_Y + 16, center.getZ() + 40.5, 180, 28);
+                });
+            }
+            case 34 -> shoot(mc, "murim_trial_island.png");
+            case 35 -> server(mc, player -> {
+                InnerWorld.leave(player, "message.murimblock.inner_world.leave");
+                Cultivation c = Meditation.of(player);
+                check("leaving loses the trial and scatters 30 % of the gauge", !InnerWorld.state(player).inside()
+                        && c.realm() == 0 && Math.abs(c.stageQi() - CultivationRules.gauge(0, 9) * 0.7) < 1e-6);
+                player.getAbilities().flying = false;
+                player.onUpdateAbilities();
+                c.set(0, 9, CultivationRules.gauge(0, 9), c.maxQi(), c.maxQi(), 4);
+                Meditation.sync(player);
+            });
+            case 36 -> server(mc, player -> {
+                // Back on the platform for a tick: now on the ground, it can sit down again.
+                check("the zombies of a lost trial are gone", countZombies(player) == 0);
+                Meditation.start(player);
+            });
+            case 37 -> server(mc, MortalTrial::begin);
+            case 38 -> server(mc, player -> {
+                if (InnerWorld.isTrial(player.level())) {
+                    player.serverLevel().getEntitiesOfClass(TrialZombie.class, player.getBoundingBox().inflate(80))
+                            .forEach(z -> z.kill());
+                }
+                trialDone = !InnerWorld.state(player).inside();
+            });
+            case 39 -> {
+                if (!trialDone) {
+                    step -= 2; // Clear the next wave.
+                    return;
+                }
+                server(mc, player -> {
+                    Cultivation c = Meditation.of(player);
+                    check("five waves cleared: Third-Rate Warrior", c.realm() == 1 && c.stage() == 1 && c.stageQi() == 0);
+                });
+            }
+            case 40 -> shoot(mc, "murim_trial_won.png");
             default -> {
                 Murimblock.LOGGER.info("Inner world tour: done, {} failure(s)", failures);
                 mc.stop();
             }
         }
+    }
+
+    /** Trial zombies the client sees near the player. */
+    private static int trialZombies(Minecraft mc) {
+        return mc.level.getEntitiesOfClass(TrialZombie.class, mc.player.getBoundingBox().inflate(80)).size();
+    }
+
+    private static int countZombies(ServerPlayer player) {
+        ServerLevel trial = player.server.getLevel(InnerWorld.TRIAL_LEVEL);
+        BlockPos center = InnerIslands.get(player.server).existingCenter(player.getUUID());
+        return trial.getEntitiesOfClass(TrialZombie.class, new AABB(center).inflate(InnerIsland.RADIUS * 2)).size();
     }
 
     private static Optional<OldMaster> master(Minecraft mc) {

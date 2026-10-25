@@ -23,6 +23,7 @@ public final class InnerIslands extends SavedData {
 
     private final Map<UUID, Integer> slots = new HashMap<>();
     private final Map<UUID, Integer> built = new HashMap<>();
+    private final Map<UUID, Integer> trialBuilt = new HashMap<>();
     private int next;
 
     public static InnerIslands get(MinecraftServer server) {
@@ -50,14 +51,31 @@ public final class InnerIslands extends SavedData {
         BlockPos center = center(player);
         int version = built.getOrDefault(player, 0);
         if (version < InnerIsland.VERSION) {
-            int chunks = (InnerIsland.CLEAR_RADIUS >> 4) + 1;
-            for (int cx = -chunks; cx <= chunks; cx++) {
-                for (int cz = -chunks; cz <= chunks; cz++) {
-                    level.getChunk((center.getX() >> 4) + cx, (center.getZ() >> 4) + cz);
-                }
-            }
+            loadChunks(level, center);
             InnerIsland.build(level, center, version > 0);
             built.put(player, InnerIsland.VERSION);
+            setDirty();
+        }
+        return center;
+    }
+
+    private static void loadChunks(ServerLevel level, BlockPos center) {
+        int chunks = (InnerIsland.CLEAR_RADIUS >> 4) + 1;
+        for (int cx = -chunks; cx <= chunks; cx++) {
+            for (int cz = -chunks; cz <= chunks; cz++) {
+                level.getChunk((center.getX() >> 4) + cx, (center.getZ() >> 4) + cz);
+            }
+        }
+    }
+
+    /** Builds (or rebuilds after a layout change) this player's trial island in the trial dimension; returns its center. */
+    public BlockPos prepareTrial(UUID player, ServerLevel level) {
+        BlockPos center = center(player);
+        int version = trialBuilt.getOrDefault(player, 0);
+        if (version < TrialIsland.VERSION) {
+            loadChunks(level, center);
+            TrialIsland.build(level, center, version > 0);
+            trialBuilt.put(player, TrialIsland.VERSION);
             setDirty();
         }
         return center;
@@ -71,6 +89,7 @@ public final class InnerIslands extends SavedData {
             UUID owner = island.getUUID("owner");
             islands.slots.put(owner, island.getInt("slot"));
             islands.built.put(owner, island.getInt("built"));
+            islands.trialBuilt.put(owner, island.getInt("trial_built"));
         }
         return islands;
     }
@@ -84,6 +103,7 @@ public final class InnerIslands extends SavedData {
             island.putUUID("owner", owner);
             island.putInt("slot", slot);
             island.putInt("built", built.getOrDefault(owner, 0));
+            island.putInt("trial_built", trialBuilt.getOrDefault(owner, 0));
             list.add(island);
         });
         tag.put("islands", list);

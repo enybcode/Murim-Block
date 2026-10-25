@@ -25,6 +25,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class InnerWorld {
     public static final ResourceKey<Level> LEVEL =
             ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "inner_world"));
+    /** The night graveyard of the mortal realm's trial, one island per player at the same spot as their own. */
+    public static final ResourceKey<Level> TRIAL_LEVEL =
+            ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "mortal_trial"));
     /** First realm past Mortal (Body Tempering): Third-rate Warrior, Qi Condensation. */
     public static final int UNLOCK_REALM = 1;
     /** Falling this far below the surface sends the player back to the body. */
@@ -39,8 +42,13 @@ public final class InnerWorld {
         return player.getData(MurimAttachments.INNER_WORLD);
     }
 
+    /** The inner world or the trial island: no blocks change there, and nobody dies there. */
     public static boolean isInnerWorld(Level level) {
-        return level.dimension() == LEVEL;
+        return level.dimension() == LEVEL || level.dimension() == TRIAL_LEVEL;
+    }
+
+    public static boolean isTrial(Level level) {
+        return level.dimension() == TRIAL_LEVEL;
     }
 
     public static boolean unlocked(int realm) {
@@ -76,20 +84,25 @@ public final class InnerWorld {
             return;
         }
         BlockPos center = InnerIslands.get(player.server).prepare(player.getUUID(), inner);
-        MeditatingBody body = MeditatingBody.seat(player);
-        state.enter(player.level().dimension(), player.getX(), player.getY(), player.getZ(), player.getYRot(),
-                player.getXRot(), body.getUUID());
-        Meditation.stop(player, null);
-        // Facing north, toward the arena.
-        player.teleportTo(inner, center.getX() + 0.5, InnerIsland.SURFACE_Y + 1, center.getZ() + InnerIsland.ARRIVAL_Z + 0.5,
-                180, 0);
-        player.fallDistance = 0;
+        sendSpirit(player, inner, center);
         OldMaster.summon(inner, center, player);
         system(player, "message.murimblock.inner_world.enter", ChatFormatting.AQUA);
     }
 
-    /** Back to the body: the spirit returns where it sat and the body vanishes. */
+    /** Seats the body where the player meditates and sends the spirit to this island's arrival point, facing north. */
+    static void sendSpirit(ServerPlayer player, ServerLevel level, BlockPos center) {
+        MeditatingBody body = MeditatingBody.seat(player);
+        state(player).enter(player.level().dimension(), player.getX(), player.getY(), player.getZ(), player.getYRot(),
+                player.getXRot(), body.getUUID());
+        Meditation.stop(player, null);
+        player.teleportTo(level, center.getX() + 0.5, InnerIsland.SURFACE_Y + 1, center.getZ() + InnerIsland.ARRIVAL_Z + 0.5,
+                180, 0);
+        player.fallDistance = 0;
+    }
+
+    /** Back to the body: the spirit returns where it sat and the body vanishes. Leaving a trial loses it. */
     public static void leave(ServerPlayer player, String reasonKey) {
+        MortalTrial.lose(player);
         InnerWorldState state = state(player);
         if (!state.inside()) {
             if (isInnerWorld(player.level())) {

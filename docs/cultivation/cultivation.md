@@ -37,7 +37,7 @@ Saved IDs stay stable once released. Commands (operators only) set each field fo
   tracking the player sees and hears it (payload `stage_breakthrough`); the window and camera are the player's own.
   Checked by `runInnerWorldTour` (shots `murim_breakthrough_spiral`, `_burst`, `_window`).
 - Stage 9 full: the button reads **Trial required** (disabled) and lists the missing meridians
-  (`MERIDIANS_FOR_TRIAL`). The trial is the next slice.
+  (`MERIDIANS_FOR_TRIAL`). The mortal realm's trial: [mortal-trial.md](mortal-trial.md); the realms above: to do.
 
 ## Meditation
 

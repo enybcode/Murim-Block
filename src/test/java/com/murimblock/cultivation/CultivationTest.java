@@ -87,4 +87,24 @@ class CultivationTest {
         assertEquals(-1, CultivationRules.nextComboTier(20));
         assertEquals(10.0, CultivationRules.meditationGain(1, 20), 1e-9);
     }
+
+    @Test
+    void wonTrialOpensTheNextRealmAtStageOne() {
+        Cultivation c = new Cultivation();
+        c.set(0, 9, CultivationRules.gauge(0, 9), 100, 200, 4);
+        assertTrue(c.breakRealm());
+        assertEquals(1, c.realm());
+        assertEquals(1, c.stage());
+        assertEquals(0, c.stageQi(), 1e-9);
+        assertEquals(CultivationRules.maxQiAfterStage(200), c.maxQi());
+    }
+
+    @Test
+    void lostTrialScattersPartOfTheGauge() {
+        Cultivation c = new Cultivation();
+        c.set(0, 9, CultivationRules.gauge(0, 9), 100, 200, 4);
+        c.scatter(0.30);
+        assertEquals(CultivationRules.gauge(0, 9) * 0.7, c.stageQi(), 1e-9);
+        assertFalse(c.gaugeFull());
+    }
 }

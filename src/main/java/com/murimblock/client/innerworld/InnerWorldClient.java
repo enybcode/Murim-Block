@@ -42,6 +42,7 @@ public final class InnerWorldClient {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(MurimEntities.MEDITATING_BODY.get(), MeditatingBodyRenderer::new);
         event.registerEntityRenderer(MurimEntities.OLD_MASTER.get(), OldMasterRenderer::new);
+        event.registerEntityRenderer(MurimEntities.TRIAL_ZOMBIE.get(), TrialZombieRenderer::new);
     }
 
     /** Right-clicking the Old Master opens the talk; nothing is sent to the server. */

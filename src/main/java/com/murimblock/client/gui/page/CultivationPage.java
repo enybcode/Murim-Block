@@ -74,7 +74,6 @@ public final class CultivationPage implements SystemPageView {
         Component inner = Component.translatable(CultivationData.inInnerWorld() ? "gui.murimblock.cultivation.inner_world.return"
                 : CultivationData.innerWorldUnlocked() ? "gui.murimblock.cultivation.inner_world.enter"
                 : "gui.murimblock.cultivation.inner_world.locked");
-        // The trial itself comes in the next slice: the button shows what it will need.
         Rect trial = columns[2];
         screen.addPageWidget(new SystemButton(trial.x(), trial.bottom() - 36, trial.width(), 16, inner,
                 SystemButton.Style.ACTION, () -> {
@@ -83,7 +82,9 @@ public final class CultivationPage implements SystemPageView {
                 }).enabled(CultivationData.canTravel()));
         screen.addPageWidget(new SystemButton(trial.x(), trial.bottom() - 16, trial.width(), 16,
                 Component.translatable("gui.murimblock.cultivation.begin_trial"), SystemButton.Style.ACTION, () -> {
-                }).enabled(false));
+                    CultivationData.beginTrial();
+                    Minecraft.getInstance().setScreen(null);
+                }).enabled(CultivationData.canBeginTrial()));
     }
 
     private void initMeridians(SystemScreen screen, Rect[] columns) {
@@ -239,10 +240,12 @@ public final class CultivationPage implements SystemPageView {
 
     private static void renderTrial(GuiGraphics g, Font font, Rect r) {
         label(g, font, r.x(), r.y(), "gui.murimblock.cultivation.trial");
-        List<FormattedCharSequence> desc = font.split(Component.translatable("murimblock.trial.heart_demon.desc"), r.width() - 16);
+        // The mortal realm ends with the graveyard's waves; the realms above with the Heart Demon.
+        String trialKey = CultivationData.currentRealm() == 0 ? "murimblock.trial.rising_dead" : "murimblock.trial.heart_demon";
+        List<FormattedCharSequence> desc = font.split(Component.translatable(trialKey + ".desc"), r.width() - 16);
         Rect card = new Rect(r.x(), r.y() + 13, r.width(), 24 + desc.size() * 10);
         SystemTheme.box(g, card, false);
-        SystemTheme.glowText(g, font, Component.translatable("murimblock.trial.heart_demon").withStyle(s -> s.withBold(true)),
+        SystemTheme.glowText(g, font, Component.translatable(trialKey).withStyle(s -> s.withBold(true)),
                 card.x() + 8, card.y() + 7, SystemTheme.TEXT);
         int y = card.y() + 20;
         for (FormattedCharSequence line : desc) {
