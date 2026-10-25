@@ -30,7 +30,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * The Old Master: a master's spirit living in the player's inner world, seated in the lotus on the NPC zone north of
+ * The Old Master: the ghost of a master living in the player's inner world, hovering over the NPC zone north of
  * the arena. He turns his head toward the player and talks when right-clicked (the dialogue is client side). Summoned
  * each time the owner enters and never saved: he leaves with them.
  */

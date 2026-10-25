@@ -8,7 +8,7 @@
         "float": {
           "position": [
             0,
-            "3 + math.sin(query.anim_time * 45) * 1.2",
+            "8 + math.sin(query.anim_time * 45) * 1.5",
             0
           ]
         },
@@ -24,6 +24,34 @@
             "0 + math.sin(query.anim_time * 60) * 4",
             0,
             "0 + math.sin(query.anim_time * 40) * 2"
+          ]
+        },
+        "tail1": {
+          "rotation": [
+            "0 + math.sin(query.anim_time * 70) * 5",
+            0,
+            "0 + math.sin(query.anim_time * 50) * 4"
+          ]
+        },
+        "tail2": {
+          "rotation": [
+            "math.sin(query.anim_time * 70 - 50) * 9",
+            0,
+            "math.sin(query.anim_time * 50 - 50) * 7"
+          ]
+        },
+        "tail3": {
+          "rotation": [
+            "math.sin(query.anim_time * 70 - 100) * 13",
+            0,
+            "math.sin(query.anim_time * 50 - 100) * 10"
+          ]
+        },
+        "tail4": {
+          "rotation": [
+            "math.sin(query.anim_time * 70 - 150) * 17",
+            0,
+            "math.sin(query.anim_time * 50 - 150) * 14"
           ]
         }
       }

@@ -24,7 +24,7 @@ public final class MurimEntities {
 
     public static final Supplier<EntityType<OldMaster>> OLD_MASTER = ENTITIES.register("old_master",
             () -> EntityType.Builder.<OldMaster>of(OldMaster::new, MobCategory.MISC)
-                    .sized(0.9f, 1.8f).fireImmune().clientTrackingRange(10).build("old_master"));
+                    .sized(0.8f, 2.4f).fireImmune().clientTrackingRange(10).build("old_master"));
 
     private MurimEntities() {
     }

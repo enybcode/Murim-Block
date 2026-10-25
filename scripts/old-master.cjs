@@ -1,23 +1,31 @@
 // Builds the Old Master (original model): GeckoLib geometry, idle animation and 128x64 texture, painted per face.
-// A white-haired master seated in the lotus on a crimson cushion, hands joined on the lap, eyes closed.
+// The ghost of a white-haired master: no legs, his robe thins into a tail of mist; hands joined in his sleeves, eyes
+// closed. Drawn translucent and self-lit by OldMasterRenderer.
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
 const ASSETS = path.join(__dirname, '../src/main/resources/assets/murimblock');
 const TW = 128, TH = 64;
 const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16), 255];
 const C = {
     robe: hex('#3d4b6c'), robeLight: hex('#536590'), robeDark: hex('#2a3450'), inner: hex('#e9e4d6'),
-    sash: hex('#b38b3f'), sashDark: hex('#8a6a2c'), cushion: hex('#8c2b2b'), cushionDark: hex('#6a1e22'),
-    trim: hex('#d6a843'), skin: hex('#d8ae88'), skinShade: hex('#b88e6a'), lid: hex('#6e4f3c'),
+    sash: hex('#b38b3f'), sashDark: hex('#8a6a2c'),
+    mist: hex('#a9dcec'), skin: hex('#d8ae88'), skinShade: hex('#b88e6a'), lid: hex('#6e4f3c'),
     hair: hex('#efefea'), hairShade: hex('#c8c8cc'), jade: hex('#3fa47d'), jadeDark: hex('#2b7a5b'),
 };
 
 // Faces: n (front, toward -z), s (back), e, w (sides), u (top), d (bottom). fx, fy: pixel in the face, fy 0 at the top.
 const robeCloth = (f, fx, fy, w, h) => f === 'u' ? C.robeLight : f === 'd' ? C.robeDark
     : (fx + fy * 3) % 7 === 0 ? C.robeLight : fy === h - 1 ? C.robeDark : C.robe;
+// The tail: robe at the top, paler and more transparent toward the tip (t 0 top of the tail, 1 tip).
+const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+const tail = (start, end) => (f, fx, fy, w, h) => {
+    const t = start + (end - start) * (f === 'u' ? 0 : f === 'd' ? 1 : fy / Math.max(1, h - 1));
+    const base = (fx + fy) % 5 === 0 ? C.robeLight : C.robe;
+    const c = mix(base, C.mist, Math.min(1, t * 1.2));
+    c[3] = Math.round(255 * (1 - t * 0.75));
+    return c;
+};
 const paint = {
-    cushion: (f, fx, fy, w, h) => f === 'u' ? ((fx === 0 || fy === 0 || fx === w - 1 || fy === h - 1) ? C.trim : C.cushion)
-        : f === 'd' ? C.cushionDark : fy === 1 ? C.trim : fy === 2 ? C.cushionDark : C.cushion,
-    lap: (f, fx, fy, w, h) => f === 'n' && (fx === 3 || fx === 10) && fy > 0 ? C.robeDark : robeCloth(f, fx, fy, w, h),
+    tail1: tail(0, 0.3), tail2: tail(0.3, 0.55), tail3: tail(0.55, 0.8), tail4: tail(0.8, 1),
     torso: (f, fx, fy, w, h) => {
         if (fy >= 6 && fy <= 7) return fy === 7 ? C.sashDark : C.sash;
         if (f === 'n') {
@@ -56,22 +64,24 @@ const paint = {
 const bones = [
     { name: 'root', pivot: [0, 0, 0] },
     { name: 'float', parent: 'root', pivot: [0, 0, 0] },
-    { name: 'cushion', parent: 'float', pivot: [0, 0, 0], cubes: [['cushion', [-7, 0, -7], [14, 3, 14]]] },
-    { name: 'lap', parent: 'float', pivot: [0, 3, 0], cubes: [['lap', [-7, 3, -6], [14, 4, 9]]] },
+    { name: 'tail1', parent: 'float', pivot: [0, 10, 0.5], cubes: [['tail1', [-3.5, 6, -1.5], [7, 4, 4]]] },
+    { name: 'tail2', parent: 'tail1', pivot: [0, 6, 0.5], cubes: [['tail2', [-2.5, 3, -1], [5, 3, 3]]] },
+    { name: 'tail3', parent: 'tail2', pivot: [0, 3, 0.5], cubes: [['tail3', [-1.5, 1, -0.5], [3, 2, 2]]] },
+    { name: 'tail4', parent: 'tail3', pivot: [0, 1, 0.5], cubes: [['tail4', [-0.5, -1, 0], [1, 2, 1]]] },
     {
-        name: 'body', parent: 'float', pivot: [0, 7, 0.5], cubes: [
-            ['torso', [-4, 7, -2], [8, 10, 5]],
-            ['sleeve', [4, 9, -2], [3, 8, 5]], ['sleeve', [-7, 9, -2], [3, 8, 5]],
-            ['forearm', [2, 7, -6], [4, 3, 5]], ['forearm', [-6, 7, -6], [4, 3, 5]],
-            ['hands', [-2, 7, -6], [4, 2, 3]],
+        name: 'body', parent: 'float', pivot: [0, 10, 0.5], cubes: [
+            ['torso', [-4, 10, -2], [8, 10, 5]],
+            ['sleeve', [4, 12, -2], [3, 8, 5]], ['sleeve', [-7, 12, -2], [3, 8, 5]],
+            ['forearm', [2, 12, -6], [4, 3, 5]], ['forearm', [-6, 12, -6], [4, 3, 5]],
+            ['hands', [-2, 12.5, -6.5], [4, 2, 2]],
         ]
     },
     {
-        name: 'head', parent: 'body', pivot: [0, 17, 0.5], cubes: [
-            ['head', [-4, 17, -3.5], [8, 8, 8]], ['bun', [-2, 25, -1.5], [4, 3, 4]], ['pin', [-4, 26, 0], [8, 1, 1]],
+        name: 'head', parent: 'body', pivot: [0, 20, 0.5], cubes: [
+            ['head', [-4, 20, -3.5], [8, 8, 8]], ['bun', [-2, 28, -1.5], [4, 3, 4]], ['pin', [-4, 29, 0], [8, 1, 1]],
         ]
     },
-    { name: 'beard', parent: 'head', pivot: [0, 17, -3.5], cubes: [['beard', [-2, 11, -3.5], [4, 6, 1]]] },
+    { name: 'beard', parent: 'head', pivot: [0, 20, -3.5], cubes: [['beard', [-2, 14, -3.5], [4, 6, 1]]] },
 ];
 
 // Box UVs packed on shelves; the same layout as vanilla boxes (top row: up, down; then e, n, w, s).
@@ -116,10 +126,14 @@ const animation = {
         'animation.old_master.idle': {
             loop: true, animation_length: 8,
             bones: {
-                // Floats a little above the ground, breathes slowly, the beard stirs.
-                float: { position: [0, wave(1.2, 45, 3), 0] },
+                // Hovers half a block up and drifts, breathes slowly, the beard stirs, the tail of mist ripples.
+                float: { position: [0, wave(1.5, 45, 8), 0] },
                 body: { scale: [wave(0.015, 90, 1), wave(0.02, 90, 1), wave(0.015, 90, 1)] },
                 beard: { rotation: [wave(4, 60), 0, wave(2, 40)] },
+                tail1: { rotation: [wave(5, 70), 0, wave(4, 50)] },
+                tail2: { rotation: [`math.sin(query.anim_time * 70 - 50) * 9`, 0, `math.sin(query.anim_time * 50 - 50) * 7`] },
+                tail3: { rotation: [`math.sin(query.anim_time * 70 - 100) * 13`, 0, `math.sin(query.anim_time * 50 - 100) * 10`] },
+                tail4: { rotation: [`math.sin(query.anim_time * 70 - 150) * 17`, 0, `math.sin(query.anim_time * 50 - 150) * 14`] },
             },
         },
     },

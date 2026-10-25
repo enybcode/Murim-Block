@@ -71,10 +71,11 @@ placed, falling returns to the body, a blow on the body ends the trip. PASS/FAIL
 
 ## Old Master (25 Oct)
 
-- `innerworld/OldMaster` (entity `murimblock:old_master`, GeckoLib): an old master seated in the lotus on a crimson
-  cushion, floating a little, breathing, beard stirring, Qi specks rising; his head follows the player. Original
+- `innerworld/OldMaster` (entity `murimblock:old_master`, GeckoLib): a ghost, as in V1 (Enzo, 25 Oct; idea only):
+  no legs, his robe thins into a rippling tail of mist; translucent, self-lit (`OldMasterRenderer`), opacity
+  breathing, hovering half a block up and drifting, beard stirring, Qi specks rising; his head follows the player. Original
   model, texture and animation built by `scripts/old-master.cjs` (`geo/`, `animations/`, `textures/entity/`).
-- Summoned at the center of the NPC zone, facing the arena, each time the owner enters; never saved, and gone once
+- Summoned above the center of the NPC zone, facing the arena, each time the owner enters; never saved, and gone once
   the owner is no longer on the island. Invulnerable, cannot be pushed.
 - Right-click: `client/innerworld/OldMasterScreen`, a System panel at the bottom of the screen, his words written
   letter by letter (click or Space to finish), numbered answers (click or 1-9): who he is, this place, how to grow
