@@ -15,7 +15,7 @@ Murim (wuxia) mod for Minecraft, restarted from zero on 23 Oct 2026. Owner: Enzo
 
 - V1 (branches `main`, `test` and the old `Murimblock` folder) is frozen: never edit it, and copy nothing
   from it (code or assets) unless Enzo asks for that specific piece.
-- Work on `v2`; commit and push `origin/v2` after each verified change. Never force-push.
+- Work on `main-V2`; commit and push `origin/main-V2` after each verified change. Never force-push.
 - All player-facing text in English, through `assets/murimblock/lang/en_us.json`.
 - Keep saved IDs and player data stable once released.
 - Original assets only; never extract other mods' assets into our jar.
