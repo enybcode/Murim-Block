@@ -37,7 +37,8 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
 - Counter: one slim strip at the top center (made smaller at Enzo's request): "RISING DEAD" and "x/15 left" (or the
   countdown before they rise), progress along its bottom edge. Payload `trial_status`.
 - Win (the 15th falls): back to the body, realm + 1 at stage 1 with an empty gauge and the stage Max Qi bonus, the spiral
-  breakthrough and its window, and "[!] X broke through to Third-Rate Warrior!" to the whole server.
+  breakthrough and its window, and "[!] You broke through to Third-Rate Warrior." to the player alone: nothing about
+  a trial is ever told to the server (Enzo, 25 Oct: it stays secret).
 - Loss: anything that ends the trip before the last zombie falls (a lethal blow, nobody dies there; falling off;
   RETURN TO BODY; a blow on the body; logging out). The trial's zombies vanish and 30 % of the gathered stage Qi
   scatters (`Cultivation.scatter`), so the gauge must be refilled before trying again.

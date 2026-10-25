@@ -318,7 +318,7 @@
   "message.murimblock.trial.begin": "[!] Your spirit sinks into a graveyard at night. The graves stir.",
   "message.murimblock.trial.wave": "[!] The dead rise! Put down all %s of them.",
   "message.murimblock.trial.warden": "[!] The Grave Warden leaves the mausoleum!",
-  "message.murimblock.trial.won": "[!] %s broke through to %s!",
+  "message.murimblock.trial.won": "[!] You broke through to %s.",
   "message.murimblock.trial.lost": "[!] You lost the trial. %s %% of your gathered Qi scatters.",
   "title.murimblock.trial": "SURVIVE DEATH",
   "title.murimblock.trial.subtitle": "Mortal Trial · fifteen of the dead",

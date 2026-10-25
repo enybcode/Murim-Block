@@ -298,8 +298,9 @@ public final class MortalTrial {
         if (c.breakRealm()) {
             Meditation.sync(player);
             Component rank = Component.translatable("murimblock.realm." + CultivationRealms.LADDER.get(c.realm()).rank());
-            player.server.getPlayerList().broadcastSystemMessage(Component.translatable("message.murimblock.trial.won",
-                    player.getDisplayName(), rank).withStyle(ChatFormatting.AQUA), false);
+            // Told to the player alone: a cultivator's trials stay secret (Enzo, 25 Oct).
+            player.displayClientMessage(Component.translatable("message.murimblock.trial.won", rank)
+                    .withStyle(ChatFormatting.AQUA), false);
             PacketDistributor.sendToPlayersTrackingEntityAndSelf(player,
                     new CultivationPayloads.Breakthrough(player.getId(), c.realm(), c.stage()));
         }
