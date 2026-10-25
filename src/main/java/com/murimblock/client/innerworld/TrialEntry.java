@@ -53,11 +53,11 @@ public final class TrialEntry {
     private static final int FADE_IN_START = 4;
     private static final int FADE_IN_END = 20;
     private static final int LIE_DOWN = 2;
-    /** The push-up begins (the animation holds its lying pose 1.05 s): earth is thrown up. */
-    private static final int RISE_START = 23;
-    private static final int RISE_END = 52;
-    private static final int TITLE = 52;
-    private static final int ARRIVAL_END = 60;
+    /** The push-up begins (the animation holds its lying pose 0.9 s): earth is thrown up. */
+    private static final int RISE_START = 20;
+    private static final int RISE_END = 66;
+    private static final int TITLE = 66;
+    private static final int ARRIVAL_END = 74;
     private static final double DANTIAN = 0.55;
 
     /** Players diving (ours included), by entity id, with the ticks since the dive began. */

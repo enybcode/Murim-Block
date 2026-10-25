@@ -37,7 +37,7 @@ public final class RiseFilm {
     private static final boolean ENABLED = Boolean.getBoolean("murimblock.riseFilm");
     private static final String WORLD = "murim-rise-film";
     private static final int SETTLE = 80;
-    private static final int FRAMES = 50;
+    private static final int FRAMES = 66;
 
     private static boolean started;
     private static int ticks = -1;
@@ -83,10 +83,10 @@ public final class RiseFilm {
             mc.options.hideGui = true;
             new File(mc.gameDirectory, "screenshots/rise").mkdirs();
         }
-        // Seen from the side: the body faces east while the camera looks south.
-        mc.player.setYBodyRot(mc.player.getYRot() - 90);
+        // Seen three quarters from the side: the body turned 55 degrees from the camera, so both legs show.
+        mc.player.setYBodyRot(mc.player.getYRot() - 55);
         mc.player.yBodyRotO = mc.player.yBodyRot;
-        mc.player.setYHeadRot(mc.player.getYRot() - 90);
+        mc.player.setYHeadRot(mc.player.getYRot() - 55);
         mc.player.yHeadRotO = mc.player.yHeadRot;
         int frame = ticks - SETTLE;
         if (frame == 0 && PlayerAnimationAccess.getPlayerAnimationLayer(mc.player, ClientCultivation.LAYER)

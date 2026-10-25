@@ -114,7 +114,7 @@ public final class InnerWorldTour {
         if (filmFrame >= 0 && mc.level.getGameTime() != filmTick) {
             filmTick = mc.level.getGameTime();
             shoot(mc, String.format("film/murim_trial_entry_%03d.png", filmFrame++));
-            if (TrialEntry.arrival() >= 59) {
+            if (TrialEntry.arrival() >= 73) {
                 filmFrame = -1;
             }
         }
@@ -308,9 +308,9 @@ public final class InnerWorldTour {
                 }
                 filmFrame = 0;
                 TIMED.add(Map.entry(() -> TrialEntry.ownDive() >= 36, "murim_trial_dive.png"));
-                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 16, "murim_trial_rise_1.png"));
-                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 36, "murim_trial_rise_2.png"));
-                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 58, "murim_trial_title.png"));
+                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 34, "murim_trial_rise_1.png"));
+                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 50, "murim_trial_rise_2.png"));
+                TIMED.add(Map.entry(() -> TrialEntry.arrival() >= 72, "murim_trial_title.png"));
             }
             case 32 -> {
                 if (!TIMED.isEmpty()) {

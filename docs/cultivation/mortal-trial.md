@@ -19,7 +19,7 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
     `trial_dive`); for the player the screen darkens from the edges to black over a slowing Warden heartbeat, the
     breathing lane hidden. Standing up or being struck cancels it, at no cost.
   - Arrival: a low bell, the screen opens on the graveyard; seen from behind, the player lies face down and gets up
-    (PAL animation `player_animations/trial_rise.json`, 2.4 s: lying face down, a push-up, one knee, standing; earth thrown up), then back to first person and the
+    (PAL animation `player_animations/trial_rise.json`, 3.2 s, after the physiotherapists' way up from the floor: lying face down, onto hands and knees, one foot forward, upright on one knee, driving up through the front leg; earth thrown up), then back to first person and the
     title **SURVIVE DEATH** (dark red) with "Mortal Trial · five waves of the dead". The first wave waits 7 s.
 - Waves: 3, 5, 7, 9, then 9 and the **Grave Warden** (1.6× size, 50 health, 6 damage) out of the mausoleum.
   7 s of calm before the first (the arrival plays meanwhile), 4 s between waves. Zombies climb out of the grave mounds farthest from the player,
@@ -53,6 +53,10 @@ trial (−30 %, zombies gone), then five cleared waves and Third-Rate Warrior. S
 scatter). Not yet played by hand with real fights.
 The tour also films the entry, one shot per tick in `screenshots/film/`; make the GIF (kept local, out of the
 repository) with `java scripts/frames-to-gif.java run/inner-world-tour/screenshots/film run/gifs/murim_trial_entry.gif`.
-To tune the getting up alone: `gradlew runRiseFilm` (`run/rise-film`) films it from the side, one shot per tick, in
+Knees and elbows: Minecraft limbs have no joint, and PAL reads a `"bend"` track per limb (degrees, Emotecraft format)
+without drawing it on 1.21.1 (that needs bendable-cuboids, 1.21.7+). `client/cultivation/BentLimbsLayer` draws any bent
+limb in two halves from the player's skin (thigh and shin, upper arm and forearm): knees fold back, elbows forward.
+
+To tune the getting up alone: `gradlew runRiseFilm` (`run/rise-film`) films it three quarters from the side, one shot per tick, in
 `screenshots/rise/`. PAL turns the `body` bone around the hips, 12 px above the feet: lying needs the body lowered by
 10 px, or the player floats (Enzo saw it float on 25 Oct).
