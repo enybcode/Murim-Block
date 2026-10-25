@@ -47,6 +47,14 @@ neoForge {
             programArguments.addAll('--width', '960', '--height', '640')
         }
 
+        // Dev only: checks the bare-handed strike in a real client (PASS/FAIL in the log), shots in run/combat-test.
+        combatTest {
+            client()
+            systemProperty 'murimblock.combatTest', 'true'
+            gameDirectory = project.file('run/combat-test')
+            programArguments.addAll('--width', '960', '--height', '640')
+        }
+
         // Dev only: checks the inner world in a real client (PASS/FAIL in the log), shots in run/screenshots, quits.
         innerWorldTour {
             client()

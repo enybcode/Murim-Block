@@ -1,0 +1,15 @@
+{
+  "animation": "murimblock:combat_jab",
+  "phases": {
+    "windup": 3,
+    "active": 2,
+    "recovery": 7
+  },
+  "reach": 3.0,
+  "angle": 70,
+  "damage": 3.0,
+  "knockback": 0.35,
+  "step": 0.35,
+  "move_speed": 0.4,
+  "hit_stop": 3
+}
