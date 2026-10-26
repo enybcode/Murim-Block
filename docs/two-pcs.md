@@ -25,8 +25,10 @@ folder of the second PC. Enzo signs in to GitHub himself when Git asks, on the f
 ```text
 Set up this PC to develop the Minecraft mod Murimblock V2, like my other PC. Reply in French. Steps:
 
-1. Check that Git and Java 21 are installed (`git --version`, `java -version`). If one is missing, tell me and
-   install it with winget once I say yes (Git.Git, EclipseAdoptium.Temurin.21.JDK).
+1. Check that Git, Java 21 and Blender 5.2 are installed (`git --version`, `java -version`,
+   `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`). If one is missing, tell me and install it with
+   winget once I say yes (Git.Git, EclipseAdoptium.Temurin.21.JDK, BlenderFoundation.Blender). Blender builds the
+   combat engine's models (`tools/blender/README.md`).
 2. Clone https://github.com/enybcode/Murim-Block.git, branch main-V2, into %USERPROFILE%\Documents\MurimblockV2
    (`git clone -b main-V2 ...`). Set the repo's git identity: user.name "enzo bertrand",
    user.email "enzo.berbertrand@gmail.com".

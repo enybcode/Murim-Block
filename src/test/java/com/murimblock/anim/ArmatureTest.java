@@ -26,24 +26,24 @@ class ArmatureTest {
         for (Joint joint : BIPED.joints()) {
             assertTrue(joint.parent() < joint.index(), joint.name());
         }
-        assertEquals(22, BIPED.size());
+        assertEquals(20, BIPED.size());
     }
 
     @Test
     void restPoseMatchesTheVanillaPlayer() {
-        assertNear(new Vector3f(0, 24, 0), restPosition("head"));
-        assertNear(new Vector3f(5, 22, 0), restPosition("upper_arm_l"));
-        assertNear(new Vector3f(-5, 22, 0), restPosition("upper_arm_r"));
-        assertNear(new Vector3f(6, 18, 0), restPosition("forearm_l"));
-        assertNear(new Vector3f(2, 12, 0), restPosition("thigh_l"));
-        assertNear(new Vector3f(-2, 2, 0), restPosition("foot_r"));
+        assertNear(new Vector3f(0, 24, 0), restPosition("Head"));
+        assertNear(new Vector3f(6, 22, 0), restPosition("Arm_L"));
+        assertNear(new Vector3f(-6, 22, 0), restPosition("Arm_R"));
+        assertNear(new Vector3f(6, 18, 0), restPosition("Hand_L"));
+        assertNear(new Vector3f(2, 12, 0), restPosition("Thigh_L"));
+        assertNear(new Vector3f(-2, 6, 0), restPosition("Leg_R"));
     }
 
     @Test
     void leftAndRightAreTwins() {
-        assertEquals(BIPED.get("hand_r").index(), BIPED.mirrorOf(BIPED.get("hand_l").index()));
-        assertEquals(BIPED.get("shin_l").index(), BIPED.mirrorOf(BIPED.get("shin_r").index()));
-        assertEquals(BIPED.get("chest").index(), BIPED.mirrorOf(BIPED.get("chest").index()));
+        assertEquals(BIPED.get("Hand_R").index(), BIPED.mirrorOf(BIPED.get("Hand_L").index()));
+        assertEquals(BIPED.get("Knee_L").index(), BIPED.mirrorOf(BIPED.get("Knee_R").index()));
+        assertEquals(BIPED.get("Chest").index(), BIPED.mirrorOf(BIPED.get("Chest").index()));
     }
 
     @Test
@@ -56,12 +56,12 @@ class ArmatureTest {
     @Test
     void shapeCheckSpotsAMovedJoint() {
         assertTrue(Biped.check(BIPED).isEmpty());
-        Armature.Builder other = Armature.builder().root("root", JointTransform.IDENTITY)
-                .joint("hips", "root", JointTransform.translation(0, 12, 0))
-                .joint("head", "hips", JointTransform.translation(0, 12, 0));
+        Armature.Builder other = Armature.builder().root("Root", JointTransform.IDENTITY)
+                .joint("Torso", "Root", JointTransform.translation(0, 1, 0))
+                .joint("Head", "Torso", JointTransform.translation(0, 11, 0));
         List<String> problems = Biped.check(other.build());
-        assertTrue(problems.stream().anyMatch(p -> p.startsWith("head should hang from neck")), problems.toString());
-        assertTrue(problems.contains("missing joint chest"), problems.toString());
+        assertTrue(problems.stream().anyMatch(p -> p.startsWith("Head should hang from Chest")), problems.toString());
+        assertTrue(problems.contains("missing joint Chest"), problems.toString());
     }
 
     @Test
@@ -76,12 +76,12 @@ class ArmatureTest {
 
     @Test
     void masksTakeChildren() {
-        JointMask upper = JointMask.withChildren(BIPED, "chest");
-        assertTrue(upper.contains(BIPED.get("hand_l").index()));
-        assertTrue(upper.contains(BIPED.get("head").index()));
-        assertTrue(!upper.contains(BIPED.get("thigh_l").index()));
-        assertEquals(13, upper.count());
-        assertEquals(12, upper.without(JointMask.of(BIPED, "head")).count());
+        JointMask upper = JointMask.withChildren(BIPED, "Chest");
+        assertTrue(upper.contains(BIPED.get("Hand_L").index()));
+        assertTrue(upper.contains(BIPED.get("Head").index()));
+        assertTrue(!upper.contains(BIPED.get("Thigh_L").index()));
+        assertEquals(12, upper.count());
+        assertEquals(11, upper.without(JointMask.of(BIPED, "Head")).count());
         assertEquals(BIPED.size(), JointMask.all(BIPED).count());
     }
 }

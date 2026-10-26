@@ -34,73 +34,83 @@ class PoseTest {
     @Test
     void raisingTheArmForwardMovesTheHandForward() {
         // Turning the upper arm -90° about X swings it from hanging down to pointing forward (+Z).
-        Pose pose = turned(BIPED.bindPose(), "upper_arm_l", new Quaternionf().rotateX(-QUARTER));
-        // Rest offsets from the shoulder pivot (5, 22, 0): elbow (1, -4, 0), hand (1, -9, 0).
-        assertNear(new Vector3f(6, 22, 4), modelPosition(pose, "forearm_l"));
-        assertNear(new Vector3f(6, 22, 9), modelPosition(pose, "hand_l"));
+        Pose pose = turned(BIPED.bindPose(), "Arm_L", new Quaternionf().rotateX(-QUARTER));
+        // Rest offsets from the shoulder (6, 22, 0): elbow (0, -4, 0), grip (0, -9, 0).
+        assertNear(new Vector3f(6, 22, 4), modelPosition(pose, "Hand_L"));
+        assertNear(new Vector3f(6, 22, 9), modelPosition(pose, "Tool_L"));
     }
 
     @Test
     void bendingTheElbowMovesOnlyWhatHangsBelow() {
-        Pose pose = turned(BIPED.bindPose(), "forearm_l", new Quaternionf().rotateX(-QUARTER));
-        assertNear(new Vector3f(6, 18, 0), modelPosition(pose, "forearm_l"));
-        assertNear(new Vector3f(6, 18, 5), modelPosition(pose, "hand_l"));
-        assertNear(new Vector3f(-6, 13, 0), modelPosition(pose, "hand_r"));
+        Pose pose = turned(BIPED.bindPose(), "Hand_L", new Quaternionf().rotateX(-QUARTER));
+        assertNear(new Vector3f(6, 18, 0), modelPosition(pose, "Hand_L"));
+        assertNear(new Vector3f(6, 18, 5), modelPosition(pose, "Tool_L"));
+        assertNear(new Vector3f(-6, 13, 0), modelPosition(pose, "Tool_R"));
+    }
+
+    @Test
+    void helpersTurnHalfAsFar() {
+        Pose pose = turned(turned(BIPED.bindPose(), "Hand_L", new Quaternionf().rotateX(-QUARTER)),
+                "Leg_R", new Quaternionf().rotateX(QUARTER));
+        Biped.settleHelpers(pose);
+        assertTrue(new Quaternionf(pose.get(index("Elbow_L")).rotation()).equals(new Quaternionf().rotateX(-QUARTER / 2), EPS));
+        assertTrue(new Quaternionf(pose.get(index("Knee_R")).rotation()).equals(new Quaternionf().rotateX(QUARTER / 2), EPS));
+        assertTrue(new Quaternionf(pose.get(index("Elbow_R")).rotation()).equals(new Quaternionf(), EPS));
+        assertNear(modelPosition(pose, "Hand_L"), modelPosition(pose, "Elbow_L"));
     }
 
     @Test
     void interpolationSlerpsHalfway() {
         Pose rest = BIPED.bindPose();
-        Pose raised = turned(rest, "upper_arm_l", new Quaternionf().rotateX(-QUARTER));
+        Pose raised = turned(rest, "Arm_L", new Quaternionf().rotateX(-QUARTER));
         Pose half = Pose.interpolate(rest, raised, 0.5f);
         Quaternionf expected = new Quaternionf().rotateX(-QUARTER / 2);
-        assertTrue(new Quaternionf(half.get(index("upper_arm_l")).rotation()).equals(expected, EPS));
+        assertTrue(new Quaternionf(half.get(index("Arm_L")).rotation()).equals(expected, EPS));
         // Endpoints are the poses themselves.
-        assertNear(modelPosition(raised, "hand_l"), modelPosition(Pose.interpolate(rest, raised, 1), "hand_l"));
-        assertNear(modelPosition(rest, "hand_l"), modelPosition(Pose.interpolate(rest, raised, 0), "hand_l"));
+        assertNear(modelPosition(raised, "Tool_L"), modelPosition(Pose.interpolate(rest, raised, 1), "Tool_L"));
+        assertNear(modelPosition(rest, "Tool_L"), modelPosition(Pose.interpolate(rest, raised, 0), "Tool_L"));
     }
 
     @Test
     void mirroringSwapsSides() {
         // Left arm raised forward and out to the side (+X), so both rotation axes are checked.
         Quaternionf lift = new Quaternionf().rotateX(-QUARTER).rotateZ(0.4f);
-        Pose left = turned(BIPED.bindPose(), "upper_arm_l", lift);
+        Pose left = turned(BIPED.bindPose(), "Arm_L", lift);
         Pose right = left.mirrored(BIPED);
-        Vector3f leftHand = modelPosition(left, "hand_l");
-        assertNear(new Vector3f(-leftHand.x, leftHand.y, leftHand.z), modelPosition(right, "hand_r"));
-        assertNear(modelPosition(BIPED.bindPose(), "hand_l"), modelPosition(right, "hand_l"));
+        Vector3f leftGrip = modelPosition(left, "Tool_L");
+        assertNear(new Vector3f(-leftGrip.x, leftGrip.y, leftGrip.z), modelPosition(right, "Tool_R"));
+        assertNear(modelPosition(BIPED.bindPose(), "Tool_L"), modelPosition(right, "Tool_L"));
         // Twice gives the original back.
-        assertNear(leftHand, modelPosition(right.mirrored(BIPED), "hand_l"));
+        assertNear(leftGrip, modelPosition(right.mirrored(BIPED), "Tool_L"));
     }
 
     @Test
     void overwriteKeepsJointsOutsideTheMask() {
         Pose rest = BIPED.bindPose();
-        Pose raised = turned(turned(rest, "upper_arm_l", new Quaternionf().rotateX(-QUARTER)),
-                "thigh_l", new Quaternionf().rotateX(-QUARTER));
-        Pose mixed = rest.overwrite(raised, JointMask.withChildren(BIPED, "chest"));
-        assertSame(raised.get(index("upper_arm_l")), mixed.get(index("upper_arm_l")));
-        assertSame(rest.get(index("thigh_l")), mixed.get(index("thigh_l")));
+        Pose raised = turned(turned(rest, "Arm_L", new Quaternionf().rotateX(-QUARTER)),
+                "Thigh_L", new Quaternionf().rotateX(-QUARTER));
+        Pose mixed = rest.overwrite(raised, JointMask.withChildren(BIPED, "Chest"));
+        assertSame(raised.get(index("Arm_L")), mixed.get(index("Arm_L")));
+        assertSame(rest.get(index("Thigh_L")), mixed.get(index("Thigh_L")));
     }
 
     @Test
     void additiveLayerStacksOnTop() {
-        Pose rest = BIPED.bindPose();
         Pose delta = new Pose(BIPED.size());
-        delta.set(index("chest"), JointTransform.rotation(new Quaternionf().rotateY(0.3f)));
-        Pose base = turned(rest, "chest", new Quaternionf().rotateY(0.2f));
+        delta.set(index("Chest"), JointTransform.rotation(new Quaternionf().rotateY(0.3f)));
+        Pose base = turned(BIPED.bindPose(), "Chest", new Quaternionf().rotateY(0.2f));
         Pose stacked = base.add(delta, JointMask.all(BIPED));
         Quaternionf expected = new Quaternionf().rotateY(0.5f);
-        assertTrue(new Quaternionf(stacked.get(index("chest")).rotation()).equals(expected, EPS));
-        assertNear(modelPosition(base, "thigh_r"), modelPosition(stacked, "thigh_r"));
+        assertTrue(new Quaternionf(stacked.get(index("Chest")).rotation()).equals(expected, EPS));
+        assertNear(modelPosition(base, "Thigh_R"), modelPosition(stacked, "Thigh_R"));
     }
 
     @Test
     void skinMatricesFollowTheJoint() {
-        // A vertex at the left hand's rest position goes where the hand goes.
-        Pose pose = turned(BIPED.bindPose(), "upper_arm_l", new Quaternionf().rotateX(-QUARTER));
-        Vector3f vertex = modelPosition(BIPED.bindPose(), "hand_l");
-        Vector3f moved = pose.toSkinMatrices(BIPED)[index("hand_l")].transformPosition(vertex, new Vector3f());
-        assertNear(modelPosition(pose, "hand_l"), moved);
+        // A vertex at the left grip's rest position goes where the grip goes.
+        Pose pose = turned(BIPED.bindPose(), "Arm_L", new Quaternionf().rotateX(-QUARTER));
+        Vector3f vertex = modelPosition(BIPED.bindPose(), "Tool_L");
+        Vector3f moved = pose.toSkinMatrices(BIPED)[index("Tool_L")].transformPosition(vertex, new Vector3f());
+        assertNear(modelPosition(pose, "Tool_L"), moved);
     }
 }

@@ -35,3 +35,5 @@ hs_err_pid*.log
 CLAUDE.local.md
 .claude/settings.local.json
 .claude/worktrees/
+tools/blender/out/
+tools/blender/__pycache__/

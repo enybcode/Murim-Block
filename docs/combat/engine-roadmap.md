@@ -3,7 +3,7 @@
 Goal: a combat engine of Epic Fight's level or better, written by us from scratch. Epic Fight is studied for
 ideas only: its code is GPL and its assets are All Rights Reserved, so nothing is copied.
 
-Status: step 1 done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
+Status: steps 0 to 2 done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
 
@@ -69,16 +69,20 @@ Build:
 Done when: the Blender scripts run headless on this PC, produce a rig file and a test GIF; the harness runs
 an empty test and exits.
 
+Done (26 Oct 2026): Blender 5.2.3 headless on this PC; `tools/blender/` (`murim_biped.py`, `build.py`,
+`export.sh`, `render.py`, README); GIFs with `scripts/frames-to-gif.java`; `client/dev/EngineTest` with the
+`runEngineTest` Gradle run (folder `run/engine-test`). The second PC needs Blender 5.2 too (`docs/two-pcs.md`).
+
 ## Step 1: Skeleton
 
 Goal: one humanoid skeleton shared by players and humanoid mobs.
 
-Joints (parent in brackets), bind pose in Minecraft pixels (1/16 block), matching the vanilla player's
-proportions:
-`root` → `hips` → `spine` → `chest` → `neck` → `head`; `chest` → `shoulder_l/r` → `upper_arm_l/r` →
-`forearm_l/r` → `hand_l/r` → `tool_l/r` (grip point, oriented like a held item); `hips` → `thigh_l/r` →
-`shin_l/r` → `foot_l/r`.
-`root` sits on the ground between the feet and carries root motion only.
+Joints: Epic Fight's biped layout, copied at Enzo's request on 26 Oct 2026 (structure only, rebuilt by us; their
+files are All Rights Reserved), positions rounded to whole pixels (bind pose in Minecraft pixels, 1/16 block):
+`Root` (pelvis, y 12, carries root motion) → `Torso` → `Chest` → `Head`; `Chest` → `Shoulder_L/R` (collarbone)
+→ `Arm_L/R` (upper arm) → `Hand_L/R` (forearm and hand) → `Tool_L/R` (grip); `Arm_L/R` → `Elbow_L/R` (helper);
+`Root` → `Thigh_L/R` → `Leg_L/R` (shin); `Thigh_L/R` → `Knee_L/R` (helper). 20 joints, left side on +X.
+Helpers turn half as far as the forearm or shin (`Biped.settleHelpers`), so the hinge of a bent limb stays filled.
 
 Build:
 - `Joint` (name, index, parent, inverse bind matrix), `Armature` (joints in parent-first order, lookup by
@@ -91,9 +95,8 @@ Done when: unit tests cover parent chains, slerp, mirror and masks; the skeleton
 code's expectations (joint names and hierarchy checked at load, clear error otherwise).
 
 Done (26 Oct 2026): `com.murimblock.anim`: `JointTransform`, `Joint`, `Armature`, `JointMask`, `Pose`, `Biped`
-(22 joints, left side on +X; `Biped.check` compares a loaded skeleton). 14 unit tests in `ArmatureTest` and
-`PoseTest`; JOML 1.10.5 added to the test classpath. The glTF side of the check runs in step 2 with the loader.
-Step 0 is not done: Blender is not installed on this PC yet, which blocks step 2's mesh.
+(Epic Fight's 20-joint layout; `Biped.check` compares a loaded skeleton). Unit tests in `ArmatureTest` and
+`PoseTest`; JOML 1.10.5 and Gson 2.10.1 added to the test classpath.
 
 ## Step 2: Mesh and glTF loader
 
@@ -102,10 +105,12 @@ Goal: load the player body as a skinned mesh made in Blender.
 Mesh rules (made in Blender on the rig of step 0):
 - Same boxes as the vanilla player, same UVs on the 64x64 skin layout, so every skin works unchanged.
 - Two variants: wide arms (Steve) and slim arms (Alex), chosen from the player's model type.
-- The outer layer (hat, jacket, sleeves, pants) is a second mesh inflated by 0.25 px like vanilla, rendered
+- The outer layer (hat, jacket, sleeves, pants) is a second mesh inflated like vanilla (0.5 px for the hat, 0.25 px for the rest), rendered
   translucent, with the same weights.
-- Elbows and knees: three close edge loops at the joint, weights blended across them, UVs adjusted so the
-  texture does not stretch; the outer sleeve bends with the arm in one piece.
+- Elbows and knees, Epic Fight's way: the limb is two rigid blocks; at the joint a hinge, flat at rest, joins
+  them: a strip on the side the joint opens on (back of the elbow, front of the knee) from the upper block's edge
+  to the helper's edge to the lower block's edge, plus two triangles on each side from the joint's axis. The
+  hinge shows the texel row just below the joint. No stretching anywhere; the sleeve does the same.
 - At most 4 joint influences per vertex, weights summing to 1.
 
 Build:
@@ -117,6 +122,11 @@ Build:
 
 Done when: unit tests load a small fixture file; a validation reports bad weights, missing joints or UVs outside
 the skin.
+
+Done (26 Oct 2026): `GltfLoader`, `SkinnedMesh`, `SkinnedModel` (pure, tested on the shipped files: skeleton,
+vanilla boxes, weights, UVs, hinges, refusals), `anim/client/SkeletalModels` (reload listener for
+`assets/*/skeletal/*.gltf`), files exported by `tools/blender/export.sh`. The body's bottom faces' UV orientation
+is to check against vanilla in step 3.
 
 ## Step 3: Skinned renderer (third person)
 

@@ -16,7 +16,7 @@ import org.joml.Matrix4fc;
 public final class Armature {
     private final List<Joint> joints;
     private final Map<String, Joint> byName;
-    /** For each joint, its mirror (a "_l" joint's "_r" twin), or itself for a joint in the middle. */
+    /** For each joint, its mirror (a "_L" joint's "_R" twin), or itself for a joint in the middle. */
     private final int[] mirrors;
     /** For each joint, the inverse of its model transform at rest: moves a rest-pose vertex into joint space. */
     private final Matrix4f[] inverseBinds;
@@ -45,11 +45,13 @@ public final class Armature {
     }
 
     private static String mirrorName(String name) {
-        if (name.endsWith("_l")) {
-            return name.substring(0, name.length() - 2) + "_r";
-        }
-        if (name.endsWith("_r")) {
-            return name.substring(0, name.length() - 2) + "_l";
+        for (String[] sides : new String[][] {{"_l", "_r"}, {"_L", "_R"}}) {
+            if (name.endsWith(sides[0])) {
+                return name.substring(0, name.length() - 2) + sides[1];
+            }
+            if (name.endsWith(sides[1])) {
+                return name.substring(0, name.length() - 2) + sides[0];
+            }
         }
         return name;
     }
