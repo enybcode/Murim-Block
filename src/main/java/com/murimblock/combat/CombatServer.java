@@ -21,15 +21,15 @@ public final class CombatServer {
         return entity.getData(MurimAttachments.FIGHTER);
     }
 
-    /** Whether this player fights with bare hands now. */
-    public static boolean bareHanded(ServerPlayer player) {
-        return player.getMainHandItem().isEmpty();
+    /** The fighting style of what this player holds, or null when it has none. */
+    public static ResourceLocation style(ServerPlayer player) {
+        return CombatMovesets.forHeld(player.getMainHandItem());
     }
 
     /** Why combat mode cannot be on now (a lang key, empty to say nothing), or null when it can. */
     private static String blocker(ServerPlayer player) {
-        if (!bareHanded(player)) {
-            return "message.murimblock.combat.hands_full";
+        if (style(player) == null) {
+            return "message.murimblock.combat.no_style";
         }
         if (Meditation.of(player).meditating()) {
             return "message.murimblock.combat.meditating";
@@ -66,7 +66,9 @@ public final class CombatServer {
     public static void request(ServerPlayer player, ResourceLocation id) {
         CombatMove move = CombatMoves.get(id);
         Fighter fighter = fighter(player);
-        if (move == null || !fighter.combatMode() || blocker(player) != null || !fighter.clock().canStrike(LAG_SLACK)) {
+        CombatMoveset style = CombatMovesets.get(style(player));
+        if (move == null || style == null || !style.chain().contains(id) || !fighter.combatMode()
+                || blocker(player) != null || !fighter.clock().canStrike(LAG_SLACK)) {
             PacketDistributor.sendToPlayer(player, new CombatPayloads.StrikeRefused());
             return;
         }
@@ -81,6 +83,13 @@ public final class CombatServer {
             String blocked = blocker(player);
             if (blocked != null) {
                 setCombatMode(player, false, blocked);
+            } else {
+                // Another weapon, another style: what was being thrown with the old one stops.
+                ResourceLocation style = style(player);
+                if (!style.equals(fighter.style())) {
+                    fighter.reset();
+                    fighter.style(style);
+                }
             }
         }
         if (fighter.clock().active()) {

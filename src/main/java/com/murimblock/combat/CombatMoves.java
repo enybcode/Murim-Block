@@ -16,8 +16,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
  * sends them to every client, so they can be tuned without restarting the game.
  */
 public final class CombatMoves {
-    public static final ResourceLocation JAB = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "jab");
-
     /** On the server, the loaded moves; on a client, the copy the server sent. */
     private static Map<ResourceLocation, CombatMove> moves = Map.of();
 

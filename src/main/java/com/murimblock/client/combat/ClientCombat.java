@@ -3,6 +3,8 @@ package com.murimblock.client.combat;
 import com.murimblock.Murimblock;
 import com.murimblock.combat.CombatMove;
 import com.murimblock.combat.CombatMoves;
+import com.murimblock.combat.CombatMoveset;
+import com.murimblock.combat.CombatMovesets;
 import com.murimblock.combat.CombatPayloads;
 import com.murimblock.combat.Fighter;
 import com.murimblock.combat.FighterState;
@@ -14,6 +16,7 @@ import com.zigythebird.playeranimcore.enums.PlayState;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.Minecraft;
@@ -115,15 +118,31 @@ public final class ClientCombat {
         if (player == null || player.isSpectator() || !OWN.clock().canStrike(0)) {
             return;
         }
-        CombatMove move = CombatMoves.get(CombatMoves.JAB);
+        // The style of what is held picks the move; the chain goes past its first move in a later step.
+        ResourceLocation styleId = CombatMovesets.forHeld(player.getMainHandItem());
+        CombatMoveset style = CombatMovesets.get(styleId);
+        if (style == null) {
+            return;
+        }
+        ResourceLocation id = style.chainMove(0);
+        CombatMove move = CombatMoves.get(id);
         if (move == null) {
             return;
         }
-        OWN.strike(CombatMoves.JAB, move);
+        OWN.style(styleId);
+        OWN.strike(id, move);
         OWN.look(player.getYRot(), player.getXRot());
         player.setSprinting(false);
         play(player, move.animation());
-        PacketDistributor.sendToServer(new CombatPayloads.StrikeRequest(CombatMoves.JAB));
+        PacketDistributor.sendToServer(new CombatPayloads.StrikeRequest(id));
+    }
+
+    /** A change of weapon stops what the old one was throwing, as on the server. */
+    private static void checkStyle(LocalPlayer player) {
+        ResourceLocation styleId = CombatMovesets.forHeld(player.getMainHandItem());
+        if (OWN.move() != null && !Objects.equals(styleId, OWN.style())) {
+            refused();
+        }
     }
 
     private static void tickOwn(LocalPlayer player) {
@@ -283,6 +302,7 @@ public final class ClientCombat {
             if (mc.player == null || mc.level == null || mc.isPaused()) {
                 return;
             }
+            checkStyle(mc.player);
             if (OWN.move() != null) {
                 tickOwn(mc.player);
             }

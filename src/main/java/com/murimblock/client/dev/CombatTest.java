@@ -3,11 +3,15 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.client.MurimKeys;
 import com.murimblock.client.combat.ClientCombat;
+import com.murimblock.combat.CombatMoveset;
+import com.murimblock.combat.CombatMovesets;
 import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.FighterState;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.KeyMapping;
@@ -15,6 +19,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
@@ -50,6 +55,7 @@ public final class CombatTest {
     private static final String WORLD = "murim-combat-test";
     private static final int FRAMES = 16;
     private static final double ZOMBIE_DISTANCE = 2.2;
+    private static final ResourceLocation TEST_SWORD = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "test_sword");
 
     private static boolean started;
     private static int ticks = -1;
@@ -125,22 +131,42 @@ public final class CombatTest {
                 server.execute(() -> player(server).setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK)));
             }
             case 105 -> {
-                check("an item in hand ends combat mode", !ClientCombat.inCombatMode() && !serverMode(server));
-                server.execute(() -> player(server).setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY));
+                check("an item without a style ends combat mode", !ClientCombat.inCombatMode() && !serverMode(server));
+                // A sword style made for the test only, matched by item tag: the engine is not tied to bare hands.
+                Map<ResourceLocation, CombatMoveset> styles = new HashMap<>(CombatMovesets.all());
+                styles.put(TEST_SWORD, new CombatMoveset(List.of("#minecraft:swords"),
+                        List.of(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "jab")), 10, 0));
+                CombatMovesets.replace(styles);
+                server.execute(() -> player(server).setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD)));
             }
             case 108 -> KeyMapping.click(MurimKeys.COMBAT_MODE.getKey());
             case 112 -> {
-                check("B turns it on again", ClientCombat.inCombatMode());
+                check("a sword with a style allows combat mode", ClientCombat.inCombatMode() && serverMode(server));
+                placeZombie(server);
+                health = health(server);
+                click(mc);
+            }
+            case 113 -> check("the sword style strikes", ClientCombat.ownState() == FighterState.ATTACK);
+            case 130 -> {
+                float lost = health - health(server);
+                check("the sword strike lands once, no vanilla sword hit (lost " + lost + ")", lost > 2.5f && lost < 3.1f);
+                Map<ResourceLocation, CombatMoveset> styles = new HashMap<>(CombatMovesets.all());
+                styles.remove(TEST_SWORD);
+                CombatMovesets.replace(styles);
+                server.execute(() -> player(server).setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY));
+            }
+            case 133 -> {
+                check("back to bare hands, combat mode stays", ClientCombat.inCombatMode() && serverMode(server));
                 mc.player.setXRot(80);
             }
-            case 116 -> {
+            case 136 -> {
                 check("aims at the floor", mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK);
                 click(mc);
                 mc.options.keyAttack.setDown(true);
             }
-            case 117 -> check("in combat mode a block aimed at is struck, not mined",
+            case 137 -> check("in combat mode a block aimed at is struck, not mined",
                     ClientCombat.ownState() == FighterState.ATTACK && !mc.gameMode.isDestroying());
-            case 126 -> {
+            case 146 -> {
                 check("the button held does not mine either", !mc.gameMode.isDestroying());
                 mc.options.keyAttack.setDown(false);
                 mc.player.setXRot(0);
@@ -148,8 +174,8 @@ public final class CombatTest {
                 mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 mc.options.hideGui = true;
             }
-            case 135 -> click(mc);
-            case 175 -> {
+            case 155 -> click(mc);
+            case 195 -> {
                 FAILED.forEach(name -> Murimblock.LOGGER.error("Combat test: FAIL {}", name));
                 Murimblock.LOGGER.info("Combat test: {}", FAILED.isEmpty() ? "PASS" : FAILED.size() + " FAILED");
                 mc.stop();
@@ -158,14 +184,14 @@ public final class CombatTest {
             }
         }
         // Side view: the body turned a quarter from the camera, the strike thrown into the air.
-        if (ticks >= 126) {
+        if (ticks >= 146) {
             mc.player.setYBodyRot(mc.player.getYRot() - 90);
             mc.player.yBodyRotO = mc.player.yBodyRot;
             mc.player.setYHeadRot(mc.player.getYRot() - 90);
             mc.player.yHeadRotO = mc.player.yHeadRot;
         }
         film(mc, "fp", ticks - 61);
-        film(mc, "side", ticks - 136);
+        film(mc, "side", ticks - 156);
     }
 
     private static boolean serverMode(MinecraftServer server) {

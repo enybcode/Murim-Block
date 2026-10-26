@@ -294,7 +294,7 @@
   "message.murimblock.meditation.hit": "[!] A blow broke your meditation.",
   "message.murimblock.combat.on": "Combat mode enabled",
   "message.murimblock.combat.off": "Combat mode disabled",
-  "message.murimblock.combat.hands_full": "Combat mode needs empty hands",
+  "message.murimblock.combat.no_style": "You cannot fight with this in hand",
   "message.murimblock.combat.meditating": "No fighting while meditating",
   "message.murimblock.meditation.blocked": "[!] You cannot meditate now.",
   "message.murimblock.meditation.water": "[!] You cannot meditate in water.",

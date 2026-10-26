@@ -31,6 +31,19 @@ public final class CombatPayloads {
         }
     }
 
+    /** Server to client: every fighting style, on join and after {@code /reload}. */
+    public record Movesets(Map<ResourceLocation, CombatMoveset> movesets) implements CustomPacketPayload {
+        public static final Type<Movesets> TYPE = CombatPayloads.payloadType("combat_movesets");
+        public static final StreamCodec<ByteBuf, Movesets> STREAM_CODEC = ByteBufCodecs.<ByteBuf, ResourceLocation,
+                CombatMoveset, Map<ResourceLocation, CombatMoveset>>map(HashMap::new, ResourceLocation.STREAM_CODEC,
+                CombatMoveset.STREAM_CODEC).map(Movesets::new, Movesets::movesets);
+
+        @Override
+        public Type<Movesets> type() {
+            return TYPE;
+        }
+    }
+
     /** Client to server: switch combat mode on or off. */
     public record ToggleCombatMode() implements CustomPacketPayload {
         public static final Type<ToggleCombatMode> TYPE = CombatPayloads.payloadType("toggle_combat_mode");

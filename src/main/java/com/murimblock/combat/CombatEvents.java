@@ -19,7 +19,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /** Hooks bare-handed combat into the game: network, move files, ticking and the vanilla punch it replaces. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CombatEvents {
-    private static final String PROTOCOL = "2";
+    private static final String PROTOCOL = "3";
 
     private CombatEvents() {
     }
@@ -29,6 +29,8 @@ public final class CombatEvents {
         PayloadRegistrar registrar = event.registrar(PROTOCOL);
         registrar.playToClient(CombatPayloads.Moves.TYPE, CombatPayloads.Moves.STREAM_CODEC,
                 (payload, context) -> CombatMoves.replace(payload.moves()));
+        registrar.playToClient(CombatPayloads.Movesets.TYPE, CombatPayloads.Movesets.STREAM_CODEC,
+                (payload, context) -> CombatMovesets.replace(payload.movesets()));
         registrar.playToClient(CombatPayloads.StrikeRefused.TYPE, CombatPayloads.StrikeRefused.STREAM_CODEC,
                 (payload, context) -> ClientCombat.refused());
         registrar.playToClient(CombatPayloads.Strike.TYPE, CombatPayloads.Strike.STREAM_CODEC,
@@ -46,13 +48,15 @@ public final class CombatEvents {
     @SubscribeEvent
     public static void addReloadListener(AddReloadListenerEvent event) {
         event.addListener(new CombatMoves.Loader());
+        event.addListener(new CombatMovesets.Loader());
     }
 
     /** On join and after {@code /reload}. */
     @SubscribeEvent
     public static void onDatapackSync(OnDatapackSyncEvent event) {
         CombatPayloads.Moves moves = new CombatPayloads.Moves(CombatMoves.all());
-        event.getRelevantPlayers().forEach(player -> PacketDistributor.sendToPlayer(player, moves));
+        CombatPayloads.Movesets movesets = new CombatPayloads.Movesets(CombatMovesets.all());
+        event.getRelevantPlayers().forEach(player -> PacketDistributor.sendToPlayer(player, moves, movesets));
     }
 
     @SubscribeEvent

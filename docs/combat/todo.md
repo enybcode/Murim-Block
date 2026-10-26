@@ -20,6 +20,13 @@ our damage; charged strike, projectiles sent back and special actions cost Qi.
 - [x] Both arms in first person during a strike (left jab, right guard), vanilla hand at rest.
 - [ ] Enzo tries it in game.
 
+## Foundations for weapons (styles done 26 Oct 2026)
+- [x] Fighting styles in JSON (`combat_movesets`): what is held, the M1 chain, chain window, priority.
+- [x] Combat mode and strikes follow the style of the held item; a test sword style works by item tag.
+- [ ] One owner for combat animations with fixed priorities (flinch, dash, guard, attack).
+- [ ] A blow taken cancels the move and the chain (flinch, `armor_ticks` for later).
+- [ ] Hit shapes per move (box, arc) with a debug view around the player.
+
 ## Step 2: combo and charged strike
 - [ ] Jab, cross, hook, fists alternating; one click buffered; the chain drops after a short pause.
 - [ ] Hold the click to charge: visible charge, more damage and knockback, "FULL CHARGE"; costs Qi.

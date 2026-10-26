@@ -13,6 +13,17 @@ public final class Fighter {
     /** In combat mode the left click always strikes and never mines; out of it, vanilla. */
     private boolean combatMode;
 
+    /** The fighting style in hand when last checked, so a change of weapon can stop what the old one was doing. */
+    private ResourceLocation style;
+
+    public ResourceLocation style() {
+        return style;
+    }
+
+    public void style(ResourceLocation id) {
+        style = id;
+    }
+
     public boolean combatMode() {
         return combatMode;
     }

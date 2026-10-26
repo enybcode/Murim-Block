@@ -6,11 +6,26 @@ combat mode and one strike, the left jab, with placeholder animations. The full 
 
 ## Decisions (Enzo, 26 Oct 2026)
 
-- Combat mode on **B**. In it the left click always strikes and never mines; out of it, vanilla. It needs empty
-  hands and ends by itself with an item in the main hand, in meditation, on death.
+- Combat mode on **B**. In it the left click always strikes and never mines; out of it, vanilla. It needs a held item
+  with a fighting style (for now only empty hands) and ends by itself without one, in meditation, on death.
 - Dash invulnerability covers blows and arrows, not explosions.
 - Vanilla armor applies after our damage (damage goes through `hurt` with a player-attack source).
 - Charged strike, projectiles sent back and the other special actions cost Qi.
+
+## Fighting styles
+
+One JSON file per style in `data/<namespace>/combat_movesets/` (`bare_hands.json`). Swords and spears will be new
+styles and moves on the same engine, without code.
+
+| Field | Meaning |
+|---|---|
+| `held` | what the main hand holds: `"empty"`, an item id, or `"#"` and an item tag |
+| `chain` | the left-click chain (M1), move ids in order |
+| `chain_window` | ticks after a move ends in which the next click goes on with the chain (default 10) |
+| `priority` | when several styles match an item, the highest wins (ties: the smaller id) |
+
+Combat mode is allowed while the main hand has a style; holding something without one ends it. Changing to another
+style stops the move in progress. The server only accepts a strike from the chain of the style in hand.
 
 ## Moves
 
@@ -35,7 +50,7 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 - `combat/StrikeClock`: the timeline (idle, attack, guard, dash, stunned), pure Java, unit tested (`StrikeClockTest`).
 - `combat/Fighter`: clock + move; a non-saved attachment on the server, a single instance for the local player.
 - Client prediction (`client/combat/ClientCombat`): the click starts the animation, the step and the local hit test at
-  once, and sends `StrikeRequest`. The server (`combat/CombatServer`) refuses out of combat mode, or still
+  once, and sends `StrikeRequest`. The server (`combat/CombatServer`) refuses out of combat mode, a move outside the style in hand, or still
   busy (3 ticks of slack for lag), and the client then stops the animation.
 - Hits: on each active tick the server sweeps the cone from last tick's view to the current one (`StrikeReach`),
   living entities only, not through blocks, each target once per strike. It resets the target's hurt delay so one
@@ -54,7 +69,7 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 ## Checks
 
 `gradlew runCombatTest` (`run/combat-test`) presses B and clicks like a player at a still husk: vanilla punch out of
-the mode, B on and off, predicted start, step, one damage
+the mode, B on and off, a test sword style matched by tag, predicted start, step, one damage
 roll per strike even clicked twice, no cooldown, an item ends the mode, no mining even held. PASS/FAIL in the
 log, then frames in `screenshots/combat/` (`fp_*` first person, `side_*` from the side). GIF with
 `java scripts/frames-to-gif.java <frames dir> run/gifs/<name>.gif`.
