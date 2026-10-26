@@ -85,7 +85,6 @@ public final class InfoData {
         return List.of(
                 new Control(MurimKeys.OPEN_SYSTEM.getTranslatedKeyMessage(), Component.translatable("key.murimblock.open_system")),
                 control("C", "gui.murimblock.guide.key.meditate"),
-                control("B", "gui.murimblock.guide.key.combat_mode"),
                 control("1-4", "gui.murimblock.guide.key.techniques"),
                 control("R", "gui.murimblock.guide.key.ultimate"),
                 control("G", "gui.murimblock.guide.key.sense_qi"),
