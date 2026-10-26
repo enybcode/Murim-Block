@@ -66,6 +66,11 @@ public final class StrikeClock {
         struck.clear();
     }
 
+    /** Whether the strike is still within its first {@code ticks} (a move that shrugs off blows while it winds up). */
+    public boolean within(int ticks) {
+        return state == FighterState.ATTACK && tick < ticks;
+    }
+
     /** First tick of the strike: the step forward. */
     public boolean starting() {
         return state == FighterState.ATTACK && tick == 0 && frozen == 0;

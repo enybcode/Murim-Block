@@ -51,6 +51,7 @@ public final class ClientCombat {
     /** PAL layer for combat, above the lotus and getting-up layer so the two never fight over it. */
     public static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "combat");
     private static final int LAYER_PRIORITY = 1100;
+    private static final ResourceLocation FLINCH = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "combat_flinch");
     private static final ResourceLocation HUD = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "combat_mode");
     /** Ground friction turns a push into a distance: a push of v slides about v / (1 - 0.546) blocks. */
     private static final double STEP_TO_PUSH = 1 - 0.546;
@@ -63,12 +64,17 @@ public final class ClientCombat {
     /** Others' strikes seen and blows felt from the server, read by the duel test. */
     private static int strikesSeen;
     private static int blowsFelt;
+    private static int flinches;
 
     private ClientCombat() {
     }
 
     public static int strikesSeen() {
         return strikesSeen;
+    }
+
+    public static int flinches() {
+        return flinches;
     }
 
     public static int blowsFelt() {
@@ -190,6 +196,20 @@ public final class ClientCombat {
         }
     }
 
+    /** The server says this fighter took a blow: what they were throwing stops, the flinch plays. */
+    public static void flinchSeen(int entityId, int ticks) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || !(mc.level.getEntity(entityId) instanceof AbstractClientPlayer player)) {
+            return;
+        }
+        if (player == mc.player) {
+            OWN.reset();
+            OWN.clock().stun(ticks);
+            flinches++;
+        }
+        CombatAnimator.play(player, FighterState.STUNNED, FLINCH, ticks);
+    }
+
     public static void impactSeen(int attackerId, int targetId, int hitStop) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
@@ -281,6 +301,9 @@ public final class ClientCombat {
             checkStyle(mc.player);
             if (OWN.move() != null) {
                 tickOwn(mc.player);
+            } else {
+                // A flinch wears off here.
+                OWN.clock().advance();
             }
             CombatAnimator.tick(mc);
             if (shake > 0) {

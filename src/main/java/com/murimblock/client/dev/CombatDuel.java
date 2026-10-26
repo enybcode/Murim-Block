@@ -133,6 +133,10 @@ public final class CombatDuel {
         if (together == 1) {
             ownHealth = mc.player.getHealth();
         }
+        if (together == 10) {
+            // In combat mode a blow taken flinches: the defender checks it reaches it over the network.
+            KeyMapping.click(MurimKeys.COMBAT_MODE.getKey());
+        }
         if (felt < 0 && ClientCombat.blowsFelt() >= 1) {
             felt = together;
         }
@@ -140,6 +144,7 @@ public final class CombatDuel {
             float lost = ownHealth - mc.player.getHealth();
             check("the defender sees the attacker's strike", ClientCombat.strikesSeen() >= 1);
             check("the defender feels the blow (shake)", ClientCombat.blowsFelt() >= 1);
+            check("the defender flinches", ClientCombat.flinches() >= 1);
             check("the defender loses one strike of health (lost " + lost + ")", lost > 2.9f && lost < 3.1f);
             finish(mc);
         } else if (felt < 0 && together == GIVE_UP) {

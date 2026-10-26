@@ -82,6 +82,16 @@ class StrikeClockTest {
     }
 
     @Test
+    void withinCountsOnlyTheStartOfAStrike() {
+        StrikeClock clock = jab();
+        assertTrue(clock.within(2));
+        clock.advance();
+        clock.advance();
+        assertFalse(clock.within(2));
+        assertFalse(new StrikeClock().within(5));
+    }
+
+    @Test
     void stunWearsOff() {
         StrikeClock clock = jab();
         clock.stun(2);

@@ -4,6 +4,7 @@ import com.murimblock.cultivation.Meditation;
 import com.murimblock.registry.MurimAttachments;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -11,6 +12,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class CombatServer {
     /** Ticks of recovery a new strike may cut, since the client's timeline runs a little ahead. */
     private static final int LAG_SLACK = 3;
+    /** Ticks a blow taken keeps a fighter from acting. */
+    public static final int FLINCH_TICKS = 8;
     /** The knockback of the blow being dealt now, read by {@link CombatEvents} when vanilla pushes the target. */
     private static double dealingKnockback = -1;
 
@@ -125,6 +128,21 @@ public final class CombatServer {
     /** The knockback to use instead of vanilla's, or -1 when no strike of ours is being dealt. */
     public static double dealingKnockback() {
         return dealingKnockback;
+    }
+
+    /**
+     * A blow taken in combat mode: from a creature or a projectile, not fire, poison, a fall or hunger. The move in
+     * progress and the chain stop, unless the move shrugs it off while it winds up.
+     */
+    public static void blowTaken(ServerPlayer player, DamageSource source) {
+        Fighter fighter = fighter(player);
+        if (!fighter.combatMode() || source.getEntity() == null && source.getDirectEntity() == null) {
+            return;
+        }
+        if (fighter.flinch(FLINCH_TICKS)) {
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player,
+                    new CombatPayloads.Flinch(player.getId(), FLINCH_TICKS));
+        }
     }
 
     public static void stop(ServerPlayer player) {

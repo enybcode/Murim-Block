@@ -25,7 +25,7 @@ our damage; charged strike, projectiles sent back and special actions cost Qi.
 - [x] Combat mode and strikes follow the style of the held item; a test sword style works by item tag.
 - [x] One owner for combat animations with fixed priorities (stunned, dash, guard, attack); none over the lotus or
       the getting up.
-- [ ] A blow taken cancels the move and the chain (flinch, `armor_ticks` for later).
+- [x] A blow taken cancels the move and the chain: 8 ticks of flinch, not for fire or poison, `armor_ticks` ready.
 - [ ] Hit shapes per move (box, arc) with a debug view around the player.
 
 ## Step 2: combo and charged strike

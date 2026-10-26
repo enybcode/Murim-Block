@@ -15,7 +15,8 @@ import net.minecraft.world.phys.Vec3;
  * the angle is the full width of the cone in front of the eyes.
  */
 public record CombatMove(ResourceLocation animation, Phases phases, double reach, double angle, float damage,
-                         double knockback, double step, double moveSpeed, int hitStop, FirstPerson firstPerson) {
+                         double knockback, double step, double moveSpeed, int hitStop, int armorTicks,
+                         FirstPerson firstPerson) {
     public static final Codec<CombatMove> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("animation").forGetter(CombatMove::animation),
             Phases.CODEC.fieldOf("phases").forGetter(CombatMove::phases),
@@ -26,6 +27,7 @@ public record CombatMove(ResourceLocation animation, Phases phases, double reach
             Codec.doubleRange(0, 2).optionalFieldOf("step", 0.0).forGetter(CombatMove::step),
             Codec.doubleRange(0, 1).optionalFieldOf("move_speed", 1.0).forGetter(CombatMove::moveSpeed),
             Codec.intRange(0, 20).optionalFieldOf("hit_stop", 0).forGetter(CombatMove::hitStop),
+            Codec.intRange(0, 100).optionalFieldOf("armor_ticks", 0).forGetter(CombatMove::armorTicks),
             FirstPerson.CODEC.optionalFieldOf("first_person", FirstPerson.NONE).forGetter(CombatMove::firstPerson)
     ).apply(i, CombatMove::new));
     public static final StreamCodec<ByteBuf, CombatMove> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);

@@ -103,6 +103,18 @@ public final class CombatPayloads {
         }
     }
 
+    /** Server to a fighter and those watching them: they took a blow, their move and chain stop for a while. */
+    public record Flinch(int entityId, int ticks) implements CustomPacketPayload {
+        public static final Type<Flinch> TYPE = CombatPayloads.payloadType("flinch");
+        public static final StreamCodec<ByteBuf, Flinch> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, Flinch::entityId, ByteBufCodecs.VAR_INT, Flinch::ticks, Flinch::new);
+
+        @Override
+        public Type<Flinch> type() {
+            return TYPE;
+        }
+    }
+
     /** Server to those watching the attacker (not the attacker, who predicted it): a blow landed. */
     public record Impact(int attackerId, int targetId, int hitStop) implements CustomPacketPayload {
         public static final Type<Impact> TYPE = CombatPayloads.payloadType("strike_impact");

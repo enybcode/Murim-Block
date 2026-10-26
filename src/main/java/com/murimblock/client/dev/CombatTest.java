@@ -236,6 +236,32 @@ public final class CombatTest {
                 check("removing the pack and /reload bring the jab back to 3", jab != null && jab.damage() == 3f);
             }
             case 305 -> {
+                placeZombie(server);
+                health = health(server);
+                click(mc);
+            }
+            // The husk hits back during the windup: the strike stops before it lands.
+            case 307 -> blow(server, false);
+            case 309 -> check("a blow taken flinches the fighter", ClientCombat.ownState() == FighterState.STUNNED
+                    && ClientCombat.flinches() >= 1);
+            case 325 -> {
+                float lost = health - health(server);
+                check("a blow taken in the windup cancels the strike (lost " + lost + ")", lost == 0);
+                click(mc);
+            }
+            case 326 -> check("after the flinch the next click strikes", ClientCombat.ownState() == FighterState.ATTACK);
+            case 345 -> {
+                placeZombie(server);
+                health = health(server);
+                click(mc);
+            }
+            // Fire is no blow: the strike goes on.
+            case 347 -> blow(server, true);
+            case 365 -> {
+                float lost = health - health(server);
+                check("burning does not cancel the strike (lost " + lost + ")", lost > 2.5f && lost < 3.1f);
+            }
+            case 370 -> {
                 FAILED.forEach(name -> Murimblock.LOGGER.error("Combat test: FAIL {}", name));
                 Murimblock.LOGGER.info("Combat test: {}", FAILED.isEmpty() ? "PASS" : FAILED.size() + " FAILED");
                 mc.stop();
@@ -283,6 +309,19 @@ public final class CombatTest {
         } catch (IOException e) {
             check("test data pack written: " + e, false);
         }
+    }
+
+    /** One damage on the player: from the husk's fist, or from fire. */
+    private static void blow(MinecraftServer server, boolean fire) {
+        server.submit(() -> {
+            ServerPlayer player = player(server);
+            player.invulnerableTime = 0;
+            if (fire) {
+                player.hurt(player.damageSources().onFire(), 1);
+            } else if (server.overworld().getEntity(zombieId) instanceof Zombie zombie) {
+                player.hurt(player.damageSources().mobAttack(zombie), 1);
+            }
+        }).join();
     }
     private static void film(Minecraft mc, String name, int frame) {
         if (frame >= 0 && frame < FRAMES) {

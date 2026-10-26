@@ -40,6 +40,7 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 | `step` | blocks stepped forward on the first tick (on the ground only) |
 | `move_speed` | multiplier on walking input during the move |
 | `hit_stop` | ticks the striker freezes on impact |
+| `armor_ticks` | first ticks of the move in which a blow taken does not cut it (default 0) |
 | `first_person` | `left` and `right`: keys `{tick, fist: [x, y, z]}`, the fist in camera space (blocks, x right, y up, -z ahead) |
 
 `/reload` reads them again and sends them to every client. A world data pack overrides the built-in file; editing
@@ -65,6 +66,10 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
   it itself). In the mode the client takes the attack clicks before vanilla (`ClientTickEvent.Pre`) and cancels every
   vanilla attack trigger, held button included; the server also cancels vanilla attacks and block hits. A crimson
   emblem sits right of the hotbar.
+- A blow taken (`CombatServer.blowTaken`): in combat mode, damage from a creature or a projectile stops the move
+  in progress and the chain, and nothing can start for 8 ticks (`FLINCH_TICKS`); fire, poison, falls and hunger
+  cut nothing, and a move's `armor_ticks` shrug blows off. The server sends `Flinch` to the fighter and those
+  watching: the predicted strike stops and `combat_flinch` plays above any strike.
 - First person (`client/combat/FirstPersonArms`): during a strike both arms are drawn from the skin in place of the
   vanilla hand. Each hangs from a fixed shoulder and reaches to its fist, eased between the move's keys; hit-stop
   holds them still.

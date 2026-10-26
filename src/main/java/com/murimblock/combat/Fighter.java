@@ -55,6 +55,20 @@ public final class Fighter {
         clock.strike(phases.windup(), phases.active(), phases.recovery());
     }
 
+    /**
+     * A blow taken: the move in progress and the chain stop, and nothing can start for {@code ticks}. False when the
+     * move shrugs it off (its {@code armor_ticks}).
+     */
+    public boolean flinch(int ticks) {
+        CombatMove current = move();
+        if (current != null && clock.within(current.armorTicks())) {
+            return false;
+        }
+        reset();
+        clock.stun(ticks);
+        return true;
+    }
+
     public void reset() {
         clock.reset();
         moveId = null;
