@@ -26,6 +26,17 @@ public final class StrikeClock {
         return frozen > 0 ? tick : tick + partial;
     }
 
+    /**
+     * Whether {@code next} may start now: a strike once the current one is nearly over ({@code slack} ticks of
+     * recovery left), anything else when it outranks or equals what is going on.
+     */
+    public boolean canEnter(FighterState next, int slack) {
+        if (next == FighterState.ATTACK) {
+            return canStrike(slack);
+        }
+        return state == FighterState.IDLE || next.priority() >= state.priority();
+    }
+
     /** Whether a new strike may start now, allowing {@code slack} ticks of recovery left (network lag). */
     public boolean canStrike(int slack) {
         return state == FighterState.IDLE || state == FighterState.ATTACK && remaining() <= slack;

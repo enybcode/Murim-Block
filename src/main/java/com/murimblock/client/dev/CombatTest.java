@@ -3,12 +3,16 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.client.MurimKeys;
 import com.murimblock.client.combat.ClientCombat;
+import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.client.innerworld.TrialEntry;
 import com.murimblock.combat.CombatMove;
 import com.murimblock.combat.CombatMoves;
 import com.murimblock.combat.CombatMoveset;
 import com.murimblock.combat.CombatMovesets;
 import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.FighterState;
+import com.zigythebird.playeranim.animation.PlayerAnimationController;
+import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,6 +124,21 @@ public final class CombatTest {
                 KeyMapping.click(MurimKeys.COMBAT_MODE.getKey());
             }
             case 42 -> check("B turns combat mode on", ClientCombat.inCombatMode() && serverMode(server));
+            case 46 -> {
+                // The getting up of the trial plays on the cultivation layer: combat must not cover it.
+                if (PlayerAnimationAccess.getPlayerAnimationLayer(mc.player, ClientCultivation.LAYER)
+                        instanceof PlayerAnimationController controller) {
+                    controller.triggerAnimation(TrialEntry.RISE);
+                }
+                click(mc);
+            }
+            case 47 -> {
+                check("no strike while the getting up plays", ClientCombat.ownState() == FighterState.IDLE);
+                if (PlayerAnimationAccess.getPlayerAnimationLayer(mc.player, ClientCultivation.LAYER)
+                        instanceof PlayerAnimationController controller) {
+                    controller.stopTriggeredAnimation();
+                }
+            }
             case 60 -> {
                 placeZombie(server);
                 health = health(server);

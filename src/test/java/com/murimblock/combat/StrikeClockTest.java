@@ -69,6 +69,19 @@ class StrikeClockTest {
     }
 
     @Test
+    void higherStatesCutLowerOnes() {
+        StrikeClock clock = jab();
+        assertTrue(clock.canEnter(FighterState.STUNNED, 0));
+        assertTrue(clock.canEnter(FighterState.DASH, 0));
+        assertTrue(clock.canEnter(FighterState.GUARD, 0));
+        assertFalse(clock.canEnter(FighterState.ATTACK, 0));
+        clock.stun(5);
+        assertFalse(clock.canEnter(FighterState.DASH, 0));
+        assertFalse(clock.canEnter(FighterState.ATTACK, 3));
+        assertTrue(clock.canEnter(FighterState.STUNNED, 0));
+    }
+
+    @Test
     void stunWearsOff() {
         StrikeClock clock = jab();
         clock.stun(2);

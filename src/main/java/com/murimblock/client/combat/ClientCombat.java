@@ -10,12 +10,8 @@ import com.murimblock.combat.Fighter;
 import com.murimblock.combat.FighterState;
 import com.murimblock.combat.StrikeReach;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
-import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import com.zigythebird.playeranim.api.PlayerAnimationFactory;
 import com.zigythebird.playeranimcore.enums.PlayState;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
@@ -62,8 +58,6 @@ public final class ClientCombat {
     private static final float SHAKE_DEGREES = 1.6f;
 
     private static final Fighter OWN = new Fighter();
-    /** Players whose animation is held by hit-stop, with the ticks left. */
-    private static final Map<Integer, Integer> HELD = new HashMap<>();
     private static int shake;
     private static boolean combatMode;
     /** Others' strikes seen and blows felt from the server, read by the duel test. */
@@ -140,11 +134,14 @@ public final class ClientCombat {
         if (move == null) {
             return;
         }
+        if (!CombatAnimator.canPlay(player, FighterState.ATTACK)) {
+            return;
+        }
         OWN.style(styleId);
         OWN.strike(id, move);
         OWN.look(player.getYRot(), player.getXRot());
         player.setSprinting(false);
-        play(player, move.animation());
+        CombatAnimator.play(player, FighterState.ATTACK, move.animation(), move.length());
         PacketDistributor.sendToServer(new CombatPayloads.StrikeRequest(id));
     }
 
@@ -166,7 +163,7 @@ public final class ClientCombat {
             for (LivingEntity target : StrikeReach.targets(player, move, OWN.lastYaw(), OWN.lastPitch())) {
                 if (OWN.clock().markStruck(target.getId())) {
                     OWN.clock().hitStop(move.hitStop());
-                    hold(player.getId(), move.hitStop());
+                    CombatAnimator.hold(player, move.hitStop());
                     impact(target);
                     shake = SHAKE_TICKS;
                 }
@@ -179,8 +176,8 @@ public final class ClientCombat {
     public static void refused() {
         Minecraft mc = Minecraft.getInstance();
         OWN.reset();
-        if (mc.player != null && controller(mc.player) instanceof PlayerAnimationController controller) {
-            controller.stopTriggeredAnimation();
+        if (mc.player != null) {
+            CombatAnimator.stop(mc.player);
         }
     }
 
@@ -188,7 +185,7 @@ public final class ClientCombat {
         CombatMove move = CombatMoves.get(id);
         Minecraft mc = Minecraft.getInstance();
         if (move != null && mc.level != null && mc.level.getEntity(entityId) instanceof AbstractClientPlayer player) {
-            play(player, move.animation());
+            CombatAnimator.play(player, FighterState.ATTACK, move.animation(), move.length());
             strikesSeen++;
         }
     }
@@ -198,7 +195,9 @@ public final class ClientCombat {
         if (mc.level == null) {
             return;
         }
-        hold(attackerId, hitStop);
+        if (mc.level.getEntity(attackerId) instanceof AbstractClientPlayer attacker) {
+            CombatAnimator.hold(attacker, hitStop);
+        }
         if (mc.level.getEntity(targetId) instanceof Entity target) {
             impact(target);
             if (target == mc.player) {
@@ -219,42 +218,6 @@ public final class ClientCombat {
                     random.nextGaussian() * 0.3 + 0.1, random.nextGaussian() * 0.4);
         }
         mc.level.addParticle(ParticleTypes.SWEEP_ATTACK, at.x, at.y, at.z, 0, 0, 0);
-    }
-
-    private static void play(AbstractClientPlayer player, ResourceLocation animation) {
-        if (controller(player) instanceof PlayerAnimationController controller) {
-            controller.unpause();
-            HELD.remove(player.getId());
-            controller.triggerAnimation(animation);
-        }
-    }
-
-    /** Hit-stop: the striker's animation stands still for a few ticks. */
-    private static void hold(int entityId, int ticks) {
-        Minecraft mc = Minecraft.getInstance();
-        if (ticks > 0 && mc.level != null && mc.level.getEntity(entityId) instanceof AbstractClientPlayer player
-                && controller(player) instanceof PlayerAnimationController controller) {
-            controller.pause();
-            HELD.put(entityId, ticks);
-        }
-    }
-
-    private static Object controller(AbstractClientPlayer player) {
-        return PlayerAnimationAccess.getPlayerAnimationLayer(player, LAYER);
-    }
-
-    private static void releaseHeld(Minecraft mc) {
-        for (Iterator<Map.Entry<Integer, Integer>> it = HELD.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry<Integer, Integer> held = it.next();
-            if (held.setValue(held.getValue() - 1) > 1) {
-                continue;
-            }
-            it.remove();
-            if (mc.level.getEntity(held.getKey()) instanceof AbstractClientPlayer player
-                    && controller(player) instanceof PlayerAnimationController controller) {
-                controller.unpause();
-            }
-        }
     }
 
     @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -319,7 +282,7 @@ public final class ClientCombat {
             if (OWN.move() != null) {
                 tickOwn(mc.player);
             }
-            releaseHeld(mc);
+            CombatAnimator.tick(mc);
             if (shake > 0) {
                 shake--;
             }
@@ -350,7 +313,7 @@ public final class ClientCombat {
         public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
             OWN.reset();
             combatMode = false;
-            HELD.clear();
+            CombatAnimator.clear();
             shake = 0;
         }
     }

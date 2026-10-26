@@ -57,7 +57,10 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
   strike is exactly one damage roll, and no vanilla attack cooldown applies.
 - Impact: sound, crit particles, a short camera shake for striker and target, and hit-stop (the animation and the
   timeline pause). The striker plays it from its own prediction; others get `Impact` from the server.
-- Combat animations play on their own PAL layer (`murimblock:combat`, above the lotus and getting-up layer).
+- Combat animations play on their own PAL layer (`murimblock:combat`), and only through `client/combat/CombatAnimator`:
+  one action per player, a new one cuts the current one only when it ranks as high or higher (stunned > dash >
+  guard > attack, `FighterState`), with a 2-tick fade; hit-stop pauses it. Nothing plays, and no strike starts,
+  while the cultivation layer (lotus, getting up) is busy. The server follows the same order (`StrikeClock.canEnter`).
 - Combat mode: B sends `ToggleCombatMode`; the server decides and answers `CombatMode` (with the reason when it ends
   it itself). In the mode the client takes the attack clicks before vanilla (`ClientTickEvent.Pre`) and cancels every
   vanilla attack trigger, held button included; the server also cancels vanilla attacks and block hits. A crimson
