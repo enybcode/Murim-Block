@@ -2,7 +2,7 @@
 
 Our own melee, no Epic Fight, modelled on a video Enzo showed on 26 Oct 2026 (combat mode on a key, both arms in
 first person, jab / cross / hook, charged strike, parry, projectiles sent back, a style rank). Slice 1, step 1:
-combat mode and one strike, the left jab, with placeholder animations. The full plan is in `todo.md` next to this file.
+combat mode and the bare-handed M1 chain from the mockup (jab, cross, hook, uppercut). The full plan is in `todo.md`.
 
 ## Decisions (Enzo, 26 Oct 2026)
 
@@ -37,6 +37,7 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 | `phases` | `windup` before the blow lands, `active` ticks it can hit, `recovery` before the next action |
 | `hitbox` | where it hits, around the eyes: `{"type": "box", "start", "length", "width", "height"}` along the view (up and down too), or `{"type": "arc", "radius", "height", "from", "to"}` swept in degrees of the view (negative to the left) over the active ticks |
 | `damage`, `knockback` | damage before armor; knockback replaces vanilla's 0.4 |
+| `lift` | upward push given to the target (the uppercut), default 0 |
 | `step` | blocks stepped forward on the first tick (on the ground only) |
 | `move_speed` | multiplier on walking input during the move |
 | `hit_stop` | ticks the striker freezes on impact |
@@ -75,6 +76,13 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
   in progress and the chain, and nothing can start for 8 ticks (`FLINCH_TICKS`); fire, poison, falls and hunger
   cut nothing, and a move's `armor_ticks` shrug blows off. The server sends `Flinch` to the fighter and those
   watching: the predicted strike stops and `combat_flinch` plays above any strike.
+- The chain (`ChainTracker`, unit tested): a click within the style's `chain_window` after a move ends throws the next
+  move, after the last one the first again; later, or after a blow taken, it starts over. A click during a move is
+  kept and thrown the tick the move allows (one click ahead); a click while flinching is lost. The client sends the
+  chain index; the server accepts the next one (window widened by the lag slack) or a fresh start at the first.
+- The bare-handed chain: jab 2/2/5 ticks, 3 damage; cross 3/2/6, 3.9, box 3.3 long; hook 4/2/7, 4.5, arc of 2.7
+  from 70 degrees left to 20 right; uppercut 5/2/10, 6, lift 0.55. First-person keys come from the mockup's
+  skeleton, rescaled to our camera; third-person animations `combat_jab`, `_cross`, `_hook`, `_uppercut`.
 - First person (`client/combat/FirstPersonArms`): during a strike both arms are drawn from the skin in place of the
   vanilla hand. Each hangs from a fixed shoulder and reaches to its fist, eased between the move's keys; hit-stop
   holds them still.
@@ -89,7 +97,12 @@ hitbox edges with the hitbox view on (ahead, too far, to the side, behind, behin
 log, then frames in `screenshots/combat/` (`fp_*` first person, `side_*` from the side). GIF with
 `java scripts/frames-to-gif.java <frames dir> run/gifs/<name>.gif`.
 
-Known: the jab animations (first and third person) are placeholders; first-person poses are tuned by eye.
+The chain checks: four clicks in a row throw the four moves and deal their damage (17.1 after armor), the uppercut
+pushes up, a long pause starts over, a click in the window goes on, a blow taken starts over; then the chain filmed
+in first person, from the side and from the front (`chain_*`). A husk without AI never moves, so the test reads the
+uppercut's upward push rather than a flight.
+
+Known: the animations are first versions, to tune by eye in game.
 
 `/reload` is checked by `runCombatTest` too: a world data pack makes the jab hit for 5, then removing it brings 3 back.
 

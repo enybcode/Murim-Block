@@ -1,30 +1,12 @@
 {
   "animation": "murimblock:combat_jab",
-  "phases": {
-    "windup": 3,
-    "active": 2,
-    "recovery": 7
-  },
+  "phases": { "windup": 2, "active": 2, "recovery": 5 },
   "hitbox": { "type": "box", "start": 0, "length": 3.0, "width": 1.2, "height": 1.2 },
   "damage": 3.0,
   "knockback": 0.35,
+  "lift": 0,
   "step": 0.35,
   "move_speed": 0.4,
-  "hit_stop": 3,
-  "first_person": {
-    "left": [
-      { "tick": 0, "fist": [-0.34, -0.72, -0.30] },
-      { "tick": 1.5, "fist": [-0.26, -0.40, -0.50] },
-      { "tick": 3, "fist": [-0.02, -0.09, -0.95] },
-      { "tick": 5, "fist": [-0.02, -0.09, -0.95] },
-      { "tick": 8.5, "fist": [-0.26, -0.40, -0.50] },
-      { "tick": 12, "fist": [-0.36, -0.80, -0.28] }
-    ],
-    "right": [
-      { "tick": 0, "fist": [0.36, -0.78, -0.30] },
-      { "tick": 2, "fist": [0.20, -0.27, -0.50] },
-      { "tick": 9, "fist": [0.20, -0.27, -0.50] },
-      { "tick": 12, "fist": [0.36, -0.80, -0.28] }
-    ]
-  }
+  "hit_stop": 2,
+  "first_person": {"left":[{"tick":0,"fist":[-0.2,-0.25,-0.5]},{"tick":1,"fist":[-0.16,-0.15,-0.78]},{"tick":2,"fist":[-0.04,-0.09,-0.95]},{"tick":4,"fist":[-0.04,-0.09,-0.95]},{"tick":6,"fist":[-0.16,-0.16,-0.68]},{"tick":8,"fist":[-0.21,-0.28,-0.46]},{"tick":9,"fist":[-0.2,-0.25,-0.5]}],"right":[{"tick":0,"fist":[0.2,-0.25,-0.5]},{"tick":1,"fist":[0.23,-0.26,-0.47]},{"tick":2,"fist":[0.26,-0.28,-0.41]},{"tick":4,"fist":[0.26,-0.28,-0.41]},{"tick":6,"fist":[0.22,-0.26,-0.47]},{"tick":8,"fist":[0.2,-0.25,-0.51]},{"tick":9,"fist":[0.2,-0.25,-0.5]}]}
 }

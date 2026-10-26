@@ -80,11 +80,12 @@ public final class CombatPayloads {
         }
     }
 
-    /** Client to server: the player started this strike (its animation already plays on their screen). */
-    public record StrikeRequest(ResourceLocation move) implements CustomPacketPayload {
+    /** Client to server: the player started this strike, at this place of the chain (it already plays on their screen). */
+    public record StrikeRequest(ResourceLocation move, int chainIndex) implements CustomPacketPayload {
         public static final Type<StrikeRequest> TYPE = CombatPayloads.payloadType("strike_request");
         public static final StreamCodec<ByteBuf, StrikeRequest> STREAM_CODEC =
-                ResourceLocation.STREAM_CODEC.map(StrikeRequest::new, StrikeRequest::move);
+                StreamCodec.composite(ResourceLocation.STREAM_CODEC, StrikeRequest::move, ByteBufCodecs.VAR_INT,
+                        StrikeRequest::chainIndex, StrikeRequest::new);
 
         @Override
         public Type<StrikeRequest> type() {

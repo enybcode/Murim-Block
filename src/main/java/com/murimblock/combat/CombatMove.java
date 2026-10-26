@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
  * the hitbox is a {@link HitShape} around the eyes.
  */
 public record CombatMove(ResourceLocation animation, Phases phases, HitShape hitbox, float damage,
-                         double knockback, double step, double moveSpeed, int hitStop, int armorTicks,
+                         double knockback, double lift, double step, double moveSpeed, int hitStop, int armorTicks,
                          FirstPerson firstPerson) {
     /** A box (start, length, width, height) or an arc (radius, height, from, to); see {@link HitShape}. */
     public static final Codec<HitShape> HIT_SHAPE_CODEC = RecordCodecBuilder.<HitShape>create(i -> i.group(
@@ -38,6 +38,7 @@ public record CombatMove(ResourceLocation animation, Phases phases, HitShape hit
             HIT_SHAPE_CODEC.fieldOf("hitbox").forGetter(CombatMove::hitbox),
             Codec.floatRange(0, 1000).fieldOf("damage").forGetter(CombatMove::damage),
             Codec.doubleRange(0, 5).optionalFieldOf("knockback", 0.4).forGetter(CombatMove::knockback),
+            Codec.doubleRange(0, 2).optionalFieldOf("lift", 0.0).forGetter(CombatMove::lift),
             Codec.doubleRange(0, 2).optionalFieldOf("step", 0.0).forGetter(CombatMove::step),
             Codec.doubleRange(0, 1).optionalFieldOf("move_speed", 1.0).forGetter(CombatMove::moveSpeed),
             Codec.intRange(0, 20).optionalFieldOf("hit_stop", 0).forGetter(CombatMove::hitStop),

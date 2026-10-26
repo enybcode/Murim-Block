@@ -39,6 +39,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Zombie;
@@ -81,6 +82,8 @@ public final class CombatTest {
     private static float health;
     private static Vec3 before;
     private static final List<String> FAILED = new ArrayList<>();
+    /** During the chain checks, clicks go on with the chain instead of starting it over. */
+    private static boolean chaining;
 
     private CombatTest() {
     }
@@ -148,11 +151,10 @@ public final class CombatTest {
                 click(mc);
             }
             case 61 -> check("strike starts at once (predicted)", ClientCombat.ownState() == FighterState.ATTACK);
-            case 62 -> click(mc);
             case 70 -> check("steps forward", mc.player.position().distanceTo(before) > 0.1);
             case 80 -> {
                 float lost = health - health(server);
-                check("one strike deals its damage once, even clicked twice (lost " + lost + ")", lost > 2.5f && lost < 3.1f);
+                check("one strike deals its damage once (lost " + lost + ")", lost > 2.5f && lost < 3.1f);
                 placeZombie(server);
                 health = health(server);
                 click(mc);
@@ -270,7 +272,7 @@ public final class CombatTest {
                 mc.options.hideGui = true;
             }
             case 374 -> check("/murim debug hitboxes on shows the hitboxes", HitboxDebugView.shown());
-            case EDGES_START + 25 * 6 + 10 -> {
+            case CHAIN + 330 -> {
                 FAILED.forEach(name -> Murimblock.LOGGER.error("Combat test: FAIL {}", name));
                 Murimblock.LOGGER.info("Combat test: {}", FAILED.isEmpty() ? "PASS" : FAILED.size() + " FAILED");
                 mc.stop();
@@ -288,6 +290,7 @@ public final class CombatTest {
         film(mc, "fp", ticks - 61);
         film(mc, "side", ticks - 156);
         edges(mc, server);
+        chain(mc, server);
     }
 
     private static boolean serverMode(MinecraftServer server) {
@@ -414,7 +417,7 @@ public final class CombatTest {
         CombatMove jab = CombatMoves.get(JAB);
         ResourceLocation hookId = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "test_hook");
         CombatMove hook = new CombatMove(jab.animation(), jab.phases(), HitShape.arc(2.6, 1.4, -70, 20), jab.damage(),
-                jab.knockback(), 0, jab.moveSpeed(), jab.hitStop(), 0, CombatMove.FirstPerson.NONE);
+                jab.knockback(), 0, 0, jab.moveSpeed(), jab.hitStop(), 0, CombatMove.FirstPerson.NONE);
         Map<ResourceLocation, CombatMove> moves = new HashMap<>(savedMoves);
         moves.put(hookId, hook);
         CombatMoves.replace(moves);
@@ -424,6 +427,128 @@ public final class CombatTest {
                 bare.priority()));
         CombatMovesets.replace(styles);
     }
+
+    private static final int CHAIN = EDGES_START + 25 * 6 + 15;
+    private static final List<String> CHAIN_ORDER = List.of("jab", "cross", "hook", "uppercut");
+    private static final List<String> thrown = new ArrayList<>();
+    private static double huskStartY;
+    private static double huskTopY;
+
+    /**
+     * The M1 chain, then the same chain filmed from the side and from the front. Clicks during a move are kept and
+     * thrown when it allows, so four clicks in a row give the four moves.
+     */
+    private static void chain(Minecraft mc, MinecraftServer server) {
+        int t = ticks - CHAIN;
+        if (t < 0) {
+            return;
+        }
+        ResourceLocation now = ClientCombat.ownMove();
+        if (now != null && (thrown.isEmpty() || !thrown.getLast().equals(now.getPath()))) {
+            thrown.add(now.getPath());
+        }
+        switch (t) {
+            case 0 -> {
+                chaining = true;
+                server.getCommands().performPrefixedCommand(player(server).createCommandSourceStack(),
+                        "murim debug hitboxes off");
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                mc.options.hideGui = false;
+                standStill(mc, server, 0);
+                placeZombie(server);
+                server.submit(() -> {
+                    if (server.overworld().getEntity(zombieId) instanceof Zombie zombie) {
+                        // No knockback, so all four reach it; the uppercut's lift is what moves it.
+                        zombie.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
+                        huskStartY = zombie.getY();
+                        huskTopY = huskStartY;
+                    }
+                }).join();
+            }
+            case 2 -> {
+                thrown.clear();
+                health = health(server);
+                click(mc);
+            }
+            case 4, 17, 32 -> click(mc);
+            case 70 -> {
+                float lost = health - health(server);
+                check("four clicks throw jab, cross, hook, uppercut (" + thrown + ")", thrown.equals(CHAIN_ORDER));
+                // 3 + 3.9 + 4.5 + 6 = 17.4 before the husk's armor.
+                check("the chain deals its four blows (lost " + lost + ")", lost > 16.5f && lost < 17.5f);
+                check("the uppercut pushes the target up (" + (huskTopY - huskStartY) + ")", huskTopY - huskStartY > 0.3);
+                placeZombie(server);
+            }
+            case 90 -> {
+                thrown.clear();
+                click(mc);
+            }
+            case 91 -> check("after a long pause the chain starts over at the jab", "jab".equals(path(ClientCombat.ownMove())));
+            case 106 -> click(mc);
+            case 107 -> check("a click within the window goes on with the cross", "cross".equals(path(ClientCombat.ownMove())));
+            case 140 -> click(mc);
+            case 142 -> blow(server, false);
+            // Without the reset this click, 10 ticks after the jab was cut, would throw the cross.
+            case 153 -> click(mc);
+            case 154 -> check("a blow taken starts the chain over", "jab".equals(path(ClientCombat.ownMove())));
+            case 190 -> {
+                // From the side: the body turned a quarter from the camera, the strikes thrown into the air.
+                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                mc.options.hideGui = true;
+                standStill(mc, server, 90);
+                server.submit(() -> {
+                    if (server.overworld().getEntity(zombieId) instanceof Zombie zombie) {
+                        zombie.moveTo(center.getX() + 0.5, center.getY(), center.getZ() + 6.5, 180, 0);
+                    }
+                }).join();
+            }
+            case 192, 194, 206, 221 -> click(mc);
+            case 260 -> {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                standStill(mc, server, 0);
+            }
+            case 262, 264, 276, 291 -> click(mc);
+            default -> {
+            }
+        }
+        if (t >= 46 && t <= 70) {
+            server.submit(() -> {
+                if (server.overworld().getEntity(zombieId) instanceof Zombie zombie) {
+                    // A husk without AI never moves: its upward push is what the uppercut gives.
+                    huskTopY = Math.max(huskTopY, huskStartY + zombie.getDeltaMovement().y);
+                }
+            }).join();
+        }
+        if (t >= 190 && t < 260) {
+            mc.player.setYBodyRot(mc.player.getYRot() - 90);
+            mc.player.yBodyRotO = mc.player.yBodyRot;
+            mc.player.setYHeadRot(mc.player.getYRot() - 90);
+            mc.player.yHeadRotO = mc.player.yHeadRot;
+        }
+        filmEvery(mc, "chain_fp", t - 3, 64);
+        filmEvery(mc, "chain_side", t - 193, 64);
+        filmEvery(mc, "chain_front", t - 263, 64);
+    }
+
+    private static String path(ResourceLocation id) {
+        return id == null ? null : id.getPath();
+    }
+
+    /** The player back at the center, looking level along this yaw. */
+    private static void standStill(Minecraft mc, MinecraftServer server, float yaw) {
+        server.submit(() -> player(server).connection.teleport(center.getX() + 0.5, center.getY(), center.getZ() + 0.5,
+                yaw, 0)).join();
+        mc.player.setYRot(yaw);
+        mc.player.setXRot(0);
+    }
+
+    /** One shot every other tick, up to {@code frames} shots. */
+    private static void filmEvery(Minecraft mc, String name, int tick, int frames) {
+        if (tick >= 0 && tick % 2 == 0 && tick / 2 < frames / 2) {
+            Screenshot.grab(mc.gameDirectory, String.format("combat/%s_%02d.png", name, tick / 2), mc.getMainRenderTarget(),
+                    message -> { });
+        }
+    }
     private static void film(Minecraft mc, String name, int frame) {
         if (frame >= 0 && frame < FRAMES) {
             Screenshot.grab(mc.gameDirectory, String.format("combat/%s_%02d.png", name, frame), mc.getMainRenderTarget(),
@@ -431,7 +556,13 @@ public final class CombatTest {
         }
     }
 
+    /** A click; outside the chain checks it starts the chain over, so the strike is always the jab. */
     private static void click(Minecraft mc) {
+        if (!chaining) {
+            ClientCombat.restartChain();
+            MinecraftServer server = mc.getSingleplayerServer();
+            server.submit(() -> CombatServer.fighter(player(server)).chain().reset()).join();
+        }
         KeyMapping.click(mc.options.keyAttack.getKey());
     }
 

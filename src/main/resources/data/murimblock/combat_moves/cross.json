@@ -1,0 +1,12 @@
+{
+  "animation": "murimblock:combat_cross",
+  "phases": { "windup": 3, "active": 2, "recovery": 6 },
+  "hitbox": { "type": "box", "start": 0, "length": 3.3, "width": 1.2, "height": 1.2 },
+  "damage": 3.9,
+  "knockback": 0.45,
+  "lift": 0,
+  "step": 0.4,
+  "move_speed": 0.35,
+  "hit_stop": 3,
+  "first_person": {"left":[{"tick":0,"fist":[-0.2,-0.25,-0.5]},{"tick":1,"fist":[-0.25,-0.28,-0.42]},{"tick":2,"fist":[-0.3,-0.33,-0.28]},{"tick":3,"fist":[-0.31,-0.33,-0.08]},{"tick":5,"fist":[-0.31,-0.33,-0.08]},{"tick":8,"fist":[-0.25,-0.25,-0.33]},{"tick":10,"fist":[-0.19,-0.21,-0.44]},{"tick":11,"fist":[-0.2,-0.25,-0.5]}],"right":[{"tick":0,"fist":[0.2,-0.25,-0.5]},{"tick":1,"fist":[0.15,-0.23,-0.56]},{"tick":2,"fist":[0.1,-0.08,-0.97]},{"tick":3,"fist":[0.04,-0.02,-1.19]},{"tick":5,"fist":[0.04,-0.02,-1.19]},{"tick":8,"fist":[0.12,-0.17,-0.66]},{"tick":10,"fist":[0.22,-0.26,-0.48]},{"tick":11,"fist":[0.2,-0.25,-0.5]}]}
+}

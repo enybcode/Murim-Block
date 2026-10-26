@@ -29,11 +29,11 @@ our damage; charged strike, projectiles sent back and special actions cost Qi.
 - [x] Hit shapes per move (box, arc) with a debug view around the player (`/murim debug hitboxes on`).
 
 ## Step 2: combo and charged strike
-- [ ] Jab, cross, hook, fists alternating; one click buffered; the chain drops after a short pause.
+- [x] Jab, cross, hook, uppercut, fists alternating; one click buffered; the chain drops after a short pause.
 - [ ] Hold the click to charge: visible charge, more damage and knockback, "FULL CHARGE"; costs Qi.
-- [ ] Real third-person animations (combo, charge, guard) with bent elbows and knees.
-- [ ] First-person poses for each move.
-- [ ] Check: GIFs from the side, the front and first person.
+- [x] Third-person animations of the four punches, bent elbows and knees (first versions); charge and guard to do.
+- [x] First-person poses for each move, from the mockup.
+- [x] Check: GIFs from the side, the front and first person.
 
 ## Step 3: defense
 - [ ] Guard, front only, with its stance.

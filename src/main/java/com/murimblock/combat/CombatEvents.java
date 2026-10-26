@@ -22,7 +22,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /** Hooks bare-handed combat into the game: network, move files, ticking and the vanilla punch it replaces. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CombatEvents {
-    private static final String PROTOCOL = "5";
+    private static final String PROTOCOL = "6";
 
     private CombatEvents() {
     }
@@ -49,7 +49,8 @@ public final class CombatEvents {
         registrar.playToServer(CombatPayloads.ToggleCombatMode.TYPE, CombatPayloads.ToggleCombatMode.STREAM_CODEC,
                 (payload, context) -> CombatServer.toggleCombatMode((ServerPlayer) context.player()));
         registrar.playToServer(CombatPayloads.StrikeRequest.TYPE, CombatPayloads.StrikeRequest.STREAM_CODEC,
-                (payload, context) -> CombatServer.request((ServerPlayer) context.player(), payload.move()));
+                (payload, context) -> CombatServer.request((ServerPlayer) context.player(), payload.move(),
+                        payload.chainIndex()));
     }
 
     @SubscribeEvent

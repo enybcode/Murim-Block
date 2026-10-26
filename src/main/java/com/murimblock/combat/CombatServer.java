@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /** The server's side of a fight: it checks each strike, finds who it reaches and deals the damage. */
@@ -66,16 +67,24 @@ public final class CombatServer {
         PacketDistributor.sendToPlayer(player, new CombatPayloads.CombatMode(on, reason));
     }
 
-    public static void request(ServerPlayer player, ResourceLocation id) {
+    /**
+     * A strike asked at {@code chainIndex} of the style's chain: the next one in the chain (the window widened by the
+     * lag slack), or a fresh start at the first one, which is always fair.
+     */
+    public static void request(ServerPlayer player, ResourceLocation id, int chainIndex) {
         CombatMove move = CombatMoves.get(id);
         Fighter fighter = fighter(player);
         CombatMoveset style = CombatMovesets.get(style(player));
-        if (move == null || style == null || !style.chain().contains(id) || !fighter.combatMode()
-                || blocker(player) != null || !fighter.clock().canEnter(FighterState.ATTACK, LAG_SLACK)) {
+        boolean inChain = style != null && chainIndex >= 0 && chainIndex < style.chain().size()
+                && style.chainMove(chainIndex).equals(id)
+                && (chainIndex == 0 || chainIndex == fighter.chain().next(style.chainWindow() + LAG_SLACK,
+                style.chain().size()));
+        if (move == null || !inChain || !fighter.combatMode() || blocker(player) != null
+                || !fighter.clock().canEnter(FighterState.ATTACK, LAG_SLACK)) {
             PacketDistributor.sendToPlayer(player, new CombatPayloads.StrikeRefused());
             return;
         }
-        fighter.strike(id, move);
+        fighter.strike(id, move, chainIndex);
         fighter.look(player.getYRot(), player.getXRot());
         PacketDistributor.sendToPlayersTrackingEntity(player, new CombatPayloads.Strike(player.getId(), id));
     }
@@ -107,6 +116,7 @@ public final class CombatServer {
             }
         }
         fighter.look(player.getYRot(), player.getXRot());
+        fighter.chain().tick(fighter.clock().state() == FighterState.ATTACK);
         fighter.clock().advance();
     }
 
@@ -119,6 +129,12 @@ public final class CombatServer {
             if (hurt) {
                 attacker.setLastHurtMob(target);
                 attacker.causeFoodExhaustion(0.1f);
+                if (move.lift() > 0) {
+                    // An uppercut lifts: the target leaves the ground (players get it through hurtMarked).
+                    Vec3 motion = target.getDeltaMovement();
+                    target.setDeltaMovement(motion.x, Math.max(motion.y, move.lift()), motion.z);
+                    target.hurtMarked = true;
+                }
             }
             return hurt;
         } finally {

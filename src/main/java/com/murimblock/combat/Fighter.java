@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 /** One fighter, the same on client (prediction) and server (authority): its timeline and the move it plays. */
 public final class Fighter {
     private final StrikeClock clock = new StrikeClock();
+    private final ChainTracker chain = new ChainTracker();
     private ResourceLocation moveId;
     private CombatMove move;
     /** Where the eyes looked at the end of the previous tick, so a hit sweeps from there to the current view. */
@@ -48,11 +49,17 @@ public final class Fighter {
         return clock.state() == FighterState.ATTACK ? move : null;
     }
 
-    public void strike(ResourceLocation id, CombatMove strike) {
+    public ChainTracker chain() {
+        return chain;
+    }
+
+    /** Starts {@code strike}, the move at {@code chainIndex} of the style's chain. */
+    public void strike(ResourceLocation id, CombatMove strike, int chainIndex) {
         moveId = id;
         move = strike;
         CombatMove.Phases phases = strike.phases();
         clock.strike(phases.windup(), phases.active(), phases.recovery());
+        chain.thrown(chainIndex);
     }
 
     /**
@@ -71,6 +78,7 @@ public final class Fighter {
 
     public void reset() {
         clock.reset();
+        chain.reset();
         moveId = null;
         move = null;
     }

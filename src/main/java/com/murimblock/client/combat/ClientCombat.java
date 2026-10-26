@@ -61,6 +61,7 @@ public final class ClientCombat {
     private static final Fighter OWN = new Fighter();
     private static int shake;
     private static boolean combatMode;
+    private static boolean buffered;
     /** Others' strikes seen and blows felt from the server, read by the duel test. */
     private static int strikesSeen;
     private static int blowsFelt;
@@ -87,6 +88,16 @@ public final class ClientCombat {
     }
 
     /** Our own fighter state, as predicted. */
+    /** The move our own fighter plays, or null; read by the dev tests. */
+    public static ResourceLocation ownMove() {
+        return OWN.move() == null ? null : OWN.moveId();
+    }
+
+    /** Starts our chain over (dev tests). */
+    public static void restartChain() {
+        OWN.chain().reset();
+    }
+
     public static FighterState ownState() {
         return OWN.clock().state();
     }
@@ -128,32 +139,46 @@ public final class ClientCombat {
         }
     }
 
-    /** A left click in combat mode: always a strike, never mining. */
+    /**
+     * A left click in combat mode: always a strike, never mining. During a strike the click is kept and thrown as
+     * soon as the strike allows (one click ahead); while flinching it is lost.
+     */
     private static void tryStrike(Minecraft mc) {
         LocalPlayer player = mc.player;
-        if (player == null || player.isSpectator() || !OWN.clock().canStrike(0)) {
+        if (player == null || player.isSpectator()) {
             return;
         }
-        // The style of what is held picks the move; the chain goes past its first move in a later step.
+        if (!OWN.clock().canStrike(0)) {
+            buffered = OWN.clock().state() == FighterState.ATTACK;
+            return;
+        }
         ResourceLocation styleId = CombatMovesets.forHeld(player.getMainHandItem());
         CombatMoveset style = CombatMovesets.get(styleId);
-        if (style == null) {
+        if (style == null || !CombatAnimator.canPlay(player, FighterState.ATTACK)) {
             return;
         }
-        ResourceLocation id = style.chainMove(0);
+        int index = OWN.chain().next(style.chainWindow(), style.chain().size());
+        ResourceLocation id = style.chainMove(index);
         CombatMove move = CombatMoves.get(id);
         if (move == null) {
             return;
         }
-        if (!CombatAnimator.canPlay(player, FighterState.ATTACK)) {
-            return;
-        }
         OWN.style(styleId);
-        OWN.strike(id, move);
+        OWN.strike(id, move, index);
         OWN.look(player.getYRot(), player.getXRot());
         player.setSprinting(false);
         CombatAnimator.play(player, FighterState.ATTACK, move.animation(), move.length());
-        PacketDistributor.sendToServer(new CombatPayloads.StrikeRequest(id));
+        PacketDistributor.sendToServer(new CombatPayloads.StrikeRequest(id, index));
+    }
+
+    /** The click kept during the last strike, thrown once it allows. */
+    private static void throwBuffered(Minecraft mc) {
+        if (buffered && OWN.clock().canStrike(0)) {
+            buffered = false;
+            if (combatMode && mc.screen == null) {
+                tryStrike(mc);
+            }
+        }
     }
 
     /** A change of weapon stops what the old one was throwing, as on the server. */
@@ -189,6 +214,7 @@ public final class ClientCombat {
     public static void refused() {
         Minecraft mc = Minecraft.getInstance();
         OWN.reset();
+        buffered = false;
         if (mc.player != null) {
             CombatAnimator.stop(mc.player);
         }
@@ -212,6 +238,7 @@ public final class ClientCombat {
         if (player == mc.player) {
             OWN.reset();
             OWN.clock().stun(ticks);
+            buffered = false;
             flinches++;
         }
         CombatAnimator.play(player, FighterState.STUNNED, FLINCH, ticks);
@@ -307,12 +334,14 @@ public final class ClientCombat {
                 return;
             }
             checkStyle(mc.player);
+            OWN.chain().tick(OWN.clock().state() == FighterState.ATTACK);
             if (OWN.move() != null) {
                 tickOwn(mc.player);
             } else {
                 // A flinch wears off here.
                 OWN.clock().advance();
             }
+            throwBuffered(mc);
             CombatAnimator.tick(mc);
             if (shake > 0) {
                 shake--;

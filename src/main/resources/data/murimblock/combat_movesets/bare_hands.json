@@ -1,5 +1,5 @@
 {
   "held": ["empty"],
-  "chain": ["murimblock:jab"],
+  "chain": ["murimblock:jab", "murimblock:cross", "murimblock:hook", "murimblock:uppercut"],
   "chain_window": 10
 }
