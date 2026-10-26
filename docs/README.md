@@ -6,4 +6,5 @@ One file per feature or decision, added as the work goes.
 - [Cultivation](cultivation/cultivation.md): Qi data, stages, meditation and meridians (first slice, proposal).
 - [Inner world](cultivation/inner-world.md): each player's private island, entered from meditation from Third-rate on.
 - [Mortal trial](cultivation/mortal-trial.md): the way out of the mortal realm, fifteen zombies on a graveyard island.
+- [Combat engine roadmap](combat/engine-roadmap.md): the steps to a combat engine at Epic Fight's level or better (plan).
 - [Two PCs](two-pcs.md): how the two PCs stay in sync through GitHub, phone access, and the second PC's setup prompt.
