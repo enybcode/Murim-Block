@@ -10,6 +10,19 @@ public final class Fighter {
     /** Where the eyes looked at the end of the previous tick, so a hit sweeps from there to the current view. */
     private float lastYaw;
     private float lastPitch;
+    /** In combat mode the left click always strikes and never mines; out of it, vanilla. */
+    private boolean combatMode;
+
+    public boolean combatMode() {
+        return combatMode;
+    }
+
+    public void combatMode(boolean on) {
+        combatMode = on;
+        if (!on) {
+            reset();
+        }
+    }
 
     public StrikeClock clock() {
         return clock;

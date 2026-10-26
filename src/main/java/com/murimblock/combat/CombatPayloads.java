@@ -31,6 +31,30 @@ public final class CombatPayloads {
         }
     }
 
+    /** Client to server: switch combat mode on or off. */
+    public record ToggleCombatMode() implements CustomPacketPayload {
+        public static final Type<ToggleCombatMode> TYPE = CombatPayloads.payloadType("toggle_combat_mode");
+        public static final StreamCodec<ByteBuf, ToggleCombatMode> STREAM_CODEC =
+                StreamCodec.unit(new ToggleCombatMode());
+
+        @Override
+        public Type<ToggleCombatMode> type() {
+            return TYPE;
+        }
+    }
+
+    /** Server to the player: combat mode is now on or off, and why (a lang key, empty for the player's own toggle). */
+    public record CombatMode(boolean on, String reason) implements CustomPacketPayload {
+        public static final Type<CombatMode> TYPE = CombatPayloads.payloadType("combat_mode");
+        public static final StreamCodec<ByteBuf, CombatMode> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.BOOL, CombatMode::on, ByteBufCodecs.STRING_UTF8, CombatMode::reason, CombatMode::new);
+
+        @Override
+        public Type<CombatMode> type() {
+            return TYPE;
+        }
+    }
+
     /** Client to server: the player started this strike (its animation already plays on their screen). */
     public record StrikeRequest(ResourceLocation move) implements CustomPacketPayload {
         public static final Type<StrikeRequest> TYPE = CombatPayloads.payloadType("strike_request");

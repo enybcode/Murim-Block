@@ -26,11 +26,47 @@ public final class CombatServer {
         return player.getMainHandItem().isEmpty();
     }
 
+    /** Why combat mode cannot be on now (a lang key, empty to say nothing), or null when it can. */
+    private static String blocker(ServerPlayer player) {
+        if (!bareHanded(player)) {
+            return "message.murimblock.combat.hands_full";
+        }
+        if (Meditation.of(player).meditating()) {
+            return "message.murimblock.combat.meditating";
+        }
+        if (!player.isAlive() || player.isSpectator() || player.isSleeping()) {
+            return "";
+        }
+        return null;
+    }
+
+    public static boolean inCombatMode(ServerPlayer player) {
+        return fighter(player).combatMode();
+    }
+
+    public static void toggleCombatMode(ServerPlayer player) {
+        Fighter fighter = fighter(player);
+        if (fighter.combatMode()) {
+            setCombatMode(player, false, "");
+            return;
+        }
+        String blocked = blocker(player);
+        if (blocked != null) {
+            PacketDistributor.sendToPlayer(player, new CombatPayloads.CombatMode(false, blocked));
+            return;
+        }
+        setCombatMode(player, true, "");
+    }
+
+    public static void setCombatMode(ServerPlayer player, boolean on, String reason) {
+        fighter(player).combatMode(on);
+        PacketDistributor.sendToPlayer(player, new CombatPayloads.CombatMode(on, reason));
+    }
+
     public static void request(ServerPlayer player, ResourceLocation id) {
         CombatMove move = CombatMoves.get(id);
         Fighter fighter = fighter(player);
-        if (move == null || !player.isAlive() || player.isSpectator() || player.isSleeping() || !bareHanded(player)
-                || Meditation.of(player).meditating() || !fighter.clock().canStrike(LAG_SLACK)) {
+        if (move == null || !fighter.combatMode() || blocker(player) != null || !fighter.clock().canStrike(LAG_SLACK)) {
             PacketDistributor.sendToPlayer(player, new CombatPayloads.StrikeRefused());
             return;
         }
@@ -41,6 +77,12 @@ public final class CombatServer {
 
     public static void tick(ServerPlayer player) {
         Fighter fighter = fighter(player);
+        if (fighter.combatMode()) {
+            String blocked = blocker(player);
+            if (blocked != null) {
+                setCombatMode(player, false, blocked);
+            }
+        }
         if (fighter.clock().active()) {
             CombatMove move = fighter.move();
             for (LivingEntity target : StrikeReach.targets(player, move, fighter.lastYaw(), fighter.lastPitch())) {
@@ -77,6 +119,6 @@ public final class CombatServer {
     }
 
     public static void stop(ServerPlayer player) {
-        fighter(player).reset();
+        setCombatMode(player, false, "");
     }
 }

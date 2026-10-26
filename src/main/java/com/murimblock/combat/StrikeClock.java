@@ -21,6 +21,11 @@ public final class StrikeClock {
         return state;
     }
 
+    /** Ticks into the strike at {@code partial} of the current tick; hit-stop holds it still. */
+    public float time(float partial) {
+        return frozen > 0 ? tick : tick + partial;
+    }
+
     /** Whether a new strike may start now, allowing {@code slack} ticks of recovery left (network lag). */
     public boolean canStrike(int slack) {
         return state == FighterState.IDLE || state == FighterState.ATTACK && remaining() <= slack;

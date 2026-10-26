@@ -1,13 +1,16 @@
 # Bare-handed combat
 
-Our own melee, no Epic Fight. Slice 1, step 1 (25 Oct 2026): one strike, the jab, with placeholder animation.
-Guard, dash, combo, lock-on and our damage model come in the next steps.
+Our own melee, no Epic Fight, modelled on a video Enzo showed on 26 Oct 2026 (combat mode on a key, both arms in
+first person, jab / cross / hook, charged strike, parry, projectiles sent back, a style rank). Slice 1, step 1:
+combat mode and one strike, the left jab, with placeholder animations. The full plan is in `todo.md` next to this file.
 
-## Choices taken for step 1 (Enzo may change them)
+## Decisions (Enzo, 26 Oct 2026)
 
-- Left click with an empty main hand: strike when aiming at a creature or the air, mine when aiming at a block.
-  With an item in hand, vanilla is untouched.
-- Damage goes through `hurt` with a player-attack source, so vanilla armor still applies after our damage.
+- Combat mode on **B**. In it the left click always strikes and never mines; out of it, vanilla. It needs empty
+  hands and ends by itself with an item in the main hand, in meditation, on death.
+- Dash invulnerability covers blows and arrows, not explosions.
+- Vanilla armor applies after our damage (damage goes through `hurt` with a player-attack source).
+- Charged strike, projectiles sent back and the other special actions cost Qi.
 
 ## Moves
 
@@ -22,6 +25,7 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 | `step` | blocks stepped forward on the first tick (on the ground only) |
 | `move_speed` | multiplier on walking input during the move |
 | `hit_stop` | ticks the striker freezes on impact |
+| `first_person` | `left` and `right`: keys `{tick, fist: [x, y, z]}`, the fist in camera space (blocks, x right, y up, -z ahead) |
 
 `/reload` reads them again and sends them to every client. A world data pack overrides the built-in file; editing
 `src/main/resources` needs `gradlew processResources` before `/reload`.
@@ -31,7 +35,7 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 - `combat/StrikeClock`: the timeline (idle, attack, guard, dash, stunned), pure Java, unit tested (`StrikeClockTest`).
 - `combat/Fighter`: clock + move; a non-saved attachment on the server, a single instance for the local player.
 - Client prediction (`client/combat/ClientCombat`): the click starts the animation, the step and the local hit test at
-  once, and sends `StrikeRequest`. The server (`combat/CombatServer`) refuses if not bare-handed, meditating or still
+  once, and sends `StrikeRequest`. The server (`combat/CombatServer`) refuses out of combat mode, or still
   busy (3 ticks of slack for lag), and the client then stops the animation.
 - Hits: on each active tick the server sweeps the cone from last tick's view to the current one (`StrikeReach`),
   living entities only, not through blocks, each target once per strike. It resets the target's hurt delay so one
@@ -39,13 +43,20 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 - Impact: sound, crit particles, a short camera shake for striker and target, and hit-stop (the animation and the
   timeline pause). The striker plays it from its own prediction; others get `Impact` from the server.
 - Combat animations play on their own PAL layer (`murimblock:combat`, above the lotus and getting-up layer).
+- Combat mode: B sends `ToggleCombatMode`; the server decides and answers `CombatMode` (with the reason when it ends
+  it itself). In the mode the client takes the attack clicks before vanilla (`ClientTickEvent.Pre`) and cancels every
+  vanilla attack trigger, held button included; the server also cancels vanilla attacks and block hits. A crimson
+  emblem sits right of the hotbar.
+- First person (`client/combat/FirstPersonArms`): during a strike both arms are drawn from the skin in place of the
+  vanilla hand. Each hangs from a fixed shoulder and reaches to its fist, eased between the move's keys; hit-stop
+  holds them still.
 
 ## Checks
 
-`gradlew runCombatTest` (`run/combat-test`) clicks like a player at a still husk: predicted start, step, one damage
-roll per strike even clicked twice, no cooldown, vanilla kept with an item, mining kept on blocks. PASS/FAIL in the
+`gradlew runCombatTest` (`run/combat-test`) presses B and clicks like a player at a still husk: vanilla punch out of
+the mode, B on and off, predicted start, step, one damage
+roll per strike even clicked twice, no cooldown, an item ends the mode, no mining even held. PASS/FAIL in the
 log, then frames in `screenshots/combat/` (`fp_*` first person, `side_*` from the side). GIF with
 `java scripts/frames-to-gif.java <frames dir> run/gifs/<name>.gif`.
 
-Known for step 3: in first person the arm barely shows (PAL third-person model arms); the jab animation is a
-placeholder.
+Known: the jab animations (first and third person) are placeholders; first-person poses are tuned by eye.

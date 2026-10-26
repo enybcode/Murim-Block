@@ -10,6 +10,7 @@ import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -18,7 +19,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /** Hooks bare-handed combat into the game: network, move files, ticking and the vanilla punch it replaces. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CombatEvents {
-    private static final String PROTOCOL = "1";
+    private static final String PROTOCOL = "2";
 
     private CombatEvents() {
     }
@@ -34,6 +35,10 @@ public final class CombatEvents {
                 (payload, context) -> ClientCombat.strikeSeen(payload.entityId(), payload.move()));
         registrar.playToClient(CombatPayloads.Impact.TYPE, CombatPayloads.Impact.STREAM_CODEC,
                 (payload, context) -> ClientCombat.impactSeen(payload.attackerId(), payload.targetId(), payload.hitStop()));
+        registrar.playToClient(CombatPayloads.CombatMode.TYPE, CombatPayloads.CombatMode.STREAM_CODEC,
+                (payload, context) -> ClientCombat.combatMode(payload.on(), payload.reason()));
+        registrar.playToServer(CombatPayloads.ToggleCombatMode.TYPE, CombatPayloads.ToggleCombatMode.STREAM_CODEC,
+                (payload, context) -> CombatServer.toggleCombatMode((ServerPlayer) context.player()));
         registrar.playToServer(CombatPayloads.StrikeRequest.TYPE, CombatPayloads.StrikeRequest.STREAM_CODEC,
                 (payload, context) -> CombatServer.request((ServerPlayer) context.player(), payload.move()));
     }
@@ -64,10 +69,17 @@ public final class CombatEvents {
         }
     }
 
-    /** Bare hands strike with our moves only: the vanilla punch is dropped. */
+    /** In combat mode the click strikes with our moves only: no vanilla punch, no mining. */
     @SubscribeEvent
     public static void onAttack(AttackEntityEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && CombatServer.bareHanded(player)) {
+        if (event.getEntity() instanceof ServerPlayer player && CombatServer.inCombatMode(player)) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getEntity() instanceof ServerPlayer player && CombatServer.inCombatMode(player)) {
             event.setCanceled(true);
         }
     }

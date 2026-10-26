@@ -1,7 +1,9 @@
 package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
+import com.murimblock.client.MurimKeys;
 import com.murimblock.client.combat.ClientCombat;
+import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.FighterState;
 import java.io.File;
 import java.util.ArrayList;
@@ -38,7 +40,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
- * Dev tool, off unless {@code murimblock.combatTest} is set (run {@code gradlew runCombatTest}): clicks like a player
+ * Dev tool, off unless {@code murimblock.combatTest} is set (run {@code gradlew runCombatTest}): presses B and clicks like a player
  * at a still husk (a zombie that does not burn) and checks the bare-handed strike (PASS/FAIL in the log), films it in first person and from the
  * side into {@code screenshots/combat/}, then quits.
  */
@@ -89,54 +91,65 @@ public final class CombatTest {
                 // The GUI stays for the first person shots: hiding it would hide the arms too.
                 new File(mc.gameDirectory, "screenshots/combat").mkdirs();
             }
-            case 40 -> {
+            case 30 -> {
                 check("aims at the zombie", mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY);
+                health = health(server);
+                click(mc);
+            }
+            case 31 -> check("out of combat mode, no strike", ClientCombat.ownState() == FighterState.IDLE);
+            case 38 -> {
+                float lost = health - health(server);
+                check("out of combat mode, the vanilla punch stays (lost " + lost + ")", lost > 0.1f && lost < 1.5f);
+                KeyMapping.click(MurimKeys.COMBAT_MODE.getKey());
+            }
+            case 42 -> check("B turns combat mode on", ClientCombat.inCombatMode() && serverMode(server));
+            case 60 -> {
+                placeZombie(server);
                 health = health(server);
                 before = mc.player.position();
                 click(mc);
             }
-            case 41 -> check("strike starts at once (predicted)", ClientCombat.ownState() == FighterState.ATTACK);
-            case 42 -> click(mc);
-            case 50 -> check("steps forward", mc.player.position().distanceTo(before) > 0.1);
-            case 60 -> {
+            case 61 -> check("strike starts at once (predicted)", ClientCombat.ownState() == FighterState.ATTACK);
+            case 62 -> click(mc);
+            case 70 -> check("steps forward", mc.player.position().distanceTo(before) > 0.1);
+            case 80 -> {
                 float lost = health - health(server);
                 check("one strike deals its damage once, even clicked twice (lost " + lost + ")", lost > 2.5f && lost < 3.1f);
                 placeZombie(server);
                 health = health(server);
                 click(mc);
             }
-            case 80 -> {
+            case 100 -> {
                 float lost = health - health(server);
                 check("next strike lands at once, no vanilla cooldown (lost " + lost + ")", lost > 2.5f && lost < 3.1f);
-                placeZombie(server);
                 server.execute(() -> player(server).setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STICK)));
             }
-            case 84 -> {
-                health = health(server);
-                click(mc);
-            }
-            case 85 -> check("holding an item, no strike", ClientCombat.ownState() == FighterState.IDLE);
-            case 95 -> {
-                float lost = health - health(server);
-                check("holding an item, the vanilla hit stays (lost " + lost + ")", lost > 0.5f && lost < 1.5f);
+            case 105 -> {
+                check("an item in hand ends combat mode", !ClientCombat.inCombatMode() && !serverMode(server));
                 server.execute(() -> player(server).setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY));
+            }
+            case 108 -> KeyMapping.click(MurimKeys.COMBAT_MODE.getKey());
+            case 112 -> {
+                check("B turns it on again", ClientCombat.inCombatMode());
                 mc.player.setXRot(80);
             }
-            case 100 -> {
+            case 116 -> {
                 check("aims at the floor", mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK);
                 click(mc);
+                mc.options.keyAttack.setDown(true);
             }
-            case 101 -> check("a block aimed at is mined, not struck",
-                    ClientCombat.ownState() == FighterState.IDLE && mc.player.swinging);
-            case 110 -> {
-                mc.gameMode.stopDestroyBlock();
+            case 117 -> check("in combat mode a block aimed at is struck, not mined",
+                    ClientCombat.ownState() == FighterState.ATTACK && !mc.gameMode.isDestroying());
+            case 126 -> {
+                check("the button held does not mine either", !mc.gameMode.isDestroying());
+                mc.options.keyAttack.setDown(false);
                 mc.player.setXRot(0);
                 mc.player.setYRot(90);
                 mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 mc.options.hideGui = true;
             }
-            case 120 -> click(mc);
-            case 160 -> {
+            case 135 -> click(mc);
+            case 175 -> {
                 FAILED.forEach(name -> Murimblock.LOGGER.error("Combat test: FAIL {}", name));
                 Murimblock.LOGGER.info("Combat test: {}", FAILED.isEmpty() ? "PASS" : FAILED.size() + " FAILED");
                 mc.stop();
@@ -145,14 +158,18 @@ public final class CombatTest {
             }
         }
         // Side view: the body turned a quarter from the camera, the strike thrown into the air.
-        if (ticks >= 110) {
+        if (ticks >= 126) {
             mc.player.setYBodyRot(mc.player.getYRot() - 90);
             mc.player.yBodyRotO = mc.player.yBodyRot;
             mc.player.setYHeadRot(mc.player.getYRot() - 90);
             mc.player.yHeadRotO = mc.player.yHeadRot;
         }
-        film(mc, "fp", ticks - 41);
-        film(mc, "side", ticks - 121);
+        film(mc, "fp", ticks - 61);
+        film(mc, "side", ticks - 136);
+    }
+
+    private static boolean serverMode(MinecraftServer server) {
+        return server.submit(() -> CombatServer.inCombatMode(player(server))).join();
     }
 
     private static void film(Minecraft mc, String name, int frame) {

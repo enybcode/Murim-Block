@@ -5,6 +5,7 @@ import com.murimblock.Murimblock;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.combat.CombatPayloads;
 import com.murimblock.cultivation.CultivationPayloads;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.KeyMapping;
@@ -24,6 +25,8 @@ public final class MurimKeys {
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, CATEGORY);
     public static final KeyMapping MEDITATE = new KeyMapping("key.murimblock.meditate",
             KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, CATEGORY);
+    public static final KeyMapping COMBAT_MODE = new KeyMapping("key.murimblock.combat_mode",
+            KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY);
 
     private MurimKeys() {
     }
@@ -40,6 +43,7 @@ public final class MurimKeys {
         public static void register(RegisterKeyMappingsEvent event) {
             event.register(OPEN_SYSTEM);
             event.register(MEDITATE);
+            event.register(COMBAT_MODE);
         }
 
         @SubscribeEvent
@@ -55,6 +59,11 @@ public final class MurimKeys {
             while (MEDITATE.consumeClick()) {
                 if (mc.screen == null && mc.player != null && !meditating) {
                     PacketDistributor.sendToServer(new CultivationPayloads.ToggleMeditation());
+                }
+            }
+            while (COMBAT_MODE.consumeClick()) {
+                if (mc.screen == null && mc.player != null) {
+                    PacketDistributor.sendToServer(new CombatPayloads.ToggleCombatMode());
                 }
             }
             boolean sneak = mc.options.keyShift.isDown();
