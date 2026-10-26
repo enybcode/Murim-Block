@@ -82,6 +82,8 @@ dependencies {
     implementation("maven.modrinth:kilagraph:${kilagraph_artifact}") { transitive = false }
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    // Minecraft's maths library, for the pure animation code (same version as Minecraft 1.21.1).
+    testImplementation 'org.joml:joml:1.10.5'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

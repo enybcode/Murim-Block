@@ -3,7 +3,7 @@
 Goal: a combat engine of Epic Fight's level or better, written by us from scratch. Epic Fight is studied for
 ideas only: its code is GPL and its assets are All Rights Reserved, so nothing is copied.
 
-Status: plan, nothing built yet (the first combat system was removed on 26 Oct 2026, commit `b27eaf3d`).
+Status: step 1 done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
 
@@ -28,16 +28,16 @@ Status: plan, nothing built yet (the first combat system was removed on 26 Oct 2
 - Pure math (poses, colliders, timelines) lives in classes without Minecraft types so it can be unit tested.
 - No step starts before the previous one is approved, unless the doc says the steps are independent.
 
-## Decisions to confirm before step 1
+## Decisions
 
 | # | Question | Recommended | Status |
 |---|----------|-------------|--------|
-| D1 | Player model | Our own skeleton and skinned mesh loaded from glTF 2.0 (Blender exports it natively). PAL is no longer used for combat; `AGENTS.md` stack is updated. | to confirm |
-| D2 | Who animates | Mixed: Claude makes first versions with Blender scripts (headless, renders GIFs), Enzo fixes by eye in Blender. | to confirm |
-| D3 | Mobs | Humanoid mobs (zombies, bandits, masters) use the same skeleton, moves and reactions; GeckoLib stays for non-humanoid creatures. | to confirm |
-| D4 | Combat mode key | B toggles combat mode (left click strikes, never mines). | to confirm |
-| D5 | Dodge invulnerability | Melee and projectiles, not explosions. | to confirm |
-| D6 | Resource | Qi replaces Epic Fight's stamina; everything special costs Qi. | to confirm |
+| D1 | Player model | Our own skeleton and skinned mesh loaded from glTF 2.0 (Blender exports it natively). PAL is no longer used for combat; `AGENTS.md` stack is updated. | accepted 26 Oct |
+| D2 | Who animates | Mixed: Claude makes first versions with Blender scripts (headless, renders GIFs), Enzo fixes by eye in Blender. | accepted 26 Oct |
+| D3 | Mobs | Humanoid mobs (zombies, bandits, masters) use the same skeleton, moves and reactions; GeckoLib stays for non-humanoid creatures. | accepted 26 Oct |
+| D4 | Combat mode key | B toggles combat mode (left click strikes, never mines). | accepted 26 Oct |
+| D5 | Dodge invulnerability | Melee and projectiles, not explosions. | accepted 26 Oct |
+| D6 | Resource | Qi replaces Epic Fight's stamina; everything special costs Qi. | accepted 26 Oct |
 
 ## Milestones
 
@@ -89,6 +89,11 @@ Build:
 
 Done when: unit tests cover parent chains, slerp, mirror and masks; the skeleton from the glTF file matches the
 code's expectations (joint names and hierarchy checked at load, clear error otherwise).
+
+Done (26 Oct 2026): `com.murimblock.anim`: `JointTransform`, `Joint`, `Armature`, `JointMask`, `Pose`, `Biped`
+(22 joints, left side on +X; `Biped.check` compares a loaded skeleton). 14 unit tests in `ArmatureTest` and
+`PoseTest`; JOML 1.10.5 added to the test classpath. The glTF side of the check runs in step 2 with the loader.
+Step 0 is not done: Blender is not installed on this PC yet, which blocks step 2's mesh.
 
 ## Step 2: Mesh and glTF loader
 
