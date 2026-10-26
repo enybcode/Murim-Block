@@ -68,7 +68,7 @@ public final class CombatServer {
         Fighter fighter = fighter(player);
         CombatMoveset style = CombatMovesets.get(style(player));
         if (move == null || style == null || !style.chain().contains(id) || !fighter.combatMode()
-                || blocker(player) != null || !fighter.clock().canStrike(LAG_SLACK)) {
+                || blocker(player) != null || !fighter.clock().canEnter(FighterState.ATTACK, LAG_SLACK)) {
             PacketDistributor.sendToPlayer(player, new CombatPayloads.StrikeRefused());
             return;
         }
