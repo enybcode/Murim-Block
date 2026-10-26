@@ -66,8 +66,19 @@ public final class ClientCombat {
     private static final Map<Integer, Integer> HELD = new HashMap<>();
     private static int shake;
     private static boolean combatMode;
+    /** Others' strikes seen and blows felt from the server, read by the duel test. */
+    private static int strikesSeen;
+    private static int blowsFelt;
 
     private ClientCombat() {
+    }
+
+    public static int strikesSeen() {
+        return strikesSeen;
+    }
+
+    public static int blowsFelt() {
+        return blowsFelt;
     }
 
     /** Our own fighter state, as predicted. */
@@ -178,6 +189,7 @@ public final class ClientCombat {
         Minecraft mc = Minecraft.getInstance();
         if (move != null && mc.level != null && mc.level.getEntity(entityId) instanceof AbstractClientPlayer player) {
             play(player, move.animation());
+            strikesSeen++;
         }
     }
 
@@ -191,6 +203,7 @@ public final class ClientCombat {
             impact(target);
             if (target == mc.player) {
                 shake = SHAKE_TICKS;
+                blowsFelt++;
             }
         }
     }

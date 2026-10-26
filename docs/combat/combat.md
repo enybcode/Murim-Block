@@ -75,3 +75,11 @@ log, then frames in `screenshots/combat/` (`fp_*` first person, `side_*` from th
 `java scripts/frames-to-gif.java <frames dir> run/gifs/<name>.gif`.
 
 Known: the jab animations (first and third person) are placeholders; first-person poses are tuned by eye.
+
+`/reload` is checked by `runCombatTest` too: a world data pack makes the jab hit for 5, then removing it brings 3 back.
+
+Over the network: `gradlew runCombatDuelServer`, then `runCombatDuelAttacker` and `runCombatDuelDefender` together
+(`run/combat-duel/`, the server folder needs `eula.txt` and `online-mode=false`). `Dev` turns combat mode on and
+strikes `Dev2`; each client checks what crossed the network (moves and styles sent, health lost, the strike and the
+blow seen by the defender), logs PASS/FAIL and quits; the server stops when both have left. The duel clients never
+pause when their window is in the back: closing the pause menu would release every key, the test's clicks included.

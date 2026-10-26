@@ -3,16 +3,25 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.client.MurimKeys;
 import com.murimblock.client.combat.ClientCombat;
+import com.murimblock.combat.CombatMove;
+import com.murimblock.combat.CombatMoves;
 import com.murimblock.combat.CombatMoveset;
 import com.murimblock.combat.CombatMovesets;
 import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.FighterState;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -36,6 +45,7 @@ import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -55,6 +65,7 @@ public final class CombatTest {
     private static final String WORLD = "murim-combat-test";
     private static final int FRAMES = 16;
     private static final double ZOMBIE_DISTANCE = 2.2;
+    private static final ResourceLocation JAB = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "jab");
     private static final ResourceLocation TEST_SWORD = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "test_sword");
 
     private static boolean started;
@@ -175,7 +186,37 @@ public final class CombatTest {
                 mc.options.hideGui = true;
             }
             case 155 -> click(mc);
-            case 195 -> {
+            case 180 -> {
+                // A world data pack makes the jab hit for 5, then /reload: the move changes without a restart.
+                writeTestPack(server, true);
+                server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "reload");
+            }
+            case 230 -> {
+                CombatMove jab = CombatMoves.get(JAB);
+                check("/reload reads the jab from a world data pack", jab != null && jab.damage() == 5f);
+                mc.options.setCameraType(CameraType.FIRST_PERSON);
+                mc.options.hideGui = false;
+                mc.player.setYRot(0);
+                mc.player.setXRot(0);
+                server.submit(() -> player(server).connection.teleport(center.getX() + 0.5, center.getY(),
+                        center.getZ() + 0.5, 0, 0)).join();
+                placeZombie(server);
+            }
+            case 236 -> {
+                health = health(server);
+                click(mc);
+            }
+            case 256 -> {
+                float lost = health - health(server);
+                check("the reloaded jab hits for 5 (lost " + lost + ")", lost > 4.5f && lost < 5.1f);
+                writeTestPack(server, false);
+                server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "reload");
+            }
+            case 300 -> {
+                CombatMove jab = CombatMoves.get(JAB);
+                check("removing the pack and /reload bring the jab back to 3", jab != null && jab.damage() == 3f);
+            }
+            case 305 -> {
                 FAILED.forEach(name -> Murimblock.LOGGER.error("Combat test: FAIL {}", name));
                 Murimblock.LOGGER.info("Combat test: {}", FAILED.isEmpty() ? "PASS" : FAILED.size() + " FAILED");
                 mc.stop();
@@ -184,7 +225,7 @@ public final class CombatTest {
             }
         }
         // Side view: the body turned a quarter from the camera, the strike thrown into the air.
-        if (ticks >= 146) {
+        if (ticks >= 146 && ticks < 230) {
             mc.player.setYBodyRot(mc.player.getYRot() - 90);
             mc.player.yBodyRotO = mc.player.yBodyRot;
             mc.player.setYHeadRot(mc.player.getYRot() - 90);
@@ -198,6 +239,32 @@ public final class CombatTest {
         return server.submit(() -> CombatServer.inCombatMode(player(server))).join();
     }
 
+
+    /** Writes (or removes) a world data pack whose jab hits for 5 instead of 3. */
+    private static void writeTestPack(MinecraftServer server, boolean on) {
+        Path pack = server.getWorldPath(LevelResource.DATAPACK_DIR).resolve("murim_combat_test");
+        try {
+            if (!on) {
+                if (Files.exists(pack)) {
+                    try (Stream<Path> files = Files.walk(pack)) {
+                        files.sorted(Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
+                    }
+                }
+                return;
+            }
+            Path move = pack.resolve("data/murimblock/combat_moves/jab.json");
+            Files.createDirectories(move.getParent());
+            Files.writeString(pack.resolve("pack.mcmeta"),
+                    "{\"pack\": {\"pack_format\": 48, \"description\": \"Combat test\"}}");
+            String jab;
+            try (InputStream in = CombatTest.class.getResourceAsStream("/data/murimblock/combat_moves/jab.json")) {
+                jab = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            Files.writeString(move, jab.replace("\"damage\": 3.0", "\"damage\": 5.0"));
+        } catch (IOException e) {
+            check("test data pack written: " + e, false);
+        }
+    }
     private static void film(Minecraft mc, String name, int frame) {
         if (frame >= 0 && frame < FRAMES) {
             Screenshot.grab(mc.gameDirectory, String.format("combat/%s_%02d.png", name, frame), mc.getMainRenderTarget(),
