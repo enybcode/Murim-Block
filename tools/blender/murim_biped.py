@@ -33,7 +33,8 @@ for _side, _x in (("L", 1), ("R", -1)):
         (f"Leg_{_side}", f"Thigh_{_side}", (2 * _x, 6, 0)),
         (f"Knee_{_side}", f"Thigh_{_side}", (2 * _x, 6, 0)),
         (f"Shoulder_{_side}", "Chest", (0, 24, 0)),
-        (f"Arm_{_side}", f"Shoulder_{_side}", (6 * _x, 22, 0)),
+        # Vanilla's arm pivot; Epic Fight puts it at the arm's middle (x ±6).
+        (f"Arm_{_side}", f"Shoulder_{_side}", (5 * _x, 22, 0)),
         (f"Hand_{_side}", f"Arm_{_side}", (6 * _x, 18, 0)),
         (f"Tool_{_side}", f"Hand_{_side}", (6 * _x, 13, 0)),
         (f"Elbow_{_side}", f"Arm_{_side}", (6 * _x, 18, 0)),

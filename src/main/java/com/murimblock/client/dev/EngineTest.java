@@ -5,10 +5,14 @@ import com.murimblock.anim.Biped;
 import com.murimblock.anim.SkinnedModel;
 import com.murimblock.anim.client.SkeletalModels;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
@@ -33,10 +37,11 @@ public final class EngineTest {
     private static final int WORLD_FRAMES = 120;
     private static final int STEP_FRAMES = 60;
 
-    private record Step(String name, Consumer<Minecraft> run) {
+    /** One step of the test: it runs on a frame, a second after the previous one. */
+    record Step(String name, Consumer<Minecraft> run) {
     }
 
-    private static final List<Step> STEPS = List.of(
+    private static final List<Step> STEPS = Stream.concat(Stream.of(
             new Step("world", mc -> check("the player is in the world", mc.player != null && mc.level != null)),
             new Step("skeletal models", mc -> {
                 for (var id : List.of(SkeletalModels.BIPED, SkeletalModels.BIPED_SLIM)) {
@@ -45,7 +50,7 @@ public final class EngineTest {
                     check(id + " fits the biped skeleton", model != null && Biped.check(model.armature()).isEmpty());
                     check(id + " has its 12 parts", model != null && model.parts().size() == 12);
                 }
-            }));
+            })), SkeletalRenderChecks.steps().stream()).toList();
 
     private static boolean started;
     private static int frames = -1;
@@ -97,6 +102,13 @@ public final class EngineTest {
             failures++;
         }
         Murimblock.LOGGER.info("Engine test: {} {}", ok ? "PASS" : "FAIL", what);
+    }
+
+    /** Runs {@code action} on the server thread with the test player. */
+    static void server(Minecraft mc, Consumer<ServerPlayer> action) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> action.accept(server.getPlayerList().getPlayer(id)));
     }
 
     static void shoot(Minecraft mc, String name) {

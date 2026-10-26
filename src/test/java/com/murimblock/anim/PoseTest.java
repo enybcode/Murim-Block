@@ -35,7 +35,7 @@ class PoseTest {
     void raisingTheArmForwardMovesTheHandForward() {
         // Turning the upper arm -90° about X swings it from hanging down to pointing forward (+Z).
         Pose pose = turned(BIPED.bindPose(), "Arm_L", new Quaternionf().rotateX(-QUARTER));
-        // Rest offsets from the shoulder (6, 22, 0): elbow (0, -4, 0), grip (0, -9, 0).
+        // Rest offsets from the shoulder (5, 22, 0): elbow (1, -4, 0), grip (1, -9, 0).
         assertNear(new Vector3f(6, 22, 4), modelPosition(pose, "Hand_L"));
         assertNear(new Vector3f(6, 22, 9), modelPosition(pose, "Tool_L"));
     }

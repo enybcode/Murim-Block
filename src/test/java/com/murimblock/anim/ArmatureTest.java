@@ -32,8 +32,8 @@ class ArmatureTest {
     @Test
     void restPoseMatchesTheVanillaPlayer() {
         assertNear(new Vector3f(0, 24, 0), restPosition("Head"));
-        assertNear(new Vector3f(6, 22, 0), restPosition("Arm_L"));
-        assertNear(new Vector3f(-6, 22, 0), restPosition("Arm_R"));
+        assertNear(new Vector3f(5, 22, 0), restPosition("Arm_L"));
+        assertNear(new Vector3f(-5, 22, 0), restPosition("Arm_R"));
         assertNear(new Vector3f(6, 18, 0), restPosition("Hand_L"));
         assertNear(new Vector3f(2, 12, 0), restPosition("Thigh_L"));
         assertNear(new Vector3f(-2, 6, 0), restPosition("Leg_R"));

@@ -3,7 +3,7 @@
 Goal: a combat engine of Epic Fight's level or better, written by us from scratch. Epic Fight is studied for
 ideas only: its code is GPL and its assets are All Rights Reserved, so nothing is copied.
 
-Status: steps 0 to 2 done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
+Status: steps 0 to 2 and 3a done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
 
@@ -151,6 +151,22 @@ Done when:
 - A test pose with elbows and knees at 150°: no hole, no corner poking out, texture not stretched, sleeve in one
   piece (GIF from front, side and close-up).
 - Cost under 0.2 ms per player per frame (measured with 20 players in view).
+
+Step 3a done (26 Oct 2026): `anim/client/SkeletalPlayerRenderer` cancels `RenderPlayerEvent.Pre` and draws the
+body and outer layer (CPU skinning in `anim/Skinning`, triangles sent as quads, `entityCutoutNoCull`, ghost and
+glowing cases), held items at `Tool_*` (offset from vanilla's hand placement), the vanilla name tag (through
+reflection: the methods are protected and overridden as protected, so an access transformer breaks vanilla),
+head look, death fall, entity scale. `anim/client/SkeletalPlayers` decides who is drawn (`/skeletal on|off`,
+`/skeletal pose <name>`, dev only) and the pose: `BipedPoses.stand` copies vanilla's standing pose (arm sway,
+an arm raised 18° when it holds an item) until the idle clip of step 5. `Arm_*` moved to vanilla's pivot (x ±5).
+`runEngineTest` (`SkeletalRenderChecks`): six default skins (wide, slim, outer layers, sword, shield, bow,
+torch) shot by vanilla then by us from six sides: at most 0.3 % of pixels differ (only the slim arms, which
+vanilla pivots half a pixel lower), the bottom faces' UVs match vanilla; test poses shot; about 30 µs per
+player.
+
+Step 3b, left: armor meshes on the skeleton, cape, elytra, arrows and stingers stuck in the body, the vanilla
+crouch pose (the crouch height already applies), the debug skeleton view, a check with 20 players. Vanilla
+keeps drawing players who sleep, glide, swim, ride or spectate.
 
 ## Step 4: Clips and the animation player
 

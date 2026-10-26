@@ -80,7 +80,7 @@
 		{
 			"name":"Elbow_L",
 			"translation":[
-				0,
+				1,
 				-4,
 				0
 			]
@@ -99,7 +99,7 @@
 			],
 			"name":"Hand_L",
 			"translation":[
-				0,
+				1,
 				-4,
 				0
 			]
@@ -111,7 +111,7 @@
 			],
 			"name":"Arm_L",
 			"translation":[
-				6,
+				5,
 				-2,
 				0
 			]
@@ -130,7 +130,7 @@
 		{
 			"name":"Elbow_R",
 			"translation":[
-				0,
+				-1,
 				-4,
 				0
 			]
@@ -149,7 +149,7 @@
 			],
 			"name":"Hand_R",
 			"translation":[
-				0,
+				-1,
 				-4,
 				0
 			]
@@ -161,7 +161,7 @@
 			],
 			"name":"Arm_R",
 			"translation":[
-				-6,
+				-5,
 				-2,
 				0
 			]

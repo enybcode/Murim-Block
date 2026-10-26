@@ -40,11 +40,12 @@ public final class Biped {
                     .joint("Knee_" + side, "Thigh_" + side, JointTransform.translation(0, -6, 0))     // (±2, 6)
                     // The collarbone starts at the top of the chest, in the middle.
                     .joint("Shoulder_" + side, CHEST, JointTransform.translation(0, 6, 0))            // (0, 24)
-                    .joint("Arm_" + side, "Shoulder_" + side, JointTransform.translation(6 * x, -2, 0)) // (±6, 22)
-                    .joint("Hand_" + side, "Arm_" + side, JointTransform.translation(0, -4, 0))        // (±6, 18)
+                    // Vanilla's arm pivot (Epic Fight puts it at the arm's middle, x ±6), so a raised arm matches vanilla.
+                    .joint("Arm_" + side, "Shoulder_" + side, JointTransform.translation(5 * x, -2, 0)) // (±5, 22)
+                    .joint("Hand_" + side, "Arm_" + side, JointTransform.translation(x, -4, 0))        // (±6, 18)
                     // The grip, where a held item sits; its orientation is tuned with the renderer (step 3).
                     .joint("Tool_" + side, "Hand_" + side, JointTransform.translation(0, -5, 0))       // (±6, 13)
-                    .joint("Elbow_" + side, "Arm_" + side, JointTransform.translation(0, -4, 0));      // (±6, 18)
+                    .joint("Elbow_" + side, "Arm_" + side, JointTransform.translation(x, -4, 0));      // (±6, 18)
         }
         return builder.build();
     }
