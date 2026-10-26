@@ -15,17 +15,26 @@ import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.armortrim.ArmorTrim;
+import net.minecraft.world.item.armortrim.TrimMaterials;
+import net.minecraft.world.item.armortrim.TrimPatterns;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Step 3 of the engine roadmap in a real client: a lineup of players with default skins (wide and slim arms, outer
- * layers, items in hand) shot from five sides drawn by vanilla, then by our skinned body, compared pixel by pixel;
- * then the test poses shot for a GIF, and the time our renderer takes per player.
+ * layers, items in hand) shot from six sides drawn by vanilla, then by our skinned body, compared pixel by pixel;
+ * the same dressed up (armor of every kind, trims, glint, a pumpkin head, arrows, stingers, an elytra, a cape) and
+ * crouching; the test poses and the skeleton view shot for a GIF; then twenty players timed.
  */
 final class SkeletalRenderChecks {
     /** Feet of the lineup's middle, high in the sky so nothing else is in the shots. */
@@ -38,6 +47,8 @@ final class SkeletalRenderChecks {
     private static final int[] SKINS = {0, 15, 3, 12, 17, 7};
     /** At most this share of the picture may differ between vanilla and us (vanilla's idle arm sway moves a few). */
     private static final double MAX_DIFFERENT = 0.004;
+    /** Dressed up, a little more: the armor of the slim arms and the arrows follow vanilla's parts half a pixel off. */
+    private static final double MAX_DIFFERENT_DRESSED = 0.006;
 
     /**
      * A camera place (feet, relative to the lineup), its look, which way the lineup faces, and whether a white floor
@@ -64,39 +75,73 @@ final class SkeletalRenderChecks {
         List<Step> steps = new ArrayList<>();
         steps.add(new Step("lineup", SkeletalRenderChecks::stage));
         for (View view : VIEWS) {
-            steps.add(new Step(view.name() + " (place)", mc -> {
-                place(mc, view);
-                SkeletalPlayers.enable(false);
-            }));
-            steps.add(new Step(view.name() + " (vanilla)", mc -> {
-                vanilla = Screenshot.takeScreenshot(mc.getMainRenderTarget());
-                SkeletalPlayers.enable(true);
-            }));
-            steps.add(new Step(view.name() + " (skeletal)", mc -> compare(mc, view)));
+            compareSteps(steps, "", view, MAX_DIFFERENT);
         }
         for (String pose : List.of("bend", "guard", "joints")) {
             for (View view : List.of(VIEWS.get(0), VIEWS.get(2))) {
-                steps.add(new Step(pose + " " + view.name() + " (place)", mc -> {
-                    place(mc, view);
-                    SkeletalPlayers.pose(pose);
-                }));
-                steps.add(new Step(pose + " " + view.name() + " (shot)", mc ->
-                        save(mc, Screenshot.takeScreenshot(mc.getMainRenderTarget()), pose + "_" + view.name())));
+                shotSteps(steps, pose + "_" + view.name(), view, () -> SkeletalPlayers.pose(pose));
             }
         }
-        steps.add(new Step("timing (start)", mc -> {
+        steps.add(new Step("dress", mc -> {
+            SkeletalPlayers.pose("stand");
+            dress(mc);
+        }));
+        for (View view : VIEWS.subList(0, 4)) {
+            compareSteps(steps, "dressed_", view, MAX_DIFFERENT_DRESSED);
+        }
+        for (View view : List.of(VIEWS.get(0), VIEWS.get(2))) {
+            shotSteps(steps, "dressed_bend_" + view.name(), view, () -> SkeletalPlayers.pose("bend"));
+        }
+        steps.add(new Step("crouch", mc -> {
+            SkeletalPlayers.pose("stand");
+            LINEUP.forEach(fake -> fake.setPose(net.minecraft.world.entity.Pose.CROUCHING));
+        }));
+        for (View view : List.of(VIEWS.get(0), VIEWS.get(2))) {
+            compareSteps(steps, "crouch_", view, 1);
+        }
+        steps.add(new Step("stand up", mc -> LINEUP.forEach(fake -> fake.setPose(net.minecraft.world.entity.Pose.STANDING))));
+        shotSteps(steps, "skeleton_view", VIEWS.get(2), () -> {
             SkeletalPlayers.pose("bend");
+            SkeletalPlayers.showJoints(true);
+        });
+        steps.add(new Step("crowd", mc -> {
+            SkeletalPlayers.showJoints(false);
+            crowd(mc);
             SkeletalPlayerRenderer.resetTiming();
         }));
         steps.add(new Step("timing", mc -> {
             double micros = SkeletalPlayerRenderer.averageMicros();
             Murimblock.LOGGER.info("Engine test: skeletal player drawn in {} µs on average", String.format("%.1f", micros));
-            EngineTest.check("a skeletal player takes under 200 µs to draw (" + String.format("%.1f", micros) + ")",
-                    micros > 0 && micros < 200);
+            EngineTest.check(LINEUP.size() + " armored and plain players take under 200 µs each to draw ("
+                    + String.format("%.1f", micros) + ")", micros > 0 && micros < 200);
+            save(mc, Screenshot.takeScreenshot(mc.getMainRenderTarget()), "crowd");
             SkeletalPlayers.enable(false);
             SkeletalPlayers.pose("stand");
         }));
         return steps;
+    }
+
+    /** Places the camera, shoots vanilla, then us, and checks how many pixels differ (any share passes when max is 1). */
+    private static void compareSteps(List<Step> steps, String prefix, View view, double max) {
+        steps.add(new Step(prefix + view.name() + " (place)", mc -> {
+            place(mc, view);
+            SkeletalPlayers.enable(false);
+        }));
+        steps.add(new Step(prefix + view.name() + " (vanilla)", mc -> {
+            vanilla = Screenshot.takeScreenshot(mc.getMainRenderTarget());
+            SkeletalPlayers.enable(true);
+        }));
+        steps.add(new Step(prefix + view.name() + " (skeletal)", mc -> compare(mc, prefix + view.name(), max)));
+    }
+
+    /** Places the camera, sets things up, then saves a shot of our rendering. */
+    private static void shotSteps(List<Step> steps, String name, View view, Runnable setup) {
+        steps.add(new Step(name + " (place)", mc -> {
+            place(mc, view);
+            SkeletalPlayers.enable(true);
+            setup.run();
+        }));
+        steps.add(new Step(name + " (shot)", mc -> save(mc, Screenshot.takeScreenshot(mc.getMainRenderTarget()), name)));
     }
 
     private static void stage(Minecraft mc) {
@@ -108,14 +153,7 @@ final class SkeletalRenderChecks {
             player.onUpdateAbilities();
         });
         for (int i = 0; i < SKINS.length; i++) {
-            // Frozen (the level counts ticks before calling tick), so the arm sway is the same in both shots.
-            RemotePlayer fake = new RemotePlayer(mc.level, new GameProfile(new UUID(0, SKINS[i]), "Test" + i)) {
-                @Override
-                public void tick() {
-                    tickCount = 0;
-                }
-            };
-            fake.setId(-1000 - i);
+            Dummy fake = new Dummy(mc, SKINS[i], i);
             if (i == 1) {
                 fake.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
                 fake.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD));
@@ -127,6 +165,81 @@ final class SkeletalRenderChecks {
             LINEUP.add(fake);
         }
         EngineTest.check("the lineup is in the world", LINEUP.stream().allMatch(fake -> mc.level.getEntity(fake.getId()) == fake));
+    }
+
+    /**
+     * Armor of every kind (dyed leather, iron with a gold trim, enchanted diamond, netherite, chainmail, gold), a
+     * pumpkin on a head, arrows and stingers stuck in a body, an elytra and a cape.
+     */
+    private static void dress(Minecraft mc) {
+        ItemStack leather = new ItemStack(Items.LEATHER_CHESTPLATE);
+        leather.set(DataComponents.DYED_COLOR, new DyedItemColor(0xB02E26, true));
+        equip(0, leather, new ItemStack(Items.LEATHER_LEGGINGS), new ItemStack(Items.LEATHER_BOOTS),
+                new ItemStack(Items.LEATHER_HELMET));
+        ItemStack iron = new ItemStack(Items.IRON_CHESTPLATE);
+        var registries = mc.level.registryAccess();
+        iron.set(DataComponents.TRIM, new ArmorTrim(
+                registries.registryOrThrow(Registries.TRIM_MATERIAL).getHolderOrThrow(TrimMaterials.GOLD),
+                registries.registryOrThrow(Registries.TRIM_PATTERN).getHolderOrThrow(TrimPatterns.COAST)));
+        equip(1, iron, ItemStack.EMPTY, ItemStack.EMPTY, new ItemStack(Items.IRON_HELMET));
+        ItemStack diamond = new ItemStack(Items.DIAMOND_CHESTPLATE);
+        diamond.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+        equip(2, diamond, new ItemStack(Items.DIAMOND_LEGGINGS), new ItemStack(Items.DIAMOND_BOOTS),
+                new ItemStack(Items.DIAMOND_HELMET));
+        equip(3, ItemStack.EMPTY, new ItemStack(Items.NETHERITE_LEGGINGS), new ItemStack(Items.NETHERITE_BOOTS),
+                new ItemStack(Items.CARVED_PUMPKIN));
+        equip(4, new ItemStack(Items.CHAINMAIL_CHESTPLATE), ItemStack.EMPTY, ItemStack.EMPTY,
+                new ItemStack(Items.GOLDEN_HELMET));
+        LINEUP.get(4).setArrowCount(4);
+        LINEUP.get(4).setStingerCount(2);
+        equip(5, new ItemStack(Items.ELYTRA), ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY);
+        // A cape needs a texture; the elytra one has the size of a cape, enough to see where the cape hangs.
+        ((Dummy) LINEUP.get(3)).cape = ResourceLocation.withDefaultNamespace("textures/entity/elytra.png");
+    }
+
+    private static void equip(int index, ItemStack chest, ItemStack legs, ItemStack feet, ItemStack head) {
+        RemotePlayer fake = LINEUP.get(index);
+        fake.setItemSlot(EquipmentSlot.CHEST, chest);
+        fake.setItemSlot(EquipmentSlot.LEGS, legs);
+        fake.setItemSlot(EquipmentSlot.FEET, feet);
+        fake.setItemSlot(EquipmentSlot.HEAD, head);
+    }
+
+    /** Fourteen more players behind the lineup, to time twenty at once. */
+    private static void crowd(Minecraft mc) {
+        for (int i = 0; i < 14; i++) {
+            Dummy fake = new Dummy(mc, i % 18, 100 + i);
+            fake.moveTo(X + (i % 7 - 3) * SPACING, Y, Z + 2 + i / 7 * 1.5, 180, 0);
+            fake.setOldPosAndRot();
+            fake.yBodyRot = fake.yBodyRotO = fake.yHeadRot = fake.yHeadRotO = 180;
+            mc.level.addEntity(fake);
+            LINEUP.add(fake);
+        }
+    }
+
+    /**
+     * A test player: frozen (the level counts ticks before calling tick, so tick puts the count back), with a default
+     * skin picked by UUID and an optional cape.
+     */
+    private static final class Dummy extends RemotePlayer {
+        private ResourceLocation cape;
+
+        Dummy(Minecraft mc, int skin, int number) {
+            super(mc.level, new GameProfile(new UUID(0, skin), "Test" + number));
+            setId(-1000 - number);
+        }
+
+        @Override
+        public void tick() {
+            tickCount = 0;
+        }
+
+        @Override
+        public PlayerSkin getSkin() {
+            PlayerSkin skin = super.getSkin();
+            return cape == null ? skin
+                    : new PlayerSkin(skin.texture(), skin.textureUrl(), cape, null, skin.model(), skin.secure());
+        }
     }
 
     private static void place(Minecraft mc, View view) {
@@ -145,7 +258,7 @@ final class SkeletalRenderChecks {
         });
     }
 
-    private static void compare(Minecraft mc, View view) {
+    private static void compare(Minecraft mc, String name, double max) {
         NativeImage ours = Screenshot.takeScreenshot(mc.getMainRenderTarget());
         int different = 0;
         for (int y = 0; y < ours.getHeight(); y++) {
@@ -161,10 +274,10 @@ final class SkeletalRenderChecks {
             }
         }
         double share = (double) different / (ours.getWidth() * ours.getHeight());
-        EngineTest.check(view.name() + ": skeletal looks like vanilla (" + String.format("%.3f%%", share * 100)
-                + " of pixels differ)", share < MAX_DIFFERENT);
-        save(mc, vanilla, view.name() + "_1_vanilla");
-        save(mc, ours, view.name() + "_2_skeletal");
+        EngineTest.check(name + ": skeletal looks like vanilla (" + String.format("%.3f%%", share * 100)
+                + " of pixels differ)", share < max);
+        save(mc, vanilla, name + "_1_vanilla");
+        save(mc, ours, name + "_2_skeletal");
         vanilla = null;
     }
 

@@ -29,8 +29,8 @@ FACE_COLORS = {
 def test_skin(slim):
     """A 64x64 UV check skin as a Blender image."""
     pixels = np.zeros((murim_biped.SKIN_SIZE, murim_biped.SKIN_SIZE, 4), dtype=np.float32)
-    for _name, outer, _corner, size, (u, v), *_ in murim_biped.parts(slim):
-        if outer:
+    for _name, layer, _corner, size, (u, v), *_ in murim_biped.parts(slim):
+        if layer != "skin":
             continue
         w, h, d = (int(math.ceil(s)) for s in size)
         regions = {
@@ -133,7 +133,9 @@ def main():
     image = bpy.data.images.load(os.path.abspath(args.skin)) if args.skin else test_skin(args.slim)
     material = skin_material(image)
     for obj in scene.objects:
-        if obj.type == "MESH":
+        if obj.type == "MESH" and obj.get("layer", "skin").startswith("armor"):
+            obj.hide_render = True
+        elif obj.type == "MESH":
             obj.data.materials.append(material)
     targets, (cx, cy, cz), scale = CLIPS[args.clip]
     if targets:

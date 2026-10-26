@@ -2,6 +2,7 @@ package com.murimblock.anim;
 
 import java.util.Map;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /** Hand-made biped poses until clips exist (step 4): the rest pose, test poses, and the head following the look. */
 public final class BipedPoses {
@@ -38,15 +39,27 @@ public final class BipedPoses {
 
     /**
      * Vanilla's standing player: arms swaying a little with {@code age} (ticks), and an arm holding an item raised by
-     * 18°. Until the idle clip exists (step 5) this is how a player stands, so we look like vanilla at rest.
+     * 18°, and vanilla's crouch. Until the idle clip exists (step 5) this is how a player stands, so we look like
+     * vanilla at rest.
      */
-    public static Pose stand(float age, boolean rightHolds, boolean leftHolds) {
+    public static Pose stand(float age, boolean rightHolds, boolean leftHolds, boolean crouching) {
         Pose pose = Biped.ARMATURE.bindPose();
         float sway = (float) Math.cos(age * 0.09f) * 0.05f + 0.05f;
         float swing = (float) Math.sin(age * 0.067f) * 0.05f;
         float raise = (float) (Math.PI / 10);
-        vanillaArm(pose, "Arm_R", (rightHolds ? -raise : 0) + swing, sway);
-        vanillaArm(pose, "Arm_L", (leftHolds ? -raise : 0) - swing, -sway);
+        // Crouching, vanilla leans the body 0.5 rad and the arms 0.4: the arms hang from the chest, so they take -0.1.
+        float crouch = crouching ? -0.1f : 0;
+        vanillaArm(pose, "Arm_R", (rightHolds ? -raise : 0) + swing + crouch, sway);
+        vanillaArm(pose, "Arm_L", (leftHolds ? -raise : 0) - swing + crouch, -sway);
+        if (crouching) {
+            // The torso leans 0.5 rad from lower and further back, so the chest top lands where vanilla's does (20.8
+            // px up, 4 px ahead of the legs); the head stays upright.
+            int torso = Biped.ARMATURE.get(Biped.TORSO).index();
+            pose.set(torso, pose.get(torso).add(JointTransform.of(new Vector3f(0, -1.85f, -1.27f),
+                    new Quaternionf().rotateX(0.5f), new Vector3f(1, 1, 1))));
+            int head = Biped.ARMATURE.get(Biped.HEAD).index();
+            pose.set(head, pose.get(head).add(JointTransform.rotation(new Quaternionf().rotateX(-0.5f))));
+        }
         return pose;
     }
 

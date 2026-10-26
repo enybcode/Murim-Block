@@ -19,7 +19,8 @@ import org.junit.jupiter.api.Test;
 class GltfLoaderTest {
     private static final Path DIR = Path.of("src/main/resources/assets/murimblock/skeletal");
     private static final Set<String> PARTS = Set.of("head", "body", "arm_l", "arm_r", "leg_l", "leg_r", "hat", "jacket",
-            "sleeve_l", "sleeve_r", "pants_l", "pants_r");
+            "sleeve_l", "sleeve_r", "pants_l", "pants_r", "armor_head", "armor_hat", "armor_body", "armor_arm_r",
+            "armor_arm_l", "armor_leg_r", "armor_leg_l", "armor_inner_body", "armor_inner_leg_r", "armor_inner_leg_l");
 
     private static SkinnedModel load(String file) {
         return GltfLoader.load(read(DIR.resolve(file)), name -> bytes(DIR.resolve(name)), Biped.ARMATURE);
@@ -113,6 +114,30 @@ class GltfLoaderTest {
             }
         }
         assertTrue(sawElbow);
+    }
+
+    @Test
+    void leftArmorMirrorsTheRight() {
+        // Vanilla maps the left armor limbs with the right ones' texture, flipped: each left vertex at (x, y, z) has the
+        // texture of the right vertex at (-x, y, z).
+        SkinnedModel model = load("biped.gltf");
+        for (String[] pair : new String[][] {{"armor_arm_l", "armor_arm_r"}, {"armor_inner_leg_l", "armor_inner_leg_r"}}) {
+            SkinnedMesh left = model.part(pair[0]);
+            SkinnedMesh right = model.part(pair[1]);
+            for (int v = 0; v < left.vertexCount(); v++) {
+                boolean found = false;
+                for (int w = 0; w < right.vertexCount() && !found; w++) {
+                    found = Math.abs(left.positions()[v * 3] + right.positions()[w * 3]) < 0.25f
+                            && Math.abs(left.positions()[v * 3 + 1] - right.positions()[w * 3 + 1]) < 1e-4f
+                            && Math.abs(left.positions()[v * 3 + 2] - right.positions()[w * 3 + 2]) < 1e-4f
+                            && Math.abs(left.uvs()[v * 2] - right.uvs()[w * 2]) < 1e-4f
+                            && Math.abs(left.uvs()[v * 2 + 1] - right.uvs()[w * 2 + 1]) < 1e-4f;
+                }
+                assertTrue(found, pair[0] + " vertex " + v);
+            }
+        }
+        assertTrue(model.part("armor_head").armor());
+        assertTrue(!model.part("armor_head").outer());
     }
 
     @Test

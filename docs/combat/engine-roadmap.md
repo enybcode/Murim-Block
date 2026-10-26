@@ -3,7 +3,7 @@
 Goal: a combat engine of Epic Fight's level or better, written by us from scratch. Epic Fight is studied for
 ideas only: its code is GPL and its assets are All Rights Reserved, so nothing is copied.
 
-Status: steps 0 to 2 and 3a done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
+Status: steps 0 to 3 done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
 
@@ -164,9 +164,15 @@ torch) shot by vanilla then by us from six sides: at most 0.3 % of pixels differ
 vanilla pivots half a pixel lower), the bottom faces' UVs match vanilla; test poses shot; about 30 µs per
 player.
 
-Step 3b, left: armor meshes on the skeleton, cape, elytra, arrows and stingers stuck in the body, the vanilla
-crouch pose (the crouch height already applies), the debug skeleton view, a check with 20 players. Vanilla
-keeps drawing players who sleep, glide, swim, ride or spectate.
+Step 3b done (26 Oct 2026): armor meshes in the biped files (vanilla's armor boxes, 64x32 UVs, left limbs
+mirrored, inflated 1 / 0.5, rigid with hinges) drawn by `anim/client/SkeletalArmor` like vanilla's armor layer
+(material layers, dye, trims, glint); `anim/client/VanillaLayers` runs the renderer's other layers (cape, elytra,
+arrows, stingers, head items, parrots, other mods' layers) on the vanilla model with its parts moved to follow
+our joints, the cape and elytra hanging from `Chest`; `BipedPoses.stand` approximates vanilla's crouch;
+`/skeletal joints on` shows the bones alone. Checks: armored lineup within 0.4 % of vanilla from four sides;
+twenty players at about 55 µs each. Left for later: armor with its own model (other mods) is not drawn; the crouch
+is close but not exact (5 to 9 % of pixels differ, the crouch clip of step 5 replaces it); vanilla keeps drawing
+players who sleep, glide, swim, ride or spectate.
 
 ## Step 4: Clips and the animation player
 

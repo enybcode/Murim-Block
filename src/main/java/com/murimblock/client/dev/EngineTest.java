@@ -48,7 +48,7 @@ public final class EngineTest {
                     SkinnedModel model = SkeletalModels.get(id);
                     check(id + " is loaded", model != null);
                     check(id + " fits the biped skeleton", model != null && Biped.check(model.armature()).isEmpty());
-                    check(id + " has its 12 parts", model != null && model.parts().size() == 12);
+                    check(id + " has its 22 parts (12 skin, 10 armor)", model != null && model.parts().size() == 22);
                 }
             })), SkeletalRenderChecks.steps().stream()).toList();
 

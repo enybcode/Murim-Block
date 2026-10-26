@@ -60,7 +60,8 @@ def trunk_weights(y):
 
 
 def parts(slim):
-    """Every box of the player. Limbs: hinge height, upper, lower and helper joints, the side the hinge opens on."""
+    """Every box of the player and of armor. Limbs: hinge height, upper, lower and helper joints, the side the hinge
+    opens on. Layers: skin, skin_outer (hat, jacket, sleeves, pants), armor_outer, armor_inner."""
     arm_w = 3 if slim else 4
     arm_y = 11.5 if slim else 12
     head = {"kind": "box", "levels": [], "weights": lambda y: {"Head": 1.0}}
@@ -75,20 +76,35 @@ def parts(slim):
                 "helper": f"Knee_{side}", "opens": "front"}
 
     boxes = [
-        # name, outer layer, model min corner, size, skin offset, inflation, shape
-        ("head", False, (-4, 24, -4), (8, 8, 8), (0, 0), 0, head),
-        ("body", False, (-4, 12, -2), (8, 12, 4), (16, 16), 0, trunk),
-        ("arm_r", False, (-4 - arm_w, arm_y, -2), (arm_w, 12, 4), (40, 16), 0, arm("R")),
-        ("arm_l", False, (4, arm_y, -2), (arm_w, 12, 4), (32, 48), 0, arm("L")),
+        # name, layer, model min corner, size, texture offset, inflation, shape
+        ("head", "skin", (-4, 24, -4), (8, 8, 8), (0, 0), 0, head),
+        ("body", "skin", (-4, 12, -2), (8, 12, 4), (16, 16), 0, trunk),
+        ("arm_r", "skin", (-4 - arm_w, arm_y, -2), (arm_w, 12, 4), (40, 16), 0, arm("R")),
+        ("arm_l", "skin", (4, arm_y, -2), (arm_w, 12, 4), (32, 48), 0, arm("L")),
         # The vanilla leg pivots sit at x ±1.9, so the legs overlap by 0.2 in the middle.
-        ("leg_r", False, (-3.9, 0, -2), (4, 12, 4), (0, 16), 0, leg("R")),
-        ("leg_l", False, (-0.1, 0, -2), (4, 12, 4), (16, 48), 0, leg("L")),
-        ("hat", True, (-4, 24, -4), (8, 8, 8), (32, 0), 0.5, head),
-        ("jacket", True, (-4, 12, -2), (8, 12, 4), (16, 32), 0.25, trunk),
-        ("sleeve_r", True, (-4 - arm_w, arm_y, -2), (arm_w, 12, 4), (40, 32), 0.25, arm("R")),
-        ("sleeve_l", True, (4, arm_y, -2), (arm_w, 12, 4), (48, 48), 0.25, arm("L")),
-        ("pants_r", True, (-3.9, 0, -2), (4, 12, 4), (0, 32), 0.25, leg("R")),
-        ("pants_l", True, (-0.1, 0, -2), (4, 12, 4), (0, 48), 0.25, leg("L")),
+        ("leg_r", "skin", (-3.9, 0, -2), (4, 12, 4), (0, 16), 0, leg("R")),
+        ("leg_l", "skin", (-0.1, 0, -2), (4, 12, 4), (16, 48), 0, leg("L")),
+        ("hat", "skin_outer", (-4, 24, -4), (8, 8, 8), (32, 0), 0.5, head),
+        ("jacket", "skin_outer", (-4, 12, -2), (8, 12, 4), (16, 32), 0.25, trunk),
+        ("sleeve_r", "skin_outer", (-4 - arm_w, arm_y, -2), (arm_w, 12, 4), (40, 32), 0.25, arm("R")),
+        ("sleeve_l", "skin_outer", (4, arm_y, -2), (arm_w, 12, 4), (48, 48), 0.25, arm("L")),
+        ("pants_r", "skin_outer", (-3.9, 0, -2), (4, 12, 4), (0, 32), 0.25, leg("R")),
+        ("pants_l", "skin_outer", (-0.1, 0, -2), (4, 12, 4), (0, 48), 0.25, leg("L")),
+    ]
+    # Armor, like vanilla's armor models: worn over the skin, on the 64x32 armor textures, left limbs mirroring
+    # the right ones' texture. Outer (helmet, chestplate, boots) inflated by 1, inner (leggings) by 0.5. Armor arms
+    # are always wide.
+    boxes += [
+        ("armor_head", "armor_outer", (-4, 24, -4), (8, 8, 8), (0, 0), 1, head),
+        ("armor_hat", "armor_outer", (-4, 24, -4), (8, 8, 8), (32, 0), 1.5, head),
+        ("armor_body", "armor_outer", (-4, 12, -2), (8, 12, 4), (16, 16), 1, trunk),
+        ("armor_arm_r", "armor_outer", (-8, 12, -2), (4, 12, 4), (40, 16), 1, arm("R")),
+        ("armor_arm_l", "armor_outer", (4, 12, -2), (4, 12, 4), (40, 16), 1, dict(arm("L"), mirror=True)),
+        ("armor_leg_r", "armor_outer", (-3.9, 0, -2), (4, 12, 4), (0, 16), 1, leg("R")),
+        ("armor_leg_l", "armor_outer", (-0.1, 0, -2), (4, 12, 4), (0, 16), 1, dict(leg("L"), mirror=True)),
+        ("armor_inner_body", "armor_inner", (-4, 12, -2), (8, 12, 4), (16, 16), 0.5, trunk),
+        ("armor_inner_leg_r", "armor_inner", (-3.9, 0, -2), (4, 12, 4), (0, 16), 0.5, leg("R")),
+        ("armor_inner_leg_l", "armor_inner", (-0.1, 0, -2), (4, 12, 4), (0, 16), 0.5, dict(leg("L"), mirror=True)),
     ]
     return boxes
 
@@ -96,8 +112,11 @@ def parts(slim):
 class BoxBuilder:
     """Writes the faces of one skin box into a mesh, UV mapped like a vanilla cube, with a weight per vertex."""
 
-    def __init__(self, name, corner, size, tex, inflate):
+    def __init__(self, name, corner, size, tex, inflate, tex_height=SKIN_SIZE, mirror=False):
         self.x0, self.y0, self.z0 = corner
+        # Vanilla's mirrored cubes: the box mapped as usual, then flipped left to right (texture and all).
+        self.mirror = mirror
+        self.tex_height = tex_height
         self.w, self.h, self.d = size
         self.u, self.v = tex
         g = inflate
@@ -140,6 +159,9 @@ class BoxBuilder:
 
     def face(self, corners, normal):
         """corners: (model point, uv in skin pixels, {joint: weight}), counter-clockwise seen from outside."""
+        if self.mirror:
+            corners = [((self.X0 + self.X1 - x, y, z), uv, weights) for (x, y, z), uv, weights in reversed(corners)]
+            normal = (-normal[0], normal[1], normal[2])
         verts = []
         for point, _uv, weights in corners:
             vert = self.bm.verts.new(blender(*point))
@@ -148,7 +170,7 @@ class BoxBuilder:
             verts.append(vert)
         face = self.bm.faces.new(verts)
         for loop, (_point, (pu, pv), _weights) in zip(face.loops, corners):
-            loop[self.uv_layer].uv = (pu / SKIN_SIZE, 1 - pv / SKIN_SIZE)
+            loop[self.uv_layer].uv = (pu / SKIN_SIZE, 1 - pv / self.tex_height)
         self.normals.append(blender(*normal))
 
     def sides(self, lo, hi, weights_lo, weights_hi):
@@ -223,8 +245,9 @@ class BoxBuilder:
         return self.obj
 
 
-def build_part(armature, name, corner, size, tex, inflate, shape):
-    box = BoxBuilder(name, corner, size, tex, inflate)
+def build_part(armature, name, layer, corner, size, tex, inflate, shape):
+    box = BoxBuilder(name, corner, size, tex, inflate, tex_height=32 if layer.startswith("armor") else SKIN_SIZE,
+                     mirror=shape.get("mirror", False))
     y0, h = corner[1], size[1]
     if shape["kind"] == "box":
         weights = shape["weights"]
@@ -272,9 +295,9 @@ def build(slim=False, collection=None):
         constraint.owner_space = "LOCAL"
         constraint.target_space = "LOCAL"
         constraint.influence = 0.5
-    for name, outer, corner, size, tex, inflate, shape in parts(slim):
-        obj = build_part(armature, name, corner, size, tex, inflate, shape)
-        obj["outer"] = outer
+    for name, layer, corner, size, tex, inflate, shape in parts(slim):
+        obj = build_part(armature, name, layer, corner, size, tex, inflate, shape)
+        obj["layer"] = layer
         collection.objects.link(obj)
     return armature
 

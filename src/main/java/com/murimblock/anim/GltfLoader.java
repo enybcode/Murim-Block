@@ -150,8 +150,8 @@ public final class GltfLoader {
 
     private SkinnedMesh mesh(JsonObject node, int[] toArmature) {
         String name = node.get("name").getAsString();
-        boolean outer = node.has("extras") && node.getAsJsonObject("extras").has("outer")
-                && node.getAsJsonObject("extras").get("outer").getAsBoolean();
+        String layer = node.has("extras") && node.getAsJsonObject("extras").has("layer")
+                ? node.getAsJsonObject("extras").get("layer").getAsString() : SkinnedMesh.SKIN;
         JsonObject mesh = array(root, "meshes").get(node.get("mesh").getAsInt()).getAsJsonObject();
         List<float[]> positions = new ArrayList<>(), normals = new ArrayList<>(), uvs = new ArrayList<>(),
                 weights = new ArrayList<>();
@@ -191,7 +191,7 @@ public final class GltfLoader {
             indices.add(index);
             base += count;
         }
-        return new SkinnedMesh(name, outer, join(positions), join(normals), join(uvs), joinInts(joints),
+        return new SkinnedMesh(name, layer, join(positions), join(normals), join(uvs), joinInts(joints),
                 join(weights), joinInts(indices));
     }
 

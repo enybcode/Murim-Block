@@ -4,7 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.murimblock.Murimblock;
+import com.murimblock.anim.Armature;
 import com.murimblock.anim.BipedPoses;
+import com.murimblock.anim.Joint;
 import com.murimblock.anim.Pose;
 import com.murimblock.anim.SkinnedMesh;
 import com.murimblock.anim.SkinnedModel;
@@ -31,10 +33,12 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /**
  * Draws players with the skinned biped instead of the vanilla model while {@link SkeletalPlayers} says so: the body
- * and outer layer from the player's skin, held items at the grip joints, and the vanilla name tag. The shadow, fire
+ * and outer layer from the player's skin, armor ({@link SkeletalArmor}), held items at the grip joints, the vanilla
+ * layers on a model following our skeleton ({@link VanillaLayers}) and the vanilla name tag. The shadow, fire
  * and hitbox are still drawn by vanilla around us.
  * <p>
  * Placement matches the vanilla player exactly at rest: vanilla flips its model (Y down, facing -Z), scales players by
@@ -120,14 +124,19 @@ public final class SkeletalPlayerRenderer {
             poseStack.mulPose(Axis.ZP.rotationDegrees(-Math.min(fall, 1) * 90));
         }
         poseStack.scale(PLAYER_SCALE, PLAYER_SCALE, PLAYER_SCALE);
+        // The vanilla layers (cape, elytra, arrows, head items, other mods' layers) draw in vanilla's model space.
+        VanillaLayers.render(renderer, player, model.armature(), jointMatrices, poseStack, buffers, light, partialTick,
+                Mth.wrapDegrees(headYaw - bodyYaw), pitch);
         poseStack.translate(0, 0.001f, 0);
 
         Minecraft mc = Minecraft.getInstance();
-        boolean visible = !player.isInvisible();
-        boolean ghost = !visible && mc.player != null && !player.isInvisibleTo(mc.player);
+        // The debug skeleton view shows the bones alone: the body would hide them.
+        boolean skeletonView = SkeletalPlayers.showJoints();
+        boolean visible = !player.isInvisible() && !skeletonView;
+        boolean ghost = player.isInvisible() && !skeletonView && mc.player != null && !player.isInvisibleTo(mc.player);
         RenderType type = visible ? RenderType.entityCutoutNoCull(skin.texture())
                 : ghost ? RenderType.itemEntityTranslucentCull(skin.texture())
-                : mc.shouldEntityAppearGlowing(player) ? RenderType.outline(skin.texture()) : null;
+                : !skeletonView && mc.shouldEntityAppearGlowing(player) ? RenderType.outline(skin.texture()) : null;
         if (type != null) {
             int overlay = LivingEntityRenderer.getOverlayCoords(player, 0);
             int color = ghost ? 0x26FFFFFF : 0xFFFFFFFF;
@@ -136,13 +145,21 @@ public final class SkeletalPlayerRenderer {
             VertexConsumer consumer = buffers.getBuffer(type);
             for (SkinnedMesh part : model.parts()) {
                 PlayerModelPart outer = OUTER_PARTS.get(part.name());
-                if (part.outer() && outer != null && !player.isModelPartShown(outer)) {
+                if (part.armor() || part.outer() && outer != null && !player.isModelPartShown(outer)) {
                     continue;
                 }
                 draw(part, skinMatrices, poseStack.last(), consumer, color, light, overlay);
             }
             poseStack.popPose();
         }
+        poseStack.pushPose();
+        poseStack.scale(PIXEL, PIXEL, PIXEL);
+        if (skeletonView) {
+            drawJoints(model.armature(), jointMatrices, poseStack.last(), buffers);
+        } else {
+            SkeletalArmor.render(player, model, skinMatrices, poseStack.last(), buffers, light);
+        }
+        poseStack.popPose();
 
         holdItem(player, HumanoidArm.RIGHT, jointMatrices[model.armature().get("Tool_R").index()], poseStack, buffers, light);
         holdItem(player, HumanoidArm.LEFT, jointMatrices[model.armature().get("Tool_L").index()], poseStack, buffers, light);
@@ -182,8 +199,33 @@ public final class SkeletalPlayerRenderer {
         }
     }
 
-    private static void draw(SkinnedMesh part, Matrix4f[] skin, PoseStack.Pose matrix, VertexConsumer consumer,
-                             int color, int light, int overlay) {
+    /** The debug skeleton view: each joint's axes (X red, Y green, Z blue) and a white line to its parent. */
+    private static void drawJoints(Armature armature, Matrix4f[] joints, PoseStack.Pose matrix, MultiBufferSource buffers) {
+        VertexConsumer lines = buffers.getBuffer(RenderType.lines());
+        for (Joint joint : armature.joints()) {
+            Matrix4f m = joints[joint.index()];
+            Vector3f at = m.getTranslation(new Vector3f());
+            line(lines, matrix, at, m.transformPosition(new Vector3f(3, 0, 0)), 0xFFFF4040);
+            line(lines, matrix, at, m.transformPosition(new Vector3f(0, 3, 0)), 0xFF40FF40);
+            line(lines, matrix, at, m.transformPosition(new Vector3f(0, 0, 3)), 0xFF4080FF);
+            if (!joint.isRoot()) {
+                line(lines, matrix, at, joints[joint.parent()].getTranslation(new Vector3f()), 0xFFFFFFFF);
+            }
+        }
+    }
+
+    private static void line(VertexConsumer lines, PoseStack.Pose matrix, Vector3f from, Vector3f to, int color) {
+        Vector3f normal = new Vector3f(to).sub(from);
+        if (normal.lengthSquared() < 1e-6f) {
+            return;
+        }
+        normal.normalize();
+        lines.addVertex(matrix, from.x, from.y, from.z).setColor(color).setNormal(matrix, normal.x, normal.y, normal.z);
+        lines.addVertex(matrix, to.x, to.y, to.z).setColor(color).setNormal(matrix, normal.x, normal.y, normal.z);
+    }
+
+    static void draw(SkinnedMesh part, Matrix4f[] skin, PoseStack.Pose matrix, VertexConsumer consumer,
+                     int color, int light, int overlay) {
         int count = part.vertexCount() * 3;
         if (positions.length < count) {
             positions = new float[count];

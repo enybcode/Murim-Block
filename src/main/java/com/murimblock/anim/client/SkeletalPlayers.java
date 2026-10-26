@@ -17,12 +17,14 @@ import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 
 /**
  * Which players the skeletal engine draws, and in what pose. Until combat mode exists it is switched by hand with
- * the client command {@code /skeletal on|off} and {@code /skeletal pose <name>} (dev only, not in the lang file).
+ * the client command {@code /skeletal on|off}, {@code /skeletal pose <name>} and {@code /skeletal joints on|off} (the
+ * debug skeleton view); dev only, not in the lang file.
  * Vanilla keeps the players it handles better for now: sleeping, gliding, swimming, riding, spectating.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class SkeletalPlayers {
     private static boolean enabled;
+    private static boolean showJoints;
     /** "stand" (vanilla's standing pose) or one of {@link BipedPoses#TEST}. */
     private static String poseName = "stand";
 
@@ -35,6 +37,15 @@ public final class SkeletalPlayers {
 
     public static void enable(boolean on) {
         enabled = on;
+    }
+
+    /** Whether the debug skeleton view is on ({@code /skeletal joints on|off}). */
+    public static boolean showJoints() {
+        return showJoints;
+    }
+
+    public static void showJoints(boolean on) {
+        showJoints = on;
     }
 
     public static void pose(String name) {
@@ -51,7 +62,8 @@ public final class SkeletalPlayers {
         if (poseName.equals("stand")) {
             boolean rightIsMain = player.getMainArm() == HumanoidArm.RIGHT;
             boolean main = !player.getMainHandItem().isEmpty(), off = !player.getOffhandItem().isEmpty();
-            return BipedPoses.stand(player.tickCount + partialTick, rightIsMain ? main : off, rightIsMain ? off : main);
+            return BipedPoses.stand(player.tickCount + partialTick, rightIsMain ? main : off, rightIsMain ? off : main,
+                    player.isCrouching());
         }
         return BipedPoses.test(poseName);
     }
@@ -69,6 +81,13 @@ public final class SkeletalPlayers {
                     context.getSource().sendSystemMessage(Component.literal("Skeletal players: off"));
                     return 1;
                 }))
+                .then(Commands.literal("joints").then(Commands.literal("on").executes(context -> {
+                    showJoints = true;
+                    return 1;
+                })).then(Commands.literal("off").executes(context -> {
+                    showJoints = false;
+                    return 1;
+                })))
                 .then(Commands.literal("pose").then(Commands.argument("name", StringArgumentType.word())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                                 Stream.concat(Stream.of("stand"), BipedPoses.TEST.keySet().stream()), builder))
