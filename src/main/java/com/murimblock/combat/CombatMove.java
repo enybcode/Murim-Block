@@ -1,6 +1,7 @@
 package com.murimblock.combat;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
@@ -11,17 +12,30 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * One strike, read from {@code data/<namespace>/combat_moves/<name>.json}. Times are in ticks, distances in blocks,
- * the angle is the full width of the cone in front of the eyes.
+ * One strike, read from {@code data/<namespace>/combat_moves/<name>.json}. Times are in ticks, distances in blocks;
+ * the hitbox is a {@link HitShape} around the eyes.
  */
-public record CombatMove(ResourceLocation animation, Phases phases, double reach, double angle, float damage,
+public record CombatMove(ResourceLocation animation, Phases phases, HitShape hitbox, float damage,
                          double knockback, double step, double moveSpeed, int hitStop, int armorTicks,
                          FirstPerson firstPerson) {
-    public static final Codec<CombatMove> CODEC = RecordCodecBuilder.create(i -> i.group(
+    /** A box (start, length, width, height) or an arc (radius, height, from, to); see {@link HitShape}. */
+    public static final Codec<HitShape> HIT_SHAPE_CODEC = RecordCodecBuilder.<HitShape>create(i -> i.group(
+            Codec.STRING.validate(t -> t.equals(HitShape.BOX) || t.equals(HitShape.ARC)
+                    ? DataResult.success(t)
+                    : DataResult.error(() -> "hitbox type is box or arc, not " + t))
+                    .fieldOf("type").forGetter(HitShape::type),
+            Codec.doubleRange(0, 8).optionalFieldOf("start", 0.0).forGetter(HitShape::start),
+            Codec.doubleRange(0, 8).optionalFieldOf("length", 0.0).forGetter(HitShape::length),
+            Codec.doubleRange(0, 8).optionalFieldOf("width", 0.0).forGetter(HitShape::width),
+            Codec.doubleRange(0, 8).fieldOf("height").forGetter(HitShape::height),
+            Codec.doubleRange(0, 8).optionalFieldOf("radius", 0.0).forGetter(HitShape::radius),
+            Codec.doubleRange(-180, 180).optionalFieldOf("from", 0.0).forGetter(HitShape::from),
+            Codec.doubleRange(-180, 180).optionalFieldOf("to", 0.0).forGetter(HitShape::to)
+    ).apply(i, HitShape::new));
+    public static final Codec<CombatMove> CODEC =RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("animation").forGetter(CombatMove::animation),
             Phases.CODEC.fieldOf("phases").forGetter(CombatMove::phases),
-            Codec.doubleRange(0, 8).fieldOf("reach").forGetter(CombatMove::reach),
-            Codec.doubleRange(1, 360).fieldOf("angle").forGetter(CombatMove::angle),
+            HIT_SHAPE_CODEC.fieldOf("hitbox").forGetter(CombatMove::hitbox),
             Codec.floatRange(0, 1000).fieldOf("damage").forGetter(CombatMove::damage),
             Codec.doubleRange(0, 5).optionalFieldOf("knockback", 0.4).forGetter(CombatMove::knockback),
             Codec.doubleRange(0, 2).optionalFieldOf("step", 0.0).forGetter(CombatMove::step),

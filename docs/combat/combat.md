@@ -35,7 +35,7 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 |---|---|
 | `animation` | PAL animation id, in `assets/<namespace>/player_animations/` |
 | `phases` | `windup` before the blow lands, `active` ticks it can hit, `recovery` before the next action |
-| `reach`, `angle` | blocks from the eyes, full width of the cone in degrees |
+| `hitbox` | where it hits, around the eyes: `{"type": "box", "start", "length", "width", "height"}` along the view (up and down too), or `{"type": "arc", "radius", "height", "from", "to"}` swept in degrees of the view (negative to the left) over the active ticks |
 | `damage`, `knockback` | damage before armor; knockback replaces vanilla's 0.4 |
 | `step` | blocks stepped forward on the first tick (on the ground only) |
 | `move_speed` | multiplier on walking input during the move |
@@ -53,9 +53,14 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 - Client prediction (`client/combat/ClientCombat`): the click starts the animation, the step and the local hit test at
   once, and sends `StrikeRequest`. The server (`combat/CombatServer`) refuses out of combat mode, a move outside the style in hand, or still
   busy (3 ticks of slack for lag), and the client then stops the animation.
-- Hits: on each active tick the server sweeps the cone from last tick's view to the current one (`StrikeReach`),
-  living entities only, not through blocks, each target once per strike. It resets the target's hurt delay so one
-  strike is exactly one damage roll, and no vanilla attack cooldown applies.
+- Hits (`StrikeReach`, `HitGeometry`): on each active tick the server tests the move's hit shape against every living
+  box nearby (a box with the separating axis test, an arc cut into convex slices), following the view from the last
+  tick to this one, not through blocks, each target once per strike. It resets the target's hurt delay so one
+  strike is exactly one damage roll, and no vanilla attack cooldown applies. The geometry is unit tested
+  (`HitGeometryTest`).
+- Hitbox view: `/murim debug hitboxes on|off` (operators). Our own strike's shape is drawn around us, grey while it
+  winds up, red while it can hit, dark once spent (an arc: the whole swing in grey, the slice being swept in red);
+  living boxes nearby in white, the ones just struck in yellow.
 - Impact: sound, crit particles, a short camera shake for striker and target, and hit-stop (the animation and the
   timeline pause). The striker plays it from its own prediction; others get `Impact` from the server.
 - Combat animations play on their own PAL layer (`murimblock:combat`), and only through `client/combat/CombatAnimator`:
@@ -78,7 +83,9 @@ One JSON file per strike in `data/<namespace>/combat_moves/` (`jab.json`). Times
 
 `gradlew runCombatTest` (`run/combat-test`) presses B and clicks like a player at a still husk: vanilla punch out of
 the mode, B on and off, a test sword style matched by tag, predicted start, step, one damage
-roll per strike even clicked twice, no cooldown, an item ends the mode, no mining even held. PASS/FAIL in the
+roll per strike even clicked twice, no cooldown, an item ends the mode, no mining even held, a blow taken, the
+hitbox edges with the hitbox view on (ahead, too far, to the side, behind, behind a wall, a test hook arc; shots
+`hitbox_jab_*`, `hitbox_hook_*`). PASS/FAIL in the
 log, then frames in `screenshots/combat/` (`fp_*` first person, `side_*` from the side). GIF with
 `java scripts/frames-to-gif.java <frames dir> run/gifs/<name>.gif`.
 

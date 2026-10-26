@@ -2,10 +2,12 @@ package com.murimblock.combat;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.combat.ClientCombat;
+import com.murimblock.client.combat.HitboxDebugView;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
@@ -20,7 +22,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /** Hooks bare-handed combat into the game: network, move files, ticking and the vanilla punch it replaces. */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CombatEvents {
-    private static final String PROTOCOL = "4";
+    private static final String PROTOCOL = "5";
 
     private CombatEvents() {
     }
@@ -36,6 +38,8 @@ public final class CombatEvents {
                 (payload, context) -> ClientCombat.refused());
         registrar.playToClient(CombatPayloads.Strike.TYPE, CombatPayloads.Strike.STREAM_CODEC,
                 (payload, context) -> ClientCombat.strikeSeen(payload.entityId(), payload.move()));
+        registrar.playToClient(CombatPayloads.DebugHitboxes.TYPE, CombatPayloads.DebugHitboxes.STREAM_CODEC,
+                (payload, context) -> HitboxDebugView.show(payload.on()));
         registrar.playToClient(CombatPayloads.Flinch.TYPE, CombatPayloads.Flinch.STREAM_CODEC,
                 (payload, context) -> ClientCombat.flinchSeen(payload.entityId(), payload.ticks()));
         registrar.playToClient(CombatPayloads.Impact.TYPE, CombatPayloads.Impact.STREAM_CODEC,
@@ -82,6 +86,11 @@ public final class CombatEvents {
         if (event.getEntity() instanceof ServerPlayer player && CombatServer.inCombatMode(player)) {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public static void registerCommands(RegisterCommandsEvent event) {
+        CombatCommands.register(event.getDispatcher());
     }
 
     @SubscribeEvent

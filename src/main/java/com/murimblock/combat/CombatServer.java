@@ -97,7 +97,8 @@ public final class CombatServer {
         }
         if (fighter.clock().active()) {
             CombatMove move = fighter.move();
-            for (LivingEntity target : StrikeReach.targets(player, move, fighter.lastYaw(), fighter.lastPitch())) {
+            for (LivingEntity target : StrikeReach.targets(player, move, fighter.lastYaw(), fighter.lastPitch(),
+                    fighter.clock().activeIndex(), fighter.clock().activeCount())) {
                 if (fighter.clock().markStruck(target.getId()) && hit(player, target, move)) {
                     fighter.clock().hitStop(move.hitStop());
                     PacketDistributor.sendToPlayersTrackingEntity(player,

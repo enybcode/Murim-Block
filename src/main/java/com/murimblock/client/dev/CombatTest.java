@@ -3,6 +3,7 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.client.MurimKeys;
 import com.murimblock.client.combat.ClientCombat;
+import com.murimblock.client.combat.HitboxDebugView;
 import com.murimblock.client.cultivation.ClientCultivation;
 import com.murimblock.client.innerworld.TrialEntry;
 import com.murimblock.combat.CombatMove;
@@ -11,6 +12,7 @@ import com.murimblock.combat.CombatMoveset;
 import com.murimblock.combat.CombatMovesets;
 import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.FighterState;
+import com.murimblock.combat.HitShape;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import java.io.File;
@@ -262,6 +264,13 @@ public final class CombatTest {
                 check("burning does not cancel the strike (lost " + lost + ")", lost > 2.5f && lost < 3.1f);
             }
             case 370 -> {
+                server.getCommands().performPrefixedCommand(player(server).createCommandSourceStack(),
+                        "murim debug hitboxes on");
+                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                mc.options.hideGui = true;
+            }
+            case 374 -> check("/murim debug hitboxes on shows the hitboxes", HitboxDebugView.shown());
+            case EDGES_START + 25 * 6 + 10 -> {
                 FAILED.forEach(name -> Murimblock.LOGGER.error("Combat test: FAIL {}", name));
                 Murimblock.LOGGER.info("Combat test: {}", FAILED.isEmpty() ? "PASS" : FAILED.size() + " FAILED");
                 mc.stop();
@@ -278,6 +287,7 @@ public final class CombatTest {
         }
         film(mc, "fp", ticks - 61);
         film(mc, "side", ticks - 156);
+        edges(mc, server);
     }
 
     private static boolean serverMode(MinecraftServer server) {
@@ -322,6 +332,97 @@ public final class CombatTest {
                 player.hurt(player.damageSources().mobAttack(zombie), 1);
             }
         }).join();
+    }
+
+    /** A target placed around the player, and whether the strike should reach it. */
+    private record Edge(String name, double dx, double dz, boolean hit, boolean wall, boolean hook) {
+    }
+
+    private static final int EDGES_START = 375;
+    // Facing +z, the left is +x. The jab's box reaches 3 blocks from the eyes, 1.2 wide; its step adds about 0.3.
+    private static final Edge[] EDGES = {
+            new Edge("the jab reaches a target 2.6 ahead", 0, 2.6, true, false, false),
+            new Edge("the jab misses a target 3.9 ahead, step included", 0, 3.9, false, false, false),
+            new Edge("the jab misses a target to the side", 1.6, 1.4, false, false, false),
+            new Edge("the jab misses a target behind", 0, -1.5, false, false, false),
+            new Edge("the jab does not go through a wall", 0, 2.2, false, true, false),
+            new Edge("a hook (arc) reaches a target 45 degrees to the left", 1.3, 1.3, true, false, true),
+    };
+    private static Map<ResourceLocation, CombatMove> savedMoves;
+    private static Map<ResourceLocation, CombatMoveset> savedStyles;
+
+    /** Each edge case: the player back at the center facing +z, the husk placed, one click, the health checked. */
+    private static void edges(Minecraft mc, MinecraftServer server) {
+        int index = (ticks - EDGES_START) / 25, at = (ticks - EDGES_START) % 25;
+        if (ticks < EDGES_START || index >= EDGES.length) {
+            return;
+        }
+        Edge edge = EDGES[index];
+        if (at == 0) {
+            if (edge.hook()) {
+                useTestHook(true);
+            }
+            BlockPos wall = center.offset(0, 0, 1);
+            server.submit(() -> {
+                ServerPlayer player = player(server);
+                player.connection.teleport(center.getX() + 0.5, center.getY(), center.getZ() + 0.5, 0, 0);
+                for (int y = 0; y < 3; y++) {
+                    player.serverLevel().setBlockAndUpdate(wall.above(y),
+                            (edge.wall() ? Blocks.STONE : Blocks.AIR).defaultBlockState());
+                }
+                if (player.serverLevel().getEntity(zombieId) instanceof Zombie zombie) {
+                    zombie.moveTo(center.getX() + 0.5 + edge.dx(), center.getY(), center.getZ() + 0.5 + edge.dz(), 180, 0);
+                    zombie.setDeltaMovement(Vec3.ZERO);
+                    zombie.setHealth(zombie.getMaxHealth());
+                }
+            }).join();
+            mc.player.setYRot(0);
+            mc.player.setXRot(0);
+        }
+        if (at == 2) {
+            health = health(server);
+            click(mc);
+        }
+        if (index == 0 || edge.hook()) {
+            film(mc, edge.hook() ? "hitbox_hook" : "hitbox_jab", at - 2);
+        }
+        if (at == 22) {
+            float lost = health - health(server);
+            check(edge.name() + " (lost " + lost + ")", edge.hit() == lost > 0);
+            if (edge.wall()) {
+                server.submit(() -> {
+                    for (int y = 0; y < 3; y++) {
+                        player(server).serverLevel().setBlockAndUpdate(center.offset(0, y, 1), Blocks.AIR.defaultBlockState());
+                    }
+                }).join();
+            }
+            if (edge.hook()) {
+                useTestHook(false);
+            }
+        }
+    }
+
+    /** Swaps the bare hands' chain for a test hook with an arc hitbox, or puts the real data back. */
+    private static void useTestHook(boolean on) {
+        if (!on) {
+            CombatMoves.replace(savedMoves);
+            CombatMovesets.replace(savedStyles);
+            return;
+        }
+        savedMoves = CombatMoves.all();
+        savedStyles = CombatMovesets.all();
+        CombatMove jab = CombatMoves.get(JAB);
+        ResourceLocation hookId = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "test_hook");
+        CombatMove hook = new CombatMove(jab.animation(), jab.phases(), HitShape.arc(2.6, 1.4, -70, 20), jab.damage(),
+                jab.knockback(), 0, jab.moveSpeed(), jab.hitStop(), 0, CombatMove.FirstPerson.NONE);
+        Map<ResourceLocation, CombatMove> moves = new HashMap<>(savedMoves);
+        moves.put(hookId, hook);
+        CombatMoves.replace(moves);
+        Map<ResourceLocation, CombatMoveset> styles = new HashMap<>(savedStyles);
+        CombatMoveset bare = styles.get(CombatMovesets.BARE_HANDS);
+        styles.put(CombatMovesets.BARE_HANDS, new CombatMoveset(bare.held(), List.of(hookId), bare.chainWindow(),
+                bare.priority()));
+        CombatMovesets.replace(styles);
     }
     private static void film(Minecraft mc, String name, int frame) {
         if (frame >= 0 && frame < FRAMES) {

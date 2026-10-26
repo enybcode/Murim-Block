@@ -44,6 +44,18 @@ public final class CombatPayloads {
         }
     }
 
+    /** Server to an operator: show or hide the hit shapes and the boxes struck (tuning view). */
+    public record DebugHitboxes(boolean on) implements CustomPacketPayload {
+        public static final Type<DebugHitboxes> TYPE = CombatPayloads.payloadType("debug_hitboxes");
+        public static final StreamCodec<ByteBuf, DebugHitboxes> STREAM_CODEC =
+                ByteBufCodecs.BOOL.map(DebugHitboxes::new, DebugHitboxes::on);
+
+        @Override
+        public Type<DebugHitboxes> type() {
+            return TYPE;
+        }
+    }
+
     /** Client to server: switch combat mode on or off. */
     public record ToggleCombatMode() implements CustomPacketPayload {
         public static final Type<ToggleCombatMode> TYPE = CombatPayloads.payloadType("toggle_combat_mode");

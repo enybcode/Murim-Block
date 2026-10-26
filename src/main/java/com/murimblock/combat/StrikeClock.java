@@ -81,6 +81,20 @@ public final class StrikeClock {
         return state == FighterState.ATTACK && frozen == 0 && tick >= windup && tick < windup + active;
     }
 
+    /** Whether hit-stop holds the timeline still. */
+    public boolean frozen() {
+        return frozen > 0;
+    }
+
+    /** Which active tick this is (0 for the first), for shapes that sweep across them. */
+    public int activeIndex() {
+        return tick - windup;
+    }
+
+    public int activeCount() {
+        return active;
+    }
+
     /** Records a target as struck; false if this strike already hit it. */
     public boolean markStruck(int entityId) {
         return struck.add(entityId);

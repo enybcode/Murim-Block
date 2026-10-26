@@ -26,7 +26,7 @@ our damage; charged strike, projectiles sent back and special actions cost Qi.
 - [x] One owner for combat animations with fixed priorities (stunned, dash, guard, attack); none over the lotus or
       the getting up.
 - [x] A blow taken cancels the move and the chain: 8 ticks of flinch, not for fire or poison, `armor_ticks` ready.
-- [ ] Hit shapes per move (box, arc) with a debug view around the player.
+- [x] Hit shapes per move (box, arc) with a debug view around the player (`/murim debug hitboxes on`).
 
 ## Step 2: combo and charged strike
 - [ ] Jab, cross, hook, fists alternating; one click buffered; the chain drops after a short pause.

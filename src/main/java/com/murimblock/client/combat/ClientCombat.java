@@ -81,6 +81,11 @@ public final class ClientCombat {
         return blowsFelt;
     }
 
+    /** Our own fighter, as predicted. */
+    static Fighter own() {
+        return OWN;
+    }
+
     /** Our own fighter state, as predicted. */
     public static FighterState ownState() {
         return OWN.clock().state();
@@ -166,8 +171,10 @@ public final class ClientCombat {
             player.push(forward.x, 0, forward.z);
         }
         if (OWN.clock().active()) {
-            for (LivingEntity target : StrikeReach.targets(player, move, OWN.lastYaw(), OWN.lastPitch())) {
+            for (LivingEntity target : StrikeReach.targets(player, move, OWN.lastYaw(), OWN.lastPitch(),
+                    OWN.clock().activeIndex(), OWN.clock().activeCount())) {
                 if (OWN.clock().markStruck(target.getId())) {
+                    HitboxDebugView.flash(target.getId());
                     OWN.clock().hitStop(move.hitStop());
                     CombatAnimator.hold(player, move.hitStop());
                     impact(target);
@@ -218,6 +225,7 @@ public final class ClientCombat {
         if (mc.level.getEntity(attackerId) instanceof AbstractClientPlayer attacker) {
             CombatAnimator.hold(attacker, hitStop);
         }
+        HitboxDebugView.flash(targetId);
         if (mc.level.getEntity(targetId) instanceof Entity target) {
             impact(target);
             if (target == mc.player) {
