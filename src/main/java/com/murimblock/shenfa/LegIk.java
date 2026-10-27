@@ -11,6 +11,7 @@ import org.joml.Vector3fc;
  */
 public final class LegIk {
     private static final float EPSILON = 1e-3f;
+    private static final float MOST_BEND = (float) Math.toRadians(160);
 
     private LegIk() {
     }
@@ -37,7 +38,8 @@ public final class LegIk {
 
         // The knee: the angle the law of cosines gives for this hip-to-sole distance, bent about the shin's X.
         float cos = (upper * upper + lower * lower - distance * distance) / (2 * upper * lower);
-        float bend = (float) (Math.PI - Math.acos(Math.max(-1, Math.min(1, cos))));
+        // A knee never folds all the way (and a leg folded flat has no stable direction).
+        float bend = (float) Math.min(MOST_BEND, Math.PI - Math.acos(Math.max(-1, Math.min(1, cos))));
         Quaternionf shinTurn = new Quaternionf().rotateX(bend);
 
         // The thigh: turned in model space so the sole, with the new knee, points at the target.
@@ -46,7 +48,15 @@ public final class LegIk {
         shinTurn.transform(soleNow).add(knee);
         thighModel.transform(soleNow);
         Vector3f wanted = new Vector3f(target).sub(hip);
-        Quaternionf swing = new Quaternionf().rotationTo(soleNow.normalize(), wanted.normalize());
+        // First about the knee's hinge axis (a signed angle: a leg swung far back or up never flips to the other
+        // side), then the small sideways rest.
+        Vector3f axis = thighModel.transform(new Vector3f(1, 0, 0));
+        Vector3f from = new Vector3f(soleNow).sub(new Vector3f(axis).mul(soleNow.dot(axis)));
+        Vector3f to = new Vector3f(wanted).sub(new Vector3f(axis).mul(wanted.dot(axis)));
+        float angle = (float) Math.atan2(new Vector3f(from).cross(to).dot(axis), from.dot(to));
+        Quaternionf hinge = new Quaternionf().fromAxisAngleRad(axis, angle);
+        Vector3f hinged = hinge.transform(new Vector3f(soleNow)).normalize();
+        Quaternionf swing = new Quaternionf().rotationTo(hinged, wanted.normalize()).mul(hinge);
         Joint thighJoint = armature.joint(thigh);
         Quaternionf parent = thighJoint.isRoot() ? new Quaternionf()
                 : model[thighJoint.parent()].getUnnormalizedRotation(new Quaternionf()).normalize();

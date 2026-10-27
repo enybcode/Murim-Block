@@ -51,7 +51,7 @@ class WalkSlideTest {
             Biped.settleHelpers(pose);
             Vector3f at = new Vector3f(0, 0, speed * t);
             if (plant) {
-                planter.apply(pose, at, 0, TO_BLOCKS, FRAME, true, new Vector3f(0, 0, 1));
+                planter.apply(pose, at, 0, TO_BLOCKS, FRAME, FootPlanter.Mode.STEP, new Vector3f(0, 0, 1), null);
             }
             if (previous != null && frame > 30) {
                 for (int i = 0; i < pose.size(); i++) {

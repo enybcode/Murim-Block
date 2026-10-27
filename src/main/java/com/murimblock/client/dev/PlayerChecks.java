@@ -2,14 +2,17 @@ package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
 import com.murimblock.shenfa.Animator;
+import com.murimblock.shenfa.Biped;
 import com.murimblock.shenfa.LivingMotion;
 import com.murimblock.shenfa.Pose;
+import com.murimblock.shenfa.client.FootPlanting;
 import com.murimblock.shenfa.client.PlayerAnimators;
 import com.murimblock.shenfa.client.SkeletalPlayerRenderer;
 import com.murimblock.shenfa.client.SkeletalPlayers;
 import com.murimblock.client.dev.EngineTest.Step;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -23,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -32,6 +36,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LadderBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.neoforged.api.distmarker.Dist;
@@ -91,6 +96,9 @@ final class PlayerChecks {
     private static Vector3f plantedAt;
     private static int plantedFoot = -1;
     private static float slide, slideTime, slideMost;
+    /** How far the foot on the ground stands off the block surface under it (pixels). */
+    private static float groundOff, groundMost;
+    private static int groundSamples;
     private static int frames;
     private static long lastShotTick = -1;
     private static int shot;
@@ -132,8 +140,21 @@ final class PlayerChecks {
                 (mc, t) -> keys(mc, true, true, false, false, false), LivingMotion.RUN));
         PARTS.add(new Part("walk_back", 40, SIDE, mc -> at(mc, X, Y, Z + 10, 0),
                 (mc, t) -> keys(mc, false, false, false, false, false, true, false), LivingMotion.WALK));
-        PARTS.add(new Part("strafe", 40, FRONT, mc -> at(mc, X - 4, Y, Z + 4, 0),
+        PARTS.add(new Part("strafe", 40, FRONT, mc -> at(mc, X - 4, Y, Z + 20, 0),
                 (mc, t) -> keys(mc, false, false, false, false, false, false, true), LivingMotion.WALK));
+        PARTS.add(new Part("stairs_up", 40, SIDE, mc -> at(mc, X + 5, Y, Z, 0),
+                (mc, t) -> keys(mc, true, false, false, false, false), LivingMotion.WALK));
+        PARTS.add(new Part("stairs_down", 40, SIDE, mc -> at(mc, X + 5, Y + 3, Z + 10, 180),
+                (mc, t) -> keys(mc, true, false, false, false, false), LivingMotion.WALK));
+        PARTS.add(new Part("slabs", 40, SIDE, mc -> at(mc, X - 5, Y, Z, 0),
+                (mc, t) -> keys(mc, true, false, false, false, false), LivingMotion.WALK));
+        // On a slab's edge: the right foot on the slab, the left one half a block lower.
+        PARTS.add(new Part("slab_edge", 30, FRONT, mc -> at(mc, AREA - 2.95, Y + 0.5, Z + 2.5, 0), none(),
+                LivingMotion.IDLE));
+        PARTS.add(new Part("turn", 60, FRONT, mc -> at(mc, X, Y, Z, 0), (mc, t) -> {
+            keys(mc, false, false, false, false, false);
+            mc.player.setYRot(mc.player.getYRot() + 3);
+        }, LivingMotion.IDLE));
         PARTS.add(new Part("walk_stop_walk", 60, SIDE, mc -> at(mc, X, Y, Z, 0),
                 (mc, t) -> keys(mc, t < 20 || t >= 35, t >= 45, false, false, false), null));
         PARTS.add(new Part("sneak", 30, FRONT, mc -> at(mc, X, Y, Z, 0),
@@ -310,6 +331,19 @@ final class PlayerChecks {
                     .setValue(BedBlock.PART, BedPart.HEAD);
             level.setBlockAndUpdate(BED, head);
             level.setBlockAndUpdate(BED.south(), head.setValue(BedBlock.PART, BedPart.FOOT));
+            // A staircase going up south (x 4 to 6), three steps to a landing; bottom slabs and their edge (x -6 to -4).
+            BlockState stairs = Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+            for (int step = 0; step < 3; step++) {
+                if (step > 0) {
+                    fill(level, 4, 2 + step, 6, 2 + step, (int) Y, (int) Y + step - 1,
+                            Blocks.SMOOTH_STONE.defaultBlockState());
+                }
+                fill(level, 4, 2 + step, 6, 2 + step, (int) Y + step, (int) Y + step, stairs);
+            }
+            fill(level, 4, 5, 6, 12, (int) Y, (int) Y + 2, Blocks.SMOOTH_STONE.defaultBlockState());
+            BlockState slab = Blocks.SMOOTH_STONE_SLAB.defaultBlockState();
+            fill(level, -6, 2, -4, 3, (int) Y, (int) Y, slab);
+            fill(level, -6, 6, -4, 7, (int) Y, (int) Y, slab);
             player.getAbilities().flying = false;
             player.onUpdateAbilities();
             // Effects left from an earlier run (the golden apple) would cloud the shots with particles.
@@ -339,6 +373,8 @@ final class PlayerChecks {
         plantedAt = null;
         plantedFoot = -1;
         slide = slideTime = slideMost = 0;
+        groundOff = groundMost = 0;
+        groundSamples = 0;
         frames = 0;
         SkeletalPlayers.enable(true);
         shot = 0;
@@ -356,7 +392,9 @@ final class PlayerChecks {
         String line = done.name() + ": motions " + SEEN + ", largest joint turn per frame at 60 fps "
                 + String.format("%.1f°", largestTurn) + " (" + largestWhere + ") over " + frames + " frames"
                 + (slideTime > 0 ? String.format(", planted foot slides %.2f blocks/s on average (%.2f at most)",
-                slide / slideTime, slideMost) : "");
+                slide / slideTime, slideMost) : "")
+                + (groundSamples > 0 ? String.format(", foot off its ground %.2f px on average (%.2f at most)",
+                groundOff / groundSamples, groundMost) : "");
         REPORT.add(line);
         if (done.expected() != null) {
             EngineTest.check("the real player " + done.name() + " plays " + done.expected().key() + " (" + SEEN + ")",
@@ -414,7 +452,8 @@ final class PlayerChecks {
                     largestWhere = com.murimblock.shenfa.Biped.ARMATURE.joint(i).name() + " at tick " + ticks + ", "
                             + PlayerAnimators.motion(player).key() + ", " + (base == null ? "-" : base.id())
                             + (player.isUsingItem() ? ", using " + player.getUseItem().getItem() : "")
-                            + (player.swinging ? ", swinging" : "");
+                            + (player.swinging ? ", swinging" : "") + ", feet " + FootPlanting.debug(player)
+                            + (player.onGround() ? "" : ", in the air");
                 }
             }
             frames++;
@@ -426,37 +465,49 @@ final class PlayerChecks {
     }
 
     /**
-     * How fast the foot on the ground slides, in blocks a second, while walking or running: the lower foot, when it
-     * is within a pixel of the ground, should stay where it is in the world while the body moves over it.
+     * How the feet keep to the ground, while walking, running or standing: the foot nearest its ground (within half a
+     * pixel) should stay where it is in the world while the body moves over it (its slide, in blocks a
+     * second), and stand on the block surface under it (its height off that surface, in pixels).
      */
     private static void footSlide(AbstractClientPlayer player, Pose pose, float partialTick, float elapsed) {
         LivingMotion motion = PlayerAnimators.motion(player);
-        if (motion != LivingMotion.WALK && motion != LivingMotion.RUN && motion != LivingMotion.SNEAK_WALK) {
+        if (!EnumSet.of(LivingMotion.WALK, LivingMotion.RUN, LivingMotion.SNEAK_WALK, LivingMotion.IDLE,
+                LivingMotion.SNEAK).contains(motion) || !player.onGround()) {
             plantedAt = null;
             return;
         }
-        var joints = pose.toModelMatrices(com.murimblock.shenfa.Biped.ARMATURE);
-        int[] legs = {com.murimblock.shenfa.Biped.ARMATURE.get("Leg_L").index(),
-                com.murimblock.shenfa.Biped.ARMATURE.get("Leg_R").index()};
-        int lowest = -1;
-        Vector3f lowestPoint = null;
-        for (int leg : legs) {
-            Vector3f foot = joints[leg].transformPosition(new Vector3f(0, -6, 0));
-            if (lowestPoint == null || foot.y < lowestPoint.y) {
-                lowest = leg;
-                lowestPoint = foot;
+        float toBlocks = 0.9375f / 16;
+        var joints = pose.toModelMatrices(Biped.ARMATURE);
+        float yaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
+        Vector3f at = new Vector3f((float) Mth.lerp(partialTick, player.xo, player.getX()),
+                (float) Mth.lerp(partialTick, player.yo, player.getY()),
+                (float) Mth.lerp(partialTick, player.zo, player.getZ()));
+        int chosen = -1;
+        Vector3f chosenPoint = null;
+        float chosenOff = Float.MAX_VALUE;
+        for (String leg : new String[] {"Leg_L", "Leg_R"}) {
+            int index = Biped.ARMATURE.get(leg).index();
+            Vector3f foot = joints[index].transformPosition(new Vector3f(0, -6, 0)).mul(toBlocks)
+                    .rotateY((float) Math.toRadians(-yaw)).add(at);
+            float ground = FootPlanting.ground(player.level(), foot.x, foot.z, at.y);
+            float off = Float.isNaN(ground) ? Float.MAX_VALUE : (foot.y - ground) / toBlocks;
+            if (Math.abs(off) < Math.abs(chosenOff)) {
+                chosen = index;
+                chosenPoint = foot;
+                chosenOff = off;
             }
         }
-        if (lowestPoint.y > 1) {
+        if (chosenPoint == null || chosenOff > 0.5f) {
             plantedAt = null;
             return;
         }
-        float yaw = net.minecraft.util.Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
-        Vector3f world = new Vector3f(lowestPoint).mul(0.9375f / 16).rotateY((float) Math.toRadians(-yaw))
-                .add((float) net.minecraft.util.Mth.lerp(partialTick, player.xo, player.getX()), 0,
-                        (float) net.minecraft.util.Mth.lerp(partialTick, player.zo, player.getZ()));
-        world.y = 0;
-        if (plantedAt != null && plantedFoot == lowest && elapsed > 0 && !shotSince && ticks > 5) {
+        if (!shotSince && ticks > 5) {
+            groundOff += Math.abs(chosenOff);
+            groundSamples++;
+            groundMost = Math.max(groundMost, Math.abs(chosenOff));
+        }
+        Vector3f world = new Vector3f(chosenPoint.x, 0, chosenPoint.z);
+        if (plantedAt != null && plantedFoot == chosen && elapsed > 0 && !shotSince && ticks > 5) {
             float seconds = elapsed / 20;
             float speed = world.distance(plantedAt) / seconds;
             if (speed > 20) {
@@ -469,7 +520,7 @@ final class PlayerChecks {
             slideMost = Math.max(slideMost, speed);
         }
         plantedAt = world;
-        plantedFoot = lowest;
+        plantedFoot = chosen;
     }
 
     /** One shot every two ticks of the part. */

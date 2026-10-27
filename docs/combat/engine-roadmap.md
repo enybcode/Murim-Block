@@ -301,6 +301,23 @@ Measured on the real player (planted foot's slide): walk 0.2 blocks a second (wa
 (was 0.6), sneak walk 0.4 (was 0.7), walking back 0.9 (was 8.5), sideways 0.7 (was 2.9); `WalkSlideTest` checks
 walk, run and sneak walk under 0.3 offline. Left: the boxing shuffle still slides (combat is being reworked); a knee
 turns up to 30° a frame, the quick cadence's own speed plus the let-go.
+
+Feet on the ground (27 Oct 2026): `FootPlanter` now has three modes. `STEP` (walking, running, sneak-walking) as
+above; `STAND` (still, sneaking still): both feet stay put while the body turns, and a foot that drifted 2.5 px or
+whose body turned 35° takes a 0.2 s step lifted on an arc, one foot at a time; `OFF` (in the air, swimming,
+riding...): the clip alone. Each foot stands on the block surface under it (`FootPlanting.ground`: the collision
+shape at the foot, a surface covered by a block above is buried, not ground): a swinging foot looks 16 px ahead and
+rises onto a step before it reaches it, a foot's height changes at most 90 px a second, the hips sink up to 9 px
+walking (4 standing: on a ledge the lower foot hangs a little) and always stay 6 px above the highest foot, and the
+drawn body catches up over a moment when Minecraft lifts it up a stair at once or drops it down one (`lag`). A
+planted foot out of reach is pulled in toward the hip, and eases there; a foot letting go keeps its height in the
+world. `LegIk` turns the thigh about the knee's hinge first (a signed angle, no flip), and folds the knee at most
+160°. The tour adds stairs up and down, slabs, a slab edge and turning in place, and measures how far the foot on the
+ground stands off its surface. Measured: walking 0.01 blocks a second of slide (was 0.2), sideways 0.08, back 0.4,
+stairs down 1.0, slabs 0.5, turning in place 0, a slab edge 0; feet within 0.05 px of their surface on average.
+Left: on stairs and slabs a leg still turns up to about 120° in a single frame when a step lifts or drops the body
+(the climb's own speed adds to the catch-up); a knee turns up to about 75° a frame walking on the flat at moments.
+`StairsTest`, `FootPlanterTest` and `WalkSlideTest` check this offline.
 Matching vanilla or right as is: idle, sneak, jump, fall and landing, boat, bed, bow, crossbow, shield, eating, the
 stance, the guard while walking, jabs; the sword swing's 48° a frame is vanilla's own speed (its formula gives 46°
 in the first frame).
