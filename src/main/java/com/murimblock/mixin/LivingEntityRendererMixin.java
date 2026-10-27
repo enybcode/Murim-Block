@@ -29,4 +29,11 @@ public abstract class LivingEntityRendererMixin {
                                            MultiBufferSource buffers, int light, CallbackInfo info) {
         MobShenfa.afterSetupAnim(entity, model, partialTick);
     }
+
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;"
+            + "Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("RETURN"))
+    private void murimblock$afterRender(LivingEntity entity, float yaw, float partialTick, PoseStack poseStack,
+                                        MultiBufferSource buffers, int light, CallbackInfo info) {
+        MobShenfa.afterRender(model);
+    }
 }

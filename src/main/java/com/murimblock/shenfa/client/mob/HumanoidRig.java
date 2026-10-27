@@ -70,6 +70,24 @@ public final class HumanoidRig implements MobRig {
     }
 
     @Override
+    public java.util.List<ModelPart> parts(EntityModel<?> model) {
+        Parts p = parts.apply(model);
+        java.util.List<ModelPart> list = new java.util.ArrayList<>(java.util.List.of(p.head, p.body, p.leftArm,
+                p.rightArm, p.leftLeg, p.rightLeg));
+        if (p.hat != null) {
+            list.add(p.hat);
+        }
+        if (p.crossedArms != null) {
+            list.add(p.crossedArms);
+        }
+        if (model instanceof PlayerModel<?> player) {
+            list.addAll(java.util.List.of(player.leftSleeve, player.rightSleeve, player.leftPants, player.rightPants,
+                    player.jacket));
+        }
+        return list;
+    }
+
+    @Override
     public Pose capture(EntityModel<?> model) {
         Parts humanoid = parts.apply(model);
         Pose pose = BIPED.bindPose();

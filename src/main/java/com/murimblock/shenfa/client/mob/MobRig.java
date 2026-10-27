@@ -20,4 +20,7 @@ public interface MobRig {
 
     /** Writes {@code pose} into the model's parts where it differs from {@code captured}. */
     void apply(EntityModel<?> model, Pose pose, Pose captured);
+
+    /** The model parts {@link #apply} may write, to put them back after the mob is drawn. */
+    java.util.List<net.minecraft.client.model.geom.ModelPart> parts(EntityModel<?> model);
 }

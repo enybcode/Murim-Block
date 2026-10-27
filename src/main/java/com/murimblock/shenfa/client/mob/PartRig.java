@@ -133,6 +133,11 @@ public final class PartRig implements MobRig {
         return false;
     }
 
+    @Override
+    public java.util.List<ModelPart> parts(EntityModel<?> model) {
+        return java.util.Arrays.asList(parts).subList(1, parts.length);
+    }
+
     /** The joint names, for the dev command that lists a mob's parts. */
     public List<String> names() {
         return armature.joints().stream().map(joint -> joint.name()).toList();

@@ -17,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.IllagerModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.commands.CommandSourceStack;
@@ -126,6 +127,14 @@ public final class MobShenfa {
         }
     }
 
+    /** Lets {@code entity}'s layers run again before a hit stop ends (dev and checks). */
+    public static void unfreeze(LivingEntity entity) {
+        State state = STATES.get(entity);
+        if (state != null) {
+            state.frozen = 0;
+        }
+    }
+
     /** Seconds into the clip on a layer of {@code entity}, or -1. */
     public static float time(LivingEntity entity, Animator.Priority priority) {
         State state = STATES.get(entity);
@@ -157,7 +166,48 @@ public final class MobShenfa {
         }
         Pose captured = state.rig.capture(model);
         Pose pose = state.animator.pose(partialTick, captured);
+        // Vanilla sets only some of a part's values each frame (a spider's legs turn, they never move): what we write
+        // is put back once the mob is drawn, or it would add up frame after frame.
+        touched = state.rig.parts(model);
+        saved = new float[touched.size() * 10];
+        boolean[] shown = new boolean[touched.size()];
+        for (int i = 0; i < touched.size(); i++) {
+            ModelPart part = touched.get(i);
+            System.arraycopy(new float[] {part.x, part.y, part.z, part.xRot, part.yRot, part.zRot, part.xScale,
+                    part.yScale, part.zScale, 0}, 0, saved, i * 10, 10);
+            shown[i] = part.visible;
+        }
+        visible = shown;
+        touchedModel = model;
         state.rig.apply(model, pose, captured);
+    }
+
+    private static java.util.List<ModelPart> touched;
+    private static float[] saved;
+    private static boolean[] visible;
+    private static EntityModel<?> touchedModel;
+
+    /** Called by the renderer once the mob is drawn: its parts go back to vanilla's values. */
+    public static void afterRender(EntityModel<?> model) {
+        if (touchedModel != model || touched == null) {
+            return;
+        }
+        for (int i = 0; i < touched.size(); i++) {
+            ModelPart part = touched.get(i);
+            int at = i * 10;
+            part.x = saved[at];
+            part.y = saved[at + 1];
+            part.z = saved[at + 2];
+            part.xRot = saved[at + 3];
+            part.yRot = saved[at + 4];
+            part.zRot = saved[at + 5];
+            part.xScale = saved[at + 6];
+            part.yScale = saved[at + 7];
+            part.zScale = saved[at + 8];
+            part.visible = visible[i];
+        }
+        touched = null;
+        touchedModel = null;
     }
 
     @SubscribeEvent
