@@ -3,7 +3,7 @@
 Goal: a combat engine of Epic Fight's level or better, written by us from scratch. Epic Fight is studied for
 ideas only: its code is GPL and its assets are All Rights Reserved, so nothing is copied.
 
-Status: steps 0 to 3 done (26 Oct 2026). The first combat system was removed the same day (commit `b27eaf3d`).
+Status: steps 0 to 4 done (27 Oct 2026). The first combat system was removed on 26 Oct (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
 
@@ -190,6 +190,19 @@ Build:
 
 Done when: unit tests sample known keyframes; a clip made in Blender plays in game and matches Blender's render
 (GIF next to GIF).
+
+Step 4 done (27 Oct 2026): `anim/Clip` (channels per joint and path, `LINEAR`, `STEP`, `CUBICSPLINE`, values are
+whole local transforms as in glTF), `anim/ClipLoader` (glTF animations matched to joints by node name, the
+armature object folded into the root as for the model; sidecar `loop`, `transition`, `mask` = joints with their
+children; unknown clips, settings or joints refused), `anim/Animation` (clip and settings), `anim/AnimationPlayer`
+(ticks of 1/20 s times speed and slow motion, partial ticks, loop without a jump, end callback, seek).
+`anim/client/SkeletalClips` loads `skeletal/animations/<set>.gltf` + `<set>.json` with the resource packs; ids are
+`murimblock:<set>/<clip>`. The commands live under `/skeletal anim play|stop|speed` (client side) instead of
+`/murim anim`, since `/murim` is a server command and the two would clash. Blender: `tools/blender/murim_clips.py`
+keys clip sets (20 fps), `export_clips.py` exports them (every frame sampled, the helper constraint baked);
+the `test` set has `bounce` (boxing bounce in guard, legs carrying it) and `wave`. Checks: unit tests sample
+hand-made and Blender-exported keyframes; `runEngineTest` plays, loops, slows down and reloads the clips and films
+them frame by frame from the three views of `render.py`. Until step 5, one player drives every skeletal player.
 
 ## Step 5: Animator: layers, masks, transitions
 

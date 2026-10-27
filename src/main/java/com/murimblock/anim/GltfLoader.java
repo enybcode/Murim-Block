@@ -30,7 +30,7 @@ public final class GltfLoader {
     private final JsonObject root;
     private final List<ByteBuffer> buffers = new ArrayList<>();
 
-    private GltfLoader(String json, Function<String, byte[]> buffer) {
+    GltfLoader(String json, Function<String, byte[]> buffer) {
         root = JsonParser.parseString(json).getAsJsonObject();
         for (JsonElement element : array(root, "buffers")) {
             JsonObject entry = element.getAsJsonObject();
@@ -40,6 +40,11 @@ public final class GltfLoader {
             byte[] bytes = buffer.apply(entry.get("uri").getAsString());
             buffers.add(ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN));
         }
+    }
+
+    /** The file's JSON. */
+    JsonObject json() {
+        return root;
     }
 
     /**
@@ -274,7 +279,7 @@ public final class GltfLoader {
 
     // Nodes.
 
-    private static int[] parentsOf(JsonArray nodes) {
+    static int[] parentsOf(JsonArray nodes) {
         int[] parents = new int[nodes.size()];
         Arrays.fill(parents, -1);
         for (int node = 0; node < nodes.size(); node++) {
@@ -288,7 +293,7 @@ public final class GltfLoader {
         return parents;
     }
 
-    private static String name(JsonArray nodes, int node) {
+    static String name(JsonArray nodes, int node) {
         JsonObject entry = nodes.get(node).getAsJsonObject();
         if (!entry.has("name")) {
             throw new IllegalArgumentException("node " + node + " has no name");
@@ -296,7 +301,7 @@ public final class GltfLoader {
         return entry.get("name").getAsString();
     }
 
-    private static Matrix4f matrix(JsonArray nodes, int node) {
+    static Matrix4f matrix(JsonArray nodes, int node) {
         JsonObject entry = nodes.get(node).getAsJsonObject();
         if (entry.has("matrix")) {
             float[] values = new float[16];
@@ -328,7 +333,7 @@ public final class GltfLoader {
 
     // Small helpers.
 
-    private static JsonArray array(JsonObject object, String key) {
+    static JsonArray array(JsonObject object, String key) {
         return object.has(key) ? object.getAsJsonArray(key) : new JsonArray();
     }
 

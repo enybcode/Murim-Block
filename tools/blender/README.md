@@ -16,7 +16,19 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
   java scripts/frames-to-gif.java <dir> out.gif 60 960
   ```
 
-  Clips: `rest`, `bend`, `joints`, `elbow`, `knee`.
+  Clips: `rest`, `bend`, `joints`, `elbow`, `knee`; or `--anim <set>/<clip>` films a clip of `murim_clips.py`
+  over its length.
+- `murim_clips.py`: clip sets written as keyframes at 20 frames per second (one per game tick). Each set is
+  exported, skeleton only, by:
+
+  ```
+  blender -b --factory-startup --python tools/blender/export_clips.py -- --set test \
+      --gltf src/main/resources/assets/murimblock/skeletal/animations/test.gltf [--blend tools/blender/out/test.blend]
+  ```
+
+  The settings of each clip (`loop`, `transition`, `mask`) go in the hand-written sidecar `<set>.json` next to the
+  `.gltf`. In game: `/skeletal anim play murimblock:test/bounce [speed]`, `/skeletal anim speed 0.25`,
+  `/skeletal anim stop`; F3+T reloads the clips.
 
 ## Rig rules
 

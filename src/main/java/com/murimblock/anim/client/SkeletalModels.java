@@ -46,7 +46,8 @@ public final class SkeletalModels implements ResourceManagerReloadListener {
     @Override
     public void onResourceManagerReload(ResourceManager manager) {
         Map<ResourceLocation, SkinnedModel> loaded = new HashMap<>();
-        manager.listResources(FOLDER, path -> path.getPath().endsWith(".gltf")).forEach((file, resource) -> {
+        manager.listResources(FOLDER, path -> path.getPath().endsWith(".gltf")
+                && !path.getPath().startsWith(SkeletalClips.FOLDER + "/")).forEach((file, resource) -> {
             String name = file.getPath().substring(FOLDER.length() + 1, file.getPath().length() - ".gltf".length());
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath(file.getNamespace(), name);
             try (InputStream in = resource.open()) {

@@ -221,7 +221,7 @@ final class SkeletalRenderChecks {
      * A test player: frozen (the level counts ticks before calling tick, so tick puts the count back), with a default
      * skin picked by UUID and an optional cape.
      */
-    private static final class Dummy extends RemotePlayer {
+    static final class Dummy extends RemotePlayer {
         private ResourceLocation cape;
 
         Dummy(Minecraft mc, int skin, int number) {
@@ -240,6 +240,12 @@ final class SkeletalRenderChecks {
             return cape == null ? skin
                     : new PlayerSkin(skin.texture(), skin.textureUrl(), cape, null, skin.model(), skin.secure());
         }
+    }
+
+    /** Takes the lineup and the crowd out of the world. */
+    static void clearLineup(Minecraft mc) {
+        LINEUP.forEach(fake -> mc.level.removeEntity(fake.getId(), net.minecraft.world.entity.Entity.RemovalReason.DISCARDED));
+        LINEUP.clear();
     }
 
     private static void place(Minecraft mc, View view) {

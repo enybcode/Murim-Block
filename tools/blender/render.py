@@ -1,7 +1,7 @@
 """Films the biped from the front, the side and three quarters, the three views side by side in each frame.
 
 blender -b --factory-startup --python tools/blender/render.py -- --out <frames dir> [--slim] [--skin skin.png]
-    [--clip bend] [--size 320]
+    [--clip bend | --anim test/bounce] [--size 320]
 
 Without --skin it uses a test skin that shows the UV layout: one colour per face (front red, back blue, right
 side green, left side yellow, top white, bottom magenta), a checker per pixel to show stretching, and an empty
@@ -19,6 +19,7 @@ from mathutils import Quaternion, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import murim_biped  # noqa: E402
+import murim_clips  # noqa: E402
 
 FACE_COLORS = {
     "front": (0.85, 0.2, 0.2), "back": (0.2, 0.35, 0.9), "right": (0.2, 0.75, 0.25),
@@ -122,6 +123,7 @@ def main():
     parser.add_argument("--slim", action="store_true")
     parser.add_argument("--skin")
     parser.add_argument("--clip", default="bend", choices=sorted(CLIPS))
+    parser.add_argument("--anim", help="a clip of murim_clips.py as <set>/<clip>, filmed over its length")
     parser.add_argument("--frames", type=int, default=48)
     parser.add_argument("--step", type=int, default=2)
     parser.add_argument("--size", type=int, default=320)
@@ -137,11 +139,18 @@ def main():
             obj.hide_render = True
         elif obj.type == "MESH":
             obj.data.materials.append(material)
-    targets, (cx, cy, cz), scale = CLIPS[args.clip]
-    if targets:
-        play_clip(armature, targets, args.frames)
+    if args.anim:
+        set_name, clip = args.anim.split("/")
+        (cx, cy, cz), scale = CLIPS["rest"][1:]
+        murim_clips.make_action(armature, clip, murim_clips.SETS[set_name][clip])
+        # A looping clip's last frame is its first: film up to the frame before it.
+        args.frames = murim_clips.SETS[set_name][clip][-1][0] - 1
     else:
-        args.frames = 0
+        targets, (cx, cy, cz), scale = CLIPS[args.clip]
+        if targets:
+            play_clip(armature, targets, args.frames)
+        else:
+            args.frames = 0
 
     world = bpy.data.worlds.new("world")
     world.color = (0.35, 0.38, 0.42)

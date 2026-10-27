@@ -1,0 +1,6 @@
+{
+  "clips": {
+    "bounce": {"loop": true, "transition": 0.15},
+    "wave": {"loop": true, "transition": 0.2, "mask": ["Chest"]}
+  }
+}
