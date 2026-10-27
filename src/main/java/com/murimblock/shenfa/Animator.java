@@ -1,13 +1,16 @@
 package com.murimblock.shenfa;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * One body's animations: a base layer (the living motion: idle, walk...), composite layers by priority that take
@@ -15,6 +18,10 @@ import org.joml.Vector3f;
  * top (breathing). Nothing ever pops: a layer that changes clip blends from the pose it showed into the new clip over
  * the new clip's transition time, a layer that starts fades in over the pose under it, and a layer that stops fades
  * out the same way.
+ * <p>
+ * Each tick also gathers the events its clips passed ({@link #events()}) and, for clips with {@link RootMotion},
+ * how far their root travelled ({@link #rootMotion()}): that travel is taken out of the drawn pose, for the body
+ * itself to move.
  */
 public final class Animator {
     public enum Priority {
@@ -27,6 +34,9 @@ public final class Animator {
     private final Map<Priority, Layer> layers = new EnumMap<>(Priority.class);
     private final Map<String, Layer> additives = new LinkedHashMap<>();
     private String motion = LivingMotion.IDLE.key();
+    private final List<ClipEvent> events = new ArrayList<>();
+    private final Vector3f rootMotion = new Vector3f();
+    private boolean noGravity;
 
     /** @param finish run on every finished pose (the biped settles its helper joints there); may be null */
     public Animator(Armature armature, Consumer<Pose> finish) {
@@ -90,6 +100,17 @@ public final class Animator {
         return false;
     }
 
+    /** Whether a composite layer plays a clip with root motion (the clip, not the ground, then places the feet). */
+    public boolean rootMotionPlaying() {
+        for (Priority priority : Priority.values()) {
+            Animation animation = playing(priority);
+            if (animation != null && animation.rootMotion() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Starts an additive clip (it keeps its place if it already plays). */
     public void playAdditive(Animation animation) {
         Layer layer = additives.computeIfAbsent(animation.id(), id -> new Layer());
@@ -108,10 +129,33 @@ public final class Animator {
 
     /** One game tick, times {@code scale} (slow motion). */
     public void tick(float scale) {
+        events.clear();
+        rootMotion.zero();
+        noGravity = false;
         base.tick(scale);
         layers.values().forEach(layer -> layer.tick(scale));
         additives.values().forEach(layer -> layer.tick(scale));
         additives.values().removeIf(layer -> layer.weight <= 0 && layer.targetWeight <= 0);
+    }
+
+    /** The events the clips passed in the last tick (mirrored with their clip), in the order they came. */
+    public List<ClipEvent> events() {
+        return events;
+    }
+
+    /** How far root motion moved the body in the last tick, in model space (pixels; the model faces +Z). */
+    public Vector3fc rootMotion() {
+        return rootMotion;
+    }
+
+    /** Whether a clip with root motion holds the body up (no gravity) at the last tick. */
+    public boolean noGravity() {
+        return noGravity;
+    }
+
+    /** Where the root of {@code animation} stands at {@code time} seconds. */
+    private Vector3f root(Animation animation, float time) {
+        return new Vector3f(animation.clip().sample(time, armature.bindPose()).get(0).translation());
     }
 
     /** The pose between the last two ticks. */
@@ -256,6 +300,15 @@ public final class Animator {
         Pose last;
         final SteadyBlend change = new SteadyBlend(), overlay = new SteadyBlend();
 
+        Layer() {
+            // A layer fading out has been let go: what its clip still passes no longer happens.
+            player.listener(event -> {
+                if (this == base || targetWeight > 0) {
+                    events.add(mirrored ? event.mirrored() : event);
+                }
+            });
+        }
+
         void start(Animation animation, float speed, boolean mirrored) {
             boolean shown = last != null && weight > 0;
             from = shown ? last : null;
@@ -279,7 +332,12 @@ public final class Animator {
         }
 
         void tick(float scale) {
+            boolean held = this == base || targetWeight > 0;
             player.tick(scale);
+            Animation playing = player.animation();
+            if (held && playing != null && playing.rootMotion() != null) {
+                travel(playing);
+            }
             previousBlend = blend;
             blend += AnimationPlayer.TICK * scale;
             previousWeight = weight;
@@ -300,6 +358,23 @@ public final class Animator {
             }
         }
 
+        /** Adds the root's travel over the last tick to the body's (a loop going round is not travel). */
+        private void travel(Animation playing) {
+            RootMotion root = playing.rootMotion();
+            float before = player.previousTime(), now = player.time();
+            if (Math.signum(now - before) == Math.signum(player.speed())) {
+                Vector3f move = root(playing, now).sub(root(playing, before));
+                if (!root.vertical()) {
+                    move.y = 0;
+                }
+                if (mirrored) {
+                    move.x = -move.x;
+                }
+                rootMotion.add(move);
+            }
+            noGravity |= root.noGravityAt(now);
+        }
+
         float[] jointWeights(float partialTick, float weight) {
             float[] result = new float[joints.length];
             for (int i = 0; i < joints.length; i++) {
@@ -314,6 +389,14 @@ public final class Animator {
 
         Pose sample(float partialTick) {
             Pose pose = player.pose(partialTick, armature.bindPose());
+            Animation playing = player.animation();
+            if (playing != null && playing.rootMotion() != null) {
+                // The root stays where the clip starts it: the body itself carries the travel.
+                JointTransform root = pose.get(0);
+                Vector3f start = root(playing, 0), at = new Vector3f(root.translation());
+                at.set(start.x, playing.rootMotion().vertical() ? start.y : at.y, start.z);
+                pose.set(0, JointTransform.of(at, root.rotation(), root.scale()));
+            }
             if (mirrored) {
                 pose = pose.mirrored(armature);
             }

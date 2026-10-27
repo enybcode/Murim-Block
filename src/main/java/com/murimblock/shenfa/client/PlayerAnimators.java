@@ -17,11 +17,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * Each player's {@link Animator}: every tick it reads what the body does (standing, walking, running, sneaking,
@@ -100,6 +103,12 @@ public final class PlayerAnimators {
         return state != null && state.animator.anyLayer();
     }
 
+    /** Whether a clip with root motion plays on {@code player}: its feet follow the clip, not the ground. */
+    public static boolean rootMotionPlaying(AbstractClientPlayer player) {
+        State state = STATES.get(player);
+        return state != null && state.animator.rootMotionPlaying();
+    }
+
     /** The base layer's clip of {@code player}, or null. */
     public static Animation baseAnimation(AbstractClientPlayer player) {
         State state = STATES.get(player);
@@ -131,9 +140,33 @@ public final class PlayerAnimators {
             State state = STATES.computeIfAbsent(player, key -> new State());
             update(player, state);
             state.animator.tick(SkeletalPlayers.slowMotion());
+            ClipEvents.run(player, state.animator.events());
+            if (player == mc.player) {
+                rootMotion(player, state.animator);
+            }
             state.previousLegTurn = state.legTurn;
             state.legTurn += Mth.wrapDegrees((float) Math.toDegrees(state.legTarget - state.legTurn)) * Mth.DEG_TO_RAD
                     * LEG_TURN_RATE;
+        }
+    }
+
+    /**
+     * Moves the local player by its clips' root motion, through {@code Entity.move} so walls and the ground stop it;
+     * the server hears of it with the player's next position, as of any movement (until the server plays clips).
+     * Others' bodies move with the positions the server sends.
+     */
+    private static void rootMotion(AbstractClientPlayer player, Animator animator) {
+        Vector3fc travel = animator.rootMotion();
+        if (travel.lengthSquared() > 0) {
+            Vector3f move = new Vector3f(travel).mul(SkeletalPlayerRenderer.PLAYER_SCALE / 16 * player.getScale())
+                    .rotateY((float) Math.toRadians(-player.yBodyRot));
+            player.move(MoverType.SELF, new Vec3(move.x, move.y, move.z));
+        }
+        if (animator.noGravity()) {
+            // Gravity pulls after the move of each tick: holding the fall at zero here keeps the body up.
+            Vec3 velocity = player.getDeltaMovement();
+            player.setDeltaMovement(velocity.x, Math.max(0, velocity.y), velocity.z);
+            player.resetFallDistance();
         }
     }
 

@@ -7,7 +7,7 @@ The animation engine is named **Shenfa** (身法, "the art of the body", the wux
 movement and stance), package `com.murimblock.shenfa`: skeleton, skinned mesh, clips, animator, foot planting and
 the player renderer. Combat, weapons and moves build on it.
 
-Status: steps 0 to 5 and 7 done (27 Oct 2026); step 6 (events and root motion) is next in order. The current to-do
+Status: steps 0 to 7 done (27 Oct 2026; step 6 without its network share). The current to-do
 list is `shenfa-todo.md` (rewritten 27 Oct 2026); this file stays as the record of each step. The first combat system was removed on 26 Oct (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
@@ -347,6 +347,22 @@ Build:
 
 Done when: a step-forward clip moves the player exactly the distance animated (test measures it), stops against
 a wall, and looks the same on another client (duel test).
+
+Step 6 done (27 Oct 2026), but for the server share: `ClipEvent`, `RootMotion`, `shenfa/client/ClipEvents`,
+`Footsteps`, `CameraShake`. Sidecar `events` (sound, particle at a joint, footstep, shake, callback; client, server or
+both) fire once each as the player passes them, forward, backward, across a loop, at any speed; a layer fading out
+fires no more, a mirrored layer swaps their side. Footsteps: each foot planted by `FootPlanter` (a stride, or a step
+while standing, softer) plays the step sound of the block under it, and vanilla's distance-counted step sounds are
+muted for a body drawn with its feet planting (sneaking makes none, as in vanilla); a body out of view keeps
+vanilla's. Root motion (`"root_motion": true` or `{vertical, no_gravity}`): the root's travel is taken out of the drawn
+pose and moves the local player through `Entity.move` along its body's facing, so walls stop it; while it plays the
+feet follow the clip, not the ground. First clip: `fists/step_in`, a jab stepping in 0.7 block. Checks (`events`
+group, real player): 9 steps in 1.75 s of walking, every vanilla step muted; step_in travels 0.70 blocks (clip 0.70)
+facing south, east and mirrored, its sound and two footsteps in order; a wall stops it at 7.70; a looping clip's
+particle and shake fire once and shake the camera. Left: the server side (events, prediction, other clients) with
+step 8; Photon effects; root motion toward a target and camera sync with combat; the boxing shuffle plants only 4
+steps in 1.75 s (it slides).
+
 
 ## Step 7: First person
 

@@ -275,6 +275,22 @@ SETS["fists"] = {
              "Arm_L": (-75, -15, 0), "Hand_L": (-80, 0, 0)}),
         (8, {**GUARD_LEGS, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 0)}}),
     ],
+    # A jab stepping in (root motion, see fists.json): the rear foot pushes the body forward, the lead foot reaches
+    # ahead and lands as the fist does, then the rear foot drags back under; the root ends 12 px (0.7 block) ahead,
+    # which moves the body itself.
+    "step_in": [
+        (0, {**GUARD_LEGS, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 0)}}),
+        (2, {"Root": {"rot": (0, -4, 0), "loc": (0, -1.2, 4)}, "Thigh_R": (22, 0, 0), "Leg_R": (32, 0, 0),
+             "Thigh_L": (-45, 0, 0), "Leg_L": (50, 0, 0), "Chest": (4, -8, 0), "Head": (-10, 8, 0),
+             "Arm_L": (-70, -10, 0), "Hand_L": (-80, 0, 0)}),
+        (4, {"Root": {"rot": (0, -10, 0), "loc": (0, -1.5, 9)}, "Thigh_R": (28, 0, 0), "Leg_R": (30, 0, 0),
+             "Thigh_L": (-30, 0, 0), "Leg_L": (25, 0, 0), "Chest": (8, -20, 0), "Head": (-12, 20, 0),
+             "Arm_L": (-90, 0, 0), "Hand_L": (-5, 0, 0)}),
+        (6, {"Root": {"rot": (0, -5, 0), "loc": (0, -1.2, 12)}, "Thigh_R": (10, 0, 0), "Leg_R": (45, 0, 0),
+             "Thigh_L": (-20, 0, 0), "Leg_L": (30, 0, 0), "Chest": (6, -8, 0), "Head": (-10, 8, 0),
+             "Arm_L": (-75, -15, 0), "Hand_L": (-80, 0, 0)}),
+        (10, {**GUARD_LEGS, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 12)}}),
+    ],
 }
 
 

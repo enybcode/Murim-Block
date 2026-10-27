@@ -12,8 +12,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * Keeps each player's feet on the ground ({@link FootPlanter}, one per player): planted while walking, running or
@@ -36,6 +38,9 @@ public final class FootPlanting {
     private static final class State {
         final FootPlanter planter = new FootPlanter();
         float lastTime = Float.NaN;
+        /** The feet's mode and the game tick when last drawn: steps are ours only while drawn and planting. */
+        FootPlanter.Mode mode = FootPlanter.Mode.OFF;
+        long drawn = Long.MIN_VALUE / 2;
     }
 
     /**
@@ -53,7 +58,8 @@ public final class FootPlanting {
         // Stepping down a stair drops the body for a tick or two: still on its feet.
         boolean grounded = player.onGround() || player.fallDistance < 0.7f && player.getDeltaMovement().y <= 0;
         boolean free = SkeletalPlayers.animated() && grounded && !player.isPassenger() && !player.isVisuallySwimming()
-                && !player.isFallFlying() && !player.isSleeping() && !player.isAutoSpinAttack();
+                && !player.isFallFlying() && !player.isSleeping() && !player.isAutoSpinAttack()
+                && !PlayerAnimators.rootMotionPlaying(player);
         FootPlanter.Mode mode = !free ? FootPlanter.Mode.OFF : STEPPING.contains(motion) ? FootPlanter.Mode.STEP
                 : STANDING.contains(motion) ? FootPlanter.Mode.STAND : FootPlanter.Mode.OFF;
         Vector3f at = new Vector3f((float) Mth.lerp(partialTick, player.xo, player.getX()),
@@ -66,6 +72,28 @@ public final class FootPlanting {
         Level level = player.level();
         state.planter.apply(pose, at, (float) Math.toRadians(-bodyYaw), SkeletalPlayerRenderer.PLAYER_SCALE * scale / 16,
                 seconds, mode, heading, (x, z, near) -> ground(level, x, z, near));
+        state.mode = mode;
+        state.drawn = level.getGameTime();
+        for (int side = 0; side < 2; side++) {
+            if (state.planter.landed(side) && steps(player, mode)) {
+                Vector3fc sole = state.planter.planted(side);
+                // A shuffle in place is softer than a stride.
+                Footsteps.step(player, new Vec3(sole.x(), sole.y(), sole.z()), mode == FootPlanter.Mode.STAND ? 0.5f : 1);
+            }
+        }
+    }
+
+    /**
+     * Whether Shenfa plays {@code player}'s step sounds (as its feet land) in place of vanilla's: it was drawn in the
+     * last ticks with its feet planting. Sneaking makes no step sound in vanilla, nor here.
+     */
+    public static boolean ownsSteps(AbstractClientPlayer player) {
+        State state = STATES.get(player);
+        return state != null && player.level().getGameTime() - state.drawn <= 2 && steps(player, state.mode);
+    }
+
+    private static boolean steps(AbstractClientPlayer player, FootPlanter.Mode mode) {
+        return mode != FootPlanter.Mode.OFF && !player.isDiscrete() && !player.isInWater();
     }
 
     /** For checks: the state of {@code player}'s feet, or "-". */

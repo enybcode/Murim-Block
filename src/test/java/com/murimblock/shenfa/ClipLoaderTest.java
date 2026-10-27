@@ -2,6 +2,7 @@ package com.murimblock.shenfa;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -100,5 +101,36 @@ class ClipLoaderTest {
         assertThrows(IllegalArgumentException.class, () -> load("{\"clips\": {\"jab\": {}}}"));
         assertThrows(IllegalArgumentException.class, () -> load("{\"clips\": {\"wave\": {\"lop\": true}}}"));
         assertThrows(IllegalArgumentException.class, () -> load("{\"clips\": {\"wave\": {\"mask\": [\"Tail\"]}}}"));
+    }
+
+    @Test
+    void eventsAndRootMotionAreRead() {
+        Animation wave = load("""
+                {"clips": {"wave": {"root_motion": {"vertical": true, "no_gravity": [[0.5, 1]]}, "events": [
+                    {"at": 1.5, "type": "footstep", "foot": "left"},
+                    {"at": 0.25, "type": "sound", "sound": "minecraft:block.stone.step", "side": "both"}]}}}
+                """).get("wave");
+        assertEquals(List.of(0.25f, 1.5f), wave.events().stream().map(ClipEvent::time).toList());
+        assertEquals(ClipEvent.Side.BOTH, wave.events().get(0).side());
+        assertEquals("minecraft:block.stone.step", wave.events().get(0).string("sound", ""));
+        assertEquals("right", wave.events().get(1).mirrored().string("foot", ""));
+        assertTrue(wave.rootMotion().vertical());
+        assertTrue(wave.rootMotion().noGravityAt(0.7f));
+        assertFalse(wave.rootMotion().noGravityAt(0.2f));
+        assertEquals(RootMotion.GROUND, load("{\"clips\": {\"wave\": {\"root_motion\": true}}}").get("wave").rootMotion());
+        assertNull(load(null).get("wave").rootMotion());
+    }
+
+    @Test
+    void badEventsAreRefused() {
+        for (String event : List.of("{\"at\": 0.1, \"type\": \"boom\"}", "{\"at\": 3, \"type\": \"footstep\"}",
+                "{\"type\": \"footstep\"}", "{\"at\": 0.1, \"type\": \"sound\", \"foot\": \"left\"}",
+                "{\"at\": 0.1, \"type\": \"particle\", \"joint\": \"Tail\"}",
+                "{\"at\": 0.1, \"type\": \"footstep\", \"foot\": \"middle\"}")) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> load("{\"clips\": {\"wave\": {\"events\": [" + event + "]}}}"), event);
+        }
+        assertThrows(IllegalArgumentException.class,
+                () -> load("{\"clips\": {\"wave\": {\"root_motion\": {\"up\": true}}}}"));
     }
 }

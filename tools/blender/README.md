@@ -27,7 +27,8 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
   ```
 
   Sets: `test`, `biped` (the living motions, played by `skeletal/motions/biped.json`), `fists`. The settings of
-  each clip (`loop`, `transition`, `mask`, `masks` by motion, `additive`, `move_speed`) go in the hand-written
+  each clip (`loop`, `transition`, `mask`, `masks` by motion, `additive`, `move_speed`, `events`, `root_motion`;
+  see `ClipLoader`, `ClipEvent`, `RootMotion`) go in the hand-written
   sidecar `<set>.json` next to the `.gltf`. In game: `/skeletal anim play murimblock:test/bounce [speed]`, `/skeletal anim speed 0.25`,
   `/skeletal anim stop`; F3+T reloads the clips.
 

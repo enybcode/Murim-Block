@@ -33,13 +33,13 @@ Shenfa is the animation engine (`com.murimblock.shenfa`); combat builds on it. T
 
 ## 1. Engine, before combat (in this order)
 
-1. Events and root motion.
-   - Timed events in the sidecar JSON: sound, particle, Photon effect, camera shake, server callback; each on the
-     client, the server or both.
-   - Footsteps from planted feet (FootPlanter knows when a foot lands): step sounds per block. Beyond EF.
-   - Root motion (EF's properties): vertical movement, gravity-off windows, fixed move distance, toward a target
-     (capped), facing, camera sync; walls stop it (`Entity.move`). The server decides, the local player is
-     predicted and corrected smoothly.
+1. Events and root motion. Done 27 Oct: clip events (sound, particle at a joint, footstep, camera shake, server
+   callback, each client/server/both), step sounds from planted feet with vanilla's muted, root motion for the
+   local player (ground or vertical, gravity-off windows, walls stop it), the `fists/step_in` clip. Left, with
+   combat or network:
+   - Photon effects as an event type; server events and callbacks run once the server plays clips (step 4).
+   - Root motion toward a target (capped), facing and camera sync (with lock-on); the server decides and the local
+     player is predicted and corrected (step 4).
 2. Any skeleton, not only the biped (needed by D3).
    - Loader, clips and animator already take any armature. To widen: the renderer (players only today), a mob
      renderer on Shenfa, FootPlanter and LegIk for any number of legs (spider, wolf), motions per skeleton.

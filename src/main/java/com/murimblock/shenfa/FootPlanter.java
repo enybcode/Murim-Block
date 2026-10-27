@@ -69,6 +69,21 @@ public final class FootPlanter {
 
     private final Foot[] feet = {new Foot(), new Foot()};
 
+    /**
+     * Whether the foot ({@code 0} left, {@code 1} right) came down on a step since the last call, and so its footstep is
+     * due; answers once per step. Where it stands is {@link #planted}.
+     */
+    public boolean landed(int side) {
+        boolean landed = feet[side].landed;
+        feet[side].landed = false;
+        return landed;
+    }
+
+    /** Where the foot stands in the world (blocks), or null when it is in the air. */
+    public Vector3fc planted(int side) {
+        return feet[side].planted;
+    }
+
     /** For checks: the hips' sink and lag, and each foot (left, right): planted, stepping or free, weight, target. */
     public String debug() {
         StringBuilder text = new StringBuilder(String.format("sink %.1f lag %.1f", sink, lag));
@@ -113,6 +128,8 @@ public final class FootPlanter {
         float sinceStep = 1;
         /** The height the sole is drawn at in the world (blocks), moved at most {@link #FOOT_SPEED}; NaN at first. */
         float drawnY = Float.NaN;
+        /** Set when the foot comes down on a step (walking, or a step while standing), until {@link #landed} takes it. */
+        boolean landed;
     }
 
     /**
@@ -233,6 +250,7 @@ public final class FootPlanter {
                             foot.planted = world(spot, at, yaw, toBlocks);
                             foot.lifted = false;
                             foot.lifting = false;
+                            foot.landed = true;
                             // A foot plants where it is and holds at once; pulled in from where the clip put it, it moves
                             // there instead of jumping.
                             foot.weight = spot.distance(onFloor) > 0.2f ? 0 : 1;
@@ -246,6 +264,7 @@ public final class FootPlanter {
                         foot.stepTime += seconds;
                         if (foot.stepTime >= STEP_TIME) {
                             foot.sinceStep = 0;
+                            foot.landed = true;
                             foot.stepTime = -1;
                             foot.planted = world(onFloor, at, yaw, toBlocks);
                             foot.plantedYaw = yaw;

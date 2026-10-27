@@ -17,6 +17,15 @@
         "ride": ["Shoulder_L", "Shoulder_R"]
       }
     },
-    "jab": {"transition": 0.08}
+    "jab": {"transition": 0.08},
+    "step_in": {
+      "transition": 0.08,
+      "root_motion": true,
+      "events": [
+        {"at": 0.1, "type": "sound", "sound": "minecraft:entity.player.attack.weak", "volume": 0.5, "pitch": 1.2},
+        {"at": 0.2, "type": "footstep", "foot": "left"},
+        {"at": 0.3, "type": "footstep", "foot": "right", "volume": 0.6}
+      ]
+    }
   }
 }

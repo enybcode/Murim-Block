@@ -1,5 +1,7 @@
 package com.murimblock.shenfa;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,13 +15,23 @@ import java.util.Map;
  * @param additive   laid on top of the pose as a change from its own first frame (breathing, a flinch)
  * @param moveSpeed  for a motion clip, the speed (blocks per second, or climbed per second) it plays at at speed 1,
  *                   so its playback follows the body's real speed and the feet do not slide; 0 when not tied
+ * @param events     what it makes happen and when, in time order
+ * @param rootMotion how its root moves the body, or null when the root moves only the drawn pose
  */
 public record Animation(String id, Clip clip, boolean loop, float transition, JointMask mask,
-                        Map<String, JointMask> masks, boolean additive, float moveSpeed) {
+                        Map<String, JointMask> masks, boolean additive, float moveSpeed, List<ClipEvent> events,
+                        RootMotion rootMotion) {
     public static final float DEFAULT_TRANSITION = 0.15f;
 
     public Animation {
         masks = Map.copyOf(masks);
+        events = events.stream().sorted(Comparator.comparingDouble(ClipEvent::time)).toList();
+    }
+
+    /** No events, no root motion. */
+    public Animation(String id, Clip clip, boolean loop, float transition, JointMask mask,
+                     Map<String, JointMask> masks, boolean additive, float moveSpeed) {
+        this(id, clip, loop, transition, mask, masks, additive, moveSpeed, List.of(), null);
     }
 
     /** A plain clip: no other masks, not additive, not tied to a speed. */

@@ -28,12 +28,14 @@ import org.joml.Vector3f;
  *
  * {@code mask} lists joints taken with their children (all joints when it is left out); {@code masks} gives other
  * masks by living motion; {@code additive} and {@code move_speed} are explained in {@link Animation} ({@code "auto"}
- * measures it from the clip's feet, {@link Strides}). A clip missing
+ * measures it from the clip's feet, {@link Strides}); {@code events} in {@link ClipEvent}, {@code root_motion} in
+ * {@link RootMotion}. A clip missing
  * from the sidecar gets the defaults (no loop, {@link Animation#DEFAULT_TRANSITION}, all joints); a name or key the sidecar
  * does not know is refused, to catch typos.
  */
 public final class ClipLoader {
-    private static final Set<String> KEYS = Set.of("loop", "transition", "mask", "masks", "additive", "move_speed");
+    private static final Set<String> KEYS = Set.of("loop", "transition", "mask", "masks", "additive", "move_speed",
+            "events", "root_motion");
 
     private ClipLoader() {
     }
@@ -84,10 +86,66 @@ public final class ClipLoader {
                 moveSpeed = entry.get("move_speed").getAsString().equals("auto") ? Strides.speed(armature, clip)
                         : entry.get("move_speed").getAsFloat();
             }
+            List<ClipEvent> events = entry.has("events") ? events(armature, name, clip, entry.getAsJsonArray("events"))
+                    : List.of();
+            RootMotion rootMotion = entry.has("root_motion") ? rootMotion(name, entry.get("root_motion")) : null;
             animations.put(name, new Animation(set + "/" + name, clip, loop, transition, mask, masks, additive,
-                    moveSpeed));
+                    moveSpeed, events, rootMotion));
         });
         return animations;
+    }
+
+    private static List<ClipEvent> events(Armature armature, String name, Clip clip, JsonArray list) {
+        List<ClipEvent> events = new ArrayList<>();
+        for (JsonElement element : list) {
+            JsonObject entry = element.getAsJsonObject().deepCopy();
+            if (!entry.has("at") || !entry.has("type")) {
+                throw new IllegalArgumentException("clip " + name + ": an event needs at and type");
+            }
+            float at = entry.remove("at").getAsFloat();
+            String type = entry.remove("type").getAsString();
+            ClipEvent.Side side = entry.has("side")
+                    ? ClipEvent.Side.valueOf(entry.remove("side").getAsString().toUpperCase()) : ClipEvent.Side.CLIENT;
+            if (!ClipEvent.TYPES.containsKey(type)) {
+                throw new IllegalArgumentException("clip " + name + ": unknown event type " + type);
+            }
+            for (String key : entry.keySet()) {
+                if (!ClipEvent.TYPES.get(type).contains(key)) {
+                    throw new IllegalArgumentException("clip " + name + ": " + type + " event has unknown setting " + key);
+                }
+            }
+            if (at < 0 || at > clip.duration() + 1e-4f) {
+                throw new IllegalArgumentException("clip " + name + ": event at " + at + " is outside the clip");
+            }
+            if (entry.has("joint") && armature.find(entry.get("joint").getAsString()) == null) {
+                throw new IllegalArgumentException("clip " + name + ": event names unknown joint " + entry.get("joint"));
+            }
+            if (entry.has("foot") && !Set.of("left", "right").contains(entry.get("foot").getAsString())) {
+                throw new IllegalArgumentException("clip " + name + ": foot is left or right");
+            }
+            events.add(new ClipEvent(at, type, side, entry));
+        }
+        return events;
+    }
+
+    private static RootMotion rootMotion(String name, JsonElement setting) {
+        if (setting.isJsonPrimitive()) {
+            return setting.getAsBoolean() ? RootMotion.GROUND : null;
+        }
+        JsonObject entry = setting.getAsJsonObject();
+        for (String key : entry.keySet()) {
+            if (!Set.of("vertical", "no_gravity").contains(key)) {
+                throw new IllegalArgumentException("clip " + name + ": root_motion has unknown setting " + key);
+            }
+        }
+        List<float[]> windows = new ArrayList<>();
+        if (entry.has("no_gravity")) {
+            for (JsonElement window : entry.getAsJsonArray("no_gravity")) {
+                JsonArray pair = window.getAsJsonArray();
+                windows.add(new float[] {pair.get(0).getAsFloat(), pair.get(1).getAsFloat()});
+            }
+        }
+        return new RootMotion(entry.has("vertical") && entry.get("vertical").getAsBoolean(), windows);
     }
 
     private static JointMask mask(Armature armature, String clip, JsonArray joints) {

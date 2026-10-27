@@ -1,6 +1,14 @@
 {
   "clips": {
     "bounce": {"loop": true, "transition": 0.15},
-    "wave": {"loop": true, "transition": 0.2, "mask": ["Chest"]}
+    "wave": {
+      "loop": true,
+      "transition": 0.2,
+      "mask": ["Chest"],
+      "events": [
+        {"at": 1.0, "type": "particle", "particle": "minecraft:cloud", "joint": "Hand_R", "count": 4, "spread": 0.05},
+        {"at": 1.0, "type": "shake", "strength": 0.5, "ticks": 6}
+      ]
+    }
   }
 }

@@ -297,4 +297,66 @@ class AnimatorTest {
         Step seen = run(animator, 10, last);
         assertTrue(seen.exceeds(own(idle).plus(own(climb)).plus(gap.blendedOver(climb.transition()))), seen.toString());
     }
+
+    /** A lunge: the root goes 16 px forward (+Z), 4 px left (+X) and 8 px up and back down over one second. */
+    private static Animation lunge(RootMotion rootMotion, List<ClipEvent> events) {
+        int root = Biped.ARMATURE.get(Biped.ROOT).index();
+        Clip clip = new Clip("lunge", List.of(new Clip.Channel(root, Clip.Path.TRANSLATION, Clip.Interpolation.LINEAR,
+                new float[] {0, 0.5f, 1}, new float[] {0, 12, 0, 2, 20, 8, 4, 12, 16})));
+        return new Animation("lunge", clip, false, 0.1f, JointMask.all(Biped.ARMATURE), Map.of(), false, 0, events,
+                rootMotion);
+    }
+
+    @Test
+    void rootMotionMovesTheBodyNotThePose() {
+        int root = Biped.ARMATURE.get(Biped.ROOT).index();
+        Animator animator = new Animator(Biped.ARMATURE, null);
+        animator.playBase(hold("idle", HEAD, 0, 0.1f, JointMask.all(Biped.ARMATURE)), 1);
+        animator.play(Animator.Priority.HIGH, lunge(RootMotion.GROUND, List.of()), 1, false);
+        Vector3f travelled = new Vector3f();
+        for (int i = 0; i < 30; i++) {
+            animator.tick(1);
+            travelled.add(animator.rootMotion());
+            Vector3f drawn = new Vector3f(animator.pose(0.5f).get(root).translation());
+            assertEquals(0, drawn.x, 1e-4f);
+            assertEquals(0, drawn.z, 1e-4f);
+        }
+        // Along the ground only; the rise and fall stays in the pose.
+        assertEquals(new Vector3f(4, 0, 16).distance(travelled), 0, 1e-3f);
+
+        Animator mirrored = new Animator(Biped.ARMATURE, null);
+        mirrored.play(Animator.Priority.HIGH, lunge(new RootMotion(true, List.of(new float[] {0.4f, 0.6f})),
+                List.of()), 1, true);
+        Vector3f up = new Vector3f();
+        int hanging = 0;
+        for (int i = 0; i < 10; i++) {
+            mirrored.tick(1);
+            up.add(mirrored.rootMotion());
+            hanging += mirrored.noGravity() ? 1 : 0;
+        }
+        // Half way: mirrored, the travel goes right; vertical, it rose 8 px; hanging from 0.4 to 0.5 s (3 ticks).
+        assertEquals(new Vector3f(-2, 8, 8).distance(up), 0, 1e-3f);
+        assertEquals(3, hanging);
+    }
+
+    @Test
+    void aLayerLetGoFiresNoMoreEvents() {
+        List<ClipEvent> events = List.of(new ClipEvent(0.2f, "footstep", ClipEvent.Side.CLIENT,
+                com.google.gson.JsonParser.parseString("{\"foot\": \"left\"}").getAsJsonObject()),
+                new ClipEvent(0.8f, "sound", ClipEvent.Side.CLIENT, new com.google.gson.JsonObject()));
+        Animator animator = new Animator(Biped.ARMATURE, null);
+        animator.play(Animator.Priority.HIGH, lunge(null, events), 1, true);
+        List<ClipEvent> heard = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            animator.tick(1);
+            heard.addAll(animator.events());
+        }
+        assertEquals(1, heard.size());
+        assertEquals("right", heard.get(0).string("foot", ""), "mirrored with its clip");
+        animator.stop(Animator.Priority.HIGH);
+        for (int i = 0; i < 20; i++) {
+            animator.tick(1);
+            assertTrue(animator.events().isEmpty());
+        }
+    }
 }
