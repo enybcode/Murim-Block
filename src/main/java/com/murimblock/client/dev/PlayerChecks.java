@@ -130,6 +130,10 @@ final class PlayerChecks {
                 (mc, t) -> keys(mc, true, true, false, false, false), LivingMotion.RUN));
         PARTS.add(new Part("run_side", 40, SIDE, mc -> at(mc, X, Y, Z, 0),
                 (mc, t) -> keys(mc, true, true, false, false, false), LivingMotion.RUN));
+        PARTS.add(new Part("walk_back", 40, SIDE, mc -> at(mc, X, Y, Z + 10, 0),
+                (mc, t) -> keys(mc, false, false, false, false, false, true, false), LivingMotion.WALK));
+        PARTS.add(new Part("strafe", 40, FRONT, mc -> at(mc, X - 4, Y, Z + 4, 0),
+                (mc, t) -> keys(mc, false, false, false, false, false, false, true), LivingMotion.WALK));
         PARTS.add(new Part("walk_stop_walk", 60, SIDE, mc -> at(mc, X, Y, Z, 0),
                 (mc, t) -> keys(mc, t < 20 || t >= 35, t >= 45, false, false, false), null));
         PARTS.add(new Part("sneak", 30, FRONT, mc -> at(mc, X, Y, Z, 0),
@@ -251,6 +255,13 @@ final class PlayerChecks {
     }
 
     private static void keys(Minecraft mc, boolean forward, boolean sprint, boolean sneak, boolean jump, boolean use) {
+        keys(mc, forward, sprint, sneak, jump, use, false, false);
+    }
+
+    private static void keys(Minecraft mc, boolean forward, boolean sprint, boolean sneak, boolean jump, boolean use,
+                             boolean back, boolean left) {
+        mc.options.keyDown.setDown(back);
+        mc.options.keyLeft.setDown(left);
         mc.options.keyUp.setDown(forward);
         mc.options.keySprint.setDown(sprint);
         mc.options.keyShift.setDown(sneak);

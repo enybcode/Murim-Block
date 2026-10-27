@@ -60,7 +60,7 @@ public final class AnimationPlayer {
         time = previousTime = seconds;
     }
 
-    /** Moves one tick on, times {@code scale} (the global slow motion factor). */
+    /** Moves one tick on, times {@code scale} (the global slow motion factor); a negative speed plays backward. */
     public void tick(float scale) {
         previousTime = time;
         if (animation == null || finished) {
@@ -69,11 +69,16 @@ public final class AnimationPlayer {
         time += TICK * speed * scale;
         float duration = animation.clip().duration();
         if (animation.loop()) {
+            // Keep the previous time continuous so the frame between the two ticks does not jump.
             if (duration > 0 && time >= duration - EPSILON) {
-                // Keep the previous time continuous so the frame between the two ticks does not jump back.
                 time -= duration;
                 previousTime -= duration;
+            } else if (duration > 0 && time < 0) {
+                time += duration;
+                previousTime += duration;
             }
+        } else if (time < 0) {
+            time = 0;
         } else if (time >= duration - EPSILON) {
             time = duration;
             finished = true;

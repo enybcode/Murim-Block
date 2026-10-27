@@ -279,6 +279,24 @@ read right. Found and fixed the same day:
   the tour now shoots every other elytra frame with vanilla to compare.
 - The test world was shared between check groups and runs: the tour now builds 300 blocks away, and the first
   step brings the player over the test area (on a fresh world the test players were dropped in unloaded chunks).
+
+Walking (27 Oct 2026). Minecraft walks a body at 4.3 blocks a second with 12 px legs: a foot on the ground covers
+at most about 0.85 block a step, so either the steps are quick or the feet slide (vanilla slides). Now:
+- `anim/FootPlanter` (with `anim/LegIk`, two-bone IK): a sole the clip puts on the ground while it goes back under
+  the body keeps its place in the world, the thigh and knee reaching for it as the body moves on; it lets go when
+  the clip lifts it (off the ground and coming forward) or the leg is straight, easing back into the clip over
+  0.12 s; it plants again only after a lift (no jump), stands exactly on the ground, and a foot in the air never goes
+  through it. `anim/client/FootPlanting` runs it for each player walking, running or sneak-walking on the ground.
+- `move_speed: "auto"` (`anim/Strides`): a step cycle's ground speed is measured from its own feet at load, so the
+  cadence always matches the body (walk 2.25, run 4.62, sneak walk 0.66 blocks a second at speed 1).
+- The walk steps 0.9 block (about 4.6 steps a second at 4.3 blocks a second), lands on both feet and keeps the
+  swinging foot 1.2 px up until it lands (a reaching key); step cycles are keyed linearly.
+- Going sideways or back, the hips and legs turn toward the motion (at most 80°, smoothed) while the chest faces
+  ahead; going back the cycle plays backward (`AnimationPlayer` takes a negative speed).
+Measured on the real player (planted foot's slide): walk 0.2 blocks a second (was 1.6 to 2.6), run 0.2 to 0.3
+(was 0.6), sneak walk 0.4 (was 0.7), walking back 0.9 (was 8.5), sideways 0.7 (was 2.9); `WalkSlideTest` checks
+walk, run and sneak walk under 0.3 offline. Left: the boxing shuffle still slides (combat is being reworked); a knee
+turns up to 30° a frame, the quick cadence's own speed plus the let-go.
 Matching vanilla or right as is: idle, sneak, jump, fall and landing, boat, bed, bow, crossbow, shield, eating, the
 stance, the guard while walking, jabs; the sword swing's 48° a frame is vanilla's own speed (its formula gives 46°
 in the first frame).

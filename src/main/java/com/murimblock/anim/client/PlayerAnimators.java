@@ -4,10 +4,13 @@ import com.murimblock.Murimblock;
 import com.murimblock.anim.Animation;
 import com.murimblock.anim.Animator;
 import com.murimblock.anim.Biped;
+import com.murimblock.anim.BipedPoses;
 import com.murimblock.anim.LivingMotion;
 import com.murimblock.anim.MotionSet;
 import com.murimblock.anim.Pose;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
@@ -18,6 +21,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import org.joml.Vector3f;
 
 /**
  * Each player's {@link Animator}: every tick it reads what the body does (standing, walking, running, sneaking,
@@ -32,6 +36,12 @@ public final class PlayerAnimators {
     private static final float MOVING = 0.6f;
     /** Falling further than this (blocks) turns a jump into a fall. */
     private static final float FALLING = 1.2f;
+    private static final Set<LivingMotion> LEG_TURNING = EnumSet.of(LivingMotion.WALK, LivingMotion.RUN,
+            LivingMotion.SNEAK_WALK);
+    private static final float LEG_TURN_MOST = (float) Math.toRadians(80);
+    private static final float BACKWARD_FROM = (float) Math.toRadians(110), BACKWARD_UNTIL = (float) Math.toRadians(70);
+    /** The share of the way the legs turn toward their target each tick. */
+    private static final float LEG_TURN_RATE = 0.35f;
 
     private static final Map<AbstractClientPlayer, State> STATES = new WeakHashMap<>();
     private static boolean combat;
@@ -46,6 +56,9 @@ public final class PlayerAnimators {
         LivingMotion motion = LivingMotion.IDLE;
         float speed;
         int airTicks;
+        /** The legs' turn toward where the body goes (radians, smoothed), and whether it goes backward. */
+        float legTurn, previousLegTurn, legTarget;
+        boolean backward;
     }
 
     /** Dev switch until combat mode exists (step 9): the motion set's combat clips come first. */
@@ -91,7 +104,9 @@ public final class PlayerAnimators {
         if (state.animator.baseAnimation() == null) {
             update(player, state);
         }
-        return state.animator.pose(partialTick);
+        Pose pose = state.animator.pose(partialTick);
+        BipedPoses.turnLegs(pose, Mth.lerp(partialTick, state.previousLegTurn, state.legTurn));
+        return pose;
     }
 
     @SubscribeEvent
@@ -104,6 +119,9 @@ public final class PlayerAnimators {
             State state = STATES.computeIfAbsent(player, key -> new State());
             update(player, state);
             state.animator.tick(SkeletalPlayers.slowMotion());
+            state.previousLegTurn = state.legTurn;
+            state.legTurn += Mth.wrapDegrees((float) Math.toDegrees(state.legTarget - state.legTurn)) * Mth.DEG_TO_RAD
+                    * LEG_TURN_RATE;
         }
     }
 
@@ -115,6 +133,7 @@ public final class PlayerAnimators {
         float moving = state.motion == LivingMotion.CLIMB ? Math.abs((float) dy * 20) : horizontal;
         // Smoothed, so a speed that wobbles from tick to tick does not make the clip stutter.
         state.speed += (moving - state.speed) * 0.5f;
+        legs(player, state, dx, dz);
 
         MotionSet set = SkeletalClips.motions(MOTIONS);
         if (set == null) {
@@ -129,6 +148,9 @@ public final class PlayerAnimators {
         if (animation.moveSpeed() > 0 && forced == null) {
             float min = state.motion == LivingMotion.CLIMB ? 0 : 0.4f;
             speed = Mth.clamp(state.speed / animation.moveSpeed(), min, 2.5f);
+            if (state.backward) {
+                speed = -speed;
+            }
         }
         state.animator.motion(state.motion.key());
         state.animator.playBase(animation, speed);
@@ -138,6 +160,28 @@ public final class PlayerAnimators {
                 state.animator.playAdditive(clip);
             }
         }
+    }
+
+    /**
+     * Where the legs point: walking sideways or back, the hips and legs turn toward where the body goes (at most
+     * {@link #LEG_TURN_MOST}) while the chest faces ahead; going back, the step cycle also plays backward. Vanilla turns
+     * the body toward the motion too, but only partly, and not at all going straight back.
+     */
+    private static void legs(AbstractClientPlayer player, State state, double dx, double dz) {
+        Vector3f going = new Vector3f((float) dx, 0, (float) dz).rotateY((float) Math.toRadians(player.yBodyRot));
+        if (going.lengthSquared() < 1e-4f || !LEG_TURNING.contains(state.motion)) {
+            state.backward = false;
+            state.legTarget = 0;
+            return;
+        }
+        // The angle from the body's front (+Z) toward its left (+X); with some hysteresis between forward and back.
+        float angle = (float) Math.atan2(going.x, going.z);
+        float side = Math.abs(angle);
+        if (state.backward ? side < BACKWARD_UNTIL : side > BACKWARD_FROM) {
+            state.backward = !state.backward;
+        }
+        float turn = state.backward ? Mth.wrapDegrees((float) Math.toDegrees(angle) - 180) * Mth.DEG_TO_RAD : angle;
+        state.legTarget = Mth.clamp(turn, -LEG_TURN_MOST, LEG_TURN_MOST);
     }
 
     private static LivingMotion read(AbstractClientPlayer player, State state, float horizontal, float vertical) {

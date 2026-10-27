@@ -82,6 +82,12 @@ def cycle(first, second, length):
             (length, first)]
 
 
+def half_cycle(keys, length):
+    """A loop from the first half's keys [(frame, key)...] (frames under length / 2), then the same mirrored."""
+    half = length // 2
+    return keys + [(frame + half, mirror(key)) for frame, key in keys] + [(length, keys[0][1])]
+
+
 # Signs, for a joint at rest (bone axes = model axes): a limb hanging down swings forward with a negative X
 # (a forearm bends at the elbow with a negative X, a shin bends at the knee with a positive X), and a left limb moves
 # out to the side with a positive Z (a right one with a negative Z). The torso, chest and head lean forward with a
@@ -119,19 +125,25 @@ SETS["biped"] = {
         (30, {"Arm_L": (-3, 0, 6), "Arm_R": (3, 0, -6), "Head": (2, 3, 0)}),
         (60, {**ARMS_DOWN, "Head": (0, 0, 0)}),
     ],
-    # Right foot lands ahead (hips at their lowest), then passes under the body (highest); arms swing against the legs
-    # and the chest turns with them. Minecraft walks at 4.3 blocks a second, a human jog: the stride is as long as
-    # legs on the ground allow (about 1.7 blocks a cycle), and walk.json's move_speed sets the cadence from it.
-    "walk": cycle(
-        # Both feet on the ground at the landing (front heel and rear toes), so the rear foot carries the body until
-        # the front one is down.
-        {"Root": {"loc": (0, -2.4, 0)}, "Torso": (2, 0, 0), "Chest": (0, -5, 0), "Head": (-2, 5, 0),
-         "Thigh_R": (-40, 0, 0), "Leg_R": (4, 0, 0), "Thigh_L": (32, 0, 0), "Leg_L": (6, 0, 0),
-         "Arm_L": (-24, 0, 4), "Arm_R": (22, 0, -4), "Hand_L": (-20, 0, 0), "Hand_R": (-8, 0, 0)},
-        {"Root": {"loc": (0, 0, 0)}, "Torso": (2, 0, 0), "Chest": (0, 0, 0), "Head": (-2, 0, 0),
-         "Thigh_R": (0, 0, 0), "Leg_R": (2, 0, 0), "Thigh_L": (-18, 0, 0), "Leg_L": (50, 0, 0),
-         "Arm_L": (0, 0, 4), "Arm_R": (0, 0, -4), "Hand_L": (-12, 0, 0), "Hand_R": (-12, 0, 0)},
-        16),
+    # Right foot lands ahead (hips at their lowest), passes under the body (highest), then the other foot reaches
+    # forward; the second half is the first mirrored. Arms swing against the legs and the chest turns with them.
+    # Minecraft walks at 4.3 blocks a second, a human jog: a step is 0.9 block (feet 7.7 px ahead and 7.5 behind with
+    # the hips 9.2 px up), as far as a 12 px leg on the ground reaches, so it takes about 4.6 steps a second
+    # (move_speed in biped.json); FootPlanter keeps each foot where it lands.
+    "walk": half_cycle([
+        # Landing: both feet down (front heel, rear toes), so the rear foot carries the body until the front is down.
+        (0, {"Root": {"loc": (0, -2.8, 0)}, "Torso": (2, 0, 0), "Chest": (0, -5, 0), "Head": (-2, 5, 0),
+             "Thigh_R": (-45, 0, 0), "Leg_R": (9, 0, 0), "Thigh_L": (36, 0, 0), "Leg_L": (6, 0, 0),
+             "Arm_L": (-24, 0, 4), "Arm_R": (22, 0, -4), "Hand_L": (-20, 0, 0), "Hand_R": (-8, 0, 0)}),
+        # Passing: the standing knee stays a little bent (hips 11.4 px up), the other foot swings through high.
+        (4, {"Root": {"loc": (0, -0.6, 0)}, "Torso": (2, 0, 0), "Chest": (0, 0, 0), "Head": (-2, 0, 0),
+             "Thigh_R": (-18, 0, 0), "Leg_R": (36, 0, 0), "Thigh_L": (-24, 0, 0), "Leg_L": (85, 0, 0),
+             "Arm_L": (0, 0, 4), "Arm_R": (0, 0, -4), "Hand_L": (-12, 0, 0), "Hand_R": (-12, 0, 0)}),
+        # Reaching: the swinging foot comes forward still 1.2 px up, so it does not skim the ground before it lands.
+        (6, {"Root": {"loc": (0, -1.4, 0)}, "Torso": (2, 0, 0), "Chest": (0, 2.5, 0), "Head": (-2, -2.5, 0),
+             "Thigh_R": (14, 0, 0), "Leg_R": (24, 0, 0), "Thigh_L": (-55, 0, 0), "Leg_L": (65, 0, 0),
+             "Arm_L": (11, 0, 4), "Arm_R": (-12, 0, -4), "Hand_L": (-10, 0, 0), "Hand_R": (-16, 0, 0)}),
+    ], 16),
     # Leaning in, a long stride with the rear heel kicked up, forearms bent and pumping.
     "run": cycle(
         {"Root": {"loc": (0, -1.5, 0)}, "Torso": (12, 0, 0), "Chest": (0, -8, 0), "Head": (-12, 8, 0),

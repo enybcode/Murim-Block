@@ -1,7 +1,7 @@
 {
   "clips": {
     "stance": {"loop": true, "transition": 0.15},
-    "stance_walk": {"loop": true, "transition": 0.12, "move_speed": 2.0},
+    "stance_walk": {"loop": true, "transition": 0.12, "move_speed": "auto"},
     "guard": {
       "loop": true,
       "transition": 0.12,

@@ -53,7 +53,7 @@ import org.joml.Vector3f;
 public final class SkeletalPlayerRenderer {
     private static final float PIXEL = 1 / 16f;
     /** Vanilla draws every player at 15/16 of the model's size. */
-    private static final float PLAYER_SCALE = 0.9375f;
+    static final float PLAYER_SCALE = 0.9375f;
     private static final Map<String, PlayerModelPart> OUTER_PARTS = Map.of("hat", PlayerModelPart.HAT,
             "jacket", PlayerModelPart.JACKET, "sleeve_l", PlayerModelPart.LEFT_SLEEVE,
             "sleeve_r", PlayerModelPart.RIGHT_SLEEVE, "pants_l", PlayerModelPart.LEFT_PANTS_LEG,
@@ -147,6 +147,7 @@ public final class SkeletalPlayerRenderer {
         }
         Pose pose = SkeletalPlayers.pose(player, partialTick);
         VanillaPoses.apply(renderer, player, pose, partialTick, netHeadYaw, pitch, SkeletalPlayers.animated());
+        FootPlanting.apply(player, pose, partialTick, bodyYaw, player.getScale());
         BipedPoses.look(pose, netHeadYaw, headPitch);
         if (poseProbe != null) {
             poseProbe.accept(player, pose);

@@ -90,6 +90,24 @@ public final class BipedPoses {
     }
 
     /**
+     * Turns the hips and legs by {@code angle} (radians, toward the body's left) about the vertical while the torso
+     * keeps facing where it faced: the legs walk where the body goes (sideways, back) while the chest faces ahead.
+     */
+    public static void turnLegs(Pose pose, float angle) {
+        if (angle == 0) {
+            return;
+        }
+        int root = Biped.ARMATURE.get(Biped.ROOT).index(), torso = Biped.ARMATURE.get(Biped.TORSO).index();
+        JointTransform hips = pose.get(root), chest = pose.get(torso);
+        Quaternionf before = new Quaternionf(hips.rotation());
+        Quaternionf after = new Quaternionf().rotateY(angle).mul(before);
+        pose.set(root, JointTransform.of(hips.translation(), after, hips.scale()));
+        // The torso's turn in model space stays as it was: after * torso' = before * torso.
+        Quaternionf torsoTurn = new Quaternionf(after).conjugate().mul(before).mul(chest.rotation());
+        pose.set(torso, JointTransform.of(chest.translation(), torsoTurn, chest.scale()));
+    }
+
+    /**
      * Turns the head by the look relative to the body: {@code yaw} in Minecraft degrees (positive toward the body's
      * right), {@code pitch} positive looking down.
      */
