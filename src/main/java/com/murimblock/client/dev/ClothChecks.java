@@ -43,6 +43,8 @@ final class ClothChecks {
             mc.player.getAbilities().flying = false;
         }));
         steps.add(new Step("cape standing", mc -> {
+            GifRecorder.start("cloth_cape_running");
+            GifRecorder.camera(GifRecorder.side(mc.player));
             standing = CapeCloth.hang(mc.player);
             EngineTest.check("the cape hangs as cloth (" + standing + ")", standing != null);
             if (standing != null) {
@@ -68,6 +70,7 @@ final class ClothChecks {
                 EngineTest.check(String.format("running it trails behind (%.2f blocks behind, %.2f down)", back,
                         -running.y), back > 0.25);
             }
+            GifRecorder.stop();
             CapeCloth.testCape(false);
         }));
         return steps;

@@ -171,6 +171,9 @@ final class CombatChecks {
                 discard(mc);
             }));
         }));
+        if (GifRecorder.ON) {
+            showcase(steps);
+        }
         for (EntityType<?> type : List.of(EntityType.ZOMBIE, EntityType.HUSK, EntityType.SKELETON,
                 EntityType.WITHER_SKELETON, EntityType.VINDICATOR, EntityType.PIGLIN_BRUTE, EntityType.ENDERMAN,
                 EntityType.SPIDER, EntityType.CAVE_SPIDER, EntityType.IRON_GOLEM, EntityType.RAVAGER,
@@ -189,6 +192,115 @@ final class CombatChecks {
             EngineTest.busy = () -> false;
         }));
         return steps;
+    }
+
+    /** Scenes only recorded for the GIFs (no checks): the other moves of both movesets, and first person. */
+    private static void showcase(List<Step> steps) {
+        steps.add(scene("fists dash strike", false, 4, 40, (mc, t) -> {
+            boolean run = t >= 0 && t < 12;
+            mc.options.keyUp.setDown(run);
+            mc.options.keySprint.setDown(run);
+            if (t == 9) {
+                CombatClient.pressAttack();
+            }
+        }));
+        steps.add(scene("fists air strike", false, 1.8, 40, (mc, t) -> {
+            if (t == 0) {
+                mc.player.jumpFromGround();
+            }
+            if (t == 5) {
+                CombatClient.pressAttack();
+            }
+        }));
+        steps.add(scene("fists qi palm", false, 1.8, 50, (mc, t) -> {
+            if (t == 0) {
+                net.minecraft.client.KeyMapping.click(CombatClient.TECHNIQUE.getKey());
+            }
+        }));
+        steps.add(scene("blade combo", true, 2.0, 60, (mc, t) -> {
+            if (t % 9 == 0 && t <= 27) {
+                CombatClient.pressAttack();
+            }
+        }));
+        steps.add(scene("blade dash thrust", true, 4.5, 40, (mc, t) -> {
+            boolean run = t >= 0 && t < 12;
+            mc.options.keyUp.setDown(run);
+            mc.options.keySprint.setDown(run);
+            if (t == 9) {
+                CombatClient.pressAttack();
+            }
+        }));
+        steps.add(scene("blade plunge", true, 2.0, 40, (mc, t) -> {
+            if (t == 0) {
+                mc.player.jumpFromGround();
+            }
+            if (t == 5) {
+                CombatClient.pressAttack();
+            }
+        }));
+        steps.add(scene("blade whirlwind", true, 1.8, 50, (mc, t) -> {
+            if (t == 0) {
+                net.minecraft.client.KeyMapping.click(CombatClient.TECHNIQUE.getKey());
+            }
+        }));
+        steps.add(scene("dodges", false, 3.5, 80, (mc, t) -> {
+            // Back, left, right, forward: the direction is the movement key held as the dodge key is pressed.
+            int[] at = {0, 20, 40, 60};
+            for (int i = 0; i < at.length; i++) {
+                if (t == at[i]) {
+                    mc.options.keyLeft.setDown(i == 1);
+                    mc.options.keyRight.setDown(i == 2);
+                    mc.options.keyUp.setDown(i == 3);
+                    net.minecraft.client.KeyMapping.click(CombatClient.DODGE.getKey());
+                }
+                if (t == at[i] + 2) {
+                    mc.options.keyLeft.setDown(false);
+                    mc.options.keyRight.setDown(false);
+                    mc.options.keyUp.setDown(false);
+                }
+            }
+        }));
+        steps.add(new Step("first person combo", mc -> {
+            at(mc, X, Z, 0);
+            spawn(mc, EntityType.ZOMBIE, X, Z + 1.6, true, mob -> {
+            });
+            mc.options.setCameraType(CameraType.FIRST_PERSON);
+            start(new Run(50, t -> {
+                face(mc, nearest(mc, EntityType.ZOMBIE));
+                mc.player.setXRot(15);
+                if (t % 6 == 0 && t <= 18) {
+                    CombatClient.pressAttack();
+                }
+            }, () -> {
+                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                discard(mc);
+            }), false);
+        }));
+    }
+
+    private interface Script {
+        void tick(Minecraft mc, int t);
+    }
+
+    /** A scene against a still zombie {@code distance} ahead, with a sword in hand or none. */
+    private static Step scene(String name, boolean sword, double distance, int ticks, Script script) {
+        return new Step(name, mc -> {
+            at(mc, X, Z, 0);
+            EngineTest.server(mc, player -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                    sword ? new ItemStack(Items.IRON_SWORD) : ItemStack.EMPTY));
+            spawn(mc, EntityType.ZOMBIE, X, Z + distance, true, mob -> {
+            });
+            start(new Run(ticks, t -> {
+                face(mc, nearest(mc, EntityType.ZOMBIE));
+                script.tick(mc, t);
+            }, () -> {
+                mc.options.keyUp.setDown(false);
+                mc.options.keySprint.setDown(false);
+                EngineTest.server(mc, player -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                        ItemStack.EMPTY));
+                discard(mc);
+            }));
+        });
     }
 
     /** A mob that attacks the player: its Shenfa attack plays and its blow lands on the player. */
@@ -300,6 +412,12 @@ final class CombatChecks {
             for (BlockPos pos : BlockPos.betweenClosed(AREA - 10, (int) Y, -10, AREA + 10, (int) Y + 4, 12)) {
                 level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
             }
+            if (GifRecorder.ON) {
+                // An unseen roof: the recorded zombies must not burn in the sun.
+                for (BlockPos pos : BlockPos.betweenClosed(AREA - 10, (int) Y + 8, -10, AREA + 10, (int) Y + 8, 12)) {
+                    level.setBlockAndUpdate(pos, Blocks.BARRIER.defaultBlockState());
+                }
+            }
             // The test world is peaceful: monsters would vanish and never attack.
             player.server.setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
             level.getEntities((Entity) null, new AABB(AREA - 30, Y - 5, -30, AREA + 30, Y + 10, 30),
@@ -335,6 +453,10 @@ final class CombatChecks {
                 mob.setPersistenceRequired();
                 if (type == EntityType.ZOMBIE || type == EntityType.HUSK) {
                     mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                    if (GifRecorder.ON) {
+                        // A cap keeps the recorded zombies from burning in the sun.
+                        mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+                    }
                 }
             }
             entity.moveTo(x, Y, z, 180, 0);
@@ -398,8 +520,16 @@ final class CombatChecks {
     }
 
     private static void start(Run run) {
+        start(run, true);
+    }
+
+    private static void start(Run run, boolean sideView) {
         at = -10;
         running = run;
+        GifRecorder.start("combat_" + EngineTest.current);
+        if (sideView) {
+            GifRecorder.camera(GifRecorder.side(Minecraft.getInstance().player));
+        }
     }
 
     @SubscribeEvent
@@ -414,6 +544,7 @@ final class CombatChecks {
         if (++at >= running.ticks()) {
             Run done = running;
             running = null;
+            GifRecorder.stop();
             done.end().run();
         }
     }

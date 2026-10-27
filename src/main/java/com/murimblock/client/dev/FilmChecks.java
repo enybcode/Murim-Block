@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 
 /**
@@ -43,6 +44,8 @@ final class FilmChecks {
     private static String sheetName;
     private static Shot pending;
     private static int wait;
+    private static final Queue<ResourceLocation> live = new ArrayDeque<>();
+    private static int liveTicks = -1;
 
     private FilmChecks() {
     }
@@ -73,6 +76,9 @@ final class FilmChecks {
             steps.add(new Step("film " + set + " saved", mc -> EngineTest.check("the " + set + " sheet is filmed",
                     shots.isEmpty() && sheet == null)));
         }
+        if (GifRecorder.ON) {
+            steps.add(new Step("film live", FilmChecks::live));
+        }
         steps.add(new Step("film done", mc -> {
             SkeletalPlayers.slowMotion(1);
             SkeletalPlayers.previewPlayer().stop();
@@ -81,6 +87,38 @@ final class FilmChecks {
             EngineTest.busy = () -> false;
         }));
         return steps;
+    }
+
+    /** Every fighting clip played once at its own speed, each recorded for a GIF. */
+    private static void live(Minecraft mc) {
+        SkeletalClips.all().keySet().stream().filter(id -> id.getNamespace().equals(Murimblock.MOD_ID)
+                        && List.of("fists", "combat", "blade", "humanoid").contains(id.getPath().split("/")[0]))
+                .sorted().forEach(live::add);
+        SkeletalPlayers.slowMotion(1);
+        liveTicks = -1;
+        EngineTest.busy = () -> !live.isEmpty() || liveTicks >= 0;
+    }
+
+    @SubscribeEvent
+    public static void liveTick(ClientTickEvent.Post event) {
+        if (liveTicks > 0) {
+            liveTicks--;
+            return;
+        }
+        if (liveTicks == 0) {
+            GifRecorder.stop();
+            liveTicks = -1;
+        }
+        ResourceLocation id = live.poll();
+        if (id == null) {
+            return;
+        }
+        SkeletalPlayers.preview(id);
+        SkeletalPlayers.previewPlayer().play(SkeletalClips.get(id), 1, null);
+        GifRecorder.start("clip_" + id.getPath(), 0.6f);
+        GifRecorder.camera(partialTick -> new GifRecorder.View(new net.minecraft.world.phys.Vec3(X - 0.3, Y + 1.2, Z + 2.8),
+                new net.minecraft.world.phys.Vec3(X, Y + 0.9, Z)));
+        liveTicks = Math.round(SkeletalClips.get(id).clip().duration() * 20) + 10;
     }
 
     private static void film(Minecraft mc, String set) {

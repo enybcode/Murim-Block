@@ -53,6 +53,8 @@ neoForge {
             systemProperty 'murimblock.engineTest', 'true'
             // -PengineGroups=player,vanilla runs only those groups of checks (all when empty).
             systemProperty 'murimblock.engineGroups', providers.gradleProperty('engineGroups').getOrElse('')
+            // -PengineGifs=true also records the scenes as frames in screenshots/gif (tools/gifs.sh makes the GIFs).
+            systemProperty 'murimblock.engineGifs', providers.gradleProperty('engineGifs').getOrElse('false')
             gameDirectory = project.file('run/engine-test')
             programArguments.addAll('--width', '1280', '--height', '720')
         }

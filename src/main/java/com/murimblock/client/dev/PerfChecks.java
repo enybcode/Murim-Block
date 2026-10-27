@@ -44,7 +44,17 @@ final class PerfChecks {
                 player.connection.teleport(X, Y + 1, Z - 2, 0, 15);
             });
         }));
-        steps.add(new Step("perf warm up", mc -> SkeletalPlayerRenderer.resetTiming()));
+        if (GifRecorder.ON) {
+            steps.add(new Step("perf crowd recorded", mc -> GifRecorder.start("perf_crowd_of_50")));
+            for (int i = 0; i < 3; i++) {
+                steps.add(new Step("perf crowd recorded", mc -> {
+                }));
+            }
+        }
+        steps.add(new Step("perf warm up", mc -> {
+            GifRecorder.stop();
+            SkeletalPlayerRenderer.resetTiming();
+        }));
         steps.add(new Step("perf with Shenfa", mc -> {
             double micros = SkeletalPlayerRenderer.averageMicros();
             fpsShenfa = mc.getFps();

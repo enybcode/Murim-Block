@@ -93,6 +93,8 @@ public final class EngineTest {
 
     /** While this says so (a scripted run playing out tick by tick), the next step waits. */
     static BooleanSupplier busy = () -> false;
+    /** The step being run, by name. */
+    static String current = "";
 
     private static boolean started;
     private static int frames = -1;
@@ -133,9 +135,10 @@ public final class EngineTest {
             return;
         }
         if (step < STEPS.size()) {
-            Step current = STEPS.get(step++);
-            Murimblock.LOGGER.info("Engine test: step {}", current.name());
-            current.run().accept(mc);
+            Step next = STEPS.get(step++);
+            current = next.name();
+            Murimblock.LOGGER.info("Engine test: step {}", current);
+            next.run().accept(mc);
             return;
         }
         if (finished) {
