@@ -3,7 +3,7 @@
 Goal: a combat engine of Epic Fight's level or better, written by us from scratch. Epic Fight is studied for
 ideas only: its code is GPL and its assets are All Rights Reserved, so nothing is copied.
 
-Status: steps 0 to 4 done (27 Oct 2026). The first combat system was removed on 26 Oct (commit `b27eaf3d`).
+Status: steps 0 to 5 done (27 Oct 2026). The first combat system was removed on 26 Oct (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
 
@@ -224,6 +224,26 @@ Build:
 
 Done when: automated test switches between every pair of motions and strikes and measures the largest joint
 rotation change between two frames: never above a threshold (no pop); GIF of walking while guarding.
+
+Step 5 done (27 Oct 2026): `anim/Animator` (base layer, composite layers `LOWEST` to `HIGHEST`, additive layers;
+a layer that changes clip blends from the pose it showed, eased over the new clip's transition; a layer fades in
+and out by weight; each joint's weight follows the mask of the current motion, so a guard can take the whole body
+standing and only the arms walking, without a pop; mirroring; `SteadyBlend` keeps each joint turning the same way
+when two rotations are near half a turn apart, which made a raised arm flip in one frame), `anim/LivingMotion`
+(with fallbacks), `anim/MotionSet` (`skeletal/motions/biped.json`: clips per motion, combat clips first in combat
+mode, additive clips), sidecar settings `masks`, `additive`, `move_speed`. `anim/client/PlayerAnimators`: one
+animator per player, reading the body every tick (ride, swim, climb, jump, fall, sneak, walk, run, idle) and
+playing walk, run, sneak walk and climb at the body's real speed. The renderer lays a swimmer down like vanilla and
+draws riders and swimmers. Clips (`tools/blender/murim_clips.py`): `biped` (idle, walk, run, sneak, sneak_walk,
+jump, fall, climb, ride, swim, additive breathe) and `fists` (stance, stance_walk, guard, jab, legs first). Dev
+commands: `/skeletal motion <motion|auto>`, `/skeletal combat on|off`, `/skeletal anim play <clip> [speed]
+[priority] [mirrored]`, `/skeletal pose animated|stand`. Checks: `AnimatorTest` switches every pair of the 12 base
+clips at three points of their cycle, and the guard and jab over each, at 60 frames per second: no frame moves
+more than the clips themselves plus an eased blend of the gap (a cut is caught); `runEngineTest` reads a test
+body standing, walking, running, sneaking and falling, plays every motion, and films the guard over walking and a
+jab from the stance. The head look is applied after the animator (no limits yet). Left for later: vanilla's arm
+poses for using items (bow, shield, eating, spyglass) and the attack swing are not drawn by the animator yet; the
+clips are first versions for Enzo to fix in Blender.
 
 ## Step 6: Events and root motion
 

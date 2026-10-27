@@ -1,0 +1,19 @@
+{
+  "motions": {
+    "idle": "murimblock:biped/idle",
+    "walk": "murimblock:biped/walk",
+    "run": "murimblock:biped/run",
+    "sneak": "murimblock:biped/sneak",
+    "sneak_walk": "murimblock:biped/sneak_walk",
+    "jump": "murimblock:biped/jump",
+    "fall": "murimblock:biped/fall",
+    "swim": "murimblock:biped/swim",
+    "climb": "murimblock:biped/climb",
+    "ride": "murimblock:biped/ride"
+  },
+  "combat": {
+    "idle": "murimblock:fists/stance",
+    "walk": "murimblock:fists/stance_walk"
+  },
+  "additive": ["murimblock:biped/breathe"]
+}

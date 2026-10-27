@@ -4,6 +4,7 @@ import com.murimblock.Murimblock;
 import com.murimblock.anim.Animation;
 import com.murimblock.anim.Biped;
 import com.murimblock.anim.ClipLoader;
+import com.murimblock.anim.MotionSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -28,7 +29,9 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class SkeletalClips implements ResourceManagerReloadListener {
     static final String FOLDER = "skeletal/animations";
+    private static final String MOTIONS = "skeletal/motions";
     private static Map<ResourceLocation, Animation> animations = Map.of();
+    private static Map<ResourceLocation, MotionSet> motionSets = Map.of();
 
     private SkeletalClips() {
     }
@@ -40,6 +43,11 @@ public final class SkeletalClips implements ResourceManagerReloadListener {
 
     public static Map<ResourceLocation, Animation> all() {
         return animations;
+    }
+
+    /** The motion set {@code assets/<namespace>/skeletal/motions/<name>.json}, or null. */
+    public static MotionSet motions(ResourceLocation id) {
+        return motionSets.get(id);
     }
 
     @SubscribeEvent
@@ -68,6 +76,21 @@ public final class SkeletalClips implements ResourceManagerReloadListener {
         });
         animations = Map.copyOf(loaded);
         Murimblock.LOGGER.info("Loaded {} skeletal clips", animations.size());
+        Map<ResourceLocation, MotionSet> sets = new HashMap<>();
+        manager.listResources(MOTIONS, path -> path.getPath().endsWith(".json")).forEach((file, resource) -> {
+            String path = file.getPath();
+            ResourceLocation id = file.withPath(path.substring(MOTIONS.length() + 1, path.length() - ".json".length()));
+            try (InputStream in = resource.open()) {
+                MotionSet set = MotionSet.parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+                set.motions().values().stream().filter(clip -> !animations.containsKey(ResourceLocation.parse(clip)))
+                        .forEach(clip -> Murimblock.LOGGER.error("Motion set {} names missing clip {}", file, clip));
+                sets.put(id, set);
+            } catch (IOException | RuntimeException e) {
+                Murimblock.LOGGER.error("Motion set {} could not be loaded: {}", file, e.getMessage());
+            }
+        });
+        motionSets = Map.copyOf(sets);
+        PlayerAnimators.clear();
     }
 
     private static byte[] read(ResourceManager manager, ResourceLocation file) {

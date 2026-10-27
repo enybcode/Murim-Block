@@ -67,21 +67,22 @@ final class ClipChecks {
             mc.level.addEntity(actor);
             SkeletalPlayers.enable(true);
             SkeletalPlayers.slowMotion(1);
-            EngineTest.check("/skeletal anim play finds a clip", SkeletalPlayers.play(BOUNCE, 1));
-            EngineTest.check("and refuses an unknown one", !SkeletalPlayers.play(
-                    ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "test/nothing"), 1));
-            timeBefore = SkeletalPlayers.player().time();
+            EngineTest.check("a clip is found by its id", SkeletalPlayers.preview(BOUNCE));
+            SkeletalPlayers.previewPlayer().speed(1);
+            EngineTest.check("and refuses an unknown one", !SkeletalPlayers.preview(
+                    ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "test/nothing")));
+            timeBefore = SkeletalPlayers.previewPlayer().time();
         }));
         steps.add(new Step("clips play in time", mc -> {
             // A second of ticks has gone by: the looping clip is still on, back near where it started.
-            float time = SkeletalPlayers.player().time();
+            float time = SkeletalPlayers.previewPlayer().time();
             EngineTest.check("bounce still plays after a second, looped (" + time + " s)",
-                    SkeletalPlayers.player().playing() && time >= 0 && time < 1);
+                    SkeletalPlayers.previewPlayer().playing() && time >= 0 && time < 1);
             SkeletalPlayers.slowMotion(0.25f);
             timeBefore = time;
         }));
         steps.add(new Step("slow motion", mc -> {
-            float moved = SkeletalPlayers.player().time() - timeBefore;
+            float moved = SkeletalPlayers.previewPlayer().time() - timeBefore;
             if (moved < 0) {
                 moved += 1;
             }
@@ -94,7 +95,7 @@ final class ClipChecks {
                 String name = clip.getPath().substring(clip.getPath().indexOf('/') + 1) + "_" + view.name();
                 steps.add(new Step("film " + name, mc -> {
                     place(mc, view);
-                    SkeletalPlayers.play(clip, 1);
+                    SkeletalPlayers.preview(clip);
                     SkeletalPlayers.slowMotion(0);
                     float duration = SkeletalClips.get(clip).clip().duration();
                     for (int frame = 0; frame * FILM_STEP < duration - 1e-4f; frame++) {
@@ -109,7 +110,7 @@ final class ClipChecks {
         }
         steps.add(new Step("reload", mc -> {
             EngineTest.check("every filmed frame is saved", film.isEmpty());
-            SkeletalPlayers.stop();
+            SkeletalPlayers.previewPlayer().stop();
             mc.reloadResourcePacks();
         }));
         steps.add(new Step("wait for the reload", mc -> {
@@ -119,6 +120,7 @@ final class ClipChecks {
                     && SkeletalClips.get(WAVE) != null);
             SkeletalPlayers.slowMotion(1);
             SkeletalPlayers.enable(false);
+            mc.level.removeEntity(actor.getId(), net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
         }));
         return steps;
     }
@@ -150,7 +152,7 @@ final class ClipChecks {
             filmName = null;
             return;
         }
-        SkeletalPlayers.player().seek(next);
+        SkeletalPlayers.previewPlayer().seek(next);
         shotPending = true;
     }
 

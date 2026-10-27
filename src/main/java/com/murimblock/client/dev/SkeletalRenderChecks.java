@@ -145,6 +145,8 @@ final class SkeletalRenderChecks {
     }
 
     private static void stage(Minecraft mc) {
+        // Compared with vanilla: vanilla's standing pose, not the animator.
+        SkeletalPlayers.pose(SkeletalPlayers.STAND);
         mc.options.hideGui = true;
         mc.options.cloudStatus().set(CloudStatus.OFF);
         EngineTest.server(mc, player -> {
@@ -223,6 +225,8 @@ final class SkeletalRenderChecks {
      */
     static final class Dummy extends RemotePlayer {
         private ResourceLocation cape;
+        /** Blocks the body seems to move each tick (the level sets the last position to the current one first). */
+        double moveX, moveY;
 
         Dummy(Minecraft mc, int skin, int number) {
             super(mc.level, new GameProfile(new UUID(0, skin), "Test" + number));
@@ -232,6 +236,8 @@ final class SkeletalRenderChecks {
         @Override
         public void tick() {
             tickCount = 0;
+            xo = getX() - moveX;
+            yo = getY() - moveY;
         }
 
         @Override

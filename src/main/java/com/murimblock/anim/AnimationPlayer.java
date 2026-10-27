@@ -1,9 +1,9 @@
 package com.murimblock.anim;
 
 /**
- * Plays one animation: elapsed time, speed, looping, and a callback when a clip that does not loop ends. Time moves
- * on {@link #tick} (one game tick, 1/20 s); {@link #pose} samples between two ticks with the partial tick, so motion
- * is smooth at any frame rate.
+ * Plays one animation: elapsed time, speed, looping, and a callback when a clip that does not loop ends (it then
+ * holds its last frame until something else plays). Time moves on {@link #tick} (one game tick, 1/20 s);
+ * {@link #pose} samples between two ticks with the partial tick, so motion is smooth at any frame rate.
  */
 public final class AnimationPlayer {
     public static final float TICK = 0.05f;
@@ -14,14 +14,17 @@ public final class AnimationPlayer {
     private float time;
     private float previousTime;
     private float speed = 1;
+    private boolean finished;
     private Runnable onEnd;
 
+    /** The animation playing or holding its last frame, or null. */
     public Animation animation() {
         return animation;
     }
 
+    /** Whether an animation is on and has not reached its end. */
     public boolean playing() {
-        return animation != null;
+        return animation != null && !finished;
     }
 
     /** Starts {@code animation} from its beginning; {@code onEnd} (may be null) runs when a clip that does not loop ends. */
@@ -29,12 +32,14 @@ public final class AnimationPlayer {
         this.animation = animation;
         this.speed = speed;
         this.onEnd = onEnd;
+        finished = false;
         time = previousTime = 0;
     }
 
     public void stop() {
         animation = null;
         onEnd = null;
+        finished = false;
     }
 
     public float speed() {
@@ -57,10 +62,10 @@ public final class AnimationPlayer {
 
     /** Moves one tick on, times {@code scale} (the global slow motion factor). */
     public void tick(float scale) {
-        if (animation == null) {
+        previousTime = time;
+        if (animation == null || finished) {
             return;
         }
-        previousTime = time;
         time += TICK * speed * scale;
         float duration = animation.clip().duration();
         if (animation.loop()) {
@@ -71,8 +76,9 @@ public final class AnimationPlayer {
             }
         } else if (time >= duration - EPSILON) {
             time = duration;
+            finished = true;
             Runnable end = onEnd;
-            stop();
+            onEnd = null;
             if (end != null) {
                 end.run();
             }

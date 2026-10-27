@@ -26,8 +26,9 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
       --gltf src/main/resources/assets/murimblock/skeletal/animations/test.gltf [--blend tools/blender/out/test.blend]
   ```
 
-  The settings of each clip (`loop`, `transition`, `mask`) go in the hand-written sidecar `<set>.json` next to the
-  `.gltf`. In game: `/skeletal anim play murimblock:test/bounce [speed]`, `/skeletal anim speed 0.25`,
+  Sets: `test`, `biped` (the living motions, played by `skeletal/motions/biped.json`), `fists`. The settings of
+  each clip (`loop`, `transition`, `mask`, `masks` by motion, `additive`, `move_speed`) go in the hand-written
+  sidecar `<set>.json` next to the `.gltf`. In game: `/skeletal anim play murimblock:test/bounce [speed]`, `/skeletal anim speed 0.25`,
   `/skeletal anim stop`; F3+T reloads the clips.
 
 ## Rig rules

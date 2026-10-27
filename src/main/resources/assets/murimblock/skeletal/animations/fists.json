@@ -1,0 +1,22 @@
+{
+  "clips": {
+    "stance": {"loop": true, "transition": 0.15},
+    "stance_walk": {"loop": true, "transition": 0.12, "move_speed": 2.0},
+    "guard": {
+      "loop": true,
+      "transition": 0.12,
+      "masks": {
+        "walk": ["Shoulder_L", "Shoulder_R"],
+        "run": ["Shoulder_L", "Shoulder_R"],
+        "sneak": ["Shoulder_L", "Shoulder_R"],
+        "sneak_walk": ["Shoulder_L", "Shoulder_R"],
+        "jump": ["Shoulder_L", "Shoulder_R"],
+        "fall": ["Shoulder_L", "Shoulder_R"],
+        "swim": ["Shoulder_L", "Shoulder_R"],
+        "climb": ["Shoulder_L", "Shoulder_R"],
+        "ride": ["Shoulder_L", "Shoulder_R"]
+      }
+    },
+    "jab": {"transition": 0.08}
+  }
+}

@@ -20,15 +20,19 @@ import org.joml.Vector3f;
  * that gives each clip its settings:
  *
  * <pre>
- * {"clips": {"wave": {"loop": true, "transition": 0.2, "mask": ["Shoulder_R"]}}}
+ * {"clips": {
+ *     "guard": {"loop": true, "transition": 0.1, "masks": {"walk": ["Shoulder_L", "Shoulder_R"]}},
+ *     "walk": {"loop": true, "move_speed": 2.6},
+ *     "breathe": {"loop": true, "additive": true, "mask": ["Chest"]}}}
  * </pre>
  *
- * {@code mask} lists joints taken with their children (all joints when it is left out). A clip missing from the
- * sidecar gets the defaults (no loop, {@link Animation#DEFAULT_TRANSITION}, all joints); a name or key the sidecar
+ * {@code mask} lists joints taken with their children (all joints when it is left out); {@code masks} gives other
+ * masks by living motion; {@code additive} and {@code move_speed} are explained in {@link Animation}. A clip missing
+ * from the sidecar gets the defaults (no loop, {@link Animation#DEFAULT_TRANSITION}, all joints); a name or key the sidecar
  * does not know is refused, to catch typos.
  */
 public final class ClipLoader {
-    private static final Set<String> KEYS = Set.of("loop", "transition", "mask");
+    private static final Set<String> KEYS = Set.of("loop", "transition", "mask", "masks", "additive", "move_speed");
 
     private ClipLoader() {
     }
@@ -61,21 +65,35 @@ public final class ClipLoader {
             boolean loop = entry.has("loop") && entry.get("loop").getAsBoolean();
             float transition = entry.has("transition") ? entry.get("transition").getAsFloat()
                     : Animation.DEFAULT_TRANSITION;
-            JointMask mask = JointMask.all(armature);
-            if (entry.has("mask")) {
-                JsonArray joints = entry.getAsJsonArray("mask");
-                String[] names = new String[joints.size()];
-                for (int i = 0; i < names.length; i++) {
-                    names[i] = joints.get(i).getAsString();
-                    if (armature.find(names[i]) == null) {
-                        throw new IllegalArgumentException("clip " + name + ": mask names unknown joint " + names[i]);
+            JointMask mask = entry.has("mask") ? mask(armature, name, entry.getAsJsonArray("mask"))
+                    : JointMask.all(armature);
+            Map<String, JointMask> masks = new LinkedHashMap<>();
+            if (entry.has("masks")) {
+                JsonObject byMotion = entry.getAsJsonObject("masks");
+                for (String motion : byMotion.keySet()) {
+                    if (LivingMotion.byKey(motion) == null) {
+                        throw new IllegalArgumentException("clip " + name + ": masks names unknown motion " + motion);
                     }
+                    masks.put(motion, mask(armature, name, byMotion.getAsJsonArray(motion)));
                 }
-                mask = JointMask.withChildren(armature, names);
             }
-            animations.put(name, new Animation(set + "/" + name, clip, loop, transition, mask));
+            boolean additive = entry.has("additive") && entry.get("additive").getAsBoolean();
+            float moveSpeed = entry.has("move_speed") ? entry.get("move_speed").getAsFloat() : 0;
+            animations.put(name, new Animation(set + "/" + name, clip, loop, transition, mask, masks, additive,
+                    moveSpeed));
         });
         return animations;
+    }
+
+    private static JointMask mask(Armature armature, String clip, JsonArray joints) {
+        String[] names = new String[joints.size()];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = joints.get(i).getAsString();
+            if (armature.find(names[i]) == null) {
+                throw new IllegalArgumentException("clip " + clip + ": mask names unknown joint " + names[i]);
+            }
+        }
+        return JointMask.withChildren(armature, names);
     }
 
     /** The file's animations as clips on {@code armature}: channels are matched to joints by node name. */

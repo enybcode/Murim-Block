@@ -1,0 +1,15 @@
+{
+  "clips": {
+    "idle": {"loop": true, "transition": 0.2},
+    "walk": {"loop": true, "transition": 0.15, "move_speed": 3.0},
+    "run": {"loop": true, "transition": 0.15, "move_speed": 5.0},
+    "sneak": {"loop": true, "transition": 0.15},
+    "sneak_walk": {"loop": true, "transition": 0.15, "move_speed": 1.3},
+    "jump": {"transition": 0.1},
+    "fall": {"loop": true, "transition": 0.25},
+    "climb": {"loop": true, "transition": 0.15, "move_speed": 2.35},
+    "ride": {"loop": true, "transition": 0.2},
+    "swim": {"loop": true, "transition": 0.25},
+    "breathe": {"loop": true, "additive": true, "mask": ["Chest"]}
+  }
+}

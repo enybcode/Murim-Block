@@ -109,6 +109,11 @@ public final class SkeletalPlayerRenderer {
         float bodyYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
         float headYaw = Mth.rotLerp(partialTick, player.yHeadRotO, player.yHeadRot);
         float pitch = Mth.lerp(partialTick, player.xRotO, player.getXRot());
+        float swim = player.getSwimAmount(partialTick);
+        if (player.isVisuallySwimming()) {
+            // Vanilla tilts the head back toward 45° while swimming, so the face looks ahead.
+            pitch = Mth.lerp(swim, pitch, -45);
+        }
         Pose pose = SkeletalPlayers.pose(player, partialTick);
         BipedPoses.look(pose, Mth.wrapDegrees(headYaw - bodyYaw), pitch);
         Matrix4f[] skinMatrices = pose.toSkinMatrices(model.armature());
@@ -116,12 +121,26 @@ public final class SkeletalPlayerRenderer {
 
         poseStack.pushPose();
         float scale = player.getScale();
+        if (SkeletalPlayers.animated() && player.isCrouching()) {
+            // Vanilla lowers a sneaking player by 2 px; the sneak clips bend the legs themselves, feet on the ground.
+            poseStack.translate(0, scale * 2 / 16f, 0);
+        }
         poseStack.scale(scale, scale, scale);
         poseStack.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
         if (player.deathTime > 0) {
             // Vanilla's fall to the side when dying.
             float fall = Mth.sqrt((player.deathTime + partialTick - 1) / 20f * 1.6f);
             poseStack.mulPose(Axis.ZP.rotationDegrees(-Math.min(fall, 1) * 90));
+        }
+        if (swim > 0) {
+            // Vanilla's swimming tilt, turned into our space (a half turn about Y from vanilla's).
+            boolean inFluid = player.isInWater()
+                    || player.isInFluidType((fluid, height) -> player.canSwimInFluidType(fluid));
+            float tilt = Mth.lerp(swim, 0, inFluid ? -90 - player.getXRot() : -90);
+            poseStack.mulPose(Axis.XP.rotationDegrees(-tilt));
+            if (player.isVisuallySwimming()) {
+                poseStack.translate(0, -1, -0.3f);
+            }
         }
         poseStack.scale(PLAYER_SCALE, PLAYER_SCALE, PLAYER_SCALE);
         // The vanilla layers (cape, elytra, arrows, head items, other mods' layers) draw in vanilla's model space.
