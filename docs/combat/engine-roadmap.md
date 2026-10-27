@@ -39,7 +39,7 @@ list is `shenfa-todo.md` (rewritten 27 Oct 2026); this file stays as the record 
 |---|----------|-------------|--------|
 | D1 | Player model | Our own skeleton and skinned mesh loaded from glTF 2.0 (Blender exports it natively). PAL is no longer used for combat; `AGENTS.md` stack is updated. | accepted 26 Oct |
 | D2 | Who animates | Mixed: Claude makes first versions with Blender scripts (headless, renders GIFs), Enzo fixes by eye in Blender. | accepted 26 Oct |
-| D3 | Mobs | Humanoid mobs (zombies, bandits, masters) use the same skeleton, moves and reactions; GeckoLib stays for non-humanoid creatures. | accepted 26 Oct |
+| D3 | Mobs | Every mob on Shenfa: humanoids (zombies, bandits, masters) on the biped skeleton with the same moves and reactions, the others (spiders, golems, bosses...) on skeletons of their own. GeckoLib stays only for non-combat models. | accepted 26 Oct, widened 27 Oct to every mob |
 | D4 | Combat mode key | B toggles combat mode (left click strikes, never mines). | accepted 26 Oct |
 | D5 | Dodge invulnerability | Melee and projectiles, not explosions. | accepted 26 Oct |
 | D6 | Resource | Qi replaces Epic Fight's stamina; everything special costs Qi. | accepted 26 Oct |

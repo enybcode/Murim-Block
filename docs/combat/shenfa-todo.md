@@ -17,6 +17,12 @@ Fight does; "EF" below marks an idea taken from it, "beyond EF" what it lacks.
   head. Same idea as EF's first-person model.
 - Tools: Blender scripts, the engine test (pixel compares, real-player tour with joint and foot measures).
 
+## Decisions
+
+- D3 widened (27 Oct 2026): every mob runs on Shenfa, non-humanoids on skeletons of their own; GeckoLib only for
+  non-combat models. Shenfa needs skeletons other than the biped: the glTF loader, clips and animator already take
+  any armature; the renderer (players only), FootPlanter and the vanilla-parity code are biped-only so far.
+
 ## 1. Engine, before combat (in this order)
 
 1. Events and root motion (old step 6).
@@ -70,7 +76,7 @@ decided.
 - Vanilla mobs (Enzo, 27 Oct 2026): redo every vanilla mob's attack animations, as Epic Fight does, on Shenfa.
   - Humanoids on the biped skeleton (D3): zombie, husk, drowned, zombie villager, zombified piglin, skeleton,
     stray, wither skeleton, piglin, piglin brute, vindicator, pillager, evoker, witch, illusioner.
-  - The others need their own skeletons in Shenfa (D3 said GeckoLib for them; to decide again): spider, cave
+  - The others on Shenfa too, each on a skeleton of its own (D3, widened 27 Oct): spider, cave
     spider, creeper, enderman (biped proportions, own skeleton), iron golem, ravager, hoglin, zoglin, blaze, slime
     and magma cube, phantom, guardian, warden, wolf, polar bear, goat, bee, and the bosses (Ender Dragon, Wither).
   - Each one: idle, walk, run, its attacks as phases with colliders, hit reactions, death; its combat behavior as
