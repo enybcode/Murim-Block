@@ -50,7 +50,8 @@ public final class EngineTest {
                     check(id + " fits the biped skeleton", model != null && Biped.check(model.armature()).isEmpty());
                     check(id + " has its 22 parts (12 skin, 10 armor)", model != null && model.parts().size() == 22);
                 }
-            })), Stream.of(SkeletalRenderChecks.steps(), ClipChecks.steps(), MotionChecks.steps())
+            })), Stream.of(SkeletalRenderChecks.steps(), ClipChecks.steps(), MotionChecks.steps(),
+                            VanillaChecks.steps())
                     .flatMap(List::stream)).toList();
 
     private static boolean started;

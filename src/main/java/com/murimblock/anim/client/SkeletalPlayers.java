@@ -45,7 +45,6 @@ import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
  * <li>{@code /skeletal motion <motion|auto>} forces a living motion, {@code /skeletal combat on|off} picks the combat
  * clips of the motion set.</li>
  * </ul>
- * Vanilla keeps the players it handles better for now: sleeping, gliding, spin attacks, spectating.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class SkeletalPlayers {
@@ -90,8 +89,7 @@ public final class SkeletalPlayers {
     }
 
     public static boolean drawn(AbstractClientPlayer player) {
-        return enabled && !player.isSleeping() && !player.isFallFlying() && !player.isAutoSpinAttack()
-                && !player.isSpectator();
+        return enabled;
     }
 
     /**
@@ -162,7 +160,8 @@ public final class SkeletalPlayers {
                 boolean rightIsMain = player.getMainArm() == HumanoidArm.RIGHT;
                 boolean main = !player.getMainHandItem().isEmpty(), off = !player.getOffhandItem().isEmpty();
                 return BipedPoses.stand(player.tickCount + partialTick, rightIsMain ? main : off,
-                        rightIsMain ? off : main, player.isCrouching());
+                        rightIsMain ? off : main, player.isCrouching(),
+                        player.isPassenger() && player.getVehicle() != null && player.getVehicle().shouldRiderSit());
             }
             default -> {
                 return BipedPoses.test(poseName);

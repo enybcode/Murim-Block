@@ -9,7 +9,10 @@
     "fall": "murimblock:biped/fall",
     "swim": "murimblock:biped/swim",
     "climb": "murimblock:biped/climb",
-    "ride": "murimblock:biped/ride"
+    "ride": "murimblock:biped/ride",
+    "sleep": "murimblock:biped/sleep",
+    "glide": "murimblock:biped/glide",
+    "spin": "murimblock:biped/spin"
   },
   "combat": {
     "idle": "murimblock:fists/stance",

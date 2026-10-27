@@ -21,8 +21,9 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
  * Each player's {@link Animator}: every tick it reads what the body does (standing, walking, running, sneaking,
- * jumping, falling, swimming, climbing, riding) and plays that motion's clip from the biped motion set on the base
- * layer, at the speed the body really moves so the feet do not slide.
+ * jumping, falling, swimming, climbing, riding, sleeping, gliding, spinning) and plays that motion's clip from the
+ * biped motion set on the base layer, at the speed the body really moves so the feet do not slide. The renderer
+ * lays and turns the body like vanilla (in bed, along an elytra flight, in a riptide spin).
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class PlayerAnimators {
@@ -140,7 +141,16 @@ public final class PlayerAnimators {
     }
 
     private static LivingMotion read(AbstractClientPlayer player, State state, float horizontal, float vertical) {
-        if (player.isPassenger()) {
+        if (player.isSleeping()) {
+            return LivingMotion.SLEEP;
+        }
+        if (player.isFallFlying()) {
+            return LivingMotion.GLIDE;
+        }
+        if (player.isAutoSpinAttack()) {
+            return LivingMotion.SPIN;
+        }
+        if (player.isPassenger() && player.getVehicle() != null && player.getVehicle().shouldRiderSit()) {
             return LivingMotion.RIDE;
         }
         if (player.isVisuallySwimming()) {

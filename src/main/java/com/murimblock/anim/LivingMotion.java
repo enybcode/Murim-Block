@@ -15,7 +15,10 @@ public enum LivingMotion {
     FALL(JUMP),
     SWIM(IDLE),
     CLIMB(IDLE),
-    RIDE(IDLE);
+    RIDE(IDLE),
+    SLEEP(IDLE),
+    GLIDE(FALL),
+    SPIN(GLIDE);
 
     private final LivingMotion fallback;
 

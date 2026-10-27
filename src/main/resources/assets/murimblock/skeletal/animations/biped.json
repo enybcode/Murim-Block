@@ -10,6 +10,9 @@
     "climb": {"loop": true, "transition": 0.15, "move_speed": 2.35},
     "ride": {"loop": true, "transition": 0.2},
     "swim": {"loop": true, "transition": 0.25},
+    "sleep": {"loop": true, "transition": 0.2},
+    "glide": {"loop": true, "transition": 0.3},
+    "spin": {"loop": true, "transition": 0.15},
     "breathe": {"loop": true, "additive": true, "mask": ["Chest"]}
   }
 }

@@ -8,6 +8,7 @@ import com.murimblock.anim.client.SkeletalPlayers;
 import com.murimblock.client.dev.EngineTest.Step;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +21,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.armortrim.ArmorTrim;
@@ -227,9 +230,19 @@ final class SkeletalRenderChecks {
         private ResourceLocation cape;
         /** Blocks the body seems to move each tick (the level sets the last position to the current one first). */
         double moveX, moveY;
+        /** The hand using its item (drawing a bow, raising a shield...) for {@link #usedFor} ticks, or null. */
+        InteractionHand using;
+        int usedFor;
+        boolean spectator;
 
         Dummy(Minecraft mc, int skin, int number) {
-            super(mc.level, new GameProfile(new UUID(0, skin), "Test" + number));
+            this(mc, skin, number, "Test" + number);
+        }
+
+        Dummy(Minecraft mc, int skin, int number, String name) {
+            // The default skin is picked by the UUID's hash; the number in both halves of the high bits cancels out of it,
+            // so every test player has its own UUID (the level refuses a second one) and still the chosen skin.
+            super(mc.level, new GameProfile(new UUID((long) number << 32 | number, skin), name));
             setId(-1000 - number);
         }
 
@@ -245,6 +258,58 @@ final class SkeletalRenderChecks {
             PlayerSkin skin = super.getSkin();
             return cape == null ? skin
                     : new PlayerSkin(skin.texture(), skin.textureUrl(), cape, null, skin.model(), skin.secure());
+        }
+
+        @Override
+        public boolean isUsingItem() {
+            return using != null || super.isUsingItem();
+        }
+
+        @Override
+        public InteractionHand getUsedItemHand() {
+            return using != null ? using : super.getUsedItemHand();
+        }
+
+        @Override
+        public ItemStack getUseItem() {
+            return using != null ? getItemInHand(using) : super.getUseItem();
+        }
+
+        @Override
+        public int getUseItemRemainingTicks() {
+            return using != null ? 1000 : super.getUseItemRemainingTicks();
+        }
+
+        @Override
+        public int getTicksUsingItem() {
+            return using != null ? usedFor : super.getTicksUsingItem();
+        }
+
+        @Override
+        public boolean isSpectator() {
+            return spectator;
+        }
+
+        /** Every outer part shown (hat, jacket, sleeves, trousers, cape), as players have them by default. */
+        void showAllParts() {
+            entityData.set(DATA_PLAYER_MODE_CUSTOMISATION, (byte) 0x7F);
+        }
+
+        /** In elytra flight for a while (the flag and the flight ticks a real flight would have). */
+        void glide() {
+            setSharedFlag(7, true);
+            try {
+                Field ticks = LivingEntity.class.getDeclaredField("fallFlyTicks");
+                ticks.setAccessible(true);
+                ticks.setInt(this, 30);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        /** In a riptide spin. */
+        void spin() {
+            setLivingEntityFlag(4, true);
         }
     }
 
@@ -272,6 +337,16 @@ final class SkeletalRenderChecks {
 
     private static void compare(Minecraft mc, String name, double max) {
         NativeImage ours = Screenshot.takeScreenshot(mc.getMainRenderTarget());
+        double share = difference(vanilla, ours);
+        EngineTest.check(name + ": skeletal looks like vanilla (" + String.format("%.3f%%", share * 100)
+                + " of pixels differ)", share < max);
+        save(mc, vanilla, name + "_1_vanilla");
+        save(mc, ours, name + "_2_skeletal");
+        vanilla = null;
+    }
+
+    /** The share of pixels that differ clearly (one channel by more than 32) between two shots. */
+    static double difference(NativeImage vanilla, NativeImage ours) {
         int different = 0;
         for (int y = 0; y < ours.getHeight(); y++) {
             for (int x = 0; x < ours.getWidth(); x++) {
@@ -285,16 +360,16 @@ final class SkeletalRenderChecks {
                 }
             }
         }
-        double share = (double) different / (ours.getWidth() * ours.getHeight());
-        EngineTest.check(name + ": skeletal looks like vanilla (" + String.format("%.3f%%", share * 100)
-                + " of pixels differ)", share < max);
-        save(mc, vanilla, name + "_1_vanilla");
-        save(mc, ours, name + "_2_skeletal");
-        vanilla = null;
+        return (double) different / (ours.getWidth() * ours.getHeight());
     }
 
     private static void save(Minecraft mc, NativeImage image, String name) {
-        File file = new File(mc.gameDirectory, "screenshots/step3/" + name + ".png");
+        saveTo(mc, image, "step3/" + name);
+    }
+
+    /** Saves (and frees) a shot as {@code run/engine-test/screenshots/<path>.png}. */
+    static void saveTo(Minecraft mc, NativeImage image, String path) {
+        File file = new File(mc.gameDirectory, "screenshots/" + path + ".png");
         file.getParentFile().mkdirs();
         try (image) {
             image.writeToFile(file);

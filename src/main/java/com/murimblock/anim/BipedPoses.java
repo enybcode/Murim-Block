@@ -39,18 +39,27 @@ public final class BipedPoses {
 
     /**
      * Vanilla's standing player: arms swaying a little with {@code age} (ticks), and an arm holding an item raised by
-     * 18°, and vanilla's crouch. Until the idle clip exists (step 5) this is how a player stands, so we look like
-     * vanilla at rest.
+     * 18°, vanilla's crouch and vanilla's seated rider (arms forward 36°, legs forward and apart). The reference to
+     * compare our drawing with vanilla ({@code /skeletal pose stand}); players are animated by clips otherwise.
      */
-    public static Pose stand(float age, boolean rightHolds, boolean leftHolds, boolean crouching) {
+    public static Pose stand(float age, boolean rightHolds, boolean leftHolds, boolean crouching, boolean sitting) {
         Pose pose = Biped.ARMATURE.bindPose();
         float sway = (float) Math.cos(age * 0.09f) * 0.05f + 0.05f;
         float swing = (float) Math.sin(age * 0.067f) * 0.05f;
         float raise = (float) (Math.PI / 10);
         // Crouching, vanilla leans the body 0.5 rad and the arms 0.4: the arms hang from the chest, so they take -0.1.
         float crouch = crouching ? -0.1f : 0;
-        vanillaArm(pose, "Arm_R", (rightHolds ? -raise : 0) + swing + crouch, sway);
-        vanillaArm(pose, "Arm_L", (leftHolds ? -raise : 0) - swing + crouch, -sway);
+        // As vanilla: a seated arm goes forward by a fifth of a half turn, and holding an item halves that and adds the
+        // raise.
+        float seated = sitting ? (float) (-Math.PI / 5) : 0;
+        vanillaArm(pose, "Arm_R", (rightHolds ? seated * 0.5f - raise : seated) + swing + crouch, sway);
+        vanillaArm(pose, "Arm_L", (leftHolds ? seated * 0.5f - raise : seated) - swing + crouch, -sway);
+        if (sitting) {
+            float spread = (float) (Math.PI / 10), tilt = 0.07853982f;
+            int right = Biped.ARMATURE.get("Thigh_R").index(), left = Biped.ARMATURE.get("Thigh_L").index();
+            pose.set(right, pose.get(right).add(JointTransform.rotation(fromVanilla(-1.4137167f, spread, tilt))));
+            pose.set(left, pose.get(left).add(JointTransform.rotation(fromVanilla(-1.4137167f, -spread, -tilt))));
+        }
         if (crouching) {
             // The torso leans 0.5 rad from lower and further back, so the chest top lands where vanilla's does (20.8
             // px up, 4 px ahead of the legs); the head stays upright.
@@ -69,7 +78,15 @@ public final class BipedPoses {
      */
     private static void vanillaArm(Pose pose, String joint, float x, float z) {
         int index = Biped.ARMATURE.get(joint).index();
-        pose.set(index, pose.get(index).add(JointTransform.rotation(new Quaternionf().rotateZ(-z).rotateX(x))));
+        pose.set(index, pose.get(index).add(JointTransform.rotation(fromVanilla(x, 0, z))));
+    }
+
+    /**
+     * A vanilla model part's turn (radians, applied Z then Y then X, as {@code ModelPart} does) in our space: a half
+     * turn about X from vanilla's, so its X turns are ours and its Y and Z turns are reversed.
+     */
+    public static Quaternionf fromVanilla(float x, float y, float z) {
+        return new Quaternionf().rotateZ(-z).rotateY(-y).rotateX(x);
     }
 
     /**

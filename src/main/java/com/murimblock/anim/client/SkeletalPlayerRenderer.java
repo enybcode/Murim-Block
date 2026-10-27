@@ -13,6 +13,7 @@ import com.murimblock.anim.SkinnedModel;
 import com.murimblock.anim.Skinning;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,12 +23,15 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -54,6 +58,8 @@ public final class SkeletalPlayerRenderer {
             "jacket", PlayerModelPart.JACKET, "sleeve_l", PlayerModelPart.LEFT_SLEEVE,
             "sleeve_r", PlayerModelPart.RIGHT_SLEEVE, "pants_l", PlayerModelPart.LEFT_PANTS_LEG,
             "pants_r", PlayerModelPart.RIGHT_PANTS_LEG);
+    /** A spectator shows only its head to other spectators, as in vanilla. */
+    private static final Set<String> SPECTATOR_PARTS = Set.of("head", "hat");
     /**
      * From each grip joint to where vanilla holds an item, worked out from vanilla's arm pivot (x ±5, y 22), its turn
      * (-90° about X, 180° about Y, which in our axes is 90° about X then 180° about Y) and its offset (±1, 2, -10 px).
@@ -106,46 +112,65 @@ public final class SkeletalPlayerRenderer {
     private static void render(AbstractClientPlayer player, PlayerRenderer renderer, SkinnedModel model,
                                PlayerSkin skin, float partialTick, PoseStack poseStack, MultiBufferSource buffers,
                                int light) {
+        // The body's and head's turns as vanilla works them out: a seated rider's body follows its mount, the head
+        // turning at most 85° from it; an upside-down player (Dinnerbone) has its head angles reversed.
         float bodyYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
         float headYaw = Mth.rotLerp(partialTick, player.yHeadRotO, player.yHeadRot);
+        float netHeadYaw = headYaw - bodyYaw;
+        Entity vehicle = player.getVehicle();
+        boolean sitting = player.isPassenger() && vehicle != null && vehicle.shouldRiderSit();
+        if (sitting && vehicle instanceof LivingEntity mount) {
+            bodyYaw = Mth.rotLerp(partialTick, mount.yBodyRotO, mount.yBodyRot);
+            float turn = Mth.clamp(Mth.wrapDegrees(headYaw - bodyYaw), -85, 85);
+            bodyYaw = headYaw - turn;
+            if (turn * turn > 2500) {
+                bodyYaw += turn * 0.2f;
+            }
+            netHeadYaw = headYaw - bodyYaw;
+        }
         float pitch = Mth.lerp(partialTick, player.xRotO, player.getXRot());
+        boolean upsideDown = LivingEntityRenderer.isEntityUpsideDown(player);
+        if (upsideDown) {
+            pitch = -pitch;
+            netHeadYaw = -netHeadYaw;
+        }
+        netHeadYaw = Mth.wrapDegrees(netHeadYaw);
         float swim = player.getSwimAmount(partialTick);
-        if (player.isVisuallySwimming()) {
-            // Vanilla tilts the head back toward 45° while swimming, so the face looks ahead.
-            pitch = Mth.lerp(swim, pitch, -45);
+        // The head as vanilla's model tilts it: back 45° in elytra flight and while swimming, so the face looks ahead.
+        float headPitch = pitch;
+        if (player.getFallFlyingTicks() > 4) {
+            headPitch = -45;
+        } else if (swim > 0 && player.isVisuallySwimming()) {
+            headPitch = Mth.lerp(swim, pitch, -45);
         }
         Pose pose = SkeletalPlayers.pose(player, partialTick);
-        BipedPoses.look(pose, Mth.wrapDegrees(headYaw - bodyYaw), pitch);
+        VanillaPoses.apply(renderer, player, pose, partialTick, netHeadYaw, pitch, SkeletalPlayers.animated());
+        BipedPoses.look(pose, netHeadYaw, headPitch);
         Matrix4f[] skinMatrices = pose.toSkinMatrices(model.armature());
         Matrix4f[] jointMatrices = pose.toModelMatrices(model.armature());
 
         poseStack.pushPose();
         float scale = player.getScale();
+        if (player.hasPose(net.minecraft.world.entity.Pose.SLEEPING)) {
+            Direction bed = player.getBedOrientation();
+            if (bed != null) {
+                float eye = player.getEyeHeight(net.minecraft.world.entity.Pose.STANDING) - 0.1f;
+                poseStack.translate(-bed.getStepX() * eye, 0, -bed.getStepZ() * eye);
+            }
+        }
         if (SkeletalPlayers.animated() && player.isCrouching()) {
             // Vanilla lowers a sneaking player by 2 px; the sneak clips bend the legs themselves, feet on the ground.
             poseStack.translate(0, scale * 2 / 16f, 0);
         }
         poseStack.scale(scale, scale, scale);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
-        if (player.deathTime > 0) {
-            // Vanilla's fall to the side when dying.
-            float fall = Mth.sqrt((player.deathTime + partialTick - 1) / 20f * 1.6f);
-            poseStack.mulPose(Axis.ZP.rotationDegrees(-Math.min(fall, 1) * 90));
-        }
-        if (swim > 0) {
-            // Vanilla's swimming tilt, turned into our space (a half turn about Y from vanilla's).
-            boolean inFluid = player.isInWater()
-                    || player.isInFluidType((fluid, height) -> player.canSwimInFluidType(fluid));
-            float tilt = Mth.lerp(swim, 0, inFluid ? -90 - player.getXRot() : -90);
-            poseStack.mulPose(Axis.XP.rotationDegrees(-tilt));
-            if (player.isVisuallySwimming()) {
-                poseStack.translate(0, -1, -0.3f);
-            }
-        }
+        turnLikeVanilla(player, poseStack, bodyYaw, partialTick, scale, swim, upsideDown);
         poseStack.scale(PLAYER_SCALE, PLAYER_SCALE, PLAYER_SCALE);
-        // The vanilla layers (cape, elytra, arrows, head items, other mods' layers) draw in vanilla's model space.
-        VanillaLayers.render(renderer, player, model.armature(), jointMatrices, poseStack, buffers, light, partialTick,
-                Mth.wrapDegrees(headYaw - bodyYaw), pitch);
+        boolean spectator = player.isSpectator();
+        if (!spectator) {
+            // The vanilla layers (cape, elytra, arrows, head items, other mods' layers) draw in vanilla's model space.
+            VanillaLayers.render(renderer, player, model.armature(), jointMatrices, poseStack, buffers, light,
+                    partialTick, netHeadYaw, pitch);
+        }
         poseStack.translate(0, 0.001f, 0);
 
         Minecraft mc = Minecraft.getInstance();
@@ -164,7 +189,8 @@ public final class SkeletalPlayerRenderer {
             VertexConsumer consumer = buffers.getBuffer(type);
             for (SkinnedMesh part : model.parts()) {
                 PlayerModelPart outer = OUTER_PARTS.get(part.name());
-                if (part.armor() || part.outer() && outer != null && !player.isModelPartShown(outer)) {
+                if (part.armor() || part.outer() && outer != null && !player.isModelPartShown(outer)
+                        || spectator && !SPECTATOR_PARTS.contains(part.name())) {
                     continue;
                 }
                 draw(part, skinMatrices, poseStack.last(), consumer, color, light, overlay);
@@ -175,13 +201,18 @@ public final class SkeletalPlayerRenderer {
         poseStack.scale(PIXEL, PIXEL, PIXEL);
         if (skeletonView) {
             drawJoints(model.armature(), jointMatrices, poseStack.last(), buffers);
-        } else {
-            SkeletalArmor.render(player, model, skinMatrices, poseStack.last(), buffers, light);
+        } else if (!spectator) {
+            SkeletalArmor.render(renderer, player, model, skinMatrices, poseStack.last(), buffers, light);
         }
         poseStack.popPose();
 
-        holdItem(player, HumanoidArm.RIGHT, jointMatrices[model.armature().get("Tool_R").index()], poseStack, buffers, light);
-        holdItem(player, HumanoidArm.LEFT, jointMatrices[model.armature().get("Tool_L").index()], poseStack, buffers, light);
+        if (!spectator) {
+            boolean slim = skin.model() == PlayerSkin.Model.SLIM;
+            holdItem(player, HumanoidArm.RIGHT, jointMatrices[model.armature().get("Tool_R").index()], slim, poseStack,
+                    buffers, light);
+            holdItem(player, HumanoidArm.LEFT, jointMatrices[model.armature().get("Tool_L").index()], slim, poseStack,
+                    buffers, light);
+        }
         poseStack.popPose();
 
         NameTag.render(renderer, player, poseStack, buffers, light, partialTick);
@@ -267,16 +298,87 @@ public final class SkeletalPlayerRenderer {
         }
     }
 
-    private static void holdItem(AbstractClientPlayer player, HumanoidArm arm, Matrix4f tool, PoseStack poseStack,
-                                 MultiBufferSource buffers, int light) {
+    /**
+     * Vanilla's body turns ({@code LivingEntityRenderer} and {@code PlayerRenderer.setupRotations}) in our space. After
+     * the body's yaw, vanilla's space is ours turned half a turn about Y, so its X and Z turns are reversed here.
+     */
+    private static void turnLikeVanilla(AbstractClientPlayer player, PoseStack poseStack, float bodyYaw,
+                                        float partialTick, float scale, float swim, boolean upsideDown) {
+        if (player.isFullyFrozen()) {
+            bodyYaw += (float) (Math.cos(player.tickCount * 3.25) * Math.PI * 0.4f);
+        }
+        boolean sleeping = player.hasPose(net.minecraft.world.entity.Pose.SLEEPING);
+        if (!sleeping) {
+            poseStack.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
+        }
+        if (player.deathTime > 0) {
+            // The fall to the side when dying.
+            float fall = Mth.sqrt((player.deathTime + partialTick - 1) / 20f * 1.6f);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-Math.min(fall, 1) * 90));
+        } else if (player.isAutoSpinAttack()) {
+            poseStack.mulPose(Axis.XP.rotationDegrees(90 + player.getXRot()));
+            poseStack.mulPose(Axis.YP.rotationDegrees((player.tickCount + partialTick) * -75));
+        } else if (sleeping) {
+            // Laid along the bed: vanilla turns by the bed's direction, a quarter turn about Z, then 270° about Y,
+            // which from its half-turned space is 90° about Y in ours.
+            Direction bed = player.getBedOrientation();
+            float facing = bed == null ? bodyYaw : switch (bed) {
+                case SOUTH -> 90;
+                case NORTH -> 270;
+                case EAST -> 180;
+                default -> 0;
+            };
+            poseStack.mulPose(Axis.YP.rotationDegrees(facing));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(90));
+            poseStack.mulPose(Axis.YP.rotationDegrees(90));
+        } else if (upsideDown) {
+            poseStack.translate(0, (player.getBbHeight() + 0.1f) / scale, 0);
+            poseStack.mulPose(Axis.ZP.rotationDegrees(180));
+        }
+        if (player.isFallFlying()) {
+            // Laid along the elytra flight, then turned toward where it is going.
+            float ticks = player.getFallFlyingTicks() + partialTick;
+            float amount = Mth.clamp(ticks * ticks / 100, 0, 1);
+            if (!player.isAutoSpinAttack()) {
+                poseStack.mulPose(Axis.XP.rotationDegrees(amount * (90 + player.getViewXRot(partialTick))));
+            }
+            Vec3 view = player.getViewVector(partialTick);
+            Vec3 motion = player.getDeltaMovementLerped(partialTick);
+            double moving = motion.horizontalDistanceSqr(), looking = view.horizontalDistanceSqr();
+            if (moving > 0 && looking > 0) {
+                double cos = (motion.x * view.x + motion.z * view.z) / Math.sqrt(moving * looking);
+                double side = motion.x * view.z - motion.z * view.x;
+                poseStack.mulPose(Axis.YP.rotation((float) (Math.signum(side) * Math.acos(cos))));
+            }
+        } else if (swim > 0) {
+            boolean inFluid = player.isInWater()
+                    || player.isInFluidType((fluid, height) -> player.canSwimInFluidType(fluid));
+            float tilt = Mth.lerp(swim, 0, inFluid ? -90 - player.getXRot() : -90);
+            poseStack.mulPose(Axis.XP.rotationDegrees(-tilt));
+            if (player.isVisuallySwimming()) {
+                poseStack.translate(0, -1, -0.3f);
+            }
+        }
+    }
+
+    /** Whether the armor in {@code slot} has a model of its own, drawn by vanilla's armor layer rather than ours. */
+    public static boolean drawsVanillaArmor(PlayerRenderer renderer, AbstractClientPlayer player,
+                                            net.minecraft.world.entity.EquipmentSlot slot) {
+        return VanillaLayers.customArmor(renderer, player, slot);
+    }
+
+    private static void holdItem(AbstractClientPlayer player, HumanoidArm arm, Matrix4f tool, boolean slim,
+                                 PoseStack poseStack, MultiBufferSource buffers, int light) {
         ItemStack stack = player.getMainArm() == arm ? player.getMainHandItem() : player.getOffhandItem();
-        if (stack.isEmpty()) {
+        if (stack.isEmpty() || VanillaLayers.atTheEye(player, stack)) {
             return;
         }
         boolean left = arm == HumanoidArm.LEFT;
         poseStack.pushPose();
-        // The joint's matrix is in pixels; the item renderer works in blocks.
-        Matrix4f joint = new Matrix4f().scale(PIXEL).mul(tool).scale(16);
+        // The joint's matrix is in pixels; the item renderer works in blocks. Vanilla holds items half a pixel
+        // further in for slim arms.
+        Matrix4f joint = new Matrix4f().scale(PIXEL).translate(slim ? (left ? -0.5f : 0.5f) : 0, 0, 0).mul(tool)
+                .scale(16);
         poseStack.mulPose(joint.mul(left ? LEFT_GRIP : RIGHT_GRIP));
         Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(player, stack,
                 left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,

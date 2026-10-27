@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -45,11 +46,12 @@ final class SkeletalArmor {
     }
 
     /** {@code matrix} is the model's space in pixels. */
-    static void render(AbstractClientPlayer player, SkinnedModel model, Matrix4f[] skin, PoseStack.Pose matrix,
-                       MultiBufferSource buffers, int light) {
+    static void render(PlayerRenderer renderer, AbstractClientPlayer player, SkinnedModel model, Matrix4f[] skin,
+                       PoseStack.Pose matrix, MultiBufferSource buffers, int light) {
         for (EquipmentSlot slot : SLOTS) {
             ItemStack stack = player.getItemBySlot(slot);
-            if (!(stack.getItem() instanceof ArmorItem armor) || armor.getEquipmentSlot() != slot) {
+            if (!(stack.getItem() instanceof ArmorItem armor) || armor.getEquipmentSlot() != slot
+                    || VanillaLayers.customArmor(renderer, player, slot)) {
                 continue;
             }
             List<SkinnedMesh> parts = new ArrayList<>();

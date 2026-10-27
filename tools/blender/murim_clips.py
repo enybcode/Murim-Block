@@ -193,6 +193,25 @@ SETS["biped"] = {
         (20, {"Arm_L": (-170, 0, 10), "Arm_R": (-170, 0, -10), "Hand_L": (-5, 0, 0), "Hand_R": (-5, 0, 0),
               "Thigh_L": (-15, 0, 0), "Leg_L": (10, 0, 0), "Thigh_R": (15, 0, 0), "Leg_R": (5, 0, 0)}),
     ],
+    # Drawn standing (the renderer lays the body in the bed like vanilla): arms along the body, still.
+    "sleep": [
+        (0, {**STRAIGHT, "Arm_L": (0, 0, 3), "Arm_R": (0, 0, -3), "Hand_L": (-4, 0, 0), "Hand_R": (-4, 0, 0)}),
+        (40, {"Head": (0, 0, 0)}),
+    ],
+    # Elytra (drawn standing, the renderer lays it along the flight): arms swept back and out like wings, legs
+    # together, a slow sway.
+    "glide": [
+        (0, {**STRAIGHT, "Arm_L": (20, 0, 25), "Arm_R": (20, 0, -25), "Hand_L": (-5, 0, 0), "Hand_R": (-5, 0, 0),
+             "Thigh_L": (4, 0, 2), "Thigh_R": (4, 0, -2), "Leg_L": (6, 0, 0), "Leg_R": (6, 0, 0)}),
+        (20, {"Arm_L": (20, 0, 30), "Arm_R": (20, 0, -20), "Chest": (0, 4, 0)}),
+        (40, {"Arm_L": (20, 0, 25), "Arm_R": (20, 0, -25), "Chest": (0, 0, 0)}),
+    ],
+    # Riptide (the renderer spins the body like vanilla): arms straight ahead together, like a dive.
+    "spin": [
+        (0, {**STRAIGHT, "Arm_L": (-175, 0, -4), "Arm_R": (-175, 0, 4), "Hand_L": (0, 0, 0), "Hand_R": (0, 0, 0),
+             "Thigh_L": (0, 0, -1), "Thigh_R": (0, 0, 1)}),
+        (20, {"Head": (0, 0, 0)}),
+    ],
     # Additive: the chest rises a little and the shoulders lift on each breath.
     "breathe": [
         (0, {"Chest": (0, 0, 0), "Shoulder_L": {"loc": (0, 0, 0)}, "Shoulder_R": {"loc": (0, 0, 0)}}),

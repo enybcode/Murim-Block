@@ -241,9 +241,25 @@ commands: `/skeletal motion <motion|auto>`, `/skeletal combat on|off`, `/skeleta
 clips at three points of their cycle, and the guard and jab over each, at 60 frames per second: no frame moves
 more than the clips themselves plus an eased blend of the gap (a cut is caught); `runEngineTest` reads a test
 body standing, walking, running, sneaking and falling, plays every motion, and films the guard over walking and a
-jab from the stance. The head look is applied after the animator (no limits yet). Left for later: vanilla's arm
-poses for using items (bow, shield, eating, spyglass) and the attack swing are not drawn by the animator yet; the
-clips are first versions for Enzo to fix in Blender.
+jab from the stance. The head look is applied after the animator (no limits yet). The clips are first versions for
+Enzo to fix in Blender.
+
+Step 5 redone for vanilla parity (27 Oct 2026), so nothing vanilla does is lost before combat:
+`anim/client/VanillaPoses` runs vanilla's own player model every frame and lays its arm work on our joints: the
+item poses (bow, crossbow charging and charged, shield, trident, spyglass, goat horn, brush, and poses other mods
+add through NeoForge's `IArmPoseTransformer`) take the arm, both for two-handed ones, forearm straight, faded in
+over 0.08 s; the attack swing is added as the change it makes to each arm and to the chest's turn, so it plays over
+any clip; a held item raises the arm 18° as in vanilla. The renderer copies every body turn of vanilla's
+`setupRotations`: asleep in a bed, elytra flight (laid along it, turned toward the motion, head back 45°), riptide
+spin, upside down (Dinnerbone and Grumm), shaking when frozen, a seated rider's body following its mount with the
+head within 85°; spectators show their head only. Armor with a model of its own (other mods, e.g. GeckoLib armor)
+is drawn by vanilla's armor layer on the vanilla model following our joints; a spyglass in use is held at the eye
+as vanilla does; slim arms hold items half a pixel in as vanilla does. New motions: `sleep`, `glide`, `spin`.
+Checks: `VanillaChecks` compares with vanilla pixel by pixel (in vanilla's `stand` pose) eleven arm poses (0.13 to
+0.15 % of pixels differ), the bodies (asleep, gliding, upside down, frozen, in a boat, custom helmet: under
+0.03 %) and a riptide spin alone (0.65 %, the spin turns 75° a tick so two shots differ), then shoots the same with
+the animator. Test players now get distinct UUIDs (two with the same UUID were silently dropped by the level).
+Still vanilla's choice, not ours: babies are not scaled down (players are never babies).
 
 ## Step 6: Events and root motion
 
