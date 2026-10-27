@@ -42,6 +42,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * The real player, played through the real keys like a person would, filmed by a camera kept at a fixed angle from
@@ -53,8 +54,10 @@ import org.joml.Quaternionf;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 final class PlayerChecks {
-    private static final double X = 0.5, Y = 200, Z = 0.5;
-    private static final BlockPos BED = BlockPos.containing(-4, Y, 8);
+    /** Far from the other checks' lineup, so the floor, pool and ladder built here never get in their way. */
+    private static final int AREA = 300;
+    private static final double X = AREA + 0.5, Y = 200, Z = 0.5;
+    private static final BlockPos BED = BlockPos.containing(AREA - 4, Y, 8);
     private static final ResourceLocation GUARD = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "fists/guard");
     private static final ResourceLocation JAB = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "fists/jab");
     /** Camera angles from the player's facing (degrees): its front from the left, its back from the left, its side. */
@@ -84,6 +87,10 @@ final class PlayerChecks {
     private static boolean shotSince;
     private static float largestTurn;
     private static String largestWhere = "";
+    /** The foot on the ground: its last place in the world, which foot, and how far it slid while planted. */
+    private static Vector3f plantedAt;
+    private static int plantedFoot = -1;
+    private static float slide, slideTime, slideMost;
     private static int frames;
     private static long lastShotTick = -1;
     private static int shot;
@@ -138,7 +145,7 @@ final class PlayerChecks {
         }, none(), null));
         PARTS.add(new Part("ladder", 40, BACK, mc -> at(mc, X, Y, -1.3, 180),
                 (mc, t) -> keys(mc, true, false, false, false, false), LivingMotion.CLIMB));
-        PARTS.add(new Part("swim", 40, SIDE, mc -> at(mc, 11.5, Y - 3.5, 2, 0),
+        PARTS.add(new Part("swim", 40, SIDE, mc -> at(mc, X + 11, Y - 3.5, 2, 0),
                 (mc, t) -> keys(mc, true, true, false, false, false), LivingMotion.SWIM));
         PARTS.add(new Part("boat", 30, FRONT, mc -> {
             at(mc, X, Y, Z + 6, 0);
@@ -294,13 +301,16 @@ final class PlayerChecks {
             level.setBlockAndUpdate(BED.south(), head.setValue(BedBlock.PART, BedPart.FOOT));
             player.getAbilities().flying = false;
             player.onUpdateAbilities();
+            // Effects left from an earlier run (the golden apple) would cloud the shots with particles.
+            player.removeAllEffects();
         });
         mc.player.getAbilities().flying = false;
         SkeletalPlayerRenderer.poseProbe = PlayerChecks::probe;
     }
 
+    /** Fills a box, x relative to the area. */
     private static void fill(ServerLevel level, int x0, int z0, int x1, int z1, int y0, int y1, BlockState state) {
-        for (BlockPos pos : BlockPos.betweenClosed(x0, y0, z0, x1, y1, z1)) {
+        for (BlockPos pos : BlockPos.betweenClosed(AREA + x0, y0, z0, AREA + x1, y1, z1)) {
             level.setBlockAndUpdate(pos, state);
         }
     }
@@ -315,7 +325,11 @@ final class PlayerChecks {
         lastPose = null;
         largestTurn = 0;
         largestWhere = "";
+        plantedAt = null;
+        plantedFoot = -1;
+        slide = slideTime = slideMost = 0;
         frames = 0;
+        SkeletalPlayers.enable(true);
         shot = 0;
         if (part < PARTS.size()) {
             keys(mc, false, false, false, false, false);
@@ -329,7 +343,9 @@ final class PlayerChecks {
         LivingMotion most = SEEN.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey)
                 .orElse(null);
         String line = done.name() + ": motions " + SEEN + ", largest joint turn per frame at 60 fps "
-                + String.format("%.1f°", largestTurn) + " (" + largestWhere + ") over " + frames + " frames";
+                + String.format("%.1f°", largestTurn) + " (" + largestWhere + ") over " + frames + " frames"
+                + (slideTime > 0 ? String.format(", planted foot slides %.2f blocks/s on average (%.2f at most)",
+                slide / slideTime, slideMost) : "");
         REPORT.add(line);
         if (done.expected() != null) {
             EngineTest.check("the real player " + done.name() + " plays " + done.expected().key() + " (" + SEEN + ")",
@@ -392,9 +408,57 @@ final class PlayerChecks {
             }
             frames++;
         }
+        footSlide(player, pose, mc.getTimer().getGameTimeDeltaPartialTick(false), elapsed);
         lastPose = pose.copy();
         lastTime = now;
         shotSince = false;
+    }
+
+    /**
+     * How fast the foot on the ground slides, in blocks a second, while walking or running: the lower foot, when it
+     * is within a pixel of the ground, should stay where it is in the world while the body moves over it.
+     */
+    private static void footSlide(AbstractClientPlayer player, Pose pose, float partialTick, float elapsed) {
+        LivingMotion motion = PlayerAnimators.motion(player);
+        if (motion != LivingMotion.WALK && motion != LivingMotion.RUN && motion != LivingMotion.SNEAK_WALK) {
+            plantedAt = null;
+            return;
+        }
+        var joints = pose.toModelMatrices(com.murimblock.anim.Biped.ARMATURE);
+        int[] legs = {com.murimblock.anim.Biped.ARMATURE.get("Leg_L").index(),
+                com.murimblock.anim.Biped.ARMATURE.get("Leg_R").index()};
+        int lowest = -1;
+        Vector3f lowestPoint = null;
+        for (int leg : legs) {
+            Vector3f foot = joints[leg].transformPosition(new Vector3f(0, -6, 0));
+            if (lowestPoint == null || foot.y < lowestPoint.y) {
+                lowest = leg;
+                lowestPoint = foot;
+            }
+        }
+        if (lowestPoint.y > 1) {
+            plantedAt = null;
+            return;
+        }
+        float yaw = net.minecraft.util.Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
+        Vector3f world = new Vector3f(lowestPoint).mul(0.9375f / 16).rotateY((float) Math.toRadians(-yaw))
+                .add((float) net.minecraft.util.Mth.lerp(partialTick, player.xo, player.getX()), 0,
+                        (float) net.minecraft.util.Mth.lerp(partialTick, player.zo, player.getZ()));
+        world.y = 0;
+        if (plantedAt != null && plantedFoot == lowest && elapsed > 0 && !shotSince && ticks > 5) {
+            float seconds = elapsed / 20;
+            float speed = world.distance(plantedAt) / seconds;
+            if (speed > 20) {
+                // A teleport, not a step.
+                plantedAt = null;
+                return;
+            }
+            slide += speed * seconds;
+            slideTime += seconds;
+            slideMost = Math.max(slideMost, speed);
+        }
+        plantedAt = world;
+        plantedFoot = lowest;
     }
 
     /** One shot every two ticks of the part. */
@@ -410,6 +474,10 @@ final class PlayerChecks {
         }
         lastShotTick = tick;
         shotSince = true;
+        if (PARTS.get(part).name().equals("elytra")) {
+            // Every other shot is vanilla's, to compare the flight a tenth of a second apart.
+            SkeletalPlayers.enable(!SkeletalPlayers.enabled());
+        }
         SkeletalRenderChecks.saveTo(mc, Screenshot.takeScreenshot(mc.getMainRenderTarget()),
                 "player/" + PARTS.get(part).name() + "/frame_" + String.format("%03d", shot++));
     }

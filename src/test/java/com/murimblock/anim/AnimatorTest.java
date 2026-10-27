@@ -235,7 +235,12 @@ class AnimatorTest {
                     Pose[] last = new Pose[1];
                     animator.playBase(from, 1);
                     run(animator, at, last);
-                    Step gap = change(last[0], sample(to, 0));
+                    // The pose shown at the switch is held while the new clip moves on: the gap to close is the widest
+                    // over the blend.
+                    Step gap = new Step(0, 0);
+                    for (float t = 0; t <= to.transition() + 1e-4f; t += AnimationPlayer.TICK / FRAMES) {
+                        gap = gap.max(change(last[0], sample(to, t)));
+                    }
                     animator.playBase(to, 1);
                     Step seen = run(animator, 20, last);
                     worst = worst.max(seen);

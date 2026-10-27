@@ -1,5 +1,6 @@
 package com.murimblock.anim.client;
 
+import com.murimblock.anim.Animator;
 import com.murimblock.anim.Biped;
 import com.murimblock.anim.BipedPoses;
 import com.murimblock.anim.JointTransform;
@@ -23,14 +24,16 @@ import org.joml.Quaternionf;
  * back and laid on our joints:
  * <ul>
  * <li>an item pose takes the arm (both for two-handed poses) as vanilla places it relative to the body's root, the
- * forearm straight, fading in and out over {@link #FADE} seconds instead of vanilla's snap;</li>
+ * forearm straight, fading in and out over {@link #FADE} seconds instead of vanilla's snap, each arm keeping the way
+ * round it started on;</li>
  * <li>the swing is added as the change vanilla's swing makes to each arm and to the body's turn, so it plays over
  * any clip (walking, running, a guard);</li>
  * <li>holding an item raises the arm by vanilla's 18°, on the animator only (the {@code stand} pose has it).</li>
  * </ul>
  */
 final class VanillaPoses {
-    private static final float FADE = 0.08f;
+    /** Seconds an item pose takes to come and go (vanilla snaps; a trident's arm goes up half a turn). */
+    private static final float FADE = 0.15f;
     private static final float RAISE = (float) Math.toRadians(-18);
     private static final Method SET_MODEL_PROPERTIES = method();
 
@@ -54,6 +57,8 @@ final class VanillaPoses {
         final float[] hold = new float[2], raise = new float[2];
         final Quaternionf[] held = {new Quaternionf(), new Quaternionf()};
         float lastTime = Float.NaN;
+        /** Keeps each arm turning the same way through a fade: a raised trident is half a turn from a hanging arm. */
+        final Animator.SteadyBlend steady = new Animator.SteadyBlend();
     }
 
     /**
@@ -122,15 +127,14 @@ final class VanillaPoses {
             if (raise > 0) {
                 local.rotateX(RAISE * raise);
             }
+            // Blended every frame, even with no item pose (weight 0), so the steady blend always knows the last turn.
             float hold = ease(arms.hold[side]);
-            if (hold > 0) {
-                Quaternionf target = new Quaternionf(parentBefore[side]).conjugate().mul(arms.held[side]);
-                local.slerp(target, hold);
-                int hand = index(hands[side]);
-                JointTransform forearm = pose.get(hand);
-                pose.set(hand, JointTransform.of(forearm.translation(),
-                        new Quaternionf(forearm.rotation()).slerp(new Quaternionf(), hold), forearm.scale()));
-            }
+            Quaternionf target = new Quaternionf(parentBefore[side]).conjugate().mul(arms.held[side]);
+            local = arms.steady.rotation(side, 4, local, target, hold);
+            int hand = index(hands[side]);
+            JointTransform forearm = pose.get(hand);
+            pose.set(hand, JointTransform.of(forearm.translation(),
+                    arms.steady.rotation(2 + side, 4, forearm.rotation(), new Quaternionf(), hold), forearm.scale()));
             setRotation(pose, arm, local);
         }
 

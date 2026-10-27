@@ -47,7 +47,16 @@ public final class EngineTest {
     }
 
     private static final List<Step> STEPS = Stream.concat(Stream.of(
-            new Step("world", mc -> check("the player is in the world", mc.player != null && mc.level != null)),
+            new Step("world", mc -> {
+                check("the player is in the world", mc.player != null && mc.level != null);
+                // A fresh world spawns the player anywhere: bring it over the test area first, so the test players added
+                // next land in loaded chunks (the client drops entities added where nothing is loaded).
+                server(mc, player -> {
+                    player.getAbilities().flying = true;
+                    player.onUpdateAbilities();
+                    player.connection.teleport(0.5, 200, -4, 0, 0);
+                });
+            }),
             new Step("skeletal models", mc -> {
                 for (var id : List.of(SkeletalModels.BIPED, SkeletalModels.BIPED_SLIM)) {
                     SkinnedModel model = SkeletalModels.get(id);

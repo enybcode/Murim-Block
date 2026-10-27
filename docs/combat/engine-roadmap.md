@@ -266,13 +266,19 @@ played through the real keys (walk, run, stop, sneak, jumps, a 40-block fall, a 
 night, an elytra flight, a riptide, bow, crossbow, shield, sword swings while walking, trident, spyglass, eating, the
 stance, the guard while walking, jabs), filmed by the third-person camera held at a fixed angle, with a probe giving
 each part's largest joint turn per frame at 60 fps (frames stalled by saving a shot are left out). Every motion is
-read right. Findings, to fix next:
-- An item pose whose arm goes half a turn (trident raised: 76° in one frame, spyglass 28°) can take the other way
-  round mid-fade: `VanillaPoses` needs the animator's steady blend and a longer fade.
-- Getting on a ladder swings both arms up in 0.15 s (33° a frame): the climb transition should be longer.
-- Walking slides the feet: the clip's stride covers about 1.7 blocks a cycle while the body walks about 2.4.
-- In elytra flight one wing seems to cut through the chest: to compare with vanilla in flight (the still check
-  only covered the take-off pose).
+read right. Found and fixed the same day:
+- An item pose whose arm goes half a turn (trident raised: 76° in one frame) took the other way round mid-fade:
+  `VanillaPoses` now uses the animator's `SteadyBlend` and fades over 0.15 s (trident 27°, spyglass 16°).
+- Getting on a ladder swung both arms up in 0.15 s (33° a frame): the climb transition is 0.25 s (21°).
+- Feet slid: Blender's eased keys stopped the planted foot at each key; step cycles are now keyed linearly
+  (`murim_clips.LINEAR`), the walk lands on both feet and has a longer stride. The tour measures the planted foot's
+  slide: run 0.5 blocks/s (at 5.6), sneak walk 0.7 (at 1.3), walk 1.5 to 1.8 (at 4.3). Walking at Minecraft's
+  4.3 blocks a second (a human jog) with legs on the ground cannot cover the distance; planting the feet needs
+  foot IK (later). The boxing shuffle slides almost fully (4.2 at 4.3): combat mode will walk slower (step 9).
+- The wing that seemed to cut through the chest in elytra flight is vanilla's too (the far wing seen edge on):
+  the tour now shoots every other elytra frame with vanilla to compare.
+- The test world was shared between check groups and runs: the tour now builds 300 blocks away, and the first
+  step brings the player over the test area (on a fresh world the test players were dropped in unloaded chunks).
 Matching vanilla or right as is: idle, sneak, jump, fall and landing, boat, bed, bow, crossbow, shield, eating, the
 stance, the guard while walking, jabs; the sword swing's 48° a frame is vanilla's own speed (its formula gives 46°
 in the first frame).

@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 /**
@@ -143,7 +144,7 @@ public final class Animator {
      * almost half a turn apart (an arm raised overhead blending into one swinging back) have two short ways round;
      * as the clips move, the shorter one can switch sides mid-blend and the limb would flip in one frame.
      */
-    static final class SteadyBlend {
+    public static final class SteadyBlend {
         /** Below this |dot| (rotations more than about 150° apart) a joint keeps the side it was going round. */
         private static final float NEAR_HALF_TURN = 0.25f;
         private int[] signs;
@@ -157,11 +158,6 @@ public final class Animator {
         }
 
         Pose blend(Pose a, Pose b, float[] weights) {
-            if (signs == null) {
-                signs = new int[a.size()];
-                lastFrom = new Quaternionf[a.size()];
-                lastTo = new Quaternionf[a.size()];
-            }
             Pose result = a.copy();
             for (int i = 0; i < a.size(); i++) {
                 float w = weights[i];
@@ -169,21 +165,35 @@ public final class Animator {
                     continue;
                 }
                 JointTransform from = a.get(i), to = b.get(i);
-                Quaternionf p = steady(new Quaternionf(from.rotation()), lastFrom, i);
-                Quaternionf q = steady(new Quaternionf(to.rotation()), lastTo, i);
-                float dot = p.dot(q);
-                if (signs[i] == 0 || Math.abs(dot) > NEAR_HALF_TURN) {
-                    signs[i] = dot < 0 ? -1 : 1;
-                }
-                if (w >= 1) {
-                    result.set(i, to);
-                    continue;
-                }
-                result.set(i, JointTransform.of(new Vector3f(from.translation()).lerp(to.translation(), w),
-                        slerp(p, q.mul(signs[i]), w),
-                        new Vector3f(from.scale()).lerp(to.scale(), w)));
+                Quaternionf turn = rotation(i, a.size(), from.rotation(), to.rotation(), w);
+                result.set(i, w >= 1 ? to : JointTransform.of(new Vector3f(from.translation()).lerp(to.translation(), w),
+                        turn, new Vector3f(from.scale()).lerp(to.scale(), w)));
             }
             return result;
+        }
+
+        /**
+         * One joint's rotation {@code weight} of the way from {@code from} to {@code to}, keeping the way round it
+         * took last frame.
+         *
+         * @param joints how many joints this blend tracks (the first call sizes it)
+         */
+        public Quaternionf rotation(int joint, int joints, Quaternionfc from, Quaternionfc to, float weight) {
+            if (signs == null) {
+                signs = new int[joints];
+                lastFrom = new Quaternionf[joints];
+                lastTo = new Quaternionf[joints];
+            }
+            Quaternionf p = steady(new Quaternionf(from), lastFrom, joint);
+            Quaternionf q = steady(new Quaternionf(to), lastTo, joint);
+            float dot = p.dot(q);
+            if (signs[joint] == 0 || Math.abs(dot) > NEAR_HALF_TURN) {
+                signs[joint] = dot < 0 ? -1 : 1;
+            }
+            if (weight >= 1) {
+                return q;
+            }
+            return slerp(p, q.mul(signs[joint]), weight);
         }
 
         private static Quaternionf steady(Quaternionf q, Quaternionf[] last, int i) {

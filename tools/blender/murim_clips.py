@@ -120,10 +120,13 @@ SETS["biped"] = {
         (60, {**ARMS_DOWN, "Head": (0, 0, 0)}),
     ],
     # Right foot lands ahead (hips at their lowest), then passes under the body (highest); arms swing against the legs
-    # and the chest turns with them.
+    # and the chest turns with them. Minecraft walks at 4.3 blocks a second, a human jog: the stride is as long as
+    # legs on the ground allow (about 1.7 blocks a cycle), and walk.json's move_speed sets the cadence from it.
     "walk": cycle(
-        {"Root": {"loc": (0, -1.8, 0)}, "Torso": (2, 0, 0), "Chest": (0, -5, 0), "Head": (-2, 5, 0),
-         "Thigh_R": (-40, 0, 0), "Leg_R": (10, 0, 0), "Thigh_L": (30, 0, 0), "Leg_L": (20, 0, 0),
+        # Both feet on the ground at the landing (front heel and rear toes), so the rear foot carries the body until
+        # the front one is down.
+        {"Root": {"loc": (0, -2.4, 0)}, "Torso": (2, 0, 0), "Chest": (0, -5, 0), "Head": (-2, 5, 0),
+         "Thigh_R": (-40, 0, 0), "Leg_R": (4, 0, 0), "Thigh_L": (32, 0, 0), "Leg_L": (6, 0, 0),
          "Arm_L": (-24, 0, 4), "Arm_R": (22, 0, -4), "Hand_L": (-20, 0, 0), "Hand_R": (-8, 0, 0)},
         {"Root": {"loc": (0, 0, 0)}, "Torso": (2, 0, 0), "Chest": (0, 0, 0), "Head": (-2, 0, 0),
          "Thigh_R": (0, 0, 0), "Leg_R": (2, 0, 0), "Thigh_L": (-18, 0, 0), "Leg_L": (50, 0, 0),
@@ -268,9 +271,15 @@ def rotation(degrees):
     return Quaternion((1, 0, 0), x) @ Quaternion((0, 1, 0), y) @ Quaternion((0, 0, 1), z)
 
 
+# Step cycles keyed straight from key to key: Blender's default ease stops the planted foot at every key and then
+# hurries it, so it slides against the ground; at an even speed it keeps up with the body.
+LINEAR = {"walk", "run", "sneak_walk", "stance_walk", "climb"}
+
+
 def make_action(armature, name, keys):
     """Keys the clip into a new action named `name` (assigned to the armature) and returns it."""
     bpy.context.scene.render.fps = FPS
+    bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR" if name in LINEAR else "BEZIER"
     if armature.animation_data is None:
         armature.animation_data_create()
     action = bpy.data.actions.new(name)
