@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,7 +39,7 @@ public final class Footsteps {
      *
      * @param volume a share of vanilla's volume (a shuffle in place is softer)
      */
-    public static void step(Player player, Vec3 at, float volume) {
+    public static void step(LivingEntity player, Vec3 at, float volume) {
         Level level = player.level();
         BlockPos pos = BlockPos.containing(at.x, at.y - 0.2, at.z);
         BlockState state = level.getBlockState(pos);

@@ -50,6 +50,8 @@ public final class PlayerAnimators {
     private static final Map<AbstractClientPlayer, State> STATES = new WeakHashMap<>();
     private static boolean combat;
     private static LivingMotion forced;
+    /** Whether the local player's root motion is applied elsewhere (by the fight, which moves the body itself). */
+    public static java.util.function.BooleanSupplier rootMotionElsewhere = () -> false;
 
     private PlayerAnimators() {
     }
@@ -63,16 +65,61 @@ public final class PlayerAnimators {
         /** The legs' turn toward where the body goes (radians, smoothed), and whether it goes backward. */
         float legTurn, previousLegTurn, legTarget;
         boolean backward;
+        /** Combat mode as the server said (the stance clips), and ticks the layers stay frozen (a hit stop). */
+        boolean combatMode;
+        int frozen;
     }
 
-    /** Dev switch until combat mode exists (step 9): the motion set's combat clips come first. */
+    /** Dev: every player in combat mode, whatever the server says (the motion set's combat clips come first). */
     public static void combat(boolean on) {
         combat = on;
     }
 
-    /** Whether combat mode is on (the dev switch until combat mode exists). */
+    /** Whether the local player is in combat mode. */
     public static boolean inCombat() {
-        return combat;
+        Minecraft mc = Minecraft.getInstance();
+        return combat || mc.player != null && inCombat(mc.player);
+    }
+
+    public static boolean inCombat(AbstractClientPlayer player) {
+        State state = STATES.get(player);
+        return combat || state != null && state.combatMode;
+    }
+
+    /** Combat mode of {@code player}, as the server says it (or the local player predicts it). */
+    public static void mode(AbstractClientPlayer player, boolean on) {
+        STATES.computeIfAbsent(player, key -> new State()).combatMode = on;
+    }
+
+    /** Plays {@code animation} on a layer of {@code player} alone. */
+    public static void play(AbstractClientPlayer player, Animator.Priority priority, Animation animation, float speed,
+                            boolean mirrored) {
+        STATES.computeIfAbsent(player, key -> new State()).animator.play(priority, animation, speed, mirrored);
+    }
+
+    public static void stop(AbstractClientPlayer player, Animator.Priority priority) {
+        State state = STATES.get(player);
+        if (state != null) {
+            state.animator.stop(priority);
+        }
+    }
+
+    /** The clip on a layer of {@code player}, or null. */
+    public static Animation playing(AbstractClientPlayer player, Animator.Priority priority) {
+        State state = STATES.get(player);
+        return state == null ? null : state.animator.playing(priority);
+    }
+
+    /** Seconds into the clip on a layer of {@code player}, or -1. */
+    public static float time(AbstractClientPlayer player, Animator.Priority priority) {
+        State state = STATES.get(player);
+        return state == null ? -1 : state.animator.time(priority);
+    }
+
+    /** Freezes {@code player}'s layers for {@code ticks} (a hit stop). */
+    public static void freeze(AbstractClientPlayer player, int ticks) {
+        State state = STATES.computeIfAbsent(player, key -> new State());
+        state.frozen = Math.max(state.frozen, ticks);
     }
 
     /** Dev: every player plays this motion whatever its body does; null goes back to reading the body. */
@@ -139,9 +186,12 @@ public final class PlayerAnimators {
         for (AbstractClientPlayer player : mc.level.players()) {
             State state = STATES.computeIfAbsent(player, key -> new State());
             update(player, state);
-            state.animator.tick(SkeletalPlayers.slowMotion());
+            state.animator.tick(state.frozen > 0 ? 0 : SkeletalPlayers.slowMotion());
+            if (state.frozen > 0) {
+                state.frozen--;
+            }
             ClipEvents.run(player, state.animator.events());
-            if (player == mc.player) {
+            if (player == mc.player && !rootMotionElsewhere.getAsBoolean()) {
                 rootMotion(player, state.animator);
             }
             state.previousLegTurn = state.legTurn;
@@ -184,7 +234,7 @@ public final class PlayerAnimators {
         if (set == null) {
             return;
         }
-        String id = set.clip(state.motion, combat);
+        String id = set.clip(state.motion, combat || state.combatMode);
         Animation animation = id == null ? null : SkeletalClips.get(ResourceLocation.parse(id));
         if (animation == null) {
             return;

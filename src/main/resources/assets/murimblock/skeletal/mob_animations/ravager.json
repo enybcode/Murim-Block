@@ -1,0 +1,20 @@
+{
+  "clips": {
+    "bite": {"transition": 0.08, "length": 0.8,
+      "rotate": {
+        "neck": [[0, 0, 0, 0], [0.3, -15, 0, 0], [0.45, 20, 0, 0], [0.8, 0, 0, 0]],
+        "head": [[0, 0, 0, 0], [0.3, -15, 0, 0], [0.45, 25, 0, 0], [0.8, 0, 0, 0]],
+        "mouth": [[0, 0, 0, 0], [0.3, 45, 0, 0], [0.45, 0, 0, 0], [0.8, 0, 0, 0]]},
+      "move": {"@model": [[0, 0, 0, 0], [0.3, 0, 0, 2], [0.45, 0, 0, -4], [0.8, 0, 0, 0]]},
+      "events": [{"at": 0.42, "type": "sound", "sound": "minecraft:entity.ravager.attack", "volume": 1.0}],
+      "attack": {"phases": [{"windup": 0.3, "active": [0.4, 0.55], "recovery": 0.65, "stun": "long", "impact": 2.5}]}},
+    "ram": {"transition": 0.08, "length": 1.0, "root_motion": true,
+      "rotate": {
+        "neck": [[0, 0, 0, 0], [0.3, 25, 0, 0], [0.7, 25, 0, 0], [1.0, 0, 0, 0]],
+        "head": [[0, 0, 0, 0], [0.3, 30, 0, 0], [0.55, -25, 0, 0], [1.0, 0, 0, 0]]},
+      "move": {"@model": [[0, 0, 0, 0], [0.3, 0, 0, 3], [0.55, 0, 0, -28], [1.0, 0, 0, -30]]},
+      "events": [{"at": 0.5, "type": "sound", "sound": "minecraft:entity.ravager.attack", "volume": 1.0, "pitch": 0.8},
+        {"at": 0.5, "type": "shake", "strength": 0.3, "ticks": 6}],
+      "attack": {"phases": [{"windup": 0.3, "active": [0.4, 0.65], "recovery": 0.8, "stun": "knockdown", "impact": 3.5}]}}
+  }
+}

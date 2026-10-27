@@ -135,6 +135,10 @@ final class VanillaLayers {
             if (layer.getClass().getName().startsWith("com.murimblock.")) {
                 continue;
             }
+            if (layer instanceof CapeLayer && CapeCloth.drawn(player)) {
+                // The cape hangs as cloth, drawn by CapeCloth.
+                continue;
+            }
             boolean onChest = layer instanceof CapeLayer || layer instanceof ElytraLayer<?, ?>;
             poseStack.pushPose();
             if (onChest) {

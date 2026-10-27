@@ -304,7 +304,7 @@ class AnimatorTest {
         Clip clip = new Clip("lunge", List.of(new Clip.Channel(root, Clip.Path.TRANSLATION, Clip.Interpolation.LINEAR,
                 new float[] {0, 0.5f, 1}, new float[] {0, 12, 0, 2, 20, 8, 4, 12, 16})));
         return new Animation("lunge", clip, false, 0.1f, JointMask.all(Biped.ARMATURE), Map.of(), false, 0, events,
-                rootMotion);
+                rootMotion, null);
     }
 
     @Test

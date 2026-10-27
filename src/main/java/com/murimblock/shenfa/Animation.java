@@ -17,10 +17,11 @@ import java.util.Map;
  *                   so its playback follows the body's real speed and the feet do not slide; 0 when not tied
  * @param events     what it makes happen and when, in time order
  * @param rootMotion how its root moves the body, or null when the root moves only the drawn pose
+ * @param attack     its strikes and protected windows, or null when it is not a fighting move
  */
 public record Animation(String id, Clip clip, boolean loop, float transition, JointMask mask,
                         Map<String, JointMask> masks, boolean additive, float moveSpeed, List<ClipEvent> events,
-                        RootMotion rootMotion) {
+                        RootMotion rootMotion, AttackData attack) {
     public static final float DEFAULT_TRANSITION = 0.15f;
 
     public Animation {
@@ -31,7 +32,7 @@ public record Animation(String id, Clip clip, boolean loop, float transition, Jo
     /** No events, no root motion. */
     public Animation(String id, Clip clip, boolean loop, float transition, JointMask mask,
                      Map<String, JointMask> masks, boolean additive, float moveSpeed) {
-        this(id, clip, loop, transition, mask, masks, additive, moveSpeed, List.of(), null);
+        this(id, clip, loop, transition, mask, masks, additive, moveSpeed, List.of(), null, null);
     }
 
     /** A plain clip: no other masks, not additive, not tied to a speed. */

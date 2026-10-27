@@ -1,5 +1,6 @@
 package com.murimblock.shenfa.client;
 
+import com.murimblock.shenfa.Animator;
 import com.murimblock.shenfa.FootPlanter;
 import com.murimblock.shenfa.LivingMotion;
 import com.murimblock.shenfa.Pose;
@@ -59,7 +60,9 @@ public final class FootPlanting {
         boolean grounded = player.onGround() || player.fallDistance < 0.7f && player.getDeltaMovement().y <= 0;
         boolean free = SkeletalPlayers.animated() && grounded && !player.isPassenger() && !player.isVisuallySwimming()
                 && !player.isFallFlying() && !player.isSleeping() && !player.isAutoSpinAttack()
-                && !PlayerAnimators.rootMotionPlaying(player);
+                && !PlayerAnimators.rootMotionPlaying(player)
+                // A reaction (a stagger, a knockdown) throws the legs about: the clip places them.
+                && PlayerAnimators.playing(player, Animator.Priority.HIGHEST) == null;
         FootPlanter.Mode mode = !free ? FootPlanter.Mode.OFF : STEPPING.contains(motion) ? FootPlanter.Mode.STEP
                 : STANDING.contains(motion) ? FootPlanter.Mode.STAND : FootPlanter.Mode.OFF;
         Vector3f at = new Vector3f((float) Mth.lerp(partialTick, player.xo, player.getX()),

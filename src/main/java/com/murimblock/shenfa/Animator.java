@@ -90,6 +90,12 @@ public final class Animator {
         return layer.targetWeight > 0 ? layer.player.animation() : null;
     }
 
+    /** Seconds into the clip of a layer, or -1 when the layer has none on. */
+    public float time(Priority priority) {
+        Layer layer = layers.get(priority);
+        return layer.targetWeight > 0 && layer.player.animation() != null ? layer.player.time() : -1;
+    }
+
     /** Whether any composite layer has a clip on (not fading out). */
     public boolean anyLayer() {
         for (Priority priority : Priority.values()) {
@@ -160,11 +166,22 @@ public final class Animator {
 
     /** The pose between the last two ticks. */
     public Pose pose(float partialTick) {
-        Pose result = base.sample(partialTick);
+        return pose(partialTick, null);
+    }
+
+    /**
+     * The pose between the last two ticks, over {@code under} instead of the base layer's clip when it is given: a
+     * mob's own vanilla pose, with Shenfa's layers laid on it. A composite layer playing an additive clip adds its
+     * change (a flinch, a lunge laid on the walk) rather than taking the joints over.
+     */
+    public Pose pose(float partialTick, Pose under) {
+        Pose result = under != null ? under.copy() : base.sample(partialTick);
         for (Layer layer : layers.values()) {
             float weight = layer.weight(partialTick);
-            if (weight > 0 && layer.player.animation() != null) {
-                result = layer.overlay.blend(result, layer.sample(partialTick), layer.jointWeights(partialTick, weight));
+            Animation animation = layer.player.animation();
+            if (weight > 0 && animation != null) {
+                result = animation.additive() ? result.add(delta(layer, partialTick, weight), animation.mask(motion))
+                        : layer.overlay.blend(result, layer.sample(partialTick), layer.jointWeights(partialTick, weight));
             }
         }
         for (Layer layer : additives.values()) {
@@ -190,7 +207,14 @@ public final class Animator {
             new Quaternionf().slerp(turn, weight, turn);
             delta.set(i, JointTransform.of(move, turn, new Vector3f(1, 1, 1)));
         }
-        return delta;
+        RootMotion root = layer.player.animation().rootMotion();
+        if (root != null) {
+            // The body itself carries the root's travel.
+            JointTransform hips = delta.get(0);
+            Vector3f kept = new Vector3f(0, root.vertical() ? 0 : hips.translation().y(), 0);
+            delta.set(0, JointTransform.of(kept, hips.rotation(), hips.scale()));
+        }
+        return layer.mirrored ? delta.mirrored(armature) : delta;
     }
 
     /**

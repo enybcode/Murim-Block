@@ -1,0 +1,23 @@
+{
+  "clips": {
+    "dodge_back": {"transition": 0.04, "root_motion": true,
+      "events": [{"at": 0.3, "type": "footstep", "foot": "right", "volume": 0.7}],
+      "attack": {"invulnerable": [[0.0, 0.3]]}},
+    "dodge_left": {"transition": 0.04, "root_motion": true,
+      "events": [{"at": 0.3, "type": "footstep", "foot": "left", "volume": 0.7}],
+      "attack": {"invulnerable": [[0.0, 0.3]]}},
+    "dodge_right": {"transition": 0.04, "root_motion": true,
+      "events": [{"at": 0.3, "type": "footstep", "foot": "right", "volume": 0.7}],
+      "attack": {"invulnerable": [[0.0, 0.3]]}},
+    "dodge_forward": {"transition": 0.04, "root_motion": true,
+      "events": [{"at": 0.45, "type": "footstep", "foot": "left", "volume": 0.8}],
+      "attack": {"invulnerable": [[0.0, 0.45]]}},
+    "hit_short": {"transition": 0.03},
+    "hit_long": {"transition": 0.03},
+    "knockdown": {"transition": 0.05,
+      "events": [{"at": 0.35, "type": "sound", "sound": "minecraft:entity.player.big_fall", "volume": 0.5}]},
+    "guard_hit": {"transition": 0.03},
+    "guard_break": {"transition": 0.03},
+    "parried": {"transition": 0.03}
+  }
+}

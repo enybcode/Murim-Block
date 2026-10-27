@@ -1,0 +1,20 @@
+{
+  "clips": {
+    "claw": {"transition": 0.08,
+      "attack": {"phases": [{"windup": 0.25, "active": [0.35, 0.5], "recovery": 0.65, "hand": "both",
+        "colliders": [{"joint": "Tool_L", "size": [12, 12, 12]}, {"joint": "Tool_R", "size": [12, 12, 12]}],
+        "damage": 1.0, "impact": 1.0, "stun": "short"}]}},
+    "lunge": {"transition": 0.08, "root_motion": true,
+      "attack": {"phases": [{"windup": 0.25, "active": [0.35, 0.55], "recovery": 0.7, "hand": "both",
+        "colliders": [{"joint": "Tool_L", "size": [13, 13, 13]}, {"joint": "Tool_R", "size": [13, 13, 13]}],
+        "damage": 1.0, "impact": 1.3, "stun": "long"}]}},
+    "punch": {"transition": 0.08,
+      "attack": {"phases": [{"windup": 0.15, "active": [0.2, 0.35], "recovery": 0.45, "hand": "right",
+        "colliders": [{"joint": "Tool_R", "size": [12, 12, 12]}],
+        "damage": 1.0, "impact": 1.0, "stun": "short"}]}},
+    "overhead": {"transition": 0.08, "root_motion": true,
+      "attack": {"phases": [{"windup": 0.3, "active": [0.38, 0.52], "recovery": 0.65, "hand": "right",
+        "colliders": [{"joint": "Tool_R", "center": [0, -2, 6], "size": [8, 12, 16]}],
+        "damage": 1.0, "impact": 1.6, "stun": "long"}]}}
+  }
+}

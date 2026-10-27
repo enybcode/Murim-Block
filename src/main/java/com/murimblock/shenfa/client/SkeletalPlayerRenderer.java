@@ -156,6 +156,9 @@ public final class SkeletalPlayerRenderer {
         VanillaPoses.apply(renderer, player, pose, partialTick, netHeadYaw, pitch, SkeletalPlayers.animated());
         FootPlanting.apply(player, pose, partialTick, bodyYaw, player.getScale());
         BipedPoses.look(pose, netHeadYaw, headPitch);
+        if (FirstPerson.drawing() && PlayerAnimators.inCombat(player)) {
+            FirstPerson.raiseArms(pose);
+        }
         if (poseProbe != null) {
             poseProbe.accept(player, pose);
         }
@@ -188,6 +191,7 @@ public final class SkeletalPlayerRenderer {
             // The vanilla layers (cape, elytra, arrows, head items, other mods' layers) draw in vanilla's model space.
             VanillaLayers.render(renderer, player, model.armature(), jointMatrices, poseStack, buffers, light,
                     partialTick, netHeadYaw, pitch);
+            CapeCloth.render(player, poseStack.last().pose(), jointMatrices, buffers, light);
         }
         poseStack.translate(0, 0.001f, 0);
 

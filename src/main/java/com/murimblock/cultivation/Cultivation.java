@@ -125,6 +125,21 @@ public final class Cultivation {
         return changed();
     }
 
+    /** Spends {@code amount} Qi (a dodge, a guarded blow, a technique); false, and nothing spent, when it is not there. */
+    public boolean spend(double amount) {
+        if (qi < amount) {
+            return false;
+        }
+        qi -= amount;
+        return changed();
+    }
+
+    /** Empties the Qi (a broken guard). */
+    public void drain() {
+        qi = 0;
+        changed();
+    }
+
     /** A lost trial: this share of the gathered stage Qi scatters, so the gauge is no longer full. */
     public void scatter(double fraction) {
         stageQi = Math.max(0, stageQi * (1 - fraction));

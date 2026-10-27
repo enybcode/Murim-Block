@@ -294,6 +294,303 @@ SETS["fists"] = {
 }
 
 
+
+# Every fighting clip starts from the square guard with every joint it moves keyed (a joint first keyed later would
+# hold that later value from the start).
+READY = {**GUARD_LEGS, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 0)}}
+
+
+def legs(lead_thigh, lead_shin, rear_thigh, rear_shin):
+    """The lead (left) and rear (right) legs: thigh forward with a negative X, shin bent with a positive X."""
+    return {"Thigh_L": (lead_thigh, 0, 0), "Leg_L": (lead_shin, 0, 0), "Thigh_R": (rear_thigh, 0, 0),
+            "Leg_R": (rear_shin, 0, 0)}
+
+
+def hips(turn, drop, ahead=0.0, lean=0.0):
+    """The pelvis turned `turn` degrees toward its left (+) or right (-), sunk `drop` px, moved `ahead` px."""
+    return {"Root": {"rot": (lean, turn, 0), "loc": (0, -drop, ahead)}}
+
+
+SETS["fists"].update({
+    # The rear straight, legs first: the rear heel turns out and the rear hip drives the right shoulder through, the
+    # chest follows, the right fist shoots out last; the left hand stays home at the chin.
+    "cross": [
+        (0, READY),
+        (2, {**hips(6, 1.2, 0.5), **legs(-24, 34, 22, 36), "Chest": (5, 6, 0), "Head": (-9, -6, 0)}),
+        (3, {**hips(14, 1.4, 1.2), **legs(-28, 36, 30, 30), "Chest": (7, 20, 0), "Head": (-11, -18, 0),
+             "Arm_R": (-75, 12, 0), "Hand_R": (-60, 0, 0)}),
+        (5, {**hips(16, 1.4, 1.6), "Chest": (8, 26, 0), "Head": (-12, -24, 0),
+             "Arm_R": (-92, 5, 0), "Hand_R": (-4, 0, 0)}),
+        (7, {**hips(8, 1.2, 0.6), **legs(-24, 34, 22, 36), "Chest": (6, 10, 0), "Head": (-10, -8, 0),
+             "Arm_R": (-70, 18, 0), "Hand_R": (-80, 0, 0)}),
+        (9, READY),
+    ],
+    # The lead hook: the weight sits on the lead leg, the lead heel pivots and the hips snap right; the left arm,
+    # bent square at the elbow and level with the shoulder, comes round with the body.
+    "hook": [
+        (0, READY),
+        (2, {**hips(8, 1.4, 0.2), **legs(-26, 40, 18, 30), "Chest": (5, 12, 0), "Head": (-9, -10, 0),
+             "Arm_L": (-40, -10, 60), "Hand_L": (-100, 0, 0)}),
+        (4, {**hips(-18, 1.6, 0.6), **legs(-30, 44, 20, 32), "Chest": (6, -26, 0), "Head": (-10, 22, 0),
+             "Arm_L": (0, -20, 88), "Hand_L": (-92, 0, 0)}),
+        (6, {**hips(-26, 1.6, 0.6), "Chest": (6, -34, 0), "Head": (-10, 28, 0),
+             "Arm_L": (0, -45, 86), "Hand_L": (-88, 0, 0)}),
+        (8, {**hips(-10, 1.2, 0.2), **legs(-24, 36, 18, 30), "Chest": (5, -10, 0), "Head": (-9, 8, 0),
+             "Arm_L": (-60, -15, 25), "Hand_L": (-100, 0, 0)}),
+        (10, READY),
+    ],
+    # The rear uppercut: the knees dip, the right hand drops a little, then the legs drive the body up and the hips
+    # turn left as the fist rises in front of the chin.
+    "uppercut": [
+        (0, READY),
+        (3, {**hips(-6, 3.2, 0), **legs(-38, 70, 30, 64), "Chest": (10, -10, 0), "Head": (-12, 8, 0),
+             "Arm_R": (-30, 10, 0), "Hand_R": (-110, 0, 0)}),
+        (5, {**hips(14, 1.0, 1.0, -4), **legs(-18, 22, 14, 18), "Chest": (-2, 20, 0), "Head": (-6, -16, 0),
+             "Arm_R": (-50, 15, -5), "Hand_R": (-115, 0, 0)}),
+        (6, {**hips(18, 0.6, 1.2, -6), "Chest": (-6, 24, 0), "Head": (-2, -20, 0),
+             "Arm_R": (-70, 12, -5), "Hand_R": (-120, 0, 0)}),
+        (9, {**hips(8, 1.2, 0.4), **legs(-24, 36, 18, 32), "Chest": (4, 8, 0), "Head": (-9, -6, 0),
+             "Arm_R": (-55, 18, 0), "Hand_R": (-105, 0, 0)}),
+        (12, READY),
+    ],
+    # In the air: both hands clasped high, the knees tucked, then the fists hammer down as the legs kick out.
+    "hammer": [
+        (0, READY),
+        (3, {**hips(0, 1.0, 0, -10), **legs(-70, 100, -50, 100), "Chest": (-10, 0, 0), "Head": (-4, 0, 0),
+             "Arm_L": (-170, -10, -8), "Hand_L": (-30, 0, 0), "Arm_R": (-170, 10, 8), "Hand_R": (-30, 0, 0)}),
+        (5, {**hips(0, 1.0, 0, 12), **legs(-45, 50, -30, 60), "Chest": (18, 0, 0), "Head": (-14, 0, 0),
+             "Arm_L": (-80, -12, -10), "Hand_L": (-10, 0, 0), "Arm_R": (-80, 12, 10), "Hand_R": (-10, 0, 0)}),
+        (7, {**hips(0, 1.0, 0, 16), "Chest": (22, 0, 0), "Head": (-16, 0, 0),
+             "Arm_L": (-35, -10, -6), "Hand_L": (-15, 0, 0), "Arm_R": (-35, 10, 6), "Hand_R": (-15, 0, 0)}),
+        (10, READY),
+    ],
+    # The technique: Qi gathers (the body sinks, the right palm draws back to the hip), then a long step and a
+    # straight palm thrust from the legs; root motion carries the step.
+    "palm": [
+        (0, READY),
+        (3, {**hips(-20, 3.0, -1), **legs(-30, 60, 28, 64), "Chest": (6, -24, 0), "Head": (-10, 22, 0),
+             "Arm_R": (10, 30, -10), "Hand_R": (-120, 0, 0), "Arm_L": (-80, -30, 10), "Hand_L": (-40, 0, 0)}),
+        (6, {**hips(-24, 3.4, -1.2), "Chest": (8, -28, 0), "Head": (-11, 26, 0)}),
+        (8, {**hips(10, 3.0, 6), **legs(-50, 50, 30, 20), "Chest": (8, 14, 0), "Head": (-12, -12, 0),
+             "Arm_R": (-80, 10, 0), "Hand_R": (-30, 0, 0), "Arm_L": (-50, -20, 10), "Hand_L": (-90, 0, 0)}),
+        (9, {**hips(18, 3.2, 9), **legs(-55, 55, 34, 16), "Chest": (10, 24, 0), "Head": (-12, -22, 0),
+             "Arm_R": (-92, 4, 0), "Hand_R": (0, 0, 0), "Arm_L": (-30, -10, 15), "Hand_L": (-100, 0, 0)}),
+        (12, {**hips(16, 3.0, 9)}),
+        (16, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 9)}}),
+    ],
+})
+
+SETS["combat"] = {
+    # Dodges: a quick hop out of the way (root motion), low, the guard kept; a roll forward.
+    "dodge_back": [
+        (0, READY),
+        (2, {**hips(0, 3.0, -6, -6), **legs(-40, 70, -10, 60), "Chest": (-4, 0, 0)}),
+        (5, {**hips(0, 2.0, -15, -4), **legs(-30, 50, 0, 40), "Chest": (0, 0, 0)}),
+        (8, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, -16)}}),
+    ],
+    "dodge_left": [
+        (0, READY),
+        (2, {"Root": {"rot": (0, 0, 8), "loc": (5, -3.0, 0)}, "Thigh_L": (-20, 0, 25), "Leg_L": (40, 0, 0),
+             "Thigh_R": (-30, 0, 5), "Leg_R": (60, 0, 0), "Chest": (4, 0, -6)}),
+        (5, {"Root": {"rot": (0, 0, 4), "loc": (14, -2.0, 0)}, "Thigh_L": (-25, 0, 5), "Leg_L": (45, 0, 0),
+             "Thigh_R": (-25, 0, 10), "Leg_R": (45, 0, 0), "Chest": (5, 0, -2)}),
+        (8, {**READY, "Root": {"rot": (0, 0, 0), "loc": (16, -1.0, 0)}}),
+    ],
+    "dodge_right": [
+        (0, READY),
+        (2, {"Root": {"rot": (0, 0, -8), "loc": (-5, -3.0, 0)}, "Thigh_R": (-20, 0, -25), "Leg_R": (40, 0, 0),
+             "Thigh_L": (-30, 0, -5), "Leg_L": (60, 0, 0), "Chest": (4, 0, 6)}),
+        (5, {"Root": {"rot": (0, 0, -4), "loc": (-14, -2.0, 0)}, "Thigh_R": (-25, 0, -5), "Leg_R": (45, 0, 0),
+             "Thigh_L": (-25, 0, -10), "Leg_L": (45, 0, 0), "Chest": (5, 0, 2)}),
+        (8, {**READY, "Root": {"rot": (0, 0, 0), "loc": (-16, -1.0, 0)}}),
+    ],
+    # A forward roll: tucked, a whole turn about the hips' X, back on the feet a block and a half on.
+    "dodge_forward": [
+        (0, READY),
+        (2, {"Root": {"rot": (60, 0, 0), "loc": (0, -5.0, 4)}, **legs(-80, 120, -80, 120), "Chest": (30, 0, 0),
+             "Head": (30, 0, 0), "Arm_L": (-120, 0, 10), "Arm_R": (-120, 0, -10)}),
+        (4, {"Root": {"rot": (150, 0, 0), "loc": (0, -6.0, 11)}}),
+        (6, {"Root": {"rot": (240, 0, 0), "loc": (0, -6.0, 17)}}),
+        (8, {"Root": {"rot": (330, 0, 0), "loc": (0, -4.0, 22)}, **legs(-60, 100, -60, 100)}),
+        (12, {**READY, "Root": {"rot": (360, 0, 0), "loc": (0, -1.0, 24)}}),
+    ],
+    # Reactions: a short flinch (head and chest snap back), a long stagger back a step, a knockdown on the back and
+    # up again, a guard shaken by a blow, a guard broken open, an attack turned aside by a parry.
+    "hit_short": [
+        (0, READY),
+        (2, {**hips(0, 1.4, -1, -4), "Chest": (-10, 6, 0), "Head": (-22, -6, 0),
+             "Arm_L": (-50, -25, 10), "Arm_R": (-35, 25, -10)}),
+        (6, READY),
+    ],
+    "hit_long": [
+        (0, READY),
+        (2, {**hips(6, 1.8, -2, -8), "Torso": (-6, 0, 0), "Chest": (-14, 10, 0), "Head": (-18, -8, 0),
+             "Arm_L": (-30, -20, 30), "Hand_L": (-50, 0, 0), "Arm_R": (-20, 20, -35), "Hand_R": (-50, 0, 0)}),
+        (6, {**hips(4, 2.4, -5, -4), **legs(-10, 30, 25, 50)}),
+        (10, {**hips(0, 1.6, -5, 0), **legs(-26, 40, -20, 40), "Torso": (4, 0, 0), "Chest": (2, 4, 0)}),
+        (14, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, -5)}}),
+    ],
+    "knockdown": [
+        (0, READY),
+        (3, {"Root": {"rot": (-40, 0, 0), "loc": (0, -4, -4)}, **legs(-50, 30, -10, 20), "Torso": (-6, 0, 0),
+             "Chest": (-10, 0, 0), "Head": (10, 0, 0), "Arm_L": (-60, 0, 50), "Arm_R": (-60, 0, -50),
+             "Hand_L": (-30, 0, 0), "Hand_R": (-30, 0, 0)}),
+        (7, {"Root": {"rot": (-88, 0, 0), "loc": (0, -9.5, -10)}, **legs(-10, 10, -6, 6), "Head": (20, 0, 0),
+             "Arm_L": (-10, 0, 40), "Arm_R": (-10, 0, -40), "Hand_L": (-10, 0, 0), "Hand_R": (-10, 0, 0)}),
+        (22, {"Root": {"rot": (-88, 0, 0), "loc": (0, -9.5, -10)}}),
+        (28, {"Root": {"rot": (-30, 0, 0), "loc": (0, -7, -10)}, **legs(-80, 130, -70, 120), "Chest": (30, 0, 0),
+              "Head": (10, 0, 0), "Arm_L": (20, 0, 20), "Arm_R": (20, 0, -20)}),
+        (33, {"Root": {"rot": (0, 0, 0), "loc": (0, -4, -10)}, **legs(-40, 80, -30, 70), "Chest": (15, 0, 0)}),
+        (36, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, -10)}}),
+    ],
+    "guard_hit": [
+        (0, READY),
+        (2, {**hips(0, 1.6, -1.5, -3), "Chest": (-4, 0, 0), "Head": (-12, 0, 0),
+             "Arm_L": (-82, -25, 0), "Hand_L": (-115, 0, 0), "Arm_R": (-62, 25, 0), "Hand_R": (-120, 0, 0)}),
+        (5, READY),
+    ],
+    "guard_break": [
+        (0, READY),
+        (2, {**hips(0, 1.0, -2, -10), "Chest": (-16, 0, 0), "Head": (-20, 0, 0),
+             "Arm_L": (-120, 0, 70), "Hand_L": (-20, 0, 0), "Arm_R": (-120, 0, -70), "Hand_R": (-20, 0, 0)}),
+        (8, {**hips(0, 2.2, -4, -6), **legs(-10, 40, 20, 50), "Chest": (-10, 0, 0),
+             "Arm_L": (-60, 0, 60), "Arm_R": (-60, 0, -60)}),
+        (14, {**hips(0, 1.6, -4, 0), **legs(-26, 40, -20, 40), "Chest": (6, 0, 0), "Head": (-8, 0, 0),
+              "Arm_L": (-20, 0, 20), "Hand_L": (-40, 0, 0), "Arm_R": (-20, 0, -20), "Hand_R": (-40, 0, 0)}),
+        (18, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, -4)}}),
+    ],
+    "parried": [
+        (0, READY),
+        (2, {**hips(-10, 1.0, -1, -8), "Chest": (-12, -14, 0), "Head": (-14, 10, 0),
+             "Arm_L": (-150, -20, 30), "Hand_L": (-20, 0, 0), "Arm_R": (-140, 20, -30), "Hand_R": (-20, 0, 0)}),
+        (7, {**hips(-4, 1.8, -3, -4), **legs(-14, 40, 22, 46), "Chest": (-6, -6, 0),
+             "Arm_L": (-80, -20, 30), "Hand_L": (-60, 0, 0), "Arm_R": (-70, 20, -30), "Hand_R": (-60, 0, 0)}),
+        (12, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, -3)}}),
+    ],
+}
+
+# A blade in the right hand: the Tool joint holds it; the arm carries the cut, the hips start it.
+BLADE_READY = {**READY, "Arm_R": (-40, 20, 0), "Hand_R": (-60, 0, 0), "Arm_L": (-30, -10, 10),
+               "Hand_L": (-70, 0, 0)}
+
+SETS["blade"] = {
+    # Forehand diagonal cut: from high on the right down across to the low left.
+    "slash_1": [
+        (0, BLADE_READY),
+        (3, {**hips(-14, 1.4, -0.5), **legs(-24, 36, 20, 34), "Chest": (2, -24, 0), "Head": (-8, 20, 0),
+             "Arm_R": (-160, 10, -40), "Hand_R": (-50, 0, 0)}),
+        (5, {**hips(10, 1.8, 1.5), **legs(-30, 44, 24, 36), "Chest": (10, 16, 0), "Head": (-12, -12, 0),
+             "Arm_R": (-90, -20, 20), "Hand_R": (-10, 0, 0)}),
+        (7, {**hips(18, 2.0, 2), "Chest": (14, 28, 0), "Head": (-12, -22, 0),
+             "Arm_R": (-30, -40, 40), "Hand_R": (-20, 0, 0)}),
+        (12, BLADE_READY),
+    ],
+    # Backhand cut, level: the blade comes from the left back across to the right.
+    "slash_2": [
+        (0, BLADE_READY),
+        (3, {**hips(18, 1.4, 0), **legs(-24, 36, 20, 34), "Chest": (4, 26, 0), "Head": (-8, -22, 0),
+             "Arm_R": (-80, -60, 20), "Hand_R": (-70, 0, 0)}),
+        (5, {**hips(0, 1.8, 1.5), "Chest": (6, 0, 0), "Head": (-10, 0, 0),
+             "Arm_R": (-90, 0, -10), "Hand_R": (-10, 0, 0)}),
+        (7, {**hips(-18, 1.8, 1.5), "Chest": (6, -26, 0), "Head": (-10, 22, 0),
+             "Arm_R": (-80, 40, -50), "Hand_R": (-20, 0, 0)}),
+        (12, BLADE_READY),
+    ],
+    # Overhead chop with a step: both hands lift the blade, then the body drops into it.
+    "slash_3": [
+        (0, BLADE_READY),
+        (4, {**hips(0, 1.0, -1, -6), **legs(-20, 30, 16, 30), "Chest": (-10, 0, 0), "Head": (-4, 0, 0),
+             "Arm_R": (-175, 10, -5), "Hand_R": (-40, 0, 0), "Arm_L": (-170, -10, 5), "Hand_L": (-40, 0, 0)}),
+        (6, {**hips(0, 3.0, 4, 8), **legs(-50, 60, 30, 40), "Chest": (14, 0, 0), "Head": (-14, 0, 0),
+             "Arm_R": (-90, 10, -5), "Hand_R": (-10, 0, 0), "Arm_L": (-85, -10, 5), "Hand_L": (-15, 0, 0)}),
+        (8, {**hips(0, 3.2, 5, 12), "Chest": (20, 0, 0), "Head": (-16, 0, 0),
+             "Arm_R": (-45, 10, -5), "Hand_R": (-15, 0, 0), "Arm_L": (-40, -10, 5), "Hand_L": (-20, 0, 0)}),
+        (14, {**BLADE_READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 5)}}),
+    ],
+    # The dash: a long lunge and a straight thrust (root motion).
+    "thrust": [
+        (0, BLADE_READY),
+        (2, {**hips(-16, 2.0, 2), **legs(-40, 50, 20, 30), "Chest": (6, -20, 0), "Head": (-10, 18, 0),
+             "Arm_R": (-70, 30, 0), "Hand_R": (-90, 0, 0)}),
+        (5, {**hips(10, 3.6, 16), **legs(-70, 70, 40, 10), "Chest": (12, 14, 0), "Head": (-14, -12, 0),
+             "Arm_R": (-95, 0, 0), "Hand_R": (0, 0, 0)}),
+        (7, {**hips(12, 3.6, 18)}),
+        (12, {**BLADE_READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 18)}}),
+    ],
+    # From the air: the blade raised behind the head falls with the body.
+    "drop_cut": [
+        (0, BLADE_READY),
+        (3, {**hips(0, 1.0, 0, -12), **legs(-60, 90, -40, 90), "Chest": (-12, 0, 0),
+             "Arm_R": (-178, 0, -10), "Hand_R": (-70, 0, 0), "Arm_L": (-160, 0, 10), "Hand_L": (-60, 0, 0)}),
+        (6, {**hips(0, 1.0, 0, 16), **legs(-40, 40, -20, 50), "Chest": (20, 0, 0), "Head": (-16, 0, 0),
+             "Arm_R": (-60, 0, -5), "Hand_R": (-10, 0, 0), "Arm_L": (-55, 0, 5), "Hand_L": (-15, 0, 0)}),
+        (11, BLADE_READY),
+    ],
+    # The guard: the blade held across in front of the body.
+    "guard": [
+        (0, {**BLADE_READY, "Arm_R": (-60, 40, -10), "Hand_R": (-70, 0, 0), "Arm_L": (-50, -30, 10),
+             "Hand_L": (-90, 0, 0)}),
+        (20, {"Arm_R": (-62, 40, -10)}),
+    ],
+    # The technique: a whole turn with the blade held out, cutting everything around.
+    "whirl": [
+        (0, BLADE_READY),
+        (4, {**hips(-30, 2.4, 0), **legs(-30, 50, 26, 50), "Chest": (6, -30, 0), "Head": (-10, 26, 0),
+             "Arm_R": (-90, 60, -20), "Hand_R": (-10, 0, 0)}),
+        (7, {**hips(-120, 2.6, 0), "Arm_R": (-90, -10, -60), "Hand_R": (0, 0, 0)}),
+        (10, {**hips(-240, 2.6, 0)}),
+        (13, {**hips(-330, 2.4, 0), "Arm_R": (-80, -30, -40)}),
+        (18, {**BLADE_READY, "Root": {"rot": (0, -360, 0), "loc": (0, -1.0, 0)}}),
+    ],
+}
+
+# Humanoid mobs (zombies, skeletons, piglins, endermen, illagers) on the biped: their attacks.
+SETS["humanoid"] = {
+    # A zombie's claw: both arms up and forward, raking down, the body leaning into it.
+    "claw": [
+        (0, {**READY, "Arm_L": (-90, 0, 4), "Hand_L": (-10, 0, 0), "Arm_R": (-90, 0, -4), "Hand_R": (-10, 0, 0)}),
+        (5, {**hips(0, 1.0, -1, -6), "Chest": (-8, 0, 0), "Head": (-6, 0, 0),
+             "Arm_L": (-160, 0, 15), "Hand_L": (-30, 0, 0), "Arm_R": (-160, 0, -15), "Hand_R": (-30, 0, 0)}),
+        (8, {**hips(0, 2.0, 3, 10), **legs(-30, 40, 20, 30), "Chest": (16, 0, 0), "Head": (-14, 0, 0),
+             "Arm_L": (-50, 0, 8), "Hand_L": (-20, 0, 0), "Arm_R": (-50, 0, -8), "Hand_R": (-20, 0, 0)}),
+        (10, {**hips(0, 2.0, 3, 12), "Arm_L": (-25, 0, 6), "Arm_R": (-25, 0, -6)}),
+        (16, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 3)}, "Arm_L": (-90, 0, 4), "Hand_L": (-10, 0, 0),
+              "Arm_R": (-90, 0, -4), "Hand_R": (-10, 0, 0)}),
+    ],
+    # A zombie's lunge: it throws itself at the target, arms out to grab (root motion).
+    "lunge": [
+        (0, {**READY, "Arm_L": (-90, 0, 4), "Hand_L": (-10, 0, 0), "Arm_R": (-90, 0, -4), "Hand_R": (-10, 0, 0)}),
+        (5, {**hips(0, 3.0, -2, -4), **legs(-40, 70, 0, 60), "Chest": (-6, 0, 0),
+             "Arm_L": (-110, 0, 25), "Arm_R": (-110, 0, -25)}),
+        (9, {**hips(0, 2.6, 14, 20), **legs(-50, 40, 30, 10), "Chest": (16, 0, 0), "Head": (-20, 0, 0),
+             "Arm_L": (-95, 0, 8), "Hand_L": (-5, 0, 0), "Arm_R": (-95, 0, -8), "Hand_R": (-5, 0, 0)}),
+        (11, {**hips(0, 2.6, 16, 18)}),
+        (18, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 16)}, "Arm_L": (-90, 0, 4), "Hand_L": (-10, 0, 0),
+              "Arm_R": (-90, 0, -4), "Hand_R": (-10, 0, 0)}),
+    ],
+    # A straight right, plain and heavy (skeletons, piglins, endermen bare-handed).
+    "punch": [
+        (0, READY),
+        (3, {**hips(-10, 1.4, -0.5), "Chest": (4, -14, 0), "Head": (-8, 12, 0),
+             "Arm_R": (-40, 30, 0), "Hand_R": (-120, 0, 0)}),
+        (5, {**hips(12, 1.6, 1.5), **legs(-28, 36, 26, 30), "Chest": (8, 20, 0), "Head": (-10, -18, 0),
+             "Arm_R": (-90, 6, 0), "Hand_R": (-5, 0, 0)}),
+        (7, {**hips(14, 1.6, 1.5)}),
+        (12, READY),
+    ],
+    # Overhead: the right hand (or its weapon) high behind the head, chopped down with the body.
+    "overhead": [
+        (0, READY),
+        (5, {**hips(-8, 1.0, -1, -8), "Chest": (-10, -10, 0), "Head": (-4, 8, 0),
+             "Arm_R": (-175, 10, -10), "Hand_R": (-60, 0, 0)}),
+        (8, {**hips(6, 2.6, 2, 10), **legs(-34, 50, 24, 36), "Chest": (16, 8, 0), "Head": (-14, -6, 0),
+             "Arm_R": (-70, 5, -5), "Hand_R": (-10, 0, 0)}),
+        (10, {**hips(6, 2.6, 2, 12), "Arm_R": (-40, 5, -5)}),
+        (16, {**READY, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 2)}}),
+    ],
+}
+
+
 def rotation(degrees):
     x, y, z = (math.radians(d) for d in degrees)
     return Quaternion((1, 0, 0), x) @ Quaternion((0, 1, 0), y) @ Quaternion((0, 0, 1), z)

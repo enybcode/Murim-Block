@@ -78,7 +78,7 @@ class AnimationPlayerTest {
         Animation slide = slide(loop);
         List<ClipEvent> events = List.of(event(0), event(0.15f), event(0.5f), event(1));
         return new Animation(slide.id(), slide.clip(), loop, slide.transition(), slide.mask(), Map.of(), false, 0,
-                events, null);
+                events, null, null);
     }
 
     private static ClipEvent event(float time) {

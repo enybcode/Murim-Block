@@ -43,3 +43,7 @@ type = "required"
 versionRange = "[${photon_version},)"
 ordering = "NONE"
 side = "BOTH"
+
+# Mixins: kept few and small (injections only).
+[[mixins]]
+config="${mod_id}.mixins.json"

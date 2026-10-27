@@ -10,6 +10,10 @@ public final class MurimClientConfig {
             .comment("Show the Guide sub-tab (controls and topics) on the Info page of the System menu.")
             .define("showGuide", true);
 
+    public static final ModConfigSpec.BooleanValue SHENFA_PLAYERS = BUILDER
+            .comment("Draw players with Shenfa, the mod's animation engine (needed to see combat moves).")
+            .define("shenfaPlayers", true);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private MurimClientConfig() {
@@ -17,6 +21,15 @@ public final class MurimClientConfig {
 
     public static boolean showGuide() {
         return SHOW_GUIDE.get();
+    }
+
+    /** Whether players are drawn by Shenfa; on before the config is read. */
+    public static boolean shenfaPlayers() {
+        try {
+            return SHENFA_PLAYERS.get();
+        } catch (IllegalStateException e) {
+            return true;
+        }
     }
 
     public static void setShowGuide(boolean show) {

@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.murimblock.Murimblock;
+import com.murimblock.client.MurimClientConfig;
 import com.murimblock.shenfa.Animation;
 import com.murimblock.shenfa.AnimationPlayer;
 import com.murimblock.shenfa.Animator;
@@ -53,7 +54,8 @@ public final class SkeletalPlayers {
     /** One clip shown on everyone, frame by frame ({@link #preview}): to film a clip next to Blender's render. */
     public static final String PREVIEW = "preview";
 
-    private static boolean enabled;
+    /** The dev switch (/skeletal on|off); null follows the client config. */
+    private static Boolean enabled;
     private static boolean showJoints;
     private static String poseName = ANIMATED;
     private static final AnimationPlayer PREVIEW_PLAYER = new AnimationPlayer();
@@ -63,7 +65,7 @@ public final class SkeletalPlayers {
     }
 
     public static boolean enabled() {
-        return enabled;
+        return enabled != null ? enabled : MurimClientConfig.shenfaPlayers();
     }
 
     public static void enable(boolean on) {
@@ -89,7 +91,7 @@ public final class SkeletalPlayers {
     }
 
     public static boolean drawn(AbstractClientPlayer player) {
-        return enabled;
+        return enabled();
     }
 
     /**
@@ -215,6 +217,16 @@ public final class SkeletalPlayers {
                             context.getSource().sendSystemMessage(Component.literal("Skeletal motion: " + key));
                             return 1;
                         })))
+                .then(Commands.literal("cape").then(Commands.literal("on").executes(context -> {
+                    CapeCloth.enable(true);
+                    return 1;
+                })).then(Commands.literal("off").executes(context -> {
+                    CapeCloth.enable(false);
+                    return 1;
+                })).then(Commands.literal("test").executes(context -> {
+                    CapeCloth.testCape(true);
+                    return 1;
+                })))
                 .then(Commands.literal("firstperson").then(Commands.literal("on").executes(context -> {
                     FirstPerson.enable(true);
                     return 1;

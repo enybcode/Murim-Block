@@ -1,0 +1,17 @@
+{
+  "clips": {
+    "bite": {"transition": 0.05, "length": 0.55,
+      "rotate": {
+        "head": [[0, 0, 0, 0], [0.2, -15, 0, 0], [0.3, 20, 0, 0], [0.55, 0, 0, 0]],
+        "@model": [[0, 0, 0, 0], [0.2, -6, 0, 0], [0.3, 8, 0, 0], [0.55, 0, 0, 0]]},
+      "move": {"@model": [[0, 0, 0, 0], [0.2, 0, 0, 1.5], [0.3, 0, 0, -5], [0.55, 0, 0, 0]]},
+      "events": [{"at": 0.27, "type": "sound", "sound": "minecraft:entity.wolf.growl", "volume": 0.6, "pitch": 1.4}],
+      "attack": {"phases": [{"windup": 0.2, "active": [0.25, 0.38], "recovery": 0.45, "stun": "short", "impact": 0.8}]}},
+    "leap": {"transition": 0.05, "length": 0.7, "root_motion": true,
+      "rotate": {
+        "@model": [[0, 0, 0, 0], [0.15, -12, 0, 0], [0.35, 10, 0, 0], [0.7, 0, 0, 0]],
+        "head": [[0, 0, 0, 0], [0.35, 15, 0, 0], [0.7, 0, 0, 0]]},
+      "move": {"@model": [[0, 0, 0, 0], [0.15, 0, 0, 2], [0.3, 0, -7, -12], [0.45, 0, 0, -22], [0.7, 0, 0, -22]]},
+      "attack": {"phases": [{"windup": 0.15, "active": [0.3, 0.5], "recovery": 0.55, "stun": "long", "impact": 1.2}]}}
+  }
+}

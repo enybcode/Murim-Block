@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.murimblock.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MobStrikeMixin"
+  ],
+  "client": [
+    "LivingEntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

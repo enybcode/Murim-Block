@@ -1,0 +1,18 @@
+{
+  "clips": {
+    "smash": {"transition": 0.08, "length": 1.1,
+      "rotate": {
+        "body": [[0, 0, 0, 0], [0.4, -12, 0, 0], [0.55, 18, 0, 0], [1.1, 0, 0, 0]],
+        "right_arm": [[0, 0, 0, 0], [0.4, -160, 0, 10], [0.55, -30, 0, 0], [1.1, 0, 0, 0]],
+        "left_arm": [[0, 0, 0, 0], [0.4, -160, 0, -10], [0.55, -30, 0, 0], [1.1, 0, 0, 0]]},
+      "events": [{"at": 0.52, "type": "shake", "strength": 0.5, "ticks": 8}],
+      "attack": {"phases": [{"windup": 0.4, "active": [0.5, 0.65], "recovery": 0.85, "stun": "knockdown", "impact": 5.0,
+        "colliders": [{"center": [0, 14, 22], "size": [30, 30, 30]}]}]}},
+    "swipe": {"transition": 0.08, "length": 0.9,
+      "rotate": {
+        "body": [[0, 0, 0, 0], [0.3, 0, -25, 0], [0.45, 6, 25, 0], [0.9, 0, 0, 0]],
+        "right_arm": [[0, 0, 0, 0], [0.3, -100, -50, 0], [0.45, -90, 50, 0], [0.9, 0, 0, 0]]},
+      "attack": {"phases": [{"windup": 0.3, "active": [0.38, 0.52], "recovery": 0.7, "stun": "long", "impact": 3.5,
+        "colliders": [{"center": [0, 20, 18], "size": [36, 24, 26]}]}]}}
+  }
+}

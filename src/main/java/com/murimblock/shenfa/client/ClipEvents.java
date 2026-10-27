@@ -15,6 +15,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -35,7 +36,7 @@ public final class ClipEvents {
         probe = listener;
     }
 
-    static void run(AbstractClientPlayer player, List<ClipEvent> events) {
+    public static void run(LivingEntity player, List<ClipEvent> events) {
         for (ClipEvent event : events) {
             if (!event.side().client()) {
                 continue;
@@ -59,7 +60,7 @@ public final class ClipEvents {
         }
     }
 
-    private static void sound(AbstractClientPlayer player, ClipEvent event) {
+    private static void sound(LivingEntity player, ClipEvent event) {
         ResourceLocation id = ResourceLocation.tryParse(event.string("sound", ""));
         if (id == null) {
             report("sound " + event.string("sound", ""));
@@ -72,14 +73,16 @@ public final class ClipEvents {
                 event.number("pitch", 1), false);
     }
 
-    private static void particle(AbstractClientPlayer player, ClipEvent event) {
+    private static void particle(LivingEntity player, ClipEvent event) {
         ResourceLocation id = ResourceLocation.tryParse(event.string("particle", ""));
         ParticleType<?> type = id == null ? null : BuiltInRegistries.PARTICLE_TYPE.get(id);
         if (!(type instanceof SimpleParticleType simple)) {
             report("particle " + event.string("particle", "") + " (only plain particles)");
             return;
         }
-        Vec3 at = joint(player, event.string("joint", Biped.ROOT));
+        // A mob's parts are not followed here: its effects rise from the middle of its body.
+        Vec3 at = player instanceof AbstractClientPlayer body ? joint(body, event.string("joint", Biped.ROOT))
+                : player.position().add(0, player.getBbHeight() * 0.6, 0);
         int count = (int) event.number("count", 1);
         float spread = event.number("spread", 0.1f), speed = event.number("speed", 0);
         var random = player.getRandom();

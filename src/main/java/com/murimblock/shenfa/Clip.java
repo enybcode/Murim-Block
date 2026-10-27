@@ -51,6 +51,18 @@ public final class Clip {
         return pose;
     }
 
+    /** The value of one joint's channel at {@code time}, or null when the clip has no such channel. */
+    public float[] value(int joint, Path path, float time) {
+        for (Channel channel : channels) {
+            if (channel.joint() == joint && channel.path() == path) {
+                float[] values = new float[4];
+                channel.sample(time, values);
+                return values;
+            }
+        }
+        return null;
+    }
+
     public enum Path {
         TRANSLATION(3), ROTATION(4), SCALE(3);
 

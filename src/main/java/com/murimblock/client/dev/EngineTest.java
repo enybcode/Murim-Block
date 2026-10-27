@@ -80,6 +80,11 @@ public final class EngineTest {
         groups.put("vanilla", VanillaChecks::steps);
         groups.put("player", PlayerChecks::steps);
         groups.put("events", EventChecks::steps);
+        groups.put("mobs", MobChecks::steps);
+        groups.put("combat", CombatChecks::steps);
+        groups.put("film", FilmChecks::steps);
+        groups.put("perf", PerfChecks::steps);
+        groups.put("cloth", ClothChecks::steps);
         String wanted = System.getProperty("murimblock.engineGroups", "");
         Set<String> only = wanted.isBlank() ? groups.keySet() : Set.of(wanted.split(","));
         return groups.entrySet().stream().filter(entry -> only.contains(entry.getKey()))
@@ -94,6 +99,7 @@ public final class EngineTest {
     private static int step;
     private static int checks;
     private static int failures;
+    private static boolean finished;
 
     private EngineTest() {
     }
@@ -132,7 +138,23 @@ public final class EngineTest {
             current.run().accept(mc);
             return;
         }
+        if (finished) {
+            return;
+        }
+        finished = true;
         Murimblock.LOGGER.info("Engine test: done, {} checks, {} failed", checks, failures);
+        // Saving a world full of test mobs has hung the shutdown before: a scripted run must end anyway.
+        Thread watchdog = new Thread(() -> {
+            try {
+                Thread.sleep(60_000);
+            } catch (InterruptedException e) {
+                return;
+            }
+            Murimblock.LOGGER.warn("Engine test: the game did not stop in a minute, halting");
+            Runtime.getRuntime().halt(0);
+        }, "engine-test-watchdog");
+        watchdog.setDaemon(true);
+        watchdog.start();
         mc.stop();
     }
 

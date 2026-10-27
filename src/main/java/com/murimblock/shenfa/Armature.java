@@ -53,6 +53,15 @@ public final class Armature {
                 return name.substring(0, name.length() - 2) + sides[0];
             }
         }
+        // Vanilla's model parts: right_arm and left_arm, rightHindLeg and leftHindLeg.
+        for (String[] sides : new String[][] {{"right", "left"}, {"Right", "Left"}}) {
+            if (name.contains(sides[0])) {
+                return name.replace(sides[0], sides[1]);
+            }
+            if (name.contains(sides[1])) {
+                return name.replace(sides[1], sides[0]);
+            }
+        }
         return name;
     }
 

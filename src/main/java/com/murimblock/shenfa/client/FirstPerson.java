@@ -1,6 +1,9 @@
 package com.murimblock.shenfa.client;
 
 import com.murimblock.Murimblock;
+import com.murimblock.shenfa.Biped;
+import com.murimblock.shenfa.JointTransform;
+import com.murimblock.shenfa.Pose;
 import java.lang.reflect.Method;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -14,6 +17,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
@@ -38,7 +42,11 @@ public final class FirstPerson {
     private static final float FOLLOW = 0.35f;
     private static final Method SET_POSITION = setPosition();
 
-    private static boolean enabled = true;
+    /**
+     * On unless the "First-person Model" mod (tr7zw, id {@code firstperson}) is there: it draws a body of its own,
+     * and two bodies would show. Epic Fight turns that mod off instead; we step aside until that is tried with it.
+     */
+    private static boolean enabled = !net.neoforged.fml.ModList.get().isLoaded("firstperson");
     /** Whether the body being drawn is the local player's, in first person. */
     private static boolean drawing;
     /** Where the head puts the eye, from vanilla's eye (blocks), as last drawn; and the camera's smoothed shift. */
@@ -115,6 +123,23 @@ public final class FirstPerson {
             drawing = false;
         }
         buffers.endBatch();
+    }
+
+    /** How far the arms rise in one's own view in combat (degrees): the stance's fists sit below the eye. */
+    private static final float RAISE = 28;
+
+    /**
+     * Lifts the arms in the local player's own view while in combat, so the guard and the fists sit in sight (Epic
+     * Fight adjusts its first-person poses per clip); others see the stance as it is.
+     */
+    static void raiseArms(Pose pose) {
+        for (String side : new String[] {"L", "R"}) {
+            int arm = Biped.ARMATURE.get("Arm_" + side).index();
+            var joint = pose.get(arm);
+            Quaternionf raised = new Quaternionf().rotateX((float) Math.toRadians(-RAISE))
+                    .mul(joint.rotation());
+            pose.set(arm, JointTransform.of(joint.translation(), raised, joint.scale()));
+        }
     }
 
     /** Vanilla's hands, unless our arms are drawn. */
