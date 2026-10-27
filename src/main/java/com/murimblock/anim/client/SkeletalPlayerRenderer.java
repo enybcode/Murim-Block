@@ -71,6 +71,8 @@ public final class SkeletalPlayerRenderer {
             .rotateX((float) Math.toRadians(90)).rotateY((float) Math.toRadians(180))
             .translate(-1 * PIXEL, 2 * PIXEL, -10 * PIXEL);
 
+    /** Dev: sees each player's final pose before it is drawn (the engine test measures jumps between frames). */
+    public static java.util.function.BiConsumer<AbstractClientPlayer, Pose> poseProbe;
     private static float[] positions = new float[0];
     private static float[] normals = new float[0];
     /** Time spent drawing players since {@link #resetTiming}, for the engine test. */
@@ -146,6 +148,9 @@ public final class SkeletalPlayerRenderer {
         Pose pose = SkeletalPlayers.pose(player, partialTick);
         VanillaPoses.apply(renderer, player, pose, partialTick, netHeadYaw, pitch, SkeletalPlayers.animated());
         BipedPoses.look(pose, netHeadYaw, headPitch);
+        if (poseProbe != null) {
+            poseProbe.accept(player, pose);
+        }
         Matrix4f[] skinMatrices = pose.toSkinMatrices(model.armature());
         Matrix4f[] jointMatrices = pose.toModelMatrices(model.armature());
 

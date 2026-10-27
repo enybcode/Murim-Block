@@ -4,9 +4,14 @@ import com.murimblock.Murimblock;
 import com.murimblock.anim.Biped;
 import com.murimblock.anim.SkinnedModel;
 import com.murimblock.anim.client.SkeletalModels;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
@@ -50,9 +55,27 @@ public final class EngineTest {
                     check(id + " fits the biped skeleton", model != null && Biped.check(model.armature()).isEmpty());
                     check(id + " has its 22 parts (12 skin, 10 armor)", model != null && model.parts().size() == 22);
                 }
-            })), Stream.of(SkeletalRenderChecks.steps(), ClipChecks.steps(), MotionChecks.steps(),
-                            VanillaChecks.steps())
-                    .flatMap(List::stream)).toList();
+            })), groups().flatMap(List::stream)).toList();
+
+    /**
+     * The groups of checks, by name; {@code -PengineGroups=player,vanilla} (system property
+     * {@code murimblock.engineGroups}) runs only those, all when it is empty.
+     */
+    private static Stream<List<Step>> groups() {
+        Map<String, Supplier<List<Step>>> groups = new LinkedHashMap<>();
+        groups.put("render", SkeletalRenderChecks::steps);
+        groups.put("clips", ClipChecks::steps);
+        groups.put("motions", MotionChecks::steps);
+        groups.put("vanilla", VanillaChecks::steps);
+        groups.put("player", PlayerChecks::steps);
+        String wanted = System.getProperty("murimblock.engineGroups", "");
+        Set<String> only = wanted.isBlank() ? groups.keySet() : Set.of(wanted.split(","));
+        return groups.entrySet().stream().filter(entry -> only.contains(entry.getKey()))
+                .map(entry -> entry.getValue().get());
+    }
+
+    /** While this says so (a scripted run playing out tick by tick), the next step waits. */
+    static BooleanSupplier busy = () -> false;
 
     private static boolean started;
     private static int frames = -1;
@@ -83,6 +106,9 @@ public final class EngineTest {
             return;
         }
         if (mc.player == null || mc.screen != null) {
+            return;
+        }
+        if (busy.getAsBoolean()) {
             return;
         }
         if (++frames < WORLD_FRAMES || (frames - WORLD_FRAMES) % STEP_FRAMES != 0) {

@@ -51,6 +51,8 @@ neoForge {
         engineTest {
             client()
             systemProperty 'murimblock.engineTest', 'true'
+            // -PengineGroups=player,vanilla runs only those groups of checks (all when empty).
+            systemProperty 'murimblock.engineGroups', providers.gradleProperty('engineGroups').getOrElse('')
             gameDirectory = project.file('run/engine-test')
             programArguments.addAll('--width', '1280', '--height', '720')
         }
