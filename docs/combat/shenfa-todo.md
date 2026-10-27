@@ -67,6 +67,14 @@ decided.
 - Grabs and throws (EF has grappling animations): clinch and throws for the fist style.
 - Mobs on Shenfa (D3): EF-style data patches with a `combat_behavior` list (weights, cooldowns, interruptible,
   conditions on distance, angle, health, chance); bosses with phases (the Grave Warden).
+- Vanilla mobs (Enzo, 27 Oct 2026): redo every vanilla mob's attack animations, as Epic Fight does, on Shenfa.
+  - Humanoids on the biped skeleton (D3): zombie, husk, drowned, zombie villager, zombified piglin, skeleton,
+    stray, wither skeleton, piglin, piglin brute, vindicator, pillager, evoker, witch, illusioner.
+  - The others need their own skeletons in Shenfa (D3 said GeckoLib for them; to decide again): spider, cave
+    spider, creeper, enderman (biped proportions, own skeleton), iron golem, ravager, hoglin, zoglin, blaze, slime
+    and magma cube, phantom, guardian, warden, wolf, polar bear, goat, bee, and the bosses (Ender Dragon, Wither).
+  - Each one: idle, walk, run, its attacks as phases with colliders, hit reactions, death; its combat behavior as
+    data (EF's mob patches). Check against EF's own list (`epicfight_mobpatch`) which ones it covers.
 - Mounted strikes, bow and crossbow, spears and swords after fists.
 - Data: moves, weapons and mob patches as datapacks reloaded with `/reload`; an in-game editor later.
 
