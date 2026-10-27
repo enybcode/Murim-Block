@@ -1,9 +1,9 @@
 package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
-import com.murimblock.anim.Biped;
-import com.murimblock.anim.SkinnedModel;
-import com.murimblock.anim.client.SkeletalModels;
+import com.murimblock.shenfa.Biped;
+import com.murimblock.shenfa.SkinnedModel;
+import com.murimblock.shenfa.client.SkeletalModels;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +51,10 @@ public final class EngineTest {
                 check("the player is in the world", mc.player != null && mc.level != null);
                 // A fresh world spawns the player anywhere: bring it over the test area first, so the test players added
                 // next land in loaded chunks (the client drops entities added where nothing is loaded).
+                // No effect left from an earlier run (the tour eats a golden apple): its particles would cloud the shots.
                 server(mc, player -> {
                     player.getAbilities().flying = true;
+                    player.removeAllEffects();
                     player.onUpdateAbilities();
                     player.connection.teleport(0.5, 200, -4, 0, 0);
                 });

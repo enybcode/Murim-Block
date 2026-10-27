@@ -2,9 +2,9 @@ package com.murimblock.client.dev;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.murimblock.Murimblock;
-import com.murimblock.anim.Animation;
-import com.murimblock.anim.client.SkeletalClips;
-import com.murimblock.anim.client.SkeletalPlayers;
+import com.murimblock.shenfa.Animation;
+import com.murimblock.shenfa.client.SkeletalClips;
+import com.murimblock.shenfa.client.SkeletalPlayers;
 import com.murimblock.client.dev.EngineTest.Step;
 import java.io.File;
 import java.io.IOException;

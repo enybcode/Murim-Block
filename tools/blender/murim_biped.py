@@ -1,6 +1,6 @@
 """The Murimblock biped for Blender: skeleton, skinned body and outer layer, both arm widths.
 
-Shared by the build, export and render scripts. Must match com.murimblock.anim.Biped (the mod checks joint
+Shared by the build, export and render scripts. Must match com.murimblock.shenfa.Biped (the mod checks joint
 names and parents when it loads the exported file). The joint layout follows Epic Fight's biped (same 20 joints,
 names and parents); the mesh is ours, built here.
 

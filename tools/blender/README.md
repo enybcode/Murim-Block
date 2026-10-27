@@ -1,12 +1,12 @@
 # Blender tools
 
-Scripts that build, export and film the biped of the combat engine (`docs/combat/engine-roadmap.md`). They run
+Scripts that build, export and film the biped of Shenfa, the animation engine (`docs/combat/engine-roadmap.md`). They run
 headless; nothing here goes into the jar.
 
 Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`; set `BLENDER` to override).
 
 - `murim_biped.py`: the skeleton (Epic Fight's 20-joint layout) and the body, built in code. Must match
-  `com.murimblock.anim.Biped`.
+  `com.murimblock.shenfa.Biped`.
 - `sh tools/blender/export.sh`: rebuilds both arm widths, writes `assets/murimblock/skeletal/biped*.gltf` and
   `.bin` for the mod, and `tools/blender/out/murim_biped*.blend` to animate (not committed).
 - `render.py`: films a test clip from the front, the side and three quarters with a UV test skin (or `--skin`):

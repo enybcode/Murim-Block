@@ -1,8 +1,8 @@
 package com.murimblock.client.dev;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.murimblock.anim.client.SkeletalPlayerRenderer;
-import com.murimblock.anim.client.SkeletalPlayers;
+import com.murimblock.shenfa.client.SkeletalPlayerRenderer;
+import com.murimblock.shenfa.client.SkeletalPlayers;
 import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.client.dev.SkeletalRenderChecks.Dummy;
 import java.util.ArrayList;

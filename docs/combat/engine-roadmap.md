@@ -3,6 +3,10 @@
 Goal: a combat engine of Epic Fight's level or better, written by us from scratch. Epic Fight is studied for
 ideas only: its code is GPL and its assets are All Rights Reserved, so nothing is copied.
 
+The animation engine is named **Shenfa** (身法, "the art of the body", the wuxia word for a fighter's mastery of
+movement and stance), package `com.murimblock.shenfa`: skeleton, skinned mesh, clips, animator, foot planting and
+the player renderer. Combat, weapons and moves build on it.
+
 Status: steps 0 to 5 done (27 Oct 2026). The first combat system was removed on 26 Oct (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
@@ -56,7 +60,7 @@ Status: steps 0 to 5 done (27 Oct 2026). The first combat system was removed on 
 Goal: everything needed to build and check the engine before any feature.
 
 Build:
-- Packages: `com.murimblock.anim` (skeleton, mesh, clips, animator, pure math), `com.murimblock.anim.client`
+- Packages: `com.murimblock.shenfa` (skeleton, mesh, clips, animator, pure math), `com.murimblock.shenfa.client`
   (rendering), `com.murimblock.combat` (fight logic), `com.murimblock.combat.client`.
 - Blender pipeline in `tools/blender/` (outside the jar): a script that builds the reference rig
   `murim_biped.blend`, an export script to glTF (`.gltf` + `.bin`) with fixed settings, and a render script that
@@ -94,7 +98,7 @@ Build:
 Done when: unit tests cover parent chains, slerp, mirror and masks; the skeleton from the glTF file matches the
 code's expectations (joint names and hierarchy checked at load, clear error otherwise).
 
-Done (26 Oct 2026): `com.murimblock.anim`: `JointTransform`, `Joint`, `Armature`, `JointMask`, `Pose`, `Biped`
+Done (26 Oct 2026): `com.murimblock.shenfa`: `JointTransform`, `Joint`, `Armature`, `JointMask`, `Pose`, `Biped`
 (Epic Fight's 20-joint layout; `Biped.check` compares a loaded skeleton). Unit tests in `ArmatureTest` and
 `PoseTest`; JOML 1.10.5 and Gson 2.10.1 added to the test classpath.
 
@@ -124,7 +128,7 @@ Done when: unit tests load a small fixture file; a validation reports bad weight
 the skin.
 
 Done (26 Oct 2026): `GltfLoader`, `SkinnedMesh`, `SkinnedModel` (pure, tested on the shipped files: skeleton,
-vanilla boxes, weights, UVs, hinges, refusals), `anim/client/SkeletalModels` (reload listener for
+vanilla boxes, weights, UVs, hinges, refusals), `shenfa/client/SkeletalModels` (reload listener for
 `assets/*/skeletal/*.gltf`), files exported by `tools/blender/export.sh`. The body's bottom faces' UV orientation
 is to check against vanilla in step 3.
 
@@ -152,11 +156,11 @@ Done when:
   piece (GIF from front, side and close-up).
 - Cost under 0.2 ms per player per frame (measured with 20 players in view).
 
-Step 3a done (26 Oct 2026): `anim/client/SkeletalPlayerRenderer` cancels `RenderPlayerEvent.Pre` and draws the
-body and outer layer (CPU skinning in `anim/Skinning`, triangles sent as quads, `entityCutoutNoCull`, ghost and
+Step 3a done (26 Oct 2026): `shenfa/client/SkeletalPlayerRenderer` cancels `RenderPlayerEvent.Pre` and draws the
+body and outer layer (CPU skinning in `shenfa/Skinning`, triangles sent as quads, `entityCutoutNoCull`, ghost and
 glowing cases), held items at `Tool_*` (offset from vanilla's hand placement), the vanilla name tag (through
 reflection: the methods are protected and overridden as protected, so an access transformer breaks vanilla),
-head look, death fall, entity scale. `anim/client/SkeletalPlayers` decides who is drawn (`/skeletal on|off`,
+head look, death fall, entity scale. `shenfa/client/SkeletalPlayers` decides who is drawn (`/skeletal on|off`,
 `/skeletal pose <name>`, dev only) and the pose: `BipedPoses.stand` copies vanilla's standing pose (arm sway,
 an arm raised 18° when it holds an item) until the idle clip of step 5. `Arm_*` moved to vanilla's pivot (x ±5).
 `runEngineTest` (`SkeletalRenderChecks`): six default skins (wide, slim, outer layers, sword, shield, bow,
@@ -165,8 +169,8 @@ vanilla pivots half a pixel lower), the bottom faces' UVs match vanilla; test po
 player.
 
 Step 3b done (26 Oct 2026): armor meshes in the biped files (vanilla's armor boxes, 64x32 UVs, left limbs
-mirrored, inflated 1 / 0.5, rigid with hinges) drawn by `anim/client/SkeletalArmor` like vanilla's armor layer
-(material layers, dye, trims, glint); `anim/client/VanillaLayers` runs the renderer's other layers (cape, elytra,
+mirrored, inflated 1 / 0.5, rigid with hinges) drawn by `shenfa/client/SkeletalArmor` like vanilla's armor layer
+(material layers, dye, trims, glint); `shenfa/client/VanillaLayers` runs the renderer's other layers (cape, elytra,
 arrows, stingers, head items, parrots, other mods' layers) on the vanilla model with its parts moved to follow
 our joints, the cape and elytra hanging from `Chest`; `BipedPoses.stand` approximates vanilla's crouch;
 `/skeletal joints on` shows the bones alone. Checks: armored lineup within 0.4 % of vanilla from four sides;
@@ -191,12 +195,12 @@ Build:
 Done when: unit tests sample known keyframes; a clip made in Blender plays in game and matches Blender's render
 (GIF next to GIF).
 
-Step 4 done (27 Oct 2026): `anim/Clip` (channels per joint and path, `LINEAR`, `STEP`, `CUBICSPLINE`, values are
-whole local transforms as in glTF), `anim/ClipLoader` (glTF animations matched to joints by node name, the
+Step 4 done (27 Oct 2026): `shenfa/Clip` (channels per joint and path, `LINEAR`, `STEP`, `CUBICSPLINE`, values are
+whole local transforms as in glTF), `shenfa/ClipLoader` (glTF animations matched to joints by node name, the
 armature object folded into the root as for the model; sidecar `loop`, `transition`, `mask` = joints with their
-children; unknown clips, settings or joints refused), `anim/Animation` (clip and settings), `anim/AnimationPlayer`
+children; unknown clips, settings or joints refused), `shenfa/Animation` (clip and settings), `shenfa/AnimationPlayer`
 (ticks of 1/20 s times speed and slow motion, partial ticks, loop without a jump, end callback, seek).
-`anim/client/SkeletalClips` loads `skeletal/animations/<set>.gltf` + `<set>.json` with the resource packs; ids are
+`shenfa/client/SkeletalClips` loads `skeletal/animations/<set>.gltf` + `<set>.json` with the resource packs; ids are
 `murimblock:<set>/<clip>`. The commands live under `/skeletal anim play|stop|speed` (client side) instead of
 `/murim anim`, since `/murim` is a server command and the two would clash. Blender: `tools/blender/murim_clips.py`
 keys clip sets (20 fps), `export_clips.py` exports them (every frame sampled, the helper constraint baked);
@@ -225,13 +229,13 @@ Build:
 Done when: automated test switches between every pair of motions and strikes and measures the largest joint
 rotation change between two frames: never above a threshold (no pop); GIF of walking while guarding.
 
-Step 5 done (27 Oct 2026): `anim/Animator` (base layer, composite layers `LOWEST` to `HIGHEST`, additive layers;
+Step 5 done (27 Oct 2026): `shenfa/Animator` (base layer, composite layers `LOWEST` to `HIGHEST`, additive layers;
 a layer that changes clip blends from the pose it showed, eased over the new clip's transition; a layer fades in
 and out by weight; each joint's weight follows the mask of the current motion, so a guard can take the whole body
 standing and only the arms walking, without a pop; mirroring; `SteadyBlend` keeps each joint turning the same way
-when two rotations are near half a turn apart, which made a raised arm flip in one frame), `anim/LivingMotion`
-(with fallbacks), `anim/MotionSet` (`skeletal/motions/biped.json`: clips per motion, combat clips first in combat
-mode, additive clips), sidecar settings `masks`, `additive`, `move_speed`. `anim/client/PlayerAnimators`: one
+when two rotations are near half a turn apart, which made a raised arm flip in one frame), `shenfa/LivingMotion`
+(with fallbacks), `shenfa/MotionSet` (`skeletal/motions/biped.json`: clips per motion, combat clips first in combat
+mode, additive clips), sidecar settings `masks`, `additive`, `move_speed`. `shenfa/client/PlayerAnimators`: one
 animator per player, reading the body every tick (ride, swim, climb, jump, fall, sneak, walk, run, idle) and
 playing walk, run, sneak walk and climb at the body's real speed. The renderer lays a swimmer down like vanilla and
 draws riders and swimmers. Clips (`tools/blender/murim_clips.py`): `biped` (idle, walk, run, sneak, sneak_walk,
@@ -245,7 +249,7 @@ jab from the stance. The head look is applied after the animator (no limits yet)
 Enzo to fix in Blender.
 
 Step 5 redone for vanilla parity (27 Oct 2026), so nothing vanilla does is lost before combat:
-`anim/client/VanillaPoses` runs vanilla's own player model every frame and lays its arm work on our joints: the
+`shenfa/client/VanillaPoses` runs vanilla's own player model every frame and lays its arm work on our joints: the
 item poses (bow, crossbow charging and charged, shield, trident, spyglass, goat horn, brush, and poses other mods
 add through NeoForge's `IArmPoseTransformer`) take the arm, both for two-handed ones, forearm straight, faded in
 over 0.08 s; the attack swing is added as the change it makes to each arm and to the chest's turn, so it plays over
@@ -282,12 +286,12 @@ read right. Found and fixed the same day:
 
 Walking (27 Oct 2026). Minecraft walks a body at 4.3 blocks a second with 12 px legs: a foot on the ground covers
 at most about 0.85 block a step, so either the steps are quick or the feet slide (vanilla slides). Now:
-- `anim/FootPlanter` (with `anim/LegIk`, two-bone IK): a sole the clip puts on the ground while it goes back under
+- `shenfa/FootPlanter` (with `shenfa/LegIk`, two-bone IK): a sole the clip puts on the ground while it goes back under
   the body keeps its place in the world, the thigh and knee reaching for it as the body moves on; it lets go when
   the clip lifts it (off the ground and coming forward) or the leg is straight, easing back into the clip over
   0.12 s; it plants again only after a lift (no jump), stands exactly on the ground, and a foot in the air never goes
-  through it. `anim/client/FootPlanting` runs it for each player walking, running or sneak-walking on the ground.
-- `move_speed: "auto"` (`anim/Strides`): a step cycle's ground speed is measured from its own feet at load, so the
+  through it. `shenfa/client/FootPlanting` runs it for each player walking, running or sneak-walking on the ground.
+- `move_speed: "auto"` (`shenfa/Strides`): a step cycle's ground speed is measured from its own feet at load, so the
   cadence always matches the body (walk 2.25, run 4.62, sneak walk 0.66 blocks a second at speed 1).
 - The walk steps 0.9 block (about 4.6 steps a second at 4.3 blocks a second), lands on both feet and keeps the
   swinging foot 1.2 px up until it lands (a reaching key); step cycles are keyed linearly.

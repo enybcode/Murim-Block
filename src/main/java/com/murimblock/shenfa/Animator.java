@@ -1,0 +1,315 @@
+package com.murimblock.shenfa;
+
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
+import org.joml.Vector3f;
+
+/**
+ * One body's animations: a base layer (the living motion: idle, walk...), composite layers by priority that take
+ * over the joints of their clip's mask (a guard on the arms, a strike on the whole body), and additive layers laid on
+ * top (breathing). Nothing ever pops: a layer that changes clip blends from the pose it showed into the new clip over
+ * the new clip's transition time, a layer that starts fades in over the pose under it, and a layer that stops fades
+ * out the same way.
+ */
+public final class Animator {
+    public enum Priority {
+        LOWEST, LOW, MIDDLE, HIGH, HIGHEST
+    }
+
+    private final Armature armature;
+    private final Consumer<Pose> finish;
+    private final Layer base;
+    private final Map<Priority, Layer> layers = new EnumMap<>(Priority.class);
+    private final Map<String, Layer> additives = new LinkedHashMap<>();
+    private String motion = LivingMotion.IDLE.key();
+
+    /** @param finish run on every finished pose (the biped settles its helper joints there); may be null */
+    public Animator(Armature armature, Consumer<Pose> finish) {
+        this.armature = armature;
+        this.finish = finish == null ? pose -> {
+        } : finish;
+        base = new Layer();
+        base.weight = base.previousWeight = base.targetWeight = 1;
+        for (Priority priority : Priority.values()) {
+            layers.put(priority, new Layer());
+        }
+    }
+
+    /** The living motion's key, which picks each layer's mask ({@link Animation#mask(String)}). */
+    public void motion(String key) {
+        motion = key;
+    }
+
+    public String motion() {
+        return motion;
+    }
+
+    /** The base layer's clip: blends into it unless it already plays; then only its speed changes. */
+    public void playBase(Animation animation, float speed) {
+        if (base.player.animation() == animation) {
+            base.player.speed(speed);
+            return;
+        }
+        base.start(animation, speed, false);
+    }
+
+    public Animation baseAnimation() {
+        return base.player.animation();
+    }
+
+    /** Plays {@code animation} on a composite layer; {@code mirrored} swaps left and right. */
+    public void play(Priority priority, Animation animation, float speed, boolean mirrored) {
+        Layer layer = layers.get(priority);
+        layer.start(animation, speed, mirrored);
+        layer.targetWeight = 1;
+    }
+
+    /** Fades a composite layer out over its clip's transition time. */
+    public void stop(Priority priority) {
+        layers.get(priority).targetWeight = 0;
+    }
+
+    /** The clip on a layer, or null when the layer is off or fading out. */
+    public Animation playing(Priority priority) {
+        Layer layer = layers.get(priority);
+        return layer.targetWeight > 0 ? layer.player.animation() : null;
+    }
+
+    /** Starts an additive clip (it keeps its place if it already plays). */
+    public void playAdditive(Animation animation) {
+        Layer layer = additives.computeIfAbsent(animation.id(), id -> new Layer());
+        if (layer.player.animation() != animation) {
+            layer.player.play(animation, 1, null);
+        }
+        layer.targetWeight = 1;
+    }
+
+    public void stopAdditive(String id) {
+        Layer layer = additives.get(id);
+        if (layer != null) {
+            layer.targetWeight = 0;
+        }
+    }
+
+    /** One game tick, times {@code scale} (slow motion). */
+    public void tick(float scale) {
+        base.tick(scale);
+        layers.values().forEach(layer -> layer.tick(scale));
+        additives.values().forEach(layer -> layer.tick(scale));
+        additives.values().removeIf(layer -> layer.weight <= 0 && layer.targetWeight <= 0);
+    }
+
+    /** The pose between the last two ticks. */
+    public Pose pose(float partialTick) {
+        Pose result = base.sample(partialTick);
+        for (Layer layer : layers.values()) {
+            float weight = layer.weight(partialTick);
+            if (weight > 0 && layer.player.animation() != null) {
+                result = layer.overlay.blend(result, layer.sample(partialTick), layer.jointWeights(partialTick, weight));
+            }
+        }
+        for (Layer layer : additives.values()) {
+            float weight = layer.weight(partialTick);
+            Animation animation = layer.player.animation();
+            if (weight > 0 && animation != null) {
+                result = result.add(delta(layer, partialTick, weight), animation.mask(motion));
+            }
+        }
+        finish.accept(result);
+        return result;
+    }
+
+    /** An additive clip's change from its first frame, scaled by {@code weight}. */
+    private Pose delta(Layer layer, float partialTick, float weight) {
+        Pose first = layer.player.animation().clip().sample(0, armature.bindPose());
+        Pose now = layer.player.pose(partialTick, armature.bindPose());
+        Pose delta = new Pose(now.size());
+        for (int i = 0; i < now.size(); i++) {
+            JointTransform a = first.get(i), b = now.get(i);
+            Vector3f move = new Vector3f(b.translation()).sub(a.translation()).mul(weight);
+            Quaternionf turn = new Quaternionf(a.rotation()).conjugate().mul(b.rotation());
+            new Quaternionf().slerp(turn, weight, turn);
+            delta.set(i, JointTransform.of(move, turn, new Vector3f(1, 1, 1)));
+        }
+        return delta;
+    }
+
+    /**
+     * Blends poses joint by joint, each joint keeping the way it turns from one frame to the next. Two rotations
+     * almost half a turn apart (an arm raised overhead blending into one swinging back) have two short ways round;
+     * as the clips move, the shorter one can switch sides mid-blend and the limb would flip in one frame.
+     */
+    public static final class SteadyBlend {
+        /** Below this |dot| (rotations more than about 150° apart) a joint keeps the side it was going round. */
+        private static final float NEAR_HALF_TURN = 0.25f;
+        private int[] signs;
+        /** Each side's rotation last frame: q and -q are the same turn, so a clip may hand either; this keeps one. */
+        private Quaternionf[] lastFrom, lastTo;
+
+        Pose blend(Pose a, Pose b, float weight) {
+            float[] weights = new float[a.size()];
+            Arrays.fill(weights, weight);
+            return blend(a, b, weights);
+        }
+
+        Pose blend(Pose a, Pose b, float[] weights) {
+            Pose result = a.copy();
+            for (int i = 0; i < a.size(); i++) {
+                float w = weights[i];
+                if (w <= 0) {
+                    continue;
+                }
+                JointTransform from = a.get(i), to = b.get(i);
+                Quaternionf turn = rotation(i, a.size(), from.rotation(), to.rotation(), w);
+                result.set(i, w >= 1 ? to : JointTransform.of(new Vector3f(from.translation()).lerp(to.translation(), w),
+                        turn, new Vector3f(from.scale()).lerp(to.scale(), w)));
+            }
+            return result;
+        }
+
+        /**
+         * One joint's rotation {@code weight} of the way from {@code from} to {@code to}, keeping the way round it
+         * took last frame.
+         *
+         * @param joints how many joints this blend tracks (the first call sizes it)
+         */
+        public Quaternionf rotation(int joint, int joints, Quaternionfc from, Quaternionfc to, float weight) {
+            if (signs == null) {
+                signs = new int[joints];
+                lastFrom = new Quaternionf[joints];
+                lastTo = new Quaternionf[joints];
+            }
+            Quaternionf p = steady(new Quaternionf(from), lastFrom, joint);
+            Quaternionf q = steady(new Quaternionf(to), lastTo, joint);
+            float dot = p.dot(q);
+            if (signs[joint] == 0 || Math.abs(dot) > NEAR_HALF_TURN) {
+                signs[joint] = dot < 0 ? -1 : 1;
+            }
+            if (weight >= 1) {
+                return q;
+            }
+            return slerp(p, q.mul(signs[joint]), weight);
+        }
+
+        private static Quaternionf steady(Quaternionf q, Quaternionf[] last, int i) {
+            if (last[i] != null && last[i].dot(q) < 0) {
+                q.mul(-1);
+            }
+            last[i] = new Quaternionf(q);
+            return q;
+        }
+
+        /** Slerp along the arc from {@code a} to {@code b} as given, never flipping {@code b} to the shorter side. */
+        private static Quaternionf slerp(Quaternionf a, Quaternionf b, float t) {
+            float dot = Math.max(-1, Math.min(1, a.dot(b)));
+            float angle = (float) Math.acos(dot);
+            float sin = (float) Math.sin(angle);
+            float wa, wb;
+            if (sin < 1e-4f) {
+                wa = 1 - t;
+                wb = t;
+            } else {
+                wa = (float) Math.sin((1 - t) * angle) / sin;
+                wb = (float) Math.sin(t * angle) / sin;
+            }
+            return new Quaternionf(a.x * wa + b.x * wb, a.y * wa + b.y * wb, a.z * wa + b.z * wb, a.w * wa + b.w * wb)
+                    .normalize();
+        }
+    }
+
+    private static float ease(float t) {
+        t = Math.max(0, Math.min(1, t));
+        return t * t * (3 - 2 * t);
+    }
+
+    /** A clip player with a blend from the last pose shown, and a weight that fades in and out. */
+    private final class Layer {
+        final AnimationPlayer player = new AnimationPlayer();
+        boolean mirrored;
+        /** The pose shown when the clip changed, blended into the new clip; null when there is nothing to blend. */
+        Pose from;
+        float blendDuration;
+        float blend, previousBlend;
+        float weight, previousWeight, targetWeight;
+        /** How much the layer holds each joint: follows its mask, which can change with the motion, without a pop. */
+        float[] joints = new float[armature.size()], previousJoints = new float[armature.size()];
+        Pose last;
+        final SteadyBlend change = new SteadyBlend(), overlay = new SteadyBlend();
+
+        void start(Animation animation, float speed, boolean mirrored) {
+            boolean shown = last != null && weight > 0;
+            from = shown ? last : null;
+            blendDuration = animation.transition();
+            blend = previousBlend = 0;
+            this.mirrored = mirrored;
+            if (!shown) {
+                // Fading in from nothing: the layer weight blends, so the joints can start on the mask at once.
+                JointMask mask = animation.mask(motion);
+                for (int i = 0; i < joints.length; i++) {
+                    joints[i] = previousJoints[i] = mask.contains(i) ? 1 : 0;
+                }
+            }
+            player.play(animation, speed, () -> {
+                if (this != base && !animation.loop()) {
+                    targetWeight = 0;
+                }
+            });
+        }
+
+        void tick(float scale) {
+            player.tick(scale);
+            previousBlend = blend;
+            blend += AnimationPlayer.TICK * scale;
+            previousWeight = weight;
+            Animation animation = player.animation();
+            float fade = animation == null ? 0 : animation.transition();
+            float step = fade > 0 ? AnimationPlayer.TICK * scale / fade : 1;
+            weight = targetWeight > weight ? Math.min(targetWeight, weight + step) : Math.max(targetWeight, weight - step);
+            System.arraycopy(joints, 0, previousJoints, 0, joints.length);
+            if (animation != null) {
+                JointMask mask = animation.mask(motion);
+                for (int i = 0; i < joints.length; i++) {
+                    joints[i] = mask.contains(i) ? Math.min(1, joints[i] + step) : Math.max(0, joints[i] - step);
+                }
+            }
+            if (weight <= 0 && targetWeight <= 0 && this != base) {
+                player.stop();
+                from = last = null;
+            }
+        }
+
+        float[] jointWeights(float partialTick, float weight) {
+            float[] result = new float[joints.length];
+            for (int i = 0; i < joints.length; i++) {
+                result[i] = weight * ease(previousJoints[i] + (joints[i] - previousJoints[i]) * partialTick);
+            }
+            return result;
+        }
+
+        float weight(float partialTick) {
+            return ease(previousWeight + (weight - previousWeight) * partialTick);
+        }
+
+        Pose sample(float partialTick) {
+            Pose pose = player.pose(partialTick, armature.bindPose());
+            if (mirrored) {
+                pose = pose.mirrored(armature);
+            }
+            if (from != null && blendDuration > 0) {
+                float t = (previousBlend + (blend - previousBlend) * partialTick) / blendDuration;
+                if (t < 1) {
+                    pose = change.blend(from, pose, ease(t));
+                } else {
+                    from = null;
+                }
+            }
+            last = pose;
+            return pose;
+        }
+    }
+}
