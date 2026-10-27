@@ -171,6 +171,7 @@ final class CombatChecks {
                 discard(mc);
             }));
         }));
+        steps.add(skeletonShoots());
         if (GifRecorder.ON) {
             showcase(steps);
         }
@@ -298,6 +299,34 @@ final class CombatChecks {
                 mc.options.keySprint.setDown(false);
                 EngineTest.server(mc, player -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
                         ItemStack.EMPTY));
+                discard(mc);
+            }));
+        });
+    }
+
+    /** A skeleton with its bow still shoots: the patch only takes its melee blows. */
+    private static Step skeletonShoots() {
+        return new Step("skeleton shoots", mc -> {
+            at(mc, X, Z, 0);
+            spawn(mc, EntityType.SKELETON, X, Z + 9, false, mob -> ((Mob) mob).setTarget(serverPlayer(mc)));
+            boolean[] bow = new boolean[1];
+            int[] arrows = new int[1];
+            java.util.Set<Integer> seen = new java.util.HashSet<>();
+            start(new Run(120, t -> {
+                LivingEntity skeleton = nearest(mc, EntityType.SKELETON);
+                face(mc, skeleton);
+                if (skeleton != null && skeleton.getMainHandItem().is(Items.BOW)) {
+                    bow[0] = true;
+                }
+                for (Entity entity : mc.level.entitiesForRendering()) {
+                    if (entity instanceof net.minecraft.world.entity.projectile.AbstractArrow && seen.add(entity.getId())) {
+                        arrows[0]++;
+                    }
+                }
+                EngineTest.server(mc, player -> player.setHealth(player.getMaxHealth()));
+            }, () -> {
+                EngineTest.check("a skeleton with its bow still shoots arrows (" + arrows[0] + " in 6 s)",
+                        bow[0] && arrows[0] >= 1);
                 discard(mc);
             }));
         });
