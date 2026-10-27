@@ -23,7 +23,7 @@ on it. `engine-roadmap.md` is the record of what was built and how; `epic-fight-
 - Combat (EF-inspired, first version): combat mode, fists and blade movesets with combos, dash and air strikes,
   techniques for Qi, dodges with invulnerability, swept colliders, damage with cultivation, staggers by impact against
   stun armor, hit stop, guard for Qi with guard break, parry, 8-tick buffer, gap closing toward the target.
-- Mobs: 30 vanilla mobs patched; 18 checked in game landing their Shenfa attack at the clip's window.
+- Mobs: 24 vanilla mobs patched; 18 checked in game landing their Shenfa attack at the clip's window.
 - Feel: hit stop, camera shake, flash, sparks and sounds by result, trails on fists and blades, lock-on (flick to
   switch, retarget after a kill), Qi bar in combat mode.
 - Checks: 94 unit tests; in-game groups render, clips, motions, vanilla, player, events, mobs, combat, film, perf,
