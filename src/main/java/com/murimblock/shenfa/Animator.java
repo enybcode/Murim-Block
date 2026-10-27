@@ -80,6 +80,16 @@ public final class Animator {
         return layer.targetWeight > 0 ? layer.player.animation() : null;
     }
 
+    /** Whether any composite layer has a clip on (not fading out). */
+    public boolean anyLayer() {
+        for (Priority priority : Priority.values()) {
+            if (playing(priority) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Starts an additive clip (it keeps its place if it already plays). */
     public void playAdditive(Animation animation) {
         Layer layer = additives.computeIfAbsent(animation.id(), id -> new Layer());

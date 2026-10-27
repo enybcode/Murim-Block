@@ -7,6 +7,7 @@ import com.murimblock.shenfa.SkinnedModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -46,8 +47,9 @@ final class SkeletalArmor {
     }
 
     /** {@code matrix} is the model's space in pixels. */
+    /** {@code shown} picks the armor parts drawn (in first person, not the helmet). */
     static void render(PlayerRenderer renderer, AbstractClientPlayer player, SkinnedModel model, Matrix4f[] skin,
-                       PoseStack.Pose matrix, MultiBufferSource buffers, int light) {
+                       PoseStack.Pose matrix, MultiBufferSource buffers, int light, Predicate<String> shown) {
         for (EquipmentSlot slot : SLOTS) {
             ItemStack stack = player.getItemBySlot(slot);
             if (!(stack.getItem() instanceof ArmorItem armor) || armor.getEquipmentSlot() != slot
@@ -57,7 +59,7 @@ final class SkeletalArmor {
             List<SkinnedMesh> parts = new ArrayList<>();
             for (String name : PARTS.get(slot)) {
                 SkinnedMesh part = model.part(name);
-                if (part != null) {
+                if (part != null && shown.test(name)) {
                     parts.add(part);
                 }
             }

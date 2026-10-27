@@ -5,6 +5,7 @@ import com.murimblock.shenfa.Animator;
 import com.murimblock.shenfa.Biped;
 import com.murimblock.shenfa.LivingMotion;
 import com.murimblock.shenfa.Pose;
+import com.murimblock.shenfa.client.FirstPerson;
 import com.murimblock.shenfa.client.FootPlanting;
 import com.murimblock.shenfa.client.PlayerAnimators;
 import com.murimblock.shenfa.client.SkeletalPlayerRenderer;
@@ -123,6 +124,8 @@ final class PlayerChecks {
             REPORT.forEach(line -> Murimblock.LOGGER.info("Engine test player: {}", line));
             keys(mc, false, false, false, false, false);
             mc.options.setCameraType(CameraType.FIRST_PERSON);
+            mc.options.fov().set(70);
+            mc.options.hideGui = true;
             SkeletalPlayerRenderer.poseProbe = null;
             PlayerAnimators.combat(false);
             SkeletalPlayers.enable(false);
@@ -264,6 +267,52 @@ final class PlayerChecks {
                 SkeletalPlayers.play(JAB, Animator.Priority.HIGH, 1, t % 24 == 16);
             }
         }, LivingMotion.IDLE));
+        // First person (parts named fp_): the body seen from its eyes, vanilla's hands or ours when a layer plays.
+        PARTS.add(new Part("fp_look_down", 40, 0, mc -> {
+            PlayerAnimators.combat(false);
+            hold(mc, ItemStack.EMPTY, ItemStack.EMPTY);
+            at(mc, X, Y, Z, 0);
+        }, (mc, t) -> look(mc, 70), LivingMotion.IDLE));
+        PARTS.add(new Part("fp_walk_down", 40, 0, mc -> at(mc, X, Y, Z, 0), (mc, t) -> {
+            look(mc, 55);
+            keys(mc, true, false, false, false, false);
+        }, LivingMotion.WALK));
+        PARTS.add(new Part("fp_sword_walk", 40, 0, mc -> {
+            hold(mc, new ItemStack(Items.DIAMOND_SWORD), ItemStack.EMPTY);
+            at(mc, X, Y, Z, 0);
+        }, (mc, t) -> {
+            look(mc, 10);
+            keys(mc, true, false, false, false, false);
+            if (t % 10 == 5) {
+                mc.player.swing(InteractionHand.MAIN_HAND);
+            }
+        }, LivingMotion.WALK));
+        PARTS.add(new Part("fp_guard_walk", 40, 0, mc -> {
+            hold(mc, ItemStack.EMPTY, ItemStack.EMPTY);
+            PlayerAnimators.combat(true);
+            at(mc, X, Y, Z, 0);
+            SkeletalPlayers.play(GUARD, Animator.Priority.MIDDLE, 1, false);
+        }, (mc, t) -> {
+            look(mc, 15);
+            keys(mc, true, false, false, false, false);
+        }, LivingMotion.WALK));
+        for (int fov : new int[] {70, 30, 110}) {
+            PARTS.add(new Part("fp_jabs_fov" + fov, 40, 0, mc -> {
+                SkeletalPlayers.stop(Animator.Priority.MIDDLE);
+                mc.options.fov().set(fov);
+                at(mc, X, Y, Z, 0);
+            }, (mc, t) -> {
+                look(mc, 0);
+                if (t % 12 == 4) {
+                    SkeletalPlayers.play(JAB, Animator.Priority.HIGH, 1, t % 24 == 16);
+                }
+            }, LivingMotion.IDLE));
+        }
+    }
+
+    private static void look(Minecraft mc, float pitch) {
+        mc.player.setXRot(pitch);
+        mc.player.xRotO = pitch;
     }
 
     private static BiConsumer<Minecraft, Integer> none() {
@@ -384,6 +433,14 @@ final class PlayerChecks {
         shot = 0;
         if (part < PARTS.size()) {
             keys(mc, false, false, false, false, false);
+            boolean firstPerson = PARTS.get(part).name().startsWith("fp_");
+            mc.options.setCameraType(firstPerson ? CameraType.FIRST_PERSON : CameraType.THIRD_PERSON_BACK);
+            // In first person the hands show only with the interface (as in play).
+            mc.options.hideGui = !firstPerson;
+            if (!firstPerson) {
+                mc.options.fov().set(70);
+            }
+            FirstPerson.resetNearest();
             Murimblock.LOGGER.info("Engine test player: part {}", PARTS.get(part).name());
             PARTS.get(part).start().accept(mc);
         }
@@ -393,12 +450,14 @@ final class PlayerChecks {
         Part done = PARTS.get(part);
         LivingMotion most = SEEN.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey)
                 .orElse(null);
+        float nearest = FirstPerson.resetNearest();
         String line = done.name() + ": motions " + SEEN + ", largest joint turn per frame at 60 fps "
                 + String.format("%.1f°", largestTurn) + " (" + largestWhere + ") over " + frames + " frames"
                 + (slideTime > 0 ? String.format(", planted foot slides %.2f blocks/s on average (%.2f at most)",
                 slide / slideTime, slideMost) : "")
                 + (groundSamples > 0 ? String.format(", foot off its ground %.2f px on average (%.2f at most)",
-                groundOff / groundSamples, groundMost) : "");
+                groundOff / groundSamples, groundMost) : "")
+                + (nearest < Float.MAX_VALUE ? String.format(", nearest hand %.2f blocks from the eye", nearest) : "");
         REPORT.add(line);
         spikes.forEach(spike -> REPORT.add("  spike " + spike));
         if (done.expected() != null) {
@@ -426,7 +485,7 @@ final class PlayerChecks {
     /** The camera: at a fixed angle from where the player faced when the part started, 5 blocks away, looking down. */
     @SubscribeEvent
     public static void camera(ViewportEvent.ComputeCameraAngles event) {
-        if (part >= 0 && part < PARTS.size()) {
+        if (part >= 0 && part < PARTS.size() && !PARTS.get(part).name().startsWith("fp_")) {
             event.setYaw(facing + PARTS.get(part).view());
             event.setPitch(18);
         }
@@ -434,7 +493,7 @@ final class PlayerChecks {
 
     @SubscribeEvent
     public static void distance(CalculateDetachedCameraDistanceEvent event) {
-        if (part >= 0 && part < PARTS.size()) {
+        if (part >= 0 && part < PARTS.size() && !PARTS.get(part).name().startsWith("fp_")) {
             event.setDistance(5);
         }
     }

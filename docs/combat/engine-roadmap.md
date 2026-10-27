@@ -359,6 +359,19 @@ Build:
 
 Done when: GIFs in first person of idle, walk, each strike; no arm clipping into the camera at FOV 30 to 110.
 
+Step 7 done (27 Oct 2026): `shenfa/client/FirstPerson`. In first person the local player's body is drawn in the world
+(after the entities, through the same renderer) from the pose others see, the head, hat, helmet, head items, vanilla
+layers and name tag left out, so looking down shows the body and the steps (planted feet included) at any field of
+view; looking down the body steps back under the eye (up to 0.2 block) so the chest's top does not fill the view.
+Vanilla's first-person hands stay for ordinary play (mining, placing, eating, every item pose); in combat mode, or
+while a Shenfa layer plays, our arms and held items replace them (`RenderHandEvent` cancelled), so the stance, the
+guard and strikes are seen as others see them, without the arms swapping between strikes. The camera follows the
+head's eye (above the neck, the neck's own turn left out), smoothed and at most 0.35 block from vanilla's, moved in
+the field-of-view event (after the camera is placed, before the world). `/skeletal firstperson on|off`. Checks (tour,
+real player): looking down, walking looking down, walking with a sword (vanilla hands), the guard walking, jabs at FOV
+70, 30 and 110; the hands never come nearer than 0.33 block to the eye (the near plane is 0.05). Not done: per-clip
+first-person adjustments (to add when a strike reads badly); in combat the fists sit low in the view at rest.
+
 ## Step 8: Network sync
 
 Goal: everyone sees the same animations at the same moment.

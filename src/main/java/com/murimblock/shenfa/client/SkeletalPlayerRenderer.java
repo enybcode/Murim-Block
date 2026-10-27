@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.murimblock.Murimblock;
 import com.murimblock.shenfa.Armature;
+import com.murimblock.shenfa.Biped;
 import com.murimblock.shenfa.BipedPoses;
 import com.murimblock.shenfa.Joint;
 import com.murimblock.shenfa.Pose;
@@ -58,6 +59,10 @@ public final class SkeletalPlayerRenderer {
             "jacket", PlayerModelPart.JACKET, "sleeve_l", PlayerModelPart.LEFT_SLEEVE,
             "sleeve_r", PlayerModelPart.RIGHT_SLEEVE, "pants_l", PlayerModelPart.LEFT_PANTS_LEG,
             "pants_r", PlayerModelPart.RIGHT_PANTS_LEG);
+    /** Seen from its own eyes, the head (and what sits on it) is left out; the arms too, unless they are ours. */
+    private static final Set<String> HEAD_PARTS = Set.of("head", "hat", "armor_head", "armor_hat");
+    private static final Set<String> ARM_PARTS = Set.of("arm_l", "arm_r", "sleeve_l", "sleeve_r", "armor_arm_l",
+            "armor_arm_r");
     /** A spectator shows only its head to other spectators, as in vanilla. */
     private static final Set<String> SPECTATOR_PARTS = Set.of("head", "hat");
     /**
@@ -156,6 +161,11 @@ public final class SkeletalPlayerRenderer {
         }
         Matrix4f[] skinMatrices = pose.toSkinMatrices(model.armature());
         Matrix4f[] jointMatrices = pose.toModelMatrices(model.armature());
+        boolean firstPerson = FirstPerson.drawing();
+        boolean ownArms = !firstPerson || FirstPerson.ownArms();
+        if (firstPerson) {
+            seenFromTheEye(player, model, jointMatrices, bodyYaw, ownArms);
+        }
 
         poseStack.pushPose();
         float scale = player.getScale();
@@ -174,7 +184,7 @@ public final class SkeletalPlayerRenderer {
         turnLikeVanilla(player, poseStack, bodyYaw, partialTick, scale, swim, upsideDown);
         poseStack.scale(PLAYER_SCALE, PLAYER_SCALE, PLAYER_SCALE);
         boolean spectator = player.isSpectator();
-        if (!spectator) {
+        if (!spectator && !firstPerson) {
             // The vanilla layers (cape, elytra, arrows, head items, other mods' layers) draw in vanilla's model space.
             VanillaLayers.render(renderer, player, model.armature(), jointMatrices, poseStack, buffers, light,
                     partialTick, netHeadYaw, pitch);
@@ -198,7 +208,8 @@ public final class SkeletalPlayerRenderer {
             for (SkinnedMesh part : model.parts()) {
                 PlayerModelPart outer = OUTER_PARTS.get(part.name());
                 if (part.armor() || part.outer() && outer != null && !player.isModelPartShown(outer)
-                        || spectator && !SPECTATOR_PARTS.contains(part.name())) {
+                        || spectator && !SPECTATOR_PARTS.contains(part.name())
+                        || firstPerson && hiddenInFirstPerson(part.name(), ownArms)) {
                     continue;
                 }
                 draw(part, skinMatrices, poseStack.last(), consumer, color, light, overlay);
@@ -210,11 +221,12 @@ public final class SkeletalPlayerRenderer {
         if (skeletonView) {
             drawJoints(model.armature(), jointMatrices, poseStack.last(), buffers);
         } else if (!spectator) {
-            SkeletalArmor.render(renderer, player, model, skinMatrices, poseStack.last(), buffers, light);
+            SkeletalArmor.render(renderer, player, model, skinMatrices, poseStack.last(), buffers, light,
+                    name -> !firstPerson || !hiddenInFirstPerson(name, ownArms));
         }
         poseStack.popPose();
 
-        if (!spectator) {
+        if (!spectator && ownArms) {
             boolean slim = skin.model() == PlayerSkin.Model.SLIM;
             holdItem(player, HumanoidArm.RIGHT, jointMatrices[model.armature().get("Tool_R").index()], slim, poseStack,
                     buffers, light);
@@ -223,7 +235,9 @@ public final class SkeletalPlayerRenderer {
         }
         poseStack.popPose();
 
-        NameTag.render(renderer, player, poseStack, buffers, light, partialTick);
+        if (!firstPerson) {
+            NameTag.render(renderer, player, poseStack, buffers, light, partialTick);
+        }
     }
 
     /**
@@ -367,6 +381,35 @@ public final class SkeletalPlayerRenderer {
                 poseStack.translate(0, -1, -0.3f);
             }
         }
+    }
+
+    private static boolean hiddenInFirstPerson(String part, boolean ownArms) {
+        return HEAD_PARTS.contains(part) || !ownArms && ARM_PARTS.contains(part);
+    }
+
+    /**
+     * Seen in first person: tells the camera where the head puts the eye (above the neck, the neck's own turn left
+     * out so looking down does not swing the view), and how near the hands come to it.
+     */
+    private static void seenFromTheEye(AbstractClientPlayer player, SkinnedModel model, Matrix4f[] joints,
+                                       float bodyYaw, boolean ownArms) {
+        float toBlocks = PLAYER_SCALE * player.getScale() / 16;
+        float lift = SkeletalPlayers.animated() && player.isCrouching() ? player.getScale() * 2 / 16f : 0;
+        Vector3f neck = joints[model.armature().get(Biped.HEAD).index()].getTranslation(new Vector3f());
+        Vector3f eye = toWorld(neck.add(0, FirstPerson.EYE_ABOVE_NECK, 0), toBlocks, bodyYaw, lift);
+        FirstPerson.eye(new Vector3f(eye).sub(0, player.getEyeHeight(), 0));
+        if (ownArms) {
+            for (String tool : new String[] {"Tool_L", "Tool_R", "Hand_L", "Hand_R"}) {
+                Vector3f hand = toWorld(joints[model.armature().get(tool).index()].getTranslation(new Vector3f()),
+                        toBlocks, bodyYaw, lift);
+                FirstPerson.hand(hand.distance(eye));
+            }
+        }
+    }
+
+    /** A model point (pixels) relative to the player's feet in the world (blocks). */
+    private static Vector3f toWorld(Vector3f model, float toBlocks, float bodyYaw, float lift) {
+        return new Vector3f(model).mul(toBlocks).rotateY((float) Math.toRadians(-bodyYaw)).add(0, lift, 0);
     }
 
     /** Whether the armor in {@code slot} has a model of its own, drawn by vanilla's armor layer rather than ours. */

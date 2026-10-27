@@ -215,6 +215,13 @@ public final class SkeletalPlayers {
                             context.getSource().sendSystemMessage(Component.literal("Skeletal motion: " + key));
                             return 1;
                         })))
+                .then(Commands.literal("firstperson").then(Commands.literal("on").executes(context -> {
+                    FirstPerson.enable(true);
+                    return 1;
+                })).then(Commands.literal("off").executes(context -> {
+                    FirstPerson.enable(false);
+                    return 1;
+                })))
                 .then(Commands.literal("combat").then(Commands.literal("on").executes(context -> {
                     PlayerAnimators.combat(true);
                     return 1;

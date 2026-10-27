@@ -67,6 +67,11 @@ public final class PlayerAnimators {
         combat = on;
     }
 
+    /** Whether combat mode is on (the dev switch until combat mode exists). */
+    public static boolean inCombat() {
+        return combat;
+    }
+
     /** Dev: every player plays this motion whatever its body does; null goes back to reading the body. */
     public static void force(LivingMotion motion) {
         forced = motion;
@@ -87,6 +92,12 @@ public final class PlayerAnimators {
     /** Forgets every animator: after a reload their clips are stale. */
     public static void clear() {
         STATES.clear();
+    }
+
+    /** Whether a composite layer (a guard, a strike) plays on {@code player}. */
+    public static boolean layerPlaying(AbstractClientPlayer player) {
+        State state = STATES.get(player);
+        return state != null && state.animator.anyLayer();
     }
 
     /** The base layer's clip of {@code player}, or null. */
