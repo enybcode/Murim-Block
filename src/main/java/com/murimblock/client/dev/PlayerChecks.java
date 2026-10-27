@@ -92,6 +92,9 @@ final class PlayerChecks {
     private static boolean shotSince;
     private static float largestTurn;
     private static String largestWhere = "";
+    /** Frames where a joint turned faster than {@link #SPIKE} (at 60 fps), with what the body was doing. */
+    private static final List<String> spikes = new ArrayList<>();
+    private static final float SPIKE = 40;
     /** The foot on the ground: its last place in the world, which foot, and how far it slid while planted. */
     private static Vector3f plantedAt;
     private static int plantedFoot = -1;
@@ -370,6 +373,7 @@ final class PlayerChecks {
         lastPose = null;
         largestTurn = 0;
         largestWhere = "";
+        spikes.clear();
         plantedAt = null;
         plantedFoot = -1;
         slide = slideTime = slideMost = 0;
@@ -396,6 +400,7 @@ final class PlayerChecks {
                 + (groundSamples > 0 ? String.format(", foot off its ground %.2f px on average (%.2f at most)",
                 groundOff / groundSamples, groundMost) : "");
         REPORT.add(line);
+        spikes.forEach(spike -> REPORT.add("  spike " + spike));
         if (done.expected() != null) {
             EngineTest.check("the real player " + done.name() + " plays " + done.expected().key() + " (" + SEEN + ")",
                     most == done.expected());
@@ -446,6 +451,13 @@ final class PlayerChecks {
                 float dot = Math.abs(new Quaternionf(pose.get(i).rotation()).dot(new Quaternionf(lastPose.get(i).rotation())));
                 // As if frames came at 60 per second: a tick is three of them.
                 float turn = (float) Math.toDegrees(2 * Math.acos(Math.min(1, dot))) / (elapsed * 3);
+                if (turn > SPIKE && spikes.size() < 12) {
+                    spikes.add(String.format("t%d+%.2f %s %.0f° (raw %.0f° in %.3f ticks) %s y%.3f %s", ticks,
+                            mc.getTimer().getGameTimeDeltaPartialTick(false),
+                            com.murimblock.shenfa.Biped.ARMATURE.joint(i).name(), turn,
+                            turn * elapsed * 3, elapsed, PlayerAnimators.motion(player).key(), player.getY(),
+                            FootPlanting.debug(player)));
+                }
                 if (turn > largestTurn) {
                     largestTurn = turn;
                     var base = PlayerAnimators.baseAnimation(player);

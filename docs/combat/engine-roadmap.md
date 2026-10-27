@@ -315,8 +315,16 @@ world. `LegIk` turns the thigh about the knee's hinge first (a signed angle, no 
 160°. The tour adds stairs up and down, slabs, a slab edge and turning in place, and measures how far the foot on the
 ground stands off its surface. Measured: walking 0.01 blocks a second of slide (was 0.2), sideways 0.08, back 0.4,
 stairs down 1.0, slabs 0.5, turning in place 0, a slab edge 0; feet within 0.05 px of their surface on average.
-Left: on stairs and slabs a leg still turns up to about 120° in a single frame when a step lifts or drops the body
-(the climb's own speed adds to the catch-up); a knee turns up to about 75° a frame walking on the flat at moments.
+Rechecked the same day (the tour logs every frame where a joint turns faster than 40° at 60 fps, with the feet's
+state), causes found and fixed: a leg near full stretch or full fold made the knee snap (`LegIk` eases the distance
+there, soft IK); a foot let go held back then snapped (it is now handed back to the clip as the clip lifts it); the
+hips squatted for a rear foot left on the lower step (only a foot under or ahead of the body makes them sink, a
+step's catch-up is capped at 3 px up and 6 down); a step up or a slab was read as a jump, and a short drop off a
+step too (`PlayerAnimators`); a jump dragged the legs to the ground (a foot let go in the air rises with the body);
+landing folded the legs (in the air feet just follow the clip); the ground lookup returned a surface buried under a
+stair; an arm flipped on the ladder (the animator's steady blend forgets the last blend's ways round); the elytra
+head snapped back 45° (it tilts over four ticks). Now on the real player: on the flat a knee peaks at 35 to 55° a
+frame (the clip alone 22), stairs and slabs at 50 to 78° for a frame or two per climb, everything else under 47°.
 `StairsTest`, `FootPlanterTest` and `WalkSlideTest` check this offline.
 Matching vanilla or right as is: idle, sneak, jump, fall and landing, boat, bed, bow, crossbow, shield, eating, the
 stance, the guard while walking, jabs; the sword swing's 48° a frame is vanilla's own speed (its formula gives 46°

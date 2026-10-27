@@ -23,6 +23,8 @@ public final class FootPlanter {
     public static final Vector3fc SOLE = new Vector3f(0, -6, 0);
     /** The clip's sole this close to the ground (pixels) plants the foot; this far up lifts it. */
     public static final float DOWN = 0.8f, UP = 1.6f;
+    /** A lifting foot is handed back to the clip between these heights of the clip's sole (pixels). */
+    public static final float LIFT_FROM = 0.3f, LIFT_TO = 2.5f;
     /** A planted foot lets go when the leg would be this close to straight (pixels short of its full length). */
     private static final float STRETCH = 0.05f;
     public static final float FADE = 0.12f;
@@ -33,8 +35,16 @@ public final class FootPlanter {
     public static final float DRIFT = 2.5f, TWIST = (float) Math.toRadians(35);
     /** A standing step: how long it takes (seconds) and how high the foot lifts (pixels). */
     public static final float STEP_TIME = 0.2f, STEP_LIFT = 2;
+    /** A standing step waits this long (seconds) after the other foot's. */
+    public static final float STEP_PAUSE = 0.06f;
     /** How fast the drawn body catches up with a step up or down (pixels a second); a bigger jump is a teleport. */
     public static final float LAG_SPEED = 60, MOST_LAG = 10;
+    /** How low (pixels) a body lifted up a step is drawn at most while it catches up. */
+    public static final float MOST_LAG_UP = 3;
+    /** How high (pixels) a body dropped down a step is drawn at most while it catches up. */
+    public static final float MOST_LAG_DOWN = 6;
+    /** A foot this far (pixels) behind the hips, walking, does not make them sink. */
+    public static final float BEHIND = 3;
     /** The hips keep at least this height (pixels) above the highest foot. */
     public static final float HIP_ABOVE_FEET = 6;
     /** How fast a foot's height may change (pixels a second), and how far ahead a swinging foot looks for a step up. */
@@ -63,8 +73,9 @@ public final class FootPlanter {
     public String debug() {
         StringBuilder text = new StringBuilder(String.format("sink %.1f lag %.1f", sink, lag));
         for (Foot foot : feet) {
-            text.append(String.format(" | %s w%.2f y%.2f", foot.planted != null ? "P" : foot.stepTime >= 0 ? "S" : "-",
-                    foot.weight, foot.drawnY));
+            text.append(String.format(" | %s w%.2f y%.2f goal(%.1f %.1f) over %.1f hip %.1f",
+                    foot.planted != null ? "P" : foot.stepTime >= 0 ? "S" : "-", foot.weight, foot.drawnY,
+                    foot.lastGoal.y, foot.lastGoal.z, foot.lastOver, foot.lastHip));
         }
         return text.toString();
     }
@@ -87,12 +98,19 @@ public final class FootPlanter {
         /** Where the target was in model space when the foot let go: the ease out follows the body there. */
         Vector3f released;
         boolean lifted = true;
+        /** Let go because the clip lifts it: handed back by height. */
+        boolean lifting;
+        /** For checks: last frame's goal (model), ground ahead and hip height. */
+        Vector3f lastGoal = new Vector3f();
+        float lastOver, lastHip;
         /** The clip's sole last frame (model space), to tell a foot pushing back from one swinging forward. */
         Vector3f lastSole;
         float weight;
         /** A standing step under way: where it started (world) and its time (seconds), or a negative time. */
         Vector3f stepFrom;
         float stepTime = -1;
+        /** Seconds since this foot last finished a standing step. */
+        float sinceStep = 1;
         /** The height the sole is drawn at in the world (blocks), moved at most {@link #FOOT_SPEED}; NaN at first. */
         float drawnY = Float.NaN;
     }
@@ -131,17 +149,23 @@ public final class FootPlanter {
         lastY = at.y();
         // A bigger jump is a teleport; off the ground the drawn body only catches up.
         lag = Math.abs(lag - bodyRise) > MOST_LAG ? 0 : mode == Mode.OFF ? lag : lag - bodyRise;
+        // A body lifted up a step is drawn a little low only (much lower, it would squat on the step it climbs), and one
+        // dropped down a little high only (much higher, its legs would stretch).
+        lag = Math.max(-MOST_LAG_UP, Math.min(MOST_LAG_DOWN, lag));
         float catchUp = LAG_SPEED * seconds;
         lag = lag > 0 ? Math.max(0, lag - catchUp) : Math.min(0, lag + catchUp);
 
-        // The hips sink so the lower foot (planted, or about to stand) reaches its ground.
+        // The hips sink so the lower foot (planted, or about to stand) reaches its ground; walking, only for a foot
+        // under or ahead of the body (one coming down a step). A foot left behind on a lower step pushes off and lets
+        // go instead: climbing, the body would otherwise squat for it.
         float wanted = 0;
         if (mode != Mode.OFF) {
             for (int side = 0; side < 2; side++) {
                 Foot foot = feet[side];
-                if (foot.planted != null) {
+                boolean ahead = mode == Mode.STAND || clip[side].dot(heading) > -BEHIND;
+                if (foot.planted != null && ahead) {
                     wanted = Math.min(wanted, (foot.planted.y - at.y()) / toBlocks);
-                } else if (clip[side].y < UP) {
+                } else if (foot.planted == null && clip[side].y < UP && ahead) {
                     wanted = Math.min(wanted, floor[side]);
                 }
             }
@@ -194,9 +218,13 @@ public final class FootPlanter {
                 }
                 case STEP -> {
                     foot.stepTime = -1;
-                    if (height > UP || forward && (foot.planted == null || height > DOWN)) {
+                    if (height > UP || forward && (foot.planted == null || height > LIFT_FROM)) {
                         // A planted foot stays down while the clip only starts it forward on the ground (the toes),
-                        // and lets go once it is both off the ground and coming forward.
+                        // and lets go once it is both off the ground and coming forward: from there it follows the
+                        // clip's lift (below), not the clock.
+                        if (foot.planted != null) {
+                            foot.lifting = true;
+                        }
                         foot.planted = null;
                         foot.lifted = true;
                     } else if (foot.planted == null && foot.lifted && height < DOWN && back) {
@@ -204,6 +232,7 @@ public final class FootPlanter {
                         if (spot != null) {
                             foot.planted = world(spot, at, yaw, toBlocks);
                             foot.lifted = false;
+                            foot.lifting = false;
                             // A foot plants where it is and holds at once; pulled in from where the clip put it, it moves
                             // there instead of jumping.
                             foot.weight = spot.distance(onFloor) > 0.2f ? 0 : 1;
@@ -212,9 +241,11 @@ public final class FootPlanter {
                 }
                 case STAND -> {
                     Foot other = feet[1 - side];
+                    foot.sinceStep += seconds;
                     if (foot.stepTime >= 0) {
                         foot.stepTime += seconds;
                         if (foot.stepTime >= STEP_TIME) {
+                            foot.sinceStep = 0;
                             foot.stepTime = -1;
                             foot.planted = world(onFloor, at, yaw, toBlocks);
                             foot.plantedYaw = yaw;
@@ -227,7 +258,7 @@ public final class FootPlanter {
                             foot.weight = 1;
                             foot.weight = 1;
                         }
-                    } else if (other.stepTime < 0) {
+                    } else if (other.stepTime < 0 && other.sinceStep > STEP_PAUSE) {
                         Vector3f now = model(foot.planted, at, yaw, toBlocks);
                         float drift = (float) Math.hypot(now.x - sole.x, now.z - sole.z);
                         float twist = Math.abs(wrap(yaw - foot.plantedYaw));
@@ -273,8 +304,17 @@ public final class FootPlanter {
                 foot.released = model(foot.target, at, yaw, toBlocks);
             }
             // Holding eases in (a foot pulled in moves to its spot) and letting go eases back into the clip.
-            foot.weight = target != null ? Math.min(1, foot.weight + seconds / FADE)
-                    : Math.max(0, foot.weight - seconds / FADE);
+            if (target != null) {
+                foot.weight = Math.min(1, foot.weight + seconds / FADE);
+            } else if (foot.lifting && mode == Mode.STEP) {
+                // Handed back to the clip as the clip lifts it: at the clip's own pace (a knee bending to lift the
+                // foot is fast; a fade on the clock would hold it back, then let it snap), and at the latest on the clock
+                // (a clip that barely lifts, like sneaking).
+                float up = Math.max(0, Math.min(1, (height - LIFT_FROM) / (LIFT_TO - LIFT_FROM)));
+                foot.weight = Math.min(Math.max(0, foot.weight - seconds / FADE), 1 - up * up * (3 - 2 * up));
+            } else {
+                foot.weight = Math.max(0, foot.weight - seconds / FADE);
+            }
             Vector3f goal = free;
             if (foot.weight > 0 && foot.target != null) {
                 float w = foot.weight * foot.weight * (3 - 2 * foot.weight);
@@ -284,6 +324,10 @@ public final class FootPlanter {
                 if (target == null && foot.released != null) {
                     held.x = foot.released.x;
                     held.z = foot.released.z;
+                    if (mode == Mode.OFF) {
+                        // In the air (a jump) it rises with the body: held to the ground it would drag the leg down.
+                        held.y = foot.released.y;
+                    }
                 }
                 goal = new Vector3f(free).lerp(held, w);
             }
@@ -308,6 +352,9 @@ public final class FootPlanter {
             if (goal.distanceSquared(sole) > 1e-6f) {
                 LegIk.reach(Biped.ARMATURE, pose, thigh, shin, SOLE, goal, 1);
             }
+            foot.lastGoal.set(goal);
+            foot.lastOver = over[side];
+            foot.lastHip = pose.toModelMatrices(Biped.ARMATURE)[thigh].m31();
         }
         Biped.settleHelpers(pose);
     }

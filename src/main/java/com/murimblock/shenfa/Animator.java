@@ -151,6 +151,11 @@ public final class Animator {
         /** Each side's rotation last frame: q and -q are the same turn, so a clip may hand either; this keeps one. */
         private Quaternionf[] lastFrom, lastTo;
 
+        /** Forgets the ways round taken so far: the next blend starts from the shorter way for each joint. */
+        void reset() {
+            signs = null;
+        }
+
         Pose blend(Pose a, Pose b, float weight) {
             float[] weights = new float[a.size()];
             Arrays.fill(weights, weight);
@@ -246,6 +251,8 @@ public final class Animator {
             from = shown ? last : null;
             blendDuration = animation.transition();
             blend = previousBlend = 0;
+            // A new blend starts with no memory of the last one's way round (it may be long past and wrong now).
+            change.reset();
             this.mirrored = mirrored;
             if (!shown) {
                 // Fading in from nothing: the layer weight blends, so the joints can start on the mask at once.

@@ -36,6 +36,7 @@ public final class PlayerAnimators {
     private static final float MOVING = 0.6f;
     /** Falling further than this (blocks) turns a jump into a fall. */
     private static final float FALLING = 1.2f;
+    private static final float SHORT_DROP = 0.6f;
     private static final Set<LivingMotion> LEG_TURNING = EnumSet.of(LivingMotion.WALK, LivingMotion.RUN,
             LivingMotion.SNEAK_WALK);
     private static final float LEG_TURN_MOST = (float) Math.toRadians(80);
@@ -203,8 +204,10 @@ public final class PlayerAnimators {
         if (player.onClimbable() && !player.onGround()) {
             return LivingMotion.CLIMB;
         }
-        // One tick off the ground (a step down, a slab) is not a jump.
-        if (!player.onGround() && (state.airTicks > 1 || vertical > 2)) {
+        // Not a jump: one tick off the ground (Minecraft lifts a body up a stair or slab in a tick, as fast as a jump
+        // starts), nor a short drop off a step (under {@link #SHORT_DROP} blocks).
+        boolean shortDrop = vertical <= 0 && player.fallDistance < SHORT_DROP;
+        if (!player.onGround() && state.airTicks > 1 && !shortDrop) {
             if (vertical > 0) {
                 return LivingMotion.JUMP;
             }

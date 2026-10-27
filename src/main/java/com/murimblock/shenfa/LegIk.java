@@ -12,6 +12,8 @@ import org.joml.Vector3fc;
 public final class LegIk {
     private static final float EPSILON = 1e-3f;
     private static final float MOST_BEND = (float) Math.toRadians(160);
+    /** Easing starts at this share of the leg's length, and at this many times its shortest (fully folded) length. */
+    private static final float SOFT_STRETCH = 0.97f, SOFT_FOLD = 1.6f;
 
     private LegIk() {
     }
@@ -33,8 +35,7 @@ public final class LegIk {
         Vector3f hip = model[thigh].getTranslation(new Vector3f());
         Vector3fc knee = pose.get(shin).translation();
         float upper = knee.length(), lower = sole.length();
-        float distance = Math.max(Math.abs(upper - lower) + EPSILON,
-                Math.min(upper + lower - EPSILON, new Vector3f(target).sub(hip).length()));
+        float distance = soften(new Vector3f(target).sub(hip).length(), upper, lower);
 
         // The knee: the angle the law of cosines gives for this hip-to-sole distance, bent about the shin's X.
         float cos = (upper * upper + lower * lower - distance * distance) / (2 * upper * lower);
@@ -67,6 +68,27 @@ public final class LegIk {
                 t.scale()));
         pose.set(shin, JointTransform.of(s.translation(), new Quaternionf(s.rotation()).slerp(shinTurn, weight),
                 s.scale()));
+    }
+
+    /**
+     * The hip-to-sole distance the knee is worked out for: the wanted one, eased near the leg's full length and near
+     * its full fold. There the knee's angle changes without limit for the least change of distance (a straight leg
+     * needs a sudden bend to shorten at all), so a foot let go or planted at full stretch would snap the knee; eased,
+     * the sole stays a tenth of a pixel short of a target at full stretch and the knee moves smoothly.
+     */
+    static float soften(float distance, float upper, float lower) {
+        float full = upper + lower, stretched = full * SOFT_STRETCH;
+        if (distance > stretched) {
+            float room = full - stretched;
+            return stretched + room * (1 - (float) Math.exp(-(distance - stretched) / room));
+        }
+        float folded = (float) Math.sqrt(upper * upper + lower * lower
+                - 2 * upper * lower * Math.cos(Math.PI - MOST_BEND)), easedFold = folded * SOFT_FOLD;
+        if (distance < easedFold) {
+            float room = easedFold - folded;
+            return easedFold - room * (1 - (float) Math.exp(-(easedFold - distance) / room));
+        }
+        return distance;
     }
 
     /** Where the sole is in model space (pixels). */

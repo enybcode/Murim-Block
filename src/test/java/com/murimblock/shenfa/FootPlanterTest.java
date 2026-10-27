@@ -89,8 +89,10 @@ class FootPlanterTest {
             boolean[] moved = new boolean[2];
             for (int side = 0; side < 2; side++) {
                 Vector3f world = sole(pose, shins[side]).mul(TO_BLOCKS).rotateY(yaw);
-                if (last[side] != null) {
-                    moved[side] = world.distance(last[side]) > 0.002f;
+                // (From the third frame: the first ones settle the feet.)
+                if (last[side] != null && frame > 2) {
+                    // More than a tenth of a pixel: a foot turned with the body would move about one a frame.
+                    moved[side] = world.distance(last[side]) > 0.1f * TO_BLOCKS;
                 }
                 last[side] = world;
                 if (moved[side] && !stepping[side]) {

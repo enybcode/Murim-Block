@@ -141,7 +141,9 @@ public final class SkeletalPlayerRenderer {
         // The head as vanilla's model tilts it: back 45° in elytra flight and while swimming, so the face looks ahead.
         float headPitch = pitch;
         if (player.getFallFlyingTicks() > 4) {
-            headPitch = -45;
+            // Vanilla snaps the head back at the fifth tick of flight; here it tilts back over four ticks.
+            float tilt = Mth.clamp((player.getFallFlyingTicks() - 4 + partialTick) / 4, 0, 1);
+            headPitch = Mth.lerp(tilt, pitch, -45);
         } else if (swim > 0 && player.isVisuallySwimming()) {
             headPitch = Mth.lerp(swim, pitch, -45);
         }
