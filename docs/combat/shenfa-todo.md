@@ -19,7 +19,7 @@ on it. `engine-roadmap.md` is the record of what was built and how; `epic-fight-
 - 1.4 Network: server-side clip library (from the mod's files), play/stop of any layer for any body, combat mode,
   hits, the local player's moves predicted and corrected by the server.
 - 1.5 Cloth: the cape as position-based cloth (beyond vanilla's board), test cape `/skeletal cape test`.
-- 1.7 Performance (part): 50 animated players at 35 µs each to draw, 113 fps (vanilla's players: 108).
+- 1.7 Performance (part): 50 animated players at 25 to 35 µs each to draw, 113 fps (vanilla's players: 108 to 117).
 - Combat (EF-inspired, first version): combat mode, fists and blade movesets with combos, dash and air strikes,
   techniques for Qi, dodges with invulnerability, swept colliders, damage with cultivation, staggers by impact against
   stun armor, hit stop, guard for Qi with guard break, parry, 8-tick buffer, gap closing toward the target.
@@ -27,7 +27,8 @@ on it. `engine-roadmap.md` is the record of what was built and how; `epic-fight-
 - Feel: hit stop, camera shake, flash, sparks and sounds by result, trails on fists and blades, lock-on (flick to
   switch, retarget after a kill), Qi bar in combat mode.
 - Checks: 94 unit tests; in-game groups render, clips, motions, vanilla, player, events, mobs, combat, film, perf,
-  cloth (about 230 checks), contact sheets of the fighting clips (`screenshots/film`).
+  cloth: 156 checks pass in one run; contact sheets of the fighting clips and of 18 mob attacks
+  (`run/engine-test/screenshots/film`). A dedicated server starts with the mod.
 
 ## Left (in order)
 

@@ -404,6 +404,24 @@ Build:
 Done when: duel test with 0 and 150 ms of simulated lag: both screens show the same clip within one tick
 of offset, no snapping.
 
+Steps 6b to 13 done in a first version (27 Oct 2026, evening), details in `combat-system.md`:
+- Mobs on Shenfa (`shenfa/client/mob`): a mixin right after vanilla's `setupAnim` lays Shenfa's layers on the
+  mob's own pose and writes them into its model parts, then puts the parts back after the draw (vanilla sets only
+  some values each frame; without that a spider drifted away). Humanoids and illagers ride the biped (`HumanoidRig`,
+  the player's clips, a rigid limb pointed from its pivot to the hand or foot); any other model gets a skeleton of
+  its parts (`PartRig`, vanilla's own space) and clips keyed on them in JSON (`ClipLoader.loadKeyframes`). The
+  model is still vanilla's, so armor, held items, glowing eyes and resource packs keep working.
+- Network: clip ids go as text (clients may have more clips than the server); `ShenfaLibrary` reads the clips from
+  the mod's files on the server; play and stop any layer of any body; combat mode; the local player predicts its
+  moves with the server's own rules and the server corrects it. Not done: integer ids, the lag simulator, the duel
+  test (one client only here).
+- Combat, hits, reactions, defense, camera and feel: `combat-system.md`. Mixins: `LivingEntityRendererMixin`
+  (client), `MobStrikeMixin` (common, `doHurtTarget` of `Mob`, iron golem, hoglin, zoglin, ravager, warden).
+- Checks: groups `mobs` (37 vanilla mobs rigged, a contact sheet of 18 attacks), `combat` (rules, combo, damage,
+  stagger, hit stop, dodge, guard, parry, 18 mobs landing their attacks), `film` (contact sheets of every fighting
+  clip), `perf` (50 players: 35 µs each, 113 fps against 108 with vanilla's), `cloth`. A dedicated server starts with
+  the mod (no client class on the server).
+
 ## Step 9: Combat core
 
 Goal: strikes as timed phases, hit detection on the real animated body, data-driven weapons.
