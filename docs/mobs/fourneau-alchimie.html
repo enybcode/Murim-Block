@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>fourneau</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>FOURNEAU D'ALCHIMIE VIVANT</h1>
+<div class="sub">Proposition pour le creeper (ou le creeper chargé) · <code>minecraft:creeper</code> (même identifiant, même apparition, mêmes drops) · Murimblock V2 — fiche de conception</div>
+<div class="seal">丹爐<br>成精</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<g transform="translate(36,26) scale(1.6)">
+<rect x="40" y="-6" width="30" height="8" fill="#5e4316"/><rect x="52" y="-12" width="6" height="6" fill="#d2a849"/>
+<rect x="34" y="2" width="42" height="8" fill="#7f5d1f"/>
+<rect x="22" y="10" width="66" height="76" fill="#a07626"/><rect x="22" y="10" width="66" height="7" fill="#d2a849"/>
+<rect x="22" y="48" width="66" height="4" fill="#7f5d1f"/>
+<rect x="16" y="20" width="8" height="18" fill="#7f5d1f"/><rect x="86" y="20" width="8" height="18" fill="#7f5d1f"/>
+<rect x="18" y="22" width="4" height="4" fill="#d2a849"/><rect x="88" y="22" width="4" height="4" fill="#d2a849"/>
+<rect x="38" y="28" width="34" height="18" fill="#3a1a0c"/><rect x="44" y="32" width="22" height="10" fill="#e8742a"/>
+<g fill="#4f7a5a"><rect x="28" y="58" width="6" height="4"/><rect x="72" y="70" width="8" height="4"/><rect x="40" y="76" width="5" height="3"/></g>
+<g stroke="#7f5d1f" stroke-width="1.5" fill="none"><path d="M44 58 h22 v8 h-22 z"/><path d="M50 62 h10"/></g>
+<rect x="24" y="86" width="12" height="36" fill="#5e4316"/><rect x="74" y="86" width="12" height="36" fill="#5e4316"/><rect x="49" y="86" width="12" height="30" fill="#5e4316"/>
+<rect x="20" y="120" width="20" height="6" fill="#3e2c10"/><rect x="70" y="120" width="20" height="6" fill="#3e2c10"/><rect x="47" y="114" width="16" height="5" fill="#3e2c10"/>
+</g>
+<g transform="translate(266,26) scale(1.6)">
+<rect x="22" y="-6" width="28" height="8" fill="#5e4316"/><rect x="18" y="2" width="36" height="8" fill="#7f5d1f"/>
+<rect x="10" y="10" width="52" height="76" fill="#94691f"/><rect x="10" y="10" width="52" height="7" fill="#d2a849"/>
+<rect x="10" y="48" width="52" height="4" fill="#7f5d1f"/><rect x="58" y="20" width="8" height="18" fill="#7f5d1f"/>
+<rect x="62" y="30" width="4" height="12" fill="#e8742a" opacity=".8"/>
+<rect x="14" y="86" width="12" height="36" fill="#5e4316" transform="rotate(8 20 86)"/><rect x="46" y="86" width="12" height="36" fill="#5e4316" transform="rotate(-8 52 86)"/>
+</g>
+<text x="124" y="252" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE</text>
+<text x="326" y="252" font-size="13" text-anchor="middle" fill="#6b5a4c">PROFIL (3e pied derrière)</text>
+<line x1="20" y1="6" x2="20" y2="234" stroke="#7d6a5a"/><line x1="14" y1="6" x2="26" y2="6" stroke="#7d6a5a"/><line x1="14" y1="234" x2="26" y2="234" stroke="#7d6a5a"/>
+<text x="10" y="120" font-size="12" fill="#6b5a4c" transform="rotate(-90 10 120)" text-anchor="middle">1,7 bloc (hitbox vanilla)</text>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="276" width="36" height="22" fill="#a07626"/><text x="20" y="314">Bronze</text>
+<rect x="88" y="276" width="36" height="22" fill="#d2a849"/><text x="88" y="314">Reflet</text>
+<rect x="156" y="276" width="36" height="22" fill="#5e4316"/><text x="156" y="314">Sombre</text>
+<rect x="224" y="276" width="36" height="22" fill="#4f7a5a"/><text x="224" y="314">Vert-gris</text>
+<rect x="292" y="276" width="36" height="22" fill="#e8742a"/><text x="292" y="314">Braises</text>
+<rect x="360" y="276" width="36" height="22" fill="#fff0b0" stroke="#b9ad96"/><text x="360" y="314">Feu blanc</text>
+<rect x="428" y="276" width="36" height="22" fill="#9aa3ad"/><text x="428" y="314">Fumée</text>
+</g>
+<text x="20" y="352" font-size="12.5" fill="#6b5a4c">Squelette à lui : cuve, couvercle (qui tremble puis saute), 2 anses,</text>
+<text x="20" y="370" font-size="12.5" fill="#6b5a4c">3 pieds à 2 segments · la gueule et les braises sont lumineuses</text>
+<text x="20" y="396" font-size="12.5" fill="#6b5a4c">Inscriptions gravées en relief sur la cuve (sceau d'alchimiste)</text>
+<text x="20" y="422" font-size="12.5" fill="#6b5a4c">Fumée et étincelles (Photon) pendant la surchauffe</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Le fourneau d'un alchimiste mort pendant un raffinage raté. Il a bu tout le Qi des pilules perdues et s'est relevé sur ses trois pieds. Il cherche encore la chaleur d'un corps vivant pour finir sa cuisson, et il éclate dès qu'il en approche.</p>
+</div>
+<div class="panel">
+<h2>Détails en relief</h2>
+<ul>
+<li>Cuve de bronze avec un ourlet, une ceinture et un sceau gravés</li>
+<li>Couvercle avec bouton, qui tremble puis saute avant l'explosion</li>
+<li>Deux anses en relief, coins plus clairs</li>
+<li>Gueule de foyer avec les braises au fond</li>
+<li>Taches de vert-de-gris, bronze terni</li>
+<li>Trois pieds trapus aux griffes de bronze</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">20 ♥</td><td style="width:45%"><div class="bar"><i style="width:40%"></i></div></td></tr>
+<tr><td>Explosion</td><td class="v">puissance 3 (6 chargé)</td><td><div class="bar"><i style="width:50%"></i></div></td></tr>
+<tr><td>Mèche</td><td class="v">1,5 s</td><td><div class="bar"><i style="width:40%"></i></div></td></tr>
+<tr><td>Drop en plus</td><td class="v">pilule ratée (plus tard)</td><td><div class="bar"><i style="width:20%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Base vanilla, à régler en jeu.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaque</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Réponse</th></tr>
+<tr><td><b>Surchauffe</b><br><span class="small">Couvercle qui tremble puis saute, feu qui blanchit</span></td><td class="v">3 (rayon 3)</td><td><span class="tag ok">Reculer</span><span class="tag ok">Esquive</span><span class="tag no">Garde</span></td></tr>
+<tr><td><b>Coup qui refroidit</b><br><span class="small">Le frapper pendant la mèche le repousse</span></td><td class="v">—</td><td><span class="tag ok">Frapper</span></td></tr>
+</table>
+</div>
+<div class="panel">
+<h2>Comportement</h2>
+<ul>
+<li>Avance lourdement, on entend le bronze qui tinte</li>
+<li>À 3 blocs : se fige, le couvercle tremble (le signal)</li>
+<li>Si on s'éloigne à plus de 7 blocs, le feu retombe</li>
+<li>Chargé par la foudre : feu bleu, explosion doublée</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">idle</td><td>Fume doucement, le couvercle cliquette</td></tr>
+<tr><td class="v">marche</td><td>Trois pieds en rotation, la cuve qui tangue</td></tr>
+<tr><td class="v">mèche</td><td>Tremble, le couvercle saute, la cuve gonfle</td></tr>
+<tr><td class="v">explosion</td><td>Éclats de bronze, fumée, pilules</td></tr>
+<tr><td class="v">mort</td><td>Bascule sur le flanc, le feu s'éteint</td></tr>
+</table>
+</div>
+</div>
+</div>
+</body></html>
