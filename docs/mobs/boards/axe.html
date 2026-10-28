@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Disciple déchu — hache</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// Two hands on the haft: the right at its end, the left a little up it (board.js places the left arm).
+const GUARD = {lean: 14, head: -6, hy: 4, aR: 12, fR: 62, w: 206, tF: 24, sF: 0, tB: -28, sB: 16};
+const BREATH = {...GUARD, lean: 17, hy: 6, w: 192, head: -2};
+const RAISE = {lean: -10, head: -16, hy: 0, aR: 172, fR: 198, w: 232, tF: 12, sF: 0, tB: -20, sB: 8};
+const HOLD = {...RAISE, lean: -15, aR: 180, fR: 206, w: 244, head: -20};
+const CHOP = {lean: 28, head: 4, hx: 8, hy: 9, aR: 100, fR: 110, w: 100, tF: 50, sF: -10, tB: -32, sB: 42};
+const STUCK = {lean: 40, head: 16, hx: 10, hy: 12, aR: 55, fR: 40, w: 20, tF: 54, sF: -14, tB: -30, sB: 48};
+const SWEEP_BACK = {lean: 4, head: -8, hx: -4, hy: 4, aR: -24, fR: 30, w: 268, tF: 18, sF: 4, tB: -34, sB: 20};
+const SWEEP = {lean: 20, head: 0, hx: 8, hy: 6, aR: 80, fR: 86, w: 92, tF: 40, sF: 0, tB: -36, sB: 18};
+const CARRY = {lean: 2, head: -10, hx: 10, hy: 3, aR: 150, fR: 188, w: 212, tF: 30, sF: 4, tB: -30, sB: 14};
+const RUN_RAISED = {lean: 26, head: -14, aR: 160, fR: 192, w: 218, tF: 46, sF: 30, tB: -42, sB: 52};
+const LEAP = {lean: 12, head: -16, hx: 10, hy: -10, aR: 182, fR: 212, w: 242, tF: 62, sF: 70, tB: -24, sB: 60};
+sheet({
+  weapon: 'axe',
+  title: 'DISCIPLE DÉCHU — À LA HACHE',
+  sub: 'Proposition avant animation · aucune technique : du poids. Les deux mains sur le manche, la droite au bout, '
+    + 'la gauche plus haut · vue de profil, il regarde vers la droite',
+  wrong: [
+    'Une seule main tient vraiment la hache : la main gauche flotte devant la poitrine.',
+    'Garde : la hache droite devant le visage, comme une torche ; elle cache sa tête.',
+    'Coup vertical : la tête de hache finit pointée vers l\'avant à hauteur de poitrine, jamais vers le bas : '
+      + 'on ne sent pas le poids qui tombe.',
+    'Le corps se plie en avant comme une révérence au lieu de tomber dans le coup.',
+    'Pendant l\'armé, la hache disparaît derrière la tête : on ne voit pas le danger.',
+  ],
+  fix: [
+    'Les deux mains sur le manche, la gauche glisse dessus selon le geste.',
+    'Le poignet oriente la hache : tranchant vers la cible, tête qui mène le mouvement.',
+    'Armé long et tenu (4 ticks), impact lourd, puis la hache plantée : la plus grande fenêtre pour le punir.',
+    'Les pieds restent plantés, c\'est le poids du corps qui tombe avec la hache.',
+    'Impact : secousse de caméra plus forte que les autres coups.',
+  ],
+  anims: [
+    {name: 'Garde', meta: 'boucle · 48 ticks',
+      feel: 'le poids : la hache en travers du corps, les épaules qui montent et descendent avec un souffle lourd.',
+      read: 'une arme lente et dangereuse : on sait qu\'il faudra esquiver, pas encaisser.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Hache en travers du corps, tête près de l\'épaule gauche, '
+          + 'main droite au bout du manche à la hanche. Jambes écartées, genoux pliés.'},
+        {ticks: '0 → 24', phase: 'souffle', pose: BREATH, from: GUARD, bend: 6,
+          arrows: [{at: 'neck', from: [16, -10], to: [16, -2], color: '#3a6fb0'}],
+          note: 'Les épaules s\'affaissent, le dos se voûte sous le poids, puis remontent : une respiration de bête.'},
+        {ticks: 'en marchant', phase: 'approche', pose: {...GUARD, tF: 36, sF: 8, tB: -12, sB: 30, hx: 6},
+          arrows: [{at: 'hip', from: [-30, 30], to: [10, 30], color: '#3a6fb0'}],
+          note: 'Il avance lourdement, la hache ne bouge presque pas.'},
+      ]},
+    {name: 'Coup vertical', meta: '30 ticks · impact au tick 12 · coup de base',
+      feel: 'une masse qui tombe : la hache monte lentement, s\'arrête, puis tout le corps s\'écrase avec elle.',
+      read: 'la hache tenue au-dessus de la tête 4 ticks : c\'est le moment de parer ou de s\'écarter.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Départ en garde.'},
+        {ticks: '1 → 8', phase: 'il lève (lent)', phaseColor: '#a32020', pose: RAISE, from: GUARD, bend: 24,
+          note: 'La hache passe au-dessus de la tête jusque dans le dos, le dos se cambre, il monte sur les orteils.'},
+        {ticks: '8 → 11', phase: 'armé (tenu)', phaseColor: '#a32020', pose: HOLD, from: RAISE, bend: 6,
+          note: 'Il reste en haut 4 ticks, la tête de hache bien visible derrière lui : le signal.'},
+        {ticks: '12', phase: 'IMPACT', phaseColor: '#c46a00', pose: CHOP, from: HOLD, bend: -50, impact: true,
+          target: 150, arrows: [{at: 'hip', from: [-8, -10], to: [-8, 6], color: '#3a6fb0'}],
+          note: 'Tout le corps tombe, genoux pliés : la hache s\'abat à la verticale sur la tête de la cible.'},
+        {ticks: '13 → 30', phase: 'plantée (ouvert)', phaseColor: '#2f6b4f', pose: STUCK, from: CHOP, bend: -12,
+          note: 'La hache finit dans le sol devant lui. 8 ticks coincé, puis il l\'arrache et revient en garde.'},
+      ]},
+    {name: 'Balayage puis coup vertical', meta: '34 ticks · impacts aux ticks 8 et 20 · après deux coups bloqués',
+      feel: 'l\'élan qui l\'emporte : le balayage le fait tourner, et la hache, emportée, remonte et retombe.',
+      read: 'le balayage oblige à reculer ; le second coup punit celui qui revient trop vite.',
+      frames: [
+        {ticks: '1 → 5', phase: 'armé', phaseColor: '#a32020', pose: SWEEP_BACK, from: GUARD, bend: -20,
+          note: 'La hache part en arrière à hauteur de taille, le buste se tourne loin de la cible.'},
+        {ticks: '6 → 8', phase: 'IMPACT 1', phaseColor: '#c46a00', pose: SWEEP, from: SWEEP_BACK, bend: 34,
+          impact: true, target: 150, note: 'Balayage à l\'horizontale, à hauteur de hanches, bras tendus.'},
+        {ticks: '9 → 15', phase: 'emportée', pose: CARRY, from: SWEEP, bend: 40,
+          note: 'L\'élan fait remonter la hache par-dessus l\'épaule gauche, il pivote sur ses pieds plantés.'},
+        {ticks: '16 → 20', phase: 'IMPACT 2', phaseColor: '#c46a00', pose: CHOP, from: CARRY, bend: -46, impact: true,
+          target: 150, note: 'La hache retombe à la verticale, sans armé tenu cette fois : plus dur à lire.'},
+        {ticks: '21 → 34', phase: 'plantée (ouvert)', phaseColor: '#2f6b4f', pose: STUCK, from: CHOP, bend: -12,
+          note: 'Encore plantée dans le sol : la plus longue ouverture de tous ses coups.'},
+      ]},
+    {name: 'Charge', meta: '30 ticks · impact aux ticks 12 → 14 · quand on recule',
+      feel: 'un rouleau compresseur : il fonce, la hache levée, et l\'abat en arrivant.',
+      read: 'il court hache levée : s\'écarter de sa ligne, pas reculer.',
+      frames: [
+        {ticks: '1 → 6', phase: 'il fonce', phaseColor: '#a32020', pose: RUN_RAISED, from: GUARD, bend: 20,
+          arrows: [{at: 'hip', from: [-36, 30], to: [6, 30], color: '#3a6fb0'}],
+          note: 'Trois pas lourds, penché en avant, la hache levée au-dessus de l\'épaule droite.'},
+        {ticks: '7 → 11', phase: 'bond', phaseColor: '#a32020', pose: LEAP, from: RUN_RAISED, bend: 10,
+          arrows: [{at: 'hip', from: [-30, 10], to: [0, -4], color: '#3a6fb0', bend: -8}],
+          note: 'Il quitte le sol d\'un bond, la hache au plus haut derrière lui.'},
+        {ticks: '12 → 14', phase: 'IMPACT', phaseColor: '#c46a00', pose: CHOP, from: LEAP, bend: -54, impact: true,
+          target: 150, note: 'Il retombe en abattant la hache : impact au moment où ses pieds touchent le sol.'},
+        {ticks: '15 → 30', phase: 'plantée (ouvert)', phaseColor: '#2f6b4f', pose: STUCK, from: CHOP, bend: -12,
+          note: 'Hache plantée, souffle coupé : long à se relever.'},
+      ]},
+  ],
+});
+</script></body></html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Disciple déchu — épée</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// Poses (see board.js): lean = torso, head, aR/fR = right upper arm / forearm, aL/fL = left, tF/sF = near (right) leg
+// thigh / shin, tB/sB = far leg, w = the weapon, hx/hy = hips moved (px).
+const GUARD = {lean: 8, head: -4, aR: 38, fR: 80, w: 100, aL: -100, fL: 175, tF: 22, sF: 4, tB: -24, sB: 14, hy: 2};
+const SWAY = {...GUARD, w: 106, fR: 84, head: -8, hy: 3};
+const ARMED = {lean: -8, head: -12, hx: -4, aR: 205, fR: 235, w: 250, aL: 75, fL: 92, tF: 18, sF: 10, tB: -36, sB: 22,
+  hy: 2};
+const CUT = {lean: 26, head: 6, hx: 10, hy: 4, aR: 100, fR: 104, w: 118, aL: -40, fL: -20, tF: 46, sF: 2, tB: -42,
+  sB: 8};
+const CUT_END = {lean: 36, head: 14, hx: 15, hy: 6, aR: 35, fR: 20, w: 12, aL: -60, fL: -40, tF: 50, sF: 4, tB: -44,
+  sB: 6};
+const TURN = {lean: 20, head: 4, hx: 12, hy: 4, aR: 60, fR: 30, w: 265, aL: -50, fL: -30, tF: 30, sF: 6, tB: -40,
+  sB: 10};
+const BACKHAND = {lean: 16, head: -2, hx: 20, hy: 4, aR: 92, fR: 92, w: 96, aL: -60, fL: -50, tF: -20, sF: 10, tB: 40,
+  sB: 4};
+const COIL = {lean: 14, head: -6, hx: -6, hy: 7, aR: 15, fR: 80, w: 92, aL: 60, fL: 92, tF: 42, sF: -14, tB: -30,
+  sB: 40};
+const LUNGE = {lean: 22, head: -10, hx: 30, hy: 7, aR: 92, fR: 92, w: 92, aL: -80, fL: -70, tF: 72, sF: 8, tB: -58,
+  sB: -52};
+sheet({
+  weapon: 'sword',
+  title: 'DISCIPLE DÉCHU — À L\'ÉPÉE',
+  sub: 'Proposition avant animation · son corps se souvient de l\'escrime de sa secte : une main tient l\'épée, '
+    + 'l\'autre fait le « doigt d\'épée » (剑指) · vue de profil, il regarde vers la droite',
+  wrong: [
+    'Garde : lame à plat pointée vers la ceinture, tenue comme un bâton. Rien ne menace.',
+    'La lame reste toujours perpendiculaire à l\'avant-bras (la prise vanilla, figée) : l\'arc de la taille ne se lit pas, '
+      + 'on dirait un coup de poing avec une épée au bout.',
+    'Armé et impact à 3 ticks d\'écart, sans pause : on ne voit pas le coup venir.',
+    'Tout le corps pivote sur place, pieds compris : il patine comme sur de la glace.',
+    'Retour en garde immédiat : pas de poids, pas de moment où on peut le punir.',
+  ],
+  fix: [
+    'Le poignet tourne (articulation de l\'arme) : la lame suit le bras pour l\'estoc, part en arc pour la taille.',
+    'Les pieds restent plantés : c\'est le bassin qui tourne et le poids qui passe d\'un pied à l\'autre.',
+    'Chaque coup : un armé tenu 2 à 4 ticks (le signal), un impact sec, puis un temps où il est ouvert.',
+    'La garde vise : pointe vers la gorge, main gauche levée derrière (le doigt d\'épée).',
+    'Sur les armes à deux mains, la main gauche est vraiment posée sur le manche.',
+  ],
+  anims: [
+    {name: 'Garde', meta: 'boucle · 40 ticks',
+      feel: 'une menace froide : la pointe le suit et tremble à peine, le seul geste propre qu\'il lui reste.',
+      read: 'la pointe vers la gorge dit « à portée d\'épée, pas plus près ».',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Pied droit devant, genoux souples. Pointe vers la gorge, '
+          + 'lame dans l\'axe du bras. Main gauche levée derrière, deux doigts tendus.'},
+        {ticks: '0 → 20', phase: 'respiration', pose: SWAY, from: GUARD, bend: 8, note: 'La pointe décrit un petit '
+          + 'cercle lent ; le corps s\'affaisse un peu, comme un cadavre qui tient debout de mémoire.'},
+        {ticks: 'en marchant', phase: 'approche', pose: {...GUARD, tF: 34, sF: 8, tB: -10, sB: 30, hx: 6},
+          arrows: [{at: 'hip', from: [-30, 30], to: [10, 30], color: '#3a6fb0'}],
+          note: 'Il avance en traînant le pied gauche mais la pointe ne quitte jamais sa cible.'},
+      ]},
+    {name: 'Taille diagonale', meta: '22 ticks · impact au tick 8 · coup de base',
+      feel: 'lourd puis tranchant : un grand arc de l\'épaule droite à la hanche gauche, qui coupe l\'air.',
+      read: 'la lame levée au-dessus de l\'épaule pendant 3 ticks : parer ou reculer maintenant.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Départ en garde.'},
+        {ticks: '1 → 6', phase: 'armé (tenu)', phaseColor: '#a32020', pose: ARMED, from: GUARD, bend: -26,
+          arrows: [{at: 'hip', from: [6, 30], to: [-12, 30], color: '#3a6fb0'}],
+          note: 'Le poids recule sur le pied arrière, la lame monte au-dessus de l\'épaule droite, la main gauche '
+            + 'vise. Tenu 3 ticks : c\'est le signal.'},
+        {ticks: '7 → 8', phase: 'IMPACT', phaseColor: '#c46a00', pose: CUT, from: ARMED, bend: -46, impact: true,
+          target: 150, arrows: [{at: 'footF', from: [-22, 4], to: [2, 4], color: '#3a6fb0'}],
+          note: 'Un pas en avant, le bassin se dévisse, la lame tombe en diagonale. 2 ticks : vif.'},
+        {ticks: '9 → 14', phase: 'suite (ouvert)', phaseColor: '#2f6b4f', pose: CUT_END, from: CUT, bend: -20,
+          note: 'La lame finit basse à gauche, le corps emporté devant ses pieds : 6 ticks où on peut le punir.'},
+        {ticks: '15 → 22', phase: 'retour', pose: GUARD, from: CUT_END, bend: 30,
+          note: 'Il se redresse en traînant le pied, la pointe revient lentement vers la gorge.'},
+      ]},
+    {name: 'Taille et revers', meta: '28 ticks · impacts aux ticks 8 et 15 · après deux coups bloqués',
+      feel: 'un rythme « TAC… tac » : la première taille lance la seconde, comme un vieux réflexe.',
+      read: 'qui baisse la garde après la première taille prend le revers.',
+      frames: [
+        {ticks: '1 → 6', phase: 'armé (tenu)', phaseColor: '#a32020', pose: ARMED, from: GUARD, bend: -26,
+          note: 'Comme la taille : même signal, pour piéger celui qui croit la connaître.'},
+        {ticks: '7 → 8', phase: 'IMPACT 1', phaseColor: '#c46a00', pose: CUT, from: ARMED, bend: -46, impact: true,
+          target: 150, note: 'La taille diagonale.'},
+        {ticks: '9 → 12', phase: 'le poignet tourne', pose: TURN, from: CUT, bend: 30,
+          arrows: [{at: 'footB', from: [-16, 0], to: [10, 0], color: '#3a6fb0'}],
+          note: 'Au lieu de s\'arrêter, le poignet retourne la lame vers l\'arrière, le pied arrière passe devant.'},
+        {ticks: '13 → 15', phase: 'IMPACT 2', phaseColor: '#c46a00', pose: BACKHAND, from: TURN, bend: 52,
+          impact: true, target: 155, note: 'Le revers à plat, à hauteur de taille, plus court mais plus rapide.'},
+        {ticks: '16 → 28', phase: 'déséquilibre', phaseColor: '#2f6b4f', pose: {...CUT_END, w: 70, fR: 60},
+          from: BACKHAND, bend: 10, note: 'Il titube, la lame traîne : la plus longue fenêtre pour le punir.'},
+      ]},
+    {name: 'Estoc fendu', meta: '26 ticks · impact aux ticks 9 → 11 · quand on recule',
+      feel: 'une flèche : il se ramasse et part d\'un coup, tout le corps aligné derrière la pointe.',
+      read: 'il se baisse en reculant la main : pas en arrière inutile, il faut s\'écarter sur le côté.',
+      frames: [
+        {ticks: '1 → 6', phase: 'il se ramasse', phaseColor: '#a32020', pose: COIL, from: GUARD, trace: 'handR',
+          bend: 10, note: 'Il fléchit, la main d\'épée recule à la hanche, pointe toujours vers la cible ; la main '
+            + 'gauche vise.'},
+        {ticks: '7 → 9', phase: 'fente', phaseColor: '#c46a00', pose: LUNGE, from: COIL, bend: 0, target: 172,
+          arrows: [{at: 'hip', from: [-34, -4], to: [0, -4], color: '#3a6fb0'}],
+          note: 'Grand pas du pied droit, jambe arrière tendue, bras et lame sur une seule ligne. Il bondit de deux '
+            + 'blocs.'},
+        {ticks: '9 → 11', phase: 'IMPACT (tenu)', phaseColor: '#c46a00', pose: LUNGE, impact: true, target: 166,
+          note: 'La pointe reste 3 ticks à hauteur de poitrine : parer est dur, s\'écarter passe.'},
+        {ticks: '12 → 26', phase: 'retour', pose: GUARD, from: LUNGE, trace: 'handR', bend: -10,
+          arrows: [{at: 'footB', from: [26, 0], to: [-4, 0], color: '#3a6fb0'}],
+          note: 'Il ramène la jambe arrière en traînant, puis remonte en garde : long à se remettre.'},
+      ]},
+  ],
+});
+</script></body></html>

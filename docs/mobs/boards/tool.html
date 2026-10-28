@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Disciple déchu — outil</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// A pelle, pioche or houe held like a staff: the right hand at the end of the haft, the left further along it,
+// the head toward the prey.
+const GUARD = {lean: 12, head: -4, hy: 3, aR: 18, fR: 74, w: 82, tF: 22, sF: 2, tB: -26, sB: 16};
+const FEINT = {...GUARD, aR: 40, fR: 84, w: 86, hx: 4, lean: 16};
+const SWEEP_BACK = {lean: 2, head: -8, hx: -4, hy: 4, aR: -14, fR: 24, w: 250, tF: 18, sF: 4, tB: -34, sB: 20};
+const SWEEP = {lean: 26, head: 4, hx: 8, hy: 8, aR: 72, fR: 80, w: 62, tF: 44, sF: -4, tB: -36, sB: 22};
+const SWEEP_END = {lean: 30, head: 12, hx: 12, hy: 9, aR: 30, fR: 30, w: 12, tF: 40, sF: 2, tB: -30, sB: 26};
+const PULL = {lean: 8, head: -6, hx: -4, hy: 4, aR: -14, fR: 64, w: 86, tF: 18, sF: 4, tB: -30, sB: 18};
+const POKE = {lean: 22, head: -2, hx: 10, hy: 5, aR: 74, fR: 88, w: 88, tF: 40, sF: 2, tB: -36, sB: 12};
+const RUN = {lean: 26, head: -16, aR: 30, fR: 82, w: 86, tF: 46, sF: 30, tB: -42, sB: 52};
+const RAM = {...POKE, hx: 18, lean: 30, tF: 56, sF: 6, tB: -48, sB: 10};
+const STUMBLE = {lean: 34, head: 14, hx: 14, hy: 9, aR: 40, fR: 50, w: 40, tF: 50, sF: 2, tB: -30, sB: 26};
+sheet({
+  weapon: 'tool',
+  title: 'DISCIPLE DÉCHU — À L\'OUTIL',
+  sub: 'Proposition avant animation · pelle, pioche ou houe tenue comme un bâton par un paysan qui a peur : '
+    + 'les deux mains sur le manche, la tête de l\'outil vers la cible · vue de profil, il regarde vers la droite',
+  wrong: [
+    'L\'outil est tenu droit devant le visage, comme une torche : il ne vise rien.',
+    'Une seule main le tient ; la main gauche n\'est pas sur le manche.',
+    'Les « estocs » ne sont que l\'avant-bras qui bouge : la pelle reste verticale, rien ne part vers la cible.',
+    'Le balayage ne se voit pas : l\'outil tourne avec le corps, toujours à la même place.',
+  ],
+  fix: [
+    'L\'outil couché vers la cible, comme une fourche : la tête mène tous les coups.',
+    'Deux mains sur le manche, écartées : la droite au bout, la gauche devant.',
+    'Coups bas et larges : balayage aux genoux, estocs au ventre, différents de l\'épée et de la hache.',
+    'Les pieds restent plantés ; seuls la charge et l\'estoc font avancer.',
+    'Il reste maladroit : il trébuche après chaque coup.',
+  ],
+  anims: [
+    {name: 'Garde', meta: 'boucle · 48 ticks',
+      feel: 'la peur : il tient l\'outil devant lui comme pour se protéger, et pique l\'air par à-coups nerveux.',
+      read: 'la tête de l\'outil pointée sur soi : il va piquer ou balayer bas.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Outil couché, tête vers la cible à hauteur de ventre, '
+          + 'mains écartées sur le manche.'},
+        {ticks: '0 → 24', phase: 'feintes', pose: FEINT, from: GUARD, bend: 0,
+          note: 'Petites piques nerveuses dans le vide, sans avancer : il garde la distance.'},
+        {ticks: 'en marchant', phase: 'approche', pose: {...GUARD, tF: 34, sF: 8, tB: -12, sB: 30, hx: 6},
+          arrows: [{at: 'hip', from: [-30, 30], to: [10, 30], color: '#3a6fb0'}],
+          note: 'Il avance à petits pas, l\'outil devant lui comme un bouclier.'},
+      ]},
+    {name: 'Balayage bas', meta: '22 ticks · impact au tick 8 · coup de base',
+      feel: 'une faux : un grand arc bas qui fauche les jambes, et qui l\'emporte avec lui.',
+      read: 'l\'outil ramené loin en arrière : reculer, ou sauter par-dessus.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Départ en garde.'},
+        {ticks: '1 → 6', phase: 'armé', phaseColor: '#a32020', pose: SWEEP_BACK, from: GUARD, bend: -26,
+          note: 'Il ramène l\'outil loin en arrière, bas, en tournant les épaules.'},
+        {ticks: '7 → 8', phase: 'IMPACT', phaseColor: '#c46a00', pose: SWEEP, from: SWEEP_BACK, bend: 40, impact: true,
+          target: 150, note: 'Le fer fauche à hauteur de genoux, bras tendus.'},
+        {ticks: '9 → 22', phase: 'il trébuche', phaseColor: '#2f6b4f', pose: SWEEP_END, from: SWEEP, bend: 20,
+          note: 'L\'élan l\'emporte, l\'outil finit au sol : il titube avant de revenir en garde.'},
+      ]},
+    {name: 'Deux estocs', meta: '24 ticks · impacts aux ticks 5 et 12 · après deux coups bloqués',
+      feel: 'le harcèlement : deux coups de fer rapides et faibles dans le ventre.',
+      read: 'il retire l\'outil à la hanche : deux coups arrivent, en rythme.',
+      frames: [
+        {ticks: '1 → 3', phase: 'il retire', phaseColor: '#a32020', pose: PULL, from: GUARD, trace: 'tip', bend: 0,
+          note: 'Les mains reculent à la hanche, la tête de l\'outil toujours vers la cible.'},
+        {ticks: '4 → 5', phase: 'IMPACT 1', phaseColor: '#c46a00', pose: POKE, from: PULL, bend: 0, impact: true,
+          target: 160, arrows: [{at: 'footF', from: [-16, 4], to: [2, 4], color: '#3a6fb0'}],
+          note: 'Petit pas, l\'outil part droit dans le ventre.'},
+        {ticks: '6 → 9', phase: 'il retire', pose: PULL, from: POKE, bend: 0, note: 'Retour à la hanche, vite.'},
+        {ticks: '10 → 12', phase: 'IMPACT 2', phaseColor: '#c46a00', pose: {...POKE, hx: 14, lean: 26}, from: PULL,
+          bend: 0, impact: true, target: 164, note: 'Le second, un peu plus loin.'},
+        {ticks: '13 → 24', phase: 'il trébuche', phaseColor: '#2f6b4f', pose: STUMBLE, from: POKE, bend: 10,
+          note: 'Il a trop avancé : il trébuche et se rattrape.'},
+      ]},
+    {name: 'Charge', meta: '26 ticks · impact aux ticks 9 → 12 · quand on recule',
+      feel: 'la panique : il fonce tête baissée, l\'outil tendu devant lui comme un bélier.',
+      read: 'il court l\'outil tendu : s\'écarter de sa ligne.',
+      frames: [
+        {ticks: '1 → 6', phase: 'il fonce', phaseColor: '#a32020', pose: RUN, from: GUARD, bend: 0,
+          arrows: [{at: 'hip', from: [-36, 30], to: [6, 30], color: '#3a6fb0'}],
+          note: 'Penché en avant, tête baissée, l\'outil tendu à hauteur de ventre.'},
+        {ticks: '7 → 12', phase: 'IMPACT', phaseColor: '#c46a00', pose: RAM, from: RUN, bend: 0, impact: true,
+          target: 172, arrows: [{at: 'hip', from: [-34, -2], to: [-4, -2], color: '#3a6fb0'}],
+          note: 'Il se jette en avant sur les derniers pas : le fer frappe en arrivant.'},
+        {ticks: '13 → 26', phase: 'il trébuche', phaseColor: '#2f6b4f', pose: STUMBLE, from: RAM, bend: 10,
+          note: 'Emporté par sa course, il trébuche et met du temps à se retourner.'},
+      ]},
+  ],
+});
+</script></body></html>

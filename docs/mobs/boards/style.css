@@ -1,0 +1,23 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { width: 1600px; background: #efe7d6; font-family: "Segoe UI", Arial, sans-serif; color: #2a2420; padding: 24px 30px; }
+h1 { font-family: Georgia, serif; font-size: 34px; color: #7a2020; letter-spacing: 1px; }
+.sub { font-size: 15px; color: #5b4a3e; margin: 2px 0 14px; }
+.top { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+.panelbox { background: #f8f2e6; border: 1.5px solid #c9b89a; border-radius: 6px; padding: 10px 14px; }
+.panelbox h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+.wrong h2 { color: #a32020; } .fix h2 { color: #2f6b4f; }
+.panelbox ul { list-style: none; font-size: 13.5px; line-height: 1.45; }
+.panelbox li { padding-left: 14px; position: relative; }
+.wrong li:before { content: "✕"; position: absolute; left: 0; color: #a32020; font-size: 11px; top: 2px; }
+.fix li:before { content: "✓"; position: absolute; left: 0; color: #2f6b4f; font-size: 12px; }
+.anim { display: grid; grid-template-columns: 300px 1fr; gap: 14px; background: #f8f2e6; border: 1.5px solid #c9b89a;
+  border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; }
+.label .name { font-family: Georgia, serif; font-size: 21px; color: #7a2020; }
+.label .meta { font-size: 12.5px; color: #6b5a4c; margin: 2px 0 8px; }
+.label .feel, .label .read { font-size: 13.5px; line-height: 1.45; margin-bottom: 6px; }
+.frames { display: flex; gap: 8px; flex-wrap: nowrap; }
+.frame { width: 236px; }
+.frame svg { display: block; border: 1px solid #d9cfbd; }
+.note { font-size: 12px; line-height: 1.35; color: #3c332c; margin-top: 4px; }
+.legend { display: flex; gap: 22px; font-size: 12.5px; color: #5b4a3e; margin-top: 4px; }
+.legend i { display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; }
