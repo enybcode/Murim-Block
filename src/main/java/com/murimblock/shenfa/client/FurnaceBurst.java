@@ -133,9 +133,9 @@ public final class FurnaceBurst {
             }
             out.normalize();
             String name = entry.getKey();
-            float speed = 0.07f + random.nextFloat() * 0.07f;
-            float up = name.equals("knob") ? 0.6f : name.equals("lid") ? 0.5f
-                    : name.startsWith("leg") ? 0.16f + random.nextFloat() * 0.08f : 0.24f + random.nextFloat() * 0.16f;
+            float speed = 0.16f + random.nextFloat() * 0.14f;
+            float up = name.equals("knob") ? 0.75f : name.equals("lid") ? 0.65f
+                    : name.startsWith("leg") ? 0.22f + random.nextFloat() * 0.1f : 0.3f + random.nextFloat() * 0.2f;
             piece.velocity = new Vec3(out.x * speed, up, out.z * speed);
             piece.orientation.set(yaw);
             piece.spin = new Vector3f(random.nextFloat() - 0.5f, random.nextFloat() - 0.5f,
