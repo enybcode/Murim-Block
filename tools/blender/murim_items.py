@@ -108,3 +108,38 @@ def bone_frame():
     # Blender: the bone's Y is world Z (up), its X world X, its Z world -Y... and the mod's model point (x, y, z) is
     # Blender's (x, -z, y). In bone space a mod vector (x, y, z) is therefore (x, y, z): the frames agree.
     return Matrix.Identity(4)
+
+
+# The body's boxes a held item must stay out of: joint, model min and max corners (rest, pixels).
+BODY = [
+    ("head", "Head", (-4, 24, -4), (4, 32, 4)),
+    ("chest", "Chest", (-4, 18, -2), (4, 24, 2)),
+    ("belly", "Torso", (-4, 12, -2), (4, 18, 2)),
+    ("thigh R", "Thigh_R", (-3.9, 6, -2), (0.1, 12, 2)),
+    ("thigh L", "Thigh_L", (-0.1, 6, -2), (3.9, 12, 2)),
+    ("shin R", "Leg_R", (-3.9, 0, -2), (0.1, 6, 2)),
+    ("shin L", "Leg_L", (-0.1, 0, -2), (3.9, 6, 2)),
+    ("arm L", "Arm_L", (4, 18, -2), (8, 24, 2)),
+    ("forearm L", "Hand_L", (4, 12, -2), (8, 18, 2)),
+]
+# Along the item, from just past the hand to the tip.
+SAMPLES = [0.3 + 0.05 * i for i in range(14)]
+
+
+def body_hits(armature, two_hands, margin=0.5):
+    """The body parts the item in the right hand passes through now (a two-handed hold may touch the left arm)."""
+    pose = armature.pose.bones
+    tool = pose["Tool_R"].matrix
+    found = set()
+    for t in SAMPLES:
+        for across in (-0.04, 0.04):
+            p = tool @ point(t, across)
+            for name, joint, low, high in BODY:
+                if two_hands and joint in ("Arm_L", "Hand_L"):
+                    continue
+                bone = pose[joint]
+                rest = bone.bone.matrix_local @ bone.matrix.inverted() @ p
+                x, y, z = rest.x, rest.z, -rest.y  # Blender (x, y, z) is the model's (x, -z, y)
+                if all(lo + margin < v < hi - margin for v, lo, hi in zip((x, y, z), low, high)):
+                    found.add(name)
+    return found

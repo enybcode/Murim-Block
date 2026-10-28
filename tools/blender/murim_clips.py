@@ -704,7 +704,8 @@ SETS["disciple"].update({
                    (21, A["stuck"]), (26, A["heave"]), (30, A["guard"])],
     "axe_double": [(0, A["guard"]), (5, A["sweep_back"]), (8, A["sweep"]), (15, A["carry"]), (20, A["chop"]),
                    (22, A["stuck"]), (29, A["stuck"]), (34, A["guard"])],
-    "axe_lunge": [(0, A["guard"]), (6, A["run"]), (10, A["leap"]), (12, A["chop"]), (14, A["stuck"]),
+    "axe_lunge": [(0, A["guard"]), (3, A["raise_"]), (6, A["run"]), (10, A["leap"]), (12, A["chop"]),
+                  (14, A["stuck"]),
                   (22, A["stuck"]), (26, A["heave"]), (30, A["guard"])],
     "tool_stance": [(0, T["guard"]), (12, T["feint"]), (16, T["guard"]), (34, T["feint"]), (38, T["guard"]),
                     (48, T["guard"])],
@@ -715,7 +716,9 @@ SETS["disciple"].update({
     "tool_lunge": [(0, T["guard"]), (6, T["run"]), (10, T["ram"]), (12, T["ram"]), (19, T["stumble"]),
                    (26, T["guard"])],
 })
-# The clips whose left hand holds the haft (bake_second_hand), by item.
+# The clips with an item in the right hand (bake_clear_item), and those whose left hand holds the haft
+# (bake_second_hand), by item.
+ARMED = {name: name.split("_")[0] for name in SETS["disciple"] if name.split("_")[0] in ("sword", "axe", "tool")}
 TWO_HANDED = {name: name.split("_")[0] for name in SETS["disciple"] if name.split("_")[0] in ("axe", "tool")}
 
 
@@ -759,9 +762,51 @@ def make_action(armature, name, keys):
             if loc is not None:
                 bone.location = Vector(loc)
                 bone.keyframe_insert("location", frame=frame)
+    if name in ARMED:
+        bake_clear_item(armature, keys[-1][0], ARMED[name])
     if name in TWO_HANDED:
         bake_second_hand(armature, keys[-1][0], TWO_HANDED[name])
     return action
+
+
+def bake_clear_item(armature, last, item):
+    """
+    Keeps the item in the right hand out of the body, on every frame: while it passes through a body part, the right
+    arm turns by 6° about whichever axis leaves it in the fewest parts (at most 120°), then the arm is keyed.
+    """
+    pose = armature.pose.bones
+    scene = bpy.context.scene
+    two_hands = item in ("axe", "tool")
+    for frame in range(0, last + 1):
+        scene.frame_set(frame)
+        clear_frame(armature, two_hands)
+        pose["Arm_R"].keyframe_insert("rotation_quaternion", frame=frame)
+
+
+def clear_frame(armature, two_hands):
+    """Turns the right arm until the item it holds is out of the body (this frame, not keyed)."""
+    import murim_items
+    pose = armature.pose.bones
+    turns = [Quaternion(axis, math.radians(sign * 6)) for axis in ((1, 0, 0), (0, 1, 0), (0, 0, 1))
+             for sign in (1, -1)]
+    hits = murim_items.body_hits(armature, two_hands, margin=0.0)
+    for _ in range(20):
+        if not hits:
+            break
+        shoulder = pose["Arm_R"].head.copy()
+        before = pose["Arm_R"].matrix.copy()
+        best = None
+        for rotation in turns:
+            turn(pose["Arm_R"], shoulder, rotation)
+            bpy.context.view_layer.update()
+            found = murim_items.body_hits(armature, two_hands, margin=0.0)
+            if best is None or len(found) < len(best[1]):
+                best = (rotation, found)
+            pose["Arm_R"].matrix = before
+            bpy.context.view_layer.update()
+        turn(pose["Arm_R"], shoulder, best[0])
+        bpy.context.view_layer.update()
+        hits = best[1]
 
 
 def bake_second_hand(armature, last, item):
@@ -789,6 +834,7 @@ def bake_second_hand(armature, last, item):
                 break
             turn(pose["Arm_R"], right, Quaternion(axis.normalized(), math.radians(6)))
             bpy.context.view_layer.update()
+        clear_frame(armature, True)
         target = pose["Tool_R"].matrix @ on_haft
         shoulder, elbow, wrist = pose["Arm_L"].head.copy(), pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
         upper, lower = (elbow - shoulder).length, (wrist - elbow).length
