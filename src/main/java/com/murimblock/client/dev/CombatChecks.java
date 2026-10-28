@@ -9,6 +9,7 @@ import com.murimblock.combat.CombatPayloads;
 import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.ArcherFighting;
 import com.murimblock.combat.DiscipleFighting;
+import com.murimblock.combat.SpiderFighting;
 import com.murimblock.combat.CombatState;
 import com.murimblock.registry.MurimAttachments;
 import com.murimblock.shenfa.ShenfaLibrary;
@@ -473,6 +474,63 @@ final class CombatChecks {
                         }
                         player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.projectile.AbstractArrow.class,
                                 player.getBoundingBox().inflate(30)).forEach(Entity::discard);
+                    });
+                    discard(mc);
+                }), false);
+            }));
+        }
+        // The Fileuse de linceuls (SpiderFighting): spits silk from afar, leaps on a slowed prey, bites at touch. At
+        // night, filmed from the side.
+        record SpiderScene(String name, double distance, boolean slowed, String expect) {
+        }
+        for (SpiderScene scene : List.of(new SpiderScene("spit", 7, false, "SPIT"),
+                new SpiderScene("leap", 4.5, true, "LEAP"), new SpiderScene("bite", 1.4, false, "BITE"))) {
+            steps.add(new Step("fileuse " + scene.name(), mc -> {
+                at(mc, X, Z, 0);
+                List<String> seen = new java.util.concurrent.CopyOnWriteArrayList<>();
+                boolean[] slowedBy = new boolean[1];
+                EngineTest.server(mc, player -> {
+                    player.setGameMode(GameType.SURVIVAL);
+                    player.setHealth(player.getMaxHealth());
+                    player.removeAllEffects();
+                    player.serverLevel().setDayTime(18000);
+                    player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                            net.minecraft.world.effect.MobEffects.NIGHT_VISION, 600, 0, false, false));
+                    if (scene.slowed()) {
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                                net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 200, 2));
+                    }
+                    var spider = EntityType.SPIDER.create(player.serverLevel());
+                    spider.moveTo(X, Y, Z + scene.distance(), 180, 0);
+                    spider.setPersistenceRequired();
+                    player.serverLevel().addFreshEntity(spider);
+                    spider.setTarget(player);
+                });
+                SpiderFighting.probe = (mob, move) -> seen.add(move.name());
+                start(new Run(120, t -> {
+                    LivingEntity spider = nearest(mc, EntityType.SPIDER);
+                    if (t == 0) {
+                        GifRecorder.start("fileuse_" + scene.name());
+                        GifRecorder.camera(GifRecorder.side(mc.player));
+                    }
+                    face(mc, spider);
+                    wounds(mc);
+                    EngineTest.server(mc, player -> {
+                        if (!scene.slowed() && player.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN)) {
+                            slowedBy[0] = true;
+                        }
+                    });
+                }, () -> {
+                    EngineTest.check(String.format("the Fileuse %s (%s%s)", switch (scene.name()) {
+                        case "spit" -> "rears and spits silk that slows its prey";
+                        case "leap" -> "leaps on a slowed prey";
+                        default -> "bites a prey at touch";
+                    }, seen, scene.name().equals("spit") ? ", slowed " + slowedBy[0] : ""), seen.contains(scene.expect())
+                            && (!scene.name().equals("spit") || slowedBy[0]));
+                    SpiderFighting.probe = null;
+                    EngineTest.server(mc, player -> {
+                        player.serverLevel().setDayTime(6000);
+                        player.removeAllEffects();
                     });
                     discard(mc);
                 }), false);

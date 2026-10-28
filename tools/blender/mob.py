@@ -208,6 +208,10 @@ def main():
     if args.blend:
         os.makedirs(os.path.dirname(os.path.abspath(args.blend)), exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(args.blend))
+    if hasattr(mob, "CLIPS"):
+        # A mob with a skeleton of its own keeps its clips beside its parts.
+        import murim_clips
+        murim_clips.SETS[args.mob] = mob.CLIPS
     if args.renders and args.film:
         film(armature, args.film.split(","), os.path.abspath(args.renders), args.size, args.view)
     elif args.renders:

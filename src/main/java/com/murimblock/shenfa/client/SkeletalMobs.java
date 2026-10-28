@@ -314,6 +314,11 @@ public final class SkeletalMobs {
         state.airTicks = grounded ? 0 : state.airTicks + 1;
         state.motion = state.airTicks > 2 ? (dy > 0 ? LivingMotion.JUMP : LivingMotion.FALL)
                 : horizontal < MOVING ? LivingMotion.IDLE : horizontal > RUNNING ? LivingMotion.RUN : LivingMotion.WALK;
+        if (mob instanceof net.minecraft.world.entity.monster.Spider spider && spider.isClimbing()) {
+            // A spider against a wall climbs it, at the speed it goes up or down.
+            state.motion = LivingMotion.CLIMB;
+            horizontal = Math.abs((float) dy) * 20;
+        }
         state.speed += (horizontal - state.speed) * 0.5f;
         MotionSet set = SkeletalClips.motions(look.motions());
         boolean fighting = look.clips() != null && mob.isAggressive();

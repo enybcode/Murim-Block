@@ -1,5 +1,12 @@
 {
   "clips": {
-    "stand": {"loop": true, "transition": 0.2}
+    "stand": {"loop": true, "transition": 0.2},
+    "idle": {"loop": true, "transition": 0.25},
+    "walk": {"loop": true, "transition": 0.1, "move_speed": 3.2},
+    "climb": {"loop": true, "transition": 0.15, "move_speed": 2.0},
+    "spit": {"transition": 0.08},
+    "bite": {"transition": 0.04},
+    "leap": {"transition": 0.05},
+    "death": {"transition": 0.05}
   }
 }

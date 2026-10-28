@@ -811,7 +811,7 @@ def rotation(degrees):
 
 # Step cycles keyed straight from key to key: Blender's default ease stops the planted foot at every key and then
 # hurries it, so it slides against the ground; at an even speed it keeps up with the body.
-LINEAR = {"walk", "run", "sneak_walk", "stance_walk", "climb"}
+LINEAR = {"walk", "run", "sneak_walk", "stance_walk", "climb"}  # also the spider's walk and climb
 
 
 def make_action(armature, name, keys):
