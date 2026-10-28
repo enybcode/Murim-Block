@@ -1,0 +1,10 @@
+{
+  "clips": {
+    "idle": {"loop": true, "transition": 0.25},
+    "shot": {"transition": 0.1},
+    "volley": {"transition": 0.1},
+    "retreat": {"loop": true, "transition": 0.15},
+    "bash": {"transition": 0.05},
+    "death": {"transition": 0.05}
+  }
+}

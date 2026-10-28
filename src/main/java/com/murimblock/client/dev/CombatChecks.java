@@ -7,6 +7,7 @@ import com.murimblock.client.combat.LockOn;
 import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.combat.CombatPayloads;
 import com.murimblock.combat.CombatServer;
+import com.murimblock.combat.ArcherFighting;
 import com.murimblock.combat.DiscipleFighting;
 import com.murimblock.combat.CombatState;
 import com.murimblock.registry.MurimAttachments;
@@ -405,6 +406,77 @@ final class CombatChecks {
                     }), false);
                 }));
             }
+        }
+        // The Archer impérial (ArcherFighting): an aimed shot at range, the retreat when its prey comes close, the
+        // bash when touching, the volley over a wall. At night, filmed from the side.
+        record ArcherScene(String name, double distance, boolean wall, String expect) {
+        }
+        for (ArcherScene scene : List.of(new ArcherScene("shot", 10, false, "SHOT"),
+                new ArcherScene("retreat", 3.5, false, "retreat"), new ArcherScene("bash", 1.6, false, "BASH"),
+                new ArcherScene("volley", 9, true, "VOLLEY"))) {
+            steps.add(new Step("archer " + scene.name(), mc -> {
+                at(mc, X, Z, 0);
+                List<String> seen = new java.util.concurrent.CopyOnWriteArrayList<>();
+                double[] from = new double[1];
+                EngineTest.server(mc, player -> {
+                    player.setGameMode(GameType.SURVIVAL);
+                    player.setHealth(player.getMaxHealth());
+                    player.serverLevel().setDayTime(18000);
+                    player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                            net.minecraft.world.effect.MobEffects.NIGHT_VISION, 600, 0, false, false));
+                    var skeleton = EntityType.SKELETON.create(player.serverLevel());
+                    skeleton.moveTo(X, Y, Z + scene.distance(), 180, 0);
+                    skeleton.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+                    skeleton.setPersistenceRequired();
+                    player.serverLevel().addFreshEntity(skeleton);
+                    skeleton.setTarget(player);
+                });
+                ArcherFighting.probe = (mob, move) -> seen.add(move.name());
+                com.murimblock.shenfa.client.SkeletalMobs.moveProbe = (mob, move) -> seen.add(move);
+                start(new Run(scene.wall() ? 200 : 140, t -> {
+                    LivingEntity skeleton = nearest(mc, EntityType.SKELETON);
+                    if (t == 0) {
+                        GifRecorder.start("archer_" + scene.name());
+                        GifRecorder.camera(GifRecorder.side(mc.player));
+                    }
+                    if (t == 2 && skeleton != null) {
+                        from[0] = server(skeleton).distanceTo(serverPlayer(mc));
+                    }
+                    if (!scene.wall() || t < 30) {
+                        face(mc, skeleton);
+                    }
+                    if (scene.wall() && t == 30) {
+                        // The player hides behind a wall the archer saw it go behind.
+                        EngineTest.server(mc, player -> {
+                            for (BlockPos pos : BlockPos.betweenClosed(AREA - 3, (int) Y, 2, AREA + 3, (int) Y + 3, 2)) {
+                                player.serverLevel().setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+                            }
+                        });
+                    }
+                    wounds(mc);
+                }, () -> {
+                    LivingEntity skeleton = nearest(mc, EntityType.SKELETON);
+                    double now = skeleton == null ? 0 : server(skeleton).distanceTo(serverPlayer(mc));
+                    EngineTest.check(String.format("the archer %s (%s, %.1f to %.1f blocks)", switch (scene.name()) {
+                        case "shot" -> "draws, holds and looses an aimed shot";
+                        case "retreat" -> "backs away from a close prey";
+                        case "bash" -> "bashes a prey touching it";
+                        default -> "lobs a volley over the wall";
+                    }, seen, from[0], now), seen.contains(scene.expect())
+                            && (!scene.name().equals("retreat") || now > from[0] + 1.5));
+                    ArcherFighting.probe = null;
+                    com.murimblock.shenfa.client.SkeletalMobs.moveProbe = null;
+                    EngineTest.server(mc, player -> {
+                        player.serverLevel().setDayTime(6000);
+                        for (BlockPos pos : BlockPos.betweenClosed(AREA - 3, (int) Y, 2, AREA + 3, (int) Y + 3, 2)) {
+                            player.serverLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                        }
+                        player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.projectile.AbstractArrow.class,
+                                player.getBoundingBox().inflate(30)).forEach(Entity::discard);
+                    });
+                    discard(mc);
+                }), false);
+            }));
         }
         if (GifRecorder.ON) {
             showcase(steps);

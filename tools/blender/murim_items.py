@@ -25,16 +25,22 @@ def right_grip():
             @ Matrix.Translation((1 * PIXEL, 2 * PIXEL, -10 * PIXEL)))
 
 
-def handheld():
-    """item/handheld's thirdperson_righthand, as ItemTransform.apply then ItemRenderer's -0.5 (blocks)."""
-    rotation = _rot("X", 0) @ _rot("Y", -90) @ _rot("Z", 55)  # JOML rotationXYZ: X, then Y, then Z
-    return (Matrix.Translation((0, 4 * PIXEL, 0.5 * PIXEL)) @ rotation @ Matrix.Scale(0.85, 4)
+# The third person right hand transforms of the item models: rotation (degrees, X then Y then Z), translation (pixels),
+# scale. "handheld" is swords, axes and tools; "bow" the bow.
+DISPLAYS = {"handheld": ((0, -90, 55), (0, 4, 0.5), 0.85), "bow": ((-80, 260, -40), (-1, -2, 2.5), 0.9)}
+
+
+def handheld(display="handheld"):
+    """An item model's thirdperson_righthand, as ItemTransform.apply then ItemRenderer's -0.5 (blocks)."""
+    (rx, ry, rz), (tx, ty, tz), scale = DISPLAYS[display]
+    rotation = _rot("X", rx) @ _rot("Y", ry) @ _rot("Z", rz)  # JOML rotationXYZ: X, then Y, then Z
+    return (Matrix.Translation((tx * PIXEL, ty * PIXEL, tz * PIXEL)) @ rotation @ Matrix.Scale(scale, 4)
             @ Matrix.Translation((-0.5, -0.5, -0.5)))
 
 
-def item_to_joint():
+def item_to_joint(display="handheld"):
     """The item's square to the Tool_R joint's space, in model pixels."""
-    return Matrix.Scale(16, 4) @ right_grip() @ handheld()
+    return Matrix.Scale(16, 4) @ right_grip() @ handheld(display)
 
 
 def along(t, across=0.0):
@@ -42,9 +48,17 @@ def along(t, across=0.0):
     return Vector((t - across, t + across, 0.5))
 
 
-def point(t, across=0.0):
+def point(t, across=0.0, display="handheld"):
     """That point in the joint's space (pixels)."""
-    return item_to_joint() @ along(t, across)
+    return item_to_joint(display) @ along(t, across)
+
+
+# The bow's texture: the string runs along the diagonal, the arrow flies across it toward the top left (+across);
+# the hand holds the stave at its grip, the string's middle (the nock) is just behind it.
+BOW_GRIP = (0.5, 0.16)
+BOW_NOCK = (0.5, -0.03)
+# How far back (across) the string comes at full draw.
+BOW_DRAW = 0.6
 
 
 # Where a hand holds the haft (t along the diagonal): the right hand's own grip is where the mod puts it; the left
@@ -58,19 +72,31 @@ SHAPES = {
     "axe": [(0.04, 0.86, 0.035, (0.42, 0.29, 0.18)), (0.66, 0.92, 0.2, (0.6, 0.63, 0.67))],
     "tool": [(0.04, 0.62, 0.035, (0.42, 0.29, 0.18)), (0.62, 0.95, 0.13, (0.6, 0.63, 0.67))],
 }
+# The bow: its stave (texture pixels, u right, v down) as a polyline, then the string.
+BOW_STAVE = [(2, 14.5), (3, 10), (5, 5.5), (9, 3), (14, 2)]
+BOW_STRING = [(13.5, 3.5), (3.5, 13.5)]
+
+
+def _segments(kind):
+    """(start, end, half width, colour) in the item's square, for the proxy."""
+    if kind == "bow":
+        to = lambda u, v: Vector((u / 16, 1 - v / 16))
+        stave = [(to(*a), to(*b), 0.045, (0.42, 0.27, 0.12)) for a, b in zip(BOW_STAVE, BOW_STAVE[1:])]
+        return stave + [(to(*BOW_STRING[0]), to(*BOW_STRING[1]), 0.01, (0.85, 0.82, 0.75))]
+    return [(Vector((s, s)), Vector((e, e)), half, colour) for s, e, half, colour in SHAPES[kind]]
 
 
 def proxy(armature, kind, bone="Tool_R"):
     """A flat stand-in of the item, held by `bone` (renders only; not exported)."""
-    to_joint = item_to_joint()
+    to_joint = item_to_joint("bow" if kind == "bow" else "handheld")
     mesh = bpy.data.meshes.new(f"held_{kind}")
     verts, faces, colours = [], [], []
-    for start, end, half, colour in SHAPES[kind]:
+    for start, end, half, colour in _segments(kind):
         base = len(verts)
-        for t, a in ((start, -half), (end, -half), (end, half), (start, half)):
+        side = Vector((-(end - start).y, (end - start).x)).normalized() * half
+        for p in (start - side, end - side, end + side, start + side):
             for z in (0.47, 0.53):
-                p = Vector((t - a, t + a, z))
-                verts.append(to_joint @ p)
+                verts.append(to_joint @ Vector((p.x, p.y, z)))
         # A thin box: front, back and the four sides.
         quads = [(0, 2, 4, 6), (1, 7, 5, 3), (0, 1, 3, 2), (2, 3, 5, 4), (4, 5, 7, 6), (6, 7, 1, 0)]
         faces += [tuple(base + i for i in quad) for quad in quads]

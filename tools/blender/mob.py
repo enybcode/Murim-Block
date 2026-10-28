@@ -162,7 +162,7 @@ def main():
     parser.add_argument("--renders")
     parser.add_argument("--size", type=int, default=480)
     parser.add_argument("--view", default="three_quarter", choices=["three_quarter", "side", "front"])
-    parser.add_argument("--held", choices=["sword", "axe", "tool"], help="a stand-in item in the right hand")
+    parser.add_argument("--held", choices=["sword", "axe", "tool", "bow"], help="a stand-in item in the right hand")
     parser.add_argument("--film", help="clips of murim_clips.py as <set>/<clip>,... filmed frame by frame into --renders")
     args = parser.parse_args(argv)
 

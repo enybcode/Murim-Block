@@ -1,0 +1,16 @@
+{
+  "motions": {
+    "idle": "murimblock:archer/idle",
+    "walk": "murimblock:biped/walk",
+    "run": "murimblock:biped/run",
+    "jump": "murimblock:biped/jump",
+    "fall": "murimblock:biped/fall",
+    "swim": "murimblock:biped/swim",
+    "climb": "murimblock:biped/climb",
+    "ride": "murimblock:biped/ride"
+  },
+  "combat": {
+    "idle": "murimblock:archer/idle"
+  },
+  "additive": []
+}

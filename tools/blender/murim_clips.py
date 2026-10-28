@@ -716,6 +716,48 @@ SETS["disciple"].update({
     "tool_lunge": [(0, T["guard"]), (6, T["run"]), (10, T["ram"]), (12, T["ram"]), (19, T["stumble"]),
                    (26, T["guard"])],
 })
+
+# The Archer impérial (the skeleton's look), from its validated storyboard (docs/mobs/boards/archer.png). The bow is
+# in the right hand. "_aim" is where the arrow points (board degrees: forward 90, up 180) and "_draw" how far the
+# left hand has drawn the string (0 to 1; None: the left hand is free); bake_bow turns the bow and puts the left hand
+# on the string on every frame, from these.
+R_SENTRY = dict(lean=0, head=0, aR=6, fR=12, w=90, aL=-4, fL=0, tF=6, sF=2, tB=-6, sB=-2)
+R_REACH = dict(lean=4, head=-10, aR=55, fR=70, w=82, aL=200, fL=210, tF=16, sF=4, tB=-18, sB=-8)
+R_NOCKED = dict(lean=4, head=-4, aR=82, fR=88, w=90, aL=40, fL=80, tF=20, sF=4, tB=-22, sB=-10)
+R_DRAWN = dict(lean=6, head=-8, aR=92, fR=92, w=90, aL=60, fL=100, tF=22, sF=4, tB=-24, sB=-12, hy=1)
+R_LOOSE = dict(lean=2, head=-6, aR=100, fR=106, w=96, aL=-70, fL=-110, tF=20, sF=4, tB=-24, sB=-12)
+R_SKY_NOCKED = dict(lean=-10, head=-30, aR=132, fR=136, w=136, aL=100, fL=130, tF=24, sF=4, tB=-22, sB=-14)
+R_SKY_DRAWN = dict(R_SKY_NOCKED, head=-34)
+R_SKY_LOOSE = dict(lean=-12, head=-32, aR=140, fR=146, w=142, aL=-60, fL=-100, tF=24, sF=4, tB=-22, sB=-14)
+R_STEP_1 = dict(R_NOCKED, tF=4, sF=-6, tB=-30, sB=-24)
+R_STEP_2 = dict(R_NOCKED, tF=26, sF=10, tB=-6, sB=-12)
+R_BASH_BACK = dict(lean=-4, head=-6, aR=-30, fR=10, w=330, aL=30, fL=50, tF=10, sF=0, tB=-26, sB=-16, hx=-4)
+R_BASH = dict(lean=24, head=4, hx=10, hy=4, aR=100, fR=130, w=170, aL=-40, fL=-30, tF=44, sF=4, tB=-36, sB=-24)
+R_SHOVE = dict(lean=10, head=-2, hx=-8, aR=60, fR=80, w=90, aL=-20, fL=0, tF=6, sF=-4, tB=-30, sB=-24)
+R_FALL_1 = dict(lean=20, head=20, hy=8, aR=20, fR=10, w=60, aL=10, fL=0, tF=60, sF=-20, tB=40, sB=-30)
+R_FALL_2 = dict(lean=70, head=30, hy=22, hx=10, aR=60, fR=40, w=30, aL=50, fL=30, tF=90, sF=0, tB=90, sB=10)
+
+
+def bow(p, draw=None, **extra):
+    """A board pose with the bow's aim and draw, and any joints set directly."""
+    return {**board(p), "_aim": p["w"], "_draw": draw, **extra}
+
+
+SETS["archer"] = {
+    # The sentinel: still, the head sweeping the horizon.
+    "idle": [(0, bow(R_SENTRY)), (20, bow(R_SENTRY, Head=(0, 28, 0))), (30, bow(R_SENTRY, Head=(-6, 28, 0))),
+             (50, bow(R_SENTRY, Head=(0, -28, 0))), (60, bow(R_SENTRY))],
+    "shot": [(0, bow(R_SENTRY)), (6, bow(R_REACH)), (12, bow(R_NOCKED, 0)), (18, bow(R_DRAWN, 1)),
+             (31, bow(R_DRAWN, 1)), (32, bow(R_LOOSE)), (40, bow(R_SENTRY))],
+    "volley": [(0, bow(R_SENTRY)), (12, bow(R_SKY_NOCKED, 0)), (23, bow(R_SKY_DRAWN, 1)), (24, bow(R_SKY_LOOSE)),
+               (28, bow(R_SKY_NOCKED, 0)), (37, bow(R_SKY_DRAWN, 1)), (38, bow(R_SKY_LOOSE)), (46, bow(R_SENTRY))],
+    # Side steps back, the arrow nocked (in place: the mob's own motion moves it).
+    "retreat": [(0, bow(R_NOCKED, 0)), (8, bow(R_STEP_1, 0)), (16, bow(R_NOCKED, 0))],
+    "bash": [(0, bow(R_SENTRY)), (6, bow(R_BASH_BACK)), (9, bow(R_BASH)), (16, bow(R_SHOVE)), (24, bow(R_SENTRY))],
+    "death": [(0, bow(R_SENTRY)), (6, bow(R_FALL_1)), (20, bow(R_FALL_2))],
+}
+BOWED = {"archer"}
+
 # The clips with an item in the right hand (bake_clear_item), and those whose left hand holds the haft
 # (bake_second_hand), by item.
 ARMED = {name: name.split("_")[0] for name in SETS["disciple"] if name.split("_")[0] in ("sword", "axe", "tool")}
@@ -751,6 +793,8 @@ def make_action(armature, name, keys):
     for frame, values in keys:
         held.update(values)
         for joint, value in held.items():
+            if joint.startswith("_"):
+                continue
             bone = pose[joint]
             if isinstance(value, dict):
                 rot, loc = value.get("rot"), value.get("loc")
@@ -766,7 +810,99 @@ def make_action(armature, name, keys):
         bake_clear_item(armature, keys[-1][0], ARMED[name])
     if name in TWO_HANDED:
         bake_second_hand(armature, keys[-1][0], TWO_HANDED[name])
+    if any("_aim" in values for _, values in keys):
+        bake_bow(armature, keys)
     return action
+
+
+def _track(keys, field):
+    """A key field per frame, linear between keys; None where a key has None (or between None and a value)."""
+    points = [(frame, values.get(field)) for frame, values in keys if field in values]
+    track = {}
+    for (f0, v0), (f1, v1) in zip(points, points[1:]):
+        for frame in range(f0, f1 + 1):
+            if v0 is None or v1 is None:
+                track[frame] = v0 if frame == f0 else (v1 if frame == f1 else None)
+            else:
+                track[frame] = v0 + (v1 - v0) * (frame - f0) / max(1, f1 - f0)
+    return track
+
+
+def bake_bow(armature, keys):
+    """
+    Turns the bow in the right hand on every frame so its arrow points where "_aim" says (in the body's profile
+    plane) with the stave upright across it, then puts the left hand on the string, drawn back by "_draw" (none:
+    the left hand keeps its own keys).
+    """
+    import murim_items
+    pose = armature.pose.bones
+    scene = bpy.context.scene
+    aims, draws = _track(keys, "_aim"), _track(keys, "_draw")
+    to_joint = murim_items.item_to_joint("bow").to_3x3()
+    arrow_local = (to_joint @ Vector((-1, 1, 0))).normalized()
+    # The collarbone rests where the left hand is free (reach_left moves it only while it holds the string).
+    for frame, values in keys:
+        if values.get("_draw") is None:
+            pose["Shoulder_L"].rotation_quaternion = Quaternion()
+            pose["Shoulder_L"].keyframe_insert("rotation_quaternion", frame=frame)
+    stave_local = (to_joint @ Vector((1, 1, 0))).normalized()
+    for frame in range(0, keys[-1][0] + 1):
+        scene.frame_set(frame)
+        aim = math.radians(aims.get(frame, 90))
+        # Board angles: forward is the model's +Z (Blender -Y), up is Blender +Z.
+        want = Vector((0, -math.sin(aim), -math.cos(aim))).normalized()
+        tool = pose["Tool_R"]
+        head = tool.head.copy()
+        arrow = (tool.matrix.to_3x3() @ arrow_local).normalized()
+        turn(tool, head, arrow.rotation_difference(want))
+        bpy.context.view_layer.update()
+        up = Vector((0, 0, 1)) if abs(want.z) < 0.8 else Vector((0, -1, 0))
+        up = (up - want * up.dot(want)).normalized()
+        stave = (tool.matrix.to_3x3() @ stave_local)
+        stave = (stave - want * stave.dot(want)).normalized()
+        angle = stave.angle(up)
+        if stave.cross(up).dot(want) < 0:
+            angle = -angle
+        turn(tool, head, Quaternion(want, angle))
+        bpy.context.view_layer.update()
+        tool.keyframe_insert("rotation_quaternion", frame=frame)
+        draw = draws.get(frame)
+        if draw is not None:
+            t, across = murim_items.BOW_NOCK
+            nock = tool.matrix @ murim_items.point(t, across - murim_items.BOW_DRAW * draw, "bow")
+            reach_left(pose, nock)
+            for name in ("Shoulder_L", "Arm_L", "Hand_L"):
+                pose[name].keyframe_insert("rotation_quaternion", frame=frame)
+
+
+def reach_left(pose, target):
+    """A two-bone reach of the left arm to `target` (armature space), the elbow bending the way it already bent."""
+    # Out of reach, the collarbone first brings the shoulder toward the target (at most 40°).
+    for _ in range(10):
+        shoulder = pose["Arm_L"].head.copy()
+        reach = (pose["Hand_L"].head - shoulder).length + (pose["Tool_L"].head - pose["Hand_L"].head).length
+        if (target - shoulder).length <= reach * 0.97:
+            break
+        root = pose["Shoulder_L"].head.copy()
+        axis = (shoulder - root).cross(target - root)
+        if axis.length < 1e-6:
+            break
+        turn(pose["Shoulder_L"], root, Quaternion(axis.normalized(), math.radians(4)))
+        bpy.context.view_layer.update()
+    shoulder, elbow, wrist = pose["Arm_L"].head.copy(), pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
+    upper, lower = (elbow - shoulder).length, (wrist - elbow).length
+    toward = target - shoulder
+    distance = min(max(toward.length, 1e-3), upper + lower - 1e-3)
+    toward.normalize()
+    bend = (elbow - shoulder) - toward * (elbow - shoulder).dot(toward)
+    bend = bend.normalized() if bend.length > 1e-4 else Vector((0, 0, -1))
+    cos = max(-1.0, min(1.0, (upper * upper + distance * distance - lower * lower) / (2 * upper * distance)))
+    new_elbow = shoulder + toward * upper * cos + bend * upper * math.sqrt(1 - cos * cos)
+    turn(pose["Arm_L"], shoulder, (elbow - shoulder).rotation_difference(new_elbow - shoulder))
+    bpy.context.view_layer.update()
+    elbow, wrist = pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
+    turn(pose["Hand_L"], elbow, (wrist - elbow).rotation_difference(target - elbow))
+    bpy.context.view_layer.update()
 
 
 def bake_clear_item(armature, last, item):

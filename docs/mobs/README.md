@@ -13,7 +13,7 @@ biped's armor parts, held items) and falls back to vanilla's renderer when `shen
 | Drowned | Disciple noyé | `disciple-noye.png` | Design sheet to validate (28 Oct 2026); the zombie's clips, plus two new clips later (fork throw, swim), storyboard first. |
 | Zombie villager | Paysan possédé | `paysan-possede.png` | Design sheet to validate (28 Oct 2026); the zombie's skeleton and clips, look only. |
 | Zombified piglin | Sanglier du culte | `sanglier-du-culte.png` | Design sheet to validate (28 Oct 2026); the zombie's skeleton and armed sword clips, look only. |
-| Skeleton | Archer impérial | `archer-imperial.png`, model `archer-imperial-model-v1.png` | In game (28 Oct 2026): model validated; moves with the biped's motions and aims its bow like vanilla's skeleton. Own clips and moves (aimed shot, volley, bow bash): next, storyboard first. |
+| Skeleton | Archer impérial | `archer-imperial.png`, model `archer-imperial-model-v1.png` | In game (28 Oct 2026) with its own clips (`skeletal/animations/archer`, storyboard `boards/archer.png`): sentinel idle, aimed shot (nock, draw held 13 ticks, loose), volley lobbed over cover, side-stepping retreat under 6 blocks, bow bash, death. Fights by `ArcherFighting` (server, ahead of vanilla's bow goal). |
 
 Cloth (`MobCloth`, pieces listed by `mob.py` in `skeletal/mobs/<name>.json`): the rope ends and the robe's front and back
 panels hang from the belt and swing with the body, off the legs.

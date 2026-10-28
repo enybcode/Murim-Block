@@ -50,7 +50,7 @@ public final class SkeletalMobs {
 
     public static final Look DISCIPLE = new Look(id("mobs/disciple"), id("textures/entity/disciple.png"),
             id("textures/entity/disciple_glow.png"), "disciple");
-    public static final Look ARCHER = new Look(id("mobs/archer"), id("textures/entity/archer.png"), null, null);
+    public static final Look ARCHER = new Look(id("mobs/archer"), id("textures/entity/archer.png"), null, "archer");
     private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
@@ -247,8 +247,8 @@ public final class SkeletalMobs {
         MotionSet set = SkeletalClips.motions(look.motions());
         boolean fighting = look.clips() != null && mob.isAggressive();
         String id = set == null ? null : set.clip(state.motion, fighting);
-        if (fighting && state.motion == LivingMotion.IDLE) {
-            // Its guard holds what it holds (DiscipleFighting.Weapon: fists, sword, axe or tool).
+        if (fighting && look == DISCIPLE && state.motion == LivingMotion.IDLE) {
+            // The disciple's guard holds what it holds (DiscipleFighting.Weapon: fists, sword, axe or tool).
             id = look.clip(com.murimblock.combat.DiscipleFighting.Weapon.of(mob.getMainHandItem()).stance()).toString();
         }
         Animation animation = id == null ? null : SkeletalClips.get(ResourceLocation.parse(id));
