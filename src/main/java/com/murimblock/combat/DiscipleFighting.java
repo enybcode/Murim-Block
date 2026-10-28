@@ -23,28 +23,80 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
  * ({@code skeletal/animations/disciple}): the clumsy haymaker, the double blow (a jab then the haymaker; always after
  * two of its blows were blocked, sometimes anyway) and the lunge when its prey backs away. Each blow lands at the
  * clip's impact, through the guard, parry and dodge of {@link CombatServer}; in a crowd around the prey it only
- * strikes, so the fight stays readable. Every client sees the move it chose.
+ * strikes, so the fight stays readable. Armed, it plays the same three moves its weapon's way ({@link Weapon}).
+ * Every client sees the move it chose.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class DiscipleFighting extends Goal {
-    /** A move: its clip, length and impacts (ticks), each impact's share of the attack damage, its reach. */
+    /** A move, and each of its impacts' share of the attack damage. */
     public enum Move {
-        STRIKE("strike", 18, new int[] {5}, new float[] {1}, 2.4),
-        DOUBLE("double", 22, new int[] {3, 10}, new float[] {0.67f, 1}, 2.4),
-        LUNGE("lunge", 26, new int[] {9, 10, 11, 12}, new float[] {1.33f}, 1.9);
+        STRIKE(1),
+        DOUBLE(0.67f, 1),
+        LUNGE(1.33f);
 
-        final ResourceLocation clip;
-        final int length;
-        final int[] impacts;
         final float[] damage;
-        final double reach;
 
-        Move(String clip, int length, int[] impacts, float[] damage, double reach) {
-            this.clip = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "disciple/" + clip);
-            this.length = length;
-            this.impacts = impacts;
+        Move(float... damage) {
             this.damage = damage;
-            this.reach = reach;
+        }
+    }
+
+    /** How a weapon plays a move: its clip, length and impacts (ticks), its reach (blocks, centre to centre). */
+    record Timing(ResourceLocation clip, int length, int[] impacts, double reach) {
+        Timing(String clip, int length, int[] impacts, double reach) {
+            this(ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "disciple/" + clip), length, impacts, reach);
+        }
+    }
+
+    /**
+     * What it holds sets its moves: bare fists; a sword wakes its sect's fencing (a cut, a cut and backhand, a
+     * lunging thrust); an axe is all weight (a chop held high first, a sweep then a chop, a charge); any tool is held
+     * like a staff (a sweep, two pokes, a charge). A weapon reaches half a block further; its damage is the item's.
+     */
+    public enum Weapon {
+        FISTS(new Timing("strike", 18, new int[] {5}, 2.4), new Timing("double", 22, new int[] {3, 10}, 2.4),
+                new Timing("lunge", 26, new int[] {9, 10, 11, 12}, 1.9)),
+        SWORD(new Timing("sword_strike", 20, new int[] {7}, 2.9), new Timing("sword_double", 26, new int[] {7, 14}, 2.9),
+                new Timing("sword_thrust", 26, new int[] {9, 10, 11, 12}, 2.4)),
+        AXE(new Timing("axe_strike", 26, new int[] {11}, 2.8), new Timing("axe_double", 30, new int[] {7, 18}, 2.8),
+                new Timing("axe_lunge", 28, new int[] {12, 13, 14}, 2.3)),
+        TOOL(new Timing("tool_strike", 20, new int[] {7}, 2.7), new Timing("tool_double", 24, new int[] {5, 12}, 2.7),
+                new Timing("tool_lunge", 26, new int[] {9, 10, 11, 12}, 2.3));
+
+        private final Timing strike, twice, lunge;
+
+        Weapon(Timing strike, Timing twice, Timing lunge) {
+            this.strike = strike;
+            this.twice = twice;
+            this.lunge = lunge;
+        }
+
+        Timing timing(Move move) {
+            return switch (move) {
+                case STRIKE -> strike;
+                case DOUBLE -> twice;
+                case LUNGE -> lunge;
+            };
+        }
+
+        /** The clip prefix of its stance (empty for bare fists). */
+        public String stance() {
+            return this == FISTS ? "stance" : name().toLowerCase(java.util.Locale.ROOT) + "_stance";
+        }
+
+        public static Weapon of(net.minecraft.world.item.ItemStack stack) {
+            var item = stack.getItem();
+            if (item instanceof net.minecraft.world.item.SwordItem) {
+                return SWORD;
+            }
+            if (item instanceof net.minecraft.world.item.AxeItem) {
+                return AXE;
+            }
+            if (item instanceof net.minecraft.world.item.DiggerItem || item instanceof net.minecraft.world.item.HoeItem
+                    || item instanceof net.minecraft.world.item.TridentItem) {
+                return TOOL;
+            }
+            return FISTS;
         }
     }
 
@@ -70,6 +122,7 @@ public final class DiscipleFighting extends Goal {
 
     private final Mob mob;
     private Move move;
+    private Timing timing;
     private int time, rest = 20, lungeRest, blocked, path;
     private boolean landed;
     /** The distance to its prey over the last half second, a tick apart (a ring). */
@@ -184,7 +237,7 @@ public final class DiscipleFighting extends Goal {
         if (distance >= LUNGE_FROM && distance <= LUNGE_UNTIL && backing && lungeRest <= 0 && !crowded(target)) {
             return Move.LUNGE;
         }
-        if (distance > Move.STRIKE.reach + target.getBbWidth() / 2) {
+        if (distance > Weapon.of(mob.getMainHandItem()).timing(Move.STRIKE).reach() + target.getBbWidth() / 2) {
             return null;
         }
         if (crowded(target)) {
@@ -205,13 +258,14 @@ public final class DiscipleFighting extends Goal {
 
     private void begin(Move next) {
         move = next;
+        timing = Weapon.of(mob.getMainHandItem()).timing(next);
         if (next == Move.DOUBLE) {
             blocked = 0;
         }
         time = 0;
         landed = false;
         mob.getNavigation().stop();
-        CombatServer.anim(mob, Animator.Priority.MIDDLE, next.clip, false);
+        CombatServer.anim(mob, Animator.Priority.MIDDLE, timing.clip(), false);
         if (probe != null) {
             probe.accept(mob, next);
         }
@@ -219,7 +273,7 @@ public final class DiscipleFighting extends Goal {
 
     private void play(LivingEntity target) {
         time++;
-        boolean windUp = time < move.impacts[0];
+        boolean windUp = time < timing.impacts()[0];
         if (target != null && windUp) {
             // It turns to its prey while it winds up; once the blow is thrown, it is thrown.
             mob.getLookControl().setLookAt(target, 30, 30);
@@ -233,12 +287,12 @@ public final class DiscipleFighting extends Goal {
             mob.setDeltaMovement(push.x, 0.36, push.z);
             mob.hasImpulse = true;
         }
-        for (int i = 0; i < move.impacts.length; i++) {
-            if (time == move.impacts[i] && target != null && !(move == Move.LUNGE && landed)) {
+        for (int i = 0; i < timing.impacts().length; i++) {
+            if (time == timing.impacts()[i] && target != null && !(move == Move.LUNGE && landed)) {
                 impact(target, move.damage[Math.min(i, move.damage.length - 1)]);
             }
         }
-        if (time >= move.length) {
+        if (time >= timing.length()) {
             end(false);
         }
     }
@@ -248,7 +302,7 @@ public final class DiscipleFighting extends Goal {
         Vec3 toward = target.position().subtract(mob.position()).multiply(1, 0, 1);
         Vec3 facing = Vec3.directionFromRotation(0, mob.yBodyRot);
         boolean inFront = toward.lengthSqr() < 1e-4 || toward.normalize().dot(facing) > 0.35;
-        if (mob.distanceTo(target) > move.reach + target.getBbWidth() / 2 || !inFront) {
+        if (mob.distanceTo(target) > timing.reach() + target.getBbWidth() / 2 || !inFront) {
             return;
         }
         float damage = (float) mob.getAttributeValue(Attributes.ATTACK_DAMAGE) * share;

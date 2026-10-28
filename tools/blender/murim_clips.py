@@ -576,6 +576,160 @@ SETS["disciple"] = {
     ],
 }
 
+# The Disciple déchu armed. The item sits in the right hand (vanilla's grip at Tool_R); a two-handed hold brings the
+# left hand onto the haft. The sword wakes the sect's fencing (a cut from the shoulder, a cut and backhand, a lunging
+# thrust); the axe is all weight (an overhead chop, a sweep then a chop, a charge ending in a chop); a tool is held
+# like a staff by a peasant (a sweep, two pokes, a charge).
+SWORD_GUARD = {**HALF_GUARD, "Arm_R": (-30, 0, -8), "Hand_R": (-40, 0, 0), "Arm_L": (-20, 0, 30),
+               "Hand_L": (-20, 0, 0)}
+TWO_HANDS = {"Root": {"rot": (0, -10, 0), "loc": (0, -1.8, 0)}, **legs(-22, 40, 14, 32), "Torso": (18, 0, 0),
+             "Chest": (4, 0, 0), "Head": (-18, 8, 4)}
+AXE_GUARD = {**TWO_HANDS, "Arm_R": (-25, 0, -15), "Hand_R": (-55, 0, 0), "Arm_L": (-40, 0, -25),
+             "Hand_L": (-50, 0, 0)}
+TOOL_GUARD = {**TWO_HANDS, "Torso": (12, 0, 0), "Arm_R": (-40, 0, -10), "Hand_R": (-50, 0, 0),
+              "Arm_L": (-50, 0, -22), "Hand_L": (-40, 0, 0)}
+# Both arms raised over the head, the haft held high (the axe's chop, the charge).
+OVERHEAD = {"Arm_R": (-170, 0, -10), "Hand_R": (-40, 0, 0), "Arm_L": (-165, 0, 12), "Hand_L": (-45, 0, 0)}
+CHOPPED = {"Arm_R": (-60, 0, -10), "Hand_R": (-10, 0, 0), "Arm_L": (-55, 0, 10), "Hand_L": (-15, 0, 0)}
+
+SETS["disciple"].update({
+    "sword_stance": [
+        (0, SWORD_GUARD),
+        (20, {"Root": {"rot": (0, -10, 0), "loc": (0, -1.8, 0)}, "Head": (-8, 10, 12), "Arm_R": (-34, 0, -10),
+              "Hand_R": (-48, 0, 0)}),
+        (40, SWORD_GUARD),
+    ],
+    # A cut from over the right shoulder down across the body.
+    "sword_strike": [
+        (0, SWORD_GUARD),
+        (4, {"Root": {"rot": (0, -25, 0), "loc": (0, -1.6, -0.5)}, "Chest": (0, -30, 0), "Head": (-10, 30, 0),
+             "Arm_R": (-150, 30, -30), "Hand_R": (-60, 0, 0), "Arm_L": (-40, 0, 25), "Hand_L": (-40, 0, 0)}),
+        (7, {"Root": {"rot": (0, 20, 0), "loc": (0, -2.2, 2)}, **legs(-36, 40, 10, 25), "Chest": (14, 35, 0),
+             "Head": (-16, -20, 0), "Arm_R": (-60, -50, 0), "Hand_R": (-10, 0, 0), "Arm_L": (-10, 0, 30)}),
+        (10, {"Root": {"rot": (0, 26, 0), "loc": (0, -2.6, 2.4)}, "Torso": (22, 0, 0), "Chest": (18, 40, 0),
+              "Arm_R": (-20, -70, 20), "Hand_R": (-20, 0, 0)}),
+        (20, SWORD_GUARD),
+    ],
+    # The cut, then the blade drawn back across in a backhand.
+    "sword_double": [
+        (0, SWORD_GUARD),
+        (4, {"Root": {"rot": (0, -25, 0), "loc": (0, -1.6, -0.5)}, "Chest": (0, -30, 0), "Head": (-10, 30, 0),
+             "Arm_R": (-150, 30, -30), "Hand_R": (-60, 0, 0)}),
+        (7, {"Root": {"rot": (0, 20, 0), "loc": (0, -2.2, 2)}, **legs(-36, 40, 10, 25), "Chest": (14, 35, 0),
+             "Head": (-16, -20, 0), "Arm_R": (-60, -50, 0), "Hand_R": (-10, 0, 0)}),
+        (10, {"Root": {"rot": (0, 24, 0), "loc": (0, -2.4, 2.2)}, "Chest": (16, 40, 0),
+              "Arm_R": (-40, -70, 10), "Hand_R": (-30, 0, 0)}),
+        (14, {"Root": {"rot": (0, -18, 0), "loc": (0, -2.0, 2.4)}, "Chest": (6, -30, 0), "Head": (-12, 22, 0),
+              "Arm_R": (-80, 40, -40), "Hand_R": (-20, 0, 0)}),
+        (18, {"Root": {"rot": (0, -22, 0), "loc": (0, -1.8, 2)}, "Chest": (4, -36, 0),
+              "Arm_R": (-50, 50, -50), "Hand_R": (-30, 0, 0)}),
+        (26, SWORD_GUARD),
+    ],
+    # The thrust: it coils, then throws itself forward, arm and blade straight at the heart.
+    "sword_thrust": [
+        (0, SWORD_GUARD),
+        (5, {"Root": {"rot": (0, -20, 0), "loc": (0, -3.2, -1)}, **legs(-40, 80, -20, 70), "Torso": (20, 0, 0),
+             "Chest": (6, -20, 0), "Head": (-20, 20, 0), "Arm_R": (-60, 0, -10), "Hand_R": (-110, 0, 0),
+             "Arm_L": (-30, 0, 30), "Hand_L": (-30, 0, 0)}),
+        (9, {"Root": {"rot": (0, 10, 0), "loc": (0, 1.0, 3)}, **legs(-40, 20, 30, 40), "Torso": (30, 0, 0),
+             "Chest": (8, 10, 0), "Head": (-30, -10, 0), "Arm_R": (-95, 0, 0), "Hand_R": (0, 0, 0),
+             "Arm_L": (30, 0, 30), "Hand_L": (-20, 0, 0)}),
+        (13, {"Root": {"rot": (0, 10, 0), "loc": (0, -3, 3)}, **legs(-50, 70, 10, 50), "Torso": (28, 0, 0),
+              "Arm_R": (-85, 0, 0), "Hand_R": (-10, 0, 0)}),
+        (19, {"Root": {"rot": (0, 0, 0), "loc": (0, -2, 1.5)}, **legs(-24, 36, 12, 26), "Torso": (18, 0, 0),
+              "Arm_R": (-50, 0, -10), "Hand_R": (-40, 0, 0)}),
+        (26, SWORD_GUARD),
+    ],
+    "axe_stance": [
+        (0, AXE_GUARD),
+        (24, {"Root": {"rot": (0, -6, 0), "loc": (0, -2.2, 0)}, "Torso": (22, 0, 0), "Head": (-20, 4, 10),
+              "Arm_R": (-22, 0, -15), "Hand_R": (-50, 0, 0)}),
+        (48, AXE_GUARD),
+    ],
+    # The chop: the axe raised high over the head, held, then brought down with the whole body.
+    "axe_strike": [
+        (0, AXE_GUARD),
+        (7, {"Root": {"rot": (0, 0, 0), "loc": (0, -1.2, -1)}, "Torso": (-6, 0, 0), "Chest": (-10, 0, 0),
+             "Head": (-6, 0, 0), **OVERHEAD}),
+        (9, {"Torso": (-8, 0, 0), "Arm_R": (-175, 0, -10), "Arm_L": (-170, 0, 12)}),
+        (11, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, 2)}, **legs(-44, 70, 16, 40), "Torso": (36, 0, 0),
+              "Chest": (14, 0, 0), "Head": (-30, 0, 0), **CHOPPED}),
+        (17, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.2, 2)}, "Torso": (34, 0, 0)}),
+        (26, AXE_GUARD),
+    ],
+    # A sweep that carries it round, then the axe up and down.
+    "axe_double": [
+        (0, AXE_GUARD),
+        (4, {"Root": {"rot": (0, -30, 0), "loc": (0, -1.8, 0)}, "Chest": (4, -40, 0), "Head": (-14, 30, 0),
+             "Arm_R": (-70, 60, -50), "Hand_R": (-40, 0, 0), "Arm_L": (-60, 50, -10), "Hand_L": (-40, 0, 0)}),
+        (7, {"Root": {"rot": (0, 25, 0), "loc": (0, -2.2, 1.5)}, "Chest": (10, 40, 0), "Head": (-16, -24, 0),
+             "Arm_R": (-80, -60, 0), "Hand_R": (-15, 0, 0), "Arm_L": (-75, -50, 10), "Hand_L": (-20, 0, 0)}),
+        (10, {"Root": {"rot": (0, 30, 0), "loc": (0, -2.4, 1.5)}, "Chest": (12, 45, 0)}),
+        (15, {"Root": {"rot": (0, 0, 0), "loc": (0, -1.2, 1)}, "Torso": (-6, 0, 0), "Chest": (-10, 0, 0),
+              "Head": (-6, 0, 0), **OVERHEAD}),
+        (18, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, 3)}, **legs(-44, 70, 16, 40), "Torso": (36, 0, 0),
+              "Chest": (14, 0, 0), "Head": (-30, 0, 0), **CHOPPED}),
+        (23, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.2, 3)}, "Torso": (32, 0, 0)}),
+        (30, AXE_GUARD),
+    ],
+    # The charge: the axe raised as it rushes, chopped down as it lands.
+    "axe_lunge": [
+        (0, AXE_GUARD),
+        (5, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, -1)}, **legs(-40, 80, -30, 70), "Torso": (20, 0, 0),
+             "Head": (-20, 0, 0), **OVERHEAD}),
+        (9, {"Root": {"rot": (0, 0, 0), "loc": (0, 1.5, 3)}, **legs(-40, 20, 30, 40), "Torso": (10, 0, 0),
+             "Head": (-20, 0, 0), "Arm_R": (-180, 0, -10), "Arm_L": (-175, 0, 12)}),
+        (12, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, 3)}, **legs(-50, 70, 10, 50), "Torso": (38, 0, 0),
+              "Chest": (14, 0, 0), "Head": (-30, 0, 0), **CHOPPED}),
+        (20, {"Root": {"rot": (0, 8, 0), "loc": (0, -2.4, 1.5)}, **legs(-24, 36, 12, 26), "Torso": (26, 0, 0)}),
+        (28, AXE_GUARD),
+    ],
+    "tool_stance": [
+        (0, TOOL_GUARD),
+        (24, {"Root": {"rot": (0, -6, 0), "loc": (0, -2.2, 0)}, "Head": (-14, 4, 10), "Arm_R": (-36, 0, -10)}),
+        (48, TOOL_GUARD),
+    ],
+    # A wide sweep of the haft from the right.
+    "tool_strike": [
+        (0, TOOL_GUARD),
+        (3, {"Root": {"rot": (0, -25, 0), "loc": (0, -1.8, 0)}, "Chest": (0, -35, 0), "Head": (-14, 28, 0),
+             "Arm_R": (-70, 50, -40), "Hand_R": (-40, 0, 0), "Arm_L": (-60, 40, -10), "Hand_L": (-40, 0, 0)}),
+        (7, {"Root": {"rot": (0, 25, 0), "loc": (0, -2.2, 1.5)}, "Chest": (10, 40, 0), "Head": (-16, -22, 0),
+             "Arm_R": (-75, -55, 0), "Hand_R": (-15, 0, 0), "Arm_L": (-70, -45, 0), "Hand_L": (-20, 0, 0)}),
+        (10, {"Root": {"rot": (0, 30, 0), "loc": (0, -2.4, 1.6)}, "Chest": (12, 44, 0)}),
+        (20, TOOL_GUARD),
+    ],
+    # Two pokes with the end of the haft.
+    "tool_double": [
+        (0, TOOL_GUARD),
+        (2, {"Arm_R": (-30, 0, -10), "Hand_R": (-100, 0, 0), "Arm_L": (-40, 0, -20), "Hand_L": (-100, 0, 0),
+             "Root": {"rot": (0, -10, 0), "loc": (0, -1.8, -1)}}),
+        (5, {"Arm_R": (-90, 0, -5), "Hand_R": (-5, 0, 0), "Arm_L": (-85, 0, -10), "Hand_L": (-10, 0, 0),
+             "Root": {"rot": (0, -10, 0), "loc": (0, -2.2, 2)}, "Torso": (22, 0, 0)}),
+        (8, {"Arm_R": (-30, 0, -10), "Hand_R": (-100, 0, 0), "Arm_L": (-40, 0, -20), "Hand_L": (-100, 0, 0),
+             "Root": {"rot": (0, -10, 0), "loc": (0, -1.8, 0)}, "Torso": (14, 0, 0)}),
+        (12, {"Arm_R": (-90, 0, -5), "Hand_R": (-5, 0, 0), "Arm_L": (-85, 0, -10), "Hand_L": (-10, 0, 0),
+              "Root": {"rot": (0, -10, 0), "loc": (0, -2.4, 2.6)}, "Torso": (24, 0, 0)}),
+        (16, {"Arm_R": (-60, 0, -10), "Hand_R": (-40, 0, 0), "Arm_L": (-60, 0, -20), "Hand_L": (-40, 0, 0)}),
+        (24, TOOL_GUARD),
+    ],
+    # The charge, the haft held out in front like a ram.
+    "tool_lunge": [
+        (0, TOOL_GUARD),
+        (5, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, -1)}, **legs(-40, 80, -30, 70), "Torso": (28, 0, 0),
+             "Head": (-28, 0, 0), "Arm_R": (-30, 0, -10), "Hand_R": (-100, 0, 0), "Arm_L": (-40, 0, -20),
+             "Hand_L": (-100, 0, 0)}),
+        (9, {"Root": {"rot": (0, 0, 0), "loc": (0, 1.5, 3)}, **legs(-40, 20, 30, 40), "Torso": (32, 0, 0),
+             "Head": (-32, 0, 0), "Arm_R": (-95, 0, -5), "Hand_R": (-5, 0, 0), "Arm_L": (-90, 0, -10),
+             "Hand_L": (-10, 0, 0)}),
+        (13, {"Root": {"rot": (0, 0, 0), "loc": (0, -3, 3)}, **legs(-50, 70, 10, 50), "Torso": (28, 0, 0)}),
+        (19, {"Root": {"rot": (0, 8, 0), "loc": (0, -2, 1.5)}, **legs(-24, 36, 12, 26), "Torso": (18, 0, 0),
+              "Arm_R": (-50, 0, -10), "Hand_R": (-50, 0, 0), "Arm_L": (-55, 0, -20), "Hand_L": (-40, 0, 0)}),
+        (26, TOOL_GUARD),
+    ],
+})
+
+
 
 def rotation(degrees):
     x, y, z = (math.radians(d) for d in degrees)

@@ -298,6 +298,39 @@ final class CombatChecks {
                 discard(mc);
             }));
         }));
+        // Armed, it fights its weapon's way: a disciple with a sword, an axe, then a shovel against a player who
+        // guards, then backs away once (filmed from the side for the GIFs).
+        for (var item : List.of(Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_SHOVEL)) {
+            String weapon = DiscipleFighting.Weapon.of(new ItemStack(item)).name().toLowerCase(java.util.Locale.ROOT);
+            steps.add(new Step("disciple with a " + weapon, mc -> {
+                at(mc, X, Z + 6, 0);
+                fighters(mc, 1, 2.6, Z + 6);
+                EngineTest.server(mc, player -> player.serverLevel().getEntitiesOfClass(Mob.class,
+                        player.getBoundingBox().inflate(6), mob -> mob.getType() == EntityType.ZOMBIE)
+                        .forEach(mob -> mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(item))));
+                List<String> played = new java.util.concurrent.CopyOnWriteArrayList<>();
+                start(new Run(220, t -> {
+                    if (t == 0) {
+                        com.murimblock.shenfa.client.SkeletalMobs.moveProbe = (mob, move) -> played.add(move);
+                        GifRecorder.start("disciple_" + weapon);
+                        GifRecorder.camera(GifRecorder.side(mc.player));
+                    }
+                    face(mc, nearest(mc, EntityType.ZOMBIE));
+                    wounds(mc);
+                    CombatClient.holdGuard(t > 2 && t < 140);
+                    if (t >= 140 && t < 152 && t % 3 == 0) {
+                        EngineTest.server(mc, player -> player.connection.teleport(player.getX(), player.getY(),
+                                player.getZ() - 0.5, player.getYRot(), player.getXRot()));
+                    }
+                }, () -> {
+                    CombatClient.holdGuard(false);
+                    com.murimblock.shenfa.client.SkeletalMobs.moveProbe = null;
+                    EngineTest.check("a disciple with a " + weapon + " fights its way (" + played + ")",
+                            played.stream().anyMatch(move -> move.startsWith(weapon + "_")));
+                    discard(mc);
+                }), false);
+            }));
+        }
         if (GifRecorder.ON) {
             showcase(steps);
         }

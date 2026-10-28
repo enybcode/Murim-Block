@@ -235,7 +235,12 @@ public final class SkeletalMobs {
                 : horizontal < MOVING ? LivingMotion.IDLE : horizontal > RUNNING ? LivingMotion.RUN : LivingMotion.WALK;
         state.speed += (horizontal - state.speed) * 0.5f;
         MotionSet set = SkeletalClips.motions(look.motions());
-        String id = set == null ? null : set.clip(state.motion, look.clips() != null && mob.isAggressive());
+        boolean fighting = look.clips() != null && mob.isAggressive();
+        String id = set == null ? null : set.clip(state.motion, fighting);
+        if (fighting && state.motion == LivingMotion.IDLE) {
+            // Its guard holds what it holds (DiscipleFighting.Weapon: fists, sword, axe or tool).
+            id = look.clip(com.murimblock.combat.DiscipleFighting.Weapon.of(mob.getMainHandItem()).stance()).toString();
+        }
         Animation animation = id == null ? null : SkeletalClips.get(ResourceLocation.parse(id));
         if (animation == null) {
             return;
