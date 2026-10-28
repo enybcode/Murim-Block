@@ -10,8 +10,6 @@ import com.murimblock.shenfa.AttackData;
 import com.murimblock.shenfa.Biped;
 import com.murimblock.shenfa.Pose;
 import com.murimblock.shenfa.client.PlayerAnimators;
-import com.murimblock.shenfa.client.mob.MobRig;
-import com.murimblock.shenfa.client.mob.MobShenfa;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -87,19 +85,11 @@ public final class Trails {
 
     /** Adds this frame's place of each striking hand of {@code body}, if a strike's window is open. */
     private static void sample(LivingEntity body, float partialTick, long now) {
-        Animation animation;
-        float time;
-        if (body instanceof AbstractClientPlayer player) {
-            animation = PlayerAnimators.playing(player, Animator.Priority.HIGH);
-            time = PlayerAnimators.time(player, Animator.Priority.HIGH);
-        } else {
-            MobRig rig = MobShenfa.rig(body);
-            if (rig == null || !rig.biped()) {
-                return;
-            }
-            animation = MobShenfa.playing(body, Animator.Priority.HIGH);
-            time = MobShenfa.time(body, Animator.Priority.HIGH);
+        if (!(body instanceof AbstractClientPlayer player)) {
+            return;
         }
+        Animation animation = PlayerAnimators.playing(player, Animator.Priority.HIGH);
+        float time = PlayerAnimators.time(player, Animator.Priority.HIGH);
         if (animation == null || animation.attack() == null || time < 0) {
             return;
         }

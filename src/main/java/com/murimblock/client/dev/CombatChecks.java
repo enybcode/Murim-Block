@@ -7,12 +7,10 @@ import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.combat.CombatPayloads;
 import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.CombatState;
-import com.murimblock.combat.MobPatches;
 import com.murimblock.registry.MurimAttachments;
 import com.murimblock.shenfa.Animator;
 import com.murimblock.shenfa.ShenfaLibrary;
 import com.murimblock.shenfa.client.SkeletalPlayers;
-import com.murimblock.shenfa.client.mob.MobShenfa;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -98,9 +96,6 @@ final class CombatChecks {
                 EngineTest.check("they stagger it and freeze both a few ticks (" + hits.stream()
                                 .map(hit -> hit.stun() + "/" + hit.hitStop()).toList() + ")",
                         hits.stream().anyMatch(hit -> hit.stun() > 0 && hit.hitStop() >= 2));
-                EngineTest.check("the zombie reels on the client", zombie[0] != null
-                        && MobShenfa.playing(zombie[0], Animator.Priority.HIGHEST) != null
-                        || hits.stream().anyMatch(hit -> hit.stun() > 0));
                 discard(mc);
             }));
         }));
@@ -150,19 +145,15 @@ final class CombatChecks {
         steps.add(new Step("parry a zombie", mc -> {
             at(mc, X, Z, 0);
             spawn(mc, EntityType.ZOMBIE, X, Z + 2.5, false, mob -> ((Mob) mob).setTarget(serverPlayer(mc)));
-            int[] raisedAt = {-100};
             start(new Run(200, t -> {
                 if (t == 0) {
                     hits.clear();
                 }
                 LivingEntity zombie = nearest(mc, EntityType.ZOMBIE);
                 face(mc, zombie);
-                // Raise the guard a few ticks into the zombie's swing, so the blow lands inside the window.
-                boolean swinging = zombie != null && MobShenfa.playing(zombie, Animator.Priority.HIGH) != null;
-                if (swinging && t - raisedAt[0] > 20) {
-                    raisedAt[0] = t + 3;
-                }
-                CombatClient.holdGuard(t >= raisedAt[0] && t < raisedAt[0] + 10);
+                // Vanilla's zombie strikes on contact, once a second: the guard goes down long enough for a new parry
+                // window, then up, so some blow lands inside a window.
+                CombatClient.holdGuard(t % 20 >= 11);
             }, () -> {
                 CombatClient.holdGuard(false);
                 List<String> results = hits.stream().map(hit -> hit.result().name()).toList();
@@ -171,16 +162,8 @@ final class CombatChecks {
                 discard(mc);
             }));
         }));
-        steps.add(skeletonShoots());
         if (GifRecorder.ON) {
             showcase(steps);
-        }
-        for (EntityType<?> type : List.of(EntityType.ZOMBIE, EntityType.HUSK, EntityType.SKELETON,
-                EntityType.WITHER_SKELETON, EntityType.VINDICATOR, EntityType.PIGLIN_BRUTE, EntityType.ENDERMAN,
-                EntityType.SPIDER, EntityType.CAVE_SPIDER, EntityType.IRON_GOLEM, EntityType.RAVAGER,
-                EntityType.HOGLIN, EntityType.ZOGLIN, EntityType.WOLF, EntityType.POLAR_BEAR, EntityType.WARDEN,
-                EntityType.VEX, EntityType.SILVERFISH)) {
-            steps.add(mobAttacks(type));
         }
         steps.add(new Step("combat done", mc -> {
             CombatEffects.probe = null;
@@ -195,9 +178,9 @@ final class CombatChecks {
         return steps;
     }
 
-    /** Scenes only recorded for the GIFs (no checks): the other moves of both movesets, and first person. */
+    /** Scenes only recorded for the GIFs (no checks): the other moves, the dodges, and first person. */
     private static void showcase(List<Step> steps) {
-        steps.add(scene("fists dash strike", false, 4, 40, (mc, t) -> {
+        steps.add(scene("fists dash strike", 4, 40, (mc, t) -> {
             boolean run = t >= 0 && t < 12;
             mc.options.keyUp.setDown(run);
             mc.options.keySprint.setDown(run);
@@ -205,7 +188,7 @@ final class CombatChecks {
                 CombatClient.pressAttack();
             }
         }));
-        steps.add(scene("fists air strike", false, 1.8, 40, (mc, t) -> {
+        steps.add(scene("fists air strike", 1.8, 40, (mc, t) -> {
             if (t == 0) {
                 mc.player.jumpFromGround();
             }
@@ -213,38 +196,7 @@ final class CombatChecks {
                 CombatClient.pressAttack();
             }
         }));
-        steps.add(scene("fists qi palm", false, 1.8, 50, (mc, t) -> {
-            if (t == 0) {
-                net.minecraft.client.KeyMapping.click(CombatClient.TECHNIQUE.getKey());
-            }
-        }));
-        steps.add(scene("blade combo", true, 2.0, 60, (mc, t) -> {
-            if (t % 9 == 0 && t <= 27) {
-                CombatClient.pressAttack();
-            }
-        }));
-        steps.add(scene("blade dash thrust", true, 4.5, 40, (mc, t) -> {
-            boolean run = t >= 0 && t < 12;
-            mc.options.keyUp.setDown(run);
-            mc.options.keySprint.setDown(run);
-            if (t == 9) {
-                CombatClient.pressAttack();
-            }
-        }));
-        steps.add(scene("blade plunge", true, 2.0, 40, (mc, t) -> {
-            if (t == 0) {
-                mc.player.jumpFromGround();
-            }
-            if (t == 5) {
-                CombatClient.pressAttack();
-            }
-        }));
-        steps.add(scene("blade whirlwind", true, 1.8, 50, (mc, t) -> {
-            if (t == 0) {
-                net.minecraft.client.KeyMapping.click(CombatClient.TECHNIQUE.getKey());
-            }
-        }));
-        steps.add(scene("dodges", false, 3.5, 80, (mc, t) -> {
+        steps.add(scene("dodges", 3.5, 80, (mc, t) -> {
             // Back, left, right, forward: the direction is the movement key held as the dodge key is pressed.
             int[] at = {0, 20, 40, 60};
             for (int i = 0; i < at.length; i++) {
@@ -283,12 +235,10 @@ final class CombatChecks {
         void tick(Minecraft mc, int t);
     }
 
-    /** A scene against a still zombie {@code distance} ahead, with a sword in hand or none. */
-    private static Step scene(String name, boolean sword, double distance, int ticks, Script script) {
+    /** A scene against a still zombie {@code distance} ahead. */
+    private static Step scene(String name, double distance, int ticks, Script script) {
         return new Step(name, mc -> {
             at(mc, X, Z, 0);
-            EngineTest.server(mc, player -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
-                    sword ? new ItemStack(Items.IRON_SWORD) : ItemStack.EMPTY));
             spawn(mc, EntityType.ZOMBIE, X, Z + distance, true, mob -> {
             });
             start(new Run(ticks, t -> {
@@ -297,89 +247,6 @@ final class CombatChecks {
             }, () -> {
                 mc.options.keyUp.setDown(false);
                 mc.options.keySprint.setDown(false);
-                EngineTest.server(mc, player -> player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
-                        ItemStack.EMPTY));
-                discard(mc);
-            }));
-        });
-    }
-
-    /** A skeleton with its bow still shoots: the patch only takes its melee blows. */
-    private static Step skeletonShoots() {
-        return new Step("skeleton shoots", mc -> {
-            at(mc, X, Z, 0);
-            spawn(mc, EntityType.SKELETON, X, Z + 9, false, mob -> ((Mob) mob).setTarget(serverPlayer(mc)));
-            boolean[] bow = new boolean[1];
-            int[] arrows = new int[1];
-            java.util.Set<Integer> seen = new java.util.HashSet<>();
-            start(new Run(120, t -> {
-                LivingEntity skeleton = nearest(mc, EntityType.SKELETON);
-                face(mc, skeleton);
-                if (skeleton != null && skeleton.getMainHandItem().is(Items.BOW)) {
-                    bow[0] = true;
-                }
-                for (Entity entity : mc.level.entitiesForRendering()) {
-                    if (entity instanceof net.minecraft.world.entity.projectile.AbstractArrow && seen.add(entity.getId())) {
-                        arrows[0]++;
-                    }
-                }
-                EngineTest.server(mc, player -> player.setHealth(player.getMaxHealth()));
-            }, () -> {
-                EngineTest.check("a skeleton with its bow still shoots arrows (" + arrows[0] + " in 6 s)",
-                        bow[0] && arrows[0] >= 1);
-                discard(mc);
-            }));
-        });
-    }
-
-    /** A mob that attacks the player: its Shenfa attack plays and its blow lands on the player. */
-    private static Step mobAttacks(EntityType<?> type) {
-        String name = BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath();
-        return new Step(name + " attacks", mc -> {
-            at(mc, X, Z, 0);
-            spawn(mc, type, X, Z + 3, false, mob -> {
-                Mob attacker = (Mob) mob;
-                if (type == EntityType.SKELETON || type == EntityType.WITHER_SKELETON) {
-                    attacker.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, type
-                            == EntityType.WITHER_SKELETON ? new ItemStack(Items.STONE_SWORD) : ItemStack.EMPTY);
-                    if (attacker instanceof net.minecraft.world.entity.monster.AbstractSkeleton skeleton) {
-                        skeleton.reassessWeaponGoal();
-                    }
-                }
-                Player target = serverPlayer(mc);
-                attacker.setTarget(target);
-                if (attacker instanceof net.minecraft.world.entity.monster.warden.Warden warden) {
-                    warden.increaseAngerAt(target, 150, false);
-                }
-                if (attacker instanceof NeutralMob neutral) {
-                    neutral.setPersistentAngerTarget(target.getUUID());
-                    neutral.startPersistentAngerTimer();
-                }
-            });
-            boolean[] clip = new boolean[1];
-            start(new Run(200, t -> {
-                if (t == 0) {
-                    hits.clear();
-                }
-                LivingEntity mob = nearest(mc, type);
-                if (mob != null && MobShenfa.playing(mob, Animator.Priority.HIGH) != null) {
-                    clip[0] = true;
-                }
-                face(mc, mob);
-                if (t % 20 == 0) {
-                    EngineTest.server(mc, player -> {
-                        player.setHealth(player.getMaxHealth());
-                        Mob attacker = (Mob) nearestServer(player, type);
-                        if (attacker != null && attacker.getTarget() == null) {
-                            attacker.setTarget(player);
-                        }
-                    });
-                }
-            }, () -> {
-                List<String> by = hits.stream().filter(hit -> mc.level.getEntity(hit.attacker()) != null
-                        && mc.level.getEntity(hit.attacker()).getType() == type).map(hit -> hit.result().name()).toList();
-                EngineTest.check(name + " plays a Shenfa attack (" + MobPatches.of(type).attacks().get(0).clip()
-                        + "...) and its blow lands at the window (" + by + ")", clip[0] && !by.isEmpty());
                 discard(mc);
             }));
         });

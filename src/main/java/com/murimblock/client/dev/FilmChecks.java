@@ -71,7 +71,7 @@ final class FilmChecks {
             });
             mc.player.getAbilities().flying = true;
         }));
-        for (String set : List.of("fists", "combat", "blade", "humanoid")) {
+        for (String set : List.of("fists", "combat")) {
             steps.add(new Step("film " + set, mc -> film(mc, set)));
             steps.add(new Step("film " + set + " saved", mc -> EngineTest.check("the " + set + " sheet is filmed",
                     shots.isEmpty() && sheet == null)));
@@ -92,7 +92,7 @@ final class FilmChecks {
     /** Every fighting clip played once at its own speed, each recorded for a GIF. */
     private static void live(Minecraft mc) {
         SkeletalClips.all().keySet().stream().filter(id -> id.getNamespace().equals(Murimblock.MOD_ID)
-                        && List.of("fists", "combat", "blade", "humanoid").contains(id.getPath().split("/")[0]))
+                        && List.of("fists", "combat").contains(id.getPath().split("/")[0]))
                 .sorted().forEach(live::add);
         SkeletalPlayers.slowMotion(1);
         liveTicks = -1;

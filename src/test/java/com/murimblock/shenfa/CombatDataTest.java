@@ -43,7 +43,7 @@ class CombatDataTest {
 
     @Test
     void everyStrikeHasItsPhases() {
-        for (String set : List.of("fists", "blade", "humanoid")) {
+        for (String set : List.of("fists")) {
             for (Animation clip : biped(set).values()) {
                 if (clip.id().endsWith("stance") || clip.id().endsWith("stance_walk") || clip.id().endsWith("guard")) {
                     assertNull(clip.attack(), clip.id());
@@ -73,39 +73,4 @@ class CombatDataTest {
         assertEquals(-16, back[2], 0.5f);
         assertEquals(16, left[0], 0.5f);
     }
-
-    @Test
-    void mobSetsReadOnTheServersSkeletonOfNames() throws IOException {
-        try (Stream<Path> files = Files.list(ASSETS.resolve("mob_animations"))) {
-            for (Path file : files.toList()) {
-                String json = read(file);
-                Armature names = ClipLoader.namesArmature(json);
-                Map<String, Animation> clips = ClipLoader.loadKeyframes("x", json, names);
-                assertFalse(clips.isEmpty(), file.toString());
-                for (Animation clip : clips.values()) {
-                    assertTrue(clip.additive(), clip.id() + " lays on the mob's own pose");
-                    assertTrue(clip.clip().duration() > 0.2f, clip.id());
-                }
-            }
-        }
-    }
-
-    @Test
-    void keyframesTurnAndMoveFromTheRest() {
-        Armature armature = Armature.builder().root("@model", JointTransform.IDENTITY)
-                .joint("head", "@model", JointTransform.translation(0, 4, -2)).build();
-        Animation nod = ClipLoader.loadKeyframes("t", """
-                {"clips": {"nod": {"length": 1, "rotate": {"head": [[0, 0, 0, 0], [0.5, 90, 0, 0]]},
-                  "move": {"head": [[0, 0, 0, 0], [0.5, 0, 2, 0]]}}}}""", armature).get("nod");
-        assertEquals(1, nod.clip().duration(), 1e-5f);
-        Pose half = nod.clip().sample(0.5f, armature.bindPose());
-        Vector3f turned = new Quaternionf(half.get(1).rotation()).transform(new Vector3f(0, 1, 0));
-        assertEquals(1, turned.z, 1e-4f, "90 degrees about X");
-        assertEquals(new Vector3f(0, 6, -2), new Vector3f(half.get(1).translation()));
-        assertThrows(IllegalArgumentException.class, () -> ClipLoader.loadKeyframes("t",
-                "{\"clips\": {\"x\": {\"rotate\": {\"tail\": [[0, 0, 0, 0]]}}}}", armature));
-        assertThrows(IllegalArgumentException.class, () -> ClipLoader.loadKeyframes("t",
-                "{\"clips\": {\"x\": {\"rotate\": {\"head\": [[0.5, 0, 0, 0], [0.2, 0, 0, 0]]}}}}", armature));
-    }
-
 }

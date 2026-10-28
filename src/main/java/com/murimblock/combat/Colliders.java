@@ -29,12 +29,12 @@ public final class Colliders {
 
     /** The boxes swept by {@code phase} of {@code animation} from {@code from} to {@code to} seconds. */
     public static List<AABB> sweep(LivingEntity body, Animation animation, AttackData.Phase phase, float from, float to,
-                                   boolean biped, float yaw) {
+                                   float yaw) {
         List<AABB> boxes = new ArrayList<>();
         for (int step = 0; step <= STEPS; step++) {
             float time = from + (to - from) * step / STEPS;
             Matrix4f[] joints = null;
-            if (biped && phase.colliders().stream().anyMatch(collider -> collider.joint() != null)) {
+            if (phase.colliders().stream().anyMatch(collider -> collider.joint() != null)) {
                 Pose pose = animation.clip().sample(time, Biped.ARMATURE.bindPose());
                 Biped.settleHelpers(pose);
                 joints = pose.toModelMatrices(Biped.ARMATURE);
@@ -44,7 +44,7 @@ public final class Colliders {
                 continue;
             }
             for (AttackData.Collider collider : phase.colliders()) {
-                Joint joint = collider.joint() == null || !biped ? null : Biped.ARMATURE.find(collider.joint());
+                Joint joint = collider.joint() == null ? null : Biped.ARMATURE.find(collider.joint());
                 Matrix4f place = joint == null || joints == null ? new Matrix4f() : joints[joint.index()];
                 boxes.add(box(body, place, collider, yaw));
             }

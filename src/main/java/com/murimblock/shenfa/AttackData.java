@@ -59,8 +59,8 @@ public record AttackData(List<Phase> phases, List<float[]> invulnerable, List<fl
     }
 
     /**
-     * A box that hits, in a joint's space (model pixels), or in the body's when {@code joint} is null (in front of a
-     * mob whose skeleton the server does not know).
+     * A box that hits, in a joint's space (model pixels), or in the body's when {@code joint} is null (in front of the
+     * body).
      *
      * @param size full width, height and depth (pixels)
      */

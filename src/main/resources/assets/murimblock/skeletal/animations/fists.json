@@ -62,23 +62,6 @@
       "attack": {"phases": [{"windup": 0.1, "active": [0.2, 0.35], "recovery": 0.45, "hand": "both",
         "colliders": [{"joint": "Tool_L", "size": [9, 9, 9]}, {"joint": "Tool_R", "size": [9, 9, 9]}],
         "damage": 2.5, "impact": 1.8, "stun": "knockdown", "knockback": 0.5}]}
-    },
-    "palm": {
-      "transition": 0.08,
-      "root_motion": true,
-      "events": [
-        {"at": 0.05, "type": "sound", "sound": "minecraft:entity.illusioner.prepare_mirror", "volume": 0.6, "pitch": 1.4},
-        {"at": 0.15, "type": "particle", "particle": "minecraft:electric_spark", "joint": "Tool_R", "count": 6, "spread": 0.15},
-        {"at": 0.4, "type": "particle", "particle": "minecraft:cloud", "joint": "Tool_R", "count": 8, "spread": 0.1, "speed": 0.15},
-        {"at": 0.4, "type": "sound", "sound": "minecraft:entity.generic.explode", "volume": 0.35, "pitch": 1.8},
-        {"at": 0.4, "type": "shake", "strength": 0.35, "ticks": 5},
-        {"at": 0.45, "type": "footstep", "foot": "left"}
-      ],
-      "attack": {
-        "phases": [{"windup": 0.15, "active": [0.35, 0.5], "recovery": 0.65, "hand": "right",
-          "colliders": [{"joint": "Tool_R", "size": [10, 10, 10]}],
-          "damage": 6.0, "impact": 3.5, "stun": "knockdown", "knockback": 1.6, "max_targets": 5}],
-        "super_armor": [[0.0, 0.5]]}
     }
   }
 }

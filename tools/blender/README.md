@@ -27,13 +27,9 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
   ```
 
   Sets: `test`, `biped` (the living motions, played by `skeletal/motions/biped.json`), `fists` (stance, guard and
-  the fist moveset), `combat` (dodges and reactions), `blade` (the sword and axe moveset), `humanoid` (humanoid mobs'
-  attacks). Mobs on skeletons of their own take clips keyed in JSON on their model parts instead
-  (`skeletal/mob_animations/*.json`, see `ClipLoader.loadKeyframes`; `/shenfamob parts` lists a mob's parts). The settings of
-  each clip (`loop`, `transition`, `mask`, `masks` by motion, `additive`, `move_speed`, `events`, `root_motion`,
-  `attack`;
-  see `ClipLoader`, `ClipEvent`, `RootMotion`, `AttackData`) go in the hand-written
-  sidecar `<set>.json` next to the `.gltf`. In game: `/skeletal anim play murimblock:test/bounce [speed]`, `/skeletal anim speed 0.25`,
+  the fist moveset), `combat` (dodges and reactions). The settings of each clip (`loop`, `transition`, `mask`,
+  `masks` by motion, `additive`, `move_speed`, `events`, `root_motion`, `attack`; see `ClipLoader`, `ClipEvent`,
+  `RootMotion`, `AttackData`) go in the hand-written sidecar `<set>.json` next to the `.gltf`. In game: `/skeletal anim play murimblock:test/bounce [speed]`, `/skeletal anim speed 0.25`,
   `/skeletal anim stop`; F3+T reloads the clips.
 
 ## Rig rules

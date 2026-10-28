@@ -125,7 +125,7 @@ public final class Cultivation {
         return changed();
     }
 
-    /** Spends {@code amount} Qi (a dodge, a guarded blow, a technique); false, and nothing spent, when it is not there. */
+    /** Spends {@code amount} Qi (a dodge, a guarded blow); false, and nothing spent, when it is not there. */
     public boolean spend(double amount) {
         if (qi < amount) {
             return false;

@@ -4,7 +4,7 @@ import java.util.List;
 import org.joml.Quaternionf;
 
 /**
- * The humanoid skeleton shared by players and humanoid mobs. Its layout follows Epic Fight's biped (same 20 joints,
+ * The humanoid skeleton of players. Its layout follows Epic Fight's biped (same 20 joints,
  * same names and parents; positions rounded to whole pixels), rebuilt by us: their files are not ours to copy.
  * <p>
  * Limbs are rigid blocks. {@code Elbow_*} and {@code Knee_*} are helper joints: the mesh's hinge at the joint hangs

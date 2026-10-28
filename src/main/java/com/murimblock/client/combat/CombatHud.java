@@ -16,7 +16,7 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
- * What combat mode shows: the Qi a dodge, a guard or a technique spends, as a bar above the hotbar, and a short white
+ * What combat mode shows: the Qi a dodge or a guard spends, as a bar above the hotbar, and a short white
  * flash when a heavy blow lands on the player or breaks its guard.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)

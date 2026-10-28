@@ -7,8 +7,10 @@ The animation engine is named **Shenfa** (身法, "the art of the body", the wux
 movement and stance), package `com.murimblock.shenfa`: skeleton, skinned mesh, clips, animator, foot planting and
 the player renderer. Combat, weapons and moves build on it.
 
-Status: steps 0 to 8 done with combat, mobs and feel in a first version (27 Oct 2026, evening); see `shenfa-todo.md`
-list is `shenfa-todo.md` (rewritten 27 Oct 2026); this file stays as the record of each step. The first combat system was removed on 26 Oct (commit `b27eaf3d`).
+Status: steps 0 to 8 done with combat and feel in a first version (27 Oct 2026). On 28 Oct the techniques, the
+blade moveset and every mob on Shenfa were taken out, to be redone with Enzo (they are in git history before that
+day). The to-do list is `shenfa-todo.md`; this file stays as the record of each step. The first combat system was
+removed on 26 Oct (commit `b27eaf3d`).
 
 ## Why Epic Fight feels good (what we must match)
 

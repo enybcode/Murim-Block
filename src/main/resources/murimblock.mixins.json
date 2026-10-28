@@ -3,12 +3,9 @@
   "minVersion": "0.8",
   "package": "com.murimblock.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "MobStrikeMixin"
-  ],
+  "mixins": [],
   "client": [
-    "CameraMixin",
-    "LivingEntityRendererMixin"
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

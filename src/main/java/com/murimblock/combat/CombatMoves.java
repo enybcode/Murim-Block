@@ -7,8 +7,8 @@ import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Which move an input starts, the same on the server and on the predicting client: the next strike of the combo,
- * the dash strike out of a sprint, the strike in the air (once per jump), the technique if the Qi is there, or a
- * dodge the way the keys point. An input that comes while a move cannot be broken waits in the buffer.
+ * the dash strike out of a sprint, the strike in the air (once per jump), or a dodge the way the keys point. An
+ * input that comes while a move cannot be broken waits in the buffer.
  */
 public final class CombatMoves {
     /** The Qi a dodge costs (D6: everything special costs Qi). */
@@ -39,8 +39,6 @@ public final class CombatMoves {
         return switch (input) {
             case DODGE -> qi < DODGE_QI ? null
                     : choice(Moveset.DODGES.get(Math.floorMod(direction, 4)), CombatState.Kind.DODGE, DODGE_QI, -1);
-            case TECHNIQUE -> qi < moves.techniqueQi() ? null
-                    : choice(moves.technique(), CombatState.Kind.TECHNIQUE, moves.techniqueQi(), -1);
             case ATTACK -> {
                 if (!body.onGround() && !body.isInWater()) {
                     yield state.airStrike ? null : choice(moves.air(), CombatState.Kind.ATTACK, 0, -1);

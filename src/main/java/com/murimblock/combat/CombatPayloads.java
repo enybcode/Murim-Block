@@ -94,7 +94,7 @@ public final class CombatPayloads {
 
     /** What a player asks for. */
     public enum Action {
-        MODE_ON, MODE_OFF, ATTACK, TECHNIQUE, DODGE, GUARD_UP, GUARD_DOWN
+        MODE_ON, MODE_OFF, ATTACK, DODGE, GUARD_UP, GUARD_DOWN
     }
 
     /** Client to server: a key of the fight was pressed; {@code direction} for a dodge (forward, back, left, right). */

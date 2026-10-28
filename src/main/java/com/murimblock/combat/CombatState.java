@@ -22,12 +22,12 @@ public final class CombatState {
     public static final int PARRY_REST = 10;
 
     public enum Kind {
-        ATTACK, TECHNIQUE, DODGE, REACTION
+        ATTACK, DODGE, REACTION
     }
 
     /** What the player asks for. */
     public enum Input {
-        ATTACK, TECHNIQUE, DODGE
+        ATTACK, DODGE
     }
 
     /** The move playing, or null. */
@@ -117,7 +117,7 @@ public final class CombatState {
             return true;
         }
         AttackData attack = animation.attack();
-        return (kind == Kind.ATTACK || kind == Kind.TECHNIQUE) && attack != null && time >= attack.recovery();
+        return kind == Kind.ATTACK && attack != null && time >= attack.recovery();
     }
 
     /** Whether a dodge may start now: as {@link #free}, or during a strike's recovery (dodge cancels it). */
@@ -142,7 +142,7 @@ public final class CombatState {
         return animation != null && animation.attack() != null && animation.attack().invulnerableAt(time);
     }
 
-    /** Whether blows hurt without staggering now (a technique's super armor). */
+    /** Whether blows hurt without staggering now (a move's super armor). */
     public boolean superArmor() {
         return animation != null && animation.attack() != null && animation.attack().superArmorAt(time);
     }

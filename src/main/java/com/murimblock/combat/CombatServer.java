@@ -47,16 +47,13 @@ import org.joml.Vector3f;
  * The fight on the server, which decides it (Epic Fight's model, with Shenfa's moves): players' inputs start moves,
  * each body's move goes on tick by tick, a strike's colliders sweep its hit window and each body they cross is hit
  * once per phase; a guard facing the blow blocks it for Qi or parries it if just raised; a dodge's window lets blows
- * through; a blow staggers by its impact against the target's stun armor and freezes both bodies a few ticks. A
- * patched mob ({@link MobPatches}) plays an attack when vanilla decides it strikes, and vanilla's own blow (damage,
- * effects) lands when the attack's window reaches the target.
+ * through; a blow staggers by its impact against the target's stun armor and freezes both bodies a few ticks. Mobs
+ * fight as vanilla made them (they are not on Shenfa); our blows stagger them and their blows meet our guard.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CombatServer {
-    private static final String PROTOCOL = "1";
+    private static final String PROTOCOL = "2";
     private static final Map<LivingEntity, CombatState> STATES = new WeakHashMap<>();
-    /** Set while our blow calls vanilla's: the mob's strike is let through. */
-    private static boolean striking;
     /** The blow being dealt, for the damage event: who deals it and how hard. */
     private static Entity pendingAttacker;
     private static float pendingImpact = 1;
@@ -118,13 +115,10 @@ public final class CombatServer {
                     anim(player, Animator.Priority.MIDDLE, null, true);
                 }
             }
-            case ATTACK, TECHNIQUE, DODGE -> {
+            case ATTACK, DODGE -> {
                 if (state.mode) {
-                    CombatState.Input wanted = switch (input.action()) {
-                        case TECHNIQUE -> CombatState.Input.TECHNIQUE;
-                        case DODGE -> CombatState.Input.DODGE;
-                        default -> CombatState.Input.ATTACK;
-                    };
+                    CombatState.Input wanted = input.action() == CombatPayloads.Action.DODGE ? CombatState.Input.DODGE
+                            : CombatState.Input.ATTACK;
                     begin(player, state, wanted, input.direction(), now);
                     PacketDistributor.sendToPlayer(player, new CombatPayloads.Self(state.clip == null ? ""
                             : state.clip.toString(), state.time, state.stunTicks));
@@ -174,9 +168,6 @@ public final class CombatServer {
             if (playing.attack() != null) {
                 hits(body, state, playing, before, after);
             }
-            if (playing.rootMotion() != null && !(body instanceof Player)) {
-                rootMotion(body, playing, before, after);
-            }
         }
         if (body instanceof ServerPlayer player && state.buffered != null && state.free()) {
             CombatState.Input input = state.takeBuffered(now);
@@ -192,51 +183,18 @@ public final class CombatServer {
         }
     }
 
-    /** A mob while it strikes or reels: it stands, and turns to its target until the blow is on its way. */
+    /** A mob while it reels or is frozen by a blow: it stands. */
     private static void steer(Mob mob, CombatState state, boolean frozen) {
-        if (state.stunTicks > 0 || frozen || state.playing() && state.movementLocked()) {
+        if (state.stunTicks > 0 || frozen) {
             mob.getNavigation().stop();
         }
         if (frozen) {
             mob.setDeltaMovement(mob.getDeltaMovement().multiply(0, 1, 0));
         }
-        LivingEntity target = mob.getTarget();
-        AttackData attack = state.animation == null ? null : state.animation.attack();
-        if (target != null && attack != null && !attack.phases().isEmpty()
-                && state.time < attack.phases().get(0).activeFrom()) {
-            double dx = target.getX() - mob.getX(), dz = target.getZ() - mob.getZ();
-            float wanted = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90;
-            float turned = Mth.approachDegrees(mob.getYRot(), wanted, 30);
-            mob.setYRot(turned);
-            mob.setYBodyRot(turned);
-            mob.setYHeadRot(turned);
-        }
-    }
-
-    /** Moves a mob by its clip's root travel (a pounce, a ram); walls stop it. */
-    private static void rootMotion(LivingEntity body, Animation animation, float from, float to) {
-        Vector3f move = root(animation.clip(), to).sub(root(animation.clip(), from));
-        if (!animation.rootMotion().vertical()) {
-            move.y = 0;
-        }
-        MobPatches patch = MobPatches.of(body.getType());
-        if (patch != null && !patch.biped()) {
-            // Keyed in vanilla's model space: Y down, the face toward -Z.
-            move.set(move.x, -move.y, -move.z);
-        }
-        move.mul(Colliders.pixel(body)).rotateY((float) Math.toRadians(-body.yBodyRot));
-        body.move(MoverType.SELF, new Vec3(move.x, move.y, move.z));
-    }
-
-    private static Vector3f root(Clip clip, float time) {
-        float[] values = clip.value(0, Clip.Path.TRANSLATION, time);
-        return values == null ? new Vector3f() : new Vector3f(values[0], values[1], values[2]);
     }
 
     /** The strikes whose hit window the move crossed this tick. */
     private static void hits(LivingEntity body, CombatState state, Animation animation, float before, float after) {
-        MobPatches patch = body instanceof Mob ? MobPatches.of(body.getType()) : null;
-        boolean biped = body instanceof Player || patch == null || patch.biped();
         float yaw = body instanceof Player ? body.getYRot() : body.yBodyRot;
         for (AttackData.Phase phase : animation.attack().phases()) {
             float from = Math.max(before, phase.activeFrom()), to = Math.min(after, phase.activeTo());
@@ -247,7 +205,7 @@ public final class CombatServer {
                 state.phase = phase;
                 state.hit.clear();
             }
-            List<AABB> boxes = Colliders.sweep(body, animation, phase, from, to, biped, yaw);
+            List<AABB> boxes = Colliders.sweep(body, animation, phase, from, to, yaw);
             AABB around = boxes.get(0);
             for (AABB box : boxes) {
                 around = around.minmax(box);
@@ -268,11 +226,8 @@ public final class CombatServer {
         }
     }
 
-    /** Who a body may hit: a mob only its target; a player anything but itself, its pets and its allies. */
+    /** Who a body may hit: anything but itself, its pets and its allies. */
     private static boolean targetable(LivingEntity body, LivingEntity other) {
-        if (body instanceof Mob mob && !(body instanceof Player)) {
-            return other == mob.getTarget();
-        }
         if (other instanceof OwnableEntity pet && pet.getOwner() == body) {
             return false;
         }
@@ -295,16 +250,7 @@ public final class CombatServer {
         outcome = CombatPayloads.Result.HIT;
         boolean landed;
         try {
-            if (attacker instanceof Mob mob && !(attacker instanceof Player)) {
-                striking = true;
-                try {
-                    landed = mob.doHurtTarget(target);
-                } finally {
-                    striking = false;
-                }
-            } else {
-                landed = playerBlow(attacker, target, phase);
-            }
+            landed = playerBlow(attacker, target, phase);
         } finally {
             pendingAttacker = null;
             pendingImpact = 1;
@@ -375,7 +321,7 @@ public final class CombatServer {
         if (stun == AttackData.Stun.NONE) {
             return stun;
         }
-        float power = impact / (1 + MobPatches.stunArmor(target));
+        float power = impact / (1 + stunArmor(target));
         if (power < 0.35f) {
             return AttackData.Stun.NONE;
         }
@@ -408,6 +354,14 @@ public final class CombatServer {
             PacketDistributor.sendToPlayer(player, new CombatPayloads.Self("", 0, state.stunTicks));
         }
         return type;
+    }
+
+    /** How hard {@code body} is to stagger: a player's armor weighs (Epic Fight), a mob's size. */
+    public static float stunArmor(LivingEntity body) {
+        if (body instanceof Player) {
+            return body.getArmorValue() / 8f;
+        }
+        return Math.max(0, body.getBbHeight() * body.getBbWidth() - 1);
     }
 
     // The damage event: dodges, guards and parries, for our blows and vanilla's alike.
@@ -485,49 +439,6 @@ public final class CombatServer {
         Vec3 toward = from.subtract(body.position()).multiply(1, 0, 1);
         Vec3 look = Vec3.directionFromRotation(0, body.getYRot());
         return toward.lengthSqr() < 1e-6 || toward.normalize().dot(look) > 0;
-    }
-
-    // Mobs: vanilla decides when they strike, Shenfa how.
-
-    /**
-     * Called when vanilla makes {@code mob} strike {@code target}: a patched mob plays one of its attacks instead, and
-     * the blow comes when its window reaches the target. Returns whether vanilla's instant blow is held back.
-     */
-    public static boolean intercept(Mob mob, Entity target) {
-        if (striking || mob.level().isClientSide || !(target instanceof LivingEntity)) {
-            return false;
-        }
-        MobPatches patch = MobPatches.of(mob.getType());
-        if (patch == null) {
-            return false;
-        }
-        CombatState state = state(mob);
-        if (state.stunTicks > 0 || state.playing()) {
-            return true;
-        }
-        double distance = mob.distanceTo(target) - target.getBbWidth() / 2;
-        List<MobPatches.Attack> attacks = patch.attacksOf(mob).stream()
-                .filter(attack -> distance >= attack.near() && distance <= attack.far()).toList();
-        if (attacks.isEmpty()) {
-            attacks = patch.attacksOf(mob);
-        }
-        float total = (float) attacks.stream().mapToDouble(MobPatches.Attack::weight).sum();
-        float roll = mob.getRandom().nextFloat() * total;
-        MobPatches.Attack picked = attacks.get(attacks.size() - 1);
-        for (MobPatches.Attack attack : attacks) {
-            roll -= attack.weight();
-            if (roll <= 0) {
-                picked = attack;
-                break;
-            }
-        }
-        Animation animation = ShenfaLibrary.get(picked.clip());
-        if (animation == null) {
-            return false;
-        }
-        state.start(picked.clip(), animation, CombatState.Kind.ATTACK);
-        anim(mob, Animator.Priority.HIGH, picked.clip(), false);
-        return true;
     }
 
     // Sending.

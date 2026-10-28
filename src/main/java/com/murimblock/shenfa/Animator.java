@@ -170,9 +170,9 @@ public final class Animator {
     }
 
     /**
-     * The pose between the last two ticks, over {@code under} instead of the base layer's clip when it is given: a
-     * mob's own vanilla pose, with Shenfa's layers laid on it. A composite layer playing an additive clip adds its
-     * change (a flinch, a lunge laid on the walk) rather than taking the joints over.
+     * The pose between the last two ticks, over {@code under} instead of the base layer's clip when it is given: an
+     * outside pose (a vanilla model's), with Shenfa's layers laid on it. A composite layer playing an additive clip
+     * adds its change (a flinch, a lunge laid on the walk) rather than taking the joints over.
      */
     public Pose pose(float partialTick, Pose under) {
         Pose result = under != null ? under.copy() : base.sample(partialTick);

@@ -80,7 +80,6 @@ public final class EngineTest {
         groups.put("vanilla", VanillaChecks::steps);
         groups.put("player", PlayerChecks::steps);
         groups.put("events", EventChecks::steps);
-        groups.put("mobs", MobChecks::steps);
         groups.put("combat", CombatChecks::steps);
         groups.put("film", FilmChecks::steps);
         groups.put("perf", PerfChecks::steps);

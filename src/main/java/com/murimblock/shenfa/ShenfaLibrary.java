@@ -13,12 +13,11 @@ import net.neoforged.fml.ModList;
 
 /**
  * The clips as the server knows them, read from the mod's own files (a dedicated server has no resource packs): the
- * biped's clip sets ({@code skeletal/animations/*.gltf} and sidecars) and the mobs' keyframe sets
- * ({@code skeletal/mob_animations/*.json}, read with a skeleton made of the part names they use). The server times
- * moves with them and places the colliders of the biped's strikes; what clients draw comes from their resource packs.
+ * biped's clip sets ({@code skeletal/animations/*.gltf} and sidecars). The server times moves with them and places
+ * the colliders of the biped's strikes; what clients draw comes from their resource packs.
  */
 public final class ShenfaLibrary {
-    private static final String ANIMATIONS = "skeletal/animations", MOB_ANIMATIONS = "skeletal/mob_animations";
+    private static final String ANIMATIONS = "skeletal/animations";
     private static Map<ResourceLocation, Animation> clips;
 
     private ShenfaLibrary() {
@@ -55,16 +54,6 @@ public final class ShenfaLibrary {
                         Biped.ARMATURE, settings).values().forEach(animation -> loaded.put(id(animation), animation));
             } catch (IOException | RuntimeException e) {
                 Murimblock.LOGGER.error("Shenfa clips {} could not be loaded: {}", set, e.getMessage());
-            }
-        }
-        for (Path file : list(assets.resolve(MOB_ANIMATIONS), ".json")) {
-            String set = name(file, ".json");
-            try {
-                String json = Files.readString(file, StandardCharsets.UTF_8);
-                ClipLoader.loadKeyframes(set, json, ClipLoader.namesArmature(json)).values()
-                        .forEach(animation -> loaded.put(id(animation), animation));
-            } catch (IOException | RuntimeException e) {
-                Murimblock.LOGGER.error("Shenfa mob clips {} could not be loaded: {}", set, e.getMessage());
             }
         }
         Murimblock.LOGGER.info("Shenfa library: {} clips", loaded.size());

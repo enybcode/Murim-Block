@@ -13,7 +13,6 @@ import com.murimblock.shenfa.Animator;
 import com.murimblock.shenfa.ShenfaLibrary;
 import com.murimblock.shenfa.client.PlayerAnimators;
 import com.murimblock.shenfa.client.SkeletalClips;
-import com.murimblock.shenfa.client.mob.MobShenfa;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -35,10 +34,10 @@ import org.lwjgl.glfw.GLFW;
 
 /**
  * The fight on the client. In combat mode (B, D4) the attack key strikes instead of mining, the use key raises the
- * guard, Left Alt dodges the way the movement keys point and R spends Qi on the technique. Moves start on the key
- * press, predicted with the server's own rules ({@link CombatMoves}); the server decides and corrects when it
- * disagrees. While a strike cannot be broken the body does not walk. Messages from the server play moves on the
- * bodies they name and the feel of each blow ({@link CombatEffects}).
+ * guard and Left Alt dodges the way the movement keys point. Moves start on the key press, predicted with the
+ * server's own rules ({@link CombatMoves}); the server decides and corrects when it disagrees. While a strike cannot
+ * be broken the body does not walk. Messages from the server play moves on the bodies they name and the feel of each
+ * blow ({@link CombatEffects}).
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CombatClient {
@@ -46,8 +45,6 @@ public final class CombatClient {
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, MurimKeys.CATEGORY);
     public static final KeyMapping DODGE = new KeyMapping("key.murimblock.dodge", KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, MurimKeys.CATEGORY);
-    public static final KeyMapping TECHNIQUE = new KeyMapping("key.murimblock.technique", KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, MurimKeys.CATEGORY);
     public static final KeyMapping LOCK_ON = new KeyMapping("key.murimblock.lock_on", KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, MurimKeys.CATEGORY);
 
@@ -69,7 +66,6 @@ public final class CombatClient {
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(MODE);
         event.register(DODGE);
-        event.register(TECHNIQUE);
         event.register(LOCK_ON);
     }
 
@@ -142,11 +138,6 @@ public final class CombatClient {
             attackPressed = false;
             act(player, CombatState.Input.ATTACK, 0);
         }
-        while (TECHNIQUE.consumeClick()) {
-            if (free) {
-                act(player, CombatState.Input.TECHNIQUE, 0);
-            }
-        }
         while (DODGE.consumeClick()) {
             if (free) {
                 act(player, CombatState.Input.DODGE, direction(mc));
@@ -196,7 +187,6 @@ public final class CombatClient {
         start(player, CombatMoves.decide(LOCAL, input, direction, player, now, ClientCultivation.get().qi()), now);
         PacketDistributor.sendToServer(new CombatPayloads.Input(switch (input) {
             case ATTACK -> CombatPayloads.Action.ATTACK;
-            case TECHNIQUE -> CombatPayloads.Action.TECHNIQUE;
             case DODGE -> CombatPayloads.Action.DODGE;
         }, direction));
     }
@@ -368,12 +358,6 @@ public final class CombatClient {
                     PlayerAnimators.play(player, layer, animation, payload.speed(), payload.mirrored());
                 }
             }
-        } else if (entity instanceof LivingEntity living) {
-            if (id == null) {
-                MobShenfa.stop(living, layer);
-            } else {
-                MobShenfa.play(living, layer, id, payload.speed(), payload.mirrored());
-            }
         }
     }
 
@@ -419,8 +403,7 @@ public final class CombatClient {
             if (animation == null) {
                 return;
             }
-            CombatState.Kind kind = Moveset.DODGES.contains(id) ? CombatState.Kind.DODGE
-                    : id.equals(Moveset.of(player).technique()) ? CombatState.Kind.TECHNIQUE : CombatState.Kind.ATTACK;
+            CombatState.Kind kind = Moveset.DODGES.contains(id) ? CombatState.Kind.DODGE : CombatState.Kind.ATTACK;
             LOCAL.start(id, animation, kind);
             LOCAL.time = LOCAL.previousTime = payload.time();
             Animation drawn = SkeletalClips.get(id);

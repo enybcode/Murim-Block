@@ -9,8 +9,6 @@ import com.murimblock.shenfa.AttackData;
 import com.murimblock.shenfa.client.CameraShake;
 import com.murimblock.shenfa.client.PlayerAnimators;
 import com.murimblock.shenfa.client.SkeletalClips;
-import com.murimblock.shenfa.client.mob.MobRig;
-import com.murimblock.shenfa.client.mob.MobShenfa;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -114,33 +112,17 @@ public final class CombatEffects {
     private static void freeze(Entity entity, int ticks) {
         if (entity instanceof AbstractClientPlayer player) {
             PlayerAnimators.freeze(player, ticks);
-        } else if (entity instanceof LivingEntity living) {
-            MobShenfa.freeze(living, ticks);
         }
     }
 
-    /**
-     * Plays a reaction on {@code body}'s own skeleton: the biped's clip of that name ({@code combat/<name>}) for
-     * players and humanoid mobs, the whole body's flinch ({@code common/<flinch|stagger|knockdown>}) for the others.
-     */
+    /** Plays a reaction on a player: the biped's clip of that name ({@code combat/<name>}). Mobs are not on Shenfa. */
     static void react(LivingEntity body, String name) {
         if (body instanceof AbstractClientPlayer player) {
             Animation clip = SkeletalClips.get(Moveset.clip("combat/" + name));
             if (clip != null) {
                 PlayerAnimators.play(player, Animator.Priority.HIGHEST, clip, 1, false);
             }
-            return;
         }
-        MobRig rig = MobShenfa.rig(body);
-        if (rig == null) {
-            return;
-        }
-        ResourceLocation clip = rig.biped() ? Moveset.clip("combat/" + name) : Moveset.clip("common/" + switch (name) {
-            case "hit_long", "parried", "guard_break" -> "stagger";
-            case "knockdown" -> "knockdown";
-            default -> "flinch";
-        });
-        MobShenfa.play(body, Animator.Priority.HIGHEST, clip, 1, false);
     }
 
     private static void sparks(ClientLevel level, CombatPayloads.Hit hit) {
