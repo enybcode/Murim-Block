@@ -23,6 +23,7 @@ Murim (wuxia) mod for Minecraft, restarted from zero on 23 Oct 2026. Owner: Enzo
 - All player-facing text in English, through `assets/murimblock/lang/en_us.json`.
 - Keep saved IDs and player data stable once released.
 - Original assets only; never extract other mods' assets into our jar.
+- Beauty first: every model gets relief and original detail, every visual gets care (`docs/art/visual-rules.md`).
 
 ## Checks
 

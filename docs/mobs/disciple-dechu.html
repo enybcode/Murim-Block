@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Disciple déchu</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:800px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>DISCIPLE DÉCHU</h1>
+<div class="sub">Remplace le zombie · <code>minecraft:zombie</code> (même identifiant, même apparition, mêmes drops) · Murimblock V2 — fiche de conception</div>
+<div class="seal">墮落<br>弟子</div>
+
+<div class="grid">
+<!-- column 1: visual -->
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<g transform="translate(30,40) scale(1.15)">
+<rect x="40" y="0" width="16" height="10" fill="#2b2b2b"/><rect x="44" y="-6" width="8" height="8" fill="#2b2b2b"/>
+<rect x="32" y="8" width="64" height="64" fill="#8a9a86"/><rect x="32" y="8" width="64" height="14" fill="#2b2b2b"/>
+<rect x="42" y="40" width="10" height="7" fill="#7fffd4"/><rect x="76" y="40" width="10" height="7" fill="#7fffd4"/><rect x="54" y="58" width="20" height="5" fill="#4a5446"/>
+<rect x="32" y="72" width="64" height="96" fill="#d8d2c2"/><path d="M32 72 L64 112 L96 72 Z" fill="#a8a294"/>
+<rect x="40" y="88" width="12" height="22" fill="#7a2020"/>
+<rect x="32" y="146" width="64" height="9" fill="#5b3a29"/><rect x="58" y="146" width="8" height="26" fill="#5b3a29"/>
+<path d="M32 168 L40 160 L48 168 L56 160 L64 168 L72 160 L80 168 L88 160 L96 168 Z" fill="#d8d2c2"/>
+<rect x="0" y="72" width="32" height="96" fill="#d8d2c2"/><rect x="96" y="72" width="32" height="96" fill="#d8d2c2"/>
+<rect x="0" y="136" width="32" height="10" fill="#efe9da"/><rect x="96" y="128" width="32" height="10" fill="#efe9da"/>
+<rect x="0" y="168" width="32" height="16" fill="#8a9a86"/><rect x="96" y="168" width="32" height="16" fill="#8a9a86"/>
+<rect x="32" y="168" width="31" height="88" fill="#cfc8b6"/><rect x="65" y="168" width="31" height="88" fill="#cfc8b6"/>
+<rect x="32" y="232" width="31" height="10" fill="#efe9da"/>
+<rect x="32" y="256" width="31" height="14" fill="#3b2a20"/><rect x="65" y="256" width="31" height="14" fill="#3b2a20"/>
+</g>
+<g transform="translate(190,40) scale(1.15)">
+<rect x="20" y="-6" width="10" height="16" fill="#2b2b2b"/>
+<rect x="0" y="8" width="64" height="64" fill="#8a9a86"/><rect x="0" y="8" width="64" height="14" fill="#2b2b2b"/><rect x="0" y="22" width="10" height="26" fill="#2b2b2b"/>
+<rect x="50" y="40" width="10" height="7" fill="#7fffd4"/>
+<rect x="16" y="72" width="32" height="96" fill="#d8d2c2"/><rect x="16" y="146" width="32" height="9" fill="#5b3a29"/>
+<g transform="rotate(-38 32 80)"><rect x="16" y="72" width="32" height="96" fill="#c9c3b3"/><rect x="16" y="168" width="32" height="16" fill="#8a9a86"/></g>
+<rect x="16" y="168" width="32" height="88" fill="#cfc8b6"/><rect x="16" y="256" width="40" height="14" fill="#3b2a20"/>
+</g>
+<text x="104" y="372" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE</text>
+<text x="250" y="372" font-size="13" text-anchor="middle" fill="#6b5a4c">PROFIL (en garde)</text>
+<line x1="18" y1="33" x2="18" y2="351" stroke="#7d6a5a"/><line x1="12" y1="33" x2="24" y2="33" stroke="#7d6a5a"/><line x1="12" y1="351" x2="24" y2="351" stroke="#7d6a5a"/>
+<text x="10" y="200" font-size="12" fill="#6b5a4c" transform="rotate(-90 10 200)" text-anchor="middle">1,95 bloc (32 px)</text>
+<g font-size="13" fill="#2a2420">
+<text x="352" y="40"><tspan font-weight="600">1</tspan> Chignon défait</text>
+<text x="352" y="84"><tspan font-weight="600">2</tspan> Yeux de Qi mort</text>
+<text x="352" y="128"><tspan font-weight="600">3</tspan> Robe de secte</text>
+<text x="352" y="172"><tspan font-weight="600">4</tspan> Tache de sang</text>
+<text x="352" y="216"><tspan font-weight="600">5</tspan> Corde + pan (tissu)</text>
+<text x="352" y="260"><tspan font-weight="600">6</tspan> Bandages</text>
+<text x="352" y="304"><tspan font-weight="600">7</tspan> Bas déchiré (tissu)</text>
+</g>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="398" width="36" height="22" fill="#8a9a86"/><text x="20" y="436">Peau</text>
+<rect x="78" y="398" width="36" height="22" fill="#d8d2c2" stroke="#b9ad96"/><text x="78" y="436">Robe</text>
+<rect x="136" y="398" width="36" height="22" fill="#2b2b2b"/><text x="136" y="436">Cheveux</text>
+<rect x="194" y="398" width="36" height="22" fill="#5b3a29"/><text x="194" y="436">Corde</text>
+<rect x="252" y="398" width="36" height="22" fill="#7a2020"/><text x="252" y="436">Sang</text>
+<rect x="310" y="398" width="36" height="22" fill="#7fffd4"/><text x="310" y="436">Yeux</text>
+<rect x="368" y="398" width="36" height="22" fill="#efe9da" stroke="#b9ad96"/><text x="368" y="436">Bandage</text>
+<rect x="426" y="398" width="36" height="22" fill="#3b2a20"/><text x="426" y="436">Chausson</text>
+</g>
+<text x="20" y="462" font-size="12.5" fill="#6b5a4c">Squelette du joueur (Biped, 20 articulations) · hitbox vanilla · yeux émissifs</text>
+</svg>
+</div>
+
+<!-- column 2 -->
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Ancien disciple d'une secte orthodoxe, tombé au combat. Le Qi mort resté dans son corps le relève, avec des restes de ses techniques. Il titube, mais sa garde revient par réflexe.</p>
+</div>
+<div class="panel">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">20 ♥</td><td style="width:45%"><div class="bar"><i style="width:40%"></i></div></td></tr>
+<tr><td>Dégâts (coup simple)</td><td class="v">3</td><td><div class="bar"><i style="width:30%"></i></div></td></tr>
+<tr><td>Vitesse</td><td class="v">0,23</td><td><div class="bar"><i style="width:46%"></i></div></td></tr>
+<tr><td>Résistance au vacillement</td><td class="v">Faible</td><td><div class="bar"><i style="width:20%"></i></div></td></tr>
+<tr><td>Rythme d'attaque</td><td class="v">≈ 2 s</td><td><div class="bar"><i style="width:35%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Base vanilla, à régler en jeu.</p>
+</div>
+<div class="panel" style="flex:1">
+<h2>Comportement</h2>
+<ul>
+<li>Approche en marchant, se met en garde à <b>3 blocs</b></li>
+<li>Coup simple d'abord, puis double coup après 2 coups bloqués</li>
+<li>Ruée si le joueur recule</li>
+<li>En groupe ou contre un mur : coup simple seulement</li>
+<li>Ne garde pas, n'esquive pas : il <b>apprend</b> garde, parade et esquive</li>
+</ul>
+</div>
+</div>
+
+<!-- column 3 -->
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaques</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Dégâts</th><th>Réponse</th></tr>
+<tr><td><b>Coup maladroit</b><br><span class="small">Poing large et lent</span></td><td class="v">2 blocs</td><td class="v">3</td><td><span class="tag ok">Garde</span><span class="tag ok">Parade facile</span></td></tr>
+<tr><td><b>Double coup</b><br><span class="small">Le 2ᵉ est plus rapide</span></td><td class="v">2 blocs</td><td class="v">2 + 3</td><td><span class="tag ok">Garde</span><span class="tag warn">Parade</span></td></tr>
+<tr><td><b>Ruée</b><br><span class="small">Plonge, bras en avant</span></td><td class="v">4 blocs</td><td class="v">4</td><td><span class="tag ok">Esquive</span><span class="tag warn">Garde</span></td></tr>
+</table>
+<svg viewBox="0 0 440 74" width="100%" style="margin-top:8px">
+<rect x="10" y="30" width="420" height="2" fill="#c9b89a"/>
+<circle cx="30" cy="31" r="9" fill="#2a2420"/><text x="30" y="58" font-size="11" text-anchor="middle" fill="#6b5a4c">Disciple</text>
+<rect x="30" y="12" width="210" height="8" fill="#7a2020" opacity=".55"/><text x="135" y="9" font-size="11" text-anchor="middle" fill="#4a3d32">coups : 2 blocs</text>
+<rect x="30" y="38" width="400" height="8" fill="#a8742a" opacity=".55"/><text x="230" y="60" font-size="11" text-anchor="middle" fill="#4a3d32">ruée : 4 blocs</text>
+<text x="240" y="28" font-size="11" fill="#6b5a4c">|</text>
+</svg>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">idle</td><td>Voûté, tête qui penche puis se redresse d'un coup</td></tr>
+<tr><td class="v">walk</td><td>Pas traînants, un pied accroche</td></tr>
+<tr><td class="v">run</td><td>Course désarticulée, bras tendus</td></tr>
+<tr><td class="v">stance</td><td>Garde à moitié oubliée, un poing levé</td></tr>
+<tr><td class="v">réactions</td><td>vacille · projeté · au sol · soulevé</td></tr>
+<tr><td class="v">death</td><td>À genoux puis face au sol, le Qi s'échappe</td></tr>
+<tr><td class="v">rise</td><td><span class="small">(option)</span> sort du sol à l'apparition</td></tr>
+</table>
+<p class="small" style="margin-top:8px"><b>Variantes plus tard :</b> husk = disciple du désert (robe ocre) · noyé = robe bleue détrempée · zombie villageois = paysan sans technique</p>
+</div>
+</div>
+</div>
+</body></html>
