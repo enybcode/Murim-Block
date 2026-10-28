@@ -7,6 +7,7 @@ import com.murimblock.client.combat.LockOn;
 import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.combat.CombatPayloads;
 import com.murimblock.combat.CombatServer;
+import com.murimblock.combat.DiscipleFighting;
 import com.murimblock.combat.CombatState;
 import com.murimblock.registry.MurimAttachments;
 import com.murimblock.shenfa.ShenfaLibrary;
@@ -200,6 +201,100 @@ final class CombatChecks {
                 if (LockOn.target() != null) {
                     LockOn.toggle();
                 }
+                discard(mc);
+            }));
+        }));
+        // The disciple's own fighting (DiscipleFighting): a move every two seconds or so, its blow landing at the
+        // clip's impact, the double blow once its blows are blocked, the lunge when its prey backs away, only plain
+        // strikes in a crowd.
+        steps.add(new Step("disciple strikes on its impact", mc -> {
+            at(mc, X, Z, 0);
+            fighters(mc, 1, 2.0);
+            start(new Run(150, t -> {
+                if (t == 0) {
+                    MOVES.clear();
+                    WOUNDS.clear();
+                    DiscipleFighting.probe = (mob, move) -> MOVES.add(new long[] {move.ordinal(), mob.level().getGameTime()});
+                }
+                face(mc, nearest(mc, EntityType.ZOMBIE));
+                wounds(mc);
+            }, () -> {
+                LivingEntity zombie = nearest(mc, EntityType.ZOMBIE);
+                Murimblock.LOGGER.info("Engine test disciple: moves {}, wounds {}, distance {}, mode {}", MOVES.stream()
+                        .map(m -> m[0] + "@" + m[1]).toList(), WOUNDS, zombie == null ? -1 : zombie.distanceTo(mc.player),
+                        serverPlayer(mc).gameMode.getGameModeForPlayer());
+                List<String> names = moveNames();
+                EngineTest.check("the disciple attacks every two seconds or so (" + names + ")",
+                        names.size() >= 3 && names.size() <= 6);
+                long first = MOVES.isEmpty() ? -1 : MOVES.get(0)[1];
+                long wound = WOUNDS.stream().filter(at -> at >= first).findFirst().orElse(-100L);
+                EngineTest.check("its blow lands at the clip's impact, not when it starts (" + (wound - first)
+                        + " ticks after)", first >= 0 && wound - first >= 3 && wound - first <= 12);
+                discard(mc);
+            }));
+        }));
+        steps.add(new Step("disciple doubles on a guard", mc -> {
+            at(mc, X, Z, 0);
+            fighters(mc, 1, 2.0);
+            start(new Run(260, t -> {
+                if (t == 0) {
+                    MOVES.clear();
+                }
+                face(mc, nearest(mc, EntityType.ZOMBIE));
+                CombatClient.holdGuard(t > 2);
+            }, () -> {
+                CombatClient.holdGuard(false);
+                List<String> names = moveNames();
+                EngineTest.check("blocked, it switches to its double blow (" + names + ")", names.contains("DOUBLE"));
+                discard(mc);
+            }));
+        }));
+        steps.add(new Step("disciple lunges at a retreat", mc -> {
+            at(mc, X, Z + 8, 0);
+            fighters(mc, 1, 3.0, Z + 8);
+            double[] lunge = {Double.NaN, 0};
+            start(new Run(220, t -> {
+                if (t == 0) {
+                    MOVES.clear();
+                }
+                wounds(mc);
+                LivingEntity zombie = nearest(mc, EntityType.ZOMBIE);
+                face(mc, zombie);
+                // The player backs away in bursts (two blocks in twelve ticks, a sprint), then stands, four times.
+                if (t % 50 >= 10 && t % 50 < 22 && t < 200 && t % 3 == 0) {
+                    EngineTest.server(mc, player -> player.connection.teleport(player.getX(), player.getY(),
+                            player.getZ() - 0.5, player.getYRot(), player.getXRot()));
+                }
+                List<String> names = moveNames();
+                if (zombie != null && names.contains("LUNGE")) {
+                    LivingEntity body = server(zombie);
+                    if (Double.isNaN(lunge[0])) {
+                        lunge[0] = body.getZ();
+                    }
+                    lunge[1] = Math.max(lunge[1], lunge[0] - body.getZ());
+                }
+            }, () -> {
+                List<String> names = moveNames();
+                EngineTest.check("its prey backing away, it lunges (" + names + ")", names.contains("LUNGE"));
+                EngineTest.check(String.format("and the lunge carries it forward (%.2f blocks)", lunge[1]),
+                        lunge[1] > 1.2);
+                discard(mc);
+            }));
+        }));
+        steps.add(new Step("disciples in a crowd only strike", mc -> {
+            at(mc, X, Z, 0);
+            fighters(mc, 3, 2.0);
+            start(new Run(200, t -> {
+                if (t == 0) {
+                    MOVES.clear();
+                }
+                face(mc, nearest(mc, EntityType.ZOMBIE));
+                wounds(mc);
+            }, () -> {
+                List<String> names = moveNames();
+                EngineTest.check("three around the player throw only plain strikes (" + names + ")",
+                        !names.isEmpty() && names.stream().allMatch("STRIKE"::equals));
+                DiscipleFighting.probe = null;
                 discard(mc);
             }));
         }));
@@ -399,6 +494,48 @@ final class CombatChecks {
             entity.moveTo(x, Y, z, 180, 0);
             level.addFreshEntity(entity);
             setup.accept(entity);
+        });
+    }
+
+    /** Disciple moves the server started ({move ordinal, game tick}) and the ticks the player was wounded. */
+    private static final List<long[]> MOVES = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final List<Long> WOUNDS = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static float lastHealth;
+
+    private static List<String> moveNames() {
+        return MOVES.stream().map(move -> DiscipleFighting.Move.values()[(int) move[0]].name()).toList();
+    }
+
+    /** {@code count} zombies fighting the player, the first {@code distance} ahead (helmets: no burning by day). */
+    private static void fighters(Minecraft mc, int count, double distance) {
+        fighters(mc, count, distance, Z);
+    }
+
+    private static void fighters(Minecraft mc, int count, double distance, double z) {
+        EngineTest.server(mc, player -> {
+            player.setGameMode(GameType.SURVIVAL);
+            player.setHealth(player.getMaxHealth());
+            lastHealth = player.getHealth();
+        });
+        for (int i = 0; i < count; i++) {
+            double angle = (i - (count - 1) / 2.0) * 0.9;
+            spawn(mc, EntityType.ZOMBIE, X + Math.sin(angle) * distance, z + Math.cos(angle) * distance, false, mob -> {
+                ((Mob) mob).setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+                ((Mob) mob).setTarget(serverPlayer(mc));
+            });
+        }
+    }
+
+    /** Notes the tick the player loses health, then heals it so the fight goes on. */
+    private static void wounds(Minecraft mc) {
+        EngineTest.server(mc, player -> {
+            if (player.getHealth() < lastHealth) {
+                WOUNDS.add(player.level().getGameTime());
+            }
+            if (player.getHealth() < 8) {
+                player.setHealth(player.getMaxHealth());
+            }
+            lastHealth = player.getHealth();
         });
     }
 

@@ -358,6 +358,8 @@ public final class CombatClient {
                     PlayerAnimators.play(player, layer, animation, payload.speed(), payload.mirrored());
                 }
             }
+        } else if (entity instanceof net.minecraft.world.entity.Mob mob) {
+            com.murimblock.shenfa.client.SkeletalMobs.play(mob, layer, id);
         }
     }
 

@@ -30,8 +30,8 @@ import org.joml.Quaternionf;
  * drops, behaviour), a new model, texture and motion. The zombie is the Disciple déchu.
  * <p>
  * A look with clips of its own ({@code skeletal/animations/<set>.gltf}, motions in {@code skeletal/motions/<set>.json})
- * moves with them: its living motions, its combat stance while it is aggressive, a strike when it swings (every third
- * one its double blow), a flinch when it is hurt, its death. A look without clips moves with the biped's motions and
+ * moves with them: its living motions, its combat stance while it is aggressive, the moves the server picks
+ * ({@code DiscipleFighting}), a flinch when it is hurt, its death. A look without clips moves with the biped's motions and
  * reaches and swings like vanilla's zombie. {@code shenfaMobs = false} in the client config brings vanilla's models back.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -51,8 +51,6 @@ public final class SkeletalMobs {
             id("textures/entity/disciple_glow.png"), "disciple");
     private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
-    /** Every this many strikes, the double blow. */
-    private static final int DOUBLE_EVERY = 3;
     private static final Map<Mob, State> STATES = new WeakHashMap<>();
     private static Boolean enabled;
     /** Dev: told of each move a mob starts (strike, double, flinch, death). */
@@ -72,8 +70,8 @@ public final class SkeletalMobs {
         int airTicks;
         /** How far the arms are raised toward the target (0 to 1), now and a tick ago (looks without clips). */
         float raise, previousRaise;
-        boolean swinging, dying;
-        int hurtTime, strikes;
+        boolean dying;
+        int hurtTime;
     }
 
     /** Whether mobs are drawn with our looks (the client config, unless a dev command overrides it). */
@@ -129,7 +127,7 @@ public final class SkeletalMobs {
         }
     }
 
-    /** Strikes, flinches and the death, as the mob swings, is hurt and dies. */
+    /** Flinches and the death, as the mob is hurt and dies; its blows come from the server ({@link #play}). */
     private static void moves(Mob mob, Look look, State state) {
         if (mob.deathTime > 0) {
             if (!state.dying) {
@@ -140,11 +138,6 @@ public final class SkeletalMobs {
             }
             return;
         }
-        if (mob.swinging && !state.swinging) {
-            state.strikes++;
-            play(mob, state, look, Animator.Priority.MIDDLE, state.strikes % DOUBLE_EVERY == 0 ? "double" : "strike");
-        }
-        state.swinging = mob.swinging;
         if (mob.hurtTime > state.hurtTime) {
             play(mob, state, look, Animator.Priority.LOW, "flinch");
         }
@@ -158,6 +151,22 @@ public final class SkeletalMobs {
         Animation animation = SkeletalClips.get(look.clip(clip));
         if (animation != null) {
             state.animator.play(priority, animation, 1, false);
+        }
+    }
+
+    /** A clip the server tells {@code mob} to play on {@code layer} (null stops the layer): its fighting moves. */
+    public static void play(Mob mob, Animator.Priority layer, ResourceLocation id) {
+        State state = STATES.computeIfAbsent(mob, key -> new State());
+        if (id == null) {
+            state.animator.stop(layer);
+            return;
+        }
+        if (moveProbe != null) {
+            moveProbe.accept(mob, id.getPath().substring(id.getPath().indexOf('/') + 1));
+        }
+        Animation animation = SkeletalClips.get(id);
+        if (animation != null && !state.dying) {
+            state.animator.play(layer, animation, 1, false);
         }
     }
 

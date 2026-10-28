@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -78,13 +77,15 @@ final class MobLookChecks {
                 MOVES.clear();
                 for (Zombie zombie : zombies(player.serverLevel())) {
                     zombie.setAggressive(true);
-                    zombie.swing(InteractionHand.MAIN_HAND);
+                    // The move the server would pick (DiscipleFighting): every client plays it.
+                    com.murimblock.combat.CombatServer.anim(zombie, com.murimblock.shenfa.Animator.Priority.MIDDLE,
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("murimblock", "disciple/strike"), false);
                 }
             });
         }));
         steps.add(new Step("disciple strikes", mc -> {
             Zombie zombie = nearest(mc);
-            EngineTest.check("swinging, it strikes (" + MOVES + ")", MOVES.contains("strike"));
+            EngineTest.check("told by the server, it strikes (" + MOVES + ")", MOVES.contains("strike"));
             EngineTest.check("aggressive, it stands in its half guard (" + clip(zombie) + ")",
                     "disciple/stance".equals(clip(zombie)));
             EngineTest.shoot(mc, "mob_disciple_stance");
