@@ -1,15 +1,29 @@
 # Two PCs
 
-Enzo develops on two Windows PCs, rarely on at the same time. Each has its own checkout of `main-V2`; GitHub
+Enzo develops on two Windows PCs, rarely on at the same time. Each has its own checkout of `main`; GitHub
 (`enybcode/Murim-Block`) is the link between them. Claude sessions, Claude's memory and the `run/` folder (test
 worlds, game options) stay on each PC; everything that matters is in the repo (`AGENTS.md`, `CLAUDE.md`, `docs/`).
 
 ## Every session
 
-- Start: `git pull --ff-only origin main-V2` before any edit. A SessionStart hook in `.claude/settings.json` does it
+- Start: `git pull --ff-only origin main` before any edit. A SessionStart hook in `.claude/settings.json` does it
   for every Claude session opened in the project (both PCs, since the file is committed); `CLAUDE.md` asks for it too.
-- End: every verified change is already pushed to `origin/main-V2` (project rule). Nothing stays local.
-- If a pull is refused because both PCs committed, rebase the local commits on `origin/main-V2`, never force-push.
+- End: every verified change is already pushed to `origin/main` (project rule). Nothing stays local.
+- If a pull is refused because both PCs committed, rebase the local commits on `origin/main`, never force-push.
+
+## Branches
+
+`main` is V2 and GitHub's default branch; `v1` is V1, frozen and protected; `Colleuhu95` is an old V1 branch kept
+as is. On 28 Oct 2026 `main` (V1) became `v1` and `main-V2` became `main`. A PC cloned before that day moves to the
+new names once, in its MurimblockV2 folder (Git Bash), with nothing uncommitted:
+
+```bash
+git fetch origin --prune
+git branch -m main v1 && git branch -u origin/v1 v1   # only if a local main (V1) exists
+git branch -m main-V2 main && git branch -u origin/main main
+git remote set-head origin -a
+git pull --ff-only
+```
 
 ## Phone
 
@@ -29,8 +43,8 @@ Set up this PC to develop the Minecraft mod Murimblock V2, like my other PC. Rep
    `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`). If one is missing, tell me and install it with
    winget once I say yes (Git.Git, EclipseAdoptium.Temurin.21.JDK, BlenderFoundation.Blender). Blender builds the
    combat engine's models (`tools/blender/README.md`).
-2. Clone https://github.com/enybcode/Murim-Block.git, branch main-V2, into %USERPROFILE%\Documents\MurimblockV2
-   (`git clone -b main-V2 ...`). Set the repo's git identity: user.name "enzo bertrand",
+2. Clone https://github.com/enybcode/Murim-Block.git, branch main, into %USERPROFILE%\Documents\MurimblockV2
+   (`git clone -b main ...`). Set the repo's git identity: user.name "enzo bertrand",
    user.email "enzo.berbertrand@gmail.com".
 3. In that folder run `gradlew.bat build` (the first run downloads Minecraft and NeoForge, it can take a while; run
    it in the background). Never run `gradlew --stop`. Report whether it passed.
