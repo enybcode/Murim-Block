@@ -2,15 +2,19 @@
 <html lang="fr"><head><meta charset="utf-8"><title>Disciple noyé — animations</title>
 <link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
 // The fork is in the right hand (the near arm). Swimming, the torso lies flat (lean about 90) facing right.
-const STAND = {lean: 6, head: 4, aR: 10, fR: 16, w: 170, aL: 4, fL: 8, tF: 8, sF: 2, tB: -6, sB: -4};
-const RAISE = {lean: -8, head: -6, hx: -4, aR: 190, fR: 196, w: 104, aL: 84, fL: 90, tF: 22, sF: 4, tB: -26,
-  sB: -14};
-const COIL = {lean: -16, head: -10, hx: -10, hy: 1, aR: 212, fR: 222, w: 102, aL: 92, fL: 94, tF: 26, sF: 6,
-  tB: -24, sB: -16};
-const THROWN = {lean: 24, head: 8, hx: 8, hy: 2, aR: 100, fR: 86, aL: -30, fL: -10, tF: 34, sF: 6, tB: -34,
-  sB: -24};
-const REACH_BACK = {lean: 10, head: 0, aR: -40, fR: -60, w: 150, aL: -10, fL: 0, tF: 14, sF: 2, tB: -14, sB: -8};
-const SWIM_A = {lean: 84, head: -6, hy: -24, aR: -70, fR: -76, aL: -80, fL: -84, tF: -96, sF: -104, tB: -88,
+// The throw follows an Olympic javelin throw: the carry, the withdrawal during cross-over steps, the block of the
+// left (far) leg, the whip from the hips up, the recovery step. Near leg = right, far leg = left.
+const CARRY = {lean: 8, head: 0, aR: 100, fR: 196, w: 96, aL: 40, fL: 70, tF: 26, sF: 8, tB: -22, sB: -30};
+const CARRY_2 = {...CARRY, hy: -2, tF: -16, sF: -30, tB: 24, sB: 8};
+const CROSS = {lean: -10, head: -6, hx: 10, hy: -1, aR: -90, fR: -94, w: 98, aL: 80, fL: 88, tF: 28, sF: 12,
+  tB: -10, sB: -26};
+const BLOCK = {lean: -18, head: -10, hx: 16, hy: 2, aR: -100, fR: -104, w: 100, aL: 88, fL: 96, tF: -28, sF: -46,
+  tB: 32, sB: 28};
+const WHIP = {lean: 20, head: 6, hx: 22, aR: 168, fR: 132, aL: -20, fL: -30, tF: -16, sF: -40, tB: 30, sB: 26};
+const RECOVER = {lean: 30, head: 14, hx: 30, hy: 4, aR: 40, fR: 20, aL: -10, fL: 10, tF: 34, sF: 30, tB: -6,
+  sB: -20};
+const REACH_BACK = {lean: 10, head: 0, hx: 30, aR: -40, fR: -60, w: 150, aL: -10, fL: 0, tF: 14, sF: 2, tB: -14,
+  sB: -8};const SWIM_A = {lean: 84, head: -6, hy: -24, aR: -70, fR: -76, aL: -80, fL: -84, tF: -96, sF: -104, tB: -88,
   sB: -96};
 const SWIM_B = {lean: 92, head: -12, hy: -20, aR: -84, fR: -88, aL: -88, fL: -90, tF: -66, sF: -84, tB: -70,
   sB: -86};
@@ -36,32 +40,38 @@ sheet({
     'Sous l\'eau ses coups (vanilla) n\'ont aucun clip : il touche sans geste visible.',
   ],
   fix: [
-    'Un vrai lancer de harpon, avec un signal tenu : la fourche levée derrière la tête.',
+    'Un lancer de javelot olympique : élan, retrait du bras pendant les pas croisés (le signal), blocage, fouet.',
     'Une nage à lui, sans brasse : les bras traînent le long du corps, le corps ondule et les jambes battent ensemble, '
       + 'comme une anguille. Les cheveux et les algues flottent.',
     'Une saisie sous l\'eau : il se détend vers toi, mains en avant, puis se replie.',
     'Hors de l\'eau, rien ne change : les clips du Disciple déchu.',
   ],
   anims: [
-    {name: 'Lancer de fourche', meta: '34 ticks · lancer au tick 22 · à distance, s\'il tient une fourche',
-      feel: 'le pêcheur qui harponne : un geste ample et lourd, tout le corps fouette, l\'eau gicle de la manche.',
-      read: 'la fourche levée derrière la tête et l\'autre bras pointé sur toi : elle part dans 12 ticks, esquive '
-        + 'sur le côté.',
+    {name: 'Lancer de fourche', meta: '48 ticks · lâché au tick 27 · à distance, s\'il tient une fourche · '
+      + 'il avance de deux pas pendant l\'élan',
+      feel: 'un lanceur de javelot olympique : un élan court, les pas croisés, la jambe avant qui bloque et tout le '
+        + 'corps qui fouette ; la force vient du sol, pas du bras.',
+      read: 'il court de côté, le bras tendu en arrière et la fourche pointée sur toi : elle part quand son pied '
+        + 'avant se plante, esquive sur le côté à ce moment-là.',
       frames: [
-        {ticks: '1 → 8', phase: 'armé', phaseColor: '#a32020', pose: RAISE, from: STAND, trace: 'tip', bend: 30,
-          note: 'Il recule le pied, lève la fourche au-dessus de l\'épaule, pointe le bras gauche vers toi.'},
-        {ticks: '9 → 20', phase: 'visée (signal)', phaseColor: '#a32020', pose: COIL, from: RAISE, trace: 'handR',
-          bend: 0, target: 172, note: 'Il se cambre, le poids sur le pied arrière, la fourche tenue haute : '
-            + 'immobile, des gouttes tombent du bras.'},
-        {ticks: '21 → 22', phase: 'LANCÉ', phaseColor: '#c46a00', pose: THROWN, from: COIL, weapon: 'none',
-          trace: 'handR', bend: -40, impact: true,
-          arrows: [{at: 'handR', from: [8, -4], to: [74, 2], color: '#c23b2f', dash: '2 3', bend: -6}],
-          note: 'Le bras fouette de haut en bas, le corps bascule en avant sur la jambe avant : la fourche part.'},
-        {ticks: '23 → 34', phase: 'retour', phaseColor: '#2f6b4f', pose: REACH_BACK, from: THROWN, weapon: 'fork',
-          trace: 'handR', bend: 20, note: 'Il se redresse et tire une autre fourche de son dos (vanilla : il en '
-            + 'garde toujours une) : un temps où il est vulnérable.'},
-      ]},
-    {name: 'Nage', meta: 'déplacement · boucle · 24 ticks · dans l\'eau', weaponless: true,
+        {ticks: '1 → 6', phase: 'élan', pose: CARRY_2, from: CARRY, trace: 'hip', bend: 0,
+          arrows: [{at: 'footB', from: [-6, 0], to: [18, 0], color: '#3a6fb0'}],
+          note: 'Deux pas de course, la fourche portée au-dessus de l\'épaule, la main près de l\'oreille, la pointe '
+            + 'un peu basse.'},
+        {ticks: '7 → 22', phase: 'retrait, pas croisés (signal)', phaseColor: '#a32020', pose: CROSS, from: CARRY_2,
+          trace: 'handR', bend: 12, target: 176, arrows: [{at: 'footF', from: [-20, 0], to: [4, 0], color: '#3a6fb0',
+            bend: -8}], note: 'Les épaules se mettent de profil, le bras se tend loin en arrière, la fourche alignée '
+            + 'sur toi ; la jambe droite croise devant la gauche, le buste penché en arrière.'},        {ticks: '23 → 26', phase: 'blocage', phaseColor: '#a32020', pose: BLOCK, from: CROSS, trace: 'footB',
+          bend: 0, target: 176, note: 'La jambe gauche se plante devant, tendue : le corps en arc, les hanches '
+            + 'devant les épaules, le bras encore loin derrière.'},
+        {ticks: '27', phase: 'LÂCHÉ', phaseColor: '#c46a00', pose: WHIP, from: BLOCK, weapon: 'none',
+          trace: 'handR', bend: -46, impact: true,
+          arrows: [{at: 'handR', from: [6, -6], to: [70, -26], color: '#c23b2f', dash: '2 3', bend: -6}],
+          note: 'Hanches, buste, épaule, coude, main : le fouet part du sol, la main passe haut au-dessus de '
+            + 'l\'épaule et la fourche part un peu vers le haut.'},
+        {ticks: '28 → 48', phase: 'rattrapage', phaseColor: '#2f6b4f', pose: RECOVER, from: WHIP, weapon: 'none',
+          trace: 'footF', bend: -20, note: 'La jambe droite passe devant pour freiner, le buste plonge en avant ; '
+            + 'puis il tire une autre fourche de son dos (vanilla : il en garde une) : il est vulnérable.'},      ]},    {name: 'Nage', meta: 'déplacement · boucle · 24 ticks · dans l\'eau', weaponless: true,
       feel: 'une anguille morte qui revient à la vie : pas de brasse, tout le corps ondule, lent et sans effort.',
       read: 'il te rejoint sous l\'eau sans bruit ; son œil cyan se voit de loin dans l\'eau sombre.',
       frames: [
