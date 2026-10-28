@@ -51,6 +51,8 @@ public final class SkeletalMobs {
             id("textures/entity/disciple_glow.png"), "disciple");
     private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
+    /** A baby's head, relative to its half-size body. */
+    private static final float BABY_HEAD = 1.5f;
     private static final Map<Mob, State> STATES = new WeakHashMap<>();
     private static Boolean enabled;
     /** Dev: told of each move a mob starts (strike, double, flinch, death). */
@@ -199,6 +201,13 @@ public final class SkeletalMobs {
         if (!state.dying) {
             BipedPoses.look(pose, netHeadYaw, headPitch);
         }
+        if (mob.isBaby()) {
+            // A child's big head, as vanilla's baby models: the head at three quarters of the adult's on a half-size body.
+            int head = Biped.ARMATURE.get(Biped.HEAD).index();
+            JointTransform current = pose.get(head);
+            pose.set(head, JointTransform.of(current.translation(), current.rotation(),
+                    new org.joml.Vector3f(current.scale()).mul(BABY_HEAD)));
+        }
         return pose;
     }
 
@@ -231,7 +240,9 @@ public final class SkeletalMobs {
         if (animation == null) {
             return;
         }
-        float speed = animation.moveSpeed() > 0 ? Mth.clamp(state.speed / animation.moveSpeed(), 0.4f, 2.5f) : 1;
+        // A baby's steps are half as long: its legs turn twice as fast for the same speed.
+        float speed = animation.moveSpeed() > 0
+                ? Mth.clamp(state.speed / (animation.moveSpeed() * mob.getAgeScale()), 0.4f, 2.5f) : 1;
         state.animator.motion(state.motion.key());
         state.animator.playBase(animation, speed);
         if (look.clips() != null) {

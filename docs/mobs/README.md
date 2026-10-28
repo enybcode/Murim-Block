@@ -11,4 +11,4 @@ biped's armor parts, held items) and falls back to vanilla's renderer when `shen
 | Zombie | Disciple déchu | `disciple-dechu.png`, model `disciple-dechu-model-v1.png`, clips `disciple-dechu-clips-v1.png` | In game (28 Oct 2026) with its own clips (`skeletal/animations/disciple`): slumped idle, dragging walk, reaching chase, half guard when aggressive, flinch, death. It fights by `DiscipleFighting` (server): waits in guard 3 blocks off, steps in about every two seconds and picks the haymaker, the double blow (always after two blocked blows, else 1 in 4) or the lunge (when its prey backs away, at most every 5 s); each blow lands at its clip's impact through guard, parry and dodge; in a crowd of three it only strikes. |
 
 Not yet: cloth on the rope ends
-and robe skirts, baby zombies' larger head (they are drawn as a half-size adult).
+and robe skirts.

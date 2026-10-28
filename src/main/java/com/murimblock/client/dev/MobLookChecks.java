@@ -51,6 +51,7 @@ final class MobLookChecks {
                     level.setBlockAndUpdate(pos, Blocks.SMOOTH_STONE.defaultBlockState());
                 }
                 zombie(level, X, Z + 3, null);
+                zombie(level, X - 1.8, Z + 2.6, z -> z.setBaby(true));
                 zombie(level, X + 2.2, Z + 4, z -> {
                     z.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
                     z.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));

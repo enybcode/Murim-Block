@@ -59,7 +59,8 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         Matrix4f[] joints = pose.toModelMatrices(model.armature());
 
         poseStack.pushPose();
-        float scale = mob.getScale();
+        // getScale leaves out a baby's half size: vanilla's models shrink it themselves.
+        float scale = mob.getScale() * mob.getAgeScale();
         poseStack.scale(scale, scale, scale);
         if (mob.isFullyFrozen()) {
             bodyYaw += (float) (Math.cos(mob.tickCount * 3.25) * Math.PI * 0.4f);
