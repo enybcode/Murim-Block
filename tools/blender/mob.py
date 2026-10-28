@@ -75,11 +75,12 @@ def light(name, kind, energy, rotation, colour):
 def pose(armature, rotations):
     for bone in armature.pose.bones:
         bone.rotation_mode = "QUATERNION"
-        x, y = rotations.get(bone.name, (0, 0))
-        bone.rotation_quaternion = Quaternion((1, 0, 0), math.radians(x)) @ Quaternion((0, 1, 0), math.radians(y))
+        x, y, *z = rotations.get(bone.name, (0, 0))
+        bone.rotation_quaternion = (Quaternion((1, 0, 0), math.radians(x)) @ Quaternion((0, 1, 0), math.radians(y))
+                                    @ Quaternion((0, 0, 1), math.radians(z[0] if z else 0)))
 
 
-def render(armature, out, size):
+def render(armature, out, size, mob=None):
     scene = bpy.context.scene
     world = bpy.data.worlds.new("world")
     world.use_nodes = True
@@ -96,16 +97,20 @@ def render(armature, out, size):
     if hasattr(scene, "eevee"):
         scene.eevee.taa_render_samples = 16
     b = murim_biped.blender
-    body, face = b(0, 17, 0), b(0, 28, 1)
+    # A mob may frame itself (VIEW: body centre, face centre, scales, aspect) and stand in a pose (STAND).
+    (cx, cy, cz), (fx, fy, fz), scale, face_scale, aspect = getattr(mob, "VIEW",
+                                                                     ((0, 17, 0), (0, 28, 1), 40, 16, 1.25))
+    pose(armature, getattr(mob, "STAND", {}))
+    body, face = b(cx, cy, cz), b(fx, fy, fz)
     views = [
         # name, camera position (model), target, ortho scale (pixels), aspect (height / width)
-        ("front", b(0, 17, 80), body, 40, 1.25),
-        ("back", b(0, 17, -80), body, 40, 1.25),
-        ("right", b(-80, 17, 0), body, 40, 1.25),
-        ("left", b(80, 17, 0), body, 40, 1.25),
-        ("three_quarter", b(52, 30, 58), body, 40, 1.25),
-        ("three_quarter_back", b(-56, 28, -54), body, 40, 1.25),
-        ("head", b(30, 32, 50), face, 16, 1.0),
+        ("front", b(cx, cy, cz + 80), body, scale, aspect),
+        ("back", b(cx, cy, cz - 80), body, scale, aspect),
+        ("right", b(cx - 80, cy, cz), body, scale, aspect),
+        ("left", b(cx + 80, cy, cz), body, scale, aspect),
+        ("three_quarter", b(cx + 52, cy + 13, cz + 58), body, scale, aspect),
+        ("three_quarter_back", b(cx - 56, cy + 11, cz - 54), body, scale, aspect),
+        ("head", b(fx + 30, fy + 4, fz + 49), face, face_scale, 1.0),
     ]
     os.makedirs(out, exist_ok=True)
     for name, position, target, scale, aspect in views:
@@ -114,8 +119,8 @@ def render(armature, out, size):
         scene.render.resolution_y = int(size * aspect)
         scene.render.filepath = os.path.join(out, f"{name}.png")
         bpy.ops.render.render(write_still=True)
-    pose(armature, POSE)
-    scene.camera = camera("pose", b(46, 24, 64), body, 42)
+    pose(armature, getattr(mob, "SHOW_POSE", POSE))
+    scene.camera = camera("pose", b(cx + 46, cy + 7, cz + 64), body, scale * 1.05)
     scene.render.resolution_x = scene.render.resolution_y = size
     scene.render.filepath = os.path.join(out, "pose.png")
     bpy.ops.render.render(write_still=True)
@@ -178,7 +183,8 @@ def main():
     image = murim_mob.save_png(texture, texture_path, args.mob)
     glow_image = murim_mob.save_png(glow, glow_path, args.mob + "_glow") if glow[..., 3].any() else None
     print("MURIM texture", width, "x", height, "->", texture_path)
-    armature = murim_mob.build(parts, width, height, args.mob)
+    armature = murim_mob.build(parts, width, height, args.mob, joints=getattr(mob, "JOINTS", None),
+                               helpers=getattr(mob, "HELPERS", None))
     if args.gltf:
         path = os.path.abspath(args.gltf)
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -205,7 +211,7 @@ def main():
     if args.renders and args.film:
         film(armature, args.film.split(","), os.path.abspath(args.renders), args.size, args.view)
     elif args.renders:
-        render(armature, os.path.abspath(args.renders), args.size)
+        render(armature, os.path.abspath(args.renders), args.size, mob)
 
 
 main()

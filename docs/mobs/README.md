@@ -14,6 +14,7 @@ biped's armor parts, held items) and falls back to vanilla's renderer when `shen
 | Zombie villager | Paysan possédé | `paysan-possede.png` (validated 28 Oct 2026), model `paysan-possede-model-v1.png` (validated 28 Oct 2026) | In game (28 Oct 2026): the disciple's clips and fighting, without the double blow. One apron colour for every profession for now. |
 | Zombified piglin | Sanglier du culte | `sanglier-du-culte.png` (validated 28 Oct 2026), model `sanglier-du-culte-model-v1.png` (validated 28 Oct 2026) | In game (28 Oct 2026): the disciple's clips and sword moves; neutral and in packs as vanilla. |
 | Skeleton | Archer impérial | `archer-imperial.png`, model `archer-imperial-model-v1.png` | In game (28 Oct 2026) with its own clips (`skeletal/animations/archer`, storyboard `boards/archer.png`): sentinel idle, aimed shot (nock, draw held 13 ticks, loose), volley lobbed over cover, side-stepping retreat under 6 blocks, bow bash, death. Fights by `ArcherFighting` (server, ahead of vanilla's bow goal). Validated 28 Oct 2026. |
+| Spider | Fileuse de linceuls | `fileuse-linceuls.png`, model `fileuse-linceuls-model-v1.png` | Model v1 (28 Oct 2026), to validate: its own skeleton (`tools/blender/mobs/spider.py`: body, abdomen, head, fangs, 8 legs of 3 segments). Not in game: Shenfa draws only biped skeletons so far. |
 
 Cloth (`MobCloth`, pieces listed by `mob.py` in `skeletal/mobs/<name>.json`): the rope ends and the robe's front and back
 panels hang from the belt and swing with the body, off the legs.

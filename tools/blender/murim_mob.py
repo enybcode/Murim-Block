@@ -113,8 +113,13 @@ def save_png(pixels, path, name):
     return image
 
 
-def build(parts, width, height, name, collection=None):
-    """The biped's armature with the mob's parts skinned to it; returns the armature."""
+def build(parts, width, height, name, collection=None, joints=None, helpers=None):
+    """
+    An armature (the biped's, or the mob's own `joints` and `helpers`, laid out as murim_biped's) with the mob's
+    parts skinned to it; returns the armature.
+    """
+    joints = joints or murim_biped.JOINTS
+    helpers = murim_biped.HELPERS if helpers is None else helpers
     collection = collection or bpy.context.scene.collection
     data = bpy.data.armatures.new(name)
     armature = bpy.data.objects.new(name, data)
@@ -122,7 +127,7 @@ def build(parts, width, height, name, collection=None):
     bpy.context.view_layer.objects.active = armature
     bpy.ops.object.mode_set(mode="EDIT")
     bones = {}
-    for joint, parent, position in murim_biped.JOINTS:
+    for joint, parent, position in joints:
         bone = data.edit_bones.new(joint)
         bone.head = murim_biped.blender(*position)
         bone.tail = murim_biped.blender(position[0], position[1] + 2, position[2])
@@ -132,7 +137,7 @@ def build(parts, width, height, name, collection=None):
             bone.use_connect = False
         bones[joint] = bone
     bpy.ops.object.mode_set(mode="OBJECT")
-    for helper, follows in murim_biped.HELPERS:
+    for helper, follows in helpers:
         constraint = armature.pose.bones[helper].constraints.new("COPY_ROTATION")
         constraint.target = armature
         constraint.subtarget = follows
@@ -143,7 +148,7 @@ def build(parts, width, height, name, collection=None):
         if part.cloth:
             continue
         box = murim_biped.BoxBuilder(part.name, part.corner, part.size, part.uv, part.inflate, tex_height=height,
-                                     tex_width=width)
+                                     tex_width=width, joints=joints)
         y0, h = part.corner[1], part.size[1]
         if isinstance(part.bind, tuple):
             _, upper, lower, helper, hinge, opens = part.bind
