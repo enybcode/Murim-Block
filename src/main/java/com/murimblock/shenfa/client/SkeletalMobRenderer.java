@@ -118,7 +118,8 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
 
     private static void holdItem(Mob mob, HumanoidArm arm, Matrix4f tool, PoseStack poseStack,
                                  MultiBufferSource buffers, int light) {
-        ItemStack stack = mob.getMainArm() == arm ? mob.getMainHandItem() : mob.getOffhandItem();
+        // The main hand's item always in the right hand, even for a left-handed mob: the clips are made for it.
+        ItemStack stack = arm == HumanoidArm.RIGHT ? mob.getMainHandItem() : mob.getOffhandItem();
         if (stack.isEmpty()) {
             return;
         }

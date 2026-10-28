@@ -19,6 +19,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -331,6 +332,80 @@ final class CombatChecks {
                 }), false);
             }));
         }
+        // Each weapon's moves one after the other on a disciple standing in its guard (the axe one left-handed: the
+        // item must still be in its right hand), filmed from the side, then from the front three quarters.
+        for (var item : List.of(Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_SHOVEL)) {
+            DiscipleFighting.Weapon kind = DiscipleFighting.Weapon.of(new ItemStack(item));
+            String weapon = kind.name().toLowerCase(java.util.Locale.ROOT);
+            for (String view : List.of("side", "front")) {
+                steps.add(new Step("disciple " + weapon + " moves, " + view, mc -> {
+                    // At night, the player seeing in the dark: a bareheaded zombie would burn by day.
+                    EngineTest.server(mc, player -> {
+                        player.serverLevel().setDayTime(18000);
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                                net.minecraft.world.effect.MobEffects.NIGHT_VISION, 400, 0, false, false));
+                    });
+                    at(mc, X, Z, 0);
+                    bareheaded = true;
+                    spawn(mc, EntityType.ZOMBIE, X, Z + 2.6, true, mob -> {
+                        Mob zombie = (Mob) mob;
+                        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(item));
+                        zombie.setLeftHanded(item == Items.IRON_AXE);
+                        zombie.setAggressive(true);
+                    });
+                    bareheaded = false;
+                    List<String> played = new java.util.concurrent.CopyOnWriteArrayList<>();
+                    String[] moves = kind.clips();
+                    start(new Run(190, t -> {
+                        LivingEntity zombie = nearest(mc, EntityType.ZOMBIE);
+                        if (t == 0) {
+                            com.murimblock.shenfa.client.SkeletalMobs.moveProbe = (mob, move) -> played.add(move);
+                            mc.options.hideGui = true;
+                            GifRecorder.start("disciple_" + weapon + "_" + view);
+                        }
+                        if (t == 2) {
+                            // Facing the player (a zombie without AI keeps its body turned the way it spawned).
+                            EngineTest.server(mc, player -> player.serverLevel().getEntitiesOfClass(Mob.class,
+                                    player.getBoundingBox().inflate(6), m -> m.getType() == EntityType.ZOMBIE).forEach(m -> {
+                                        m.setYRot(180);
+                                        m.setYBodyRot(180);
+                                        m.setYHeadRot(180);
+                                    }));
+                        }
+                        // The camera once the client sees the zombie (it arrives a few ticks after it is spawned).
+                        if (t < 15 && t % 3 == 0) {
+                            if (zombie != null) {
+                                Vec3 at = zombie.position();
+                                GifRecorder.camera(view.equals("side")
+                                        ? partial -> new GifRecorder.View(at.add(3.6, 1.1, -1.3), at.add(0, 0.9, -1.3))
+                                        : partial -> new GifRecorder.View(at.add(2.7, 1.35, -1.4), at.add(0, 0.95, 0)));
+                            }
+                        }
+                        mc.player.setYRot(0);
+                        for (int i = 0; i < moves.length; i++) {
+                            if (t == 20 + i * 55 && zombie != null) {
+                                String clip = moves[i];
+                                EngineTest.server(mc, player -> CombatServer.anim(server(zombie),
+                                        com.murimblock.shenfa.Animator.Priority.MIDDLE,
+                                        ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "disciple/" + clip), false));
+                            }
+                        }
+                    }, () -> {
+                        EngineTest.server(mc, player -> player.serverLevel().setDayTime(6000));
+                        mc.options.hideGui = false;
+                        com.murimblock.shenfa.client.SkeletalMobs.moveProbe = null;
+                        EngineTest.check("the " + weapon + " disciple plays its three moves (" + played + ")",
+                                played.containsAll(List.of(moves)));
+                        LivingEntity zombie = nearest(mc, EntityType.ZOMBIE);
+                        if (zombie instanceof Mob mob && item == Items.IRON_AXE) {
+                            EngineTest.check("a left-handed disciple still holds its axe in the right hand",
+                                    mob.isLeftHanded() && !mob.getMainHandItem().isEmpty());
+                        }
+                        discard(mc);
+                    }), false);
+                }));
+            }
+        }
         if (GifRecorder.ON) {
             showcase(steps);
         }
@@ -506,8 +581,12 @@ final class CombatChecks {
         EngineTest.busy = () -> running != null;
     }
 
+    /** Spawn zombies without the cap they get when filming (scenes shot at night). */
+    private static boolean bareheaded;
+
     private static void spawn(Minecraft mc, EntityType<?> type, double x, double z, boolean still,
                               Consumer<Entity> setup) {
+        boolean cap = GifRecorder.ON && !bareheaded;
         EngineTest.server(mc, player -> {
             ServerLevel level = player.serverLevel();
             Entity entity = type.create(level);
@@ -518,7 +597,7 @@ final class CombatChecks {
                 mob.setPersistenceRequired();
                 if (type == EntityType.ZOMBIE || type == EntityType.HUSK) {
                     mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-                    if (GifRecorder.ON) {
+                    if (cap) {
                         // A cap keeps the recorded zombies from burning in the sun.
                         mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
                     }

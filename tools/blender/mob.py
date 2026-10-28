@@ -21,6 +21,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "mobs"))
 import murim_biped  # noqa: E402
 import murim_mob  # noqa: E402
+import murim_items  # noqa: E402
 
 # A fighting pose for the renders: joint rotations in degrees about X then Y.
 POSE = {
@@ -122,7 +123,7 @@ def render(armature, out, size):
     print("MURIM rendered views to", out)
 
 
-def film(armature, clips, out, size):
+def film(armature, clips, out, size, view="three_quarter"):
     """Each clip from three quarters, a frame per tick, into <out>/<clip>/frame_NNN.png."""
     import murim_clips
     scene = bpy.context.scene
@@ -136,7 +137,8 @@ def film(armature, clips, out, size):
     scene.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in engines else "BLENDER_EEVEE_NEXT"
     scene.render.resolution_x = scene.render.resolution_y = size
     b = murim_biped.blender
-    scene.camera = camera("film", b(46, 22, 52), b(0, 14, 2), 46)
+    eye = {"three_quarter": b(46, 22, 52), "side": b(-80, 16, 4), "front": b(0, 18, 80)}[view]
+    scene.camera = camera("film", eye, b(0, 14, 4), 50)
     for clip in clips:
         set_name, name = clip.split("/")
         keys = murim_clips.SETS[set_name][name]
@@ -159,6 +161,8 @@ def main():
     parser.add_argument("--blend")
     parser.add_argument("--renders")
     parser.add_argument("--size", type=int, default=480)
+    parser.add_argument("--view", default="three_quarter", choices=["three_quarter", "side", "front"])
+    parser.add_argument("--held", choices=["sword", "axe", "tool"], help="a stand-in item in the right hand")
     parser.add_argument("--film", help="clips of murim_clips.py as <set>/<clip>,... filmed frame by frame into --renders")
     args = parser.parse_args(argv)
 
@@ -193,11 +197,13 @@ def main():
     for obj in bpy.context.scene.objects:
         if obj.type == "MESH":
             obj.data.materials.append(mat)
+    if args.held:
+        murim_items.proxy(armature, args.held)
     if args.blend:
         os.makedirs(os.path.dirname(os.path.abspath(args.blend)), exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(args.blend))
     if args.renders and args.film:
-        film(armature, args.film.split(","), os.path.abspath(args.renders), args.size)
+        film(armature, args.film.split(","), os.path.abspath(args.renders), args.size, args.view)
     elif args.renders:
         render(armature, os.path.abspath(args.renders), args.size)
 

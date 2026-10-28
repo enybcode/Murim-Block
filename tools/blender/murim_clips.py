@@ -12,7 +12,7 @@ previous key's value. Elbow and Knee follow by themselves (their constraint is b
 import math
 
 import bpy
-from mathutils import Quaternion, Vector
+from mathutils import Matrix, Quaternion, Vector
 
 FPS = 20
 
@@ -576,158 +576,145 @@ SETS["disciple"] = {
     ],
 }
 
-# The Disciple déchu armed. The item sits in the right hand (vanilla's grip at Tool_R); a two-handed hold brings the
-# left hand onto the haft. The sword wakes the sect's fencing (a cut from the shoulder, a cut and backhand, a lunging
-# thrust); the axe is all weight (an overhead chop, a sweep then a chop, a charge ending in a chop); a tool is held
-# like a staff by a peasant (a sweep, two pokes, a charge).
-SWORD_GUARD = {**HALF_GUARD, "Arm_R": (-30, 0, -8), "Hand_R": (-40, 0, 0), "Arm_L": (-20, 0, 30),
-               "Hand_L": (-20, 0, 0)}
-TWO_HANDS = {"Root": {"rot": (0, -10, 0), "loc": (0, -1.8, 0)}, **legs(-22, 40, 14, 32), "Torso": (18, 0, 0),
-             "Chest": (4, 0, 0), "Head": (-18, 8, 4)}
-AXE_GUARD = {**TWO_HANDS, "Arm_R": (-25, 0, -15), "Hand_R": (-55, 0, 0), "Arm_L": (-40, 0, -25),
-             "Hand_L": (-50, 0, 0)}
-TOOL_GUARD = {**TWO_HANDS, "Torso": (12, 0, 0), "Arm_R": (-40, 0, -10), "Hand_R": (-50, 0, 0),
-              "Arm_L": (-50, 0, -22), "Hand_L": (-40, 0, 0)}
-# Both arms raised over the head, the haft held high (the axe's chop, the charge).
-OVERHEAD = {"Arm_R": (-170, 0, -10), "Hand_R": (-40, 0, 0), "Arm_L": (-165, 0, 12), "Hand_L": (-45, 0, 0)}
-CHOPPED = {"Arm_R": (-60, 0, -10), "Hand_R": (-10, 0, 0), "Arm_L": (-55, 0, 10), "Hand_L": (-15, 0, 0)}
+# The Disciple déchu armed, from the validated storyboards (docs/mobs/boards/): sword, axe and tool. Poses are written
+# as on the boards, in profile: angles in degrees on screen, limbs from straight down (0) toward the front (+), the
+# torso from upright leaning forward (+), the weapon from straight down, forward at 90, up at 180; hx/hy move the hips
+# (board pixels, 34 to the torso's 12 model pixels). board() turns them into joint turns; what a profile cannot show
+# (the hips and chest turning, an arm swinging across) is added as twists. The item is in the right hand; the axe's
+# and the tool's left hand is put on the haft afterwards (bake_second_hand).
+BOARD_PIXEL = 12 / 34
+# The weapon's own turn from the forearm when the wrist is straight (murim_items: a held item points 80° forward).
+WRIST_REST = 80
+
+
+def board(p):
+    lean = p.get("lean", 0)
+    # A two-handed hold (an aL/fL pose without its own armZ) brings the right hand in front of the body.
+    key = {
+        "Root": {"rot": (0, p.get("hips", 0), 0),
+                 "loc": (0, -p.get("hy", 0) * BOARD_PIXEL, p.get("hx", 0) * BOARD_PIXEL)},
+        "Torso": (lean * 0.6, p.get("twist", 0) * 0.4, 0),
+        "Chest": (lean * 0.4, p.get("twist", 0) * 0.6, 0),
+        "Head": (p.get("head", 0), -p.get("twist", 0) * 0.5 - p.get("hips", 0) * 0.5, 0),
+        # Leaning forward turns the chest, so a hanging arm points back by as much: the arm turns that much more.
+        "Arm_R": (-(p["aR"] + lean), p.get("armY", 0), p.get("armZ", 0)),
+        "Hand_R": (-(p["fR"] - p["aR"]), 0, 0),
+        "Tool_R": (WRIST_REST - (p["w"] - p["fR"]), p.get("wristY", 0), 0),
+        "Thigh_R": (-p["tF"], 0, p.get("legZ", 0)), "Leg_R": (p["tF"] - p["sF"], 0, 0),
+        "Thigh_L": (-p["tB"], 0, -p.get("legZ", 0)), "Leg_L": (p["tB"] - p["sB"], 0, 0),
+    }
+    if "aL" in p:
+        key["Arm_L"] = (-(p["aL"] + lean), 0, p.get("armLZ", 8))
+        key["Hand_L"] = (-(p["fL"] - p["aL"]), 0, 0)
+    return key
+
+
+def poses(**named):
+    return {name: board(p) for name, p in named.items()}
+
+
+# Sword: the arm alone; the left hand makes the sword fingers behind.
+SWORD_GUARD = dict(lean=8, head=-4, aR=38, fR=80, w=100, aL=-100, fL=175, tF=22, sF=4, tB=-24, sB=14, hy=2,
+                   armZ=-6, hips=-14, twist=-6)
+S = poses(
+    guard=SWORD_GUARD,
+    sway=dict(SWORD_GUARD, w=106, fR=84, head=-8, hy=3),
+    armed=dict(lean=-8, head=-12, hx=-4, aR=205, fR=235, w=250, aL=75, fL=92, tF=18, sF=10, tB=-36, sB=22, hy=2,
+               hips=-24, twist=-28, armZ=-16),
+    cut=dict(lean=26, head=6, hx=10, hy=4, aR=100, fR=104, w=118, aL=-40, fL=-20, tF=46, sF=2, tB=-42, sB=8,
+             hips=14, twist=26, armY=-34, armZ=-10),
+    cut_end=dict(lean=36, head=14, hx=15, hy=6, aR=35, fR=20, w=12, aL=-60, fL=-40, tF=50, sF=4, tB=-44, sB=6,
+                 hips=20, twist=36, armY=-60, armZ=10),
+    turn=dict(lean=20, head=4, hx=12, hy=4, aR=60, fR=30, w=265, aL=-50, fL=-30, tF=30, sF=6, tB=-40, sB=10,
+              hips=10, twist=-8, armY=36, armZ=-20),
+    backhand=dict(lean=16, head=-2, hx=20, hy=4, aR=92, fR=92, w=96, aL=-60, fL=-50, tF=-20, sF=10, tB=40, sB=4,
+                  hips=-14, twist=-30, armY=46, armZ=-26, wristY=-30),
+    stagger=dict(lean=36, head=14, hx=15, hy=6, aR=35, fR=60, w=70, aL=-60, fL=-40, tF=50, sF=4, tB=-44, sB=6,
+                 hips=-18, twist=-30, armY=40),
+    coil=dict(lean=14, head=-6, hx=-6, hy=7, aR=15, fR=80, w=92, aL=60, fL=92, tF=42, sF=-14, tB=-30, sB=40,
+              hips=-16, twist=-10, armZ=-8),
+    lunge=dict(lean=22, head=-10, hx=30, hy=7, aR=92, fR=92, w=92, aL=-80, fL=-70, tF=72, sF=8, tB=-58, sB=-52,
+               hips=-10, twist=-4),
+)
+
+# Axe: two hands, the right at the end of the haft.
+AXE_GUARD = dict(lean=14, head=-6, hy=4, aR=12, fR=62, w=206, tF=24, sF=0, tB=-28, sB=16, hips=-10, armZ=22,
+                 aL=30, fL=80)
+AXE_RAISE = dict(lean=-10, head=-16, hy=0, aR=172, fR=198, w=232, tF=12, sF=0, tB=-20, sB=8, armZ=18, aL=160,
+                 fL=200)
+AXE_CHOP = dict(lean=28, head=4, hx=8, hy=9, aR=100, fR=110, w=100, tF=50, sF=-10, tB=-32, sB=42, armZ=22,
+                aL=80, fL=100)
+AXE_STUCK = dict(lean=40, head=16, hx=10, hy=12, aR=55, fR=40, w=20, tF=54, sF=-14, tB=-30, sB=48, armZ=22,
+                 aL=40, fL=40)
+A = poses(
+    guard=AXE_GUARD,
+    breath=dict(AXE_GUARD, lean=17, hy=6, w=202, head=-2),
+    raise_=AXE_RAISE,
+    hold=dict(AXE_RAISE, lean=-15, aR=180, fR=206, w=244, head=-20),
+    chop=AXE_CHOP,
+    stuck=AXE_STUCK,
+    heave=dict(AXE_STUCK, lean=30, hy=9, aR=40, fR=60, w=120),
+    sweep_back=dict(lean=4, head=-8, hx=-4, hy=4, aR=-24, fR=30, w=268, tF=18, sF=4, tB=-34, sB=20, hips=-24,
+                    twist=-40, aL=10, fL=40),
+    sweep=dict(lean=20, head=0, hx=8, hy=6, aR=80, fR=86, w=92, tF=40, sF=0, tB=-36, sB=18, hips=20, twist=36,
+               armY=-30, aL=80, fL=90),
+    carry=dict(lean=2, head=-10, hx=10, hy=3, aR=150, fR=188, w=212, tF=30, sF=4, tB=-30, sB=14, hips=24,
+               twist=30, armY=-20, aL=150, fL=190),
+    run=dict(lean=26, head=-14, aR=160, fR=192, w=218, tF=46, sF=30, tB=-42, sB=52, aL=150, fL=190),
+    leap=dict(lean=12, head=-16, hx=10, hy=-10, aR=182, fR=212, w=242, tF=62, sF=70, tB=-24, sB=60, aL=170,
+              fL=210),
+)
+
+# Tool: held like a staff, the head toward the prey.
+TOOL_GUARD = dict(lean=12, head=-4, hy=3, aR=18, fR=74, w=82, tF=22, sF=2, tB=-26, sB=16, hips=-12, armZ=22,
+                  aL=40, fL=80)
+TOOL_POKE = dict(lean=22, head=-2, hx=10, hy=5, aR=74, fR=88, w=88, tF=40, sF=2, tB=-36, sB=12, hips=-12,
+                 aL=70, fL=88)
+TOOL_STUMBLE = dict(lean=34, head=14, hx=14, hy=9, aR=40, fR=50, w=40, tF=50, sF=2, tB=-30, sB=26, aL=40, fL=50)
+T = poses(
+    guard=TOOL_GUARD,
+    feint=dict(TOOL_GUARD, aR=40, fR=84, w=86, hx=4, lean=16),
+    sweep_back=dict(lean=2, head=-8, hx=-4, hy=4, aR=-14, fR=24, w=250, tF=18, sF=4, tB=-34, sB=20, hips=-24,
+                    twist=-40, aL=10, fL=40),
+    sweep=dict(lean=26, head=4, hx=8, hy=8, aR=72, fR=80, w=62, tF=44, sF=-4, tB=-36, sB=22, hips=20, twist=36,
+               armY=-30, aL=60, fL=80),
+    sweep_end=dict(lean=30, head=12, hx=12, hy=9, aR=30, fR=30, w=12, tF=40, sF=2, tB=-30, sB=26, hips=26,
+                   twist=44, armY=-40, aL=30, fL=30),
+    pull=dict(lean=8, head=-6, hx=-4, hy=4, aR=-14, fR=64, w=86, tF=18, sF=4, tB=-30, sB=18, hips=-12, aL=10,
+              fL=70),
+    poke=TOOL_POKE,
+    poke2=dict(TOOL_POKE, hx=14, lean=26),
+    run=dict(lean=26, head=-16, aR=30, fR=82, w=86, tF=46, sF=30, tB=-42, sB=52, aL=40, fL=84),
+    ram=dict(TOOL_POKE, hx=18, lean=30, tF=56, sF=6, tB=-48, sB=10),
+    stumble=TOOL_STUMBLE,
+)
 
 SETS["disciple"].update({
-    "sword_stance": [
-        (0, SWORD_GUARD),
-        (20, {"Root": {"rot": (0, -10, 0), "loc": (0, -1.8, 0)}, "Head": (-8, 10, 12), "Arm_R": (-34, 0, -10),
-              "Hand_R": (-48, 0, 0)}),
-        (40, SWORD_GUARD),
-    ],
-    # A cut from over the right shoulder down across the body.
-    "sword_strike": [
-        (0, SWORD_GUARD),
-        (4, {"Root": {"rot": (0, -25, 0), "loc": (0, -1.6, -0.5)}, "Chest": (0, -30, 0), "Head": (-10, 30, 0),
-             "Arm_R": (-150, 30, -30), "Hand_R": (-60, 0, 0), "Arm_L": (-40, 0, 25), "Hand_L": (-40, 0, 0)}),
-        (7, {"Root": {"rot": (0, 20, 0), "loc": (0, -2.2, 2)}, **legs(-36, 40, 10, 25), "Chest": (14, 35, 0),
-             "Head": (-16, -20, 0), "Arm_R": (-60, -50, 0), "Hand_R": (-10, 0, 0), "Arm_L": (-10, 0, 30)}),
-        (10, {"Root": {"rot": (0, 26, 0), "loc": (0, -2.6, 2.4)}, "Torso": (22, 0, 0), "Chest": (18, 40, 0),
-              "Arm_R": (-20, -70, 20), "Hand_R": (-20, 0, 0)}),
-        (20, SWORD_GUARD),
-    ],
-    # The cut, then the blade drawn back across in a backhand.
-    "sword_double": [
-        (0, SWORD_GUARD),
-        (4, {"Root": {"rot": (0, -25, 0), "loc": (0, -1.6, -0.5)}, "Chest": (0, -30, 0), "Head": (-10, 30, 0),
-             "Arm_R": (-150, 30, -30), "Hand_R": (-60, 0, 0)}),
-        (7, {"Root": {"rot": (0, 20, 0), "loc": (0, -2.2, 2)}, **legs(-36, 40, 10, 25), "Chest": (14, 35, 0),
-             "Head": (-16, -20, 0), "Arm_R": (-60, -50, 0), "Hand_R": (-10, 0, 0)}),
-        (10, {"Root": {"rot": (0, 24, 0), "loc": (0, -2.4, 2.2)}, "Chest": (16, 40, 0),
-              "Arm_R": (-40, -70, 10), "Hand_R": (-30, 0, 0)}),
-        (14, {"Root": {"rot": (0, -18, 0), "loc": (0, -2.0, 2.4)}, "Chest": (6, -30, 0), "Head": (-12, 22, 0),
-              "Arm_R": (-80, 40, -40), "Hand_R": (-20, 0, 0)}),
-        (18, {"Root": {"rot": (0, -22, 0), "loc": (0, -1.8, 2)}, "Chest": (4, -36, 0),
-              "Arm_R": (-50, 50, -50), "Hand_R": (-30, 0, 0)}),
-        (26, SWORD_GUARD),
-    ],
-    # The thrust: it coils, then throws itself forward, arm and blade straight at the heart.
-    "sword_thrust": [
-        (0, SWORD_GUARD),
-        (5, {"Root": {"rot": (0, -20, 0), "loc": (0, -3.2, -1)}, **legs(-40, 80, -20, 70), "Torso": (20, 0, 0),
-             "Chest": (6, -20, 0), "Head": (-20, 20, 0), "Arm_R": (-60, 0, -10), "Hand_R": (-110, 0, 0),
-             "Arm_L": (-30, 0, 30), "Hand_L": (-30, 0, 0)}),
-        (9, {"Root": {"rot": (0, 10, 0), "loc": (0, 1.0, 3)}, **legs(-40, 20, 30, 40), "Torso": (30, 0, 0),
-             "Chest": (8, 10, 0), "Head": (-30, -10, 0), "Arm_R": (-95, 0, 0), "Hand_R": (0, 0, 0),
-             "Arm_L": (30, 0, 30), "Hand_L": (-20, 0, 0)}),
-        (13, {"Root": {"rot": (0, 10, 0), "loc": (0, -3, 3)}, **legs(-50, 70, 10, 50), "Torso": (28, 0, 0),
-              "Arm_R": (-85, 0, 0), "Hand_R": (-10, 0, 0)}),
-        (19, {"Root": {"rot": (0, 0, 0), "loc": (0, -2, 1.5)}, **legs(-24, 36, 12, 26), "Torso": (18, 0, 0),
-              "Arm_R": (-50, 0, -10), "Hand_R": (-40, 0, 0)}),
-        (26, SWORD_GUARD),
-    ],
-    "axe_stance": [
-        (0, AXE_GUARD),
-        (24, {"Root": {"rot": (0, -6, 0), "loc": (0, -2.2, 0)}, "Torso": (22, 0, 0), "Head": (-20, 4, 10),
-              "Arm_R": (-22, 0, -15), "Hand_R": (-50, 0, 0)}),
-        (48, AXE_GUARD),
-    ],
-    # The chop: the axe raised high over the head, held, then brought down with the whole body.
-    "axe_strike": [
-        (0, AXE_GUARD),
-        (7, {"Root": {"rot": (0, 0, 0), "loc": (0, -1.2, -1)}, "Torso": (-6, 0, 0), "Chest": (-10, 0, 0),
-             "Head": (-6, 0, 0), **OVERHEAD}),
-        (9, {"Torso": (-8, 0, 0), "Arm_R": (-175, 0, -10), "Arm_L": (-170, 0, 12)}),
-        (11, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, 2)}, **legs(-44, 70, 16, 40), "Torso": (36, 0, 0),
-              "Chest": (14, 0, 0), "Head": (-30, 0, 0), **CHOPPED}),
-        (17, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.2, 2)}, "Torso": (34, 0, 0)}),
-        (26, AXE_GUARD),
-    ],
-    # A sweep that carries it round, then the axe up and down.
-    "axe_double": [
-        (0, AXE_GUARD),
-        (4, {"Root": {"rot": (0, -30, 0), "loc": (0, -1.8, 0)}, "Chest": (4, -40, 0), "Head": (-14, 30, 0),
-             "Arm_R": (-70, 60, -50), "Hand_R": (-40, 0, 0), "Arm_L": (-60, 50, -10), "Hand_L": (-40, 0, 0)}),
-        (7, {"Root": {"rot": (0, 25, 0), "loc": (0, -2.2, 1.5)}, "Chest": (10, 40, 0), "Head": (-16, -24, 0),
-             "Arm_R": (-80, -60, 0), "Hand_R": (-15, 0, 0), "Arm_L": (-75, -50, 10), "Hand_L": (-20, 0, 0)}),
-        (10, {"Root": {"rot": (0, 30, 0), "loc": (0, -2.4, 1.5)}, "Chest": (12, 45, 0)}),
-        (15, {"Root": {"rot": (0, 0, 0), "loc": (0, -1.2, 1)}, "Torso": (-6, 0, 0), "Chest": (-10, 0, 0),
-              "Head": (-6, 0, 0), **OVERHEAD}),
-        (18, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, 3)}, **legs(-44, 70, 16, 40), "Torso": (36, 0, 0),
-              "Chest": (14, 0, 0), "Head": (-30, 0, 0), **CHOPPED}),
-        (23, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.2, 3)}, "Torso": (32, 0, 0)}),
-        (30, AXE_GUARD),
-    ],
-    # The charge: the axe raised as it rushes, chopped down as it lands.
-    "axe_lunge": [
-        (0, AXE_GUARD),
-        (5, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, -1)}, **legs(-40, 80, -30, 70), "Torso": (20, 0, 0),
-             "Head": (-20, 0, 0), **OVERHEAD}),
-        (9, {"Root": {"rot": (0, 0, 0), "loc": (0, 1.5, 3)}, **legs(-40, 20, 30, 40), "Torso": (10, 0, 0),
-             "Head": (-20, 0, 0), "Arm_R": (-180, 0, -10), "Arm_L": (-175, 0, 12)}),
-        (12, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, 3)}, **legs(-50, 70, 10, 50), "Torso": (38, 0, 0),
-              "Chest": (14, 0, 0), "Head": (-30, 0, 0), **CHOPPED}),
-        (20, {"Root": {"rot": (0, 8, 0), "loc": (0, -2.4, 1.5)}, **legs(-24, 36, 12, 26), "Torso": (26, 0, 0)}),
-        (28, AXE_GUARD),
-    ],
-    "tool_stance": [
-        (0, TOOL_GUARD),
-        (24, {"Root": {"rot": (0, -6, 0), "loc": (0, -2.2, 0)}, "Head": (-14, 4, 10), "Arm_R": (-36, 0, -10)}),
-        (48, TOOL_GUARD),
-    ],
-    # A wide sweep of the haft from the right.
-    "tool_strike": [
-        (0, TOOL_GUARD),
-        (3, {"Root": {"rot": (0, -25, 0), "loc": (0, -1.8, 0)}, "Chest": (0, -35, 0), "Head": (-14, 28, 0),
-             "Arm_R": (-70, 50, -40), "Hand_R": (-40, 0, 0), "Arm_L": (-60, 40, -10), "Hand_L": (-40, 0, 0)}),
-        (7, {"Root": {"rot": (0, 25, 0), "loc": (0, -2.2, 1.5)}, "Chest": (10, 40, 0), "Head": (-16, -22, 0),
-             "Arm_R": (-75, -55, 0), "Hand_R": (-15, 0, 0), "Arm_L": (-70, -45, 0), "Hand_L": (-20, 0, 0)}),
-        (10, {"Root": {"rot": (0, 30, 0), "loc": (0, -2.4, 1.6)}, "Chest": (12, 44, 0)}),
-        (20, TOOL_GUARD),
-    ],
-    # Two pokes with the end of the haft.
-    "tool_double": [
-        (0, TOOL_GUARD),
-        (2, {"Arm_R": (-30, 0, -10), "Hand_R": (-100, 0, 0), "Arm_L": (-40, 0, -20), "Hand_L": (-100, 0, 0),
-             "Root": {"rot": (0, -10, 0), "loc": (0, -1.8, -1)}}),
-        (5, {"Arm_R": (-90, 0, -5), "Hand_R": (-5, 0, 0), "Arm_L": (-85, 0, -10), "Hand_L": (-10, 0, 0),
-             "Root": {"rot": (0, -10, 0), "loc": (0, -2.2, 2)}, "Torso": (22, 0, 0)}),
-        (8, {"Arm_R": (-30, 0, -10), "Hand_R": (-100, 0, 0), "Arm_L": (-40, 0, -20), "Hand_L": (-100, 0, 0),
-             "Root": {"rot": (0, -10, 0), "loc": (0, -1.8, 0)}, "Torso": (14, 0, 0)}),
-        (12, {"Arm_R": (-90, 0, -5), "Hand_R": (-5, 0, 0), "Arm_L": (-85, 0, -10), "Hand_L": (-10, 0, 0),
-              "Root": {"rot": (0, -10, 0), "loc": (0, -2.4, 2.6)}, "Torso": (24, 0, 0)}),
-        (16, {"Arm_R": (-60, 0, -10), "Hand_R": (-40, 0, 0), "Arm_L": (-60, 0, -20), "Hand_L": (-40, 0, 0)}),
-        (24, TOOL_GUARD),
-    ],
-    # The charge, the haft held out in front like a ram.
-    "tool_lunge": [
-        (0, TOOL_GUARD),
-        (5, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, -1)}, **legs(-40, 80, -30, 70), "Torso": (28, 0, 0),
-             "Head": (-28, 0, 0), "Arm_R": (-30, 0, -10), "Hand_R": (-100, 0, 0), "Arm_L": (-40, 0, -20),
-             "Hand_L": (-100, 0, 0)}),
-        (9, {"Root": {"rot": (0, 0, 0), "loc": (0, 1.5, 3)}, **legs(-40, 20, 30, 40), "Torso": (32, 0, 0),
-             "Head": (-32, 0, 0), "Arm_R": (-95, 0, -5), "Hand_R": (-5, 0, 0), "Arm_L": (-90, 0, -10),
-             "Hand_L": (-10, 0, 0)}),
-        (13, {"Root": {"rot": (0, 0, 0), "loc": (0, -3, 3)}, **legs(-50, 70, 10, 50), "Torso": (28, 0, 0)}),
-        (19, {"Root": {"rot": (0, 8, 0), "loc": (0, -2, 1.5)}, **legs(-24, 36, 12, 26), "Torso": (18, 0, 0),
-              "Arm_R": (-50, 0, -10), "Hand_R": (-50, 0, 0), "Arm_L": (-55, 0, -20), "Hand_L": (-40, 0, 0)}),
-        (26, TOOL_GUARD),
-    ],
+    "sword_stance": [(0, S["guard"]), (20, S["sway"]), (40, S["guard"])],
+    "sword_strike": [(0, S["guard"]), (4, S["armed"]), (6, S["armed"]), (8, S["cut"]), (14, S["cut_end"]),
+                     (22, S["guard"])],
+    "sword_double": [(0, S["guard"]), (4, S["armed"]), (6, S["armed"]), (8, S["cut"]), (12, S["turn"]),
+                     (15, S["backhand"]), (20, S["stagger"]), (28, S["guard"])],
+    "sword_thrust": [(0, S["guard"]), (6, S["coil"]), (9, S["lunge"]), (11, S["lunge"]), (18, S["coil"]),
+                     (26, S["guard"])],
+    "axe_stance": [(0, A["guard"]), (24, A["breath"]), (48, A["guard"])],
+    "axe_strike": [(0, A["guard"]), (8, A["raise_"]), (11, A["hold"]), (12, A["chop"]), (14, A["stuck"]),
+                   (21, A["stuck"]), (26, A["heave"]), (30, A["guard"])],
+    "axe_double": [(0, A["guard"]), (5, A["sweep_back"]), (8, A["sweep"]), (15, A["carry"]), (20, A["chop"]),
+                   (22, A["stuck"]), (29, A["stuck"]), (34, A["guard"])],
+    "axe_lunge": [(0, A["guard"]), (6, A["run"]), (10, A["leap"]), (12, A["chop"]), (14, A["stuck"]),
+                  (22, A["stuck"]), (26, A["heave"]), (30, A["guard"])],
+    "tool_stance": [(0, T["guard"]), (12, T["feint"]), (16, T["guard"]), (34, T["feint"]), (38, T["guard"]),
+                    (48, T["guard"])],
+    "tool_strike": [(0, T["guard"]), (6, T["sweep_back"]), (8, T["sweep"]), (14, T["sweep_end"]),
+                    (22, T["guard"])],
+    "tool_double": [(0, T["guard"]), (3, T["pull"]), (5, T["poke"]), (9, T["pull"]), (12, T["poke2"]),
+                    (18, T["stumble"]), (24, T["guard"])],
+    "tool_lunge": [(0, T["guard"]), (6, T["run"]), (10, T["ram"]), (12, T["ram"]), (19, T["stumble"]),
+                   (26, T["guard"])],
 })
+# The clips whose left hand holds the haft (bake_second_hand), by item.
+TWO_HANDED = {name: name.split("_")[0] for name in SETS["disciple"] if name.split("_")[0] in ("axe", "tool")}
 
 
 
@@ -770,7 +757,59 @@ def make_action(armature, name, keys):
             if loc is not None:
                 bone.location = Vector(loc)
                 bone.keyframe_insert("location", frame=frame)
+    if name in TWO_HANDED:
+        bake_second_hand(armature, keys[-1][0], TWO_HANDED[name])
     return action
+
+
+def bake_second_hand(armature, last, item):
+    """
+    Puts the left hand on the haft of the item held in the right, on every frame: the right arm first swings the haft
+    in toward the left shoulder if it is out of reach, then a two-bone reach (the arm, then the forearm) takes the left
+    hand to the haft point murim_items gives, the elbow bending the way it already bent; then keys both arms.
+    """
+    import murim_items
+    on_haft = Vector(murim_items.point(murim_items.SECOND_HAND[item]))
+    pose = armature.pose.bones
+    scene = bpy.context.scene
+    for frame in range(0, last + 1):
+        scene.frame_set(frame)
+        # Out of the left arm's reach, the right arm swings the haft in toward the left shoulder until it is in reach.
+        left = pose["Arm_L"].head.copy()
+        reach = (pose["Hand_L"].head - left).length + (pose["Tool_L"].head - pose["Hand_L"].head).length
+        for _ in range(12):
+            target = pose["Tool_R"].matrix @ on_haft
+            if (target - left).length <= reach * 0.96:
+                break
+            right = pose["Arm_R"].head.copy()
+            axis = (target - right).cross(left - right)
+            if axis.length < 1e-6:
+                break
+            turn(pose["Arm_R"], right, Quaternion(axis.normalized(), math.radians(6)))
+            bpy.context.view_layer.update()
+        target = pose["Tool_R"].matrix @ on_haft
+        shoulder, elbow, wrist = pose["Arm_L"].head.copy(), pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
+        upper, lower = (elbow - shoulder).length, (wrist - elbow).length
+        toward = target - shoulder
+        distance = min(max(toward.length, 1e-3), upper + lower - 1e-3)
+        toward.normalize()
+        bend = (elbow - shoulder) - toward * (elbow - shoulder).dot(toward)
+        bend = bend.normalized() if bend.length > 1e-4 else Vector((0, 0, -1))
+        cos = max(-1.0, min(1.0, (upper * upper + distance * distance - lower * lower) / (2 * upper * distance)))
+        new_elbow = shoulder + toward * upper * cos + bend * upper * math.sqrt(1 - cos * cos)
+        turn(pose["Arm_L"], shoulder, (elbow - shoulder).rotation_difference(new_elbow - shoulder))
+        bpy.context.view_layer.update()
+        elbow, wrist = pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
+        turn(pose["Hand_L"], elbow, (wrist - elbow).rotation_difference(target - elbow))
+        bpy.context.view_layer.update()
+        for name in ("Arm_R", "Arm_L", "Hand_L"):
+            pose[name].keyframe_insert("rotation_quaternion", frame=frame)
+
+
+def turn(bone, about, rotation):
+    """Turns a pose bone by `rotation` (armature space) about the point `about`."""
+    bone.matrix = (Matrix.Translation(about) @ rotation.to_matrix().to_4x4() @ Matrix.Translation(-about)
+                   @ bone.matrix)
 
 
 def build_set(armature, set_name):

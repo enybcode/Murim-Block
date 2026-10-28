@@ -56,11 +56,13 @@ public final class DiscipleFighting extends Goal {
     public enum Weapon {
         FISTS(new Timing("strike", 18, new int[] {5}, 2.4), new Timing("double", 22, new int[] {3, 10}, 2.4),
                 new Timing("lunge", 26, new int[] {9, 10, 11, 12}, 1.9)),
-        SWORD(new Timing("sword_strike", 20, new int[] {7}, 2.9), new Timing("sword_double", 26, new int[] {7, 14}, 2.9),
-                new Timing("sword_thrust", 26, new int[] {9, 10, 11, 12}, 2.4)),
-        AXE(new Timing("axe_strike", 26, new int[] {11}, 2.8), new Timing("axe_double", 30, new int[] {7, 18}, 2.8),
-                new Timing("axe_lunge", 28, new int[] {12, 13, 14}, 2.3)),
-        TOOL(new Timing("tool_strike", 20, new int[] {7}, 2.7), new Timing("tool_double", 24, new int[] {5, 12}, 2.7),
+        SWORD(new Timing("sword_strike", 22, new int[] {8}, 2.9),
+                new Timing("sword_double", 28, new int[] {8, 15}, 2.9),
+                new Timing("sword_thrust", 26, new int[] {9, 10, 11}, 2.4)),
+        AXE(new Timing("axe_strike", 30, new int[] {12}, 2.8), new Timing("axe_double", 34, new int[] {8, 20}, 2.8),
+                new Timing("axe_lunge", 30, new int[] {12, 13, 14}, 2.3)),
+        TOOL(new Timing("tool_strike", 22, new int[] {8}, 2.7),
+                new Timing("tool_double", 24, new int[] {5, 12}, 2.7),
                 new Timing("tool_lunge", 26, new int[] {9, 10, 11, 12}, 2.3));
 
         private final Timing strike, twice, lunge;
@@ -77,6 +79,12 @@ public final class DiscipleFighting extends Goal {
                 case DOUBLE -> twice;
                 case LUNGE -> lunge;
             };
+        }
+
+        /** Its three moves' clips (in the disciple set), for checks. */
+        public String[] clips() {
+            return new String[] {strike.clip().getPath().substring(9), twice.clip().getPath().substring(9),
+                    lunge.clip().getPath().substring(9)};
         }
 
         /** The clip prefix of its stance (empty for bare fists). */
