@@ -1,6 +1,7 @@
 package com.murimblock.client.dev;
 
 import com.murimblock.client.dev.EngineTest.Step;
+import com.murimblock.shenfa.client.FurnaceBurst;
 import com.murimblock.shenfa.client.SkeletalMobRenderer;
 import com.murimblock.shenfa.client.SkeletalMobs;
 import com.murimblock.shenfa.client.SkeletalModels;
@@ -326,6 +327,36 @@ final class MobLookChecks {
         steps.add(new Step("fourneau calm", mc -> {
             EngineTest.busy = () -> false;
             GifRecorder.stop();
+            // A real one bursts in front (blocks spared): it breaks into its pieces of bronze.
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                player.serverLevel().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING)
+                        .set(false, player.server);
+                var creeper = EntityType.CREEPER.create(player.serverLevel());
+                creeper.moveTo(X, Y, Z + 6.5, 180, 0);
+                creeper.setYBodyRot(150);
+                creeper.setNoAi(true);
+                creeper.addTag(TAG);
+                player.serverLevel().addFreshEntity(creeper);
+                creeper.ignite();
+            });
+            GifRecorder.start("fourneau_burst", 0.7f);
+            long until = mc.level.getGameTime() + 52;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("fourneau burst", mc -> {
+            EngineTest.check("the Fourneau bursts into its pieces (" + FurnaceBurst.pieces() + ")",
+                    FurnaceBurst.pieces() >= 10);
+            EngineTest.shoot(mc, "mob_fourneau_burst");
+            long until = mc.level.getGameTime() + 90;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("fourneau burst over", mc -> {
+            EngineTest.busy = () -> false;
+            GifRecorder.stop();
+            EngineTest.server(mc, player -> player.serverLevel().getGameRules()
+                    .getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(true, player.server));
             mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class,

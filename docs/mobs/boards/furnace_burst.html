@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Fourneau d'alchimie — explosion</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cell { background: #f5efe2; border: 1px solid #d8cbb1; border-radius: 4px; padding: 6px 8px; }
+.cell b { font-size: 13px; } .cell .ph { font-size: 12px; color: #a32020; margin-left: 6px; }
+.cell p { font-size: 12.5px; line-height: 1.4; margin-top: 4px; color: #3d332b; }
+svg { display: block; width: 100%; height: auto; }
+</style></head><body>
+<h1>FOURNEAU D'ALCHIMIE — EXPLOSION</h1>
+<div class="sub">Proposition avant de la construire · le fourneau ne disparaît plus d'un coup : il éclate en ses vraies pièces
+  de bronze qui volent, retombent, rebondissent et fument · vue de profil, il regarde vers la droite</div>
+<div class="top">
+  <div class="panelbox wrong"><h2>Ce qui ne va pas aujourd'hui</h2><ul>
+    <li>À l'explosion, le modèle disparaît d'un coup dans la fumée grise du creeper vanilla.</li>
+    <li>Rien ne rappelle le fourneau : pas de couvercle qui part, pas de bronze, pas de braises.</li>
+  </ul></div>
+  <div class="panelbox fix"><h2>Ce qui change</h2><ul>
+    <li>Le fourneau se brise en ses propres pièces (même texture) : couvercle, 4 parois, 2 anses, 3 pieds, le sceau.</li>
+    <li>Plus une gerbe d'éclats de bronze, de braises qui tombent en traînées et un nuage de vapeur.</li>
+    <li>Les pièces tournent, retombent avec la gravité, rebondissent (« clang »), glissent puis fument au sol.</li>
+    <li>Décor seulement : côté client, pas de collision avec les joueurs, pas de butin ; disparaissent en 5 s.</li>
+  </ul></div>
+</div>
+<div class="anim"><div class="label">
+  <div class="name">Explosion</div><div class="meta">tick 30 de la mèche · pièces visibles 5 s (100 ticks)</div>
+  <div class="feel"><b>Sensation :</b> la cocotte qui saute : un « POC » du couvercle, puis le bronze éclate en tous
+    sens et retombe en pluie qui tinte.</div>
+  <div class="read"><b>Pour le joueur :</b> on voit d'où vient le danger et ce qu'il en reste ; les pièces qui
+    fument au sol racontent l'explosion.</div>
+  <div class="read"><b>Nombre :</b> ~12 grandes pièces, ~20 éclats, ~30 braises (moins si les particules sont
+    réduites).</div>
+</div><div class="strip" id="strip"></div></div>
+<div style="font-size:12.5px;color:#5b4a3e;margin-top:4px">pointillés : trajectoire des pièces · orange : braises ·
+  blanc : vapeur · ticks : 20 par seconde</div>
+<script>
+const W = 300, H = 210, GROUND = 186, OX = 140, OY = 150, GRAV = 0.55;
+// Pieces: [name, w, h, colour, vx, vy, spin, dx, dy] (start offset from the vessel's centre).
+const PIECES = [
+  ['lid', 40, 10, '#5e4316', 0.8, -9.5, 7, 0, -38],
+  ['knob', 6, 8, '#d2a849', 1.6, -11, 20, 0, -48],
+  ['wall front', 12, 44, '#a07626', 4.2, -4.5, 9, 22, 0],
+  ['wall back', 12, 44, '#8f6a22', -4.0, -4.2, -8, -22, 0],
+  ['wall side', 34, 10, '#a07626', 1.5, -6.5, -5, 0, -10],
+  ['wall side 2', 30, 10, '#8f6a22', -1.2, -5.5, 6, 0, 8],
+  ['seal', 14, 12, '#d2a849', 3.2, -2.5, 14, 24, 14],
+  ['handle', 8, 12, '#5e4316', -5.2, -6.2, -18, -26, -16],
+  ['leg front', 7, 22, '#5e4316', 3.0, -1.8, 10, 14, 36],
+  ['leg back', 7, 22, '#3e2c10', -2.8, -1.6, -11, -12, 36],
+  ['leg mid', 7, 20, '#5e4316', 0.6, -2.4, 6, 2, 36],
+  ['rim', 44, 5, '#d2a849', -1.8, -7.8, -6, 0, -28],
+];
+const SHARDS = Array.from({length: 18}, (_, i) => {
+  const a = -Math.PI * (0.08 + 0.84 * ((i * 0.618) % 1)), v = 4 + (i * 1.7) % 5;
+  return [Math.cos(a) * v, Math.sin(a) * v, (i % 5) * 9 - 18];
+});
+const EMBERS = Array.from({length: 24}, (_, i) => {
+  const a = -Math.PI * (0.05 + 0.9 * ((i * 0.381) % 1)), v = 2.5 + (i * 1.3) % 4.5;
+  return [Math.cos(a) * v, Math.sin(a) * v];
+});
+// Falls under gravity, bounces off the ground (losing most of its speed), then slides to a stop.
+function fly(x, y, vx, vy, t, h) {
+  let px = x, py = y, bounced = 0;
+  for (let i = 0; i < t; i++) {
+    vy += GRAV; px += vx; py += vy;
+    if (py > GROUND - h / 2) { py = GROUND - h / 2; vy = -vy * 0.35; vx *= 0.6; bounced++; if (Math.abs(vy) < 1) vy = 0; }
+  }
+  return [px, py, bounced];
+}
+function frame(t, opts) {
+  let s = `<svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#f8f2e6"/>`
+    + `<line x1="10" y1="${GROUND}" x2="${W - 10}" y2="${GROUND}" stroke="#c9bfa6" stroke-width="3"/>`;
+  if (opts.scorch) s += `<ellipse cx="${OX}" cy="${GROUND + 2}" rx="60" ry="6" fill="#4a3d32" opacity="0.35"/>`;
+  if (opts.whole) {
+    // The fourneau at the last tick of its fuse: swollen, the lid lifted, cracks of light.
+    s += `<rect x="${OX - 30}" y="${OY - 36}" width="60" height="68" fill="#a07626"/>`
+      + `<rect x="${OX - 30}" y="${OY - 36}" width="60" height="5" fill="#d2a849"/>`
+      + `<rect x="${OX + 26}" y="${OY - 14}" width="6" height="12" fill="#fff4c0"/>`
+      + `<path d="M${OX - 12},${OY - 30} l6,14 l-8,10 l7,16 M${OX + 14},${OY - 28} l-5,12 l7,12" stroke="#fff4c0"
+          stroke-width="3" fill="none"/>`
+      + `<rect x="${OX - 22}" y="${OY + 32}" width="8" height="22" fill="#5e4316"/>`
+      + `<rect x="${OX + 12}" y="${OY + 32}" width="8" height="22" fill="#5e4316"/>`
+      + `<g transform="translate(${OX},${OY - 62}) rotate(-12)"><rect x="-20" y="-5" width="40" height="10" fill="#5e4316"/>`
+      + `<rect x="-3" y="-13" width="6" height="8" fill="#d2a849"/></g>`
+      + `<path d="M${OX - 26},${OY - 40} q-10,-10 -18,-8 M${OX + 26},${OY - 40} q10,-10 18,-8" stroke="#e8eef2"
+          stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  }
+  if (opts.flash) s += `<circle cx="${OX}" cy="${OY}" r="${opts.flash}" fill="#fff4c0" opacity="0.85"/>`
+    + `<circle cx="${OX}" cy="${OY}" r="${opts.flash * 0.55}" fill="#ffb24a" opacity="0.9"/>`;
+  if (opts.steam) s += `<g fill="#e8eef2" opacity="${opts.steam[1]}">${[[0, 0], [-30, -10], [28, -14], [-12, -34],
+    [16, -40], [-40, 14], [38, 10]].map(([dx, dy], i) => `<circle cx="${OX + dx * opts.steam[0]}" cy="${OY + dy
+      * opts.steam[0] - opts.steam[2]}" r="${(14 + i % 3 * 5) * Math.min(1.6, opts.steam[0])}"/>`).join('')}</g>`;
+  if (t > 0) {
+    for (const [, w, h, col, vx, vy, spin, dx, dy] of PIECES) {
+      const [x, y, b] = fly(OX + dx, OY + dy, vx * 1.5, vy, t, Math.min(w, h));
+      if (opts.trail) {
+        let d = '';
+        for (let i = 0; i <= t; i += 1) { const [tx, ty] = fly(OX + dx, OY + dy, vx * 1.5, vy, i, Math.min(w, h)); d += (i ? ' L' : 'M') + tx + ',' + ty; }
+        s += `<path d="${d}" stroke="#a32020" stroke-width="1.2" stroke-dasharray="3 3" fill="none" opacity="0.6"/>`;
+      }
+      const rot = b ? (h > w ? 90 : 0) + (opts.rest ? 0 : spin) : spin * t;
+      s += `<g transform="translate(${x},${y}) rotate(${rot})" opacity="${opts.fade || 1}"><rect x="${-w / 2}"
+        y="${-h / 2}" width="${w}" height="${h}" fill="${col}" stroke="#2e2008" stroke-width="0.8"/></g>`;
+      if (opts.smoke && b) s += `<path d="M${x},${y - 6} q-4,-10 2,-18 q6,-8 0,-16" stroke="#9aa3ad" stroke-width="3"
+        fill="none" opacity="${0.6 * (opts.fade || 1)}"/>`;
+    }
+    for (const [vx, vy, spin] of SHARDS) {
+      const [x, y] = fly(OX, OY, vx, vy, t, 3);
+      s += `<rect x="${x - 2}" y="${y - 1.5}" width="4" height="3" fill="#d2a849" opacity="${opts.fade || 1}"
+        transform="rotate(${spin * t} ${x} ${y})"/>`;
+    }
+    if (opts.embers) for (const [vx, vy] of EMBERS) {
+      const [x, y] = fly(OX, OY, vx, vy, t, 2), [px, py] = fly(OX, OY, vx, vy, Math.max(0, t - 2), 2);
+      s += `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="#e8742a" stroke-width="2" opacity="${opts.embers}"/>`
+        + `<circle cx="${x}" cy="${y}" r="2" fill="#ffb24a" opacity="${opts.embers}"/>`;
+    }
+  }
+  if (opts.word) s += `<text x="${opts.word[1]}" y="${opts.word[2]}" font-size="17" font-weight="800" fill="#a32020"
+    font-family="Georgia">${opts.word[0]}</text>`;
+  return s + '</svg>';
+}
+const CELLS = [
+  [0, 'tick 30', 'le bouchon', {whole: true, word: ['POC !', 180, 40]},
+    'Dernier tick de la mèche : la cuve gonflée se fend de lumière, le couvercle part comme un bouchon.'],
+  [1, 'tick 30 → 31', 'éclatement', {flash: 46, steam: [0.6, 0.9, 0], embers: 1, word: ['BOUM', 200, 40]},
+    'Éclair blanc-orange, le bronze se brise : les parois, les anses et les pieds partent dans tous les sens.'],
+  [7, 'ticks 31 → 37', 'la gerbe', {trail: true, steam: [1.2, 0.7, 10], embers: 1},
+    'Les pièces tournent sur elles-mêmes en arc ; le couvercle monte le plus haut, les braises tombent en traînées.'],
+  [16, 'ticks 37 → 50', 'pluie de bronze', {trail: true, steam: [1.5, 0.4, 24], embers: 0.8, word: ['clang', 214, 160]},
+    'Elles retombent et rebondissent une fois en tintant ; les éclats glissent sur le sol.'],
+  [70, 'ticks 50 → 90', 'les restes', {rest: true, smoke: true, scorch: true, embers: 0.4},
+    'Les pièces gisent autour d\'une tache noire, chacune fume ; les braises rougeoient puis s\'éteignent.'],
+  [70, 'ticks 90 → 130', 'fondu', {rest: true, smoke: true, scorch: true, fade: 0.35},
+    'La fumée s\'éclaircit et les pièces s\'effacent doucement (5 s en tout).'],
+];
+document.getElementById('strip').innerHTML = CELLS.map(([t, ticks, ph, opts, note]) =>
+  `<div class="cell"><b>${ticks}</b><span class="ph">${ph}</span>${frame(t, opts)}<p>${note}</p></div>`).join('');
+</script></body></html>
