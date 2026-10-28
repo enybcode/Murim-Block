@@ -3,6 +3,7 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.shenfa.client.CapeCloth;
+import com.murimblock.shenfa.client.FirstPerson;
 import com.murimblock.shenfa.client.SkeletalPlayers;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +72,35 @@ final class ClothChecks {
                         -running.y), back > 0.25);
             }
             GifRecorder.stop();
+            // A pool beside the track: swimming, the body lies flat and the legs kick under the cape.
+            EngineTest.server(mc, player -> {
+                for (BlockPos pos : BlockPos.betweenClosed(AREA + 3, (int) Y - 6, -1, AREA + 17, (int) Y - 1, 40)) {
+                    boolean inside = pos.getX() > AREA + 3 && pos.getX() < AREA + 17 && pos.getY() > Y - 6
+                            && pos.getZ() > -1 && pos.getZ() < 40;
+                    player.serverLevel().setBlockAndUpdate(pos, inside ? Blocks.WATER.defaultBlockState()
+                            : Blocks.SMOOTH_STONE.defaultBlockState());
+                }
+                player.connection.teleport(AREA + 10.5, Y - 4, 1.5, 0, 0);
+            });
+            GifRecorder.start("cloth_cape_swimming");
+            GifRecorder.camera(GifRecorder.side(mc.player));
+            mc.player.setXRot(0);
+            mc.options.keyUp.setDown(true);
+            mc.options.keySprint.setDown(true);
+        }));
+        steps.add(new Step("cape swimming", mc -> {
+            EngineTest.check("the player swims in the pool", mc.player.isVisuallySwimming());
+            EngineTest.shoot(mc, "cloth_swimming");
+            GifRecorder.stop();
+            mc.options.setCameraType(CameraType.FIRST_PERSON);
+        }));
+        steps.add(new Step("first person swimming", mc -> {
+            EngineTest.check("swimming in first person, the body is not drawn round the camera",
+                    mc.player.isVisuallySwimming() && !FirstPerson.active());
+            EngineTest.shoot(mc, "fp_swimming");
+            mc.options.keyUp.setDown(false);
+            mc.options.keySprint.setDown(false);
+            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             CapeCloth.testCape(false);
         }));
         return steps;

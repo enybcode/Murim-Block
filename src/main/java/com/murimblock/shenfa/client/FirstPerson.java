@@ -78,7 +78,9 @@ public final class FirstPerson {
         LocalPlayer player = mc.player;
         return enabled && player != null && SkeletalPlayers.enabled() && SkeletalPlayers.animated()
                 && mc.options.getCameraType().isFirstPerson() && mc.getCameraEntity() == player
-                && !player.isSpectator() && !player.isSleeping();
+                && !player.isSpectator() && !player.isSleeping()
+                // Lying flat (swimming, crawling, gliding) the eye sits inside the chest: vanilla's hands instead.
+                && !player.isVisuallySwimming() && !player.isFallFlying();
     }
 
     /** Whether the body being drawn right now is the local player's seen in first person. */
@@ -160,8 +162,7 @@ public final class FirstPerson {
         long now = System.nanoTime();
         float frames = lastShift == 0 ? 1 : Math.min(10, (now - lastShift) / 1.6667e7f);
         lastShift = now;
-        Vector3f target = active() && !Minecraft.getInstance().player.isVisuallySwimming()
-                && !Minecraft.getInstance().player.isFallFlying() ? eyeShift : new Vector3f();
+        Vector3f target = active() ? eyeShift : new Vector3f();
         float follow = 1 - (float) Math.pow(1 - FOLLOW, frames);
         cameraShift.lerp(target, follow);
         if (cameraShift.length() > MOST_SHIFT) {

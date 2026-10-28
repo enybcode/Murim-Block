@@ -35,13 +35,16 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class LockOn {
     private static final double RANGE = 20, KEEP = 26;
-    /** A flick of the mouse this many degrees in one frame switches target. */
-    private static final float FLICK = 14;
+    /** A flick of the mouse: this many degrees of turn within {@link #FLICK_NANOS} switches target. */
+    private static final float FLICK = 10;
+    private static final long FLICK_NANOS = 150_000_000L, SWITCH_PAUSE_NANOS = 300_000_000L;
     /** How long the foe may stay hidden behind a wall (ticks) before the lock lets go. */
     private static final int HIDDEN = 40;
     private static LivingEntity target;
     private static int hidden;
-    private static float lastYaw = Float.NaN;
+    /** The mouse's turn (degrees) since {@link #sweepStart}, and when the target last switched. */
+    private static float sweep;
+    private static long sweepStart, switched;
 
     private LockOn() {
     }
@@ -53,7 +56,7 @@ public final class LockOn {
     /** Locks on the best foe in sight, or lets go if locked. */
     public static void toggle() {
         target = target == null ? pick(null, 0) : null;
-        lastYaw = Float.NaN;
+        sweep = 0;
     }
 
     @SubscribeEvent
@@ -79,25 +82,39 @@ public final class LockOn {
         }
     }
 
-    /** Each frame the view turns toward the foe; a flick of the mouse first switches foe. */
+    /**
+     * Called by the mouse handler with the turn the mouse asks for (degrees, positive: to the right), before it is
+     * applied. Only the mouse counts: a turn made by a strike or by the lock itself never switches foe.
+     */
+    public static void mouse(float degrees) {
+        if (target == null) {
+            return;
+        }
+        long now = System.nanoTime();
+        if (now - sweepStart > FLICK_NANOS) {
+            sweep = 0;
+            sweepStart = now;
+        }
+        sweep += degrees;
+        if (Math.abs(sweep) > FLICK && now - switched > SWITCH_PAUSE_NANOS) {
+            LivingEntity next = pick(target, sweep > 0 ? 1 : -1);
+            if (next != null) {
+                target = next;
+                switched = now;
+            }
+            sweep = 0;
+        }
+    }
+
+    /** Each frame the view turns toward the foe; the mouse only switches foe ({@link #mouse}). */
     @SubscribeEvent
     public static void frame(RenderFrameEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (target == null || player == null || mc.isPaused()) {
-            lastYaw = Float.NaN;
             return;
         }
         float frames = Math.min(5, mc.getTimer().getRealtimeDeltaTicks() * 3);
-        if (!Float.isNaN(lastYaw)) {
-            float flick = Mth.wrapDegrees(player.getYRot() - lastYaw);
-            if (Math.abs(flick) > FLICK) {
-                LivingEntity next = pick(target, flick > 0 ? 1 : -1);
-                if (next != null) {
-                    target = next;
-                }
-            }
-        }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(true);
         Vec3 eye = player.getEyePosition(partialTick);
         Vec3 at = target.getPosition(partialTick).add(0, target.getBbHeight() * 0.6, 0);
@@ -111,7 +128,6 @@ public final class LockOn {
         player.setXRot(newPitch);
         player.yRotO = newYaw;
         player.xRotO = newPitch;
-        lastYaw = newYaw;
     }
 
     /**

@@ -3,6 +3,7 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.client.combat.CombatClient;
 import com.murimblock.client.combat.CombatEffects;
+import com.murimblock.client.combat.LockOn;
 import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.combat.CombatPayloads;
 import com.murimblock.combat.CombatServer;
@@ -156,6 +157,49 @@ final class CombatChecks {
                 List<String> results = hits.stream().map(hit -> hit.result().name()).toList();
                 EngineTest.check("a guard raised as the blow comes parries it (" + results + ")",
                         results.contains("PARRY"));
+                discard(mc);
+            }));
+        }));
+        steps.add(new Step("lock-on through a combo", mc -> {
+            at(mc, X, Z, 0);
+            spawn(mc, EntityType.ZOMBIE, X, Z + 1.6, true, mob -> {
+            });
+            spawn(mc, EntityType.ZOMBIE, X + 4, Z + 3, true, mob -> {
+            });
+            LivingEntity[] locked = new LivingEntity[1];
+            boolean[] kept = {true};
+            boolean[] nudge = new boolean[1];
+            start(new Run(90, t -> {
+                if (t == 0) {
+                    face(mc, nearest(mc, EntityType.ZOMBIE));
+                    LockOn.toggle();
+                    locked[0] = LockOn.target();
+                }
+                if (t % 6 == 1 && t <= 37) {
+                    CombatClient.pressAttack();
+                }
+                if (t <= 60 && LockOn.target() != locked[0]) {
+                    kept[0] = false;
+                }
+                if (t == 62) {
+                    LockOn.mouse(3);
+                    nudge[0] = LockOn.target() == locked[0];
+                }
+                if (t == 66) {
+                    LockOn.mouse(15);
+                }
+                if (t == 78 && LockOn.target() == locked[0]) {
+                    LockOn.mouse(-15);
+                }
+            }, () -> {
+                EngineTest.check("the lock holds its foe through the combo and the uppercut's launch",
+                        locked[0] != null && kept[0]);
+                EngineTest.check("a small mouse move keeps the foe", nudge[0]);
+                EngineTest.check("a flick of the mouse switches foe", LockOn.target() != null
+                        && LockOn.target() != locked[0]);
+                if (LockOn.target() != null) {
+                    LockOn.toggle();
+                }
                 discard(mc);
             }));
         }));
