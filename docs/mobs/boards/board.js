@@ -30,6 +30,20 @@ function body(x, y, p) {
   // The weapon from the right hand: its butt behind the hand, its length ahead.
   r.butt = add(r.handR, down(p.w + 180, w.butt));
   r.tip = add(r.handR, down(p.w, w.length));
+  if (w.bow) {
+    // A bow in the right hand: the arrow points along w, the stave across it; the string drawn back to the nock
+    // by the left hand (draw 0 to 1), which reaches it by IK.
+    const ahead = down(p.w, 1);
+    r.tipA = add(r.handR, down(p.w + 90, 24));
+    r.tipB = add(r.handR, down(p.w - 90, 24));
+    r.nock = add(r.handR, down(p.w + 180, 5 + 20 * (p.draw || 0)));
+    r.tip = add(r.nock, [ahead[0] * 34, ahead[1] * 34]);
+    if (p.draw !== undefined) {
+      r.elbowL = reach(shoulder, r.nock, L.upper, L.fore);
+      r.handL = r.nock;
+      return r;
+    }
+  }
   if (w.twoHands) {
     // The left hand on the haft, reached by the arm (two-bone IK, elbow down).
     r.grip = add(r.handR, down(p.w, w.second));
@@ -58,6 +72,7 @@ const WEAPONS = {
   sword: {length: 44, butt: 7, draw: 'sword'},
   axe: {length: 46, butt: 6, second: 20, twoHands: true, draw: 'axe'},
   tool: {length: 52, butt: 6, second: 24, twoHands: true, draw: 'tool'},
+  bow: {length: 0, butt: 0, bow: true, draw: 'bow'},
 };
 
 function line(a, b, color, width, extra = '') {
@@ -86,7 +101,7 @@ function figure(x, y, p, ghost) {
     transform="rotate(${(p.lean || 0) + (p.head || 0)} ${head[0]} ${head[1]})"/>`;
   s += `<rect x="${head[0] - 12}" y="${head[1] - 13}" width="24" height="9" fill="${col(C.hair)}"
     transform="rotate(${(p.lean || 0) + (p.head || 0)} ${head[0]} ${head[1]})"/>`;
-  s += `<rect x="${head[0] + 5}" y="${head[1] - 3}" width="3" height="3" fill="${ghost ? C.ghost : '#9fffe0'}"
+  s += `<rect x="${head[0] + 5}" y="${head[1] - 3}" width="3" height="3" fill="${ghost ? C.ghost : (C.eye || '#9fffe0')}"
     transform="rotate(${(p.lean || 0) + (p.head || 0)} ${head[0]} ${head[1]})"/>`;
   // Near leg.
   s += line(r.hip, r.kneeF, col(C.robe), 8) + line(r.kneeF, r.footF, col(C.robe), 7);
@@ -120,6 +135,17 @@ function weapon(kind, r, p, ghost) {
   } else if (kind === 'tool') {
     s += line(r.butt, r.tip, col(C.haft), 4);
     s += line(add(r.tip, down(p.w + 180, 2)), add(r.tip, down(p.w, 11)), col(C.iron), 10);
+  } else if (kind === 'bow') {
+    const bulge = add(r.handR, down(p.w, 10 - 4 * (p.draw || 0)));
+    const c = [2 * bulge[0] - (r.tipA[0] + r.tipB[0]) / 2, 2 * bulge[1] - (r.tipA[1] + r.tipB[1]) / 2];
+    s += `<path d="M${r.tipA[0]},${r.tipA[1]} Q${c[0]},${c[1]} ${r.tipB[0]},${r.tipB[1]}" fill="none"
+      stroke="${col(C.haft)}" stroke-width="5"/>`;
+    s += line(r.tipA, r.nock, col('#d8d0b8'), 1.2) + line(r.nock, r.tipB, col('#d8d0b8'), 1.2);
+    if (p.arrow) {
+      s += line(r.nock, r.tip, col('#6b4a2f'), 2.5);
+      s += line(r.nock, add(r.nock, down(p.w, 6)), col('#b33a35'), 4);
+      s += line(add(r.tip, down(p.w + 180, 4)), r.tip, col(C.iron), 4);
+    }
   }
   return s;
 }
@@ -183,6 +209,7 @@ function panel(frame, weaponKind) {
 }
 
 function sheet(spec) {
+  Object.assign(C, spec.colors || {});
   let h = `<h1>${spec.title}</h1><div class="sub">${spec.sub}</div>`;
   h += `<div class="top"><div class="panelbox wrong"><h2>Ce qui ne va pas dans la version actuelle</h2><ul>`;
   h += spec.wrong.map(w => `<li>${w}</li>`).join('') + '</ul></div>';

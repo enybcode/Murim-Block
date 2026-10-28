@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Archer impérial — animations</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The bow is in the right hand (the near arm), the arrow along w; draw pulls the string to the left hand.
+const SENTRY = {lean: 0, head: 0, aR: 6, fR: 12, w: 90, aL: -4, fL: 0, tF: 6, sF: 2, tB: -6, sB: -2};
+const SENTRY_2 = {...SENTRY, head: -6, aR: 10, fR: 16, hy: 1};
+const REACH = {lean: 4, head: -10, aR: 55, fR: 70, w: 82, aL: 200, fL: 210, tF: 16, sF: 4, tB: -18, sB: -8};
+const NOCKED = {lean: 4, head: -4, aR: 82, fR: 88, w: 90, draw: 0, arrow: true, tF: 20, sF: 4, tB: -22, sB: -10};
+const DRAWN = {lean: 6, head: -8, aR: 92, fR: 92, w: 90, draw: 1, arrow: true, tF: 22, sF: 4, tB: -24, sB: -12,
+  hy: 1};
+const LOOSE = {lean: 2, head: -6, aR: 100, fR: 106, w: 96, aL: -70, fL: -110, tF: 20, sF: 4, tB: -24, sB: -12};
+const SKY_NOCKED = {lean: -10, head: -30, aR: 132, fR: 136, w: 136, draw: 0, arrow: true, tF: 24, sF: 4, tB: -22,
+  sB: -14};
+const SKY_DRAWN = {...SKY_NOCKED, draw: 1, head: -34};
+const SKY_LOOSE = {lean: -12, head: -32, aR: 140, fR: 146, w: 142, aL: -60, fL: -100, tF: 24, sF: 4, tB: -22,
+  sB: -14};
+const STEP_BACK = {...NOCKED, hx: -10, tF: 4, sF: -6, tB: -30, sB: -24};
+const STEP_BACK_2 = {...NOCKED, hx: -20, tF: 26, sF: 10, tB: -6, sB: -12};
+const BASH_BACK = {lean: -4, head: -6, aR: -30, fR: 10, w: 330, aL: 30, fL: 50, tF: 10, sF: 0, tB: -26, sB: -16,
+  hx: -4};
+const BASH = {lean: 24, head: 4, hx: 10, hy: 4, aR: 100, fR: 130, w: 170, aL: -40, fL: -30, tF: 44, sF: 4, tB: -36,
+  sB: -24};
+const SHOVE = {lean: 10, head: -2, hx: -8, aR: 60, fR: 80, w: 90, aL: -20, fL: 0, tF: 6, sF: -4, tB: -30, sB: -24};
+const FALL_1 = {lean: 20, head: 20, hy: 8, aR: 20, fR: 10, w: 60, aL: 10, fL: 0, tF: 60, sF: -20, tB: 40, sB: -30};
+const FALL_2 = {lean: 70, head: 30, hy: 22, hx: 10, aR: 60, fR: 40, w: 30, aL: 50, fL: 30, tF: 90, sF: 0, tB: 90,
+  sB: 10};
+sheet({
+  weapon: 'bow',
+  colors: {robe: '#7a3428', robeDark: '#541c16', skin: '#e2dbc6', skinDark: '#b3aa92', hair: '#7d3a2c',
+    belt: '#3b2a20', eye: '#1c1a18'},
+  title: 'ARCHER IMPÉRIAL — ANIMATIONS',
+  sub: 'Proposition avant animation · un soldat discipliné même mort : tout est propre, posé, vertical · l\'arc dans '
+    + 'la main droite, la main gauche encoche et bande · vue de profil, il regarde vers la droite',
+  wrong: [
+    'Aujourd\'hui il n\'a aucune animation à lui : il marche comme le joueur et vise comme le squelette vanilla.',
+    'La visée vanilla tend les deux bras d\'un coup, sans encocher ni bander : on ne voit pas le tir venir.',
+    'La flèche part sans signal ni recul de l\'arc.',
+    'Il recule en marchant normalement, de dos à moitié, au lieu de garder la cible en face.',
+  ],
+  fix: [
+    'Une vraie séquence d\'archer : prendre une flèche au carquois, encocher, bander, tenir, lâcher.',
+    'La corde tendue tenue 1 s est le signal : le joueur sait quand garder ou esquiver.',
+    'Le corps reste droit et de profil à la cible, les pieds écartés et plantés (posture de soldat).',
+    'Il recule en pas chassés, toujours face à la cible, une flèche déjà encochée.',
+    'Le seul geste « sale » est le coup de crosse, quand on le colle.',
+  ],
+  anims: [
+    {name: 'Sentinelle', meta: 'repos · boucle · 60 ticks',
+      feel: 'un garde mort qui tient encore son poste : immobile, droit, la tête qui balaie l\'horizon.',
+      read: 'au repos il ne menace pas ; dès qu\'il tourne la tête vers toi, il t\'a vu.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: SENTRY, note: 'Droit, l\'arc tenu bas le long de la jambe, l\'autre main '
+          + 'le long du corps.'},
+        {ticks: '0 → 30', phase: 'veille', pose: SENTRY_2, from: SENTRY, trace: 'handR', bend: 4,
+          note: 'La tête tourne lentement d\'un côté à l\'autre, l\'arc bouge à peine.'},
+      ]},
+    {name: 'Tir posé', meta: '40 ticks · tir au tick 32 · attaque de base',
+      feel: 'la discipline : chaque geste est net et à sa place, puis la tension, puis le claquement de la corde.',
+      read: 'la corde tendue près de la joue pendant 1 s : garder ou esquiver maintenant.',
+      frames: [
+        {ticks: '1 → 6', phase: 'flèche', pose: REACH, from: SENTRY, trace: 'handL', bend: -20,
+          note: 'La main gauche va chercher une flèche dans le carquois par-dessus l\'épaule, l\'arc monte.'},
+        {ticks: '7 → 12', phase: 'encoche', pose: NOCKED, from: REACH, trace: 'handL', bend: 10,
+          note: 'Il pose la flèche sur la corde ; le bras d\'arc se tend vers la cible.'},
+        {ticks: '13 → 31', phase: 'bande, puis tenu (signal)', phaseColor: '#a32020', pose: DRAWN, from: NOCKED,
+          trace: 'handL', bend: 0, target: 170, note: 'Il tire la corde jusqu\'à la joue (6 ticks), puis tient, '
+            + 'immobile, la tête sur la cible : le joueur a 13 ticks pour réagir.'},
+        {ticks: '32', phase: 'LÂCHÉ', phaseColor: '#c46a00', pose: LOOSE, from: DRAWN, trace: 'handL', bend: -10,
+          impact: true, arrows: [{at: 'handR', from: [10, 0], to: [70, 0], color: '#c23b2f', dash: '2 3'}],
+          note: 'La corde claque, la main gauche part en arrière, l\'arc pivote un peu vers l\'avant.'},
+        {ticks: '33 → 40', phase: 'retour', phaseColor: '#2f6b4f', pose: SENTRY, from: LOOSE, trace: 'handR',
+          bend: 10, note: 'Il redescend l\'arc et reprend une flèche : un temps où il est vulnérable.'},
+      ]},
+    {name: 'Volée', meta: '46 ticks · tirs aux ticks 24 et 38 · quand on se cache',
+      feel: 'l\'artillerie : il lève l\'arc vers le ciel et deux flèches retombent en cloche derrière le mur.',
+      read: 'l\'arc pointé vers le ciel : les flèches vont tomber d\'en haut, il faut bouger.',
+      frames: [
+        {ticks: '1 → 12', phase: 'encoche haut', phaseColor: '#a32020', pose: SKY_NOCKED, from: SENTRY,
+          trace: 'handR', bend: 20, note: 'Il se penche en arrière et lève l\'arc à 45°.'},
+        {ticks: '13 → 23', phase: 'bande', phaseColor: '#a32020', pose: SKY_DRAWN, from: SKY_NOCKED, trace: 'handL',
+          bend: 0, note: 'Il bande vers le ciel, plus vite que le tir posé.'},
+        {ticks: '24', phase: 'LÂCHÉ 1', phaseColor: '#c46a00', pose: SKY_LOOSE, from: SKY_DRAWN, impact: true,
+          trace: 'handL', bend: -10,
+          arrows: [{at: 'handR', from: [10, -10], to: [80, -10], color: '#c23b2f', dash: '2 3', bend: -30}],
+          note: 'Première flèche, en cloche.'},
+        {ticks: '25 → 37', phase: 'recharge', pose: SKY_DRAWN, from: SKY_LOOSE, trace: 'handL', bend: 10,
+          note: 'Il encoche et bande aussitôt, sans redescendre.'},
+        {ticks: '38', phase: 'LÂCHÉ 2', phaseColor: '#c46a00', pose: SKY_LOOSE, impact: true,
+          note: 'Seconde flèche, un peu plus loin : les deux encadrent la cachette.'},
+      ]},
+    {name: 'Recul', meta: 'déplacement · boucle · 16 ticks · quand on approche à moins de 6 blocs',
+      feel: 'le soldat qui garde sa distance : il recule sans quitter la cible des yeux, prêt à tirer.',
+      read: 'il recule face à toi, flèche encochée : courir droit sur lui coûte une flèche.',
+      frames: [
+        {ticks: '0', phase: 'prêt', pose: NOCKED, note: 'Flèche encochée, arc devant lui, à moitié levé.'},
+        {ticks: '0 → 8', phase: 'pas chassé', pose: STEP_BACK, from: NOCKED, trace: 'hip', bend: 0,
+          arrows: [{at: 'footB', from: [10, 0], to: [-14, 0], color: '#3a6fb0'}],
+          note: 'Le pied arrière recule le premier, le corps reste de profil.'},
+        {ticks: '8 → 16', phase: 'pas chassé', pose: STEP_BACK_2, from: STEP_BACK, trace: 'hip', bend: 0,
+          arrows: [{at: 'footF', from: [14, 0], to: [-8, 0], color: '#3a6fb0'}],
+          note: 'Le pied avant rejoint ; l\'arc ne bouge pas.'},
+      ]},
+    {name: 'Coup de crosse', meta: '24 ticks · impact au tick 9 · quand on est collé',
+      feel: 'la surprise : le seul geste brutal, il frappe avec l\'arc puis se dégage.',
+      read: 'le bras d\'arc part en arrière : un coup arrive, garde ou parade.',
+      frames: [
+        {ticks: '1 → 6', phase: 'armé', phaseColor: '#a32020', pose: BASH_BACK, from: SENTRY, bend: 20,
+          note: 'Il ramène l\'arc loin derrière lui, à l\'épaule.'},
+        {ticks: '7 → 9', phase: 'IMPACT', phaseColor: '#c46a00', pose: BASH, from: BASH_BACK, bend: -50,
+          impact: true, target: 150, note: 'L\'arc s\'abat de haut en bas sur la tête de la cible.'},
+        {ticks: '10 → 24', phase: 'dégagement', phaseColor: '#2f6b4f', pose: SHOVE, from: BASH, trace: 'hip',
+          bend: 0, arrows: [{at: 'footB', from: [12, 0], to: [-14, 0], color: '#3a6fb0'}],
+          note: 'Il recule de deux pas pour retrouver sa distance et reprend une flèche.'},
+      ]},
+    {name: 'Mort', meta: '20 ticks',
+      feel: 'un pantin dont on coupe les fils : l\'armure tombe d\'un bloc, les os suivent.',
+      read: 'il est mort quand l\'arc tombe.',
+      frames: [
+        {ticks: '0 → 6', phase: 'chute', pose: FALL_1, from: SENTRY, trace: 'hip', bend: 0,
+          note: 'Les genoux lâchent, l\'arc glisse de la main.'},
+        {ticks: '6 → 20', phase: 'au sol', pose: FALL_2, from: FALL_1, trace: 'hip', bend: 0,
+          note: 'Il s\'effondre en avant ; les os s\'éparpillent en particules à la fin.'},
+      ]},
+  ],
+});
+</script></body></html>
