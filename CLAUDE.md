@@ -8,3 +8,4 @@
 - Keep this file and `AGENTS.md` short: they load every turn. Put history and feature details in `docs/`,
   long repeatable procedures in `.claude/skills/<name>/SKILL.md`, and folder-specific pitfalls in
   `.claude/rules/*.md` with `paths:`.
+- Build the CurseForge tester zip (`run/release/`) only when Enzo explicitly asks for it, never on your own.
