@@ -21,10 +21,11 @@ function body(x, y, p) {
   const r = {hip, neck, shoulder};
   r.elbowR = add(shoulder, down(p.aR, L.upper));
   r.handR = add(r.elbowR, down(p.fR, L.fore));
+  // A knee only bends forward: the shin never points further forward than its thigh.
   r.kneeF = add(hip, down(p.tF, L.thigh));
-  r.footF = add(r.kneeF, down(p.sF, L.shin));
+  r.footF = add(r.kneeF, down(Math.min(p.sF, p.tF - 4), L.shin));
   r.kneeB = add(hip, down(p.tB, L.thigh));
-  r.footB = add(r.kneeB, down(p.sB, L.shin));
+  r.footB = add(r.kneeB, down(Math.min(p.sB, p.tB - 4), L.shin));
   const w = WEAPONS[p.weapon] || WEAPONS.none;
   // The weapon from the right hand: its butt behind the hand, its length ahead.
   r.butt = add(r.handR, down(p.w + 180, w.butt));

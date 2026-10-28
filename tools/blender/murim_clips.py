@@ -589,6 +589,8 @@ WRIST_REST = 80
 
 def board(p):
     lean = p.get("lean", 0)
+    # A knee only bends forward: the shin never points further forward than its thigh (4° short of straight).
+    sF, sB = min(p["sF"], p["tF"] - 4), min(p["sB"], p["tB"] - 4)
     # A two-handed hold (an aL/fL pose without its own armZ) brings the right hand in front of the body.
     key = {
         "Root": {"rot": (0, p.get("hips", 0), 0),
@@ -600,8 +602,8 @@ def board(p):
         "Arm_R": (-(p["aR"] + lean), p.get("armY", 0), p.get("armZ", 0)),
         "Hand_R": (-(p["fR"] - p["aR"]), 0, 0),
         "Tool_R": (WRIST_REST - (p["w"] - p["fR"]), p.get("wristY", 0), 0),
-        "Thigh_R": (-p["tF"], 0, p.get("legZ", 0)), "Leg_R": (p["tF"] - p["sF"], 0, 0),
-        "Thigh_L": (-p["tB"], 0, -p.get("legZ", 0)), "Leg_L": (p["tB"] - p["sB"], 0, 0),
+        "Thigh_R": (-p["tF"], 0, p.get("legZ", 0)), "Leg_R": (p["tF"] - sF, 0, 0),
+        "Thigh_L": (-p["tB"], 0, -p.get("legZ", 0)), "Leg_L": (p["tB"] - sB, 0, 0),
     }
     if "aL" in p:
         key["Arm_L"] = (-(p["aL"] + lean), 0, p.get("armLZ", 8))
