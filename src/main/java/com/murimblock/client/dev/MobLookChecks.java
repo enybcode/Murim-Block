@@ -59,6 +59,9 @@ final class MobLookChecks {
                 player.connection.teleport(X, Y, Z, 0, 10);
             });
         }));
+        // The client hears of the new zombies a few ticks after they are spawned.
+        steps.add(new Step("mob looks arriving", mc -> {
+        }));
         steps.add(new Step("disciple front", mc -> {
             Zombie zombie = nearest(mc);
             EngineTest.check("the Disciple's model is loaded", SkeletalModels.get(SkeletalMobs.DISCIPLE.model()) != null);
@@ -151,9 +154,38 @@ final class MobLookChecks {
                     && SkeletalMobs.look(zombie) == null);
             EngineTest.shoot(mc, "mob_vanilla_zombie");
             SkeletalMobs.enable(null);
-            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             EngineTest.server(mc, player -> {
                 zombies(player.serverLevel()).forEach(Entity::discard);
+                // The Archer impérial: one standing, one aiming its bow.
+                for (double x : new double[] {X - 1.4, X + 1.4}) {
+                    var skeleton = EntityType.SKELETON.create(player.serverLevel());
+                    skeleton.moveTo(x, Y, Z + 3.4, 180, 0);
+                    skeleton.setYHeadRot(180);
+                    skeleton.setYBodyRot(180);
+                    skeleton.setNoAi(true);
+                    skeleton.addTag(TAG);
+                    skeleton.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+                    skeleton.setAggressive(x > X);
+                    player.serverLevel().addFreshEntity(skeleton);
+                }
+                player.connection.teleport(X, Y, Z, 0, 10);
+            });
+        }));
+        steps.add(new Step("archer look", mc -> {
+            var skeleton = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.Skeleton.class,
+                    mc.player.getBoundingBox().inflate(8)).stream().findFirst().orElse(null);
+            EngineTest.check("the Archer's model is loaded", SkeletalModels.get(SkeletalMobs.ARCHER.model()) != null);
+            EngineTest.check("skeletons wear the Archer's look", skeleton != null && SkeletalMobs.look(skeleton) != null
+                    && mc.getEntityRenderDispatcher().getRenderer(skeleton) instanceof SkeletalMobRenderer<?>);
+            EngineTest.shoot(mc, "mob_archer_front");
+            EngineTest.server(mc, player -> player.connection.teleport(X + 3.2, Y + 0.6, Z + 1, 58, 15));
+        }));
+        steps.add(new Step("archer three quarters", mc -> {
+            EngineTest.shoot(mc, "mob_archer_three_quarter");
+            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Skeleton.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
                 player.removeEffect(MobEffects.NIGHT_VISION);
                 player.serverLevel().setDayTime(6000);
                 player.server.setDifficulty(Difficulty.PEACEFUL, true);
@@ -194,7 +226,9 @@ final class MobLookChecks {
     }
 
     private static Zombie nearest(Minecraft mc) {
-        return mc.level.getEntitiesOfClass(Zombie.class, mc.player.getBoundingBox().inflate(12)).stream()
+        // Plain zombies only: the test world keeps husks and drowned left by other checks.
+        return mc.level.getEntitiesOfClass(Zombie.class, mc.player.getBoundingBox().inflate(12),
+                        zombie -> zombie.getType() == EntityType.ZOMBIE).stream()
                 .min(java.util.Comparator.comparingDouble(zombie -> zombie.distanceToSqr(mc.player))).orElse(null);
     }
 }

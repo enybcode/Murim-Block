@@ -27,7 +27,8 @@ import org.joml.Quaternionf;
 
 /**
  * Vanilla mobs drawn with a look of ours on the biped's skeleton ({@code docs/mobs/}): the same mob (id, spawns,
- * drops, behaviour), a new model, texture and motion. The zombie is the Disciple déchu.
+ * drops, behaviour), a new model, texture and motion. The zombie is the Disciple déchu, the skeleton the Archer
+ * impérial (aiming its bow like vanilla's until it has clips of its own).
  * <p>
  * A look with clips of its own ({@code skeletal/animations/<set>.gltf}, motions in {@code skeletal/motions/<set>.json})
  * moves with them: its living motions, its combat stance while it is aggressive, the moves the server picks
@@ -49,7 +50,8 @@ public final class SkeletalMobs {
 
     public static final Look DISCIPLE = new Look(id("mobs/disciple"), id("textures/entity/disciple.png"),
             id("textures/entity/disciple_glow.png"), "disciple");
-    private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE);
+    public static final Look ARCHER = new Look(id("mobs/archer"), id("textures/entity/archer.png"), null, null);
+    private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -106,6 +108,8 @@ public final class SkeletalMobs {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(EntityType.ZOMBIE, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.ZombieRenderer(context)));
+        event.registerEntityRenderer(EntityType.SKELETON, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.SkeletonRenderer(context)));
     }
 
     @SubscribeEvent
@@ -187,7 +191,13 @@ public final class SkeletalMobs {
         }
         Pose pose = state.animator.pose(partialTick);
         float raise = Mth.lerp(partialTick, state.previousRaise, state.raise);
-        if (look != null && look.clips() == null && raise > 0.01f) {
+        if (look != null && look.clips() == null && raise > 0.01f && mob.getMainHandItem().getItem()
+                instanceof net.minecraft.world.item.BowItem) {
+            // Vanilla's bow aim (HumanoidModel.ArmPose.BOW_AND_ARROW): both arms toward the target, following the head.
+            float yaw = Mth.DEG_TO_RAD * netHeadYaw, pitch = Mth.DEG_TO_RAD * headPitch;
+            arm(pose, "Arm_R", "Shoulder_R", -Mth.HALF_PI + pitch, -0.1f + yaw, raise);
+            arm(pose, "Arm_L", "Shoulder_L", -Mth.HALF_PI + pitch, 0.5f + yaw, raise);
+        } else if (look != null && look.clips() == null && raise > 0.01f) {
             // Vanilla's zombie arms (AnimationUtils.animateZombieArms): reaching forward, a swing down and in.
             float attack = mob.getAttackAnim(partialTick);
             float swing = Mth.sin(attack * Mth.PI);
