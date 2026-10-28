@@ -306,13 +306,26 @@ final class MobLookChecks {
             // The one on the right swells on its fuse (client side only: no explosion), the heat lifting its lid.
             fuses.clear();
             SkeletalMobs.moveProbe = (mob, move) -> fuses.add(move);
+            GifRecorder.start("fourneau_fuse", 0.55f);
             creepers.stream().filter(c -> c.getX() > X).forEach(c -> c.setSwellDir(1));
             EngineTest.shoot(mc, "mob_fourneau_front");
+            // The whole fuse plays out (30 ticks) before the next step.
+            long until = mc.level.getGameTime() + 32;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
         }));
         steps.add(new Step("fourneau swelling", mc -> {
             SkeletalMobs.moveProbe = null;
             EngineTest.check("its fuse plays the kettle clip (" + fuses + ")", fuses.contains("fuse"));
             EngineTest.shoot(mc, "mob_fourneau_swelling");
+            // It cools down: the lid drops back.
+            mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class,
+                    mc.player.getBoundingBox().inflate(8)).forEach(c -> c.setSwellDir(-1));
+            long until = mc.level.getGameTime() + 40;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("fourneau calm", mc -> {
+            EngineTest.busy = () -> false;
+            GifRecorder.stop();
             mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class,
