@@ -26,7 +26,7 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
   meanwhile), then one every 3 s while fewer than 4 stand, always from graves away from the player, earth thrown up.
   The 15th is the **Grave Warden** (1.6x size, 30 health, 4 damage), out of the mausoleum once the 14 others are down.
   It looks like a zombie gone wrong (Enzo, 25 Oct: "a bit mutant, do not change too much"): an original texture
-  (`scripts/grave-warden.cjs`: grey-green rotting skin with sores, bare ribs through a torn shirt, ragged trousers,
+  (`tools/textures/grave-warden.cjs`: grey-green rotting skin with sores, bare ribs through a torn shirt, ragged trousers,
   bare clawed hands and feet), red eyes glowing in the dark, and growths that follow its body and arm
   (`GraveWardenMutationLayer`): three bone spikes down the spine, a hunch with bone nubs, a bone knot and spur on
   the right shoulder, a swollen right forearm. `runRiseFilm` ends with shots of it from the front, three quarters,
@@ -62,7 +62,7 @@ trial (−30 %, zombies gone), then all 15 put down and Third-Rate Warrior. Shot
 `murim_trial_arrival`, `murim_trial_island`, `murim_trial_won`. Unit tests: `CultivationTest` (realm breakthrough,
 scatter). Not yet played by hand with real fights.
 The tour also films the entry, one shot per tick in `screenshots/film/`; make the GIF (kept local, out of the
-repository) with `java scripts/frames-to-gif.java run/inner-world-tour/screenshots/film run/gifs/murim_trial_entry.gif`.
+repository) with `java tools/frames-to-gif.java run/inner-world-tour/screenshots/film run/gifs/murim_trial_entry.gif`.
 Knees and elbows: Minecraft limbs have no joint, and PAL reads a `"bend"` track per limb (degrees, Emotecraft format)
 without drawing it on 1.21.1 (that needs bendable-cuboids, 1.21.7+). `client/cultivation/BentLimbsLayer` draws any bent
 limb in two halves from the player's skin (thigh and shin, upper arm and forearm): knees fold back, elbows forward.

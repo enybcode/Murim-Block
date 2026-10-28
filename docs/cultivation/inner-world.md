@@ -74,7 +74,7 @@ placed, falling returns to the body, a blow on the body ends the trip. PASS/FAIL
 - `innerworld/OldMaster` (entity `murimblock:old_master`, GeckoLib): a ghost, as in V1 (Enzo, 25 Oct; idea only):
   no legs, his robe thins into a rippling tail of mist; translucent, self-lit (`OldMasterRenderer`), opacity
   breathing, hovering half a block up and drifting, beard stirring, Qi specks rising; his head follows the player. Original
-  model, texture and animation built by `scripts/old-master.cjs` (`geo/`, `animations/`, `textures/entity/`).
+  model, texture and animation built by `tools/textures/old-master.cjs` (`geo/`, `animations/`, `textures/entity/`).
 - Summoned above the center of the NPC zone, facing the arena, each time the owner enters; never saved, and gone once
   the owner is no longer on the island. Invulnerable, cannot be pushed.
 - Right-click: `client/innerworld/OldMasterScreen`, a System panel at the bottom of the screen, his words written

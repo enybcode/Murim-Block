@@ -80,7 +80,7 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
   Harmony and its own combo for the gain (`CultivationRules.meditationGain(harmony, combo)`). Sneak stands up.
 - Effects: hits flash the frame, send a rectangular wave out (perfect: two, gold, plus sparks) and climb a
   pentatonic bell; misses shake the lane, redden the screen edges and thud (note block bass). Harmony tints the
-  edges in the tier colour (`textures/gui/breath_vignette.png`, drawn by `scripts/breath-vignette.cjs`), and above
+  edges in the tier colour (`textures/gui/breath_vignette.png`, drawn by `tools/textures/breath-vignette.cjs`), and above
   50 % Qi motes drift to the frame. The world brightens a little on the inhale. Sounds are vanilla sound events.
 - Qi smoke `client/cultivation/QiAura` + `QiParticle`, `QiSparkParticle` (types `murimblock:qi`, `qi_ring`,
   `qi_spark`, options `QiParticleOptions` = power 0-1): cyan puffs and near-white twinkling specks leave the body of
@@ -93,6 +93,6 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
 - Commands: `/murim cultivation get|fill <player>`, `/murim cultivation set <player> <realm> <stage> <meridians>`,
   `/murim cultivation qi <player> <amount>` (Qi and max Qi), `/murim prepare` (test setup: all meridians, full
   gauge, 10 000 Qi, clear day, hostiles within 32 blocks removed).
-- Pill icon drawn by `scripts/pill-icon.cjs`. Meridian bonuses are shown but not applied yet.
+- Pill icon drawn by `tools/textures/pill-icon.cjs`. Meridian bonuses are shown but not applied yet.
 - Check: `gradlew runGuiShots` also seats the player in lotus on a platform and shoots the HUD states
   (`murim_meditation`, `murim_breath_good`, `murim_breath_miss`, `murim_breath_full`).

@@ -8,7 +8,6 @@ import com.murimblock.combat.CombatPayloads;
 import com.murimblock.combat.CombatServer;
 import com.murimblock.combat.CombatState;
 import com.murimblock.registry.MurimAttachments;
-import com.murimblock.shenfa.Animator;
 import com.murimblock.shenfa.ShenfaLibrary;
 import com.murimblock.shenfa.client.SkeletalPlayers;
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ import java.util.function.Consumer;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -27,7 +25,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -396,12 +393,6 @@ final class CombatChecks {
         List<? extends Entity> found = mc.level.getEntities((Entity) null, new AABB(AREA - 20, Y - 5, -20, AREA + 20,
                 Y + 10, 20), entity -> entity.getType() == type && entity.isAlive());
         return found.isEmpty() ? null : (LivingEntity) found.get(0);
-    }
-
-    private static Entity nearestServer(Player player, EntityType<?> type) {
-        List<? extends Entity> found = player.level().getEntities((Entity) null, new AABB(AREA - 20, Y - 5, -20,
-                AREA + 20, Y + 10, 20), entity -> entity.getType() == type && entity.isAlive());
-        return found.isEmpty() ? null : found.get(0);
     }
 
     /** The server's copy of a client entity (single player). */

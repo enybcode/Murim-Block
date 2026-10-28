@@ -16,7 +16,7 @@ const crc = b => { let c = 0xffffffff; for (const x of b) c = crcTable[(c ^ x) &
 const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([len, td, c]); };
 const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(W, 0); ihdr.writeUInt32BE(W, 4); ihdr[8] = 8; ihdr[9] = 6;
 const png = Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
-const out = path.join(__dirname, '../src/main/resources/assets/murimblock/textures/gui/breath_vignette.png');
+const out = path.join(__dirname, '../../src/main/resources/assets/murimblock/textures/gui/breath_vignette.png');
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, png);
 console.log('wrote', out);

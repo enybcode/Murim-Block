@@ -7,7 +7,6 @@ import com.murimblock.registry.MurimAttachments;
 import com.murimblock.shenfa.Animation;
 import com.murimblock.shenfa.Animator;
 import com.murimblock.shenfa.AttackData;
-import com.murimblock.shenfa.Clip;
 import com.murimblock.shenfa.ShenfaLibrary;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +39,6 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import org.joml.Vector3f;
 
 /**
  * The fight on the server, which decides it (Epic Fight's model, with Shenfa's moves): players' inputs start moves,

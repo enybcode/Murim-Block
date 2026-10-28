@@ -13,7 +13,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * Turns the PNG frames of an in-game film (a dev tour's screenshots) into a looping GIF to show Enzo. Keep GIFs out of
- * the repository. Usage: java scripts/frames-to-gif.java <frames dir> <out.gif> [delay ms, 50] [width, 640]
+ * the repository. Usage: java tools/frames-to-gif.java <frames dir> <out.gif> [delay ms, 50] [width, 640]
  */
 public class FramesToGif {
     public static void main(String[] args) throws Exception {

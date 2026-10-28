@@ -13,7 +13,7 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
 
   ```
   blender -b --factory-startup --python tools/blender/render.py -- --out <dir> --clip joints
-  java scripts/frames-to-gif.java <dir> out.gif 60 960
+  java tools/frames-to-gif.java <dir> out.gif 60 960
   ```
 
   Clips: `rest`, `bend`, `joints`, `elbow`, `knee`; or `--anim <set>/<clip>` films a clip of `murim_clips.py`

@@ -69,7 +69,7 @@ Build:
   `murim_biped.blend`, an export script to glTF (`.gltf` + `.bin`) with fixed settings, and a render script that
   films a clip from front, side and three quarters into PNG frames. Check Blender is installed on both PCs;
   document the setup in `docs/two-pcs.md`.
-- Reuse `scripts/frames-to-gif.java` for GIFs.
+- Reuse `tools/frames-to-gif.java` for GIFs.
 - An in-game test harness (`client/dev/EngineTest`) driven by a system property and a Gradle run config, as
   before: scripted steps, captures, a pass/fail report in the log.
 
@@ -77,7 +77,7 @@ Done when: the Blender scripts run headless on this PC, produce a rig file and a
 an empty test and exits.
 
 Done (26 Oct 2026): Blender 5.2.3 headless on this PC; `tools/blender/` (`murim_biped.py`, `build.py`,
-`export.sh`, `render.py`, README); GIFs with `scripts/frames-to-gif.java`; `client/dev/EngineTest` with the
+`export.sh`, `render.py`, README); GIFs with `tools/frames-to-gif.java`; `client/dev/EngineTest` with the
 `runEngineTest` Gradle run (folder `run/engine-test`). The second PC needs Blender 5.2 too (`docs/two-pcs.md`).
 
 ## Step 1: Skeleton

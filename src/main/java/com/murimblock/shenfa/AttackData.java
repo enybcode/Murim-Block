@@ -71,17 +71,6 @@ public record AttackData(List<Phase> phases, List<float[]> invulnerable, List<fl
         }
     }
 
-    /** The phase whose window holds {@code time}: between its windup (or the clip's start) and the next's. */
-    public Phase phaseAt(float time) {
-        Phase current = phases.isEmpty() ? null : phases.get(0);
-        for (Phase phase : phases) {
-            if (time >= phase.windup()) {
-                current = phase;
-            }
-        }
-        return current;
-    }
-
     public boolean invulnerableAt(float time) {
         return within(invulnerable, time);
     }

@@ -5,7 +5,7 @@ blender -b --factory-startup --python tools/blender/render.py -- --out <frames d
 
 Without --skin it uses a test skin that shows the UV layout: one colour per face (front red, back blue, right
 side green, left side yellow, top white, bottom magenta), a checker per pixel to show stretching, and an empty
-outer layer. Make a GIF of the frames with scripts/frames-to-gif.java.
+outer layer. Make a GIF of the frames with tools/frames-to-gif.java.
 """
 
 import argparse

@@ -99,7 +99,7 @@ function png(img) {
     return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
 
-const out = path.join(__dirname, '../src/main/resources/assets/murimblock/textures/entity');
+const out = path.join(__dirname, '../../src/main/resources/assets/murimblock/textures/entity');
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(path.join(out, 'grave_warden.png'), png(base));
 fs.writeFileSync(path.join(out, 'grave_warden_eyes.png'), png(eyes));

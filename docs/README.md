@@ -13,3 +13,14 @@ One file per feature or decision, added as the work goes.
 - [Two PCs](two-pcs.md): how the two PCs stay in sync through GitHub, phone access, and the second PC's setup prompt.
 - [Playtest checklist](playtest/tests-en-jeu.pdf): what Enzo tests in game, to tick and annotate (in French; source
   `tests-en-jeu.html`, printed to PDF with Chrome headless).
+
+## Repository layout
+
+- `src/main/java/com/murimblock/`: `shenfa/` the animation engine (`shenfa/client/` draws players), `combat/` and
+  `client/combat/` the fight (server rules, client keys and feel), `cultivation/`, `innerworld/`, `registry/`,
+  `client/gui/` the System screen, `client/dev/` the scripted in-game checks (off unless a dev run sets them), `mixin/`.
+- `src/main/resources/assets/murimblock/`: `skeletal/` the biped and its clip sets (glTF and sidecars), `lang/`,
+  textures, GeckoLib models, particles, `player_animations/` (PAL).
+- `tools/`: `blender/` builds the biped and the clips, `textures/` paints original textures and models (Node),
+  `gifs.sh` and `frames-to-gif.java` turn recorded frames into GIFs.
+- `docs/`: this index; `playtest/` the in-game checklist.

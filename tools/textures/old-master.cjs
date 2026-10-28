@@ -2,7 +2,7 @@
 // The ghost of a white-haired master: no legs, his robe thins into a tail of mist; hands joined in his sleeves, eyes
 // closed. Drawn translucent and self-lit by OldMasterRenderer.
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
-const ASSETS = path.join(__dirname, '../src/main/resources/assets/murimblock');
+const ASSETS = path.join(__dirname, '../../src/main/resources/assets/murimblock');
 const TW = 128, TH = 64;
 const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16), 255];
 const C = {
