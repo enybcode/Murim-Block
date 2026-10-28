@@ -103,9 +103,9 @@ td.note { height: 20px; }
 </ul></section>
 
 <section><h2>9. Contre les mobs (vanilla)</h2>
-<div class="why">Les mobs ne sont plus sur Shenfa : ils attaquent comme en vanilla. Vérifier que le combat reste juste contre eux.</div>
+<div class="why">Le zombie est maintenant le Disciple déchu (section 16). Les autres mobs attaquent comme en vanilla : vérifier que le combat reste juste contre eux.</div>
 <ul class="check">
-<li>Zombie, husk, noyé : bloqués, parés, esquivés.</li>
+<li>Husk, noyé : bloqués, parés, esquivés.</li>
 <li>Squelette et stray : leurs flèches sont gardées ou esquivées.</li>
 <li>Araignée, loup, golem de fer, ravageur : coups gardés ; le golem projette quand même en l'air sans garde.</li>
 <li>Creeper : son explosion n'est pas gardée (normal), l'esquive au bon moment la passe-t-elle ?</li>
@@ -153,7 +153,26 @@ td.note { height: 20px; }
 <li>Avec du lag : les coups partent tout de suite chez soi, sans saut visible.</li>
 </ul></section>
 
-<section><h2>15. Ressenti à noter (pour le réglage)</h2>
+<section><h2>16. Le Disciple déchu (le zombie)</h2>
+<div class="why">Le zombie a un nouveau look, ses propres animations et ses propres coups. Pour en faire apparaître : <code>/summon zombie</code>, avec une arme : <code>/summon zombie ~ ~ ~ {HandItems:[{id:"iron_sword",count:1}]}</code> (ou <code>iron_axe</code>, <code>iron_shovel</code>).</div>
+<ul class="check">
+<li>Look : robe de secte, chignon, yeux qui brillent dans le noir ; les bouts de corde et les pans de robe bougent quand il marche.</li>
+<li>Bébé zombie : demi-taille avec une grosse tête.</li>
+<li>Au repos il est voûté, la tête tombe puis se redresse ; il marche en traînant le pied ; il court bras tendus.</li>
+<li>Agressif, il se met en garde à environ 3 blocs, puis avance pour frapper toutes les 2 s environ.</li>
+<li>Mains nues : coup maladroit, double coup (après 2 coups bloqués), ruée quand on recule.</li>
+<li>Les dégâts tombent quand le coup arrive, pas au début du geste : la garde et la parade se font sur l'impact.</li>
+<li>Le parer ou le faire vaciller lui fait perdre son coup.</li>
+<li>À 3 contre toi : seulement des coups simples.</li>
+<li>Épée : taille diagonale, taille et revers, estoc fendu.</li>
+<li>Hache : coup vertical (hache tenue en haut avant de tomber), balayage puis coup vertical, charge ; deux mains sur le manche.</li>
+<li>Pelle / outil : balayage bas, deux estocs, charge ; deux mains sur le manche.</li>
+<li>L'arme reste dans la main droite et ne traverse pas le corps ; pas de trou ni de bug de texture.</li>
+<li>Touché il sursaute ; mort, il tombe à genoux puis face contre terre.</li>
+<li>Option <code>shenfaMobs = false</code> dans <code>config/murimblock-client.toml</code> : zombie vanilla.</li>
+</ul></section>
+
+<section><h2>17. Ressenti à noter (pour le réglage)</h2>
 <table>
 <tr><th style="width:22%">Élément</th><th style="width:18%">Trop lent / court / faible</th><th style="width:18%">Trop rapide / long / fort</th><th>Remarque (pose, son, effet…)</th></tr>
 <tr><td>Jab</td><td class="note"></td><td></td><td></td></tr>
@@ -169,6 +188,9 @@ td.note { height: 20px; }
 <tr><td>Parade (timing)</td><td class="note"></td><td></td><td></td></tr>
 <tr><td>Esquives (distance, coût)</td><td class="note"></td><td></td><td></td></tr>
 <tr><td>Verrouillage</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Disciple : rythme des coups</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Disciple : lisibilité des coups</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Disciple : dégâts / difficulté</td><td class="note"></td><td></td><td></td></tr>
 </table>
 <b>Bugs vus</b> (ce que je faisais, ce qui s'est passé) :
 <div class="lines"><div></div><div></div><div></div><div></div><div></div><div></div></div>
