@@ -20,6 +20,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Creeper;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -59,9 +60,12 @@ public final class SkeletalMobs {
     /** The spider, on a skeleton of its own. */
     public static final Look FILEUSE = new Look(id("mobs/spider"), id("textures/entity/spider.png"),
             id("textures/entity/spider_glow.png"), "spider");
+    /** The creeper, on a skeleton of its own. */
+    public static final Look FOURNEAU = new Look(id("mobs/furnace"), id("textures/entity/furnace.png"),
+            id("textures/entity/furnace_glow.png"), "furnace");
     private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER,
             EntityType.HUSK, SABLES, EntityType.DROWNED, NOYE, EntityType.ZOMBIE_VILLAGER, PAYSAN,
-            EntityType.ZOMBIFIED_PIGLIN, SANGLIER, EntityType.SPIDER, FILEUSE);
+            EntityType.ZOMBIFIED_PIGLIN, SANGLIER, EntityType.SPIDER, FILEUSE, EntityType.CREEPER, FOURNEAU);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -101,6 +105,8 @@ public final class SkeletalMobs {
         float raise, previousRaise;
         boolean dying;
         int hurtTime;
+        /** A creeper's fuse: 1 while it swells, -1 while it cools (or idles). */
+        int swellDir = -1;
     }
 
     /**
@@ -160,6 +166,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.DrownedRenderer(context)));
         event.registerEntityRenderer(EntityType.ZOMBIE_VILLAGER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.ZombieVillagerRenderer(context)));
+        event.registerEntityRenderer(EntityType.CREEPER, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.CreeperRenderer(context)));
         event.registerEntityRenderer(EntityType.SPIDER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.SpiderRenderer<>(context)));
         event.registerEntityRenderer(EntityType.ZOMBIFIED_PIGLIN, context -> new SkeletalMobRenderer<>(context,
@@ -205,6 +213,34 @@ public final class SkeletalMobs {
             play(mob, state, look, Animator.Priority.LOW, "flinch");
         }
         state.hurtTime = mob.hurtTime;
+        if (mob instanceof Creeper creeper) {
+            fuse(creeper, look, state);
+        }
+    }
+
+    /**
+     * The Fourneau's fuse, like a kettle's: its clip as it starts to swell (the heat lifts the lid, then it bursts),
+     * a long cooling one if it calms down first; steam escapes under the lid, more as it swells.
+     */
+    private static void fuse(Creeper creeper, Look look, State state) {
+        int dir = creeper.getSwellDir() > 0 ? 1 : -1;
+        float swell = creeper.getSwelling(1);
+        if (dir != state.swellDir) {
+            if (dir > 0) {
+                play(creeper, state, look, Animator.Priority.MIDDLE, "fuse");
+            } else if (swell > 0) {
+                play(creeper, state, look, Animator.Priority.MIDDLE, "calm");
+            }
+            state.swellDir = dir;
+        }
+        if (swell > 0.15f && creeper.getRandom().nextFloat() < swell) {
+            float yaw = creeper.yBodyRot * Mth.DEG_TO_RAD, side = (creeper.getRandom().nextFloat() - 0.5f) * 0.7f;
+            double x = creeper.getX() - Mth.sin(yaw) * 0.1 + Mth.cos(yaw) * side;
+            double z = creeper.getZ() + Mth.cos(yaw) * 0.1 + Mth.sin(yaw) * side;
+            creeper.level().addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD, x,
+                    creeper.getY() + creeper.getBbHeight() * 0.95, z, Mth.cos(yaw) * side * 0.15, 0.06 + swell * 0.08,
+                    Mth.sin(yaw) * side * 0.15);
+        }
     }
 
     private static void play(Mob mob, State state, Look look, Animator.Priority priority, String clip) {

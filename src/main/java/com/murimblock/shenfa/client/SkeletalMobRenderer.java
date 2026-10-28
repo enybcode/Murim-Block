@@ -62,6 +62,13 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         // getScale leaves out a baby's half size: vanilla's models shrink it themselves.
         float scale = mob.getScale() * mob.getAgeScale();
         poseStack.scale(scale, scale, scale);
+        if (mob instanceof net.minecraft.world.entity.monster.Creeper creeper) {
+            // Vanilla's fuse: the body swells and wobbles as it is about to burst (CreeperRenderer.scale).
+            float swell = creeper.getSwelling(partialTick);
+            float wobble = 1 + Mth.sin(swell * 100) * swell * 0.01f;
+            swell = (float) Math.pow(Mth.clamp(swell, 0, 1), 3);
+            poseStack.scale((1 + swell * 0.4f) * wobble, (1 + swell * 0.1f) / wobble, (1 + swell * 0.4f) * wobble);
+        }
         if (mob.isFullyFrozen()) {
             bodyYaw += (float) (Math.cos(mob.tickCount * 3.25) * Math.PI * 0.4f);
         }
@@ -76,7 +83,7 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         boolean biped = model.armature().find(com.murimblock.shenfa.Biped.CHEST) != null;
         if (biped && !mob.isInvisible()) {
             MobCloth.render(mob, look, poseStack.last().pose(), joints, scale, buffers, light,
-                    LivingEntityRenderer.getOverlayCoords(mob, 0));
+                    LivingEntityRenderer.getOverlayCoords(mob, white(mob, partialTick)));
         }
 
         Minecraft mc = Minecraft.getInstance();
@@ -88,7 +95,7 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         poseStack.pushPose();
         poseStack.scale(PIXEL, PIXEL, PIXEL);
         if (type != null) {
-            int overlay = LivingEntityRenderer.getOverlayCoords(mob, 0);
+            int overlay = LivingEntityRenderer.getOverlayCoords(mob, white(mob, partialTick));
             draw(model, skin, poseStack, buffers.getBuffer(type), ghost ? 0x26FFFFFF : 0xFFFFFFFF, light, overlay);
             if (visible && look.glow() != null) {
                 draw(model, skin, poseStack, buffers.getBuffer(RenderType.eyes(look.glow())), 0xFFFFFFFF, light,
@@ -110,6 +117,15 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         poseStack.popPose();
         // The name tag, when the mob has one.
         super.render(mob, yaw, partialTick, poseStack, buffers, light);
+    }
+
+    /** Vanilla's white flashes of a creeper's fuse (CreeperRenderer.getWhiteOverlayProgress), else none. */
+    private static float white(Mob mob, float partialTick) {
+        if (!(mob instanceof net.minecraft.world.entity.monster.Creeper creeper)) {
+            return 0;
+        }
+        float swell = creeper.getSwelling(partialTick);
+        return (int) (swell * 10) % 2 == 0 ? 0 : Mth.clamp(swell, 0.5f, 1);
     }
 
     private static void draw(SkinnedModel model, Matrix4f[] skin, PoseStack poseStack, VertexConsumer consumer,

@@ -1,0 +1,11 @@
+{
+  "motions": {
+    "idle": "murimblock:furnace/idle",
+    "walk": "murimblock:furnace/walk",
+    "run": "murimblock:furnace/walk",
+    "jump": "murimblock:furnace/stand",
+    "fall": "murimblock:furnace/stand"
+  },
+  "combat": {},
+  "additive": []
+}

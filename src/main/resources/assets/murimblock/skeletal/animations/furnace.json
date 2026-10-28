@@ -1,0 +1,11 @@
+{
+  "clips": {
+    "stand": {"loop": true, "transition": 0.2},
+    "idle": {"loop": true, "transition": 0.25},
+    "walk": {"loop": true, "transition": 0.1, "move_speed": 2.0},
+    "fuse": {"transition": 0.05},
+    "calm": {"transition": 0.15},
+    "flinch": {"transition": 0.03},
+    "death": {"transition": 0.05}
+  }
+}

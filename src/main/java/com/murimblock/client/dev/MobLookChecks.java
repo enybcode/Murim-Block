@@ -36,6 +36,9 @@ final class MobLookChecks {
     private MobLookChecks() {
     }
 
+    /** The moves the swelling Fourneau starts, seen by the move probe. */
+    private static final List<String> fuses = new ArrayList<>();
+
     static List<Step> steps() {
         List<Step> steps = new ArrayList<>();
         steps.add(new Step("mob looks setup", mc -> {
@@ -264,16 +267,55 @@ final class MobLookChecks {
             EngineTest.check("spiders wear the Fileuse's look", spider != null && SkeletalMobs.look(spider) != null
                     && mc.getEntityRenderDispatcher().getRenderer(spider) instanceof SkeletalMobRenderer<?>);
             var clip = spider == null ? null : SkeletalMobs.baseAnimation(spider);
-            EngineTest.check("and stands in its pose (" + (clip == null ? null : clip.id()) + ")", clip != null
-                    && clip.id().equals("spider/stand"));
+            EngineTest.check("and rests in its idle (" + (clip == null ? null : clip.id()) + ")", clip != null
+                    && clip.id().equals("spider/idle"));
             EngineTest.shoot(mc, "mob_fileuse_front");
             EngineTest.server(mc, player -> player.connection.teleport(X + 3.4, Y + 1.2, Z + 1.2, 52, 25));
         }));
         steps.add(new Step("fileuse three quarters", mc -> {
             EngineTest.shoot(mc, "mob_fileuse_three_quarter");
-            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Spider.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                // The Fourneau d'alchimie, on a skeleton of its own: one standing, one about to burst.
+                for (double x : new double[] {X - 1.4, X + 1.4}) {
+                    var creeper = EntityType.CREEPER.create(player.serverLevel());
+                    creeper.moveTo(x, Y, Z + 3.4, 180, 0);
+                    creeper.setYHeadRot(180);
+                    creeper.setYBodyRot(180);
+                    creeper.setNoAi(true);
+                    creeper.addTag(TAG);
+                    player.serverLevel().addFreshEntity(creeper);
+                }
+                player.connection.teleport(X, Y + 0.4, Z, 0, 15);
+            });
+        }));
+        steps.add(new Step("fourneau look", mc -> {
+            var creepers = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class,
+                    mc.player.getBoundingBox().inflate(8));
+            var model = SkeletalModels.get(SkeletalMobs.FOURNEAU.model());
+            EngineTest.check("the Fourneau's model is loaded on a skeleton of its own", model != null
+                    && model.armature().find(com.murimblock.shenfa.Biped.CHEST) == null);
+            EngineTest.check("creepers wear the Fourneau's look", !creepers.isEmpty()
+                    && SkeletalMobs.look(creepers.get(0)) != null
+                    && mc.getEntityRenderDispatcher().getRenderer(creepers.get(0)) instanceof SkeletalMobRenderer<?>);
+            var resting = creepers.stream().filter(c -> c.getX() < X).findFirst().map(SkeletalMobs::baseAnimation)
+                    .orElse(null);
+            EngineTest.check("and simmers in its idle (" + (resting == null ? null : resting.id()) + ")",
+                    resting != null && resting.id().equals("furnace/idle"));
+            // The one on the right swells on its fuse (client side only: no explosion), the heat lifting its lid.
+            fuses.clear();
+            SkeletalMobs.moveProbe = (mob, move) -> fuses.add(move);
+            creepers.stream().filter(c -> c.getX() > X).forEach(c -> c.setSwellDir(1));
+            EngineTest.shoot(mc, "mob_fourneau_front");
+        }));
+        steps.add(new Step("fourneau swelling", mc -> {
+            SkeletalMobs.moveProbe = null;
+            EngineTest.check("its fuse plays the kettle clip (" + fuses + ")", fuses.contains("fuse"));
+            EngineTest.shoot(mc, "mob_fourneau_swelling");
+            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class,
                         new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
                 player.removeEffect(MobEffects.NIGHT_VISION);
                 player.serverLevel().setDayTime(6000);
