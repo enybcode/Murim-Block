@@ -167,8 +167,12 @@ public final class DiscipleFighting extends Goal {
         if (installed) {
             return;
         }
-        if (zombie.getType() == EntityType.DROWNED) {
-            zombie.goalSelector.addGoal(1, new DiscipleFighting(zombie));
+        if (zombie instanceof net.minecraft.world.entity.monster.Drowned drowned) {
+            // Vanilla's melee and trident goals give way to the noyé's throw and grab, and the disciple's fists on land.
+            drowned.goalSelector.removeAllGoals(goal -> goal instanceof MeleeAttackGoal
+                    || goal instanceof net.minecraft.world.entity.ai.goal.RangedAttackGoal);
+            drowned.goalSelector.addGoal(2, new NoyeFighting(drowned));
+            drowned.goalSelector.addGoal(2, new DiscipleFighting(drowned));
         } else {
             zombie.goalSelector.removeAllGoals(goal -> goal instanceof MeleeAttackGoal);
             zombie.goalSelector.addGoal(2, new DiscipleFighting(zombie));
@@ -178,8 +182,8 @@ public final class DiscipleFighting extends Goal {
     @Override
     public boolean canUse() {
         LivingEntity target = mob.getTarget();
-        if (mob.getType() == EntityType.DROWNED && (mob.isInWater()
-                || mob.getMainHandItem().getItem() instanceof net.minecraft.world.item.TridentItem)) {
+        if (mob instanceof net.minecraft.world.entity.monster.Drowned drowned && (drowned.isInWater()
+                || NoyeFighting.armed(drowned) || !drowned.okTarget(target))) {
             return false;
         }
         return target != null && target.isAlive() && mob.canAttack(target);

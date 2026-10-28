@@ -101,7 +101,10 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         }
         poseStack.popPose();
         if (biped && visible) {
-            holdItem(mob, HumanoidArm.RIGHT, joints[model.armature().get("Tool_R").index()], poseStack, buffers, light);
+            if (!SkeletalMobs.handEmpty(mob)) {
+                holdItem(mob, HumanoidArm.RIGHT, joints[model.armature().get("Tool_R").index()], poseStack, buffers,
+                        light);
+            }
             holdItem(mob, HumanoidArm.LEFT, joints[model.armature().get("Tool_L").index()], poseStack, buffers, light);
         }
         poseStack.popPose();

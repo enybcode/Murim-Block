@@ -176,6 +176,31 @@ final class MobLookChecks {
         }));
         steps.add(new Step("zombie family three quarters", mc -> {
             EngineTest.shoot(mc, "mob_zombie_family_three_quarter");
+            MOVES.clear();
+            SkeletalMobs.moveProbe = (mob, move) -> MOVES.add(move);
+            EngineTest.server(mc, player -> {
+                ServerLevel level = player.serverLevel();
+                // The noyé of the row throws its fork; another swims in a pool beside the platform.
+                zombies(level).stream().filter(z -> z.getType() == EntityType.DROWNED).forEach(z -> {
+                    z.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
+                    com.murimblock.combat.CombatServer.anim(z, com.murimblock.shenfa.Animator.Priority.MIDDLE,
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("murimblock", "disciple/noye_throw"),
+                            false);
+                });
+                for (BlockPos pos : BlockPos.betweenClosed(AREA + 7, (int) Y - 1, 7, AREA + 9, (int) Y + 1, 9)) {
+                    level.setBlockAndUpdate(pos, pos.getY() == (int) Y - 1 ? Blocks.SMOOTH_STONE.defaultBlockState()
+                            : Blocks.WATER.defaultBlockState());
+                }
+                zombie(level, EntityType.DROWNED, AREA + 8.5, 8.5, null);
+            });
+        }));
+        steps.add(new Step("noye throws and swims", mc -> {
+            EngineTest.check("the noyé throws its fork (" + MOVES + ")", MOVES.contains("noye_throw"));
+            Zombie swimmer = mc.level.getEntitiesOfClass(Zombie.class, mc.player.getBoundingBox().inflate(16),
+                    z -> z.getType() == EntityType.DROWNED && z.isInWater()).stream().findFirst().orElse(null);
+            EngineTest.check("in the water the noyé swims (" + clip(swimmer) + ")", "disciple/noye_swim".equals(clip(swimmer)));
+            EngineTest.shoot(mc, "mob_noye_throw");
+            SkeletalMobs.moveProbe = null;
             EngineTest.server(mc, player -> {
                 zombies(player.serverLevel()).stream().filter(z -> z.getType() != EntityType.ZOMBIE).forEach(Entity::discard);
                 player.connection.teleport(X + 2.5, Y + 0.4, Z + 1, 32, 12);

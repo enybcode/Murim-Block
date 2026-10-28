@@ -717,6 +717,45 @@ SETS["disciple"].update({
                    (26, T["guard"])],
 })
 
+# The Disciple noyé (the drowned's look), from its validated storyboard (docs/mobs/boards/noye.png): the fork throw
+# of an Olympic javelin thrower, the eel's swim and the grab under water; out of the water it plays the disciple's
+# clips. The storyboard's run-up carries the body two steps; here the hips move only a little (the mob's own motion
+# moves it), and the shoulders turn side-on (twist) as the arm draws back.
+N_STAND = dict(lean=6, head=4, aR=10, fR=16, w=170, aL=4, fL=8, tF=8, sF=2, tB=-6, sB=-4)
+N_CARRY = dict(lean=8, head=0, aR=100, fR=196, w=96, aL=40, fL=70, tF=26, sF=8, tB=-22, sB=-30)
+N_CARRY_2 = dict(N_CARRY, hy=-2, tF=-16, sF=-30, tB=24, sB=8)
+N_WITHDRAW = dict(lean=-4, head=-4, hx=2, aR=-86, fR=-90, w=96, aL=70, fL=84, tF=-24, sF=-36, tB=20, sB=4,
+                  hips=-16, twist=-30)
+N_CROSS = dict(lean=-10, head=-6, hx=5, hy=-1, aR=-90, fR=-94, w=98, aL=80, fL=88, tF=28, sF=12, tB=-10, sB=-26,
+               hips=-20, twist=-36)
+N_BLOCK = dict(lean=-18, head=-10, hx=8, hy=2, aR=-100, fR=-104, w=100, aL=88, fL=96, tF=-28, sF=-46, tB=32, sB=28,
+               hips=-10, twist=-40)
+N_WHIP = dict(lean=20, head=6, hx=10, aR=168, fR=132, w=132, aL=-20, fL=-30, tF=-16, sF=-40, tB=30, sB=26, hips=20,
+              twist=30)
+N_RECOVER = dict(lean=30, head=14, hx=12, hy=4, aR=40, fR=20, w=20, aL=-10, fL=10, tF=34, sF=30, tB=-6, sB=-20,
+                 hips=24, twist=36, armY=-30)
+N_REACH_BACK = dict(lean=10, head=0, hx=6, aR=-40, fR=-60, w=150, aL=-10, fL=0, tF=14, sF=2, tB=-14, sB=-8)
+N_SWIM_A = dict(lean=84, head=-6, hy=-24, aR=-70, fR=-76, w=-76, aL=-80, fL=-84, tF=-96, sF=-104, tB=-88, sB=-96)
+N_SWIM_B = dict(lean=92, head=-12, hy=-20, aR=-84, fR=-88, w=-88, aL=-88, fL=-90, tF=-66, sF=-84, tB=-70, sB=-86)
+N_SWIM_C = dict(lean=80, head=-2, hy=-26, aR=-66, fR=-72, w=-72, aL=-74, fL=-80, tF=-104, sF=-110, tB=-98, sB=-106)
+N_GRAB_REACH = dict(lean=70, head=-16, hy=-22, hx=6, aR=100, fR=110, w=110, aL=92, fL=100, tF=-80, sF=-96, tB=-90,
+                    sB=-100)
+N_GRAB = dict(lean=78, head=-10, hy=-20, hx=12, aR=80, fR=60, w=60, aL=74, fL=50, tF=-100, sF=-108, tB=-94, sB=-102)
+N_GRAB_BACK = dict(lean=62, head=-4, hy=-24, hx=4, aR=40, fR=-10, w=-10, aL=30, fL=-20, tF=-84, sF=-100, tB=-92,
+                   sB=-100)
+N = poses(stand=N_STAND, carry=N_CARRY, carry_2=N_CARRY_2, withdraw=N_WITHDRAW, cross=N_CROSS, block=N_BLOCK,
+          whip=N_WHIP, recover=N_RECOVER, reach_back=N_REACH_BACK, swim_a=N_SWIM_A, swim_b=N_SWIM_B, swim_c=N_SWIM_C,
+          grab_reach=N_GRAB_REACH, grab=N_GRAB, grab_back=N_GRAB_BACK)
+
+SETS["disciple"].update({
+    # Released at tick 27 (NoyeFighting); the fork in hand is hidden from 27 to 40 (SkeletalMobs.handEmpty).
+    "noye_throw": [(0, N["carry"]), (6, N["carry_2"]), (12, N["withdraw"]), (22, N["cross"]), (26, N["block"]),
+                   (27, N["whip"]), (28, N["whip"]), (36, N["recover"]), (44, N["reach_back"]), (48, N["stand"])],
+    "noye_swim": [(0, N["swim_a"]), (8, N["swim_b"]), (14, N["swim_c"]), (24, N["swim_a"])],
+    # The hands close at tick 8 (NoyeFighting).
+    "noye_grab": [(0, N["swim_a"]), (5, N["grab_reach"]), (8, N["grab"]), (14, N["grab_back"]), (18, N["swim_a"])],
+})
+
 # The Archer impérial (the skeleton's look), from its validated storyboard (docs/mobs/boards/archer.png). The bow is
 # in the right hand. "_aim" is where the arrow points (board degrees: forward 90, up 180) and "_draw" how far the
 # left hand has drawn the string (0 to 1; None: the left hand is free); bake_bow turns the bow and puts the left hand

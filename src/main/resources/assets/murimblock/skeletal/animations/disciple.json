@@ -19,6 +19,9 @@
     "tool_strike": {"transition": 0.05},
     "tool_double": {"transition": 0.05},
     "tool_lunge": {"transition": 0.05},
+    "noye_throw": {"transition": 0.08},
+    "noye_swim": {"loop": true, "transition": 0.25},
+    "noye_grab": {"transition": 0.05},
     "flinch": {"transition": 0.03,
       "mask": ["Torso", "Chest", "Head", "Shoulder_L", "Shoulder_R", "Arm_L", "Arm_R", "Hand_L", "Hand_R"]},
     "death": {"transition": 0.05}

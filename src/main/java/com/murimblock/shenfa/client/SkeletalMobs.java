@@ -233,6 +233,20 @@ public final class SkeletalMobs {
         }
     }
 
+    /**
+     * Whether {@code mob}'s right hand shows nothing: the Disciple noyé's fork is gone from its release (tick 27 of
+     * noye_throw) until it draws another from its back (tick 40).
+     */
+    static boolean handEmpty(Mob mob) {
+        State state = STATES.get(mob);
+        if (state == null || look(mob) != NOYE) {
+            return false;
+        }
+        Animation clip = state.animator.playing(Animator.Priority.MIDDLE);
+        float ticks = state.animator.time(Animator.Priority.MIDDLE) * 20;
+        return clip != null && clip.id().endsWith("noye_throw") && ticks >= 27 && ticks < 40;
+    }
+
     /** Whether {@code mob}'s look falls by a clip of its own when it dies (vanilla's fall to the side is left out). */
     static boolean diesByClip(Mob mob) {
         Look look = look(mob);
@@ -304,6 +318,12 @@ public final class SkeletalMobs {
         MotionSet set = SkeletalClips.motions(look.motions());
         boolean fighting = look.clips() != null && mob.isAggressive();
         String id = set == null ? null : set.clip(state.motion, fighting);
+        if (look == NOYE && mob.isInWater()) {
+            // The Disciple noyé swims like an eel in the water, whatever it does (docs/mobs/boards/noye.png).
+            state.motion = LivingMotion.SWIM;
+            id = look.clip("noye_swim").toString();
+            fighting = false;
+        }
         if (fighting && "disciple".equals(look.clips()) && state.motion == LivingMotion.IDLE) {
             // The disciple's guard holds what it holds (DiscipleFighting.Weapon: fists, sword, axe or tool).
             id = look.clip(com.murimblock.combat.DiscipleFighting.Weapon.of(mob.getMainHandItem()).stance()).toString();
