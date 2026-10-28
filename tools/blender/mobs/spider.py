@@ -182,3 +182,7 @@ def parts():
                      segment(51 + i, tip=True)),
             ]
     return p
+
+
+# Until its clips are drawn on a storyboard, the spider holds its standing pose (the one the model was validated in).
+CLIPS = {"stand": [(0, STAND), (20, STAND)]}

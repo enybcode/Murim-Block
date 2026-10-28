@@ -3,6 +3,8 @@ package com.murimblock.shenfa.client;
 import com.murimblock.Murimblock;
 import com.murimblock.client.MurimClientConfig;
 import com.murimblock.shenfa.Animation;
+import com.murimblock.shenfa.Armature;
+import com.murimblock.shenfa.SkinnedModel;
 import com.murimblock.shenfa.Animator;
 import com.murimblock.shenfa.Biped;
 import com.murimblock.shenfa.BipedPoses;
@@ -54,9 +56,12 @@ public final class SkeletalMobs {
     /** The zombie family: the disciple's clips on looks of their own ({@code docs/mobs/zombie-family.png}). */
     public static final Look SABLES = disciple("sables"), NOYE = disciple("noye"), PAYSAN = disciple("paysan"),
             SANGLIER = disciple("sanglier");
+    /** The spider, on a skeleton of its own. */
+    public static final Look FILEUSE = new Look(id("mobs/spider"), id("textures/entity/spider.png"),
+            id("textures/entity/spider_glow.png"), "spider");
     private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER,
             EntityType.HUSK, SABLES, EntityType.DROWNED, NOYE, EntityType.ZOMBIE_VILLAGER, PAYSAN,
-            EntityType.ZOMBIFIED_PIGLIN, SANGLIER);
+            EntityType.ZOMBIFIED_PIGLIN, SANGLIER, EntityType.SPIDER, FILEUSE);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -78,7 +83,17 @@ public final class SkeletalMobs {
     }
 
     private static final class State {
-        final Animator animator = new Animator(Biped.ARMATURE, Biped::settleHelpers);
+        // The look's own skeleton, or the biped's (whose helpers settle after each pose).
+        final Armature armature;
+        final boolean biped;
+        final Animator animator;
+
+        State(Armature armature) {
+            this.armature = armature;
+            biped = armature == Biped.ARMATURE;
+            animator = new Animator(armature, biped ? Biped::settleHelpers : null);
+        }
+
         LivingMotion motion = LivingMotion.IDLE;
         float speed;
         int airTicks;
@@ -86,6 +101,25 @@ public final class SkeletalMobs {
         float raise, previousRaise;
         boolean dying;
         int hurtTime;
+    }
+
+    /**
+     * The skeleton {@code look} moves: its model's when it brings its own (no chest), else the biped's; the biped's too
+     * until the model is loaded.
+     */
+    static Armature armature(Look look) {
+        SkinnedModel model = look == null ? null : SkeletalModels.get(look.model());
+        return model == null || model.armature().find(Biped.CHEST) != null ? Biped.ARMATURE : model.armature();
+    }
+
+    private static State state(Mob mob) {
+        Armature armature = armature(LOOKS.get(mob.getType()));
+        State state = STATES.get(mob);
+        if (state == null || state.armature != armature) {
+            state = new State(armature);
+            STATES.put(mob, state);
+        }
+        return state;
     }
 
     /** Whether mobs are drawn with our looks (the client config, unless a dev command overrides it). */
@@ -126,6 +160,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.DrownedRenderer(context)));
         event.registerEntityRenderer(EntityType.ZOMBIE_VILLAGER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.ZombieVillagerRenderer(context)));
+        event.registerEntityRenderer(EntityType.SPIDER, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.SpiderRenderer<>(context)));
         event.registerEntityRenderer(EntityType.ZOMBIFIED_PIGLIN, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.PiglinRenderer(context,
                         net.minecraft.client.model.geom.ModelLayers.ZOMBIFIED_PIGLIN,
@@ -142,7 +178,7 @@ public final class SkeletalMobs {
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity instanceof Mob mob && LOOKS.containsKey(mob.getType())) {
                 Look look = LOOKS.get(mob.getType());
-                State state = STATES.computeIfAbsent(mob, key -> new State());
+                State state = state(mob);
                 update(mob, look, state);
                 if (look.clips() != null) {
                     moves(mob, look, state);
@@ -183,7 +219,7 @@ public final class SkeletalMobs {
 
     /** A clip the server tells {@code mob} to play on {@code layer} (null stops the layer): its fighting moves. */
     public static void play(Mob mob, Animator.Priority layer, ResourceLocation id) {
-        State state = STATES.computeIfAbsent(mob, key -> new State());
+        State state = state(mob);
         if (id == null) {
             state.animator.stop(layer);
             return;
@@ -206,19 +242,19 @@ public final class SkeletalMobs {
     /** {@code mob}'s pose this frame: its motion and moves, its head's look. */
     public static Pose pose(Mob mob, float partialTick, float netHeadYaw, float headPitch) {
         Look look = LOOKS.get(mob.getType());
-        State state = STATES.computeIfAbsent(mob, key -> new State());
+        State state = state(mob);
         if (state.animator.baseAnimation() == null && look != null) {
             update(mob, look, state);
         }
         Pose pose = state.animator.pose(partialTick);
         float raise = Mth.lerp(partialTick, state.previousRaise, state.raise);
-        if (look != null && look.clips() == null && raise > 0.01f && mob.getMainHandItem().getItem()
+        if (state.biped && look != null && look.clips() == null && raise > 0.01f && mob.getMainHandItem().getItem()
                 instanceof net.minecraft.world.item.BowItem) {
             // Vanilla's bow aim (HumanoidModel.ArmPose.BOW_AND_ARROW): both arms toward the target, following the head.
             float yaw = Mth.DEG_TO_RAD * netHeadYaw, pitch = Mth.DEG_TO_RAD * headPitch;
             arm(pose, "Arm_R", "Shoulder_R", -Mth.HALF_PI + pitch, -0.1f + yaw, raise);
             arm(pose, "Arm_L", "Shoulder_L", -Mth.HALF_PI + pitch, 0.5f + yaw, raise);
-        } else if (look != null && look.clips() == null && raise > 0.01f) {
+        } else if (state.biped && look != null && look.clips() == null && raise > 0.01f) {
             // Vanilla's zombie arms (AnimationUtils.animateZombieArms): reaching forward, a swing down and in.
             float attack = mob.getAttackAnim(partialTick);
             float swing = Mth.sin(attack * Mth.PI);
@@ -229,10 +265,10 @@ public final class SkeletalMobs {
             arm(pose, "Arm_R", "Shoulder_R", reach, -in, raise);
             arm(pose, "Arm_L", "Shoulder_L", reach, in, raise);
         }
-        if (!state.dying) {
+        if (state.biped && !state.dying) {
             BipedPoses.look(pose, netHeadYaw, headPitch);
         }
-        if (mob.isBaby()) {
+        if (state.biped && mob.isBaby()) {
             // A child's big head, as vanilla's baby models: the head at three quarters of the adult's on a half-size body.
             int head = Biped.ARMATURE.get(Biped.HEAD).index();
             JointTransform current = pose.get(head);

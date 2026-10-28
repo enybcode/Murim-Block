@@ -1,6 +1,9 @@
 """Builds the biped, keys a clip set from murim_clips.py and exports its animations as glTF (skeleton only, no mesh).
 
 blender -b --factory-startup --python tools/blender/export_clips.py -- --set test --gltf out.gltf [--blend out.blend]
+
+A mob with a skeleton of its own (tools/blender/mobs/<mob>.py with JOINTS) gives its clips as CLIPS:
+--set spider --mob spider builds its skeleton instead of the biped.
 """
 
 import argparse
@@ -17,13 +20,22 @@ import murim_clips  # noqa: E402
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     parser = argparse.ArgumentParser()
-    parser.add_argument("--set", required=True, choices=sorted(murim_clips.SETS))
+    parser.add_argument("--set", required=True)
+    parser.add_argument("--mob", help="a mob of tools/blender/mobs with its own JOINTS and CLIPS")
     parser.add_argument("--gltf", required=True)
     parser.add_argument("--blend", help="also save the scene with the actions here, to edit them")
     args = parser.parse_args(argv)
 
     murim_biped.clear_scene()
-    armature = murim_biped.build()
+    if args.mob:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "mobs"))
+        import importlib
+        import murim_mob
+        mob = importlib.import_module(args.mob)
+        murim_clips.SETS[args.set] = mob.CLIPS
+        armature = murim_mob.build([], 16, 16, args.set, joints=mob.JOINTS, helpers=mob.HELPERS)
+    else:
+        armature = murim_biped.build()
     lengths = murim_clips.build_set(armature, args.set)
     scene = bpy.context.scene
     scene.frame_start = 0

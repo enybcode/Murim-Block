@@ -27,7 +27,7 @@ public final class SkeletalModels implements ResourceManagerReloadListener {
     public static final ResourceLocation BIPED = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "biped");
     public static final ResourceLocation BIPED_SLIM = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "biped_slim");
 
-    private static final String FOLDER = "skeletal";
+    static final String FOLDER = "skeletal";
     private static Map<ResourceLocation, SkinnedModel> models = Map.of();
 
     private SkeletalModels() {

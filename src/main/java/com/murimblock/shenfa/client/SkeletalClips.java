@@ -2,7 +2,9 @@ package com.murimblock.shenfa.client;
 
 import com.murimblock.Murimblock;
 import com.murimblock.shenfa.Animation;
+import com.murimblock.shenfa.Armature;
 import com.murimblock.shenfa.Biped;
+import com.murimblock.shenfa.GltfLoader;
 import com.murimblock.shenfa.ClipLoader;
 import com.murimblock.shenfa.MotionSet;
 import java.io.IOException;
@@ -67,7 +69,8 @@ public final class SkeletalClips implements ResourceManagerReloadListener {
                 ResourceLocation sidecarFile = file.withPath(path.substring(0, path.length() - ".gltf".length()) + ".json");
                 Optional<Resource> sidecar = manager.getResource(sidecarFile);
                 String settings = sidecar.isPresent() ? new String(read(manager, sidecarFile), StandardCharsets.UTF_8) : null;
-                ClipLoader.load(set, json, uri -> read(manager, file.withPath(folder + uri)), Biped.ARMATURE, settings)
+                ClipLoader.load(set, json, uri -> read(manager, file.withPath(folder + uri)), armature(manager, file, set, json),
+                                settings)
                         .forEach((name, animation) -> loaded.put(
                                 ResourceLocation.fromNamespaceAndPath(file.getNamespace(), animation.id()), animation));
             } catch (IOException | RuntimeException e) {
@@ -91,6 +94,20 @@ public final class SkeletalClips implements ResourceManagerReloadListener {
         });
         motionSets = Map.copyOf(sets);
         PlayerAnimators.clear();
+    }
+
+    /**
+     * The skeleton a clip set moves: the biped's, or for a mob with a skeleton of its own (no chest) the one of its
+     * model {@code skeletal/mobs/<set>.gltf}, so the clips' joints line up with what draws them.
+     */
+    static Armature armature(ResourceManager manager, ResourceLocation file, String set, String json) throws IOException {
+        if (json.contains("\"" + Biped.CHEST + "\"")) {
+            return Biped.ARMATURE;
+        }
+        ResourceLocation model = file.withPath(SkeletalModels.FOLDER + "/mobs/" + set + ".gltf");
+        String modelJson = new String(read(manager, model), StandardCharsets.UTF_8);
+        return GltfLoader.load(modelJson, uri -> read(manager, model.withPath(SkeletalModels.FOLDER + "/mobs/" + uri)),
+                null).armature();
     }
 
     private static byte[] read(ResourceManager manager, ResourceLocation file) {

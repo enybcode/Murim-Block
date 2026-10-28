@@ -72,7 +72,9 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
             poseStack.mulPose(Axis.ZP.rotationDegrees(-Math.min(fall, 1) * 90));
         }
         poseStack.translate(0, 0.001f, 0);
-        if (!mob.isInvisible()) {
+        // Cloth, armor and held items hang on the biped's joints: a look on a skeleton of its own has none yet.
+        boolean biped = model.armature().find(com.murimblock.shenfa.Biped.CHEST) != null;
+        if (biped && !mob.isInvisible()) {
             MobCloth.render(mob, look, poseStack.last().pose(), joints, scale, buffers, light,
                     LivingEntityRenderer.getOverlayCoords(mob, 0));
         }
@@ -94,11 +96,11 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
             }
         }
         SkinnedModel armor = SkeletalModels.get(SkeletalModels.BIPED);
-        if (visible && armor != null) {
+        if (biped && visible && armor != null) {
             SkeletalArmor.render(mob, slot -> false, armor, skin, poseStack.last(), buffers, light, name -> true);
         }
         poseStack.popPose();
-        if (visible) {
+        if (biped && visible) {
             holdItem(mob, HumanoidArm.RIGHT, joints[model.armature().get("Tool_R").index()], poseStack, buffers, light);
             holdItem(mob, HumanoidArm.LEFT, joints[model.armature().get("Tool_L").index()], poseStack, buffers, light);
         }

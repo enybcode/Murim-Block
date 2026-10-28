@@ -1,0 +1,12 @@
+{
+  "motions": {
+    "idle": "murimblock:spider/stand",
+    "walk": "murimblock:spider/stand",
+    "run": "murimblock:spider/stand",
+    "jump": "murimblock:spider/stand",
+    "fall": "murimblock:spider/stand",
+    "climb": "murimblock:spider/stand"
+  },
+  "combat": {},
+  "additive": []
+}

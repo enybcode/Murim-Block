@@ -216,9 +216,39 @@ final class MobLookChecks {
         }));
         steps.add(new Step("archer three quarters", mc -> {
             EngineTest.shoot(mc, "mob_archer_three_quarter");
-            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Skeleton.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                // The Fileuse de linceuls, on a skeleton of its own.
+                var spider = EntityType.SPIDER.create(player.serverLevel());
+                spider.moveTo(X, Y, Z + 3.5, 160, 0);
+                spider.setYHeadRot(160);
+                spider.setYBodyRot(160);
+                spider.setNoAi(true);
+                spider.addTag(TAG);
+                player.serverLevel().addFreshEntity(spider);
+                player.connection.teleport(X, Y + 0.4, Z, 0, 18);
+            });
+        }));
+        steps.add(new Step("fileuse look", mc -> {
+            var spider = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.Spider.class,
+                    mc.player.getBoundingBox().inflate(8)).stream().findFirst().orElse(null);
+            var model = SkeletalModels.get(SkeletalMobs.FILEUSE.model());
+            EngineTest.check("the Fileuse's model is loaded on a skeleton of its own", model != null
+                    && model.armature().find(com.murimblock.shenfa.Biped.CHEST) == null);
+            EngineTest.check("spiders wear the Fileuse's look", spider != null && SkeletalMobs.look(spider) != null
+                    && mc.getEntityRenderDispatcher().getRenderer(spider) instanceof SkeletalMobRenderer<?>);
+            var clip = spider == null ? null : SkeletalMobs.baseAnimation(spider);
+            EngineTest.check("and stands in its pose (" + (clip == null ? null : clip.id()) + ")", clip != null
+                    && clip.id().equals("spider/stand"));
+            EngineTest.shoot(mc, "mob_fileuse_front");
+            EngineTest.server(mc, player -> player.connection.teleport(X + 3.4, Y + 1.2, Z + 1.2, 52, 25));
+        }));
+        steps.add(new Step("fileuse three quarters", mc -> {
+            EngineTest.shoot(mc, "mob_fileuse_three_quarter");
+            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Spider.class,
                         new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
                 player.removeEffect(MobEffects.NIGHT_VISION);
                 player.serverLevel().setDayTime(6000);
