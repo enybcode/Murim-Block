@@ -183,6 +183,12 @@ def main():
                                   export_skins=True, export_all_influences=False, export_def_bones=False,
                                   export_animations=False, export_extras=True)
         print("MURIM exported", path)
+        spec = murim_mob.cloth_spec(parts, width, height)
+        if spec["cloth"]:
+            import json
+            with open(path[:-len(".gltf")] + ".json", "w", encoding="utf-8") as out:
+                json.dump(spec, out, indent=1)
+            print("MURIM cloth", [piece["name"] for piece in spec["cloth"]])
     mat = material(image, glow_image)
     for obj in bpy.context.scene.objects:
         if obj.type == "MESH":

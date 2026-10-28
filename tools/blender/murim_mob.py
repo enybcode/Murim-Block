@@ -37,9 +37,12 @@ def trunk_weights(y):
 class Part:
     """One box. bind: a joint name (rigid), "trunk", or ("limb", upper, lower, helper, hinge y, opens)."""
 
-    def __init__(self, name, bind, corner, size, paint, inflate=0.0, emissive=None):
+    def __init__(self, name, bind, corner, size, paint, inflate=0.0, emissive=None, cloth=None):
         self.name, self.bind, self.corner, self.size = name, bind, corner, size
         self.paint, self.inflate, self.emissive = paint, inflate, emissive
+        # Cloth ("front" or "back": the side of the body it hangs on) is simulated in game, not built: its corner is
+        # the middle of its top edge, its size (width, length, 1); only its texture is packed here.
+        self.cloth = cloth
         self.uv = None
 
 
@@ -137,6 +140,8 @@ def build(parts, width, height, name, collection=None):
         constraint.target_space = "LOCAL"
         constraint.influence = 0.5
     for part in parts:
+        if part.cloth:
+            continue
         box = murim_biped.BoxBuilder(part.name, part.corner, part.size, part.uv, part.inflate, tex_height=height,
                                      tex_width=width)
         y0, h = part.corner[1], part.size[1]
@@ -191,3 +196,18 @@ def shade(ramp, face, x, y, h, salt, rough=0.1, offset=0):
     elif n > 1 - rough * 0.6:
         level += 1
     return ramp[max(0, min(len(ramp) - 1, level))]
+
+
+def cloth_spec(parts, width, height):
+    """The cloth pieces for the mod (skeletal/mobs/<name>.json): where each hangs and its two faces in the texture."""
+    pieces = []
+    for part in parts:
+        if not part.cloth:
+            continue
+        faces = regions(part)
+        pieces.append({
+            "name": part.name, "joint": part.bind, "side": part.cloth, "pin": list(part.corner),
+            "width": part.size[0], "length": part.size[1],
+            "front": list(faces["front"]), "back": list(faces["back"]),
+        })
+    return {"texture": [width, height], "cloth": pieces}

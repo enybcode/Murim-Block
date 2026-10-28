@@ -72,6 +72,10 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
             poseStack.mulPose(Axis.ZP.rotationDegrees(-Math.min(fall, 1) * 90));
         }
         poseStack.translate(0, 0.001f, 0);
+        if (!mob.isInvisible()) {
+            MobCloth.render(mob, look, poseStack.last().pose(), joints, scale, buffers, light,
+                    LivingEntityRenderer.getOverlayCoords(mob, 0));
+        }
 
         Minecraft mc = Minecraft.getInstance();
         boolean visible = !mob.isInvisible();

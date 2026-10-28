@@ -62,6 +62,7 @@ public final class SkeletalModels implements ResourceManagerReloadListener {
             }
         });
         models = Map.copyOf(loaded);
+        MobCloth.clear();
         Murimblock.LOGGER.info("Loaded {} skeletal models", models.size());
     }
 

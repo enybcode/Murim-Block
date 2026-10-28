@@ -212,6 +212,17 @@ def skirt(face, x, y, w, h):
     return robe_dirt(ROBE, face, x, y, h, 45, 12, 5)
 
 
+def panel(face, x, y, w, h):
+    """A robe panel hanging from the belt: shadowed under it, an indigo hem, the bottom edge torn."""
+    if y == h - 1 and noise(x, 3, 49 + ord(face[0])) < 0.5:
+        return None
+    if y == h - 2:
+        return INDIGO[2] if face in ("front", "back") else INDIGO[1]
+    if y == 0:
+        return ROBE[1]
+    return robe_dirt(ROBE, face, x, y, h, 51, 12, 5)
+
+
 def pendant(face, x, y, w, h):
     if y < 3:
         return CORD[2] if face not in ("top", "bottom") else CORD[1]
@@ -327,8 +338,12 @@ def parts():
         *[Part(f"lapel_{i}", "trunk", (2.5 - i, 22 - i, 1.6), (2, 1, 1), lapel) for i in range(7)],
         Part("belt", "trunk", (-4, 14, -2), (8, 2, 4), belt, inflate=0.5),
         Part("knot", "Torso", (-3, 13.5, 2.1), (2, 2, 1), knot),
-        Part("cord_end_1", "Torso", (-2.8, 10.5, 2.35), (1, 3, 1), cord_end),
-        Part("cord_end_2", "Torso", (-1.7, 11, 2.35), (1, 3, 1), cord_end),
+        # Cloth, simulated in game: the rope's loose ends under the knot, the robe's front and back panels below the
+        # belt (the corner is the middle of the top edge).
+        Part("rope_1", "Torso", (-2.3, 13.6, 2.95), (1, 4, 1), cord_end, cloth="front"),
+        Part("rope_2", "Torso", (-1.3, 13.8, 2.95), (1, 3, 1), cord_end, cloth="front"),
+        Part("panel_front", "Torso", (0, 13.8, 2.6), (6, 7, 1), panel, cloth="front"),
+        Part("panel_back", "Torso", (0, 13.8, -2.6), (7, 8, 1), panel, cloth="back"),
         Part("pendant", "Torso", (4.15, 8, -0.5), (1, 6, 1), pendant),
         # Arms: the right sleeve torn off at the elbow over a bandaged forearm, the left sleeve whole down to a wide
         # trimmed cuff.

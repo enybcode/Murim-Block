@@ -67,9 +67,28 @@ final class MobLookChecks {
             EngineTest.check("and wear the Disciple's look", zombie != null && SkeletalMobs.look(zombie) != null);
             EngineTest.check("standing, it plays its slumped idle (" + clip(zombie) + ")", "disciple/idle".equals(clip(zombie)));
             EngineTest.shoot(mc, "mob_disciple_front");
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                player.connection.teleport(X, Y, Z + 1.3, 0, 38);
+            });
+        }));
+        steps.add(new Step("disciple cloth close", mc -> {
+            EngineTest.shoot(mc, "mob_disciple_cloth_front");
+            EngineTest.server(mc, player -> player.connection.teleport(X - 1.9, Y, Z + 3, -90, 32));
+        }));
+        steps.add(new Step("disciple cloth side", mc -> {
+            EngineTest.shoot(mc, "mob_disciple_cloth_side");
             EngineTest.server(mc, player -> player.connection.teleport(X + 3.2, Y + 0.6, Z + 1, 58, 15));
         }));
         steps.add(new Step("disciple three quarters", mc -> {
+            Zombie dressed = nearest(mc);
+            for (String piece : new String[] {"panel_front", "panel_back", "rope_1", "rope_2"}) {
+                org.joml.Vector3f hang = dressed == null ? null : com.murimblock.shenfa.client.MobCloth.hang(dressed, piece);
+                EngineTest.check("its " + piece + " hangs down as cloth (" + hang + ", bottom "
+                        + com.murimblock.shenfa.client.MobCloth.ahead(dressed, piece) + " px ahead)",
+                        hang != null && -hang.y > 0.6f * hang.length());
+            }
             EngineTest.shoot(mc, "mob_disciple_three_quarter");
             SkeletalMobs.moveProbe = (mob, move) -> MOVES.add(move);
             GifRecorder.start("mob_disciple_moves");
@@ -106,6 +125,24 @@ final class MobLookChecks {
                 zombie(player.serverLevel(), X, Z + 3, null);
                 player.connection.teleport(X, Y, Z, 0, 10);
             });
+        }));
+        steps.add(new Step("disciple walking", mc -> {
+            // One walks up to the player, its cloth swinging (filmed for the GIFs).
+            GifRecorder.start("mob_disciple_walking");
+            EngineTest.server(mc, player -> {
+                zombies(player.serverLevel()).forEach(Entity::discard);
+                zombie(player.serverLevel(), X, Z + 9, z -> z.setNoAi(false));
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                player.connection.teleport(X + 2.5, Y + 0.4, Z + 1, 32, 12);
+            });
+        }));
+        steps.add(new Step("disciple walked", mc -> {
+            EngineTest.server(mc, player -> zombies(player.serverLevel()).forEach(z -> z.getNavigation().moveTo(X, Y, Z + 1, 1)));
+        }));
+        steps.add(new Step("disciple walked up", mc -> {
+            GifRecorder.stop();
+            EngineTest.shoot(mc, "mob_disciple_walking");
             SkeletalMobs.enable(false);
         }));
         steps.add(new Step("vanilla zombie look", mc -> {
@@ -135,6 +172,7 @@ final class MobLookChecks {
         zombie.setYBodyRot(180);
         zombie.setNoAi(true);
         zombie.setPersistenceRequired();
+        zombie.setCanPickUpLoot(false);
         zombie.addTag(TAG);
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             zombie.setItemSlot(slot, ItemStack.EMPTY);

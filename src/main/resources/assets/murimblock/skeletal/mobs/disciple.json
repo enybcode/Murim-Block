@@ -1,0 +1,104 @@
+{
+ "texture": [
+  128,
+  64
+ ],
+ "cloth": [
+  {
+   "name": "rope_1",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    -2.3,
+    13.6,
+    2.95
+   ],
+   "width": 1,
+   "length": 4,
+   "front": [
+    113,
+    37,
+    1,
+    4
+   ],
+   "back": [
+    115,
+    37,
+    1,
+    4
+   ]
+  },
+  {
+   "name": "rope_2",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    -1.3,
+    13.8,
+    2.95
+   ],
+   "width": 1,
+   "length": 3,
+   "front": [
+    13,
+    43,
+    1,
+    3
+   ],
+   "back": [
+    15,
+    43,
+    1,
+    3
+   ]
+  },
+  {
+   "name": "panel_front",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    0,
+    13.8,
+    2.6
+   ],
+   "width": 6,
+   "length": 7,
+   "front": [
+    113,
+    17,
+    6,
+    7
+   ],
+   "back": [
+    120,
+    17,
+    6,
+    7
+   ]
+  },
+  {
+   "name": "panel_back",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    0,
+    13.8,
+    -2.6
+   ],
+   "width": 7,
+   "length": 8,
+   "front": [
+    97,
+    17,
+    7,
+    8
+   ],
+   "back": [
+    105,
+    17,
+    7,
+    8
+   ]
+  }
+ ]
+}

@@ -100,7 +100,7 @@ public final class CapeCloth {
         }
         state.lastPin = new Vector3f(top[0]);
         Cloth.Plane back = plane(model, chest, camera, -BACK + 0.6f);
-        Cloth.Plane legs = plane(model, hips, camera, legsBack(joints, hips));
+        Cloth.Plane legs = plane(model, hips, camera, legsEdge(joints, hips, -1, 2.4f, 0.4f));
         state.cloth.update(top, down, seconds, back, legs);
         draw(state.cloth, texture, camera, buffers, light);
     }
@@ -120,20 +120,23 @@ public final class CapeCloth {
     }
 
     /**
-     * How far behind the hips the legs' plane stands (pixels, along the hips' z): just behind the backs of the thighs,
-     * further back when a leg swings behind the body (a swimming kick, a stride), so the legs never poke through.
+     * Where a plane before ({@code side} 1) or behind (-1) the legs stands (pixels, along the hips' z): just past the
+     * thighs ({@code margin} past them, at least {@code least}), further when a leg swings that way (a swimming kick,
+     * a stride), so the legs never poke through cloth.
      */
-    private static float legsBack(Matrix4f[] joints, Matrix4f hips) {
+    static float legsEdge(Matrix4f[] joints, Matrix4f hips, int side, float least, float margin) {
         Matrix4f toHips = new Matrix4f(hips).invert();
-        float back = -2.4f;
-        for (String side : new String[] {"L", "R"}) {
-            Matrix4f thigh = joints[Biped.ARMATURE.get("Thigh_" + side).index()];
-            Matrix4f shin = joints[Biped.ARMATURE.get("Leg_" + side).index()];
-            // The back of the thigh's middle and of the knee.
-            back = Math.min(back, toHips.transformPosition(thigh.transformPosition(new Vector3f(0, -3, -2))).z - 0.4f);
-            back = Math.min(back, toHips.transformPosition(shin.transformPosition(new Vector3f(0, 0, -2))).z - 0.4f);
+        float edge = least;
+        for (String leg : new String[] {"L", "R"}) {
+            Matrix4f thigh = joints[Biped.ARMATURE.get("Thigh_" + leg).index()];
+            Matrix4f shin = joints[Biped.ARMATURE.get("Leg_" + leg).index()];
+            // That side of the thigh's middle and of the knee.
+            Vector3f thighSide = thigh.transformPosition(new Vector3f(0, -3, 2 * side));
+            Vector3f kneeSide = shin.transformPosition(new Vector3f(0, 0, 2 * side));
+            edge = Math.max(edge, side * toHips.transformPosition(thighSide).z + margin);
+            edge = Math.max(edge, side * toHips.transformPosition(kneeSide).z + margin);
         }
-        return Math.max(back, -8);
+        return side * Math.min(edge, 8);
     }
 
     /** A plane behind a joint: the cloth stays at least on its far side (toward the body's back). */
