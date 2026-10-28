@@ -73,6 +73,7 @@ const WEAPONS = {
   axe: {length: 46, butt: 6, second: 20, twoHands: true, draw: 'axe'},
   tool: {length: 52, butt: 6, second: 24, twoHands: true, draw: 'tool'},
   bow: {length: 0, butt: 0, bow: true, draw: 'bow'},
+  fork: {length: 54, butt: 8, draw: 'fork'},
 };
 
 function line(a, b, color, width, extra = '') {
@@ -135,6 +136,15 @@ function weapon(kind, r, p, ghost) {
   } else if (kind === 'tool') {
     s += line(r.butt, r.tip, col(C.haft), 4);
     s += line(add(r.tip, down(p.w + 180, 2)), add(r.tip, down(p.w, 11)), col(C.iron), 10);
+  } else if (kind === 'fork') {
+    // A fisherman's fork, held in one hand: the haft, a crossbar and three prongs.
+    s += line(r.butt, r.tip, col(C.haft), 4);
+    const bar = add(r.tip, down(p.w + 180, 10));
+    s += line(add(bar, down(p.w + 90, 6)), add(bar, down(p.w - 90, 6)), col(C.iron), 3);
+    for (const side of [-6, 0, 6]) {
+      const root = add(bar, down(p.w + 90, side));
+      s += line(root, add(root, down(p.w, side ? 9 : 12)), col(C.iron), 2.5);
+    }
   } else if (kind === 'bow') {
     const bulge = add(r.handR, down(p.w, 10 - 4 * (p.draw || 0)));
     const c = [2 * bulge[0] - (r.tipA[0] + r.tipB[0]) / 2, 2 * bulge[1] - (r.tipA[1] + r.tipB[1]) / 2];
@@ -171,10 +181,16 @@ function arc(a, b, bend, color = C.arc, dash = '5 4', width = 2.5) {
 /** One key frame panel. */
 function panel(frame, weaponKind) {
   const W = 190, H = 190, x = 78, y = 118;
+  weaponKind = frame.weapon || weaponKind;
   const pose = {...frame.pose, weapon: weaponKind};
   // The whole drawing, from the weapon raised high to a lunge far ahead, at 236 by 206.
   let s = `<svg viewBox="-6 -8 212 184" width="236" height="206">`;
   s += `<rect x="-6" y="-8" width="212" height="184" fill="#f8f3e8"/>`;
+  if (frame.water) {
+    // Under water: the surface above, the lake's bed below.
+    s += `<rect x="-6" y="8" width="212" height="${y + 26}" fill="#dbe9f0"/>`;
+    s += `<path d="M-6 8 q12 -5 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0" fill="none" stroke="#7fa9c2" stroke-width="2"/>`;
+  }
   s += `<line x1="0" y1="${y + 34}" x2="${W}" y2="${y + 34}" stroke="#d9cfbd" stroke-width="2"/>`;
   if (frame.target) {
     // The prey, faded, where the blow should meet it.

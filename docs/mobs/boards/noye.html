@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Disciple noyé — animations</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The fork is in the right hand (the near arm). Swimming, the torso lies flat (lean about 90) facing right.
+const STAND = {lean: 6, head: 4, aR: 10, fR: 16, w: 170, aL: 4, fL: 8, tF: 8, sF: 2, tB: -6, sB: -4};
+const RAISE = {lean: -8, head: -6, hx: -4, aR: 190, fR: 196, w: 104, aL: 84, fL: 90, tF: 22, sF: 4, tB: -26,
+  sB: -14};
+const COIL = {lean: -16, head: -10, hx: -10, hy: 1, aR: 212, fR: 222, w: 102, aL: 92, fL: 94, tF: 26, sF: 6,
+  tB: -24, sB: -16};
+const THROWN = {lean: 24, head: 8, hx: 8, hy: 2, aR: 100, fR: 86, aL: -30, fL: -10, tF: 34, sF: 6, tB: -34,
+  sB: -24};
+const REACH_BACK = {lean: 10, head: 0, aR: -40, fR: -60, w: 150, aL: -10, fL: 0, tF: 14, sF: 2, tB: -14, sB: -8};
+const SWIM_A = {lean: 84, head: -6, hy: -24, aR: -70, fR: -76, aL: -80, fL: -84, tF: -96, sF: -104, tB: -88,
+  sB: -96};
+const SWIM_B = {lean: 92, head: -12, hy: -20, aR: -84, fR: -88, aL: -88, fL: -90, tF: -66, sF: -84, tB: -70,
+  sB: -86};
+const SWIM_C = {lean: 80, head: -2, hy: -26, aR: -66, fR: -72, aL: -74, fL: -80, tF: -104, sF: -110, tB: -98,
+  sB: -106};
+const GRAB_REACH = {lean: 70, head: -16, hy: -22, hx: 6, aR: 100, fR: 110, aL: 92, fL: 100, tF: -80, sF: -96,
+  tB: -90, sB: -100};
+const GRAB = {lean: 78, head: -10, hy: -20, hx: 24, aR: 80, fR: 60, aL: 74, fL: 50, tF: -100, sF: -108, tB: -94,
+  sB: -102};
+const GRAB_BACK = {lean: 62, head: -4, hy: -24, hx: 4, aR: 40, fR: -10, aL: 30, fL: -20, tF: -84, sF: -100,
+  tB: -92, sB: -100};
+sheet({
+  weapon: 'fork',
+  colors: {robe: '#3f5f7e', robeDark: '#2f4a63', skin: '#6f9a96', skinDark: '#557c79', hair: '#1f2e2b',
+    belt: '#4f7a3a', eye: '#7fe8ff', haft: '#7a5a3a'},
+  title: 'DISCIPLE NOYÉ — ANIMATIONS',
+  sub: 'Proposition avant animation · les deux clips qui lui manquent (le reste vient du Disciple déchu) · lourd et '
+    + 'trempé hors de l\'eau, souple comme une anguille dedans · la fourche dans la main droite · vue de profil, il '
+    + 'regarde vers la droite',
+  wrong: [
+    'Avec une fourche, il lance comme le noyé vanilla : il lève le bras sans aucun clip, on ne voit pas le tir venir.',
+    'Dans l\'eau il joue la marche du Disciple : il « marche » en flottant, sans nager.',
+    'Sous l\'eau ses coups (vanilla) n\'ont aucun clip : il touche sans geste visible.',
+  ],
+  fix: [
+    'Un vrai lancer de harpon, avec un signal tenu : la fourche levée derrière la tête.',
+    'Une nage à lui, sans brasse : les bras traînent le long du corps, le corps ondule et les jambes battent ensemble, '
+      + 'comme une anguille. Les cheveux et les algues flottent.',
+    'Une saisie sous l\'eau : il se détend vers toi, mains en avant, puis se replie.',
+    'Hors de l\'eau, rien ne change : les clips du Disciple déchu.',
+  ],
+  anims: [
+    {name: 'Lancer de fourche', meta: '34 ticks · lancer au tick 22 · à distance, s\'il tient une fourche',
+      feel: 'le pêcheur qui harponne : un geste ample et lourd, tout le corps fouette, l\'eau gicle de la manche.',
+      read: 'la fourche levée derrière la tête et l\'autre bras pointé sur toi : elle part dans 12 ticks, esquive '
+        + 'sur le côté.',
+      frames: [
+        {ticks: '1 → 8', phase: 'armé', phaseColor: '#a32020', pose: RAISE, from: STAND, trace: 'tip', bend: 30,
+          note: 'Il recule le pied, lève la fourche au-dessus de l\'épaule, pointe le bras gauche vers toi.'},
+        {ticks: '9 → 20', phase: 'visée (signal)', phaseColor: '#a32020', pose: COIL, from: RAISE, trace: 'handR',
+          bend: 0, target: 172, note: 'Il se cambre, le poids sur le pied arrière, la fourche tenue haute : '
+            + 'immobile, des gouttes tombent du bras.'},
+        {ticks: '21 → 22', phase: 'LANCÉ', phaseColor: '#c46a00', pose: THROWN, from: COIL, weapon: 'none',
+          trace: 'handR', bend: -40, impact: true,
+          arrows: [{at: 'handR', from: [8, -4], to: [74, 2], color: '#c23b2f', dash: '2 3', bend: -6}],
+          note: 'Le bras fouette de haut en bas, le corps bascule en avant sur la jambe avant : la fourche part.'},
+        {ticks: '23 → 34', phase: 'retour', phaseColor: '#2f6b4f', pose: REACH_BACK, from: THROWN, weapon: 'fork',
+          trace: 'handR', bend: 20, note: 'Il se redresse et tire une autre fourche de son dos (vanilla : il en '
+            + 'garde toujours une) : un temps où il est vulnérable.'},
+      ]},
+    {name: 'Nage', meta: 'déplacement · boucle · 24 ticks · dans l\'eau', weaponless: true,
+      feel: 'une anguille morte qui revient à la vie : pas de brasse, tout le corps ondule, lent et sans effort.',
+      read: 'il te rejoint sous l\'eau sans bruit ; son œil cyan se voit de loin dans l\'eau sombre.',
+      frames: [
+        {ticks: '0 → 8', phase: 'glisse', pose: SWIM_A, from: SWIM_C, weapon: 'none', water: true, trace: 'footF',
+          bend: 6, note: 'À plat, la tête en avant, les bras traînent le long du corps ; les cheveux flottent '
+            + 'derrière.'},
+        {ticks: '8 → 14', phase: 'coup de jambes', pose: SWIM_B, from: SWIM_A, weapon: 'none', water: true,
+          trace: 'footF', bend: -6, arrows: [{at: 'hip', from: [10, -14], to: [36, -16], color: '#3a6fb0'}],
+          note: 'Les deux jambes battent ensemble vers le bas, les hanches plongent : il avance d\'un coup.'},
+        {ticks: '14 → 24', phase: 'remonte', pose: SWIM_C, from: SWIM_B, weapon: 'none', water: true,
+          trace: 'footF', bend: 8, note: 'Les jambes remontent, le corps s\'allonge et glisse jusqu\'au coup '
+            + 'suivant.'},
+      ]},
+    {name: 'Saisie sous l\'eau', meta: '18 ticks · impact au tick 8 · son coup dans l\'eau',
+      feel: 'l\'attaque d\'une bête des profondeurs : il se ramasse, puis jaillit vers toi mains ouvertes.',
+      read: 'il replie les jambes et tend les bras : il va jaillir, recule ou frappe-le avant.',
+      frames: [
+        {ticks: '1 → 5', phase: 'ramassé', phaseColor: '#a32020', pose: GRAB_REACH, from: SWIM_A, weapon: 'none',
+          water: true, trace: 'handR', bend: -20, note: 'Il se cambre, tend les deux bras vers toi, mains '
+            + 'ouvertes.'},
+        {ticks: '6 → 8', phase: 'IMPACT', phaseColor: '#c46a00', pose: GRAB, from: GRAB_REACH, weapon: 'none',
+          water: true, trace: 'handR', bend: 10, impact: true, target: 150,
+          arrows: [{at: 'hip', from: [-24, 0], to: [-2, 0], color: '#3a6fb0'}],
+          note: 'Un coup de jambes le projette en avant, les mains se referment sur la cible.'},
+        {ticks: '9 → 18', phase: 'repli', phaseColor: '#2f6b4f', pose: GRAB_BACK, from: GRAB, weapon: 'none',
+          water: true, trace: 'handR', bend: -16, note: 'Il ramène les bras contre lui et se laisse dériver en '
+            + 'arrière, prêt à recommencer.'},
+      ]},
+  ],
+});
+</script></body></html>
