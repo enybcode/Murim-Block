@@ -198,12 +198,17 @@ function panel(frame, weaponKind) {
       <rect x="${frame.target - 2}" y="${y - 74}" width="18" height="18" fill="${C.target}"/>`;
   }
   if (frame.from) {
-    s += figure(x, y, {...frame.from, weapon: weaponKind}, true);
+    s += (window.FIGURE || figure)(x, y, {...frame.from, weapon: weaponKind}, true);
   }
-  s += figure(x, y, pose, false);
-  const now = body(x, y, pose);
+  if (frame.wall !== undefined) {
+    // A wall the creature climbs, on the right.
+    s += `<rect x="${frame.wall}" y="-8" width="40" height="${y + 42}" fill="#cfc6b3"/>`;
+  }
+  // A sheet may draw its own creature (window.FIGURE) and name its points (window.BODY).
+  s += (window.FIGURE || figure)(x, y, pose, false);
+  const now = (window.BODY || body)(x, y, pose);
   if (frame.from) {
-    const before = body(x, y, {...frame.from, weapon: weaponKind});
+    const before = (window.BODY || body)(x, y, {...frame.from, weapon: weaponKind});
     const what = frame.trace || 'tip';
     s += arc(before[what], now[what], frame.bend || 0);
   }

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Fileuse de linceuls — animations</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The spider in profile, facing right. A pose: lean (the body's pitch, degrees, nose up +), hx/hy (the body moved,
+// px, hy down +), abd (the abdomen's extra tilt), fang (fangs open, degrees), flip (belly up), and feet: where the
+// four near feet stand, [dx, dy] from x and the ground (dy up +), front leg first. The far legs follow, a little
+// behind. Points: tip (the fangs), mouth, spin (the spinnerets), body, f0..f3 (the near feet).
+const G = 34;
+function spiderPoints(x, y, p) {
+  const a = rad(-(p.lean || 0)), ca = Math.cos(a), sa = Math.sin(a);
+  const c = [x + 4 + (p.hx || 0), y + G - 26 + (p.hy || 0)];
+  const at = (u, v) => [c[0] + u * ca - v * sa, c[1] + u * sa + v * ca];
+  const flip = p.flip ? -1 : 1;
+  const ab = rad(-(p.lean || 0) - (p.abd || 0)), cb = Math.cos(ab), sb = Math.sin(ab);
+  const back = at(-14, 0);
+  const abd = (u, v) => [back[0] + u * cb - v * sb, back[1] + u * sb + v * cb];
+  const r = {c, at, abd, flip, body: c, head: at(20, -1 * flip), mouth: at(28, 3 * flip), tip: at(31, 8 * flip),
+    spin: abd(-44, 2 * flip)};
+  const hips = [at(9, 7 * flip), at(3, 8 * flip), at(-3, 8 * flip), at(-9, 7 * flip)];
+  r.hips = hips;
+  r.feet = (p.feet || STAND_FEET).map(([dx, dy]) => [x + dx, y + G - dy]);
+  r.feet.forEach((f, i) => r['f' + i] = f);
+  return r;
+}
+function knee(h, f, flip) {
+  // Two segments of 24 and 28 px, the knee bent up (away from the belly).
+  const a = 24, b = 28, dx = f[0] - h[0], dy = f[1] - h[1];
+  const d = Math.min(Math.hypot(dx, dy), a + b - 0.5), ang = Math.atan2(dy, dx);
+  const bend = Math.acos((a * a + d * d - b * b) / (2 * a * d));
+  const side = (dx >= 0 ? -1 : 1) * flip;
+  return [h[0] + Math.cos(ang + side * bend) * a, h[1] + Math.sin(ang + side * bend) * a];
+}
+const STAND_FEET = [[48, 0], [24, 0], [-16, 0], [-44, 0]];
+window.BODY = (x, y, p) => spiderPoints(x, y, p);
+window.FIGURE = (x, y, p, ghost) => {
+  const r = spiderPoints(x, y, p);
+  const col = c => ghost ? C.ghost : c;
+  let s = `<g${ghost ? ' opacity="0.28"' : ''}>`;
+  // Far legs: the same feet a little behind, darker.
+  r.hips.forEach((h, i) => {
+    const f = [r.feet[i][0] - 6, r.feet[i][1] - 3], hh = [h[0] - 4, h[1] - 2], k = knee(hh, f, r.flip);
+    s += line(hh, k, col('#3a332d'), 5) + line(k, f, col('#3a332d'), 4);
+  });
+  // The abdomen with its shroud bands and seals, the cephalothorax, the head with eyes and fangs.
+  const box = (pts, fill) => `<path d="M${pts.map(q => q.join(',')).join(' L')} Z" fill="${col(fill)}"/>`;
+  const A = r.abd;
+  s += box([A(0, -16), A(-46, -16), A(-46, 16), A(0, 16)], '#252019');
+  for (const [u0, u1] of [[-8, -15], [-21, -28], [-33, -39]]) {
+    s += box([A(u0, -16 * r.flip), A(u1, -16 * r.flip), A(u1 - 1, 10 * r.flip), A(u0 + 1, 12 * r.flip)], '#ded8c5');
+  }
+  s += box([A(-17, -17 * r.flip), A(-24, -17 * r.flip), A(-24, -14 * r.flip), A(-17, -14 * r.flip)], '#8a2424');
+  s += line(r.spin, [r.spin[0] - 14, r.spin[1] + 3], col('#d8d2c2'), 1);
+  const T = r.at;
+  s += box([T(14, -11), T(-14, -11), T(-14, 11), T(14, 11)], '#1e1a17');
+  s += box([T(28, -9), T(14, -9), T(14, 8), T(28, 8)], '#161311');
+  if (!ghost) {
+    [[25, -5], [21, -5], [25, -1]].forEach(([u, v]) => {
+      const e = T(u, v * r.flip);
+      s += `<rect x="${e[0] - 1.5}" y="${e[1] - 1.5}" width="3" height="3" fill="#e83a2a"/>`;
+    });
+  }
+  const fa = rad(-(p.lean || 0) + (p.fang || 0) * r.flip);
+  s += line(r.mouth, [r.mouth[0] + Math.cos(fa + 1.2 * r.flip) * 9, r.mouth[1] + Math.sin(fa + 1.2 * r.flip) * 9],
+    col('#d8d0b8'), 3);
+  // Near legs over the body.
+  r.hips.forEach((h, i) => {
+    const k = knee(h, r.feet[i], r.flip);
+    s += line(h, k, col('#4f4640'), 6) + line(k, r.feet[i], col('#4f4640'), 5);
+    s += line(r.feet[i], [r.feet[i][0], r.feet[i][1] + 1], col('#d8d0b8'), 4);
+  });
+  return s + '</g>';
+};
+
+const STAND = {lean: 0, feet: STAND_FEET};
+const BREATHE = {lean: 2, hy: 1, abd: 4, feet: STAND_FEET};
+const STEP_A = {lean: 0, hx: 3, feet: [[56, 4], [22, 0], [-8, 4], [-46, 0]]};
+const STEP_B = {lean: 0, hx: 6, feet: [[50, 0], [32, 4], [-14, 0], [-38, 4]]};
+const CLIMB_A = {lean: 80, hx: 18, hy: -26, feet: [[48, 80], [50, 58], [48, 18], [44, 2]]};
+const CLIMB_B = {lean: 80, hx: 18, hy: -34, feet: [[50, 92], [48, 62], [50, 26], [44, 6]]};
+const REAR = {lean: 42, hx: -6, hy: -4, abd: -30, fang: 30, feet: [[44, 46], [30, 30], [-14, 0], [-38, 0]]};
+const SPIT = {lean: 28, hx: 2, hy: -2, abd: -18, fang: 50, feet: [[46, 24], [30, 10], [-14, 0], [-38, 0]]};
+const CROUCH = {lean: -6, hy: 8, abd: 10, feet: [[40, 0], [20, 0], [-14, 0], [-38, 0]]};
+const LUNGE = {lean: 8, hx: 22, hy: 2, fang: 60, feet: [[66, 2], [40, 0], [-6, 0], [-30, 0]]};
+const BITE = {lean: -4, hx: 18, hy: 4, fang: 0, feet: [[62, 0], [36, 0], [-6, 0], [-30, 0]]};
+const DEEP = {lean: -10, hy: 12, abd: 12, feet: [[38, 0], [18, 0], [-12, 0], [-36, 0]]};
+const FLIGHT = {lean: 14, hx: 40, hy: -46, fang: 40, feet: [[110, 76], [84, 62], [40, 52], [16, 50]]};
+const LAND = {lean: -8, hx: 70, hy: 6, fang: 0, feet: [[118, 0], [96, 0], [56, 0], [30, 0]]};
+const FLIP_1 = {lean: -50, hy: -6, feet: [[40, 20], [24, 4], [-10, 0], [-34, 10]]};
+const DEAD = {flip: true, lean: 0, hy: -6, feet: [[30, 56], [14, 62], [-10, 62], [-26, 54]]};
+
+sheet({
+  weapon: 'none',
+  colors: {robe: '#1e1a17'},
+  title: 'FILEUSE DE LINCEULS — ANIMATIONS',
+  sub: 'Proposition avant animation · une prédatrice patiente : immobile, puis soudain très rapide · ses pattes '
+    + 'bougent par vagues, jamais toutes ensemble · vue de profil, elle regarde vers la droite (4 pattes visibles)',
+  wrong: [
+    'Aujourd\'hui elle reste figée dans sa pose debout, même quand elle court, grimpe ou attaque.',
+    'Elle n\'a pas de crachat de toile : elle mord comme l\'araignée vanilla, sans signal.',
+    'Les bouts de linceul sur son dos sont rigides.',
+  ],
+  fix: [
+    'Une vraie marche d\'araignée : les pattes par groupes de quatre, en alternance (1 et 3 d\'un côté, 2 et 4 de '
+      + 'l\'autre), le corps qui glisse sans rebondir.',
+    'Chaque attaque a son signal : elle se cabre avant de cracher, se ramasse avant de bondir.',
+    'Les bouts de linceul flottent en tissu simulé (marche, bond, mort).',
+    'Les pattes restent plantées au sol ; seul le pied qui avance se lève.',
+  ],
+  anims: [
+    {name: 'Repos', meta: 'boucle · 60 ticks',
+      feel: 'la patience : immobile, seul l\'abdomen respire et une patte tapote, comme si elle écoutait le sol.',
+      read: 'au repos elle ne menace pas, mais elle sent tout ce qui marche près d\'elle.',
+      frames: [
+        {ticks: '0', phase: 'à l\'affût', pose: STAND, note: 'Basse, les pattes écartées, la tête légèrement levée.'},
+        {ticks: '0 → 30', phase: 'souffle', pose: BREATHE, from: STAND, trace: 'spin', bend: 4,
+          note: 'L\'abdomen gonfle et retombe lentement ; une patte avant tapote le sol.'},
+      ]},
+    {name: 'Marche', meta: 'boucle · 12 ticks · course plus rapide',
+      feel: 'une glissade : le corps avance d\'un bloc, sans à-coups, les pattes font le travail.',
+      read: 'elle file vite et bas, on l\'entend plus qu\'on ne la voit.',
+      frames: [
+        {ticks: '0 → 6', phase: 'groupe A', pose: STEP_A, from: STAND, trace: 'f0', bend: -10,
+          arrows: [{at: 'body', from: [-14, -24], to: [10, -24], color: '#3a6fb0'}],
+          note: 'Pattes 1 et 3 se lèvent et avancent, 2 et 4 poussent.'},
+        {ticks: '6 → 12', phase: 'groupe B', pose: STEP_B, from: STEP_A, trace: 'f1', bend: -10,
+          note: 'Puis l\'inverse ; le corps ne monte ni ne descend.'},
+      ]},
+    {name: 'Grimpe', meta: 'boucle · 16 ticks · sur un mur',
+      feel: 'l\'impossible : collée au mur comme au sol, aussi à l\'aise à la verticale.',
+      read: 'elle peut venir d\'en haut : regarder les murs.',
+      frames: [
+        {ticks: '0 → 8', phase: 'monte', pose: CLIMB_A, wall: 140, note: 'Le corps à plat contre la paroi, la tête '
+          + 'vers le haut, les pattes en étoile.'},
+        {ticks: '8 → 16', phase: 'monte', pose: CLIMB_B, from: CLIMB_A, wall: 140, trace: 'head', bend: 0,
+          note: 'Même alternance que la marche, à la verticale.'},
+      ]},
+    {name: 'Crachat de toile', meta: '30 ticks · crachat au tick 18 · attaque à distance (4 à 10 blocs)',
+      feel: 'la menace : elle se dresse comme un cobra, les crochets écartés, puis claque une boule de soie.',
+      read: 'dressée sur ses pattes arrière, l\'abdomen rentré : esquive sur le côté, sinon tu es ralenti 3 s.',
+      frames: [
+        {ticks: '1 → 8', phase: 'se cabre', phaseColor: '#a32020', pose: REAR, from: STAND, trace: 'head', bend: -14,
+          note: 'Les pattes avant se lèvent, l\'abdomen passe sous le corps, les crochets s\'ouvrent.'},
+        {ticks: '8 → 17', phase: 'tenu (signal)', phaseColor: '#a32020', pose: REAR, target: 170,
+          note: 'Elle reste dressée et vise : 9 ticks pour s\'écarter.'},
+        {ticks: '18', phase: 'CRACHAT', phaseColor: '#c46a00', pose: SPIT, from: REAR, trace: 'mouth', bend: 0,
+          arrows: [{at: 'mouth', from: [6, 0], to: [70, 14], color: '#c23b2f', dash: '2 3', bend: -12}],
+          note: 'Elle plonge en avant et crache une boule de soie qui colle (lenteur 3 s).'},
+        {ticks: '19 → 30', phase: 'retombe', phaseColor: '#2f6b4f', pose: STAND, from: SPIT, trace: 'head', bend: 6,
+          note: 'Elle retombe sur ses 8 pattes, prête à bondir sur la proie engluée.'},
+      ]},
+    {name: 'Morsure', meta: '16 ticks · impact au tick 7 · au contact',
+      feel: 'le coup de fouet : un mouvement sec vers l\'avant, les crochets qui claquent, puis elle recule.',
+      read: 'elle se tasse une fraction de seconde : garde ou parade.',
+      frames: [
+        {ticks: '1 → 4', phase: 'se tasse', phaseColor: '#a32020', pose: CROUCH, from: STAND, trace: 'head', bend: 0,
+          note: 'Le corps descend, l\'abdomen se relève.'},
+        {ticks: '5 → 7', phase: 'IMPACT', phaseColor: '#c46a00', pose: LUNGE, from: CROUCH, trace: 'tip', bend: -8,
+          impact: true, target: 150, note: 'Elle jaillit, crochets grands ouverts, et les referme sur la cible.'},
+        {ticks: '8 → 16', phase: 'recul', phaseColor: '#2f6b4f', pose: STAND, from: BITE, trace: 'head', bend: 0,
+          arrows: [{at: 'body', from: [10, -26], to: [-12, -26], color: '#3a6fb0'}],
+          note: 'Elle recule aussitôt hors de portée.'},
+      ]},
+    {name: 'Bond', meta: '24 ticks · impact à l\'atterrissage (tick 14) · sur une proie ralentie (3 à 6 blocs)',
+      feel: 'la chute de l\'ombre : elle se ramasse, puis tombe sur sa proie pattes en avant.',
+      read: 'elle s\'écrase contre le sol avant de sauter : c\'est maintenant qu\'il faut esquiver.',
+      frames: [
+        {ticks: '1 → 6', phase: 'se ramasse', phaseColor: '#a32020', pose: DEEP, from: STAND, trace: 'body', bend: 0,
+          note: 'Tout le corps s\'écrase au sol, les pattes arrière se plient.'},
+        {ticks: '7 → 12', phase: 'en vol', pose: FLIGHT, from: DEEP, trace: 'body', bend: -30,
+          note: 'Elle saute en arc, les 8 pattes en avant comme une main ouverte ; les linceuls flottent.'},
+        {ticks: '13 → 14', phase: 'IMPACT', phaseColor: '#c46a00', pose: LAND, from: FLIGHT, trace: 'tip', bend: 0,
+          impact: true, target: 178, note: 'Elle retombe sur la cible et mord.'},
+      ]},
+    {name: 'Mort', meta: '20 ticks',
+      feel: 'la fin d\'une araignée : elle bascule sur le dos, les pattes se replient une à une.',
+      read: 'morte quand ses pattes sont repliées vers le ciel.',
+      frames: [
+        {ticks: '0 → 8', phase: 'bascule', pose: FLIP_1, from: STAND, trace: 'head', bend: -10,
+          note: 'Les pattes avant lâchent, elle roule sur le côté.'},
+        {ticks: '8 → 20', phase: 'repliée', pose: DEAD, from: FLIP_1, trace: 'body', bend: 0,
+          note: 'Sur le dos, les pattes se replient vers le ventre en tremblant.'},
+      ]},
+  ],
+});
+</script></body></html>
