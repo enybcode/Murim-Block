@@ -24,6 +24,7 @@ Murim (wuxia) mod for Minecraft, restarted from zero on 23 Oct 2026. Owner: Enzo
 - Keep saved IDs and player data stable once released.
 - Original assets only; never extract other mods' assets into our jar.
 - Beauty first: every model gets relief and original detail, every visual gets care (`docs/art/visual-rules.md`).
+- Before any model or animation, draw its storyboard and get it validated by Enzo (`docs/art/visual-rules.md`).
 
 ## Checks
 

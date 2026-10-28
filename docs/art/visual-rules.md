@@ -35,8 +35,13 @@ is. Every visual piece gets real care: models, textures, animations, effects, so
 
 ## Process
 
-1. Visual design sheet first (look, palette, parts in relief, lore, stats, attacks, animations), for Enzo to validate.
-2. Then the model, built in Blender.
+No model and no animation is made before its storyboard is drawn and validated by Enzo (rule set 28 Oct 2026).
+
+1. Storyboard first, validated by Enzo before any work in Blender:
+   - a model: a design sheet (look, palette, parts in relief, lore, stats, attacks), as `docs/mobs/disciple-dechu.png`;
+   - an animation: its key poses drawn with the weapon's path, the body's motion, the timing in ticks, the feel
+     aimed for and what the player must read, as `docs/mobs/boards/` (drawn by `board.js`).
+2. Then the model or the clip, built in Blender, following the validated storyboard.
 3. Before calling a model done, show Enzo renders from the front, the side, the back and three quarters, close up.
 4. Then check it in game: daylight, night and in a fight.
 5. Beauty is part of "done": a model that works but looks plain is not finished.
