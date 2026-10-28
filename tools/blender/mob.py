@@ -142,7 +142,8 @@ def film(armature, clips, out, size, view="three_quarter"):
     scene.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in engines else "BLENDER_EEVEE_NEXT"
     scene.render.resolution_x = scene.render.resolution_y = size
     b = murim_biped.blender
-    eye = {"three_quarter": b(46, 22, 52), "side": b(-80, 16, 4), "front": b(0, 18, 80)}[view]
+    eye = {"three_quarter": b(46, 22, 52), "side": b(-80, 16, 4), "front": b(0, 18, 80),
+           "top": b(-12, 96, 6)}[view]
     scene.camera = camera("film", eye, b(0, 14, 4), 50)
     for clip in clips:
         set_name, name = clip.split("/")
@@ -166,8 +167,9 @@ def main():
     parser.add_argument("--blend")
     parser.add_argument("--renders")
     parser.add_argument("--size", type=int, default=480)
-    parser.add_argument("--view", default="three_quarter", choices=["three_quarter", "side", "front"])
-    parser.add_argument("--held", choices=["sword", "axe", "tool", "bow"], help="a stand-in item in the right hand")
+    parser.add_argument("--view", default="three_quarter", choices=["three_quarter", "side", "front", "top"])
+    parser.add_argument("--held", choices=["sword", "axe", "tool", "bow", "fork"],
+                        help="a stand-in item in the right hand")
     parser.add_argument("--film", help="clips of murim_clips.py as <set>/<clip>,... filmed frame by frame into --renders")
     args = parser.parse_args(argv)
 

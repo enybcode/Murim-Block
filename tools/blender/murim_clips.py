@@ -717,45 +717,95 @@ SETS["disciple"].update({
                    (26, T["guard"])],
 })
 
+
 # The Disciple noyé (the drowned's look), from its validated storyboard (docs/mobs/boards/noye.png): the fork throw
 # of an Olympic javelin thrower, the eel's swim and the grab under water; out of the water it plays the disciple's
-# clips. The storyboard's run-up carries the body two steps; here the hips move only a little (the mob's own motion
-# moves it), and the shoulders turn side-on (twist) as the arm draws back.
+# clips. The run-up's steps are on the spot (the mob's own motion moves it). While the shoulders are side-on the arms
+# reach out of the profile, so those poses set the arm joints themselves (noye_pose): the throwing arm straight back
+# at shoulder height, the other toward the prey, the head turned back to it. The fork is the trident, held as the mod
+# draws it (murim_items.TRIDENT_BOXES).
+def noye_pose(p, **joints):
+    key = board(p)
+    key.update(joints)
+    return key
+
+
+# Carried: the elbow out at shoulder height, the hand by the ear, the prongs forward and a little low.
+N_CARRY_ARM = dict(Arm_R=(0, 0, -80), Hand_R=(0, 0, -90), Tool_R=(-10, 0, 0))
+# Drawn back: the prongs by the head, the shaft along the arm.
+N_BACK_ARM = dict(Arm_R=(0, 0, -85), Hand_R=(0, 0, 0), Tool_R=(-100, -15, 0), Arm_L=(0, 0, 75), Hand_L=(-30, 0, 0),
+                  Head=(-4, 88, 0))
+N_STRIDE_A = dict(tF=30, sF=6, tB=-26, sB=-50)
+N_STRIDE_B = dict(tF=-26, sF=-50, tB=30, sB=6)
+N_SIDE = dict(hips=-40, twist=-50, aR=0, fR=0, w=0)
 N_STAND = dict(lean=6, head=4, aR=10, fR=16, w=170, aL=4, fL=8, tF=8, sF=2, tB=-6, sB=-4)
-N_CARRY = dict(lean=8, head=0, aR=100, fR=196, w=96, aL=40, fL=70, tF=26, sF=8, tB=-22, sB=-30)
-N_CARRY_2 = dict(N_CARRY, hy=-2, tF=-16, sF=-30, tB=24, sB=8)
-N_WITHDRAW = dict(lean=-4, head=-4, hx=2, aR=-86, fR=-90, w=96, aL=70, fL=84, tF=-24, sF=-36, tB=20, sB=4,
-                  hips=-16, twist=-30)
-N_CROSS = dict(lean=-10, head=-6, hx=5, hy=-1, aR=-90, fR=-94, w=98, aL=80, fL=88, tF=28, sF=12, tB=-10, sB=-26,
-               hips=-20, twist=-36)
-N_BLOCK = dict(lean=-18, head=-10, hx=8, hy=2, aR=-100, fR=-104, w=100, aL=88, fL=96, tF=-28, sF=-46, tB=32, sB=28,
-               hips=-10, twist=-40)
-N_WHIP = dict(lean=20, head=6, hx=10, aR=168, fR=132, w=132, aL=-20, fL=-30, tF=-16, sF=-40, tB=30, sB=26, hips=20,
-              twist=30)
-N_RECOVER = dict(lean=30, head=14, hx=12, hy=4, aR=40, fR=20, w=20, aL=-10, fL=10, tF=34, sF=30, tB=-6, sB=-20,
-                 hips=24, twist=36, armY=-30)
-N_REACH_BACK = dict(lean=10, head=0, hx=6, aR=-40, fR=-60, w=150, aL=-10, fL=0, tF=14, sF=2, tB=-14, sB=-8)
-N_SWIM_A = dict(lean=84, head=-6, hy=-24, aR=-70, fR=-76, w=-76, aL=-80, fL=-84, tF=-96, sF=-104, tB=-88, sB=-96)
-N_SWIM_B = dict(lean=92, head=-12, hy=-20, aR=-84, fR=-88, w=-88, aL=-88, fL=-90, tF=-66, sF=-84, tB=-70, sB=-86)
-N_SWIM_C = dict(lean=80, head=-2, hy=-26, aR=-66, fR=-72, w=-72, aL=-74, fL=-80, tF=-104, sF=-110, tB=-98, sB=-106)
-N_GRAB_REACH = dict(lean=70, head=-16, hy=-22, hx=6, aR=100, fR=110, w=110, aL=92, fL=100, tF=-80, sF=-96, tB=-90,
-                    sB=-100)
-N_GRAB = dict(lean=78, head=-10, hy=-20, hx=12, aR=80, fR=60, w=60, aL=74, fL=50, tF=-100, sF=-108, tB=-94, sB=-102)
-N_GRAB_BACK = dict(lean=62, head=-4, hy=-24, hx=4, aR=40, fR=-10, w=-10, aL=30, fL=-20, tF=-84, sF=-100, tB=-92,
-                   sB=-100)
-N = poses(stand=N_STAND, carry=N_CARRY, carry_2=N_CARRY_2, withdraw=N_WITHDRAW, cross=N_CROSS, block=N_BLOCK,
-          whip=N_WHIP, recover=N_RECOVER, reach_back=N_REACH_BACK, swim_a=N_SWIM_A, swim_b=N_SWIM_B, swim_c=N_SWIM_C,
-          grab_reach=N_GRAB_REACH, grab=N_GRAB, grab_back=N_GRAB_BACK)
+# In the grab the fork stays along the forearm, so it never swings round: the prongs lead the hands to the prey.
+
+
+def noye_swim(tick, length=24):
+    """The eel's swim at `tick`: flat, the head up to look ahead, the arms and the fork trailing along the body
+    (the shaft under the chest, out of the face), and a slow wave running from the chest down to the feet."""
+    angle = 2 * math.pi * tick / length
+    wave = lambda lag: math.sin(angle - lag)
+    thigh_r, thigh_l, knee = -90 + 16 * wave(1.4), -90 + 16 * wave(1.5), 16 + 13 * wave(2.3)
+    key = board(dict(lean=90, head=-72 + 5 * wave(-0.4), aR=-84 + 4 * wave(1.0), fR=-86 + 6 * wave(1.4),
+                     w=-106 + 6 * wave(1.4), aL=-86 + 4 * wave(1.0), fL=-88 + 6 * wave(1.4), armZ=-16, armLZ=10,
+                     hy=-24 + 1.5 * wave(0.8), tF=thigh_r, sF=thigh_r - knee, tB=thigh_l, sB=thigh_l - knee))
+    key["Torso"] = (54 + 7 * wave(0.6), 0, 0)
+    key["Chest"] = (36 + 6 * wave(0.0), 0, 0)
+    return key
+
+
+N = dict(
+    stand=board(N_STAND),
+    carry=noye_pose(dict(lean=10, aR=0, fR=0, w=0, aL=30, fL=60, twist=-10, hy=1, **N_STRIDE_A), **N_CARRY_ARM),
+    carry_2=noye_pose(dict(lean=10, aR=0, fR=0, w=0, aL=-20, fL=10, twist=-10, hy=1, **N_STRIDE_B), **N_CARRY_ARM),
+    withdraw=noye_pose(dict(lean=-6, hy=2, tF=-20, sF=-40, tB=24, sB=10, **N_SIDE), **N_BACK_ARM),
+    cross=noye_pose(dict(lean=-10, hy=-1, hx=2, tF=34, sF=14, tB=-14, sB=-30, **N_SIDE), **N_BACK_ARM),
+    impulse=noye_pose(dict(lean=-12, hy=2, hx=3, tF=-24, sF=-46, tB=26, sB=14, **N_SIDE), **N_BACK_ARM),
+    cross_2=noye_pose(dict(lean=-14, hy=-1, hx=4, tF=34, sF=14, tB=-14, sB=-30, **N_SIDE), **N_BACK_ARM),
+    block=noye_pose(dict(N_SIDE, lean=-20, hy=4, hx=5, tF=-30, sF=-60, tB=36, sB=32, hips=-30, twist=-55),
+                    **N_BACK_ARM),
+    pull=noye_pose(dict(lean=-4, aR=165, fR=235, w=110, aL=40, fL=70, hy=4, hx=7, tF=-24, sF=-60, tB=34, sB=30,
+                        hips=-10, twist=-25, armZ=-20), Head=(-2, 35, 0)),
+    whip=board(dict(lean=14, head=2, aR=150, fR=150, w=115, aL=-20, fL=-10, twist=10, hy=4, hx=9, tF=-12, sF=-56,
+                    tB=30, sB=26, armZ=-10)),
+    whip_2=board(dict(lean=24, head=6, aR=105, fR=95, w=95, aL=-30, fL=-20, hips=8, twist=18, hy=5, hx=10, tF=4,
+                      sF=-40, tB=26, sB=20, armZ=-5)),
+    brake=noye_pose(dict(lean=34, head=10, aR=0, fR=0, w=0, aL=-30, fL=-10, hips=15, twist=25, hx=10, hy=5, tF=36,
+                         sF=10, tB=6, sB=2), Arm_R=(-60, 0, 30), Hand_R=(-20, 0, 0)),
+    reach_back=board(dict(lean=6, head=-6, aR=200, fR=250, w=250, aL=10, fL=30, twist=-10, hx=4, hy=1, tF=12, sF=4,
+                          tB=-8, sB=-12)),
+    draw=board(dict(lean=4, head=-4, aR=185, fR=225, w=180, aL=10, fL=30, twist=-6, hx=2, tF=10, sF=4, tB=-8,
+                    sB=-10)),
+    bring=board(dict(lean=6, head=2, aR=60, fR=110, w=170, aL=6, fL=12, hx=1, tF=9, sF=2, tB=-6, sB=-6)),
+    glide=noye_swim(0),
+    sweep=board(dict(lean=82, head=-64, hy=-24, aR=-20, fR=60, w=60, aL=-20, fL=60, tF=-100, sF=-124, tB=-102,
+                     sB=-126)),
+    coil=board(dict(lean=74, head=-62, hy=-24, aR=40, fR=150, w=150, aL=40, fL=150, tF=-110, sF=-146, tB=-112,
+                    sB=-148)),
+    lunge=board(dict(lean=84, head=-66, hy=-22, hx=12, aR=92, fR=96, w=96, aL=90, fL=94, tF=-86, sF=-90, tB=-88,
+                     sB=-92)),
+    clutch=board(dict(lean=86, head=-66, hy=-22, hx=12, aR=80, fR=60, w=60, aL=78, fL=56, tF=-84, sF=-88, tB=-86,
+                      sB=-90)),
+    pull_in=board(dict(lean=88, head=-68, hy=-23, hx=5, aR=0, fR=100, w=100, aL=0, fL=100, tF=-92, sF=-96, tB=-94,
+                       sB=-98)),
+    let_go=board(dict(lean=89, head=-70, hy=-24, hx=2, aR=-40, fR=20, w=20, aL=-40, fL=20, tF=-90, sF=-94, tB=-92,
+                      sB=-96)),
+)
 
 SETS["disciple"].update({
-    # Released at tick 27 (NoyeFighting); the fork in hand is hidden from 27 to 40 (SkeletalMobs.handEmpty).
-    "noye_throw": [(0, N["carry"]), (6, N["carry_2"]), (12, N["withdraw"]), (22, N["cross"]), (26, N["block"]),
-                   (27, N["whip"]), (28, N["whip"]), (36, N["recover"]), (44, N["reach_back"]), (48, N["stand"])],
-    "noye_swim": [(0, N["swim_a"]), (8, N["swim_b"]), (14, N["swim_c"]), (24, N["swim_a"])],
+    # Two strides, the arm drawn back, crossed steps, the front leg blocks, the whip: released at tick 27
+    # (NoyeFighting). The fork in hand is hidden from 27 to 40 (SkeletalMobs.handEmpty), when it takes another from
+    # its back.
+    "noye_throw": [(0, N["carry"]), (5, N["carry_2"]), (10, N["withdraw"]), (14, N["cross"]), (18, N["impulse"]),
+                   (22, N["cross_2"]), (25, N["block"]), (26, N["pull"]), (27, N["whip"]), (29, N["whip_2"]),
+                   (34, N["brake"]), (38, N["reach_back"]), (40, N["draw"]), (44, N["bring"]), (48, N["stand"])],
+    "noye_swim": [(tick, noye_swim(tick)) for tick in range(0, 25, 3)],
     # The hands close at tick 8 (NoyeFighting).
-    "noye_grab": [(0, N["swim_a"]), (5, N["grab_reach"]), (8, N["grab"]), (14, N["grab_back"]), (18, N["swim_a"])],
+    "noye_grab": [(0, N["glide"]), (2, N["sweep"]), (5, N["coil"]), (8, N["lunge"]), (10, N["clutch"]),
+                  (14, N["pull_in"]), (16, N["let_go"]), (18, N["glide"])],
 })
-
 # The Archer impérial (the skeleton's look), from its validated storyboard (docs/mobs/boards/archer.png). The bow is
 # in the right hand. "_aim" is where the arrow points (board degrees: forward 90, up 180) and "_draw" how far the
 # left hand has drawn the string (0 to 1; None: the left hand is free); bake_bow turns the bow and puts the left hand
@@ -811,7 +861,7 @@ def rotation(degrees):
 
 # Step cycles keyed straight from key to key: Blender's default ease stops the planted foot at every key and then
 # hurries it, so it slides against the ground; at an even speed it keeps up with the body.
-LINEAR = {"walk", "run", "sneak_walk", "stance_walk", "climb"}  # also the spider's walk and climb
+LINEAR = {"walk", "run", "sneak_walk", "stance_walk", "climb", "noye_swim"}  # also the spider's walk and climb
 
 
 def make_action(armature, name, keys):

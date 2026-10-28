@@ -86,8 +86,24 @@ def _segments(kind):
     return [(Vector((s, s)), Vector((e, e)), half, colour) for s, e, half, colour in SHAPES[kind]]
 
 
+# The trident (the noyé's fork) is drawn by its own model: TridentModel's boxes (pixels, prongs toward -Y), flipped by
+# the item renderer (scale 1, -1, -1) and placed by trident_in_hand's thirdperson_righthand transform.
+TRIDENT_BOXES = [((-0.5, 2, -0.5), (1, 25, 1), (0.36, 0.55, 0.52)), ((-1.5, 0, -0.5), (3, 2, 1), (0.36, 0.55, 0.52)),
+                 ((-2.5, -3, -0.5), (1, 4, 1), (0.6, 0.78, 0.74)), ((-0.5, -4, -0.5), (1, 4, 1), (0.6, 0.78, 0.74)),
+                 ((1.5, -3, -0.5), (1, 4, 1), (0.6, 0.78, 0.74))]
+
+
+def trident_to_joint():
+    """TridentModel's space (pixels) to the Tool_R joint's space (pixels)."""
+    display = Matrix.Translation((11 * PIXEL, 17 * PIXEL, -2 * PIXEL)) @ _rot("Y", 60)
+    return (Matrix.Scale(16, 4) @ right_grip() @ display @ Matrix.Translation((-0.5, -0.5, -0.5))
+            @ Matrix.Diagonal((1, -1, -1, 1)) @ Matrix.Scale(PIXEL, 4))
+
+
 def proxy(armature, kind, bone="Tool_R"):
     """A flat stand-in of the item, held by `bone` (renders only; not exported)."""
+    if kind == "fork":
+        return _trident(armature, bone)
     to_joint = item_to_joint("bow" if kind == "bow" else "handheld")
     mesh = bpy.data.meshes.new(f"held_{kind}")
     verts, faces, colours = [], [], []
@@ -107,6 +123,34 @@ def proxy(armature, kind, bone="Tool_R"):
     for colour in dict.fromkeys(colours):
         material = bpy.data.materials.new(f"held_{kind}_{len(obj.data.materials)}")
         material.diffuse_color = (*colour, 1)
+        material.use_nodes = True
+        material.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (*colour, 1)
+        obj.data.materials.append(material)
+    index = {c: i for i, c in enumerate(dict.fromkeys(colours))}
+    for polygon, colour in zip(mesh.polygons, colours):
+        polygon.material_index = index[colour]
+    bpy.context.scene.collection.objects.link(obj)
+    parent_to_joint(obj, armature, bone)
+    return obj
+
+
+def _trident(armature, bone):
+    to_joint = trident_to_joint()
+    mesh = bpy.data.meshes.new("held_fork")
+    verts, faces, colours = [], [], []
+    quads = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    for (x, y, z), (w, h, d), colour in TRIDENT_BOXES:
+        base = len(verts)
+        for i in range(8):
+            corner = Vector((x + w * (i >> 2 & 1), y + h * (i >> 1 & 1), z + d * (i & 1)))
+            verts.append(to_joint @ corner)
+        faces += [tuple(base + i for i in quad) for quad in quads]
+        colours += [colour] * 6
+    mesh.from_pydata([tuple(v) for v in verts], [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new("held_fork", mesh)
+    for colour in dict.fromkeys(colours):
+        material = bpy.data.materials.new(f"held_fork_{len(obj.data.materials)}")
         material.use_nodes = True
         material.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (*colour, 1)
         obj.data.materials.append(material)
