@@ -37,3 +37,4 @@ CLAUDE.local.md
 .claude/worktrees/
 tools/blender/out/
 tools/blender/__pycache__/
+__pycache__/
