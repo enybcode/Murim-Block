@@ -62,6 +62,8 @@ public final class SpiderFighting extends Goal {
     private final Spider mob;
     private Move move;
     private int time, rest = 10, spitRest, path;
+    /** Where it stands while it rears, spits or bites. */
+    private Vec3 anchor;
 
     SpiderFighting(Spider mob) {
         this.mob = mob;
@@ -169,6 +171,7 @@ public final class SpiderFighting extends Goal {
     private void begin(Move next) {
         move = next;
         time = 0;
+        anchor = mob.position();
         mob.getNavigation().stop();
         CombatServer.anim(mob, Animator.Priority.MIDDLE, next.clip, false);
         if (probe != null) {
@@ -178,6 +181,11 @@ public final class SpiderFighting extends Goal {
 
     private void play(LivingEntity target) {
         time++;
+        if (move != Move.LEAP || time < move.at) {
+            // Rearing, spitting or biting, it stands: stopping the path leaves the move control walking on to its last
+            // waypoint, so it is held too (the leap's jump is let go).
+            hold();
+        }
         if (target != null && time <= move.at) {
             mob.getLookControl().setLookAt(target, 30, 30);
             mob.setYRot(mob.getYHeadRot());
@@ -202,6 +210,19 @@ public final class SpiderFighting extends Goal {
         }
         if (time >= move.length) {
             end(false);
+        }
+    }
+
+    private void hold() {
+        mob.getNavigation().stop();
+        mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0);
+        mob.setSpeed(0);
+        mob.setZza(0);
+        mob.setXxa(0);
+        mob.setDeltaMovement(mob.getDeltaMovement().multiply(0, 1, 0));
+        // Something in the move control still walks it on a little each tick: it is put back where it stood.
+        if (anchor != null) {
+            mob.setPos(anchor.x, mob.getY(), anchor.z);
         }
     }
 

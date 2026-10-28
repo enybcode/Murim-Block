@@ -506,7 +506,17 @@ final class CombatChecks {
                     player.serverLevel().addFreshEntity(spider);
                     spider.setTarget(player);
                 });
-                SpiderFighting.probe = (mob, move) -> seen.add(move.name());
+                double[] slide = {-1};
+                net.minecraft.world.phys.Vec3[] reared = new net.minecraft.world.phys.Vec3[1];
+                net.minecraft.world.entity.Entity[] spitter = new net.minecraft.world.entity.Entity[1];
+                SpiderFighting.probe = (mob, move) -> {
+                    seen.add(move.name());
+                    if (move == SpiderFighting.Move.SPIT && reared[0] == null) {
+                        reared[0] = mob.position();
+                        spitter[0] = mob;
+                        slide[0] = -(mob.level().getGameTime() + 16);
+                    }
+                };
                 start(new Run(120, t -> {
                     LivingEntity spider = nearest(mc, EntityType.SPIDER);
                     if (t == 0) {
@@ -516,11 +526,19 @@ final class CombatChecks {
                     face(mc, spider);
                     wounds(mc);
                     EngineTest.server(mc, player -> {
+                        // How far it slid while rearing (until just before the spit's small lunge).
+                        if (reared[0] != null && slide[0] < 0 && player.level().getGameTime() >= -slide[0]) {
+                            slide[0] = spitter[0].position().subtract(reared[0]).horizontalDistance();
+                        }
                         if (!scene.slowed() && player.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN)) {
                             slowedBy[0] = true;
                         }
                     });
                 }, () -> {
+                    if (scene.name().equals("spit")) {
+                        EngineTest.check(String.format("rearing, the Fileuse stands still (%.2f blocks)", slide[0]),
+                                slide[0] >= 0 && slide[0] < 0.3);
+                    }
                     EngineTest.check(String.format("the Fileuse %s (%s%s)", switch (scene.name()) {
                         case "spit" -> "rears and spits silk that slows its prey";
                         case "leap" -> "leaps on a slowed prey";
