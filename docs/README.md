@@ -11,7 +11,7 @@ One file per feature or decision, added as the work goes.
 - [Combat system](combat/combat-system.md): keys, the fists, rules, blows, guard and parry, mobs, feel (first version).
 - [Epic Fight study](combat/epic-fight-study.md): what Epic Fight does in first person, combat and feel (27 Oct 2026).
 - [Visual rules](art/visual-rules.md): the art direction, relief on every model, hand-shaded textures, the process.
-- [Mob sheets](mobs/): one validated design sheet per mob (Disciple déchu = zombie; PNG from its HTML source).
+- [Mob sheets](mobs/): one validated design sheet per mob and its model renders (Disciple déchu = zombie).
 - [Two PCs](two-pcs.md): how the two PCs stay in sync through GitHub, phone access, and the second PC's setup prompt.
 - [Playtest checklist](playtest/tests-en-jeu.pdf): what Enzo tests in game, to tick and annotate (in French; source
   `tests-en-jeu.html`, printed to PDF with Chrome headless).

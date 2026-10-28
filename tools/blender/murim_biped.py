@@ -112,11 +112,12 @@ def parts(slim):
 class BoxBuilder:
     """Writes the faces of one skin box into a mesh, UV mapped like a vanilla cube, with a weight per vertex."""
 
-    def __init__(self, name, corner, size, tex, inflate, tex_height=SKIN_SIZE, mirror=False):
+    def __init__(self, name, corner, size, tex, inflate, tex_height=SKIN_SIZE, mirror=False, tex_width=SKIN_SIZE):
         self.x0, self.y0, self.z0 = corner
         # Vanilla's mirrored cubes: the box mapped as usual, then flipped left to right (texture and all).
         self.mirror = mirror
         self.tex_height = tex_height
+        self.tex_width = tex_width
         self.w, self.h, self.d = size
         self.u, self.v = tex
         g = inflate
@@ -170,7 +171,7 @@ class BoxBuilder:
             verts.append(vert)
         face = self.bm.faces.new(verts)
         for loop, (_point, (pu, pv), _weights) in zip(face.loops, corners):
-            loop[self.uv_layer].uv = (pu / SKIN_SIZE, 1 - pv / self.tex_height)
+            loop[self.uv_layer].uv = (pu / self.tex_width, 1 - pv / self.tex_height)
         self.normals.append(blender(*normal))
 
     def sides(self, lo, hi, weights_lo, weights_hi):

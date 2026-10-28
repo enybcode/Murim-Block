@@ -38,3 +38,15 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
 - Limbs are rigid. `Elbow_*` and `Knee_*` are helpers that follow the forearm (`Hand_*`) or shin (`Leg_*`) at half
   the angle (a Copy Rotation constraint at 0.5 in Blender, `Biped.settleHelpers` in the mod); do not key them.
 - Flexing: the elbow bends with a negative X rotation of `Hand_*`, the knee with a positive X rotation of `Leg_*`.
+
+## Mobs
+
+`mobs/<name>.py` lists a mob's parts in relief on the biped's skeleton and paints its texture in code
+(`murim_mob.py`: packing, painting helpers, skinning; rules in `docs/art/visual-rules.md`). One command paints the
+texture, exports the model and films it from every side, close up and in a pose:
+
+```
+blender -b --factory-startup --python tools/blender/mob.py -- --mob disciple \
+    --texture src/main/resources/assets/murimblock/textures/entity/disciple.png \
+    --gltf src/main/resources/assets/murimblock/skeletal/mobs/disciple.gltf --renders <dir>
+```
