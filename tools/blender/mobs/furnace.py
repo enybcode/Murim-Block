@@ -59,10 +59,6 @@ def vessel(face, x, y, w, h):
             if 4 <= x <= w - 5 and 4 <= y <= 5:
                 return EMBER[2] if (x + y) % 2 else EMBER[1]
             return SOOT
-        # The alchemist's seal engraved under the mouth.
-        sx, sy = x - (w - 6) // 2, y - 9
-        if 0 <= sx < 6 and 0 <= sy < 5:
-            return BRONZE[1] if SEAL[sy][sx] == "X" else BRONZE[3]
     if face == "top":
         return DARK[1]
     if face == "bottom":
@@ -77,12 +73,38 @@ def vessel_glow(face, x, y, w, h):
 
 
 def belly(face, x, y, w, h):
-    """The vessel's belly, with the alchemist's seal engraved on its front."""
-    if face == "front":
-        sx, sy = x - (w - 6) // 2, y
-        if 0 <= sx < 6 and 0 <= sy < 5:
-            return BRONZE[1] if SEAL[sy][sx] == "X" else BRONZE[3]
     return bronze(21, -1)(face, x, y, w, h)
+
+
+def plaque(face, x, y, w, h):
+    """The alchemist's seal on a raised plaque."""
+    if face == "front" and 0 < x < w - 1 and 0 < y < h - 1:
+        return BRONZE[1] if SEAL[y - 1][x - 1] == "X" else BRONZE[4]
+    return BRONZE[2] if face != "top" else BRONZE[4]
+
+
+def stud(face, x, y, w, h):
+    return BRONZE[4] if face in ("front", "top") else BRONZE[2]
+
+
+def rib(face, x, y, w, h):
+    if face in ("top", "bottom"):
+        return BRONZE[4]
+    return BRONZE[3] if y % 4 else BRONZE[4]
+
+
+def frame(face, x, y, w, h):
+    return BRONZE[4] if face == "top" else shade(DARK, face, x, y, h, 23, 0.1, offset=2)
+
+
+def mask(face, x, y, w, h):
+    """A beast's mask where a leg meets the vessel: two eyes and a snout."""
+    if face == "front":
+        if y == 1 and x in (0, w - 1):
+            return SOOT
+        if y == h - 1 and 0 < x < w - 1:
+            return BRONZE[4]
+    return shade(BRONZE, face, x, y, h, 25, 0.1, offset=1)
 
 
 def band(salt):
@@ -132,20 +154,43 @@ def parts():
         Part("belly", "Root", (-6, 10, -6), (12, 5, 12), belly, inflate=0.5),
         Part("belt", "Root", (-6, 15, -6), (12, 1, 12), band(7), inflate=0.35),
         Part("foot_ring", "Root", (-5.5, 9, -5.5), (11, 1, 11), band(9)),
-        Part("handle_l", "Handle_L", (6.5, 19, -1.5), (2, 4, 3), handle),
-        Part("handle_r", "Handle_R", (-8.5, 19, -1.5), (2, 4, 3), handle),
-        Part("handle_l_tip", "Handle_L", (8.5, 22, -1), (1, 1, 2), knob),
-        Part("handle_r_tip", "Handle_R", (-9.5, 22, -1), (1, 1, 2), knob),
-        # The lid, its upper step, the knob and a smoke vent.
+        # Handles: rings standing out of each side (a bar out, an upright, a bar back).
+        Part("handle_l_top", "Handle_L", (6, 22, -1), (3, 1, 2), handle),
+        Part("handle_l_out", "Handle_L", (8, 18, -1), (1, 4, 2), handle),
+        Part("handle_l_low", "Handle_L", (6, 18, -1), (2, 1, 2), handle),
+        Part("handle_r_top", "Handle_R", (-9, 22, -1), (3, 1, 2), handle),
+        Part("handle_r_out", "Handle_R", (-9, 18, -1), (1, 4, 2), handle),
+        Part("handle_r_low", "Handle_R", (-8, 18, -1), (2, 1, 2), handle),
+        # The furnace mouth framed: a hood over it, a sill under it, posts at its sides.
+        Part("hood", "Root", (-4.5, 21, 5.6), (9, 1.5, 2), frame),
+        Part("sill", "Root", (-4, 16.5, 5.8), (8, 0.8, 1.5), frame),
+        Part("post_l", "Root", (3, 17, 5.8), (1, 4, 1), frame),
+        Part("post_r", "Root", (-4, 17, 5.8), (1, 4, 1), frame),
+        # The seal on its plaque on the belly; ribs down the four corners; studs along the rim.
+        Part("plaque", "Root", (-4, 9.5, 6.2), (8, 7, 0.8), plaque),
+        *[Part(f"rib_{i}", "Root", (sx * 6.2 - 0.6, 10, sz * 6.2 - 0.6), (1.2, 14, 1.2), rib)
+          for i, (sx, sz) in enumerate(((1, 1), (-1, 1), (1, -1), (-1, -1)))],
+        *[Part(f"stud_f{i}", "Root", (-4.5 + 3 * i, 23.3, 6.4), (1, 1, 0.6), stud) for i in range(4)],
+        *[Part(f"stud_b{i}", "Root", (-4.5 + 3 * i, 23.3, -7), (1, 1, 0.6), stud) for i in range(4)],
+        # The lid: a flared skirt, two steps, a pearl knob on a base, a chimney.
+        Part("lid_skirt", "Lid", (-6.5, 24.6, -6.5), (13, 1, 13), lid),
         Part("lid", "Lid", (-5.5, 25, -5.5), (11, 2, 11), lid),
         Part("lid_top", "Lid", (-3.5, 27, -3.5), (7, 1, 7), lid),
-        Part("knob", "Lid", (-1, 28, -1), (2, 2, 2), knob),
-        Part("vent", "Lid", (2, 27, 1), (2, 1, 2), smoke_vent),
+        Part("knob_base", "Lid", (-1.5, 28, -1.5), (3, 1, 3), knob),
+        Part("knob", "Lid", (-1, 29, -1), (2, 2, 2), knob),
+        Part("vent", "Lid", (2, 27, 1), (2, 2, 2), smoke_vent),
     ]
     for name, (x, z) in LEGS.items():
+        out = 1 if z > 0 else -1
         p += [
             Part(f"leg_{name}", f"Leg_{name}", (x - 1.5, 5, z - 1.5), (3, 5, 3), leg),
+            # A beast's mask where the leg meets the vessel, facing out.
+            Part(f"mask_{name}", f"Leg_{name}", (x - 2, 7, z + out * 1.6 - 0.5), (4, 3, 1), mask),
+            Part(f"knee_{name}", f"Shin_{name}", (x - 1.75, 4.2, z - 1.75), (3.5, 1, 3.5), claw),
             Part(f"shin_{name}", f"Shin_{name}", (x - 1.25, 1, z - 1.25), (2.5, 4, 2.5), leg),
             Part(f"claw_{name}", f"Shin_{name}", (x - 2, 0, z - 2), (4, 1, 4), claw),
+            # Three toes reaching out.
+            *[Part(f"toe_{name}{t}", f"Shin_{name}", (x - 1.75 + 1.25 * t, 0, z + out * 2 - (0 if out > 0 else 1)),
+                   (1, 1, 1), claw) for t in range(3)],
         ]
     return p
