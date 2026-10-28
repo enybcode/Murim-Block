@@ -9,3 +9,5 @@
   long repeatable procedures in `.claude/skills/<name>/SKILL.md`, and folder-specific pitfalls in
   `.claude/rules/*.md` with `paths:`.
 - Build the CurseForge tester zip (`run/release/`) only when Enzo explicitly asks for it, never on your own.
+- Before any model or animation, draw its storyboard (key poses, motion lines, timing, the feel aimed for) and get
+  it validated by Enzo; only then build it (`docs/art/visual-rules.md`, boards in `docs/mobs/boards/`).
