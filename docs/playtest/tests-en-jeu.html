@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Murimblock V2 — Tests en jeu</title>
+<style>
+@page { size: A4; margin: 14mm 14mm 16mm; }
+body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.2pt; color: #1d1d1f; line-height: 1.38; }
+h1 { font-size: 21pt; margin: 0 0 2px; color: #7a1f1f; }
+.sub { color: #666; margin-bottom: 12px; }
+h2 { font-size: 13pt; margin: 16px 0 6px; padding: 4px 8px; background: #f3ece4; border-left: 4px solid #7a1f1f; break-after: avoid; }
+section { break-inside: avoid-page; }
+ul.check { list-style: none; padding-left: 0; margin: 4px 0; }
+ul.check li { position: relative; padding-left: 22px; margin: 3px 0; break-inside: avoid; }
+ul.check li::before { content: ""; position: absolute; left: 2px; top: 3px; width: 11px; height: 11px; border: 1.4px solid #555; border-radius: 2px; }
+.why { color: #666; font-size: 9.2pt; }
+code, kbd { font-family: Consolas, monospace; font-size: 9.2pt; background: #eee; padding: 0 3px; border-radius: 3px; }
+kbd { border: 1px solid #bbb; background: #fafafa; }
+table { border-collapse: collapse; width: 100%; font-size: 9.4pt; margin: 6px 0; }
+th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; vertical-align: top; }
+th { background: #eee; }
+td.note { height: 20px; }
+.box { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; background: #fafafa; margin: 6px 0; }
+.lines div { border-bottom: 1px solid #ccc; height: 20px; }
+</style></head><body>
+
+<h1>Murimblock V2 — Tests en jeu</h1>
+<div class="sub">Shenfa et combat aux poings · version du 28 oct. 2026 (commit 19f9855d) · coche chaque ligne, note ce qui cloche</div>
+
+<div class="box"><b>Lancer :</b> <code>./gradlew runClient</code> (ou <code>gradlew.bat runClient</code>) · monde en <b>Survie</b>, difficulté <b>Normale</b>.<br>
+<b>Commandes utiles :</b> <code>/summon minecraft:zombie</code> · <code>/time set night</code> · <code>/gamemode survival</code> · <code>/effect give @s minecraft:resistance 99999 3</code> (pour tester longtemps) · <kbd>F3</kbd>+<kbd>T</kbd> recharge clips et réglages · <kbd>F5</kbd> change de vue.<br>
+<b>Touches du combat :</b> <kbd>B</kbd> mode combat · <kbd>clic gauche</kbd> frapper · <kbd>clic droit</kbd> (tenu) garde · <kbd>Alt gauche</kbd> esquive · <kbd>V</kbd> verrouiller une cible.</div>
+
+<section><h2>1. Mode combat</h2>
+<ul class="check">
+<li><kbd>B</kbd> : le message « Combat mode: on » s'affiche et la barre de Qi apparaît au-dessus de la barre d'objets.</li>
+<li>En mode combat, le clic gauche ne casse pas de bloc et le clic droit n'utilise pas l'objet (pas de nourriture, pas de bloc posé).</li>
+<li><kbd>B</kbd> à nouveau : retour normal (minage, objets), la barre de Qi disparaît.</li>
+<li>Le mode reste correct après une mort, un changement de dimension, une déconnexion puis reconnexion.</li>
+</ul></section>
+
+<section><h2>2. Combo aux poings</h2>
+<ul class="check">
+<li>Clics réguliers sur un zombie : <b>jab → cross → crochet → uppercut</b>, puis le combo recommence.</li>
+<li>Cliquer trop tôt : le coup suivant part quand même à la fin du précédent (mémoire de 8 ticks).</li>
+<li>Attendre trop longtemps entre deux clics : le combo repart du jab.</li>
+<li>On ne peut pas marcher pendant un coup ; on peut de nouveau bouger à la fin.</li>
+<li>Portée : un zombie à 1,5–2 blocs est touché, le corps avance un peu vers lui (max 1,5 bloc).</li>
+<li>Un coup qui rate (rien devant) ne touche personne et ne bloque pas le joueur trop longtemps.</li>
+<li>Pas de coup à travers un mur.</li>
+<li>Les coups partent des pieds et des hanches, les bras en dernier (regarder en <kbd>F5</kbd>).</li>
+<li>L'uppercut soulève la cible ; le crochet la fait reculer plus longtemps que le jab.</li>
+</ul></section>
+
+<section><h2>3. Frappe en sprint et en l'air</h2>
+<ul class="check">
+<li>Sprinter puis cliquer : pas en avant avec un coup puissant (recul long).</li>
+<li>Sauter puis cliquer : frappe en l'air à deux poings, la cible est mise au sol.</li>
+<li>Une seule frappe en l'air par saut.</li>
+</ul></section>
+
+<section><h2>4. Dégâts et impact</h2>
+<ul class="check">
+<li>Le zombie perd de la vie à chaque coup touché (environ 11 points sur un combo complet, sans arme ni cultivation).</li>
+<li>Arrêt sur image : les deux corps se figent un court instant à l'impact (plus long sur les gros coups).</li>
+<li>Étincelles et son au contact ; secousse de caméra pour celui qui est touché.</li>
+<li>Traînée derrière le poing pendant la fenêtre de frappe.</li>
+<li>Un mob touché vacille et s'arrête un instant ; un golem de fer vacille à peine.</li>
+<li>Avec une cultivation plus haute, les coups font plus mal.</li>
+</ul></section>
+
+<section><h2>5. Garde</h2>
+<ul class="check">
+<li>Clic droit tenu face à un zombie : ses coups sont bloqués, pas de perte de vie, la barre de Qi baisse.</li>
+<li>Chaque coup bloqué d'affilée coûte un peu plus de Qi ; le coût redescend après 2 s sans coup.</li>
+<li>Qi à zéro : la garde se brise (flash blanc, son), moitié des dégâts passent, le joueur vacille.</li>
+<li>La garde bloque aussi les flèches d'un squelette quand on lui fait face.</li>
+<li>De dos, la garde ne protège pas.</li>
+<li>En Créatif, la garde ne coûte pas de Qi.</li>
+</ul></section>
+
+<section><h2>6. Parade</h2>
+<ul class="check">
+<li>Lever la garde juste avant le coup du zombie : parade (étincelles, bruit d'enclume), aucun dégât, le zombie vacille.</li>
+<li>Garde levée trop tôt : simple blocage, pas de parade.</li>
+<li>Spammer le clic droit ne donne pas de parade (il faut baisser la garde au moins 0,5 s avant).</li>
+<li>Le timing est-il trop dur, trop facile ? (noter en bas)</li>
+</ul></section>
+
+<section><h2>7. Esquives</h2>
+<ul class="check">
+<li><kbd>Alt</kbd> sans direction : saut en arrière d'environ un bloc.</li>
+<li><kbd>Alt</kbd> + <kbd>Z</kbd>/<kbd>Q</kbd>/<kbd>D</kbd> : roulade avant, esquive gauche, esquive droite.</li>
+<li>Chaque esquive coûte 6 Qi ; sans assez de Qi, rien ne se passe.</li>
+<li>Pendant l'esquive, les coups et flèches ne touchent pas.</li>
+<li>Contre un mur, l'esquive s'arrête au mur (pas de passage à travers).</li>
+<li>On peut esquiver pendant la fin d'un coup pour se sortir d'un combo.</li>
+</ul></section>
+
+<section><h2>8. Verrouillage de cible</h2>
+<ul class="check">
+<li><kbd>V</kbd> près de plusieurs mobs : la caméra suit le mob le plus proche du viseur.</li>
+<li>Un geste rapide de la souris passe à la cible suivante.</li>
+<li>Quand la cible meurt, le verrou passe au mob suivant ; <kbd>V</kbd> à nouveau relâche.</li>
+<li>Les coups se tournent vers la cible verrouillée.</li>
+</ul></section>
+
+<section><h2>9. Contre les mobs (vanilla)</h2>
+<div class="why">Les mobs ne sont plus sur Shenfa : ils attaquent comme en vanilla. Vérifier que le combat reste juste contre eux.</div>
+<ul class="check">
+<li>Zombie, husk, noyé : bloqués, parés, esquivés.</li>
+<li>Squelette et stray : leurs flèches sont gardées ou esquivées.</li>
+<li>Araignée, loup, golem de fer, ravageur : coups gardés ; le golem projette quand même en l'air sans garde.</li>
+<li>Creeper : son explosion n'est pas gardée (normal), l'esquive au bon moment la passe-t-elle ?</li>
+<li>Groupe de 4–5 zombies : le combat reste lisible, pas de blocage du joueur.</li>
+</ul></section>
+
+<section><h2>10. Corps du joueur hors combat (Shenfa)</h2>
+<ul class="check">
+<li>En <kbd>F5</kbd> : marche, course, accroupi, saut, chute, nage, échelle, élytres, lit, bateau, cheval.</li>
+<li>Pieds bien posés en marchant ; escaliers montés et descendus (une jambe peut encore tourner une image).</li>
+<li>Bruits de pas quand le pied touche le sol, pas de double son.</li>
+<li>Armure portée (cuir, fer, diamant, netherite, armure teinte) et objets tenus dans les deux mains.</li>
+<li>Arc, arbalète, trident, bouclier, nourriture : poses correctes.</li>
+<li>Skins larges et fins (Steve / Alex).</li>
+</ul></section>
+
+<section><h2>11. Première personne</h2>
+<ul class="check">
+<li>En mode combat, les poings sont levés dans ta vue ; ils suivent les coups.</li>
+<li>Hors combat, la vue première personne est normale (main, objets).</li>
+<li>Regarder vers le bas : le corps est visible sans couper la caméra.</li>
+</ul></section>
+
+<section><h2>12. Cape en tissu</h2>
+<ul class="check">
+<li><code>/skeletal cape test</code> : une cape apparaît, elle pend debout.</li>
+<li>En courant, elle flotte derrière ; en s'arrêtant, elle retombe sans trembler.</li>
+<li>Accroupi, en sautant, en nageant : pas de cape qui traverse le corps de façon gênante.</li>
+<li><code>/skeletal cape off</code> : retour à la cape vanilla.</li>
+</ul></section>
+
+<section><h2>13. Réglages et performances</h2>
+<ul class="check">
+<li>Dans <code>config/murimblock-client.toml</code>, <code>shenfaPlayers = false</code> : joueurs vanilla, le combat marche encore.</li>
+<li><code>/skeletal off</code> puis <code>/skeletal on</code> : bascule sans erreur.</li>
+<li>Fps avec beaucoup de joueurs ou de mobs proches : pas de chute notable par rapport à vanilla (<kbd>F3</kbd>).</li>
+<li>Ralenti pour regarder une pose : <code>/skeletal anim play murimblock:fists/hook</code> puis <code>/skeletal anim speed 0.25</code>, et <code>/skeletal anim stop</code>.</li>
+</ul></section>
+
+<section><h2>14. Multijoueur (si un 2ᵉ PC ou un 2ᵉ client est possible)</h2>
+<ul class="check">
+<li>Serveur dédié : <code>./gradlew runServer</code>, deux clients connectés.</li>
+<li>Chaque joueur voit les coups, gardes et esquives de l'autre.</li>
+<li>Coups entre joueurs : dégâts, garde, parade, esquive.</li>
+<li>Avec du lag : les coups partent tout de suite chez soi, sans saut visible.</li>
+</ul></section>
+
+<section><h2>15. Ressenti à noter (pour le réglage)</h2>
+<table>
+<tr><th style="width:22%">Élément</th><th style="width:18%">Trop lent / court / faible</th><th style="width:18%">Trop rapide / long / fort</th><th>Remarque (pose, son, effet…)</th></tr>
+<tr><td>Jab</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Cross</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Crochet</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Uppercut</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Frappe en sprint</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Frappe en l'air</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Portée des poings</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Arrêt sur image</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Secousse / flash</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Garde (coût en Qi)</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Parade (timing)</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Esquives (distance, coût)</td><td class="note"></td><td></td><td></td></tr>
+<tr><td>Verrouillage</td><td class="note"></td><td></td><td></td></tr>
+</table>
+<b>Bugs vus</b> (ce que je faisais, ce qui s'est passé) :
+<div class="lines"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+</section>
+
+</body></html>
