@@ -142,16 +142,34 @@ public final class DiscipleFighting extends Goal {
         setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
-    /** The zombie (the plain one: not the husk, drowned or our own zombies) fights as the disciple. */
+    /**
+     * The zombie family, all with the disciple's clips and fighting ({@code docs/mobs/zombie-family.png}): the zombie,
+     * the husk (Disciple des sables), the drowned (Disciple noyé), the zombie villager (Paysan possédé) and the
+     * zombified piglin (Sanglier du culte). Not our own zombies (the trial's).
+     */
+    public static boolean family(EntityType<?> type) {
+        return type == EntityType.ZOMBIE || type == EntityType.HUSK || type == EntityType.DROWNED
+                || type == EntityType.ZOMBIE_VILLAGER || type == EntityType.ZOMBIFIED_PIGLIN;
+    }
+
+    /**
+     * The family fights as the disciple. The drowned keeps vanilla's goals in the water and while it holds a trident
+     * (it swims and throws, with no clips for that yet); on land and empty-handed the disciple's goal takes over.
+     */
     @SubscribeEvent
     public static void join(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide() || event.getEntity().getType() != EntityType.ZOMBIE
+        if (event.getLevel().isClientSide() || !family(event.getEntity().getType())
                 || !(event.getEntity() instanceof Zombie zombie)) {
             return;
         }
         boolean installed = zombie.goalSelector.getAvailableGoals().stream()
                 .anyMatch(goal -> goal.getGoal() instanceof DiscipleFighting);
-        if (!installed) {
+        if (installed) {
+            return;
+        }
+        if (zombie.getType() == EntityType.DROWNED) {
+            zombie.goalSelector.addGoal(1, new DiscipleFighting(zombie));
+        } else {
             zombie.goalSelector.removeAllGoals(goal -> goal instanceof MeleeAttackGoal);
             zombie.goalSelector.addGoal(2, new DiscipleFighting(zombie));
         }
@@ -160,6 +178,10 @@ public final class DiscipleFighting extends Goal {
     @Override
     public boolean canUse() {
         LivingEntity target = mob.getTarget();
+        if (mob.getType() == EntityType.DROWNED && (mob.isInWater()
+                || mob.getMainHandItem().getItem() instanceof net.minecraft.world.item.TridentItem)) {
+            return false;
+        }
         return target != null && target.isAlive() && mob.canAttack(target);
     }
 
@@ -251,7 +273,8 @@ public final class DiscipleFighting extends Goal {
         if (crowded(target)) {
             return Move.STRIKE;
         }
-        if (blocked >= 2 || mob.getRandom().nextFloat() < DOUBLE_CHANCE) {
+        // The Paysan possédé never learned to fight: no double blow.
+        if (mob.getType() != EntityType.ZOMBIE_VILLAGER && (blocked >= 2 || mob.getRandom().nextFloat() < DOUBLE_CHANCE)) {
             return Move.DOUBLE;
         }
         return Move.STRIKE;
@@ -260,7 +283,7 @@ public final class DiscipleFighting extends Goal {
     /** Two other disciples already fighting the same prey close by. */
     private boolean crowded(LivingEntity target) {
         return mob.level().getEntitiesOfClass(Mob.class, target.getBoundingBox().inflate(5),
-                other -> other != mob && other.getType() == EntityType.ZOMBIE && other.isAlive()
+                other -> other != mob && family(other.getType()) && other.isAlive()
                         && other.getTarget() == target).size() >= 2;
     }
 
@@ -319,6 +342,12 @@ public final class DiscipleFighting extends Goal {
         if (hurt) {
             target.knockback(move == Move.LUNGE ? 0.6 : 0.35, -toward.x, -toward.z);
             mob.setLastHurtMob(target);
+            if (mob.getType() == EntityType.HUSK && mob.getMainHandItem().isEmpty()) {
+                // The Disciple des sables' thirst: vanilla's husk hunger (Husk.doHurtTarget).
+                float scale = mob.level().getCurrentDifficultyAt(mob.blockPosition()).getEffectiveDifficulty();
+                target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                        net.minecraft.world.effect.MobEffects.HUNGER, 140 * (int) scale), mob);
+            }
         } else {
             blocked++;
         }

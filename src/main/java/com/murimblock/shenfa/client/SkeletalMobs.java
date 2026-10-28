@@ -51,7 +51,12 @@ public final class SkeletalMobs {
     public static final Look DISCIPLE = new Look(id("mobs/disciple"), id("textures/entity/disciple.png"),
             id("textures/entity/disciple_glow.png"), "disciple");
     public static final Look ARCHER = new Look(id("mobs/archer"), id("textures/entity/archer.png"), null, "archer");
-    private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER);
+    /** The zombie family: the disciple's clips on looks of their own ({@code docs/mobs/zombie-family.png}). */
+    public static final Look SABLES = disciple("sables"), NOYE = disciple("noye"), PAYSAN = disciple("paysan"),
+            SANGLIER = disciple("sanglier");
+    private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER,
+            EntityType.HUSK, SABLES, EntityType.DROWNED, NOYE, EntityType.ZOMBIE_VILLAGER, PAYSAN,
+            EntityType.ZOMBIFIED_PIGLIN, SANGLIER);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -65,6 +70,11 @@ public final class SkeletalMobs {
 
     private static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, path);
+    }
+
+    private static Look disciple(String name) {
+        return new Look(id("mobs/" + name), id("textures/entity/" + name + ".png"),
+                id("textures/entity/" + name + "_glow.png"), "disciple");
     }
 
     private static final class State {
@@ -110,6 +120,17 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.ZombieRenderer(context)));
         event.registerEntityRenderer(EntityType.SKELETON, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.SkeletonRenderer(context)));
+        event.registerEntityRenderer(EntityType.HUSK, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.HuskRenderer(context)));
+        event.registerEntityRenderer(EntityType.DROWNED, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.DrownedRenderer(context)));
+        event.registerEntityRenderer(EntityType.ZOMBIE_VILLAGER, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.ZombieVillagerRenderer(context)));
+        event.registerEntityRenderer(EntityType.ZOMBIFIED_PIGLIN, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.PiglinRenderer(context,
+                        net.minecraft.client.model.geom.ModelLayers.ZOMBIFIED_PIGLIN,
+                        net.minecraft.client.model.geom.ModelLayers.ZOMBIFIED_PIGLIN_INNER_ARMOR,
+                        net.minecraft.client.model.geom.ModelLayers.ZOMBIFIED_PIGLIN_OUTER_ARMOR, true)));
     }
 
     @SubscribeEvent
@@ -247,7 +268,7 @@ public final class SkeletalMobs {
         MotionSet set = SkeletalClips.motions(look.motions());
         boolean fighting = look.clips() != null && mob.isAggressive();
         String id = set == null ? null : set.clip(state.motion, fighting);
-        if (fighting && look == DISCIPLE && state.motion == LivingMotion.IDLE) {
+        if (fighting && "disciple".equals(look.clips()) && state.motion == LivingMotion.IDLE) {
             // The disciple's guard holds what it holds (DiscipleFighting.Weapon: fists, sword, axe or tool).
             id = look.clip(com.murimblock.combat.DiscipleFighting.Weapon.of(mob.getMainHandItem()).stance()).toString();
         }

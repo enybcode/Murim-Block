@@ -146,6 +146,40 @@ final class MobLookChecks {
         steps.add(new Step("disciple walked up", mc -> {
             GifRecorder.stop();
             EngineTest.shoot(mc, "mob_disciple_walking");
+            // The zombie family in a row behind it (docs/mobs/zombie-family.png), the piglin with its golden sword.
+            EngineTest.server(mc, player -> {
+                ServerLevel level = player.serverLevel();
+                zombie(level, EntityType.HUSK, X - 3.3, Z + 4.5, null);
+                zombie(level, EntityType.DROWNED, X - 1.1, Z + 4.5, null);
+                zombie(level, EntityType.ZOMBIE_VILLAGER, X + 1.1, Z + 4.5, null);
+                zombie(level, EntityType.ZOMBIFIED_PIGLIN, X + 3.3, Z + 4.5,
+                        z -> z.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD)));
+                player.connection.teleport(X, Y + 0.4, Z - 1, 0, 8);
+            });
+        }));
+        steps.add(new Step("zombie family arriving", mc -> {
+        }));
+        steps.add(new Step("zombie family", mc -> {
+            for (EntityType<?> type : new EntityType<?>[] {EntityType.HUSK, EntityType.DROWNED, EntityType.ZOMBIE_VILLAGER,
+                    EntityType.ZOMBIFIED_PIGLIN}) {
+                Zombie zombie = mc.level.getEntitiesOfClass(Zombie.class, mc.player.getBoundingBox().inflate(12),
+                        z -> z.getType() == type).stream().findFirst().orElse(null);
+                var look = zombie == null ? null : SkeletalMobs.look(zombie);
+                String name = EntityType.getKey(type).getPath();
+                EngineTest.check(name + " wears its look (" + (look == null ? null : look.model()) + ")", look != null
+                        && look != SkeletalMobs.DISCIPLE && SkeletalModels.get(look.model()) != null
+                        && mc.getEntityRenderDispatcher().getRenderer(zombie) instanceof SkeletalMobRenderer<?>);
+                EngineTest.check(name + " plays the disciple's idle (" + clip(zombie) + ")", "disciple/idle".equals(clip(zombie)));
+            }
+            EngineTest.shoot(mc, "mob_zombie_family");
+            EngineTest.server(mc, player -> player.connection.teleport(X + 5.5, Y + 0.8, Z + 1, 50, 12));
+        }));
+        steps.add(new Step("zombie family three quarters", mc -> {
+            EngineTest.shoot(mc, "mob_zombie_family_three_quarter");
+            EngineTest.server(mc, player -> {
+                zombies(player.serverLevel()).stream().filter(z -> z.getType() != EntityType.ZOMBIE).forEach(Entity::discard);
+                player.connection.teleport(X + 2.5, Y + 0.4, Z + 1, 32, 12);
+            });
             SkeletalMobs.enable(false);
         }));
         steps.add(new Step("vanilla zombie look", mc -> {
@@ -195,7 +229,12 @@ final class MobLookChecks {
     }
 
     private static void zombie(ServerLevel level, double x, double z, java.util.function.Consumer<Zombie> dress) {
-        Zombie zombie = EntityType.ZOMBIE.create(level);
+        zombie(level, EntityType.ZOMBIE, x, z, dress);
+    }
+
+    private static void zombie(ServerLevel level, EntityType<? extends Zombie> type, double x, double z,
+            java.util.function.Consumer<Zombie> dress) {
+        Zombie zombie = type.create(level);
         if (zombie == null) {
             return;
         }

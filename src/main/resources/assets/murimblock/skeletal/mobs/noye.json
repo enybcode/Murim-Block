@@ -1,0 +1,104 @@
+{
+ "texture": [
+  128,
+  64
+ ],
+ "cloth": [
+  {
+   "name": "kelp_1",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    1.4,
+    13.6,
+    2.95
+   ],
+   "width": 1,
+   "length": 6,
+   "front": [
+    49,
+    30,
+    1,
+    6
+   ],
+   "back": [
+    51,
+    30,
+    1,
+    6
+   ]
+  },
+  {
+   "name": "kelp_2",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    2.4,
+    13.8,
+    2.95
+   ],
+   "width": 1,
+   "length": 4,
+   "front": [
+    121,
+    30,
+    1,
+    4
+   ],
+   "back": [
+    123,
+    30,
+    1,
+    4
+   ]
+  },
+  {
+   "name": "panel_front",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    -1,
+    13.8,
+    2.6
+   ],
+   "width": 6,
+   "length": 8,
+   "front": [
+    25,
+    30,
+    6,
+    8
+   ],
+   "back": [
+    32,
+    30,
+    6,
+    8
+   ]
+  },
+  {
+   "name": "panel_back",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    0,
+    13.8,
+    -2.6
+   ],
+   "width": 7,
+   "length": 9,
+   "front": [
+    1,
+    30,
+    7,
+    9
+   ],
+   "back": [
+    9,
+    30,
+    7,
+    9
+   ]
+  }
+ ]
+}

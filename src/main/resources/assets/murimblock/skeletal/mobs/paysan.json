@@ -1,0 +1,56 @@
+{
+ "texture": [
+  128,
+  64
+ ],
+ "cloth": [
+  {
+   "name": "apron_front",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    0,
+    14,
+    2.65
+   ],
+   "width": 6,
+   "length": 7,
+   "front": [
+    97,
+    17,
+    6,
+    7
+   ],
+   "back": [
+    104,
+    17,
+    6,
+    7
+   ]
+  },
+  {
+   "name": "tunic_back",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    0,
+    13.8,
+    -2.6
+   ],
+   "width": 7,
+   "length": 6,
+   "front": [
+    111,
+    17,
+    7,
+    6
+   ],
+   "back": [
+    119,
+    17,
+    7,
+    6
+   ]
+  }
+ ]
+}

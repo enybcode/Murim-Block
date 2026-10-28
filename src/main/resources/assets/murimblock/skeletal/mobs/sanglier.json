@@ -1,0 +1,80 @@
+{
+ "texture": [
+  128,
+  32
+ ],
+ "cloth": [
+  {
+   "name": "sash_end",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    2.5,
+    13.6,
+    2.95
+   ],
+   "width": 1,
+   "length": 5,
+   "front": [
+    87,
+    26,
+    1,
+    5
+   ],
+   "back": [
+    89,
+    26,
+    1,
+    5
+   ]
+  },
+  {
+   "name": "tasset_front",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    -1,
+    13.8,
+    2.6
+   ],
+   "width": 6,
+   "length": 5,
+   "front": [
+    73,
+    26,
+    6,
+    5
+   ],
+   "back": [
+    80,
+    26,
+    6,
+    5
+   ]
+  },
+  {
+   "name": "tasset_back",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    0,
+    13.8,
+    -2.6
+   ],
+   "width": 7,
+   "length": 6,
+   "front": [
+    33,
+    26,
+    7,
+    6
+   ],
+   "back": [
+    41,
+    26,
+    7,
+    6
+   ]
+  }
+ ]
+}
