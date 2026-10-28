@@ -1,0 +1,14 @@
+{
+  "clips": {
+    "idle": {"loop": true, "transition": 0.25},
+    "walk": {"loop": true, "transition": 0.2, "move_speed": "auto"},
+    "run": {"loop": true, "transition": 0.15, "move_speed": "auto"},
+    "stance": {"loop": true, "transition": 0.2},
+    "strike": {"transition": 0.05},
+    "double": {"transition": 0.05},
+    "lunge": {"transition": 0.05},
+    "flinch": {"transition": 0.03,
+      "mask": ["Torso", "Chest", "Head", "Shoulder_L", "Shoulder_R", "Arm_L", "Arm_R", "Hand_L", "Hand_R"]},
+    "death": {"transition": 0.05}
+  }
+}

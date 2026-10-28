@@ -8,7 +8,8 @@ biped's armor parts, held items) and falls back to vanilla's renderer when `shen
 
 | Mob | Look | Sheet | State |
 |---|---|---|---|
-| Zombie | Disciple déchu | `disciple-dechu.png`, model `disciple-dechu-model-v1.png` | In game (28 Oct 2026). Moves with the biped's living motions; reaches and swings like vanilla's zombie. Own clips and attacks: next. |
+| Zombie | Disciple déchu | `disciple-dechu.png`, model `disciple-dechu-model-v1.png`, clips `disciple-dechu-clips-v1.png` | In game (28 Oct 2026) with its own clips (`skeletal/animations/disciple`): slumped idle, dragging walk, reaching chase, half guard when aggressive, strike (every third swing the double blow), flinch, death. |
 
-Not yet: each mob's own clips (idle stooped, dragging walk, the three attacks of its sheet), cloth on the rope ends
+Not yet: the lunge (its clip is ready; it needs the server to make the zombie leap) and the attacks chosen by the
+server (today vanilla's zombie decides when to hit and the client picks the clip), cloth on the rope ends
 and robe skirts, baby zombies' larger head (they are drawn as a half-size adult).

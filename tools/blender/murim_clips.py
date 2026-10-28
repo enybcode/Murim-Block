@@ -456,6 +456,127 @@ SETS["combat"] = {
 }
 
 
+# The Disciple déchu (the zombie's look; docs/mobs/disciple-dechu.png): a dead body that still half remembers its
+# training. Stooped and slack, it drags its left foot, lurches forward reaching when it chases, and keeps one fist up
+# out of habit when it faces a fight. Its blows are wide and slow to read: a haymaker, a jab then a haymaker, a lunge.
+SLUMP = {**bent_legs(0.8), "Torso": (14, 0, 0), "Chest": (8, 0, 0), "Head": (-6, 0, 10),
+         "Arm_L": (-12, 0, 6), "Arm_R": (-8, 0, -4), "Hand_L": (-14, 0, 0), "Hand_R": (-20, 0, 0)}
+# The guard it half remembers: left foot ahead, the left fist up, the right arm hanging.
+HALF_GUARD = {"Root": {"rot": (0, -14, 0), "loc": (0, -1.4, 0)}, **legs(-20, 36, 10, 28),
+              "Torso": (10, 0, 0), "Chest": (6, -6, 0), "Head": (-12, 14, 6),
+              "Arm_L": (-70, -10, 20), "Hand_L": (-95, 0, 0), "Arm_R": (-14, 0, -6), "Hand_R": (-24, 0, 0)}
+SHAMBLE_LAND = {"Root": {"loc": (0, -2.2, 0)}, "Torso": (16, 0, -3), "Chest": (6, -6, 0), "Head": (-8, 6, 8),
+                "Thigh_R": (-32, 0, 0), "Leg_R": (8, 0, 0), "Thigh_L": (26, 0, 0), "Leg_L": (10, 0, 0),
+                "Arm_L": (-18, 0, 6), "Arm_R": (8, 0, -4), "Hand_L": (-18, 0, 0), "Hand_R": (-10, 0, 0)}
+FLINCH_REST = {"Torso": (14, 0, 0), "Chest": (8, 0, 0), "Head": (-6, 0, 10), "Arm_L": (-12, 0, 6),
+               "Arm_R": (-8, 0, -4)}
+
+SETS["disciple"] = {
+    # Slumped, the head sinking to one side until it jerks up again.
+    "idle": [
+        (0, SLUMP),
+        (24, {"Torso": (16, 0, 2), "Chest": (10, 4, 0), "Head": (-2, 6, 24), "Arm_L": (-14, 0, 8),
+              "Arm_R": (-6, 0, -6)}),
+        (30, {"Head": (0, 4, 30)}),
+        (33, {"Head": (-14, -6, -6), "Chest": (6, -2, 0)}),
+        (40, {"Head": (-8, -2, 4)}),
+        (60, SLUMP),
+    ],
+    # A shamble: a full step with the right foot, the left one dragged after it, the body rolling over them.
+    "walk": [
+        (0, SHAMBLE_LAND),
+        (7, {"Root": {"loc": (0, -1.0, 0)}, "Torso": (15, 0, 2), "Chest": (2, 0, 0), "Head": (-6, 0, 14),
+             "Thigh_R": (-6, 0, 0), "Leg_R": (6, 0, 0), "Thigh_L": (-4, 0, 0), "Leg_L": (18, 0, 0),
+             "Arm_L": (-6, 0, 6), "Arm_R": (-4, 0, -4), "Hand_L": (-14, 0, 0), "Hand_R": (-16, 0, 0)}),
+        (14, {"Root": {"loc": (0, -1.8, 0)}, "Torso": (14, 0, 4), "Chest": (4, 6, 0), "Head": (-8, -4, 6),
+              "Thigh_L": (-22, 0, 0), "Leg_L": (6, 0, 0), "Thigh_R": (24, 0, 0), "Leg_R": (8, 0, 0),
+              "Arm_L": (6, 0, 6), "Arm_R": (-16, 0, -4), "Hand_L": (-10, 0, 0), "Hand_R": (-22, 0, 0)}),
+        (21, {"Root": {"loc": (0, -0.6, 0)}, "Torso": (16, 0, 0), "Chest": (2, 0, 0), "Head": (-6, 0, 10),
+              "Thigh_R": (-30, 0, 0), "Leg_R": (60, 0, 0), "Thigh_L": (4, 0, 0), "Leg_L": (8, 0, 0),
+              "Arm_L": (-8, 0, 6), "Arm_R": (0, 0, -4), "Hand_L": (-14, 0, 0), "Hand_R": (-14, 0, 0)}),
+        (28, SHAMBLE_LAND),
+    ],
+    # The chase: thrown forward, long ragged strides, both arms reaching for the prey.
+    "run": cycle(
+        {"Root": {"loc": (0, -1.8, 0)}, "Torso": (26, 0, 0), "Chest": (4, -8, 0), "Head": (-24, 8, 0),
+         "Thigh_R": (-48, 0, 0), "Leg_R": (22, 0, 0), "Thigh_L": (34, 0, 0), "Leg_L": (55, 0, 0),
+         "Arm_L": (-75, 0, 10), "Arm_R": (-55, 0, -10), "Hand_L": (-20, 0, 0), "Hand_R": (-30, 0, 0)},
+        {"Root": {"loc": (0, 0.4, 0)}, "Torso": (26, 0, 0), "Chest": (0, 0, 0), "Head": (-24, 0, 0),
+         "Thigh_R": (-12, 0, 0), "Leg_R": (28, 0, 0), "Thigh_L": (-30, 0, 0), "Leg_L": (95, 0, 0),
+         "Arm_L": (-60, 0, 14), "Arm_R": (-70, 0, -14), "Hand_L": (-30, 0, 0), "Hand_R": (-20, 0, 0)},
+        16),
+    # Facing a fight: the half-remembered guard, swaying.
+    "stance": [
+        (0, HALF_GUARD),
+        (20, {"Root": {"rot": (0, -10, 0), "loc": (0, -1.8, 0)}, "Head": (-8, 10, 12),
+              "Arm_L": (-62, -10, 22), "Hand_L": (-88, 0, 0), "Arm_R": (-8, 0, -8)}),
+        (40, HALF_GUARD),
+    ],
+    # The clumsy blow: the right arm flung back, then a wide haymaker that carries the body past its feet.
+    "strike": [
+        (0, HALF_GUARD),
+        (3, {"Root": {"rot": (0, -30, 0), "loc": (0, -1.6, -0.5)}, "Chest": (4, -25, 0), "Head": (-10, 30, 0),
+             "Arm_R": (20, 0, -70), "Hand_R": (-60, 0, 0), "Arm_L": (-40, 0, 20), "Hand_L": (-60, 0, 0)}),
+        (5, {"Root": {"rot": (0, 15, 0), "loc": (0, -2.2, 2)}, **legs(-36, 40, 10, 25), "Chest": (14, 30, 0),
+             "Head": (-16, -20, 0), "Arm_R": (-95, -45, 0), "Hand_R": (-15, 0, 0), "Arm_L": (-20, 0, 25),
+             "Hand_L": (-40, 0, 0)}),
+        (8, {"Root": {"rot": (0, 24, 0), "loc": (0, -2.6, 2.6)}, "Torso": (24, 0, 0), "Chest": (18, 36, 0),
+             "Head": (-20, -24, 10), "Arm_R": (-60, -60, 10), "Hand_R": (-30, 0, 0)}),
+        (18, HALF_GUARD),
+    ],
+    # The memory of a technique: a quick left jab, then the right haymaker.
+    "double": [
+        (0, HALF_GUARD),
+        (3, {"Root": {"rot": (0, -22, 0), "loc": (0, -1.6, 1)}, "Chest": (8, -18, 0), "Head": (-12, 22, 0),
+             "Arm_L": (-95, -10, 0), "Hand_L": (-10, 0, 0)}),
+        (6, {"Root": {"rot": (0, -8, 0), "loc": (0, -1.4, 0.5)}, "Chest": (6, 0, 0), "Head": (-10, 8, 0),
+             "Arm_L": (-60, -10, 15), "Hand_L": (-80, 0, 0)}),
+        (8, {"Root": {"rot": (0, -20, 0), "loc": (0, -1.6, 0)}, "Chest": (4, -20, 0),
+             "Arm_R": (-30, 20, -40), "Hand_R": (-80, 0, 0)}),
+        (10, {"Root": {"rot": (0, 16, 0), "loc": (0, -2.0, 2)}, **legs(-34, 40, 10, 25), "Chest": (12, 28, 0),
+              "Head": (-14, -18, 0), "Arm_R": (-95, -40, 0), "Hand_R": (-10, 0, 0)}),
+        (14, {"Root": {"rot": (0, 10, 0), "loc": (0, -1.8, 1.5)}, "Arm_R": (-70, -30, 0), "Hand_R": (-40, 0, 0)}),
+        (22, HALF_GUARD),
+    ],
+    # The lunge: it sinks, throws itself forward with both arms out, lands short and stumbles (in place: the mob's
+    # own motion carries it).
+    "lunge": [
+        (0, HALF_GUARD),
+        (5, {"Root": {"rot": (0, 0, 0), "loc": (0, -3.5, -1)}, **legs(-40, 80, -30, 70), "Torso": (30, 0, 0),
+             "Chest": (10, 0, 0), "Head": (-30, 0, 0), "Arm_L": (40, 0, 20), "Arm_R": (40, 0, -20),
+             "Hand_L": (-30, 0, 0), "Hand_R": (-30, 0, 0)}),
+        (9, {"Root": {"rot": (0, 0, 0), "loc": (0, 1.5, 3)}, **legs(-40, 20, 30, 40), "Torso": (34, 0, 0),
+             "Chest": (8, 0, 0), "Head": (-34, 0, 0), "Arm_L": (-110, 0, 10), "Arm_R": (-110, 0, -10),
+             "Hand_L": (-10, 0, 0), "Hand_R": (-10, 0, 0)}),
+        (13, {"Root": {"loc": (0, -3, 3)}, **legs(-50, 70, 10, 50), "Torso": (30, 0, 0),
+              "Arm_L": (-80, 0, 20), "Arm_R": (-90, 0, -20), "Hand_L": (-30, 0, 0), "Hand_R": (-30, 0, 0)}),
+        (19, {"Root": {"rot": (0, 8, 0), "loc": (0, -2, 1.5)}, **legs(-24, 36, 12, 26), "Torso": (20, 0, 0),
+              "Head": (-16, -8, 10), "Arm_L": (-40, 0, 20), "Arm_R": (-30, 0, -14)}),
+        (26, HALF_GUARD),
+    ],
+    # Struck: the head snaps back and the arms fly out (upper body only, see disciple.json).
+    "flinch": [
+        (0, FLINCH_REST),
+        (2, {"Torso": (-4, 0, 0), "Chest": (-12, 8, 0), "Head": (-30, -10, -8), "Arm_L": (-30, 0, 30),
+             "Arm_R": (-24, 0, -30)}),
+        (8, FLINCH_REST),
+    ],
+    # Death, within vanilla's 20 ticks: the knees give, it kneels, slumps and falls on its face.
+    "death": [
+        (0, SLUMP),
+        (4, {"Root": {"rot": (0, 0, 0), "loc": (0, -4, 0)}, **legs(-50, 95, -45, 90), "Torso": (20, 0, 0),
+             "Head": (-20, 0, 0), "Arm_L": (-10, 0, 20), "Arm_R": (-10, 0, -20)}),
+        (8, {"Root": {"rot": (0, 0, 0), "loc": (0, -6, 0)}, **legs(0, 90, 0, 90), "Torso": (10, 0, 0),
+             "Chest": (10, 0, 0), "Head": (20, 0, 15), "Arm_L": (0, 0, 6), "Arm_R": (0, 0, -6),
+             "Hand_L": (-6, 0, 0), "Hand_R": (-6, 0, 0)}),
+        (14, {"Root": {"rot": (88, 0, 0), "loc": (0, -10.5, 4)}, **legs(0, 0, 0, 0), "Torso": (0, 0, 0),
+              "Chest": (0, 0, 0), "Head": (-10, 20, 0), "Arm_L": (-20, 0, 30), "Arm_R": (-10, 0, -25)}),
+        (16, {"Root": {"rot": (84, 0, 0), "loc": (0, -10, 4)}}),
+        (20, {"Root": {"rot": (88, 0, 0), "loc": (0, -10.5, 4)}}),
+    ],
+}
+
+
 def rotation(degrees):
     x, y, z = (math.radians(d) for d in degrees)
     return Quaternion((1, 0, 0), x) @ Quaternion((0, 1, 0), y) @ Quaternion((0, 0, 1), z)

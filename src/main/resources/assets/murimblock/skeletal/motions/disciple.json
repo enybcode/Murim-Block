@@ -1,0 +1,16 @@
+{
+  "motions": {
+    "idle": "murimblock:disciple/idle",
+    "walk": "murimblock:disciple/walk",
+    "run": "murimblock:disciple/run",
+    "jump": "murimblock:biped/jump",
+    "fall": "murimblock:biped/fall",
+    "swim": "murimblock:biped/swim",
+    "climb": "murimblock:biped/climb",
+    "ride": "murimblock:biped/ride"
+  },
+  "combat": {
+    "idle": "murimblock:disciple/stance"
+  },
+  "additive": ["murimblock:biped/breathe"]
+}

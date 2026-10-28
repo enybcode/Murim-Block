@@ -65,8 +65,8 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
             bodyYaw += (float) (Math.cos(mob.tickCount * 3.25) * Math.PI * 0.4f);
         }
         poseStack.mulPose(Axis.YP.rotationDegrees(-bodyYaw));
-        if (mob.deathTime > 0) {
-            // Vanilla's fall to the side when dying.
+        if (mob.deathTime > 0 && !SkeletalMobs.diesByClip(mob)) {
+            // Vanilla's fall to the side when dying (a look with its own death clip falls by it).
             float fall = Mth.sqrt((mob.deathTime + partialTick - 1) / 20f * 1.6f);
             poseStack.mulPose(Axis.ZP.rotationDegrees(-Math.min(fall, 1) * 90));
         }

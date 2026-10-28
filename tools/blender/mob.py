@@ -122,6 +122,34 @@ def render(armature, out, size):
     print("MURIM rendered views to", out)
 
 
+def film(armature, clips, out, size):
+    """Each clip from three quarters, a frame per tick, into <out>/<clip>/frame_NNN.png."""
+    import murim_clips
+    scene = bpy.context.scene
+    world = bpy.data.worlds.new("world")
+    world.use_nodes = True
+    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.42, 0.45, 0.5, 1)
+    scene.world = world
+    light("key", "SUN", 3.2, (55, 0, -35), (1.0, 0.95, 0.86))
+    light("rim", "SUN", 1.4, (60, 0, 150), (0.75, 0.85, 1.0))
+    engines = {item.identifier for item in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items}
+    scene.render.engine = "BLENDER_EEVEE" if "BLENDER_EEVEE" in engines else "BLENDER_EEVEE_NEXT"
+    scene.render.resolution_x = scene.render.resolution_y = size
+    b = murim_biped.blender
+    scene.camera = camera("film", b(46, 22, 52), b(0, 14, 2), 46)
+    for clip in clips:
+        set_name, name = clip.split("/")
+        keys = murim_clips.SETS[set_name][name]
+        murim_clips.make_action(armature, name, keys)
+        folder = os.path.join(out, name)
+        os.makedirs(folder, exist_ok=True)
+        for frame in range(0, keys[-1][0] + 1):
+            scene.frame_set(frame)
+            scene.render.filepath = os.path.join(folder, f"frame_{frame:03d}.png")
+            bpy.ops.render.render(write_still=True)
+    print("MURIM filmed", clips)
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     parser = argparse.ArgumentParser()
@@ -131,6 +159,7 @@ def main():
     parser.add_argument("--blend")
     parser.add_argument("--renders")
     parser.add_argument("--size", type=int, default=480)
+    parser.add_argument("--film", help="clips of murim_clips.py as <set>/<clip>,... filmed frame by frame into --renders")
     args = parser.parse_args(argv)
 
     mob = importlib.import_module(args.mob)
@@ -161,7 +190,9 @@ def main():
     if args.blend:
         os.makedirs(os.path.dirname(os.path.abspath(args.blend)), exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(args.blend))
-    if args.renders:
+    if args.renders and args.film:
+        film(armature, args.film.split(","), os.path.abspath(args.renders), args.size)
+    elif args.renders:
         render(armature, os.path.abspath(args.renders), args.size)
 
 

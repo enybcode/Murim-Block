@@ -32,6 +32,7 @@ final class MobLookChecks {
     private static final int AREA = 680;
     private static final double X = AREA + 0.5, Y = 200, Z = 0.5;
     private static final String TAG = "murimblock_look_check";
+    private static final java.util.Set<String> MOVES = new java.util.LinkedHashSet<>();
 
     private MobLookChecks() {
     }
@@ -64,23 +65,45 @@ final class MobLookChecks {
             EngineTest.check("zombies are drawn by the Shenfa mob renderer", zombie != null
                     && mc.getEntityRenderDispatcher().getRenderer(zombie) instanceof SkeletalMobRenderer<?>);
             EngineTest.check("and wear the Disciple's look", zombie != null && SkeletalMobs.look(zombie) != null);
+            EngineTest.check("standing, it plays its slumped idle (" + clip(zombie) + ")", "disciple/idle".equals(clip(zombie)));
             EngineTest.shoot(mc, "mob_disciple_front");
             EngineTest.server(mc, player -> player.connection.teleport(X + 3.2, Y + 0.6, Z + 1, 58, 15));
         }));
         steps.add(new Step("disciple three quarters", mc -> {
             EngineTest.shoot(mc, "mob_disciple_three_quarter");
+            SkeletalMobs.moveProbe = (mob, move) -> MOVES.add(move);
+            GifRecorder.start("mob_disciple_moves");
             EngineTest.server(mc, player -> {
                 player.connection.teleport(X, Y, Z + 1.2, 0, 15);
+                MOVES.clear();
                 for (Zombie zombie : zombies(player.serverLevel())) {
                     zombie.setAggressive(true);
                     zombie.swing(InteractionHand.MAIN_HAND);
                 }
             });
         }));
-        steps.add(new Step("disciple reaching", mc -> {
+        steps.add(new Step("disciple strikes", mc -> {
             Zombie zombie = nearest(mc);
-            EngineTest.check("an aggressive zombie shows it (arms raised)", zombie != null && zombie.isAggressive());
-            EngineTest.shoot(mc, "mob_disciple_reaching");
+            EngineTest.check("swinging, it strikes (" + MOVES + ")", MOVES.contains("strike"));
+            EngineTest.check("aggressive, it stands in its half guard (" + clip(zombie) + ")",
+                    "disciple/stance".equals(clip(zombie)));
+            EngineTest.shoot(mc, "mob_disciple_stance");
+            EngineTest.server(mc, player -> zombies(player.serverLevel()).forEach(z -> z.hurt(
+                    player.damageSources().playerAttack(player), 1)));
+        }));
+        steps.add(new Step("disciple flinches", mc -> {
+            EngineTest.check("hurt, it flinches (" + MOVES + ")", MOVES.contains("flinch"));
+            EngineTest.server(mc, player -> zombies(player.serverLevel()).forEach(z -> z.hurt(
+                    player.damageSources().playerAttack(player), 1000)));
+        }));
+        steps.add(new Step("disciple dies", mc -> {
+            EngineTest.check("killed, it falls by its death clip (" + MOVES + ")", MOVES.contains("death"));
+            GifRecorder.stop();
+            SkeletalMobs.moveProbe = null;
+            EngineTest.server(mc, player -> {
+                zombie(player.serverLevel(), X, Z + 3, null);
+                player.connection.teleport(X, Y, Z, 0, 10);
+            });
             SkeletalMobs.enable(false);
         }));
         steps.add(new Step("vanilla zombie look", mc -> {
@@ -123,6 +146,11 @@ final class MobLookChecks {
     private static List<Zombie> zombies(ServerLevel level) {
         return level.getEntitiesOfClass(Zombie.class, new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20),
                 zombie -> zombie.getTags().contains(TAG));
+    }
+
+    private static String clip(Zombie zombie) {
+        var animation = zombie == null ? null : SkeletalMobs.baseAnimation(zombie);
+        return animation == null ? null : animation.id();
     }
 
     private static Zombie nearest(Minecraft mc) {
