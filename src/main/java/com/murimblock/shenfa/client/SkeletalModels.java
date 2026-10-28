@@ -53,7 +53,8 @@ public final class SkeletalModels implements ResourceManagerReloadListener {
             try (InputStream in = resource.open()) {
                 String json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
                 String folder = file.getPath().substring(0, file.getPath().lastIndexOf('/') + 1);
-                boolean biped = name.startsWith("biped");
+                // Mob models (skeletal/mobs/) are built on the biped's skeleton too.
+                boolean biped = name.startsWith("biped") || name.startsWith("mobs/");
                 loaded.put(id, GltfLoader.load(json, uri -> read(manager,
                         ResourceLocation.fromNamespaceAndPath(file.getNamespace(), folder + uri)), biped ? Biped.ARMATURE : null));
             } catch (IOException | RuntimeException e) {

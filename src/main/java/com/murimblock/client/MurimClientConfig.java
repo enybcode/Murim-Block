@@ -14,6 +14,10 @@ public final class MurimClientConfig {
             .comment("Draw players with Shenfa, the mod's animation engine (needed to see combat moves).")
             .define("shenfaPlayers", true);
 
+    public static final ModConfigSpec.BooleanValue SHENFA_MOBS = BUILDER
+            .comment("Draw mobs with the mod's own looks (the zombie as the Disciple d00e9chu); false shows vanilla's models.")
+            .define("shenfaMobs", true);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private MurimClientConfig() {
@@ -27,6 +31,15 @@ public final class MurimClientConfig {
     public static boolean shenfaPlayers() {
         try {
             return SHENFA_PLAYERS.get();
+        } catch (IllegalStateException e) {
+            return true;
+        }
+    }
+
+    /** Whether mobs wear the mod's looks; on before the config is read. */
+    public static boolean shenfaMobs() {
+        try {
+            return SHENFA_MOBS.get();
         } catch (IllegalStateException e) {
             return true;
         }

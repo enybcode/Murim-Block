@@ -69,10 +69,10 @@ public final class SkeletalPlayerRenderer {
      * From each grip joint to where vanilla holds an item, worked out from vanilla's arm pivot (x ±5, y 22), its turn
      * (-90° about X, 180° about Y, which in our axes is 90° about X then 180° about Y) and its offset (±1, 2, -10 px).
      */
-    private static final Matrix4f RIGHT_GRIP = new Matrix4f().translate(1 * PIXEL, 9 * PIXEL, 0)
+    static final Matrix4f RIGHT_GRIP = new Matrix4f().translate(1 * PIXEL, 9 * PIXEL, 0)
             .rotateX((float) Math.toRadians(90)).rotateY((float) Math.toRadians(180))
             .translate(1 * PIXEL, 2 * PIXEL, -10 * PIXEL);
-    private static final Matrix4f LEFT_GRIP = new Matrix4f().translate(-1 * PIXEL, 9 * PIXEL, 0)
+    static final Matrix4f LEFT_GRIP = new Matrix4f().translate(-1 * PIXEL, 9 * PIXEL, 0)
             .rotateX((float) Math.toRadians(90)).rotateY((float) Math.toRadians(180))
             .translate(-1 * PIXEL, 2 * PIXEL, -10 * PIXEL);
 
@@ -225,7 +225,8 @@ public final class SkeletalPlayerRenderer {
         if (skeletonView) {
             drawJoints(model.armature(), jointMatrices, poseStack.last(), buffers);
         } else if (!spectator) {
-            SkeletalArmor.render(renderer, player, model, skinMatrices, poseStack.last(), buffers, light,
+            SkeletalArmor.render(player, slot -> VanillaLayers.customArmor(renderer, player, slot), model, skinMatrices,
+                    poseStack.last(), buffers, light,
                     name -> !firstPerson || !hiddenInFirstPerson(name, ownArms));
         }
         poseStack.popPose();

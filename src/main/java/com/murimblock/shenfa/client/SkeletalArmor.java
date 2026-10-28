@@ -9,16 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
@@ -46,14 +45,16 @@ final class SkeletalArmor {
     private SkeletalArmor() {
     }
 
-    /** {@code matrix} is the model's space in pixels. */
-    /** {@code shown} picks the armor parts drawn (in first person, not the helmet). */
-    static void render(PlayerRenderer renderer, AbstractClientPlayer player, SkinnedModel model, Matrix4f[] skin,
+    /**
+     * {@code matrix} is the model's space in pixels; {@code ownModel} tells the slots whose armor brings its own model
+     * (drawn by vanilla instead); {@code shown} picks the armor parts drawn (in first person, not the helmet).
+     */
+    static void render(LivingEntity player, Predicate<EquipmentSlot> ownModel, SkinnedModel model, Matrix4f[] skin,
                        PoseStack.Pose matrix, MultiBufferSource buffers, int light, Predicate<String> shown) {
         for (EquipmentSlot slot : SLOTS) {
             ItemStack stack = player.getItemBySlot(slot);
             if (!(stack.getItem() instanceof ArmorItem armor) || armor.getEquipmentSlot() != slot
-                    || VanillaLayers.customArmor(renderer, player, slot)) {
+                    || ownModel.test(slot)) {
                 continue;
             }
             List<SkinnedMesh> parts = new ArrayList<>();

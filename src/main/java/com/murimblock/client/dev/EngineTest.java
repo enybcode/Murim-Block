@@ -84,6 +84,7 @@ public final class EngineTest {
         groups.put("film", FilmChecks::steps);
         groups.put("perf", PerfChecks::steps);
         groups.put("cloth", ClothChecks::steps);
+        groups.put("mobs", MobLookChecks::steps);
         String wanted = System.getProperty("murimblock.engineGroups", "");
         Set<String> only = wanted.isBlank() ? groups.keySet() : Set.of(wanted.split(","));
         return groups.entrySet().stream().filter(entry -> only.contains(entry.getKey()))

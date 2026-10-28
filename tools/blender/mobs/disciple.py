@@ -227,7 +227,7 @@ def arm_bare(face, x, y, w, h):
     if y < 6:
         return robe_dirt(ROBE, face, x, y, h, 51, 24, 12)
     if face == "bottom":
-        return NAIL if y == 0 and x % 2 == 0 else SKIN[1]
+        return SKIN[0] if y == 0 else SKIN[1]
     if y == h - 1 and face != "top" and x % 2 == 0:
         return NAIL
     if y in (7, 9):
@@ -238,7 +238,7 @@ def arm_bare(face, x, y, w, h):
 def arm_sleeved(face, x, y, w, h):
     if y >= 10 or face == "bottom":
         if face == "bottom":
-            return NAIL if y == 0 and x % 2 == 0 else SKIN[1]
+            return SKIN[0] if y == 0 else SKIN[1]
         return NAIL if y == h - 1 and x % 2 == 0 else shade(SKIN, face, x, y, h, 57, 0.1)
     return robe_dirt(ROBE, face, x, y, h, 59, 24, 12)
 
