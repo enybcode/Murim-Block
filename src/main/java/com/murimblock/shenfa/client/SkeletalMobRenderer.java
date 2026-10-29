@@ -72,6 +72,10 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         // getScale leaves out a baby's half size: vanilla's models shrink it themselves.
         float scale = mob.getScale() * mob.getAgeScale();
         poseStack.scale(scale, scale, scale);
+        if (mob instanceof net.minecraft.world.entity.monster.CaveSpider) {
+            // Vanilla's cave spider is a smaller spider (CaveSpiderRenderer).
+            poseStack.scale(0.7f, 0.7f, 0.7f);
+        }
         if (mob instanceof net.minecraft.world.entity.monster.Creeper creeper) {
             // Vanilla's fuse: the body swells and wobbles as it is about to burst (CreeperRenderer.scale).
             float swell = creeper.getSwelling(partialTick);

@@ -63,6 +63,9 @@ public final class SkeletalMobs {
     /** The spider, on a skeleton of its own. */
     public static final Look FILEUSE = new Look(id("mobs/spider"), id("textures/entity/spider.png"),
             id("textures/entity/spider_glow.png"), "spider");
+    /** The cave spider as the Bête des Cinq Venins: the Fileuse's skeleton and clips, drawn at vanilla's 0.7. */
+    public static final Look VENINS = new Look(id("mobs/venins"), id("textures/entity/venins.png"),
+            id("textures/entity/venins_glow.png"), "spider");
     /** The creeper, on a skeleton of its own. */
     public static final Look FOURNEAU = new Look(id("mobs/furnace"), id("textures/entity/furnace.png"),
             id("textures/entity/furnace_glow.png"), "furnace");
@@ -76,7 +79,8 @@ public final class SkeletalMobs {
             Map.entry(EntityType.SKELETON, ARCHER), Map.entry(EntityType.HUSK, SABLES), Map.entry(EntityType.DROWNED, NOYE),
             Map.entry(EntityType.ZOMBIE_VILLAGER, PAYSAN), Map.entry(EntityType.ZOMBIFIED_PIGLIN, SANGLIER),
             Map.entry(EntityType.SPIDER, FILEUSE), Map.entry(EntityType.CREEPER, FOURNEAU), Map.entry(EntityType.ENDERMAN, MOINE),
-            Map.entry(EntityType.IRON_GOLEM, GOLEM), Map.entry(EntityType.STRAY, ESPRIT));
+            Map.entry(EntityType.IRON_GOLEM, GOLEM), Map.entry(EntityType.STRAY, ESPRIT),
+            Map.entry(EntityType.CAVE_SPIDER, VENINS));
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -193,6 +197,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.ZombieVillagerRenderer(context)));
         event.registerEntityRenderer(EntityType.CREEPER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.CreeperRenderer(context)));
+        event.registerEntityRenderer(EntityType.CAVE_SPIDER, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.CaveSpiderRenderer(context)));
         event.registerEntityRenderer(EntityType.SPIDER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.SpiderRenderer<>(context)));
         event.registerEntityRenderer(EntityType.IRON_GOLEM, context -> new SkeletalMobRenderer<>(context,
@@ -251,6 +257,12 @@ public final class SkeletalMobs {
         }
         if (look == ESPRIT) {
             trail(mob);
+        }
+        if (look == VENINS && mob.getRandom().nextInt(25) == 0) {
+            // Venom dripping from its fangs.
+            float yaw = mob.yBodyRot * Mth.DEG_TO_RAD;
+            mob.level().addParticle(net.minecraft.core.particles.ParticleTypes.ITEM_SLIME,
+                    mob.getX() - Mth.sin(yaw) * 0.45, mob.getY() + 0.2, mob.getZ() + Mth.cos(yaw) * 0.45, 0, -0.05, 0);
         }
     }
 

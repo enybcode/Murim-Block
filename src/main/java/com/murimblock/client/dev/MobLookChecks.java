@@ -327,6 +327,35 @@ final class MobLookChecks {
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Spider.class,
                         new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                // The Bête des Cinq Venins (the cave spider), on the Fileuse's skeleton.
+                var cave = EntityType.CAVE_SPIDER.create(player.serverLevel());
+                cave.moveTo(X, Y, Z + 2.6, 160, 0);
+                cave.setYHeadRot(160);
+                cave.setYBodyRot(160);
+                cave.setNoAi(true);
+                cave.addTag(TAG);
+                player.serverLevel().addFreshEntity(cave);
+                player.connection.teleport(X, Y + 0.3, Z, 0, 22);
+            });
+        }));
+        steps.add(new Step("venins look", mc -> {
+            var cave = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.CaveSpider.class,
+                    mc.player.getBoundingBox().inflate(8)).stream().findFirst().orElse(null);
+            EngineTest.check("the Bête des Cinq Venins' model is loaded",
+                    SkeletalModels.get(SkeletalMobs.VENINS.model()) != null);
+            EngineTest.check("cave spiders wear its look", cave != null && SkeletalMobs.look(cave) == SkeletalMobs.VENINS
+                    && mc.getEntityRenderDispatcher().getRenderer(cave) instanceof SkeletalMobRenderer<?>);
+            var clip = cave == null ? null : SkeletalMobs.baseAnimation(cave);
+            EngineTest.check("and rests in the Fileuse's idle (" + (clip == null ? null : clip.id()) + ")",
+                    clip != null && clip.id().equals("spider/idle"));
+            EngineTest.shoot(mc, "mob_venins_front");
+            EngineTest.server(mc, player -> player.connection.teleport(X + 2.2, Y + 0.9, Z + 1.0, 52, 28));
+        }));
+        steps.add(new Step("venins three quarters", mc -> {
+            EngineTest.shoot(mc, "mob_venins_three_quarter");
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Spider.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
                 // The Fourneau d'alchimie, on a skeleton of its own: one standing, one about to burst.
                 for (double x : new double[] {X - 1.4, X + 1.4}) {
                     var creeper = EntityType.CREEPER.create(player.serverLevel());
