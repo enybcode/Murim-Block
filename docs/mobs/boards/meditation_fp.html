@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Méditation — première personne</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script>
+<style>.frame { width: 300px; } .frames { gap: 10px; }</style></head><body><script>
+// The lotus meditation as the player sees it in first person (with the third-person poses of meditation.html).
+// Each panel is the screen, 300 by 169. A stone lantern 1.5 blocks tall stands 4 blocks ahead: the horizon (the eye's
+// height) passes above it standing, through its middle seated, so the eye's height reads at a glance.
+const W = 300, H = 169, PX = 46; // pixels per block at the lantern's distance
+const SKIN = '#d6a77f', SKIN_D = '#b0835e', ROBE = '#cfc5ad', ROBE_D = '#9d927b', BELT = '#5b3a29', INK = '#2a2420';
+
+/** The world seen with the eye at eye blocks above the ground, pitch degrees down (+), roll degrees. */
+function world(eye, pitch = 0, roll = 0) {
+  const horizon = H / 2 - pitch * 3.2;
+  const ground = horizon + eye * 40;
+  let s = `<g transform="rotate(${roll} ${W / 2} ${H / 2})">`;
+  s += `<rect x="-40" y="-40" width="${W + 80}" height="${horizon + 40}" fill="#cfe0ea"/>`;
+  s += `<rect x="-40" y="${horizon}" width="${W + 80}" height="${H + 80}" fill="#b9c99a"/>`;
+  // Distant hills on the horizon, and cherry trees.
+  s += `<path d="M-40 ${horizon} L30 ${horizon - 14} L80 ${horizon - 6} L140 ${horizon - 20} L210 ${horizon - 8}
+    L260 ${horizon - 16} L340 ${horizon} Z" fill="#a9b8c4"/>`;
+  for (const [x, k] of [[40, 1], [255, 0.8]]) {
+    s += `<rect x="${x - 2}" y="${ground - 30 * k}" width="4" height="${30 * k}" fill="#6b4a2f"/>`;
+    s += `<circle cx="${x}" cy="${ground - 34 * k}" r="${14 * k}" fill="#e6b3c4"/>`;
+  }
+  // The stone lantern, 1.5 blocks tall, its base on the ground line.
+  const top = ground - 1.5 * 40;
+  s += `<rect x="${W / 2 + 40}" y="${top}" width="14" height="${ground - top}" fill="#9a9a92"/>`;
+  s += `<rect x="${W / 2 + 34}" y="${top - 4}" width="26" height="7" fill="#7f7f78"/>`;
+  s += `<rect x="${W / 2 + 43}" y="${top + 8}" width="8" height="8" fill="#f2c85b"/>`;
+  s += `<line x1="-40" y1="${horizon}" x2="${W + 40}" y2="${horizon}" stroke="#7a8a96" stroke-width="1" stroke-dasharray="3 3"/>`;
+  return s + '</g>';
+}
+
+/** The seated body seen looking down: crossed shins, open knees, hands on them, the chest's top at the bottom. */
+function lap(breath = 0, y = 0) {
+  let s = `<g transform="translate(0 ${y})">`;
+  // Shins crossed ahead of the hips (the far one first), the feet at their ends.
+  s += line([62, 88], [184, 66], ROBE_D, 22) + line([184, 66], [204, 62], INK, 14);
+  s += line([238, 88], [116, 66], ROBE, 22) + line([116, 66], [96, 62], INK, 14);
+  // Thighs from the hips out to the open knees.
+  s += line([125, 145], [58, 92], ROBE, 32) + line([175, 145], [242, 92], ROBE, 32);
+  // The chest's top and the belt at the bottom of the view.
+  s += `<rect x="${102 - breath * 4}" y="${132 - breath * 3}" width="${96 + breath * 8}" height="40" fill="${ROBE}"/>`;
+  s += line([102 - breath * 4, 136 - breath * 3], [198 + breath * 4, 136 - breath * 3], BELT, 7);
+  // Arms from below the view, hands resting on the knees.
+  s += line([84, 180], [70, 128], ROBE, 18) + line([70, 128], [58, 96], SKIN, 14);
+  s += line([216, 180], [230, 128], ROBE, 18) + line([230, 128], [242, 96], SKIN, 14);
+  return s + '</g>';
+}
+
+/** The breathing lane of the HUD, as a strip at the bottom (only its place: the real one is BreathingHud). */
+function lane(word) {
+  let s = `<rect x="70" y="150" width="160" height="12" rx="2" fill="#1e1a24" opacity="0.75"/>`;
+  s += `<rect x="142" y="148" width="16" height="16" fill="none" stroke="#e8d9a0" stroke-width="1.5"/>`;
+  for (const x of [96, 128, 176, 204]) s += `<rect x="${x}" y="153" width="6" height="6" fill="#8fd6c8"/>`;
+  if (word) s += `<text x="150" y="143" text-anchor="middle" font-size="10" font-weight="700" fill="#f2c85b">${word}</text>`;
+  return s;
+}
+
+/** The player's own body seen from behind, as the breakthrough camera shows it: lift (px) and arms open (0-1). */
+function back(lift, open, glow) {
+  const cx = 150, base = 128 - lift;
+  let s = '';
+  if (glow) {
+    s += `<ellipse cx="${cx}" cy="140" rx="70" ry="10" fill="none" stroke="#8fd6c8" stroke-width="3" opacity="0.8"/>`;
+    s += `<path d="M${cx - 40} 140 C ${cx - 70} 90, ${cx + 70} 80, ${cx} 20" fill="none" stroke="#8fd6c8" stroke-width="3" opacity="${glow}"/>`;
+    s += `<path d="M${cx + 40} 140 C ${cx + 70} 90, ${cx - 70} 80, ${cx} 20" fill="none" stroke="#f2c85b" stroke-width="3" opacity="${glow}"/>`;
+  }
+  s += `<ellipse cx="${cx}" cy="142" rx="34" ry="4" fill="#000" opacity="${0.25 - lift * 0.006}"/>`;
+  s += line([cx - 30, base + 6], [cx + 30, base + 6], ROBE_D, 12);
+  s += `<rect x="${cx - 14}" y="${base - 40}" width="28" height="42" fill="${ROBE}"/>`;
+  s += line([cx - 14, base - 6], [cx + 14, base - 6], BELT, 6);
+  s += line([cx - 13, base - 36], [cx - 24 - 12 * open, base - 14 - 14 * open], ROBE, 9);
+  s += line([cx + 13, base - 36], [cx + 24 + 12 * open, base - 14 - 14 * open], ROBE, 9);
+  s += `<rect x="${cx - 11}" y="${base - 62}" width="22" height="22" fill="#26222a"/>`;
+  return s;
+}
+
+function screen(f) {
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="border:2px solid #2a2420">`;
+  s += f.draw();
+  if (f.cross !== false) s += `<g stroke="#fff" stroke-width="1.5" opacity="0.8"><line x1="146" y1="84.5" x2="154" y2="84.5"/><line x1="150" y1="80.5" x2="150" y2="88.5"/></g>`;
+  if (f.eye !== undefined) {
+    // The eye's height, as a small gauge on the right: 0 to 1.8 blocks.
+    s += `<rect x="282" y="20" width="8" height="90" fill="#000" opacity="0.25"/>`;
+    s += `<rect x="282" y="${110 - f.eye / 1.8 * 90}" width="8" height="3" fill="#f2c85b"/>`;
+    s += `<text x="278" y="${114 - f.eye / 1.8 * 90}" text-anchor="end" font-size="9" fill="#fff">${f.eye.toFixed(2)}</text>`;
+  }
+  s += `<rect x="0" y="0" width="${W}" height="16" fill="#000" opacity="0.35"/>`;
+  s += `<text x="6" y="12" font-size="11" font-weight="700" fill="#fff">${f.ticks}</text>`;
+  s += `<text x="${W - 6}" y="12" text-anchor="end" font-size="10" fill="${f.color || '#e8e0cc'}">${f.phase}</text>`;
+  return `<div class="frame">${s}</svg><div class="note">${f.note}</div></div>`;
+}
+
+const rows = [
+  {name: 'S\'asseoir', meta: '24 ticks · l\'œil descend de 1,62 à 0,95 bloc',
+    feel: 'on sent son poids descendre : la caméra suit la tête, en douceur, et se pose.',
+    read: 'la lanterne « grandit » : on est assis, au ras du sol.',
+    frames: [
+      {ticks: '0', phase: 'debout', eye: 1.62, draw: () => world(1.62), note: 'Vue normale. Les mains vanilla '
+        + 'et l\'objet tenu disparaissent en glissant vers le bas (4 ticks).'},
+      {ticks: '1 → 16', phase: 'descend', eye: 1.25, draw: () => world(1.25, 6, 2), note: 'La caméra suit l\'œil '
+        + 'de la tête : elle descend et pique un peu vers l\'avant avec le buste (6°), avec un léger roulis quand '
+        + 'les pieds se croisent.'},
+      {ticks: '17 → 19', phase: 'posé', color: '#f2a23c', eye: 0.92, draw: () => world(0.92, 3, 0), note: 'Les '
+        + 'fesses touchent : la caméra descend 0,03 bloc trop bas puis remonte. Un tassement, pas une secousse.'},
+      {ticks: '20 → 24', phase: 'installé', color: '#8fd6c8', eye: 0.95, draw: () => world(0.95) + lane(),
+        note: 'Le dos se redresse, l\'horizon revient au centre. Le mini-jeu de souffle apparaît en bas.'},
+    ]},
+  {name: 'Assis', meta: 'la souris reste libre · le corps reste en lotus',
+    feel: 'présent dans son corps : regarder en bas montre ses jambes croisées et ses mains, comme dans la réalité.',
+    read: 'la caméra bouge avec le souffle : on respire avec son personnage.',
+    frames: [
+      {ticks: 'regard devant', phase: 'lotus', eye: 0.95, draw: () => world(0.95) + lane(), note: 'Rien du '
+        + 'corps à l\'écran : les genoux sont juste sous le bord. Tourner la tête ne tourne pas le corps assis.'},
+      {ticks: 'regard en bas', phase: 'lotus', cross: false, draw: () => `<rect width="${W}" height="${H}" fill="#b9c99a"/>`
+        + lap() + lane(), note: 'Les jambes croisées, les genoux ouverts, les mains posées dessus, le haut du '
+        + 'buste en bas. Le corps recule un peu sous l\'œil, comme en marchant.'},
+      {ticks: 'inspire', phase: 'monte', color: '#8fd6c8', eye: 0.98, draw: () => world(0.98, -1) + lane(),
+        note: 'La caméra monte de 0,03 bloc et se relève de 1° sur l\'inspire (toi : au rythme des marques).'},
+      {ticks: 'expire', phase: 'descend', color: '#9fd18a', eye: 0.93, draw: () => world(0.93, 1.5) + lane('GOOD'),
+        note: 'Elle redescend et s\'incline de 1,5°. Sur un bon souffle, l\'inspiration suivante est plus ample.'},
+    ]},
+  {name: 'Percée de stade', meta: '72 ticks · la caméra passe derrière et revient',
+    feel: 'on sort de son corps pour se voir s\'élever, puis on y revient.',
+    read: 'le corps lui-même raconte la percée, plus seulement les particules.',
+    frames: [
+      {ticks: '0 → 16', phase: 'recul', cross: false, draw: () => world(1.6, 0) + back(0, 0, 0.3), note: 'Au lieu '
+        + 'd\'une coupe sèche vers la 3e personne, la caméra glisse en arrière et monte sur 12 ticks. Il s\'incline, '
+        + 'l\'anneau se forme.'},
+      {ticks: '16 → 34', phase: 'porté', color: '#8fd6c8', cross: false, draw: () => world(1.6, 0) + back(14, 0.6, 1),
+        note: 'Vu de dos : il décolle de 0,3 bloc, bras qui s\'ouvrent, les deux brins de Qi montent autour.'},
+      {ticks: '35 → 38', phase: 'ÉCLAT', color: '#f2a23c', cross: false, draw: () => world(1.6, -2) + back(18, 1, 0)
+        + `<circle cx="150" cy="40" r="26" fill="#fff6c8" opacity="0.7"/>`, note: 'Tête levée, bras ouverts. '
+        + 'La caméra monte de 2° avec lui, sans secousse.'},
+      {ticks: '39 → 72', phase: 'retour', eye: 0.95, draw: () => world(0.95) + lane(), note: 'Il redescend '
+        + 'pendant que le Qi retombe ; la caméra rentre dans la tête sur les 12 derniers ticks.'},
+    ]},
+  {name: 'Se relever', meta: '16 ticks · aussi après un coup (1,5× plus vite)',
+    feel: 'on reprend la main vite, sans perdre le fil de la vue.',
+    read: 'la vue remonte à hauteur normale : on peut bouger.',
+    frames: [
+      {ticks: '1 → 6', phase: 'pousse', eye: 1.0, draw: () => world(1.0, 10), note: 'Le buste se penche : la vue '
+        + 'pique de 10° vers l\'avant. Le mini-jeu disparaît.'},
+      {ticks: '7 → 12', phase: 'monte', eye: 1.4, draw: () => world(1.4, 4), note: 'L\'œil remonte avec les '
+        + 'jambes, la vue se redresse.'},
+      {ticks: '13 → 16', phase: 'debout', color: '#9fd18a', eye: 1.62, draw: () => world(1.62), note: 'Debout : '
+        + 'les mains vanilla et l\'objet tenu remontent dans la vue.'},
+      {ticks: 'coup reçu', phase: 'interrompu', color: '#e05a4a', eye: 1.2, draw: () => world(1.2, 5, -4)
+        + `<rect width="${W}" height="${H}" fill="#c0392b" opacity="0.12"/>`, note: 'Le relevé joue 1,5× plus vite, '
+        + 'avec le petit recul vanilla de la vue sous le coup.'},
+    ]},
+];
+
+let h = `<h1>MÉDITATION — EN PREMIÈRE PERSONNE</h1><div class="sub">Ce que le joueur voit pendant les animations de
+  meditation.png · chaque case est l'écran · la lanterne de pierre (1,5 bloc, 4 blocs devant) et la jauge à droite
+  donnent la hauteur de l'œil · pointillés : l'horizon</div>`;
+h += `<div class="top"><div class="panelbox wrong"><h2>Ce qui ne va pas aujourd'hui</h2><ul>${[
+  'La caméra reste à 1,62 bloc pendant que le corps s\'assoit : on flotte au-dessus de soi.',
+  'Les mains vanilla et l\'objet tenu restent en l\'air devant la vue pendant toute la méditation.',
+  'Regarder en bas : les jambes du calque à part, sans genoux ni hanches qui suivent.',
+  'La percée bascule d\'un coup en 3e personne puis revient d\'un coup : deux coupes sèches.',
+].map(x => `<li>${x}</li>`).join('')}</ul></div><div class="panelbox fix"><h2>Ce qui change</h2><ul>${[
+  'La caméra suit l\'œil de la tête Shenfa (la vue en 1re personne de Shenfa), sans la limite de 0,35 bloc '
+    + 'pendant la méditation, lissée.',
+  'Les mains vanilla et l\'objet tenu glissent hors de la vue en s\'asseyant et reviennent en se levant.',
+  'En bas, on voit son vrai corps en lotus ; le souffle fait monter et descendre la vue de quelques centimètres.',
+  'La percée : la caméra glisse derrière (12 ticks) et revient dans la tête (12 ticks), sans coupe.',
+].map(x => `<li>${x}</li>`).join('')}</ul></div></div>`;
+for (const r of rows) {
+  h += `<div class="anim"><div class="label"><div class="name">${r.name}</div><div class="meta">${r.meta}</div>
+    <div class="feel"><b>Sensation :</b> ${r.feel}</div><div class="read"><b>Pour le joueur :</b> ${r.read}</div></div>
+    <div class="frames">${r.frames.map(screen).join('')}</div></div>`;
+}
+document.body.innerHTML = h;
+</script></body></html>
