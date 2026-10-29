@@ -184,6 +184,42 @@ final class GolemChecks {
                 });
             });
         }));
+        steps.add(new Step("golem death", mc -> {
+            EngineTest.server(mc, player -> {
+                player.setGameMode(GameType.CREATIVE);
+                player.connection.teleport(X, Y + 0.5, Z, 0, 10);
+                IronGolem golem = EntityType.IRON_GOLEM.create(player.serverLevel());
+                golem.moveTo(X, Y, Z + 4, 180, 0);
+                golem.setYHeadRot(180);
+                golem.setYBodyRot(180);
+                golem.addTag(TAG);
+                player.serverLevel().addFreshEntity(golem);
+            });
+            // Struck down: its talisman flies off, it kneels, and falls apart into its stone parts.
+            boolean[] flew = {false};
+            int[] most = {0};
+            run(150, t -> {
+                if (t == 0) {
+                    GifRecorder.start("golem_death");
+                    GifRecorder.camera(partial -> new GifRecorder.View(new Vec3(X + 3.2, Y + 2.6, Z + 0.6),
+                            new Vec3(X, Y + 1.2, Z + 4)));
+                }
+                if (t == 20) {
+                    EngineTest.server(mc, player -> player.serverLevel().getEntitiesOfClass(IronGolem.class, area())
+                            .forEach(golem -> golem.hurt(golem.damageSources().playerAttack(player), 1000)));
+                }
+                flew[0] |= com.murimblock.shenfa.client.GolemCollapse.talismanFlying();
+                most[0] = Math.max(most[0], com.murimblock.shenfa.client.GolemCollapse.pieces());
+                if (t == 30 || t == 44 || t == 60) {
+                    EngineTest.shoot(mc, "mob_golem_death_" + t);
+                }
+            }, () -> {
+                EngineTest.check("at its death the talisman flies off", flew[0]);
+                EngineTest.check("and the statue falls apart (" + most[0] + " pieces)", most[0] >= 20);
+                EngineTest.server(mc, player -> player.serverLevel().getEntitiesOfClass(Entity.class, area(),
+                        entity -> entity.getTags().contains(TAG)).forEach(Entity::discard));
+            });
+        }));
         return steps;
     }
 

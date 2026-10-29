@@ -11,10 +11,12 @@ import org.joml.Vector3f;
 
 /**
  * The Gardien-talisman's paper talisman ({@code docs/mobs/boards/golem.png}), which its clips do not key: it flutters
- * on the statue's face, harder as it walks; at its death it is torn off (tick 10) and the statue is stone again.
+ * on the statue's face, harder as it walks; at its death it is torn off (tick 6, GolemCollapse) and the statue is
+ * stone again.
  */
 final class GolemTalisman {
-    private static final int TORN = 10;
+    /** The tick of its death the talisman is torn off (GolemCollapse lets it fly). */
+    static final int TORN = 6;
 
     private GolemTalisman() {
     }
@@ -24,7 +26,7 @@ final class GolemTalisman {
         if (talisman == null) {
             return;
         }
-        if (mob.deathTime >= TORN) {
+        if (mob.deathTime > TORN) {
             pose.set(talisman.index(), JointTransform.of(talisman.bind().translation(), new Quaternionf(),
                     new Vector3f(0)));
             return;

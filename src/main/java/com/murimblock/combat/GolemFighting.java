@@ -77,8 +77,10 @@ public final class GolemFighting extends Goal {
 
     private final IronGolem mob;
     private Move move;
-    private int time, rest, skyRest, bellRest = 40, chainRest = 40, close, path;
+    private int time, rest, skyRest, bellRest = 80, chainRest = 40, close, path;
     private boolean woken, stunned, chained;
+    /** Whether its sky fist has come since it woke: the bell never before it. */
+    private boolean struck;
     private Vec3 anchor;
 
     GolemFighting(IronGolem mob) {
@@ -199,8 +201,9 @@ public final class GolemFighting extends Goal {
         skyRest--;
         bellRest--;
         chainRest--;
-        if (target != null) {
-            // Kept close: counted through its own moves too, the prey thrown up and landing near again.
+        if (target != null && move != Move.WAKE) {
+            // Kept close: counted through its own moves too, the prey thrown up and landing near again (not while it
+            // wakes: the bell never comes first).
             close = mob.distanceTo(target) <= CLOSE_RANGE ? close + 1 : 0;
         }
         if (move != null) {
@@ -214,7 +217,7 @@ public final class GolemFighting extends Goal {
         double distance = mob.distanceTo(target);
         double reach = SKY_REACH + target.getBbWidth() / 2;
         if (--rest <= 0) {
-            if (close >= CLOSE && bellRest <= 0) {
+            if (close >= CLOSE && bellRest <= 0 && struck) {
                 begin(Move.BELL);
                 return;
             }
@@ -245,7 +248,11 @@ public final class GolemFighting extends Goal {
         mob.getNavigation().stop();
         CombatServer.anim(mob, Animator.Priority.MIDDLE, next.clip, false);
         switch (next) {
-            case SKY -> skyRest = SKY_REST;
+            case WAKE -> struck = false;
+            case SKY -> {
+                skyRest = SKY_REST;
+                struck = true;
+            }
             case BELL -> {
                 bellRest = BELL_REST;
                 close = 0;

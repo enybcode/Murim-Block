@@ -388,7 +388,7 @@ def _clips():
         "chain": [(0, guard), (4, spin_a), (8, spin_b), (12, spin_a), (14, throw), (24, pull), (30, hang), (44, guard)],
         "stagger": [(0, throw), (6, stagger), (12, dazed), (20, dazed)],
         "flinch": [(0, guard), (3, flinch), (10, guard)],
-        "death": [(0, dead), (10, dead), (24, knees), (34, fallen), (40, fallen)],
+        "death": [(0, dead), (6, dead), (14, knees), (20, fallen)],
     }
 
 
