@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Gardien des tombes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>GARDIEN DES TOMBES</h1>
+<div class="sub">Boss de l'épreuve mortelle · <code>murimblock:trial_zombie</code> (le 15ᵉ mort, sort du mausolée) · passe sur Shenfa avec les gestes du Disciple déchu · fiche de conception</div>
+<div class="seal">守墓<br>屍</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<!-- face -->
+<g transform="translate(30,40) scale(1.15)">
+<rect x="24" y="52" width="6" height="22" fill="#d9cfae" transform="rotate(-28 27 70)"/>
+<rect x="58" y="64" width="12" height="10" fill="#7f8a6a"/>
+<rect x="32" y="8" width="64" height="64" fill="#4f6a4c"/>
+<rect x="38" y="14" width="8" height="6" fill="#6e2a24"/><rect x="80" y="54" width="8" height="6" fill="#6e2a24"/><rect x="60" y="18" width="6" height="4" fill="#3c5038"/>
+<rect x="40" y="36" width="14" height="9" fill="#ff3a2a"/><rect x="74" y="36" width="14" height="9" fill="#ff3a2a"/>
+<rect x="44" y="38" width="6" height="5" fill="#ffd0b0"/><rect x="78" y="38" width="6" height="5" fill="#ffd0b0"/>
+<rect x="54" y="54" width="20" height="12" fill="#1c1a18"/><rect x="56" y="54" width="4" height="4" fill="#d9cfae"/><rect x="66" y="54" width="4" height="4" fill="#d9cfae"/>
+<rect x="32" y="72" width="64" height="96" fill="#283044"/>
+<path d="M44 72 L64 128 L84 72 Z" fill="#4f6a4c"/>
+<g fill="#d9cfae"><rect x="50" y="84" width="28" height="5"/><rect x="52" y="94" width="24" height="5"/><rect x="54" y="104" width="20" height="5"/></g>
+<rect x="36" y="140" width="10" height="20" fill="#4f6a4c"/><rect x="80" y="118" width="10" height="14" fill="#4f6a4c"/>
+<path d="M32 168 L40 158 L48 168 L56 160 L64 168 L72 158 L80 168 L88 160 L96 168 Z" fill="#283044"/>
+<rect x="0" y="72" width="32" height="96" fill="#4f6a4c"/>
+<rect x="-6" y="64" width="22" height="20" fill="#d9cfae"/><rect x="-2" y="68" width="8" height="8" fill="#b9ae8c"/>
+<rect x="-6" y="120" width="44" height="42" fill="#5c7a57"/><rect x="-2" y="128" width="8" height="8" fill="#6e2a24"/><rect x="22" y="140" width="10" height="6" fill="#3c5038"/>
+<rect x="-4" y="162" width="6" height="14" fill="#d9cfae"/><rect x="8" y="162" width="6" height="16" fill="#d9cfae"/><rect x="20" y="162" width="6" height="14" fill="#d9cfae"/>
+<rect x="96" y="72" width="32" height="96" fill="#4f6a4c"/><rect x="96" y="72" width="32" height="34" fill="#283044"/>
+<path d="M96 106 L104 114 L112 106 L120 116 L128 106 Z" fill="#283044"/>
+<rect x="98" y="168" width="5" height="10" fill="#d9cfae"/><rect x="109" y="168" width="5" height="12" fill="#d9cfae"/><rect x="120" y="168" width="5" height="10" fill="#d9cfae"/>
+<rect x="32" y="168" width="31" height="74" fill="#3a3550"/><rect x="65" y="168" width="31" height="74" fill="#3a3550"/>
+<path d="M32 242 L38 234 L44 242 L50 236 L56 242 L63 234 L63 242 Z" fill="#3a3550"/>
+<rect x="32" y="236" width="31" height="20" fill="#4f6a4c"/><rect x="65" y="242" width="31" height="14" fill="#4f6a4c"/>
+<rect x="44" y="200" width="10" height="12" fill="#4f6a4c"/>
+<g fill="#d9cfae"><rect x="32" y="256" width="6" height="8"/><rect x="44" y="256" width="6" height="9"/><rect x="56" y="256" width="6" height="8"/>
+<rect x="66" y="256" width="6" height="8"/><rect x="78" y="256" width="6" height="9"/><rect x="90" y="256" width="6" height="8"/></g>
+</g>
+<!-- profil, en garde : bosse, trois pics d'os sur l'echine -->
+<g transform="translate(190,40) scale(1.15)">
+<rect x="0" y="8" width="64" height="64" fill="#4f6a4c"/><rect x="50" y="36" width="12" height="9" fill="#ff3a2a"/>
+<rect x="16" y="72" width="32" height="96" fill="#283044"/>
+<rect x="0" y="70" width="22" height="30" fill="#5c7a57"/>
+<rect x="-12" y="62" width="6" height="26" fill="#d9cfae" transform="rotate(-50 -9 88)"/>
+<rect x="-6" y="96" width="6" height="22" fill="#d9cfae" transform="rotate(-42 -3 118)"/>
+<rect x="0" y="128" width="5" height="18" fill="#d9cfae" transform="rotate(-34 2 146)"/>
+<g transform="rotate(-40 32 80)"><rect x="16" y="72" width="32" height="96" fill="#4f6a4c"/><rect x="10" y="120" width="44" height="42" fill="#5c7a57"/>
+<rect x="18" y="162" width="6" height="14" fill="#d9cfae"/><rect x="34" y="162" width="6" height="16" fill="#d9cfae"/></g>
+<rect x="16" y="168" width="32" height="74" fill="#3a3550"/><rect x="16" y="242" width="32" height="14" fill="#4f6a4c"/>
+<rect x="44" y="256" width="10" height="8" fill="#d9cfae"/>
+</g>
+<text x="104" y="372" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE</text>
+<text x="250" y="372" font-size="13" text-anchor="middle" fill="#6b5a4c">PROFIL (en garde)</text>
+<line x1="18" y1="33" x2="18" y2="351" stroke="#7d6a5a"/><line x1="12" y1="33" x2="24" y2="33" stroke="#7d6a5a"/><line x1="12" y1="351" x2="24" y2="351" stroke="#7d6a5a"/>
+<text x="10" y="200" font-size="12" fill="#6b5a4c" transform="rotate(-90 10 200)" text-anchor="middle">3,1 blocs (1,6 × le joueur)</text>
+<g font-size="13" fill="#2a2420">
+<text x="352" y="40"><tspan font-weight="600">1</tspan> Yeux rouges (émissifs)</text>
+<text x="352" y="70"><tspan font-weight="600">2</tspan> Mâchoire, dents</text>
+<text x="352" y="100"><tspan font-weight="600">3</tspan> Nœud d'os + éperon</text>
+<text x="352" y="130"><tspan font-weight="600">4</tspan> Bosse, 3 pics d'échine</text>
+<text x="352" y="160"><tspan font-weight="600">5</tspan> Côtes à nu (relief)</text>
+<text x="352" y="190"><tspan font-weight="600">6</tspan> Avant-bras enflé</text>
+<text x="352" y="220"><tspan font-weight="600">7</tspan> Griffes (mains, pieds)</text>
+<text x="352" y="250"><tspan font-weight="600">8</tspan> Chemise (tissu)</text>
+<text x="352" y="280"><tspan font-weight="600">9</tspan> Pantalon en loques</text>
+<text x="352" y="310"><tspan font-weight="600">10</tspan> Plaies, croûtes</text>
+</g>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="398" width="36" height="22" fill="#4f6a4c"/><text x="20" y="436">Peau</text>
+<rect x="78" y="398" width="36" height="22" fill="#5c7a57"/><text x="78" y="436">Enflure</text>
+<rect x="136" y="398" width="36" height="22" fill="#d9cfae" stroke="#b9ad96"/><text x="136" y="436">Os</text>
+<rect x="194" y="398" width="36" height="22" fill="#283044"/><text x="194" y="436">Chemise</text>
+<rect x="252" y="398" width="36" height="22" fill="#3a3550"/><text x="252" y="436">Pantalon</text>
+<rect x="310" y="398" width="36" height="22" fill="#6e2a24"/><text x="310" y="436">Plaies</text>
+<rect x="368" y="398" width="36" height="22" fill="#ff3a2a"/><text x="368" y="436">Yeux</text>
+</g>
+<text x="20" y="462" font-size="12.5" fill="#6b5a4c">Même allure qu'aujourd'hui (validée le 25 oct.), mais en pièces Shenfa en relief</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Le gardien du cimetière de l'épreuve, mort à son poste. Le Qi mort de tout le cimetière s'est amassé en lui : des os ont percé sa peau, son bras droit a enflé. Il se bat comme les Disciples déchus, mais chacun de ses coups pèse comme une pierre tombale.</p>
+</div>
+<div class="panel">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">60 ♥ (×2)</td><td style="width:45%"><div class="bar"><i style="width:100%"></i></div></td></tr>
+<tr><td>Dégâts (attaque)</td><td class="v">8 (×2)</td><td><div class="bar"><i style="width:80%"></i></div></td></tr>
+<tr><td>Vitesse</td><td class="v">0,20</td><td><div class="bar"><i style="width:40%"></i></div></td></tr>
+<tr><td>Recul</td><td class="v">−80 %</td><td><div class="bar"><i style="width:80%"></i></div></td></tr>
+<tr><td>Taille</td><td class="v">× 1,6</td><td><div class="bar"><i style="width:64%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Stats doublées le 29 oct. (déjà en jeu). Contre un mortel à 20 ♥, la ruée enlève la moitié de la vie.</p>
+</div>
+<div class="panel" style="flex:1">
+<h2>Ce qui change</h2>
+<ul>
+<li>Corps <b>Shenfa</b> au lieu du modèle zombie vanilla : vrais coudes, vrais genoux</li>
+<li>Les excroissances deviennent des pièces du modèle, plus un calque à part</li>
+<li>Il joue les <b>clips du Disciple déchu</b> (même set, même IA de combat)</li>
+<li>Joués <b>à 85 %</b> de vitesse : plus lourd, plus lisible pour sa taille</li>
+<li>Chaque impact secoue un peu la caméra et soulève de la terre</li>
+</ul>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaques</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Dégâts</th><th>Réponse</th></tr>
+<tr><td><b>Coup maladroit</b><br><span class="small">Le bras enflé, large et lent</span></td><td class="v">3 blocs</td><td class="v">8</td><td><span class="tag ok">Garde</span><span class="tag ok">Parade</span></td></tr>
+<tr><td><b>Double coup</b><br><span class="small">Le 2ᵉ est plus rapide</span></td><td class="v">3 blocs</td><td class="v">5 + 8</td><td><span class="tag ok">Garde</span><span class="tag warn">Parade</span></td></tr>
+<tr><td><b>Ruée</b><br><span class="small">Plonge, bras en avant</span></td><td class="v">6 blocs</td><td class="v">11</td><td><span class="tag ok">Esquive</span><span class="tag no">Garde</span></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Portées × 1,6 avec sa taille. Mêmes règles que le Disciple : coup simple d'abord, double après deux coups bloqués, ruée si on recule.</p>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations (set du Disciple)</h2>
+<table>
+<tr><td class="v">idle</td><td>Voûté, la tête tombe puis se redresse d'un coup</td></tr>
+<tr><td class="v">walk</td><td>Pas traînants, le bras enflé pend</td></tr>
+<tr><td class="v">stance</td><td>Garde à moitié oubliée, poing enflé levé</td></tr>
+<tr><td class="v">strike · double · lunge</td><td>Les trois coups du Disciple</td></tr>
+<tr><td class="v">flinch</td><td>Vacille sous un coup</td></tr>
+<tr><td class="v">death</td><td>À genoux puis face au sol, le Qi s'échappe</td></tr>
+</table>
+<p class="small" style="margin-top:8px"><b>À décider :</b> les 14 autres morts de l'épreuve gardent le zombie vanilla. Ils peuvent aussi prendre le corps et les gestes du Disciple déchu, pour que toute l'épreuve se batte pareil.</p>
+</div>
+</div>
+</div>
+</body></html>
