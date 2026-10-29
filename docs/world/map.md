@@ -1,0 +1,82 @@
+# Murim map (plan, step 0)
+
+Enzo's brief (29 Oct 2026): the overworld is one fixed Murim continent, cold and empty in the north, lush in the
+south, sea in the east. Source: Enzo's doc "Murim Block — Guide des biomes" (27 Oct 2026). Mockup:
+[Carte du Murim](https://claude.ai/artifact/RmzwZsWZ5Vqwv98G3c39Fk) (private artifact; it runs a small version of the
+algorithm below). Capitals come later, but their ground is reserved from step 2.
+
+## Shape
+
+- North is -Z. The continent is a rounded blob about 10 000 blocks wide, centred on 0,0, with bays and capes
+  (no square edge). Ocean all around; the west ends in snow peaks, the east in beaches and capes.
+- Same layout in every world (not random like V1). Only the small noise detail depends on the seed.
+- Zone borders are wavy: a two-scale domain warp (bends of ~3 600 blocks up to ~600 blocks off, wiggles of
+  ~950 blocks). Zones, rivers and reserved sites are all defined in warped space, so they always agree.
+- Crossing west to east: about 30 min sprinting, 12 min on a horse.
+
+## Zones and biomes
+
+Coordinates are the guide's (warped space), approximate. Biome ids are `murimblock:` unless noted.
+"From V1" means the V1 biome (branch `test`) is reused and adapted, with Enzo's OK of 29 Oct 2026.
+
+| Zone | Where (X, Z) | Biomes | From V1 | Ground Y |
+|---|---|---|---|---|
+| Northern wastes | Z < -2100 | `frozen_steppe` (to -3000), `cold_desert` (to -4200), `frozen_tundra` | `tianshan_snowfields` (spruce, meadow), `hexi_frontier_desert` (Gobi gravel) | 78-90 |
+| Qinghai | X < -2000, -2100 < Z < 0 | `qinghai_plateau`, `western_snow_peaks` (west edge) | `kunlun_glaciers` | 120-150 |
+| Shaanxi | -2000 < X < 0, -2100 < Z < 0 | `loess_plateau` | `loess_plateau` | 90-110, ravines -15 to -30 |
+| Central plains | 0 < X < 2300, -2100 < Z < 0 | `central_plains` | | 64-72 |
+| Shandong | X > 2300, -2100 < Z < 0 | `shandong_hills`, `sacred_mountain` (3400, -1100) | `cloud_sea_peaks` (Huangshan pine) | 70-100, peak ~210 |
+| Sichuan | X < -200, 0 < Z < 2300 | `red_basin` (centre), `bamboo_mountains` (rim) | `shu_bamboo_sea` | 70-90 / 100-180 |
+| Hubei | -200 < X < 2100, 0 < Z < 2300 | `hubei_waterlands`, `river_delta` (X > 2100) | `jiangnan_waterlands` (canals, ponds) | 62-70 |
+| Unnam | X < 0, Z > 2300 | `stone_forest` (Z < 3500), `western_gorges` (X < -3500), `unnam_jungle` | `jade_karst_forest` (stone towers) | 90-110 / 70-90 |
+| Honam | 0 < X < 2500, Z > 2300 | `stone_peaks` (600, 2900), `rice_terraces`, `subtropical_forest` | `wulingyuan_pillars`, `camphor_hills` | 70-90, peaks +60 to +150 |
+| East coast | X > 2500, Z > 2300, and the shore | `southeast_coast`, `minecraft:beach`, vanilla oceans | | 63, shelf 5-15 deep |
+
+Each biome JSON sets `grass_color`, `foliage_color`, `water_color`, `fog_color` and `sky_color` from the guide.
+Caves, oceans and beaches stay vanilla.
+
+## Relief and water
+
+- North wall: a ridge 20-40 blocks high along Z -2100, lower (10-20) above the central plains, with four passes at
+  X -3400, -900, 1200 (the fortified pass) and 3800.
+- Mountain chains along Z 0: wooded and high west of X -200, low hills east of it. Gorge walls 60-100 blocks high
+  along X -200 between Sichuan and Hubei.
+- Yellow river: north to south along X 0 (Shaanxi / central plains border), 30-60 wide, then a tributary to Wuhan.
+- Great river: west to east from the Sichuan basin through the gorges to Wuhan (950, 1100), then a delta at the
+  coast, 60-100 wide after Wuhan.
+- Lakes: Qinghai salt lake (-3500, -1100), r ~220, white crust; the great lake (1250, 2350), r ~380.
+
+## Reserved sites
+
+Flattened and kept free of ravines and rivers (except the Wuhan confluence) from step 2:
+
+- Capitals: Chang-An (-1300, -700), 300 x 300, ground Y 100; Wuhan (950, 1100), 300 x 300, ground Y 66.
+- Faction sites: North Sky HQ (-2000, -3200), Silent Night (1000, -4300), Iron Castle (3000, -3200),
+  Tang clan (-2800, 1300), Broken Fist (-2500, 3000), sacred mountain (3400, -1100).
+
+Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at their fixed spot.
+
+## How it plugs in (no TerraBlender)
+
+- `MurimMap`: pure Java. Zone at (x, z), target height, rivers, lakes, reserved sites. Unit tested; a test writes
+  the map as a PNG.
+- `MurimBiomeSource` (`murimblock:murim_map`): biome of the zone; vanilla for caves and ocean.
+- Custom density functions read `MurimMap` for plateaus, the wall, chains and river beds; vanilla noise adds detail.
+- `noise_settings/murim`: a copy of the overworld settings using those functions, with each biome's surface rules.
+- `world_preset` override of `minecraft:normal`: new worlds only. Older worlds must be recreated when the relief
+  changes.
+
+## Steps
+
+1. Biomes in place: `MurimMap`, the biome source, the 21 biome JSONs with the guide's colours and vanilla flora,
+   ocean around. Relief still vanilla. Checks: map PNG, GameTest that the preset loads, real-client tour.
+2. Big relief: plateaus, plains, north wall and passes, chains, west peaks, Sichuan gorges, reserved ground.
+3. Water: the two rivers, Wuhan confluence, delta, the two lakes.
+4. Landforms and soils: loess ravines, stone forest, Honam peaks, rice terraces, V1 generators adapted, tree
+   density rising to the south.
+5. Ambience: fog, particles and sounds per zone.
+
+## Open points
+
+- Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.
+- Whether amplified / large-biome presets get the map too.
