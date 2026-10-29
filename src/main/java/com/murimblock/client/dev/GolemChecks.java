@@ -138,6 +138,13 @@ final class GolemChecks {
                 player.setHealth(player.getMaxHealth());
                 player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 60, 3, false, false));
                 player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 60, 3, false, false));
+                // A bystander beside the player: the earth bell strikes all around, not only its prey.
+                var pig = EntityType.PIG.create(player.serverLevel());
+                pig.moveTo(X + 0.6, Y, Z + 2.2, 0, 0);
+                pig.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 20 * 60, 2, false, false));
+                pig.setNoAi(true);
+                pig.addTag(TAG);
+                player.serverLevel().addFreshEntity(pig);
                 player.connection.teleport(X + 2, Y, Z + 1, 0, 0);
             });
             // The script: strike the villager (it wakes); stand in reach (the sky fist, then the bell); back off to
@@ -173,6 +180,9 @@ final class GolemChecks {
                         MOVES.contains("WAKE") && MOVES.contains("SKY") && MOVES.contains("BELL")
                                 && MOVES.contains("CHAIN"));
                 EngineTest.check("with no one to punish it goes back to its place", home[0]);
+                var pigs = mc.level.getEntitiesOfClass(net.minecraft.world.entity.animal.Pig.class, area());
+                EngineTest.check("the bell strikes a bystander too (" + pigs.stream().map(p -> p.getHealth()).toList() + ")",
+                        pigs.stream().anyMatch(p -> p.getHealth() < p.getMaxHealth()));
                 GolemFighting.probe = null;
                 EngineTest.server(mc, player -> {
                     player.serverLevel().getEntitiesOfClass(Entity.class, area(),

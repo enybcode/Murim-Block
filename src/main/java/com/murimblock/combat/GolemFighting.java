@@ -16,6 +16,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -31,8 +32,9 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
  * <li>Whoever harms a villager near it (or the statue itself, or a villager's sworn enemy as vanilla reckons it) wakes
  * it: dust falls, its eyes and runes light, then it walks after that one alone, never running.
  * <li>Within reach, the sky fist (vanilla's blow, which throws up), then 15 ticks open.
- * <li>Kept close too long, the earth bell: both fists on the ground, the ground fractures round it; 6 damage and
- * slowed for a second, unless in the air; then 20 ticks open.
+ * <li>Kept close too long, the earth bell: both fists on the ground, the ground fractures round it; everyone on the
+ * ground within 3.5 blocks (but villagers and golems) takes 6 damage, is thrown back a little and
+ * slowed for a second; leaping avoids it; then 20 ticks open.
  * <li>From 4 to 8 blocks, the chain (every 8 s): 4 damage and pulled back before it, then 20 ticks open. A parried
  * chain breaks and staggers it; it takes half again as much while it reels.
  * <li>With no one left to punish it walks back to its place and turns to stone again.
@@ -297,6 +299,11 @@ public final class GolemFighting extends Goal {
         }
     }
 
+    /** Whether {@code body} stands on the ground (a leap clears the bell): something solid just under its feet. */
+    private static boolean standing(LivingEntity body) {
+        return body.onGround() || !body.level().noCollision(body, body.getBoundingBox().move(0, -0.2, 0));
+    }
+
     private boolean inFront(LivingEntity target, double cos) {
         Vec3 toward = target.position().subtract(mob.position()).multiply(1, 0, 1);
         Vec3 facing = Vec3.directionFromRotation(0, mob.yBodyRot);
@@ -312,14 +319,25 @@ public final class GolemFighting extends Goal {
         }
     }
 
-    /** The earth bell: the ground fractures round the fists (the clip's own event); who stands there is struck. */
+    /**
+     * The earth bell: the ground fractures round the fists (the clip's own event); everyone standing on it within its
+     * radius is struck and thrown back a little, its prey or not, but the villagers it guards and other golems.
+     */
     private void bell(LivingEntity target) {
         Vec3 at = mob.position().add(Vec3.directionFromRotation(0, mob.yBodyRot).scale(BELL_AHEAD));
         mob.playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.6f, 0.6f);
-        if (target.onGround() && target.position().distanceTo(at) <= BELL_RADIUS
-                && target.hurt(mob.damageSources().mobAttack(mob), BELL_DAMAGE)) {
-            mob.setLastHurtMob(target);
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 4), mob);
+        for (LivingEntity victim : mob.level().getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(BELL_RADIUS, 1.5,
+                BELL_RADIUS), victim -> victim != mob && standing(victim) && victim.position().distanceTo(at) <= BELL_RADIUS
+                && !(victim instanceof net.minecraft.world.entity.npc.AbstractVillager)
+                && !(victim instanceof net.minecraft.world.entity.animal.AbstractGolem))) {
+            if (victim.hurt(mob.damageSources().mobAttack(mob), BELL_DAMAGE)) {
+                mob.setLastHurtMob(victim);
+                victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 4), mob);
+                Vec3 away = victim.position().subtract(at).multiply(1, 0, 1);
+                away = away.lengthSqr() < 1e-4 ? Vec3.ZERO : away.normalize().scale(0.45);
+                victim.push(away.x, 0.3, away.z);
+                victim.hurtMarked = true;
+            }
         }
     }
 
