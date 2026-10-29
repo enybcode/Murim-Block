@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Murimblock V2 — Test du 29 oct.</title>
+<style>
+@page { size: A4; margin: 14mm 14mm 16mm; }
+body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.2pt; color: #1d1d1f; line-height: 1.38; }
+h1 { font-size: 21pt; margin: 0 0 2px; color: #7a1f1f; }
+.sub { color: #666; margin-bottom: 12px; }
+h2 { font-size: 13pt; margin: 16px 0 6px; padding: 4px 8px; background: #f3ece4; border-left: 4px solid #7a1f1f; break-after: avoid; }
+h2 small { font-weight: normal; color: #7a1f1f; font-size: 9.5pt; }
+section { break-inside: avoid-page; }
+ul.check { list-style: none; padding-left: 0; margin: 4px 0; }
+ul.check li { position: relative; padding-left: 22px; margin: 3px 0; break-inside: avoid; }
+ul.check li::before { content: ""; position: absolute; left: 2px; top: 3px; width: 11px; height: 11px; border: 1.4px solid #555; border-radius: 2px; }
+.why { color: #666; font-size: 9.2pt; }
+code, kbd { font-family: Consolas, monospace; font-size: 9.2pt; background: #eee; padding: 0 3px; border-radius: 3px; }
+kbd { border: 1px solid #bbb; background: #fafafa; }
+table { border-collapse: collapse; width: 100%; font-size: 9.4pt; margin: 6px 0; }
+th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; vertical-align: top; }
+th { background: #eee; }
+.box { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; background: #fafafa; margin: 6px 0; }
+.lines div { border-bottom: 1px solid #ccc; height: 20px; }
+</style></head><body>
+
+<h1>Murimblock V2 — Test du 29 oct. 2026</h1>
+<div class="sub">Tout ce qui a changé depuis le zip du 28 oct. (12 h 55) · zip <code>Murimblock-V2-test-2026-10-29.zip</code> · commit 651dee3d ·
+coche chaque ligne, note ce qui cloche</div>
+
+<div class="box"><b>Installer :</b> CurseForge → Minecraft → <b>Create Custom Profile</b> → <b>Import</b> → choisir le zip. Il installe
+NeoForge 21.1.248, GeckoLib, Player Animation Library, Photon, LDLib2 et KilaGraph tout seul. (Pour Enzo : <code>gradlew.bat runClient</code>.)<br>
+<b>Monde :</b> Survie, difficulté <b>Normale</b>, en mode triche (pour les commandes).<br>
+<b>Commandes utiles :</b> <code>/summon minecraft:&lt;mob&gt;</code> · <code>/time set night</code> · <code>/effect give @s minecraft:resistance 99999 3</code>
+(pour tester longtemps) · <code>/kill @e[type=minecraft:&lt;mob&gt;]</code> · <kbd>F5</kbd> change de vue · <kbd>F3</kbd>+<kbd>T</kbd> recharge clips et réglages.<br>
+<b>Ce qu'il y a de neuf :</b> les monstres vanilla gardent leur nom, leurs apparitions et leurs drops, mais ont un nouveau look murim, leurs propres
+animations, souvent leur propre façon de se battre et une mort à eux. Treize mobs sont concernés.</div>
+
+<section><h2>0. Pour tous les mobs</h2>
+<ul class="check">
+<li>Chaque mob regardé de jour, de nuit et en combat : modèle en relief, rien de transparent ni de troué, pas de morceau qui flotte.</li>
+<li>Il marche, court, saute, tombe et nage sans glisser ni se figer dans une pose.</li>
+<li>Touché, il a un recul (flinch) ; mort, il joue sa propre animation (pas la chute sur le côté du vanilla).</li>
+<li>Avec beaucoup de mobs à l'écran (une quinzaine), le jeu reste fluide.</li>
+<li>Désactiver les looks : <code>shenfaMobs = false</code> dans <code>config/murimblock-client.toml</code> puis relancer → les mobs vanilla
+reviennent, rien ne casse.</li>
+</ul></section>
+
+<section><h2>1. Disciple déchu <small>zombie</small></h2>
+<ul class="check">
+<li>Repos voûté, marche traînante, poursuite bras tendus ; demi-garde quand il est en colère.</li>
+<li>Il attend en garde à ~3 blocs puis avance : coup large, double coup (toujours après deux coups parés), fente si on recule.</li>
+<li>Dans un groupe de trois, il ne fait que frapper.</li>
+<li>Armé (<code>/summon minecraft:zombie ~ ~ ~ {HandItems:[{id:"minecraft:iron_sword",count:1}]}</code>, puis une hache, puis une pioche) :
+chaque arme a ses propres coups et sa garde ; l'objet ne traverse pas le corps.</li>
+<li>Bébé zombie : demi-taille avec une grosse tête d'enfant.</li>
+<li>Les bouts de corde et les pans de la robe pendent et se balancent.</li>
+</ul></section>
+
+<section><h2>2. Famille zombie <small>husk, drowned, zombie villager, zombified piglin</small></h2>
+<table><tr><th>Mob</th><th>Look</th><th>À vérifier</th></tr>
+<tr><td>Husk</td><td>Disciple des sables</td><td>Se bat comme le disciple ; ses coups donnent Faim.</td></tr>
+<tr><td>Drowned</td><td>Disciple noyé</td><td>Avec un trident : lance sa fourche comme un javelot (la fourche disparaît de la main puis il en sort une
+autre) ; nage comme une anguille ; sous l'eau, attrape et tire.</td></tr>
+<tr><td>Zombie villager</td><td>Paysan possédé</td><td>Coups du disciple, sans le double coup.</td></tr>
+<tr><td>Zombified piglin</td><td>Sanglier du culte</td><td>Neutre en groupe comme le vanilla ; coups d'épée du disciple.</td></tr>
+</table>
+<ul class="check"><li>Les quatre looks sont bien différents et lisibles de loin.</li>
+<li>Le noyé ne se bloque pas hors de l'eau ni sur un rivage.</li></ul></section>
+
+<section><h2>3. Archer impérial <small>skeleton</small> et Esprit de l'Archer <small>stray</small></h2>
+<ul class="check">
+<li>Archer : sentinelle au repos ; tir visé (encoche, tension tenue, lâcher) ; volée lobée par-dessus un abri ; recule en pas chassés si
+on approche à moins de 6 blocs ; coup d'arc au corps à corps.</li>
+<li>Esprit : corps de brume sans jambes, à moitié transparent, flocons qui tombent de la queue ; mêmes coups ; ses flèches donnent Lenteur.</li>
+<li>Mort de l'Esprit : il se cabre et monte, la brume se défait en flocons, l'armure (11 pièces) tombe et disparaît en 5 s.</li>
+</ul></section>
+
+<section><h2>4. Fileuse de linceuls <small>spider</small> et Bête des Cinq Venins <small>cave spider</small></h2>
+<ul class="check">
+<li>Fileuse (squelette à elle, 8 pattes) : marche par groupes de pattes alternés, grimpe aux murs.</li>
+<li>De 4 à 10 blocs : se cabre, tient, crache de la soie qui ralentit 3 s ; saute sur une proie ralentie ; mord au contact. Elle reste
+immobile pendant qu'elle se cabre, crache et mord.</li>
+<li>Bête des Cinq Venins : plus petite, venin qui goutte des crochets ; son crachat empoisonne 3 s, sa morsure empoisonne, elle saute sur
+une proie empoisonnée.</li>
+<li>Mort de la Bête : la poche gonfle et palpite, éclate, laisse une flaque verte 5 s qui empoisonne si on marche dedans.</li>
+</ul></section>
+
+<section><h2>5. Fourneau d'alchimie vivant <small>creeper</small></h2>
+<ul class="check">
+<li>Repos qui mijote (le couvercle tinte), marche en se dandinant sur trois pieds.</li>
+<li>Mèche comme une bouilloire : le couvercle claque de plus en plus haut, de la vapeur sort, il se hisse sur la pointe des pieds.</li>
+<li>S'éloigner pendant la mèche : il se calme, le couvercle retombe.</li>
+<li>Explosion : il éclate en une vingtaine de morceaux de bronze qui volent à 5–6 blocs.</li>
+<li>Tué avant d'exploser : il bascule sur le flanc, le feu s'éteint.</li>
+</ul></section>
+
+<section><h2>6. Moine du Vide <small>enderman</small></h2>
+<ul class="check">
+<li>Grand moine, robe en tissu, bandeau sur les yeux, chapelet qui lévite.</li>
+<li>En colère : il arrache bandeau et chapelet (on ne peut pas le blesser avant), les perles tournent autour de lui.</li>
+<li>Combat lent et lisible : paume du Vide de près, volée de perles en ligne (un pas de côté l'esquive), pas dans le Vide, éclatement de
+perles. Chaque coup est suivi d'un moment où on peut le frapper.</li>
+</ul></section>
+
+<section><h2>7. Gardien-talisman <small>iron golem</small></h2>
+<ul class="check">
+<li>Statue immobile à sa place, il laisse les monstres tranquilles.</li>
+<li>Frapper un villageois près de lui le réveille (les yeux et les runes s'allument) et il ne poursuit que le coupable.</li>
+<li>Poing du ciel (le lancer vanilla), cloche de terre (le sol se fissure autour de ses poings, jamais avant un premier poing du ciel),
+chaîne qui ramène la proie ; parer la chaîne le fait tituber.</li>
+<li>Ensuite il rentre chez lui et redevient pierre.</li>
+<li>Mort : le talisman est arraché et s'envole, la statue se brise en ses morceaux de pierre qui tombent puis disparaissent.</li>
+</ul></section>
+
+<section><h2>8. Empoisonneuse des Cinq Venins <small>witch</small></h2>
+<ul class="check">
+<li>Cheveux en relief, jupe et pans qui se balancent.</li>
+<li>Fioles de venin ; fiole de langueur si on s'enfuit ; aiguilles de scorpion de près, puis un pas glissé en arrière.</li>
+<li>Elle boit son élixir avec sa propre animation.</li>
+</ul></section>
+
+<section><h2>9. Sceau de jade vivant <small>slime</small> — nouveau aujourd'hui</h2>
+<div class="box">Grand : <code>/summon minecraft:slime ~ ~ ~ {Size:3}</code> · moyen : <code>{Size:1}</code> · petit : <code>{Size:0}</code>.
+Faire un monde plat, ou chercher un marais la nuit.</div>
+<ul class="check">
+<li>Les trois tailles ont le même modèle à la bonne échelle : bloc de jade, ceinture d'or, coin réparé à l'or, bête accroupie dessus,
+pompon rouge.</li>
+<li>Au repos, la bête tourne la tête vers toi. Il saute comme le slime : il s'écrase, s'étire en l'air, retombe d'un coup sec (bruit de
+pierre, pas de bave verte).</li>
+<li>Coup de sceau (grand et moyen) : il se tasse, monte au-dessus de toi, reste figé à plat (son ombre au sol), puis s'abat.</li>
+<li>Sortir de l'ombre pendant qu'il est figé : il rate. Rester dessous : dégâts, et Lenteur 2 s sous le grand.</li>
+<li>À l'impact : poussière, l'écran tremble si on est près, et sa marque rouge (les quatre caractères) reste au sol 3 s.</li>
+<li>Mort : il se fend, tremble, éclate en éclats de jade ; les petits sceaux qui apparaissent roulent et se redressent.</li>
+<li>Le petit ne fait pas de dégâts (comme le vanilla). Les magma cubes restent vanilla.</li>
+</ul></section>
+
+<section><h2>10. Le sol qui se fissure</h2>
+<ul class="check">
+<li>La cloche de terre du Gardien fait sauter les blocs du sol en vague autour de ses poings, puis ils se reposent et reviennent.</li>
+<li>Aucun bloc n'est perdu ni dupliqué après l'effet, même sur des coffres, de l'herbe ou de la neige.</li>
+</ul></section>
+
+<section><h2>11. Mes notes</h2>
+<div class="lines"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+</section>
+
+</body></html>
