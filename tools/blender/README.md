@@ -40,6 +40,7 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
   export_clips.py -- --set disciple --declip disciple,sables,noye,paysan,sanglier --gltf .../animations/disciple.gltf
   export_clips.py -- --set archer --declip archer,esprit --gltf .../animations/archer.gltf
   export_clips.py -- --set witch --mob witch --declip witch --gltf .../animations/witch.gltf
+  export_clips.py -- --set meditation --gltf .../animations/meditation.gltf
   ```
 
   `limb_check.py -- --mob <mob> [--set <set>] [--declip ...]` lists, clip by clip, the frames where an arm or the held

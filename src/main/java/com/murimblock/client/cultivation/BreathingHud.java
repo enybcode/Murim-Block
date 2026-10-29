@@ -116,6 +116,15 @@ public final class BreathingHud {
         return seconds(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false));
     }
 
+    /** How full the lungs are at the next tick, 0 to 1, while the lane plays, or -1 (the body breathes with it). */
+    static float lung() {
+        if (!playing()) {
+            return -1;
+        }
+        float t = (meditationTicks + 1) / 20f;
+        return Mth.clamp((TRACK.level(t) - BreathTrack.EMPTY) / (BreathTrack.FULL - BreathTrack.EMPTY), 0, 1);
+    }
+
     private static boolean full(Cultivation.Snapshot c) {
         return CultivationRules.gaugeFull(c.realm(), c.stage(), c.stageQi());
     }
@@ -163,6 +172,9 @@ public final class BreathingHud {
         lastResult = result;
         judgedAt = t;
         int tierBefore = CultivationRules.comboTier(combo);
+        if (result != BreathResult.MISS) {
+            LotusBody.deepBreath();
+        }
         if (result == BreathResult.MISS) {
             if (combo >= 5) {
                 brokenAt = t;

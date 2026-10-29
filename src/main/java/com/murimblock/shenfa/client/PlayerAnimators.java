@@ -91,6 +91,24 @@ public final class PlayerAnimators {
         STATES.computeIfAbsent(player, key -> new State()).combatMode = on;
     }
 
+    /**
+     * Whether a clip holds the whole body of a player (seated in meditation): its feet are not planted, vanilla's arm
+     * work and held items are left out, and in first person the eye may go as low as the head does.
+     */
+    public static java.util.function.Predicate<AbstractClientPlayer> bodyHeld = player -> false;
+
+    /** Holds an additive clip of {@code player} at {@code seconds} (see {@link Animator#holdAdditive}). */
+    public static void holdAdditive(AbstractClientPlayer player, Animation animation, float seconds) {
+        STATES.computeIfAbsent(player, key -> new State()).animator.holdAdditive(animation, seconds);
+    }
+
+    public static void stopAdditive(AbstractClientPlayer player, String id) {
+        State state = STATES.get(player);
+        if (state != null) {
+            state.animator.stopAdditive(id);
+        }
+    }
+
     /** Plays {@code animation} on a layer of {@code player} alone. */
     public static void play(AbstractClientPlayer player, Animator.Priority priority, Animation animation, float speed,
                             boolean mirrored) {

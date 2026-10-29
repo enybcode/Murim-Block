@@ -30,6 +30,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
@@ -55,6 +56,10 @@ public final class StageBreakthrough {
     /** The spiral climbs from the feet to here; the burst happens here. */
     private static final double TOP = 2.1;
     private static final double LIFT = 0.12;
+    /** The camera glides behind over this many ticks, and back into the head over as many before {@link #CAMERA_END}. */
+    private static final float GLIDE = 12;
+    /** The camera's distance behind the eye at the glide's ends: nearer, it would be inside the head. */
+    private static final float NEAREST = 0.6f;
     /** Semitones of the chime for stages 1-9, a pentatonic scale. */
     private static final int[] SCALE = {0, 2, 4, 7, 9, 12, 14, 16, 19};
 
@@ -82,6 +87,9 @@ public final class StageBreakthrough {
         Minecraft mc = Minecraft.getInstance();
         EFFECTS.removeIf(e -> e.entityId == entityId);
         EFFECTS.add(new Effect(entityId, realm, stage));
+        if (mc.level != null && mc.level.getEntity(entityId) instanceof net.minecraft.client.player.AbstractClientPlayer player) {
+            LotusBody.breakthrough(player);
+        }
         if (mc.player != null && mc.player.getId() == entityId) {
             // The System covers the scene: close it, and step behind the player to see the spiral.
             mc.setScreen(null);
@@ -267,9 +275,21 @@ public final class StageBreakthrough {
             PoseStack pose = event.getPoseStack();
             pose.pushPose();
             for (Effect e : EFFECTS) {
-                if (e.entityId == event.getEntity().getId()) {
+                // On Shenfa the breakthrough clip lifts the body itself.
+                if (e.entityId == event.getEntity().getId() && !com.murimblock.shenfa.client.SkeletalPlayers.enabled()) {
                     pose.translate(0, LIFT * lift(e, event.getPartialTick()), 0);
                 }
+            }
+        }
+
+        /** The camera glides back from the eye and returns, rather than cutting to and from the third person. */
+        @SubscribeEvent
+        public static void cameraDistance(CalculateDetachedCameraDistanceEvent event) {
+            Effect own = own(Minecraft.getInstance());
+            if (cameraBefore != null && own != null) {
+                float t = own.age + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
+                float out = Math.min(smooth(t / GLIDE), 1 - smooth((t - CAMERA_END + GLIDE) / GLIDE));
+                event.setDistance(Mth.lerp(Math.max(0, out), NEAREST, event.getDistance()));
             }
         }
 

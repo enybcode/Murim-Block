@@ -126,6 +126,17 @@ public final class Animator {
         layer.targetWeight = 1;
     }
 
+    /**
+     * Holds an additive clip at {@code seconds}, set from outside every tick (a breath following the player's own):
+     * the clip runs at the speed that reaches that time at the next tick, so the frames between stay smooth.
+     */
+    public void holdAdditive(Animation animation, float seconds) {
+        playAdditive(animation);
+        AnimationPlayer player = additives.get(animation.id()).player;
+        float end = animation.clip().duration() - 2 * AnimationPlayer.TICK;
+        player.speed((Math.max(0, Math.min(end, seconds)) - player.time()) / AnimationPlayer.TICK);
+    }
+
     public void stopAdditive(String id) {
         Layer layer = additives.get(id);
         if (layer != null) {

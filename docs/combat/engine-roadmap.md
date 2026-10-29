@@ -548,7 +548,7 @@ Build and check:
 - 50 players or mobs on the engine in view: frame cost measured, skinning cached when nothing moves.
 - Shader packs (Iris) and mods that add player render layers: fall back to vanilla rendering when a conflict is
   detected, with a config switch.
-- The lotus pose and the trial's getting up (now drawn by `BentLimbsLayer`) move to the engine.
+- The trial's getting up (now drawn by `BentLimbsLayer`) moves to the engine (the lotus did on 29 Oct 2026).
 
 Done when: numbers written in this doc, no crash with the tested mods.
 

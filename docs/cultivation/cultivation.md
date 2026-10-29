@@ -41,7 +41,7 @@ Saved IDs stay stable once released. Commands (operators only) set each field fo
 
 ## Meditation
 
-- Key (placeholder C): sit in lotus (PAL animation), camera free, player rooted. Moving, attacking or taking damage
+- Key (placeholder C): sit in lotus (Shenfa, see below), camera free, player rooted. Moving, attacking or taking damage
   ends it. Not usable in the air, in water or with a hostile mob closer than 8 blocks.
 - Base gain: 2 stage Qi per second, and `qi` refills 5× faster.
 - Breathing QTE (V2, validated playable mockup "Breathing V2", artifact Kanzz5Vni8Jhd3CDPrxaNm, 24 Oct): marks
@@ -70,10 +70,14 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
   (save + network), `Meditation` (server rules), `CultivationEvents`, `CultivationCommands`, `MeridianPillItem`.
 - Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `2`: sync, pose, toggle, advance, breath.
 - Key C (placeholder) starts meditation; seated cross-legged, knees bent out, shins crossed, hands on the knees
-  (Enzo's reference photo, 23 Oct). Legs have no knee in Minecraft or PAL: `MeditationLegsLayer` hides them and draws
-  a thigh and a shin per leg from the skin. Rest of the pose
-  in `player_animations/meditate_lotus.json`, played through PAL and
-  sent to everyone tracking the player. The Cultivation page has Advance and Stop/Meditate; Profile reads the real Qi.
+  (Enzo's reference photo, 23 Oct). Drawn by Shenfa since 29 Oct (storyboards `docs/mobs/boards/meditation.png`
+  and `meditation_fp.png`): `client/cultivation/LotusBody` plays `skeletal/animations/meditation.gltf` (sit 24 ticks,
+  lotus, breakthrough 72, stand 16, 1.5x after a hit) for every player the server says meditates. One's own body
+  breathes with the lane (additive `breath` held at `BreathingHud.lung()`, `deep` on a good breath); others breathe on
+  a 4 s loop. While seated (`PlayerAnimators.bodyHeld`) the feet are not planted, vanilla arm work and held items are
+  left out, and the first-person eye follows the head down to about 0.95 block. A breakthrough lifts the body by its
+  clip; the third-person camera glides back over 12 ticks and in again. With Shenfa players off, no lotus is drawn.
+  Clips in `tools/blender/murim_clips.py` (`SETS["meditation"]`); check: `runEngineTest -PengineGroups=meditation`. The Cultivation page has Advance and Stop/Meditate; Profile reads the real Qi.
 - Breathing QTE: `client/cultivation/BreathTrack` (patterns and judging, plain Java, unit tested) and
   `BreathingHud` (lane, frame, Combo and Harmony boxes, effects). Presses come from the input events, so they are
   timed to the frame. The client judges and sends `Breath(BreathResult)`; the server accepts one per 8 ticks and keeps

@@ -75,6 +75,9 @@ final class VanillaPoses {
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("setModelProperties", e);
         }
+        if (PlayerAnimators.bodyHeld.test(player)) {
+            return;
+        }
         Entity vehicle = player.getVehicle();
         boolean sitting = player.isPassenger() && vehicle != null && vehicle.shouldRiderSit();
         model.riding = sitting;

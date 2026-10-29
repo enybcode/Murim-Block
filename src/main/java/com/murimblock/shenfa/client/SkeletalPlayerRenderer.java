@@ -490,7 +490,7 @@ public final class SkeletalPlayerRenderer {
     private static void holdItem(AbstractClientPlayer player, HumanoidArm arm, Matrix4f tool, boolean slim,
                                  PoseStack poseStack, MultiBufferSource buffers, int light) {
         ItemStack stack = player.getMainArm() == arm ? player.getMainHandItem() : player.getOffhandItem();
-        if (stack.isEmpty() || VanillaLayers.atTheEye(player, stack)) {
+        if (stack.isEmpty() || VanillaLayers.atTheEye(player, stack) || PlayerAnimators.bodyHeld.test(player)) {
             return;
         }
         boolean left = arm == HumanoidArm.LEFT;

@@ -861,6 +861,70 @@ TWO_HANDED = {name: name.split("_")[0] for name in SETS["disciple"] if name.spli
 
 
 
+# Lotus meditation (storyboards docs/mobs/boards/meditation.png and meditation_fp.png, validated 29 Oct 2026): the
+# hips on the ground, knees open 40°, shins crossed in front (the left one ahead and lower), hands on the knees.
+# Thighs and shins are 6 px: open wider, the feet could not reach the middle. LOTUS is the exhaled rest.
+LOTUS_LEGS = {"Root": {"loc": (0, -9.5, 0)}, "Thigh_L": (-85, 0, 40), "Thigh_R": (-85, 0, -40),
+              "Leg_L": (125, -20, -70), "Leg_R": (130, 50, 60)}
+LOTUS_ARMS = {"Arm_R": (-10, 20, -5), "Hand_R": (-25, 0, 0), "Arm_L": (-10, -20, 5), "Hand_L": (-25, 0, 0)}
+SHOULDERS = lambda y: {"Shoulder_L": {"loc": (0, y, 0)}, "Shoulder_R": {"loc": (0, y, 0)}}
+EXHALE = {"Torso": {"rot": (2, 0, 0), "loc": (0, -0.2, 0)}, "Chest": (2, 0, 0), "Head": (4, 0, 0), **SHOULDERS(-0.3)}
+INHALE = {"Torso": {"rot": (-1, 0, 0), "loc": (0, 0.6, 0)}, "Chest": (-3, 0, 0), "Head": (-1, 0, 0), **SHOULDERS(0.5)}
+LOTUS = {**LOTUS_LEGS, **LOTUS_ARMS, **EXHALE}
+# The palms turned up, the arms opened, as the Qi lifts the body at a breakthrough (`open` 0 to 1).
+OPEN_ARMS = lambda k: {"Arm_R": (-10 + 15 * k, 20 + 20 * k, -5 - 45 * k), "Hand_R": (-25 + 5 * k, 0, 0),
+                       "Arm_L": (-10 + 15 * k, -20 - 20 * k, 5 + 45 * k), "Hand_L": (-25 + 5 * k, 0, 0)}
+
+SETS["meditation"] = {
+    # 24 ticks: the left foot crosses behind, the knees open and the body sinks under control, the hips touch at 17
+    # with a small settle, then the back straightens and the hands come to the knees.
+    "sit": [
+        (0, {**STRAIGHT, **ARMS_DOWN, **SHOULDERS(0)}),
+        (6, {"Root": {"loc": (0, -1.5, 0)}, "Thigh_L": (-20, 0, 18), "Thigh_R": (-24, 0, -14), "Leg_L": (40, 0, -10),
+             "Leg_R": (44, 0, 10), "Torso": (6, 0, 0), "Head": (4, 0, 0),
+             "Arm_L": (-15, 0, 16), "Arm_R": (-15, 0, -16), "Hand_L": (-25, 0, 0), "Hand_R": (-25, 0, 0)}),
+        (16, {"Root": {"loc": (0, -7, -0.5)}, "Thigh_L": (-75, 0, 34), "Thigh_R": (-75, 0, -34),
+              "Leg_L": (125, -10, -50), "Leg_R": (128, 30, 45), "Torso": (16, 0, 0), "Chest": (2, 0, 0),
+              "Head": (-8, 0, 0), "Arm_L": (-38, 0, 12), "Arm_R": (-38, 0, -12), "Hand_L": (-30, 0, 0),
+              "Hand_R": (-30, 0, 0)}),
+        (17, {**LOTUS_LEGS, "Root": {"loc": (0, -9.8, 0)}, "Torso": (8, 0, 0), "Head": (2, 0, 0)}),
+        (19, {"Root": {"loc": (0, -9.5, 0)}}),
+        (24, LOTUS),
+    ],
+    # Others see this slow breath (4 s); one's own body plays lotus_still with breath held at the QTE's level.
+    "lotus": [(0, LOTUS), (30, INHALE), (38, INHALE), (80, EXHALE)],
+    "lotus_still": [(0, LOTUS), (40, EXHALE)],
+    # Additive, held by the client at a time from its breath: 0 s exhaled, 1 s full.
+    "breath": [(0, EXHALE), (20, INHALE), (21, INHALE)],
+    # Additive, on a good breath: a deeper inhale over the breath, then back.
+    "deep": [(0, EXHALE), (5, {"Torso": (-3, 0, 0), "Chest": (-7, 0, 0), "Head": (-5, 0, 0), **SHOULDERS(1.0)}),
+             (12, EXHALE)],
+    # 72 ticks with the spiral of StageBreakthrough: bows as the ring forms, carried up 5 px as the strands climb,
+    # head up and arms open at the burst (36), then down again while the Qi falls.
+    "breakthrough": [
+        (0, LOTUS),
+        (16, {"Torso": (6, 0, 0), "Chest": (6, 0, 0), "Head": (14, 0, 0), **SHOULDERS(-0.6)}),
+        (34, {"Root": {"loc": (0, -5, 0)}, "Torso": (-4, 0, 0), "Chest": (-8, 0, 0), "Head": (-12, 0, 0),
+              **SHOULDERS(0.6), **OPEN_ARMS(0.6)}),
+        (36, {"Root": {"loc": (0, -4.5, 0)}, "Chest": (-10, 0, 0), "Head": (-24, 0, 0), **OPEN_ARMS(1)}),
+        (39, {"Root": {"loc": (0, -4.5, 0)}, "Head": (-22, 0, 0)}),
+        (72, LOTUS),
+    ],
+    # 16 ticks: uncross and lean forward pushing on the knees, the legs lift the body, upright.
+    "stand": [
+        (0, LOTUS),
+        (6, {"Root": {"loc": (0, -7, 0.5)}, "Thigh_L": (-80, 0, 18), "Thigh_R": (-80, 0, -18), "Leg_L": (130, 0, 0),
+             "Leg_R": (130, 0, 0), "Torso": (28, 0, 0), "Chest": (4, 0, 0), "Head": (-14, 0, 0),
+             "Arm_L": (-42, 0, 8), "Arm_R": (-42, 0, -8), "Hand_L": (-20, 0, 0), "Hand_R": (-20, 0, 0),
+             **SHOULDERS(0)}),
+        (12, {"Root": {"loc": (0, -2, 0)}, "Thigh_L": (-28, 0, 4), "Thigh_R": (-28, 0, -4), "Leg_L": (52, 0, 0),
+              "Leg_R": (52, 0, 0), "Torso": (10, 0, 0), "Chest": (0, 0, 0), "Head": (-4, 0, 0),
+              "Arm_L": (-10, 0, 6), "Arm_R": (-10, 0, -6), "Hand_L": (-10, 0, 0), "Hand_R": (-10, 0, 0)}),
+        (16, {**STRAIGHT, **ARMS_DOWN}),
+    ],
+}
+
+
 def rotation(degrees):
     x, y, z = (math.radians(d) for d in degrees)
     return Quaternion((1, 0, 0), x) @ Quaternion((0, 1, 0), y) @ Quaternion((0, 0, 1), z)

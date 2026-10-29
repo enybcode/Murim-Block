@@ -5,7 +5,6 @@ import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationRules;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
-import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import com.zigythebird.playeranim.api.PlayerAnimationFactory;
 import com.zigythebird.playeranimcore.enums.PlayState;
 import java.util.HashMap;
@@ -20,11 +19,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 
-/** The client's copy of its own cultivation, and the lotus pose of meditating players. */
+/** The client's copy of its own cultivation, and who meditates (the lotus itself is {@link LotusBody}). */
 public final class ClientCultivation {
-    /** PAL layer playing Murimblock animations on players. */
+    /** PAL layer playing Murimblock animations on players (the trial's getting up). */
     public static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "main");
-    public static final ResourceLocation LOTUS = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "meditate_lotus");
     private static final int LAYER_PRIORITY = 1000;
 
     private static Cultivation.Snapshot current = Cultivation.Snapshot.START;
@@ -80,13 +78,8 @@ public final class ClientCultivation {
         }
         Minecraft mc = Minecraft.getInstance();
         Entity entity = mc.level == null ? null : mc.level.getEntity(entityId);
-        if (entity instanceof AbstractClientPlayer player
-                && PlayerAnimationAccess.getPlayerAnimationLayer(player, LAYER) instanceof PlayerAnimationController controller) {
-            if (meditating) {
-                controller.triggerAnimation(LOTUS);
-            } else {
-                controller.stopTriggeredAnimation();
-            }
+        if (entity instanceof AbstractClientPlayer player) {
+            LotusBody.seat(player, meditating);
         }
     }
 

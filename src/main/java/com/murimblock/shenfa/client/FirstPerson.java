@@ -36,7 +36,7 @@ import org.joml.Vector3f;
 public final class FirstPerson {
     /** The eye above the neck (the {@code Head} joint) in model pixels: vanilla's eye height at rest. */
     static final float EYE_ABOVE_NECK = 1.62f / (SkeletalPlayerRenderer.PLAYER_SCALE / 16) - 24;
-    private static final float MOST_SHIFT = 0.35f;
+    private static final float MOST_SHIFT = 0.35f, MOST_SHIFT_HELD = 1.2f;
     private static final float BACK_LOOKING_DOWN = 0.2f;
     /** The share of the way the camera moves toward the head each frame at 60 frames a second. */
     private static final float FOLLOW = 0.35f;
@@ -165,8 +165,11 @@ public final class FirstPerson {
         Vector3f target = active() ? eyeShift : new Vector3f();
         float follow = 1 - (float) Math.pow(1 - FOLLOW, frames);
         cameraShift.lerp(target, follow);
-        if (cameraShift.length() > MOST_SHIFT) {
-            cameraShift.normalize(MOST_SHIFT);
+        // Seated, the head sits far below vanilla's eye: the camera goes down with it.
+        float most = Minecraft.getInstance().player != null
+                && PlayerAnimators.bodyHeld.test(Minecraft.getInstance().player) ? MOST_SHIFT_HELD : MOST_SHIFT;
+        if (cameraShift.length() > most) {
+            cameraShift.normalize(most);
         }
         if (cameraShift.lengthSquared() < 1e-8f || !active()) {
             return;

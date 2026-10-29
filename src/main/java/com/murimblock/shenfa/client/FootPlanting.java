@@ -60,7 +60,7 @@ public final class FootPlanting {
         boolean grounded = player.onGround() || player.fallDistance < 0.7f && player.getDeltaMovement().y <= 0;
         boolean free = SkeletalPlayers.animated() && grounded && !player.isPassenger() && !player.isVisuallySwimming()
                 && !player.isFallFlying() && !player.isSleeping() && !player.isAutoSpinAttack()
-                && !PlayerAnimators.rootMotionPlaying(player)
+                && !PlayerAnimators.rootMotionPlaying(player) && !PlayerAnimators.bodyHeld.test(player)
                 // A reaction (a stagger, a knockdown) throws the legs about: the clip places them.
                 && PlayerAnimators.playing(player, Animator.Priority.HIGHEST) == null;
         FootPlanter.Mode mode = !free ? FootPlanter.Mode.OFF : STEPPING.contains(motion) ? FootPlanter.Mode.STEP

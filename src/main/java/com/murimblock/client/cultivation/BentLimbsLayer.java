@@ -143,8 +143,8 @@ public final class BentLimbsLayer extends RenderLayer<AbstractClientPlayer, Play
         }
 
         /**
-         * Bent limbs are skipped in the vanilla model (skipDraw survives the renderer's own visibility reset). Late, so
-         * the meditation legs' own reset does not show them again.
+         * Bent limbs are skipped in the vanilla model (skipDraw survives the renderer's own visibility reset). Late, after
+         * other layers' own resets.
          */
         @SubscribeEvent(priority = EventPriority.LOW)
         public static void beforePlayer(RenderPlayerEvent.Pre event) {
