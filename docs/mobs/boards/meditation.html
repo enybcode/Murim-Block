@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Méditation — Shenfa</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The player's lotus meditation on Shenfa. Poses (see board.js), in profile facing right: lean = torso, head,
+// aR/fR = near arm, aL/fL = far arm, tF/sF = near thigh / shin, tB/sB = far leg, hx/hy = hips moved (px).
+// Seated: the hips on the ground (hy 28), thighs forward, shins folded back under (crossed).
+const STAND = {lean: 0, head: 0, aR: 4, fR: 6, aL: -4, fL: -2, tF: 2, sF: 0, tB: -2, sB: -4};
+const CROSS = {lean: 6, head: 4, aR: 14, fR: 30, aL: 10, fL: 26, tF: 26, sF: -12, tB: -14, sB: -30, hy: 4, hx: 2};
+const SINK = {lean: 16, head: 2, aR: 40, fR: 60, aL: 34, fL: 58, tF: 58, sF: -38, tB: 50, sB: -44, hy: 17, hx: 2};
+const TOUCH = {lean: 8, head: 6, aR: 24, fR: 56, aL: 20, fL: 54, tF: 80, sF: -66, tB: 74, sB: -70, hy: 29};
+const LOTUS = {lean: 0, head: 3, aR: 10, fR: 50, aL: 8, fL: 48, tF: 80, sF: -68, tB: 74, sB: -72, hy: 28};
+const INHALE = {...LOTUS, lean: -3, head: -1, hy: 27, aR: 8, fR: 52};
+const EXHALE = {...LOTUS, lean: 3, head: 6, hy: 28.5, aR: 12, fR: 48};
+const DEEP = {...LOTUS, lean: -6, head: -4, hy: 26, aR: 6, fR: 54};
+const BOW = {...LOTUS, lean: 6, head: 14, hy: 28.5, aR: 14, fR: 46};
+const RISE = {...LOTUS, lean: -8, head: -12, hy: 22, aR: 22, fR: 30, aL: 20, fL: 28};
+const BURST = {...LOTUS, lean: -10, head: -20, hy: 20, aR: 38, fR: 20, aL: 36, fL: 18};
+const PUSH = {lean: 30, head: 0, aR: 52, fR: 40, aL: 46, fL: 38, tF: 62, sF: -44, tB: 60, sB: -50, hy: 20, hx: 3};
+const UP = {lean: 12, head: 2, aR: 16, fR: 20, aL: 12, fL: 18, tF: 24, sF: 6, tB: 10, sB: -10, hy: 5};
+const lift = (dy) => ({at: 'neck', from: [16, dy + 10], to: [16, dy - 4], color: '#3a6fb0'});
+const sink = (dy) => ({at: 'neck', from: [16, dy - 4], to: [16, dy + 10], color: '#3a6fb0'});
+sheet({
+  colors: {eye: '#26222a', skin: '#d6a77f', skinDark: '#b0835e'},
+  title: 'MÉDITATION — SUR SHENFA',
+  sub: 'Proposition avant animation · le joueur s\'assoit en lotus, respire au rythme du mini-jeu, se soulève à la '
+    + 'percée, se relève · vue de profil, il regarde vers la droite · jambes croisées, genoux ouverts, mains posées '
+    + 'sur les genoux (ta photo de référence du 23 oct.)',
+  wrong: [
+    'Animation PAL : les jambes vanilla n\'ont pas de genou, un calque à part (MeditationLegsLayer) les cache et '
+      + 'redessine cuisses et tibias ; l\'armure et les mods de skin ne suivent pas.',
+    'Debout → assis d\'une image à l\'autre, et pareil pour se relever : aucun poids, aucune transition.',
+    'La respiration : 2° de buste sur 4 s, sans aucun lien avec le mini-jeu de souffle.',
+    'Bras figés à 18° : les mains flottent au-dessus des genoux.',
+    'À la percée, le corps est soulevé d\'un bloc, tout raide, comme un objet qu\'on monte.',
+  ],
+  fix: [
+    'Tout passe sur Shenfa : vrais genoux, vrais coudes, plus de calque de jambes ni de PAL pour le lotus.',
+    'S\'asseoir (24 ticks) et se relever (16 ticks) : le poids descend et remonte, les jambes se croisent.',
+    'Ton propre corps respire avec le mini-jeu : la poitrine monte sur l\'inspire, tient sur la rétention, '
+      + 'descend sur l\'expire. Les autres joueurs te voient respirer sur une boucle lente de 4 s.',
+    'Un bon souffle : une inspiration plus ample (couche additive, 12 ticks).',
+    'La percée (72 ticks, calée sur les 3,6 s de la spirale) : il se recueille, s\'ouvre en montant, '
+      + 'la tête se lève à l\'éclat, puis il se repose.',
+  ],
+  anims: [
+    {name: 'S\'asseoir', meta: '24 ticks · touché au sol au tick 17',
+      feel: 'un geste de pratiquant, contrôlé : il descend lentement, sans les mains, et se pose sans choc.',
+      read: 'on voit tout de suite qu\'il entre en méditation (et qu\'il est vulnérable).',
+      frames: [
+        {ticks: '0', phase: 'debout', pose: STAND, note: 'Départ debout, à l\'arrêt.'},
+        {ticks: '1 → 6', phase: 'croise', pose: CROSS, from: STAND, trace: 'footB', bend: -10,
+          arrows: [{at: 'footB', from: [-14, 0], to: [8, 0], color: '#3a6fb0'}],
+          note: 'Le pied gauche passe derrière le droit, les genoux s\'ouvrent ; les bras s\'écartent un peu pour '
+            + 'l\'équilibre.'},
+        {ticks: '7 → 16', phase: 'descend', pose: SINK, from: CROSS, trace: 'hip', bend: 6,
+          note: 'Il plie les genoux vers l\'extérieur et descend, buste penché pour garder le poids au-dessus des '
+            + 'pieds. Lent au début, plus vite à la fin.'},
+        {ticks: '17 → 19', phase: 'posé', phaseColor: '#c46a00', pose: TOUCH, from: SINK, trace: 'hip', bend: 4,
+          note: 'Les fesses touchent le sol, les tibias se croisent dessous ; un petit tassement de 1 tick.'},
+        {ticks: '20 → 24', phase: 'installe', phaseColor: '#2f6b4f', pose: LOTUS, from: TOUCH, trace: 'handR',
+          bend: -8, note: 'Le dos se redresse, les mains se posent sur les genoux, la tête s\'incline à peine, les '
+            + 'yeux se ferment.'},
+      ]},
+    {name: 'Respiration', meta: 'boucle · suit le mini-jeu (toi) · 80 ticks (les autres)',
+      feel: 'calme et vivant : on voit le souffle passer, pas un mannequin assis.',
+      read: 'le joueur sent son corps respirer avec les marques qui défilent ; les autres voient qu\'il cultive.',
+      frames: [
+        {ticks: 'repos', phase: 'lotus', pose: LOTUS, note: 'La pose de base : dos droit, épaules basses, mains sur '
+          + 'les genoux, coudes souples.'},
+        {ticks: 'inspire', phase: 'monte', phaseColor: '#3a6fb0', pose: INHALE, from: EXHALE, trace: 'neck',
+          bend: 0, arrows: [lift(-6)], note: 'La poitrine se gonfle, les épaules montent un peu, le buste se '
+            + 'redresse, la tête suit. Durée = la marque d\'inspire.'},
+        {ticks: 'rétention', phase: 'tient', pose: INHALE, note: 'Il reste plein, immobile ; un très léger '
+          + 'tremblement si la rétention est longue.'},
+        {ticks: 'expire', phase: 'descend', phaseColor: '#2f6b4f', pose: EXHALE, from: INHALE, trace: 'neck',
+          bend: 0, arrows: [sink(-6)], note: 'Tout se relâche : les épaules tombent, la tête s\'incline, le buste '
+            + 'se tasse un peu plus bas qu\'au repos.'},
+        {ticks: 'bon souffle', phase: '+ 12 ticks', phaseColor: '#c46a00', pose: DEEP, from: LOTUS,
+          trace: 'neck', bend: 0, arrows: [lift(-8)], note: 'Sur un « Good » ou mieux : une inspiration plus '
+            + 'ample par-dessus, la poitrine s\'ouvre en grand, puis revient.'},
+      ]},
+    {name: 'Percée de stade', meta: '72 ticks · éclat au tick 36 · avec la spirale de Qi',
+      feel: 'une montée qui se gonfle puis se libère : le Qi le soulève, il ne saute pas.',
+      read: 'le corps raconte la spirale : recueilli, porté, ouvert à l\'éclat, apaisé.',
+      frames: [
+        {ticks: '0 → 16', phase: 'recueille', pose: BOW, from: LOTUS, trace: 'neck', bend: 0,
+          note: 'Pendant que l\'anneau se forme aux pieds, il expire à fond et s\'incline : tête basse, épaules '
+            + 'rentrées.'},
+        {ticks: '16 → 34', phase: 'porté', phaseColor: '#3a6fb0', pose: RISE, from: BOW, trace: 'hip', bend: 0,
+          arrows: [lift(-2)], note: 'Avec la spirale qui monte : longue inspiration, le buste s\'ouvre, les mains '
+            + 'quittent les genoux, paumes vers le haut. Les hanches décollent de 0,3 bloc, jambes toujours '
+            + 'croisées.'},
+        {ticks: '35 → 38', phase: 'ÉCLAT', phaseColor: '#c46a00', pose: BURST, from: RISE, trace: 'handR',
+          bend: 6, impact: true, note: 'L\'éclat : la tête se lève vers le ciel, les bras s\'ouvrent un peu plus, '
+            + 'tenu 3 ticks au sommet.'},
+        {ticks: '39 → 72', phase: 'redescend', phaseColor: '#2f6b4f', pose: LOTUS, from: BURST, trace: 'hip',
+          bend: 0, arrows: [sink(-2)], note: 'Longue expiration : il redescend doucement pendant que les '
+            + 'particules tombent, les mains reviennent aux genoux.'},
+      ]},
+    {name: 'Se relever', meta: '16 ticks · aussi quand il prend un coup (joué 1,5× plus vite)',
+      feel: 'efficace : il se relève d\'un seul mouvement, sans traîner.',
+      read: 'la méditation est finie, il peut bouger.',
+      frames: [
+        {ticks: '0', phase: 'lotus', pose: LOTUS, note: 'Départ assis.'},
+        {ticks: '1 → 6', phase: 'pousse', phaseColor: '#a32020', pose: PUSH, from: LOTUS, trace: 'neck', bend: -6,
+          note: 'Il décroise, se penche en avant, les mains poussent sur les genoux.'},
+        {ticks: '7 → 12', phase: 'monte', pose: UP, from: PUSH, trace: 'hip', bend: -6,
+          arrows: [{at: 'hip', from: [-4, 14], to: [-4, -4], color: '#3a6fb0'}],
+          note: 'Les jambes poussent, le buste se redresse en montant.'},
+        {ticks: '13 → 16', phase: 'debout', phaseColor: '#2f6b4f', pose: STAND, from: UP, trace: 'neck', bend: 0,
+          note: 'Debout, les bras retombent ; la suite enchaîne sur la marche ou le repos.'},
+      ]},
+  ],
+});
+
+// The lotus seen from the front, which the profile cannot show: knees open wide, shins crossed, hands on the knees.
+// up: hips lifted (px); breath: chest widened and shoulders raised (px); open: arms opened, palms up (0 to 1);
+// look: head raised (px).
+function front(o, ghost) {
+  const g = ghost ? C.ghost : null, col = c => g || c;
+  const y = 146 - (o.up || 0), b = o.breath || 0, op = o.open || 0;
+  const sh = 108 - b - (o.up || 0);
+  let s = `<g${ghost ? ' opacity="0.28"' : ''}>`;
+  // Shins crossed in front, near the ground; the far one first.
+  s += line([66, 150], [116, 154], col(C.robeDark), 8) + line([134, 150], [84, 154], col(C.robe), 8);
+  s += line([114, 154], [122, 154], col(C.ink), 6) + line([86, 154], [78, 154], col(C.ink), 6);
+  // Thighs from the hips out to the knees.
+  s += line([92, y - 2], [62, 148], col(C.robe), 10) + line([108, y - 2], [138, 148], col(C.robe), 10);
+  // Torso, wider at the chest on an inhale, and the belt.
+  s += `<path d="M${88 - b} ${sh} L${112 + b} ${sh} L${110} ${y} L${90} ${y} Z" fill="${col(C.robe)}"/>`;
+  s += line([90, y - 9], [110, y - 9], col(C.belt), 6);
+  s += line([100, sh], [96, sh + 20], col(C.robeDark), 2) + line([100, sh], [104, sh + 20], col(C.robeDark), 2);
+  // Arms: on the knees at rest, opened outward, palms up, at the burst.
+  const elbowL = [78 - 10 * op, sh + 20 - 6 * op], elbowR = [122 + 10 * op, sh + 20 - 6 * op];
+  const handL = [64 - 14 * op, 140 - (o.up || 0) * 0.5 - 18 * op], handR = [136 + 14 * op, 140 - (o.up || 0) * 0.5 - 18 * op];
+  s += line([86 - b, sh + 3], elbowL, col(C.robe), 8) + line(elbowL, handL, col(C.skin), 7);
+  s += line([114 + b, sh + 3], elbowR, col(C.robe), 8) + line(elbowR, handR, col(C.skin), 7);
+  // Head, eyes closed (two short lines), looking up a little at the burst.
+  const hy = sh - 24 - (o.look || 0) * 0.3;
+  s += `<rect x="89" y="${hy}" width="22" height="22" fill="${col(C.skin)}"/>`;
+  s += `<rect x="88" y="${hy - 2}" width="24" height="9" fill="${col(C.hair)}"/>`;
+  if (!ghost) {
+    s += line([93, hy + 13 - (o.look || 0) * 0.2], [97, hy + 13 - (o.look || 0) * 0.2], C.ink, 1.5);
+    s += line([103, hy + 13 - (o.look || 0) * 0.2], [107, hy + 13 - (o.look || 0) * 0.2], C.ink, 1.5);
+  }
+  return s + '</g>';
+}
+function frontPanel(f) {
+  let s = `<svg viewBox="-6 -8 212 184" width="236" height="206"><rect x="-6" y="-8" width="212" height="184" fill="#f8f3e8"/>`;
+  s += `<line x1="0" y1="157" x2="200" y2="157" stroke="#d9cfbd" stroke-width="2"/>`;
+  if (f.ghost) s += front(f.ghost, true);
+  s += front(f.pose, false);
+  for (const a of f.arrows || []) s += arc(a[0], a[1], 0, '#3a6fb0', '', 2.5);
+  s += `<text x="0" y="6" font-size="11" font-weight="700" fill="${C.ink}">${f.ticks}</text>`;
+  s += `<text x="0" y="19" font-size="10" fill="${C.soft}">${f.phase}</text></svg>`;
+  return `<div class="frame">${s}<div class="note">${f.note}</div></div>`;
+}
+const row = document.createElement('div');
+row.className = 'anim';
+row.innerHTML = `<div class="label"><div class="name">La pose, de face</div><div class="meta">ce que le profil ne montre pas</div>
+  <div class="feel"><b>Sensation :</b> stable et ancré : un triangle large posé au sol, le dos droit au-dessus.</div>
+  <div class="read"><b>Pour le joueur :</b> la silhouette du lotus se reconnaît de loin, même sans effets.</div></div>
+  <div class="frames">${[
+    {ticks: 'repos', phase: 'lotus', pose: {}, note: 'Genoux grands ouverts, tibias croisés devant, mains posées '
+      + 'sur les genoux, yeux fermés.'},
+    {ticks: 'inspire', phase: 'monte', pose: {breath: 3}, ghost: {}, arrows: [[[78, 112], [78, 98]], [[122, 112], [122, 98]]],
+      note: 'La poitrine s\'élargit et les épaules montent de 2 à 3 pixels : discret mais lisible.'},
+    {ticks: 'percée · éclat', phase: 'ouvert', pose: {up: 10, breath: 3, open: 1, look: 6}, ghost: {},
+      arrows: [[[100, 168], [100, 150]]], note: 'Hanches décollées, jambes toujours croisées, bras ouverts '
+        + 'paumes vers le ciel, tête levée.'},
+  ].map(frontPanel).join('')}</div>`;
+document.querySelector('.anim').before(row);
+document.querySelector('.legend span').lastChild.textContent = 'trajet d'un point du corps (pointillés rouges)';
+</script></body></html>
