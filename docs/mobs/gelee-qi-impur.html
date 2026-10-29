@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>gelee</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>GELÉE DE QI IMPUR</h1>
+<div class="sub">Remplace le slime · <code>minecraft:slime</code> (même identifiant, même apparition, mêmes drops, se divise comme le vanilla) · Murimblock V2 — fiche de conception</div>
+<div class="seal">濁氣<br>成形</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<!-- grande, de face : cube de gelée trouble, coeur sombre, perle -->
+<g transform="translate(40,14) scale(2.3)">
+<rect x="0" y="0" width="96" height="96" fill="#8fae7a" opacity=".55"/>
+<rect x="0" y="0" width="96" height="6" fill="#d6e8c0" opacity=".9"/>
+<rect x="0" y="6" width="5" height="84" fill="#b9d3a2" opacity=".7"/>
+<rect x="91" y="6" width="5" height="90" fill="#4f6b4a" opacity=".7"/>
+<rect x="0" y="90" width="96" height="6" fill="#4f6b4a" opacity=".85"/>
+<rect x="12" y="96" width="6" height="5" fill="#6f8f60"/><rect x="58" y="96" width="5" height="7" fill="#6f8f60"/><rect x="80" y="96" width="4" height="4" fill="#6f8f60"/>
+<rect x="18" y="20" width="60" height="58" fill="#5d7a52" opacity=".75"/>
+<g fill="#3b3328" opacity=".85">
+<rect x="22" y="26" width="18" height="4"/><rect x="36" y="30" width="4" height="10"/><rect x="40" y="38" width="14" height="4"/>
+<rect x="60" y="24" width="12" height="4"/><rect x="68" y="28" width="4" height="12"/>
+<rect x="24" y="60" width="4" height="12"/><rect x="28" y="68" width="16" height="4"/>
+<rect x="56" y="62" width="16" height="4"/><rect x="56" y="66" width="4" height="8"/>
+</g>
+<rect x="38" y="42" width="20" height="20" fill="#f2e6a0" opacity=".35"/>
+<rect x="42" y="46" width="12" height="12" fill="#f2e6a0"/><rect x="44" y="48" width="4" height="4" fill="#fffbe6"/>
+<rect x="66" y="44" width="10" height="10" fill="#a07626"/><rect x="69" y="47" width="4" height="4" fill="#5d7a52"/>
+<g fill="#7a2020"><rect x="20" y="44" width="3" height="3"/><rect x="24" y="47" width="3" height="3"/><rect x="28" y="49" width="3" height="3"/></g>
+<rect x="48" y="70" width="14" height="2" fill="#e8e0cc"/><rect x="50" y="68" width="2" height="6" fill="#e8e0cc"/><rect x="56" y="68" width="2" height="6" fill="#e8e0cc"/>
+<g fill="#eef5e0" opacity=".9"><rect x="10" y="14" width="3" height="3"/><rect x="82" y="22" width="2" height="2"/><rect x="14" y="80" width="2" height="2"/><rect x="84" y="70" width="3" height="3"/></g>
+</g>
+<line x1="20" y1="14" x2="20" y2="235" stroke="#7d6a5a"/><line x1="14" y1="14" x2="26" y2="14" stroke="#7d6a5a"/><line x1="14" y1="235" x2="26" y2="235" stroke="#7d6a5a"/>
+<text x="10" y="125" font-size="12" fill="#6b5a4c" transform="rotate(-90 10 125)" text-anchor="middle">2 blocs (grande, hitbox vanilla)</text>
+<text x="150" y="258" font-size="13" text-anchor="middle" fill="#6b5a4c">GRANDE, DE FACE</text>
+<!-- les trois tailles -->
+<g transform="translate(272,94)">
+<g transform="scale(1.1)"><rect x="0" y="0" width="96" height="96" fill="#8fae7a" opacity=".55"/><rect x="0" y="0" width="96" height="6" fill="#d6e8c0"/><rect x="18" y="20" width="60" height="58" fill="#5d7a52" opacity=".75"/><rect x="42" y="46" width="12" height="12" fill="#f2e6a0"/></g>
+<g transform="translate(118,53) scale(.55)"><rect x="0" y="0" width="96" height="96" fill="#8fae7a" opacity=".55"/><rect x="0" y="0" width="96" height="8" fill="#d6e8c0"/><rect x="24" y="24" width="48" height="48" fill="#5d7a52" opacity=".75"/><rect x="40" y="40" width="16" height="16" fill="#f2e6a0"/></g>
+<g transform="translate(182,79) scale(.28)"><rect x="0" y="0" width="96" height="96" fill="#8fae7a" opacity=".6"/><rect x="0" y="0" width="96" height="12" fill="#d6e8c0"/><rect x="34" y="34" width="28" height="28" fill="#f2e6a0"/></g>
+</g>
+<text x="325" y="222" font-size="12" text-anchor="middle" fill="#6b5a4c">grande</text>
+<text x="418" y="222" font-size="12" text-anchor="middle" fill="#6b5a4c">moyenne</text>
+<text x="471" y="222" font-size="12" text-anchor="middle" fill="#6b5a4c">petite</text>
+<text x="372" y="258" font-size="13" text-anchor="middle" fill="#6b5a4c">LES TROIS TAILLES</text>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="280" width="36" height="22" fill="#8fae7a"/><text x="20" y="318">Gelée</text>
+<rect x="88" y="280" width="36" height="22" fill="#d6e8c0"/><text x="88" y="318">Reflet</text>
+<rect x="156" y="280" width="36" height="22" fill="#4f6b4a"/><text x="156" y="318">Ombre</text>
+<rect x="224" y="280" width="36" height="22" fill="#3b3328"/><text x="224" y="318">Impuretés</text>
+<rect x="292" y="280" width="36" height="22" fill="#f2e6a0"/><text x="292" y="318">Perle</text>
+<rect x="360" y="280" width="36" height="22" fill="#a07626"/><text x="360" y="318">Bronze</text>
+<rect x="428" y="280" width="36" height="22" fill="#7a2020"/><text x="428" y="318">Chapelet</text>
+</g>
+<text x="20" y="352" font-size="12.5" fill="#6b5a4c">Deux couches comme le slime vanilla : gelée translucide dehors, cœur trouble</text>
+<text x="20" y="370" font-size="12.5" fill="#6b5a4c">dedans · squelette à lui : gelée, cœur, perle (se tasse, s'étire, tremble)</text>
+<text x="20" y="396" font-size="12.5" fill="#6b5a4c">Seule la perle est lumineuse · des objets avalés flottent dans la gelée</text>
+<text x="20" y="422" font-size="12.5" fill="#6b5a4c">Bulles qui montent, gouttes qui tombent du bas (Photon, discrètes)</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Quand un cultivateur purifie son corps, il rejette son Qi impur en sueur noire. Dans les marais et sous terre, ces impuretés s'amassent pendant des siècles jusqu'à prendre forme autour d'une perle. La gelée avale tout ce qu'elle croise et cherche le Qi pur des vivants pour le salir.</p>
+</div>
+<div class="panel">
+<h2>Détails en relief</h2>
+<ul>
+<li>Gelée en deux couches : bord clair en haut, plus sombre en bas</li>
+<li>Veines d'impuretés noires qui tournent dans le cœur</li>
+<li>Une perle de Qi trouble qui brille au centre</li>
+<li>Objets avalés : sapèque de bronze, perles de chapelet, arête</li>
+<li>Gouttes qui pendent sous le cube, bulles prises dedans</li>
+<li>Petites tailles : moins d'objets, la perle prend toute la place</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">16 / 4 / 1 ♥</td><td style="width:45%"><div class="bar"><i style="width:35%"></i></div></td></tr>
+<tr><td>Dégâts</td><td class="v">4 / 2 / 0</td><td><div class="bar"><i style="width:30%"></i></div></td></tr>
+<tr><td>Souillure</td><td class="v">−5 Qi par coup (grande)</td><td><div class="bar"><i style="width:20%"></i></div></td></tr>
+<tr><td>Drop en plus</td><td class="v">perle trouble (plus tard)</td><td><div class="bar"><i style="width:20%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Base vanilla, à régler en jeu.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaque</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Réponse</th></tr>
+<tr><td><b>Bond écrasant</b><br><span class="small">Se tasse longtemps, saute et retombe sur sa proie</span></td><td class="v">contact</td><td><span class="tag ok">Esquive</span><span class="tag ok">Reculer</span><span class="tag warn">Garde</span></td></tr>
+<tr><td><b>Souillure</b><br><span class="small">Son contact salit le Qi : il en prend un peu</span></td><td class="v">contact</td><td><span class="tag ok">Ne pas rester collé</span></td></tr>
+</table>
+</div>
+<div class="panel">
+<h2>Comportement</h2>
+<ul>
+<li>Saute comme le vanilla, la perle en avance sur la gelée</li>
+<li>Se tasse avant chaque saut : le signal pour esquiver</li>
+<li>À la mort, la perle se fend et chaque éclat devient une gelée</li>
+<li>La petite ne fait pas mal, elle suit en tremblant</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">idle</td><td>Respire, les veines tournent, une bulle monte</td></tr>
+<tr><td class="v">saut</td><td>Se tasse, s'étire en l'air, s'écrase en tremblant</td></tr>
+<tr><td class="v">attaque</td><td>Tassement plus long, retombe de tout son poids</td></tr>
+<tr><td class="v">touché</td><td>Onde dans la gelée, les objets sautent</td></tr>
+<tr><td class="v">division</td><td>La perle se fend, la gelée se coupe en morceaux</td></tr>
+</table>
+</div>
+</div>
+</div>
+</body></html>
