@@ -93,6 +93,27 @@ public final class SpiderFighting extends Goal {
         }
     }
 
+    /**
+     * The Bête des Cinq Venins' sac bursts as it dies (docs/mobs/boards/venins_death.png): it leaves a puddle of
+     * venom, a cloud of Poison on the ground from the burst (its tick 10) for 5 s.
+     */
+    @SubscribeEvent
+    public static void died(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (event.getEntity().getType() != EntityType.CAVE_SPIDER || event.getEntity().level().isClientSide) {
+            return;
+        }
+        LivingEntity spider = event.getEntity();
+        var cloud = new net.minecraft.world.entity.AreaEffectCloud(spider.level(), spider.getX(), spider.getY(),
+                spider.getZ());
+        cloud.setOwner(spider);
+        cloud.setRadius(1.2f);
+        cloud.setWaitTime(10);
+        cloud.setDuration(100);
+        cloud.setRadiusPerTick(0);
+        cloud.addEffect(new MobEffectInstance(MobEffects.POISON, SLOW_TICKS, 0));
+        spider.level().addFreshEntity(cloud);
+    }
+
     /** Its silk slows what it hits; the venom poisons it. */
     @SubscribeEvent
     public static void web(ProjectileImpactEvent event) {

@@ -325,6 +325,40 @@ public final class SkeletalPlayerRenderer {
         }
     }
 
+    /** As {@link #draw}, but grown by {@code grow} about the part's middle (after skinning). */
+    static void drawGrown(SkinnedMesh part, Matrix4f[] skin, PoseStack.Pose matrix, VertexConsumer consumer,
+                          int color, int light, int overlay, float grow) {
+        int count = part.vertexCount() * 3;
+        if (positions.length < count) {
+            positions = new float[count];
+            normals = new float[count];
+        }
+        Skinning.skin(part, skin, positions, normals);
+        float cx = 0, cy = 0, cz = 0;
+        for (int v = 0; v < part.vertexCount(); v++) {
+            cx += positions[v * 3];
+            cy += positions[v * 3 + 1];
+            cz += positions[v * 3 + 2];
+        }
+        cx /= part.vertexCount();
+        cy /= part.vertexCount();
+        cz /= part.vertexCount();
+        float[] uvs = part.uvs();
+        int[] indices = part.indices();
+        for (int t = 0; t < indices.length; t += 3) {
+            for (int corner = 0; corner < 4; corner++) {
+                int v = indices[t + Math.min(corner, 2)];
+                consumer.addVertex(matrix, cx + (positions[v * 3] - cx) * grow, cy + (positions[v * 3 + 1] - cy) * grow,
+                                cz + (positions[v * 3 + 2] - cz) * grow)
+                        .setColor(color)
+                        .setUv(uvs[v * 2], uvs[v * 2 + 1])
+                        .setOverlay(overlay)
+                        .setLight(light)
+                        .setNormal(matrix, normals[v * 3], normals[v * 3 + 1], normals[v * 3 + 2]);
+            }
+        }
+    }
+
     /**
      * As {@link #draw}, but fading out what lies below {@code cut} (model pixels, after skinning): gone under it, whole
      * {@code band} pixels above it, the alpha of {@code color} in between.

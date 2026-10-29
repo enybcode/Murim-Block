@@ -250,6 +250,8 @@ public final class SkeletalMobs {
             }
             if (look == ESPRIT) {
                 SpiritRemains.dying(mob);
+            } else if (look == VENINS) {
+                VenomBurst.dying(mob);
             }
             return;
         }

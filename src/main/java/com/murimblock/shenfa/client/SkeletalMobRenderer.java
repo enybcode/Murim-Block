@@ -67,6 +67,8 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         }
         // Where the dying Esprit's mist has come undone, from the bottom up.
         float cut = spirit ? SpiritRemains.cut(mob, partialTick) : -Float.MAX_VALUE;
+        // How much the dying Bête des Cinq Venins' sac has swollen (0 once it burst).
+        float sac = look == SkeletalMobs.VENINS ? VenomBurst.grow(mob, partialTick) : 1;
 
         poseStack.pushPose();
         // getScale leaves out a baby's half size: vanilla's models shrink it themselves.
@@ -113,10 +115,11 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
             // The dying Esprit lights up instead of reddening.
             int overlay = spirit && mob.deathTime > 0 ? OverlayTexture.NO_OVERLAY
                     : LivingEntityRenderer.getOverlayCoords(mob, white(mob, partialTick));
-            draw(model, skin, poseStack, buffers.getBuffer(type), ghost ? 0x26FFFFFF : 0xFFFFFFFF, light, overlay, cut);
+            draw(model, skin, poseStack, buffers.getBuffer(type), ghost ? 0x26FFFFFF : 0xFFFFFFFF, light, overlay, cut,
+                    sac);
             if (visible && look.glow() != null && SkeletalMobs.glows(mob, look)) {
                 draw(model, skin, poseStack, buffers.getBuffer(RenderType.eyes(look.glow())), 0xFFFFFFFF, light,
-                        OverlayTexture.NO_OVERLAY, cut);
+                        OverlayTexture.NO_OVERLAY, cut, sac);
             }
         }
         SkinnedModel armor = SkeletalModels.get(SkeletalModels.BIPED);
@@ -145,12 +148,19 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         return (int) (swell * 10) % 2 == 0 ? 0 : Mth.clamp(swell, 0.5f, 1);
     }
 
-    /** Draws the model's body; a dying Esprit's mist only above {@code cut}, its heart until it bursts. */
+    /** Draws the model's body; a dying Esprit's mist only above {@code cut}, its heart until it bursts. A dying
+     * Bête des Cinq Venins' sac grown by {@code sac} (gone at 0). */
     private static void draw(SkinnedModel model, Matrix4f[] skin, PoseStack poseStack, VertexConsumer consumer,
-                             int color, int light, int overlay, float cut) {
+                             int color, int light, int overlay, float cut, float sac) {
         boolean dying = cut > -Float.MAX_VALUE;
         for (SkinnedMesh part : model.parts()) {
             if (part.armor() || dying && part.name().equals("heart") && cut > 32) {
+                continue;
+            }
+            if (sac != 1 && part.name().equals("sac")) {
+                if (sac > 0) {
+                    SkeletalPlayerRenderer.drawGrown(part, skin, poseStack.last(), consumer, color, light, overlay, sac);
+                }
                 continue;
             }
             if (dying && SpiritRemains.mist(part.name())) {

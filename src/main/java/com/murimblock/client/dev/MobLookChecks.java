@@ -5,6 +5,7 @@ import com.murimblock.shenfa.client.FurnaceBurst;
 import com.murimblock.shenfa.client.SkeletalMobRenderer;
 import com.murimblock.shenfa.client.SkeletalMobs;
 import com.murimblock.shenfa.client.SpiritRemains;
+import com.murimblock.shenfa.client.VenomBurst;
 import com.murimblock.shenfa.client.SkeletalModels;
 import java.util.ArrayList;
 import java.util.List;
@@ -353,6 +354,25 @@ final class MobLookChecks {
         }));
         steps.add(new Step("venins three quarters", mc -> {
             EngineTest.shoot(mc, "mob_venins_three_quarter");
+            // It dies: its sac swells, bursts and leaves a puddle of poison.
+            GifRecorder.start("venins_death", 0.6f);
+            EngineTest.server(mc, player -> player.serverLevel().getEntitiesOfClass(
+                    net.minecraft.world.entity.monster.CaveSpider.class, new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20))
+                    .forEach(net.minecraft.world.entity.LivingEntity::kill));
+            long until = mc.level.getGameTime() + 14;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("venins death", mc -> {
+            EngineTest.check("its sac bursts into a puddle (" + VenomBurst.puddles() + ")", VenomBurst.puddles() > 0);
+            EngineTest.check("which poisons the ground", !mc.level.getEntitiesOfClass(
+                    net.minecraft.world.entity.AreaEffectCloud.class, mc.player.getBoundingBox().inflate(8)).isEmpty());
+            EngineTest.shoot(mc, "mob_venins_death");
+            long until = mc.level.getGameTime() + 50;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("venins puddle", mc -> {
+            EngineTest.busy = () -> false;
+            GifRecorder.stop();
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Spider.class,
                         new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
