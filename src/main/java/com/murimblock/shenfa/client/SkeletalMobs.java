@@ -235,7 +235,10 @@ public final class SkeletalMobs {
                 state.dying = true;
                 state.animator.stop(Animator.Priority.MIDDLE);
                 state.animator.stop(Animator.Priority.LOW);
-                play(mob, state, look, Animator.Priority.HIGHEST, "death");
+                play(mob, state, look, Animator.Priority.HIGHEST, look == ESPRIT ? "spirit_death" : "death");
+            }
+            if (look == ESPRIT) {
+                SpiritRemains.dying(mob);
             }
             return;
         }

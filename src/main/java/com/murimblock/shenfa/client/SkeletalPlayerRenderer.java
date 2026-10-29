@@ -326,6 +326,36 @@ public final class SkeletalPlayerRenderer {
     }
 
     /**
+     * As {@link #draw}, but fading out what lies below {@code cut} (model pixels, after skinning): gone under it, whole
+     * {@code band} pixels above it, the alpha of {@code color} in between.
+     */
+    static void drawAbove(SkinnedMesh part, Matrix4f[] skin, PoseStack.Pose matrix, VertexConsumer consumer,
+                          int color, int light, int overlay, float cut, float band) {
+        int count = part.vertexCount() * 3;
+        if (positions.length < count) {
+            positions = new float[count];
+            normals = new float[count];
+        }
+        Skinning.skin(part, skin, positions, normals);
+        float[] uvs = part.uvs();
+        int[] indices = part.indices();
+        int alpha = color >>> 24, rgb = color & 0xFFFFFF;
+        for (int t = 0; t < indices.length; t += 3) {
+            for (int corner = 0; corner < 4; corner++) {
+                int v = indices[t + Math.min(corner, 2)];
+                float y = positions[v * 3 + 1];
+                int a = (int) (alpha * Mth.clamp((y - cut) / band, 0, 1));
+                consumer.addVertex(matrix, positions[v * 3], y, positions[v * 3 + 2])
+                        .setColor(a << 24 | rgb)
+                        .setUv(uvs[v * 2], uvs[v * 2 + 1])
+                        .setOverlay(overlay)
+                        .setLight(light)
+                        .setNormal(matrix, normals[v * 3], normals[v * 3 + 1], normals[v * 3 + 2]);
+            }
+        }
+    }
+
+    /**
      * Vanilla's body turns ({@code LivingEntityRenderer} and {@code PlayerRenderer.setupRotations}) in our space. After
      * the body's yaw, vanilla's space is ours turned half a turn about Y, so its X and Z turns are reversed here.
      */

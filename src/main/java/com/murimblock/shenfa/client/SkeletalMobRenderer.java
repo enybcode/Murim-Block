@@ -57,6 +57,16 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         Pose pose = SkeletalMobs.pose(mob, partialTick, Mth.wrapDegrees(headYaw - bodyYaw), pitch);
         Matrix4f[] skin = pose.toSkinMatrices(model.armature());
         Matrix4f[] joints = pose.toModelMatrices(model.armature());
+        boolean spirit = look == SkeletalMobs.ESPRIT;
+        if (spirit && mob.deathTime >= SpiritRemains.RELEASE) {
+            // The Esprit's armour has fallen from it: nothing is left to draw.
+            if (!SpiritRemains.released(mob)) {
+                SpiritRemains.release(mob, model, skin, joints, mob.getScale() * mob.getAgeScale(), bodyYaw, partialTick);
+            }
+            return;
+        }
+        // Where the dying Esprit's mist has come undone, from the bottom up.
+        float cut = spirit ? SpiritRemains.cut(mob, partialTick) : -Float.MAX_VALUE;
 
         poseStack.pushPose();
         // getScale leaves out a baby's half size: vanilla's models shrink it themselves.
@@ -81,7 +91,7 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         poseStack.translate(0, 0.001f, 0);
         // Cloth, armor and held items hang on the biped's joints: a look on a skeleton of its own has none yet.
         boolean biped = model.armature().find(com.murimblock.shenfa.Biped.CHEST) != null;
-        if (biped && !mob.isInvisible()) {
+        if (biped && !mob.isInvisible() && cut < 2) {
             MobCloth.render(mob, look, poseStack.last().pose(), joints, scale, buffers, light,
                     LivingEntityRenderer.getOverlayCoords(mob, white(mob, partialTick)));
         }
@@ -96,11 +106,13 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         poseStack.pushPose();
         poseStack.scale(PIXEL, PIXEL, PIXEL);
         if (type != null) {
-            int overlay = LivingEntityRenderer.getOverlayCoords(mob, white(mob, partialTick));
-            draw(model, skin, poseStack, buffers.getBuffer(type), ghost ? 0x26FFFFFF : 0xFFFFFFFF, light, overlay);
+            // The dying Esprit lights up instead of reddening.
+            int overlay = spirit && mob.deathTime > 0 ? OverlayTexture.NO_OVERLAY
+                    : LivingEntityRenderer.getOverlayCoords(mob, white(mob, partialTick));
+            draw(model, skin, poseStack, buffers.getBuffer(type), ghost ? 0x26FFFFFF : 0xFFFFFFFF, light, overlay, cut);
             if (visible && look.glow() != null && SkeletalMobs.glows(mob, look)) {
                 draw(model, skin, poseStack, buffers.getBuffer(RenderType.eyes(look.glow())), 0xFFFFFFFF, light,
-                        OverlayTexture.NO_OVERLAY);
+                        OverlayTexture.NO_OVERLAY, cut);
             }
         }
         SkinnedModel armor = SkeletalModels.get(SkeletalModels.BIPED);
@@ -129,10 +141,17 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         return (int) (swell * 10) % 2 == 0 ? 0 : Mth.clamp(swell, 0.5f, 1);
     }
 
+    /** Draws the model's body; a dying Esprit's mist only above {@code cut}, its heart until it bursts. */
     private static void draw(SkinnedModel model, Matrix4f[] skin, PoseStack poseStack, VertexConsumer consumer,
-                             int color, int light, int overlay) {
+                             int color, int light, int overlay, float cut) {
+        boolean dying = cut > -Float.MAX_VALUE;
         for (SkinnedMesh part : model.parts()) {
-            if (!part.armor()) {
+            if (part.armor() || dying && part.name().equals("heart") && cut > 32) {
+                continue;
+            }
+            if (dying && SpiritRemains.mist(part.name())) {
+                SkeletalPlayerRenderer.drawAbove(part, skin, poseStack.last(), consumer, color, light, overlay, cut, 4);
+            } else {
                 SkeletalPlayerRenderer.draw(part, skin, poseStack.last(), consumer, color, light, overlay);
             }
         }

@@ -4,6 +4,7 @@ import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.shenfa.client.FurnaceBurst;
 import com.murimblock.shenfa.client.SkeletalMobRenderer;
 import com.murimblock.shenfa.client.SkeletalMobs;
+import com.murimblock.shenfa.client.SpiritRemains;
 import com.murimblock.shenfa.client.SkeletalModels;
 import java.util.ArrayList;
 import java.util.List;
@@ -275,6 +276,24 @@ final class MobLookChecks {
         }));
         steps.add(new Step("esprit three quarters", mc -> {
             EngineTest.shoot(mc, "mob_esprit_three_quarter");
+            // The one on the right dies: its mist comes undone and its armour falls.
+            GifRecorder.start("esprit_death", 0.6f);
+            EngineTest.server(mc, player -> player.serverLevel().getEntitiesOfClass(
+                    net.minecraft.world.entity.monster.Stray.class, new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20))
+                    .stream().filter(s -> s.getX() > X).forEach(net.minecraft.world.entity.LivingEntity::kill));
+            long until = mc.level.getGameTime() + 18;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("esprit death", mc -> {
+            EngineTest.check("the Esprit's armour falls from it (" + SpiritRemains.pieces() + ")",
+                    SpiritRemains.pieces() >= 8);
+            EngineTest.shoot(mc, "mob_esprit_death");
+            long until = mc.level.getGameTime() + 70;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("esprit remains", mc -> {
+            EngineTest.busy = () -> false;
+            GifRecorder.stop();
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Stray.class,
                         new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);

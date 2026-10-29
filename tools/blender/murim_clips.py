@@ -826,6 +826,11 @@ R_BASH = dict(lean=24, head=4, hx=10, hy=4, aR=100, fR=130, w=170, aL=-40, fL=-3
 R_SHOVE = dict(lean=10, head=-2, hx=-8, aR=60, fR=80, w=90, aL=-20, fL=0, tF=6, sF=-4, tB=-30, sB=-24)
 R_FALL_1 = dict(lean=20, head=20, hy=8, aR=20, fR=10, w=60, aL=10, fL=0, tF=60, sF=-20, tB=40, sB=-30)
 R_FALL_2 = dict(lean=70, head=30, hy=22, hx=10, aR=60, fR=40, w=30, aL=50, fL=30, tF=90, sF=0, tB=90, sB=10)
+# The Esprit de l'Archer's death (docs/mobs/boards/esprit_death.png): struck, it rears back and rises, arms flung up,
+# as its mist comes undone (the mod fades it from the bottom up, then drops its armour).
+R_STRUCK = dict(lean=-10, head=-14, hy=-2, aR=40, fR=60, w=90, aL=30, fL=50, tF=6, sF=2, tB=-6, sB=-2)
+R_RISE = dict(lean=-18, head=-26, hy=-8, aR=140, fR=150, w=160, aL=140, fL=152, tF=6, sF=2, tB=-6, sB=-2)
+R_RISEN = dict(R_RISE, lean=-16, head=-30, hy=-10, aR=150, fR=158, w=168, aL=148, fL=160)
 
 
 def bow(p, draw=None, **extra):
@@ -845,6 +850,7 @@ SETS["archer"] = {
     "retreat": [(0, bow(R_NOCKED, 0)), (8, bow(R_STEP_1, 0)), (16, bow(R_NOCKED, 0))],
     "bash": [(0, bow(R_SENTRY)), (6, bow(R_BASH_BACK)), (9, bow(R_BASH)), (16, bow(R_SHOVE)), (24, bow(R_SENTRY))],
     "death": [(0, bow(R_SENTRY)), (6, bow(R_FALL_1)), (20, bow(R_FALL_2))],
+    "spirit_death": [(0, bow(R_SENTRY)), (2, bow(R_STRUCK)), (8, bow(R_RISE)), (14, bow(R_RISEN))],
 }
 BOWED = {"archer"}
 
