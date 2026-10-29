@@ -66,10 +66,13 @@ public final class SkeletalMobs {
     /** The Enderman as the Moine du Vide: the biped's joints stretched to its height, a joint per rosary bead. */
     public static final Look MOINE = new Look(id("mobs/moine"), id("textures/entity/moine.png"),
             id("textures/entity/moine_glow.png"), "moine");
+    /** The Iron Golem as the Gardien-talisman: the biped's joints set to its build, a joint for its talisman. */
+    public static final Look GOLEM = new Look(id("mobs/golem"), id("textures/entity/golem.png"),
+            id("textures/entity/golem_glow.png"), "golem");
     private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER,
             EntityType.HUSK, SABLES, EntityType.DROWNED, NOYE, EntityType.ZOMBIE_VILLAGER, PAYSAN,
             EntityType.ZOMBIFIED_PIGLIN, SANGLIER, EntityType.SPIDER, FILEUSE, EntityType.CREEPER, FOURNEAU,
-            EntityType.ENDERMAN, MOINE);
+            EntityType.ENDERMAN, MOINE, EntityType.IRON_GOLEM, GOLEM);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -119,8 +122,14 @@ public final class SkeletalMobs {
      */
     static Armature armature(Look look) {
         SkinnedModel model = look == null ? null : SkeletalModels.get(look.model());
-        return model == null || model.armature().find(Biped.CHEST) != null && look != MOINE ? Biped.ARMATURE
+        return model == null || model.armature().find(Biped.CHEST) != null && look != MOINE && look != GOLEM
+                ? Biped.ARMATURE
                 : model.armature();
+    }
+
+    /** Whether a mob's glowing parts are lit: the Gardien's eyes and runes only once it is woken. */
+    static boolean glows(Mob mob, Look look) {
+        return look != GOLEM || mob.isAggressive() || mob.getTarget() != null;
     }
 
     private static State state(Mob mob) {
@@ -175,6 +184,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.CreeperRenderer(context)));
         event.registerEntityRenderer(EntityType.SPIDER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.SpiderRenderer<>(context)));
+        event.registerEntityRenderer(EntityType.IRON_GOLEM, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.IronGolemRenderer(context)));
         event.registerEntityRenderer(EntityType.ENDERMAN, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.EndermanRenderer(context)));
         event.registerEntityRenderer(EntityType.ZOMBIFIED_PIGLIN, context -> new SkeletalMobRenderer<>(context,
@@ -199,6 +210,7 @@ public final class SkeletalMobs {
                     moves(mob, look, state);
                 }
                 state.animator.tick(1);
+                ClipEvents.run(mob, state.animator.events());
                 state.previousRaise = state.raise;
                 state.raise += ((mob.isAggressive() ? 1 : 0) - state.raise) * 0.25f;
             }
@@ -327,6 +339,9 @@ public final class SkeletalMobs {
         }
         if (look == MOINE) {
             MoineRosary.apply(mob, state.animator, state.armature, pose, partialTick);
+        }
+        if (look == GOLEM) {
+            GolemTalisman.apply(mob, state.armature, pose, partialTick);
         }
         if (state.biped && mob.isBaby()) {
             // A child's big head, as vanilla's baby models: the head at three quarters of the adult's on a half-size body.

@@ -1,0 +1,23 @@
+{
+  "clips": {
+    "statue": {"loop": true, "transition": 0.4},
+    "wake": {"transition": 0.1,
+      "events": [{"at": 0.0, "type": "sound", "sound": "minecraft:block.grindstone.use", "volume": 0.9, "pitch": 0.5},
+        {"at": 0.3, "type": "particle", "particle": "minecraft:poof", "count": 8, "spread": 0.6}]},
+    "walk": {"loop": true, "transition": 0.15, "move_speed": 1.6},
+    "guard": {"loop": true, "transition": 0.2},
+    "guard_walk": {"loop": true, "transition": 0.12, "move_speed": 1.7},
+    "sky": {"transition": 0.08},
+    "bell": {"transition": 0.08,
+      "events": [{"at": 0.2, "type": "sound", "sound": "minecraft:block.bell.use", "volume": 0.8, "pitch": 0.7},
+        {"at": 0.5, "type": "sound", "sound": "minecraft:block.bell.use", "volume": 0.8, "pitch": 0.6},
+        {"at": 0.8, "type": "fracture", "radius": 3.5, "ahead": 1.4}]},
+    "chain": {"transition": 0.08,
+      "events": [{"at": 0.2, "type": "sound", "sound": "minecraft:block.chain.step", "volume": 1, "pitch": 0.6},
+        {"at": 0.4, "type": "sound", "sound": "minecraft:block.chain.step", "volume": 1, "pitch": 0.7},
+        {"at": 0.7, "type": "sound", "sound": "minecraft:block.chain.break", "volume": 1, "pitch": 0.8}]},
+    "stagger": {"transition": 0.04},
+    "flinch": {"transition": 0.04},
+    "death": {"transition": 0.05}
+  }
+}

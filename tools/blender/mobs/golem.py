@@ -340,3 +340,56 @@ def parts():
             Part(f"moss_foot_{s}", f"Leg_{side}", (lx + (3 if x > 0 else 0), 2, -2), (3, 1, 3), moss),
         ]
     return p
+
+
+# Clips (docs/mobs/boards/golem.png, v2), from the storyboard's poses by murim_clips.board. A statue until someone harms
+# a villager; the talisman flutters and the runes are the mod's (GolemTalisman), not keyed here.
+def _clips():
+    from murim_clips import board
+
+    def pose(**p):
+        p.setdefault("w", p["fR"])
+        return board(p)
+
+    statue = pose(lean=4, head=2, aR=6, fR=4, aL=-4, fL=-2, tF=4, sF=0, tB=-4, sB=-8)
+    shake = pose(lean=-4, head=-14, aR=20, fR=36, aL=10, fL=24, tF=6, sF=0, tB=-6, sB=-10)
+    woken = pose(lean=0, head=-8, aR=14, fR=30, aL=6, fL=20, tF=6, sF=0, tB=-6, sB=-10)
+    guard = pose(lean=10, head=-4, aR=30, fR=50, aL=20, fL=40, tF=14, sF=4, tB=-16, sB=-20)
+    guard_b = pose(lean=12, head=-2, hy=1, aR=32, fR=54, aL=22, fL=44, tF=14, sF=4, tB=-16, sB=-20)
+    walk_a = pose(lean=6, head=2, aR=-12, fR=-8, aL=14, fL=12, tF=18, sF=8, tB=-14, sB=-18)
+    walk_b = pose(lean=6, head=2, aR=14, fR=12, aL=-12, fL=-8, tF=-14, sF=-18, tB=18, sB=8)
+    pass_a = pose(lean=6, head=2, hy=-1, aR=0, fR=2, aL=0, fL=2, tF=4, sF=-24, tB=-2, sB=-6)
+    pass_b = pose(lean=6, head=2, hy=-1, aR=0, fR=2, aL=0, fL=2, tF=-2, sF=-6, tB=4, sB=-24)
+    gwalk_a = pose(lean=10, head=-4, aR=30, fR=50, aL=20, fL=40, tF=20, sF=8, tB=-18, sB=-22)
+    gwalk_b = pose(lean=10, head=-4, aR=30, fR=50, aL=20, fL=40, tF=-16, sF=-22, tB=20, sB=8)
+    low = pose(lean=34, head=-14, hy=8, aR=8, fR=4, aL=4, fL=0, tF=34, sF=-6, tB=-24, sB=-34)
+    sky = pose(lean=-10, head=-18, hy=-2, aR=172, fR=176, aL=164, fL=170, tF=16, sF=6, tB=-14, sB=-18)
+    bell_up = pose(lean=-6, head=-12, aR=166, fR=200, aL=160, fL=200, tF=10, sF=2, tB=-12, sB=-16)
+    slam = pose(lean=42, head=-10, hy=10, aR=46, fR=16, aL=40, fL=12, tF=42, sF=0, tB=-30, sB=-50)
+    spin_a = pose(lean=2, head=-6, aR=160, fR=172, aL=20, fL=40, tF=12, sF=4, tB=-14, sB=-18)
+    spin_b = pose(lean=2, head=-6, aR=150, fR=190, aL=22, fL=42, tF=12, sF=4, tB=-14, sB=-18)
+    throw = pose(lean=16, head=-8, hx=6, aR=96, fR=92, aL=-20, fL=-10, tF=30, sF=4, tB=-26, sB=-30)
+    pull = pose(lean=-12, head=-6, hx=-4, aR=30, fR=96, aL=10, fL=20, tF=20, sF=6, tB=-30, sB=-34)
+    hang = pose(lean=6, head=-4, aR=64, fR=56, aL=16, fL=30, tF=16, sF=4, tB=-18, sB=-22)
+    stagger = pose(lean=-20, head=-22, hx=-8, aR=-30, fR=-10, aL=34, fL=24, tF=20, sF=4, tB=-30, sB=-34)
+    dazed = pose(lean=10, head=18, hy=4, aR=10, fR=0, aL=6, fL=-4, tF=10, sF=2, tB=-12, sB=-16)
+    flinch = pose(lean=-6, head=-12, hx=-2, aR=20, fR=40, aL=10, fL=30, tF=10, sF=4, tB=-18, sB=-22)
+    dead = pose(lean=-4, head=-10, aR=6, fR=4, aL=-4, fL=-2, tF=4, sF=0, tB=-4, sB=-8)
+    knees = pose(lean=10, head=20, hy=17, aR=10, fR=0, aL=0, fL=-10, tF=90, sF=-10, tB=80, sB=-20)
+    fallen = pose(lean=70, head=20, hy=30, hx=8, aR=60, fR=50, aL=50, fL=40, tF=90, sF=-4, tB=86, sB=-14)
+    return {
+        "statue": [(0, statue), (40, statue)],
+        "wake": [(0, statue), (6, shake), (14, woken), (24, guard)],
+        "walk": [(0, walk_a), (8, pass_a), (16, walk_b), (24, pass_b), (32, walk_a)],
+        "guard": [(0, guard), (20, guard_b), (40, guard)],
+        "guard_walk": [(0, gwalk_a), (16, gwalk_b), (32, gwalk_a)],
+        "sky": [(0, guard), (12, low), (14, sky), (30, sky), (36, guard)],
+        "bell": [(0, guard), (14, bell_up), (16, slam), (36, slam), (40, guard)],
+        "chain": [(0, guard), (4, spin_a), (8, spin_b), (12, spin_a), (14, throw), (24, pull), (30, hang), (44, guard)],
+        "stagger": [(0, throw), (6, stagger), (12, dazed), (20, dazed)],
+        "flinch": [(0, guard), (3, flinch), (10, guard)],
+        "death": [(0, dead), (10, dead), (24, knees), (34, fallen), (40, fallen)],
+    }
+
+
+CLIPS = _clips() if "bpy" in __import__("sys").modules else {}

@@ -1,0 +1,15 @@
+{
+  "motions": {
+    "idle": "murimblock:golem/statue",
+    "walk": "murimblock:golem/walk",
+    "run": "murimblock:golem/walk",
+    "jump": "murimblock:golem/statue",
+    "fall": "murimblock:golem/statue"
+  },
+  "combat": {
+    "idle": "murimblock:golem/guard",
+    "walk": "murimblock:golem/guard_walk",
+    "run": "murimblock:golem/guard_walk"
+  },
+  "additive": []
+}

@@ -25,7 +25,7 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class SkeletalModels implements ResourceManagerReloadListener {
     /** Mobs on the biped's joints stretched to another size, plus joints of their own: their skeleton is their model's. */
-    static final java.util.Set<String> STRETCHED = java.util.Set.of("moine");
+    static final java.util.Set<String> STRETCHED = java.util.Set.of("moine", "golem");
     public static final ResourceLocation BIPED = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "biped");
     public static final ResourceLocation BIPED_SLIM = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "biped_slim");
 

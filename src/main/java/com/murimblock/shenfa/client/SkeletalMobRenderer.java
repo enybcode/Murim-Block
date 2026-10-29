@@ -97,7 +97,7 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         if (type != null) {
             int overlay = LivingEntityRenderer.getOverlayCoords(mob, white(mob, partialTick));
             draw(model, skin, poseStack, buffers.getBuffer(type), ghost ? 0x26FFFFFF : 0xFFFFFFFF, light, overlay);
-            if (visible && look.glow() != null) {
+            if (visible && look.glow() != null && SkeletalMobs.glows(mob, look)) {
                 draw(model, skin, poseStack, buffers.getBuffer(RenderType.eyes(look.glow())), 0xFFFFFFFF, light,
                         OverlayTexture.NO_OVERLAY);
             }
