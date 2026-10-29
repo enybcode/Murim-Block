@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Gardien-talisman</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>GARDIEN-TALISMAN</h1>
+<div class="sub">Remplace le Golem de fer · <code>minecraft:iron_golem</code> (même identifiant, même apparition au village, mêmes drops, taille 2,7 blocs) · Murimblock V2 — fiche de conception</div>
+<div class="seal">鎮守<br>石將</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<defs>
+<g id="bell"><path d="M-5 0 Q-6 -9 0 -10 Q6 -9 5 0 Z" fill="#b08a3a" stroke="#7a5c22" stroke-width="1"/><circle cx="0" cy="2" r="1.6" fill="#7a5c22"/></g>
+</defs>
+<!-- front -->
+<g transform="translate(14,24)">
+<rect x="64" y="214" width="30" height="80" fill="#7d8277"/><rect x="112" y="214" width="30" height="80" fill="#7d8277"/>
+<rect x="58" y="292" width="40" height="14" fill="#5f645b"/><rect x="108" y="292" width="40" height="14" fill="#5f645b"/>
+<path d="M34 62 L172 62 L162 176 L146 222 L60 222 L44 176 Z" fill="#8f9488"/>
+<g stroke="#6b7066" stroke-width="1.5"><line x1="50" y1="110" x2="156" y2="110"/><line x1="52" y1="126" x2="154" y2="126"/><line x1="54" y1="142" x2="152" y2="142"/><line x1="56" y1="158" x2="150" y2="158"/>
+<line x1="70" y1="110" x2="70" y2="160"/><line x1="88" y1="110" x2="88" y2="160"/><line x1="118" y1="110" x2="118" y2="160"/><line x1="136" y1="110" x2="136" y2="160"/></g>
+<circle cx="103" cy="88" r="17" fill="#6b7066"/><circle cx="103" cy="88" r="12" fill="none" stroke="#ffcf5a" stroke-width="2"/><path d="M103 78 L103 98 M95 84 L111 84 M96 93 L110 93" stroke="#ffcf5a" stroke-width="2"/>
+<rect x="44" y="174" width="118" height="14" fill="#5f645b"/><rect x="86" y="186" width="34" height="34" fill="#7d8277" stroke="#5f645b" stroke-width="2"/><path d="M96 196 L110 196 M103 192 L103 214 M96 206 L110 206" stroke="#5f645b" stroke-width="2"/>
+<path d="M36 64 Q46 74 40 84 L34 76 Z M150 170 Q160 180 156 192 L146 186 Z M66 280 Q74 290 70 300 L64 294 Z" fill="#6f7d4a"/>
+<path d="M140 70 L134 86 L140 96 M60 130 L68 140" stroke="#4d5249" stroke-width="1.5" fill="none"/>
+<path d="M24 56 L60 54 L64 82 L20 88 Z" fill="#7d8277"/><path d="M182 56 L146 54 L142 82 L186 88 Z" fill="#7d8277"/>
+<circle cx="40" cy="70" r="7" fill="#5f645b"/><circle cx="166" cy="70" r="7" fill="#5f645b"/>
+<rect x="18" y="86" width="30" height="148" fill="#8f9488"/><rect x="158" y="86" width="30" height="148" fill="#8f9488"/>
+<rect x="12" y="230" width="42" height="38" fill="#7d8277"/><rect x="152" y="230" width="42" height="38" fill="#7d8277"/>
+<g stroke="#3e3e44" stroke-width="4"><line x1="16" y1="176" x2="50" y2="166"/><line x1="16" y1="192" x2="50" y2="182"/><line x1="16" y1="208" x2="50" y2="198"/>
+<line x1="156" y1="166" x2="190" y2="176"/><line x1="156" y1="182" x2="190" y2="192"/><line x1="156" y1="198" x2="190" y2="208"/></g>
+<path d="M50 198 Q54 214 50 222" stroke="#3e3e44" stroke-width="2" fill="none"/><path d="M156 198 Q152 214 156 222" stroke="#3e3e44" stroke-width="2" fill="none"/>
+<use href="#bell" x="50" y="232"/><use href="#bell" x="156" y="232"/>
+<path d="M24 120 L42 120 M33 112 L33 150 M26 140 L40 140" stroke="#ffcf5a" stroke-width="1.6" opacity=".55"/><path d="M164 120 L182 120 M173 112 L173 150 M166 140 L180 140" stroke="#ffcf5a" stroke-width="1.6" opacity=".55"/>
+<rect x="80" y="22" width="46" height="42" fill="#8f9488"/>
+<rect x="72" y="14" width="62" height="10" fill="#6b7066"/><rect x="92" y="4" width="22" height="12" fill="#6b7066"/>
+<rect x="84" y="36" width="10" height="4" fill="#ffcf5a"/><rect x="112" y="36" width="10" height="4" fill="#ffcf5a"/>
+<rect x="86" y="54" width="34" height="4" fill="#5f645b"/>
+<path d="M96 22 L110 22 L111 70 L104 66 L95 70 Z" fill="#e8c547" stroke="#c9a530" stroke-width="1"/>
+<g stroke="#b02a1e" stroke-width="1.8" fill="none"><path d="M99 28 L107 28 M103 26 L103 40 M99 36 Q103 44 107 36 M100 48 L106 52 M106 48 L100 52 M103 56 L103 64"/></g>
+</g>
+<!-- action: both fists raised, runes alight -->
+<g transform="translate(250,30)">
+<g transform="rotate(-4 103 200)">
+<rect x="64" y="214" width="30" height="80" fill="#7d8277" transform="rotate(10 79 214)"/><rect x="112" y="214" width="30" height="80" fill="#7d8277" transform="rotate(-8 127 214)"/>
+<rect x="46" y="292" width="40" height="14" fill="#5f645b"/><rect x="118" y="292" width="40" height="14" fill="#5f645b"/>
+<path d="M34 72 L172 72 L162 180 L146 222 L60 222 L44 180 Z" fill="#8f9488"/>
+<circle cx="103" cy="96" r="17" fill="#6b7066"/><circle cx="103" cy="96" r="12" fill="#ffcf5a" opacity=".35"/><circle cx="103" cy="96" r="12" fill="none" stroke="#ffcf5a" stroke-width="2.5"/>
+<path d="M103 86 L103 106 M95 92 L111 92 M96 101 L110 101" stroke="#ffcf5a" stroke-width="2.5"/>
+<rect x="44" y="178" width="118" height="14" fill="#5f645b"/>
+<rect x="22" y="-6" width="30" height="88" fill="#8f9488" transform="rotate(-12 37 76)"/><rect x="156" y="-6" width="30" height="88" fill="#8f9488" transform="rotate(12 171 76)"/>
+<rect x="16" y="-34" width="42" height="36" fill="#7d8277" transform="rotate(-12 37 76)"/><rect x="150" y="-34" width="42" height="36" fill="#7d8277" transform="rotate(12 171 76)"/>
+<g stroke="#ffcf5a" stroke-width="2"><path d="M30 20 L44 20 M37 10 L37 50" transform="rotate(-12 37 76)"/><path d="M164 20 L178 20 M171 10 L171 50" transform="rotate(12 171 76)"/></g>
+<rect x="80" y="30" width="46" height="42" fill="#8f9488"/><rect x="72" y="22" width="62" height="10" fill="#6b7066"/>
+<rect x="84" y="44" width="10" height="5" fill="#ffcf5a"/><rect x="112" y="44" width="10" height="5" fill="#ffcf5a"/>
+<path d="M96 30 L110 30 Q122 50 116 74 L108 70 Q110 52 96 30 Z" fill="#e8c547" stroke="#c9a530" stroke-width="1"/>
+<path d="M102 36 L108 40 M104 46 L110 50" stroke="#b02a1e" stroke-width="1.8"/>
+</g>
+<g fill="none" stroke="#ffcf5a"><path d="M20 -20 Q103 -50 190 -20" stroke-width="4" opacity=".6"/></g>
+<use href="#bell" x="20" y="100"/><use href="#bell" x="190" y="100"/>
+
+</g>
+<text x="118" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE</text>
+<text x="360" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">ACTION (poings levés, runes allumées)</text>
+<line x1="8" y1="26" x2="8" y2="330" stroke="#7d6a5a"/><line x1="2" y1="26" x2="14" y2="26" stroke="#7d6a5a"/><line x1="2" y1="330" x2="14" y2="330" stroke="#7d6a5a"/>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="380" width="36" height="22" fill="#8f9488"/><text x="20" y="418">Pierre</text>
+<rect x="78" y="380" width="36" height="22" fill="#6f7d4a"/><text x="78" y="418">Mousse</text>
+<rect x="136" y="380" width="36" height="22" fill="#e8c547"/><text x="136" y="418">Talisman</text>
+<rect x="194" y="380" width="36" height="22" fill="#b02a1e"/><text x="194" y="418">Encre</text>
+<rect x="252" y="380" width="36" height="22" fill="#3e3e44"/><text x="252" y="418">Chaînes</text>
+<rect x="310" y="380" width="36" height="22" fill="#b08a3a"/><text x="310" y="418">Clochettes</text>
+<rect x="368" y="380" width="36" height="22" fill="#ffcf5a"/><text x="368" y="418">Runes</text>
+</g>
+<text x="20" y="450" font-size="12.5" fill="#6b5a4c">2,7 blocs · squelette propre · talisman et chaînes animés</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Statue de général qui gardait la porte du temple du village. Un maître taoïste lui a collé au front un talisman de garde : tant que le papier tient, la pierre veille sur les villageois. Elle ne parle pas, ne dort pas, et n'oublie jamais qui a levé la main sur eux.</p>
+</div>
+<div class="panel">
+<h2>Détails en relief</h2>
+<ul>
+<li>Pierre gris-vert sculptée en armure de général : lamelles, épaulières à tête de lion</li>
+<li>Talisman jaune à l'encre rouge collé au front, qui <b>flotte</b> devant le visage</li>
+<li>Chaînes de fer enroulées aux avant-bras, clochettes de bronze qui tintent</li>
+<li>Runes gravées sur le torse et les bras, qui s'allument en or quand il frappe</li>
+<li>Mousse et fissures ; des éclats tombent quand il est blessé</li>
+<li>Petite tête casquée enfoncée entre d'énormes épaules, bras jusqu'aux genoux</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">100 PV</td><td style="width:45%"><div class="bar"><i style="width:100%"></i></div></td></tr>
+<tr><td>Dégâts</td><td class="v">7 à 21</td><td><div class="bar"><i style="width:85%"></i></div></td></tr>
+<tr><td>Vitesse</td><td class="v">0,25</td><td><div class="bar"><i style="width:40%"></i></div></td></tr>
+<tr><td>Recul subi</td><td class="v">aucun</td><td><div class="bar"><i style="width:100%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Base vanilla, à régler en jeu.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaques</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Réponse</th></tr>
+<tr><td><b>Poing du ciel</b><br><span class="small">Deux poings vers le haut, lance la cible en l'air (vanilla)</span></td><td class="v">2,5</td><td><span class="tag ok">Esquive</span><span class="tag no">Garde</span></td></tr>
+<tr><td><b>Cloche de terre</b><br><span class="small">Frappe le sol, onde dorée, clochettes : sonne autour de lui</span></td><td class="v">3</td><td><span class="tag ok">Saut</span><span class="tag warn">Garde</span></td></tr>
+<tr><td><b>Chaîne</b><br><span class="small">Lance sa chaîne et ramène la cible devant lui</span></td><td class="v">8</td><td><span class="tag ok">Esquive</span><span class="tag ok">Parade</span></td></tr>
+</table>
+</div>
+<div class="panel">
+<h2>Comportement</h2>
+<ul>
+<li><b>Statue immobile</b> : il ne bouge pas du tout, yeux et runes éteints</li>
+<li>Se <b>réveille</b> quand quelqu.un frappe un villageois, et ne poursuit que le coupable</li>
+<li>Ensuite il revient à sa place et redevient statue</li>
+<li>Blessé : la pierre se fissure et le talisman se déchire peu à peu ; réparé au lingot de fer</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">statue / réveil</td><td>Figé ; au réveil la poussière tombe, yeux et runes s.allument</td></tr>
+<tr><td class="v">frappe</td><td>Les runes s'allument, deux poings vers le ciel</td></tr>
+<tr><td class="v">walk</td><td>Pas lourds, chaînes et talisman qui balancent</td></tr>
+<tr><td class="v">blessé</td><td>Éclats de pierre, le talisman se fend</td></tr>
+<tr><td class="v">mort</td><td>Le talisman s'envole, il se fige et s'effondre en blocs</td></tr>
+</table>
+</div>
+</div>
+</div>
+</body></html>

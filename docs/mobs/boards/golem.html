@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Gardien-talisman — animations</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The golem's build: a deep trunk and arms down to the knees on short legs.
+Object.assign(L, {torso: 44, upper: 29, fore: 29});
+const P = o => o;
+const STONE = '#8f9488', STONE_LIGHT = '#a3a89c', STONE_DARK = '#6b7066', DARKEST = '#4f544a';
+const PAPER = '#e8c547', INK = '#b02a1e', IRON = '#3e3e44', BRONZE = '#b08a3a', RUNE = '#ffcf5a';
+const fwd = (a, l) => [Math.cos(rad(a)) * l, Math.sin(rad(a)) * l];
+
+function slab(c, w, h, angle, fill, extra = '') {
+  return `<rect x="${c[0] - w / 2}" y="${c[1] - h / 2}" width="${w}" height="${h}" fill="${fill}"
+    transform="rotate(${angle} ${c[0]} ${c[1]})" ${extra}/>`;
+}
+
+function arm(r, side, p, col) {
+  const near = side === 'R';
+  const sh = r.shoulder, el = near ? r.elbowR : r.elbowL, ha = near ? r.handR : r.handL;
+  let s = line(sh, el, col(near ? STONE : STONE_DARK), 14) + line(el, ha, col(near ? STONE : STONE_DARK), 13);
+  // Chains round the forearm, a bell hanging from them.
+  const along = t => [el[0] + (ha[0] - el[0]) * t, el[1] + (ha[1] - el[1]) * t];
+  const a = Math.atan2(ha[1] - el[1], ha[0] - el[0]) * 180 / Math.PI;
+  for (const t of [0.42, 0.56, 0.7]) s += slab(along(t), 3, 17, a, col(IRON));
+  if (near) {
+    const b = add(along(0.6), [0, 10]);
+    s += `<path d="M${b[0] - 4},${b[1] + 4} q0,-9 4,-9 q4,0 4,9 Z" fill="${col(BRONZE)}"/>`;
+  }
+  // Elbow guard, fist.
+  s += slab(el, 16, 8, a - 90, col(near ? STONE_DARK : DARKEST));
+  s += slab(ha, 17, 17, a - 90, col(near ? STONE_LIGHT : STONE_DARK));
+  if (p.runes && !p.ghost) {
+    s += `<circle cx="${(sh[0] + el[0]) / 2}" cy="${(sh[1] + el[1]) / 2}" r="7" fill="${RUNE}" opacity=".35"/>`;
+  }
+  s += line([(sh[0] * 3 + el[0]) / 4, (sh[1] * 3 + el[1]) / 4], [(sh[0] + el[0] * 3) / 4, (sh[1] + el[1] * 3) / 4],
+    col(p.runes ? RUNE : '#c8a050'), 2);
+  return s;
+}
+
+function leg(r, side, col) {
+  const near = side === 'F';
+  const knee = near ? r.kneeF : r.kneeB, foot = near ? r.footF : r.footB;
+  return line(r.hip, knee, col(near ? STONE : STONE_DARK), 16) + line(knee, foot, col(near ? STONE : STONE_DARK), 15)
+    + slab(add(knee, [6, 0]), 5, 9, 0, col(near ? STONE_DARK : DARKEST))
+    + slab(add(foot, [4, -2]), 22, 8, 0, col(DARKEST));
+}
+
+// The guardian over the shared skeleton: stone general, talisman on the face, chains and bells, runes that light
+// up as it strikes; its lotus, chain, shockwave and rubble.
+window.FIGURE = (x, y, p, ghost) => {
+  const r = body(x, y, p);
+  const col = c => ghost ? C.ghost : c;
+  const q = {...p, ghost};
+  let s = `<g${ghost ? ' opacity="0.28"' : ''}>`;
+  if (p.dust && !ghost) {
+    // Dust and flakes of stone falling off as it wakes.
+    [[-18, -40], [14, -52], [-10, -10], [20, -20], [-22, 10], [16, 14], [2, -66]].forEach(([dx, dy]) => {
+      s += slab([x + dx, y + dy], 3, 3, 30, STONE_LIGHT) + slab([x + dx + 2, y + dy + 8], 2, 2, 0, STONE_LIGHT);
+    });
+  }
+  if (p.rubble) {
+    // Fallen into blocks, the talisman on top.
+    [[-30, 0, 18], [-12, 2, 20], [8, 0, 16], [24, 2, 18], [-20, -16, 16], [0, -18, 18], [16, -14, 14], [-6, -32, 14]]
+      .forEach(([dx, dy, w], i) => {
+        s += slab([x + dx, y + 26 + dy], w, w, (i * 17) % 20 - 10, col(i % 2 ? STONE : STONE_DARK));
+      });
+    s += slab([x + 4, y - 4], 6, 20, 70, col(PAPER));
+    return s + '</g>';
+  }
+  s += leg(r, 'B', col);
+  s += arm(r, 'L', q, col);
+  // Trunk: belly, broad chest, belt with its beast buckle.
+  const lean = p.lean || 0;
+  s += line(r.hip, add(r.hip, up(lean, 18)), col(STONE), 34);
+  s += line(add(r.hip, up(lean, 14)), r.neck, col(STONE), 44);
+  s += line(add(r.hip, up(lean, 5)), add(r.hip, up(lean, 11)), col(DARKEST), 34);
+  s += slab(add(add(r.hip, up(lean, 8)), fwd(lean, 17)), 6, 9, lean, col(BRONZE));
+  // The rune disc on the chest's front.
+  const disc = add(add(r.hip, up(lean, 31)), fwd(lean, 21));
+  if (p.runes && !ghost) s += `<circle cx="${disc[0]}" cy="${disc[1]}" r="12" fill="${RUNE}" opacity=".35"/>`;
+  s += slab(disc, 5, 14, lean, col(DARKEST));
+  s += slab(disc, 2, 9, lean, col(p.runes ? RUNE : '#c8a050'));
+  if (p.crack && !ghost) {
+    const c = add(r.hip, up(lean, 28));
+    s += `<path d="M${c[0] - 8},${c[1] - 10} l6,8 l-4,6 l7,8" stroke="${DARKEST}" stroke-width="2" fill="none"/>`;
+  }
+  // Pauldron.
+  s += slab(add(r.shoulder, up(lean, 2)), 22, 15, lean, col(STONE_DARK));
+  // Head, sunk forward: helmet, cheek guard, amber eye, the talisman over the face.
+  const turn = lean + (p.head || 0);
+  const head = add(r.neck, up(turn, 10));
+  s += `<g transform="rotate(${turn} ${head[0]} ${head[1]})">
+    <rect x="${head[0] - 11}" y="${head[1] - 12}" width="22" height="24" fill="${col(STONE)}"/>
+    <rect x="${head[0] - 13}" y="${head[1] - 16}" width="26" height="7" fill="${col(STONE_DARK)}"/>
+    <rect x="${head[0] - 9}" y="${head[1] - 20}" width="18" height="4" fill="${col(STONE_DARK)}"/>
+    <rect x="${head[0] - 12}" y="${head[1] - 9}" width="6" height="14" fill="${col(STONE_DARK)}"/>
+    <rect x="${head[0] + 4}" y="${head[1] - 4}" width="5" height="3" fill="${col(p.dead ? STONE_DARK : '#ffb640')}"/>`;
+  if (!p.talOff) {
+    const flap = p.flap || 0;
+    s += `<g transform="rotate(${-flap} ${head[0] + 12} ${head[1] - 8})">
+      <rect x="${head[0] + 11}" y="${head[1] - 9}" width="4" height="22" fill="${col(PAPER)}"/>
+      <rect x="${head[0] + 12}" y="${head[1] - 6}" width="2" height="12" fill="${col(INK)}"/></g>`;
+  }
+  s += '</g>';
+  if (p.talOff && !ghost) {
+    const t = add(head, p.talOff);
+    s += `<g transform="rotate(-40 ${t[0]} ${t[1]})"><rect x="${t[0]}" y="${t[1]}" width="5" height="22" fill="${PAPER}"/>
+      <rect x="${t[0] + 1.5}" y="${t[1] + 3}" width="2" height="12" fill="${INK}"/></g>`;
+  }
+  s += leg(r, 'F', col);
+  s += arm(r, 'R', q, col);
+  if (!ghost) {
+    const h = r.handR;
+    if (p.lotus) {
+      s += `<g transform="translate(${h[0] + 6},${h[1] - 8})"><path d="M0,6 q-8,-4 -6,-12 q4,4 6,10 q2,-6 6,-10
+        q2,8 -6,12 Z" fill="#e89ab8" stroke="#b05a80"/><path d="M-3,6 q3,-12 6,0" fill="#f5c2d6"/></g>`;
+    }
+    if (p.spin) {
+      // The chain whirled above its head.
+      s += `<ellipse cx="${h[0]}" cy="${h[1] - 6}" rx="26" ry="8" fill="none" stroke="${IRON}" stroke-width="3"
+        stroke-dasharray="4 3"/>` + slab([h[0] + 26, h[1] - 6], 6, 6, 45, IRON);
+    }
+    if (p.chain) {
+      // The chain out to its end: links, then the hook.
+      const to = p.chain;
+      s += `<line x1="${h[0]}" y1="${h[1]}" x2="${to[0]}" y2="${to[1]}" stroke="${IRON}" stroke-width="3"
+        stroke-dasharray="5 2"/>` + slab(to, 7, 7, 45, IRON);
+    }
+    if (p.broken) {
+      s += `<path d="M${h[0]},${h[1]} l10,6 l4,-3 M${h[0] + 30},${h[1] - 6} l8,4 l6,-2" stroke="${IRON}"
+        stroke-width="3" stroke-dasharray="5 2" fill="none"/>`;
+    }
+    if (p.wave) {
+      // The shockwave rolling out over the ground round the fists.
+      s += [22, 42, 62].map((rx, i) => `<ellipse cx="${h[0]}" cy="${y + 33}" rx="${rx}" ry="${4 + i * 3}" fill="none"
+        stroke="${RUNE}" stroke-width="${4 - i}" opacity="${0.9 - i * 0.25}"/>`).join('');
+    }
+    if (p.ring) {
+      // The bells ringing.
+      s += [0, 1].map(i => `<path d="M${h[0] - 18 - i * 6},${h[1] + 2} q-4,6 0,12" fill="none" stroke="${BRONZE}"
+        stroke-width="2"/><path d="M${h[0] + 18 + i * 6},${h[1] + 2} q4,6 0,12" fill="none" stroke="${BRONZE}"
+        stroke-width="2"/>`).join('');
+    }
+  }
+  return s + '</g>';
+};
+
+// Calm.
+const STAND = P({lean: 4, head: 2, aR: 6, fR: 4, aL: -4, fL: -2, tF: 4, sF: 0, tB: -4, sB: -8});
+const WALK_A = P({lean: 6, head: 2, flap: 6, aR: -12, fR: -8, aL: 14, fL: 12, tF: 18, sF: 8, tB: -14, sB: -18});
+const WALK_B = P({lean: 6, head: 2, flap: -4, aR: 14, fR: 12, aL: -12, fL: -8, tF: -14, sF: -18, tB: 18, sB: 8});
+// A statue: frozen, its eyes and runes dark, until someone harms a villager.
+const STATUE = P({...STAND, dead: true});
+const WAKE = P({lean: 0, head: -8, runes: true, dust: true, flap: 24, aR: 14, fR: 30, aL: 6, fL: 20, tF: 6, sF: 0,
+  tB: -6, sB: -10});
+// Fighting.
+const GUARD = P({lean: 10, head: -4, aR: 30, fR: 50, aL: 20, fL: 40, tF: 14, sF: 4, tB: -16, sB: -20});
+const LOW = P({lean: 34, head: -14, hy: 8, runes: true, aR: 8, fR: 4, aL: 4, fL: 0, tF: 34, sF: -6, tB: -24, sB: -34});
+const SKY = P({lean: -10, head: -18, hy: -2, runes: true, flap: 30, aR: 172, fR: 176, aL: 164, fL: 170, tF: 16, sF: 6,
+  tB: -14, sB: -18});
+const SKY_HOLD = P({...SKY, runes: false, flap: 4});
+const BELL_UP = P({lean: -6, head: -12, runes: true, ring: true, aR: 166, fR: 200, aL: 160, fL: 200, tF: 10, sF: 2,
+  tB: -12, sB: -16});
+const BELL_SLAM = P({lean: 42, head: -10, hy: 10, runes: true, wave: true, flap: 40, aR: 46, fR: 16, aL: 40, fL: 12,
+  tF: 42, sF: 0, tB: -30, sB: -50});
+const BELL_DOWN = P({...BELL_SLAM, runes: false, wave: false, flap: 10});
+const SPIN = P({lean: 2, head: -6, runes: true, spin: true, aR: 160, fR: 172, aL: 20, fL: 40, tF: 12, sF: 4, tB: -14,
+  sB: -18});
+const THROW = P({lean: 16, head: -8, hx: 6, runes: true, chain: [176, 62], aR: 96, fR: 92, aL: -20, fL: -10, tF: 30,
+  sF: 4, tB: -26, sB: -30});
+const PULL = P({lean: -12, head: -6, hx: -4, chain: [132, 70], aR: 30, fR: 96, aL: 10, fL: 20, tF: 20, sF: 6,
+  tB: -30, sB: -34});
+const HANG = P({lean: 6, head: -4, chain: [128, 150], aR: 64, fR: 56, aL: 16, fL: 30, tF: 16, sF: 4, tB: -18,
+  sB: -22});
+const STAGGER = P({lean: -20, head: -22, hx: -8, broken: true, crack: true, aR: -30, fR: -10, aL: 34, fL: 24, tF: 20,
+  sF: 4, tB: -30, sB: -34});
+const DAZED = P({lean: 10, head: 18, hy: 4, crack: true, flap: -8, aR: 10, fR: 0, aL: 6, fL: -4, tF: 10, sF: 2,
+  tB: -12, sB: -16});
+const TAL_OFF = P({...STAND, lean: -4, head: -10, talOff: [-6, -46], crack: true, dead: true});
+const KNEES = P({lean: 10, head: 20, hy: 17, talOff: [-30, 4], crack: true, dead: true, aR: 10, fR: 0, aL: 0, fL: -10,
+  tF: 90, sF: -10, tB: 80, sB: -20});
+const RUBBLE = P({rubble: true});
+const GREEN = '#2f6b4f';
+sheet({
+  weapon: 'none',
+  colors: {ghost: '#9aa3ad'},
+  title: 'GARDIEN-TALISMAN — ANIMATIONS (v2)',
+  sub: 'Proposition avant animation · lourd, lent, lisible : ses runes s\'allument avant chaque coup, puis il reste '
+    + 'figé dans une fenêtre OUVERTE (vert) · vue de profil, il regarde vers la droite · 100 PV ≈ 14 coups d\'épée',
+  wrong: [
+    '<b>Statue immobile</b> tant que personne ne frappe un villageois ; ensuite il ne poursuit que le coupable, en '
+      + 'marchant.',
+    'À moins de 2,5 blocs : <b>Poing du ciel</b> (préparation 12 ticks), il te lance en l\'air.',
+    'Collé à lui plus de 2 s, ou à plusieurs : <b>Cloche de terre</b>, une onde au sol tout autour (recharge 6 s).',
+    'Tu restes entre 4 et 8 blocs : <b>Chaîne</b>, il te ramène devant lui (recharge 8 s).',
+  ],
+  fix: [
+    'Avant chaque attaque, ses <b>runes s\'allument</b> en or : c\'est le signal.',
+    'Après chaque attaque, une fenêtre <b>OUVERTE</b> où il ne peut rien faire : c\'est là qu\'on frappe.',
+    'Poing du ciel : un pas de côté suffit. Cloche de terre : un <b>saut</b> l\'évite entièrement.',
+    'Parer la chaîne au bon moment la <b>casse</b> : il vacille 1 s et prend +50 % de dégâts.',
+    'Blessé, la pierre se fissure et le talisman se déchire : on voit où il en est.',
+  ],
+  anims: [
+    {name: 'Statue et réveil', meta: 'statue : aucun mouvement · réveil 24 ticks · retour à sa place, puis statue',
+      feel: 'une vraie statue du village, jusqu\'au jour où on touche aux villageois.',
+      read: 'ses yeux et ses runes qui s\'allument, la poussière qui tombe : tu l\'as fâché.',
+      frames: [
+        {ticks: 'statue', phase: 'immobile', pose: STATUE, note: 'Il ne bouge pas du tout, yeux et runes éteints. '
+          + 'Seul le talisman bouge au vent.'},
+        {ticks: 'réveil 0 → 24', phase: 'se réveille (signal)', phaseColor: '#a32020', pose: WAKE, from: STATUE,
+          trace: 'handR', bend: 6, note: 'Quelqu\'un frappe un villageois : la poussière tombe, ses yeux et ses '
+          + 'runes s\'allument, il tourne la tête vers le coupable.'},
+        {ticks: 'poursuite', phase: 'pas lourd', pose: WALK_A, from: WALK_B, trace: 'footF', bend: 6,
+          note: 'Il marche vers le coupable, sans jamais courir. Il ne s\'en prend qu\'à lui.'},
+        {ticks: 'après', phase: 'retour', pose: STATUE, from: WALK_A, trace: 'footF', note: 'Coupable mort ou parti '
+          + 'loin : il revient à sa place, reprend sa pose et redevient statue.'},
+      ]},
+    {name: 'Poing du ciel', meta: '36 ticks · impact au tick 14 · 2,5 blocs · 7 à 21 dégâts, te lance en l\'air',
+      feel: 'la statue se ramasse puis se déplie d\'un coup : on décolle.',
+      read: 'il se penche, poings vers le sol, runes allumées : écarte-toi.',
+      frames: [
+        {ticks: '0 → 12', phase: 'se ramasse (signal)', phaseColor: '#a32020', pose: LOW, from: GUARD,
+          trace: 'handR', bend: 10, target: 170, note: 'Il se penche, les deux poings descendent entre ses pieds ; '
+          + 'les runes s\'allument.'},
+        {ticks: '13 → 14', phase: 'POING', phaseColor: '#c46a00', pose: SKY, from: LOW, trace: 'handR', bend: -30,
+          impact: true, target: 170, arrows: [{from: [177, 80], to: [177, 10], color: '#3a6fb0'}],
+          note: 'Il se redresse, les deux poings vers le ciel : la cible part en l\'air.'},
+        {ticks: '15 → 30', phase: 'OUVERT', phaseColor: GREEN, pose: SKY_HOLD, note: 'Il reste les bras levés, '
+          + 'figé, 15 ticks : frappe-le au ventre.'},
+        {ticks: '31 → 36', phase: 'retour', pose: GUARD, from: SKY_HOLD, trace: 'handR', bend: 20,
+          note: 'Il redescend les bras et reprend sa garde.'},
+      ]},
+    {name: 'Cloche de terre', meta: '40 ticks · impact au tick 16 · rayon 3 blocs · 6 dégâts, étourdit 1 s',
+      feel: 'un coup de gong dans le sol : tout tremble autour de lui.',
+      read: 'les poings joints au-dessus de la tête et les clochettes qui sonnent : saute.',
+      frames: [
+        {ticks: '0 → 14', phase: 'lève (signal)', phaseColor: '#a32020', pose: BELL_UP, from: GUARD,
+          trace: 'handR', bend: 14, note: 'Il joint les poings au-dessus de sa tête ; les clochettes sonnent, '
+          + 'les runes s\'allument.'},
+        {ticks: '15 → 16', phase: 'FRAPPE', phaseColor: '#c46a00', pose: BELL_SLAM, from: BELL_UP, trace: 'handR',
+          bend: -20, impact: true, target: 172, note: 'Les poings frappent le sol : une onde dorée part tout '
+          + 'autour. En l\'air, elle ne te touche pas.'},
+        {ticks: '17 → 36', phase: 'OUVERT', phaseColor: GREEN, pose: BELL_DOWN, note: 'Il reste courbé, poings au '
+          + 'sol, 20 ticks : la plus longue ouverture.'},
+        {ticks: '37 → 40', phase: 'se relève', pose: GUARD, from: BELL_DOWN, trace: 'neck', note: 'Il se redresse '
+          + 'lourdement.'},
+      ]},
+    {name: 'Chaîne', meta: '44 ticks · lancer au tick 14 · 4 à 8 blocs · 4 dégâts, te ramène à 2 blocs',
+      feel: 'on ne fuit pas le gardien du village.',
+      read: 'la chaîne qui tourne au-dessus de sa tête : esquive de côté, ou pare au moment du lancer.',
+      frames: [
+        {ticks: '0 → 12', phase: 'fait tourner (signal)', phaseColor: '#a32020', pose: SPIN, from: GUARD,
+          trace: 'handR', bend: 12, target: 176, note: 'Il fait tourner sa chaîne au-dessus de sa tête.'},
+        {ticks: '13 → 14', phase: 'LANCE', phaseColor: '#c46a00', pose: THROW, from: SPIN, trace: 'handR',
+          bend: -12, impact: true, target: 176, note: 'La chaîne part droit sur toi. Pare à ce moment : elle casse.'},
+        {ticks: '15 → 24', phase: 'tire', phaseColor: '#c46a00', pose: PULL, from: THROW, trace: 'handR', target: 132,
+          arrows: [{from: [184, 100], to: [146, 100], color: '#3a6fb0'}], note: 'Il tire : tu es ramené à 2 blocs '
+          + 'devant lui.'},
+        {ticks: '25 → 44', phase: 'OUVERT', phaseColor: GREEN, pose: HANG, target: 132, note: 'La chaîne pend, il '
+          + 'ne frappe pas tout de suite : 20 ticks pour frapper ou te dégager.'},
+      ]},
+    {name: 'Vacille', meta: '20 ticks · après une chaîne parée au bon moment',
+      feel: 'la pierre perd l\'équilibre pour la première fois.',
+      read: 'la chaîne cassée, il part en arrière et se fissure : donne tout.',
+      frames: [
+        {ticks: '0 → 6', phase: 'PARÉ', phaseColor: '#c46a00', pose: STAGGER, from: THROW, trace: 'neck',
+          impact: true, note: 'La chaîne casse : il bascule en arrière, la pierre se fend.'},
+        {ticks: '7 → 20', phase: 'OUVERT +50 %', phaseColor: GREEN, pose: DAZED, from: STAGGER, trace: 'neck',
+          note: 'Il se courbe, sonné. Chaque coup fait +50 % de dégâts.'},
+      ]},
+    {name: 'Mort', meta: '40 ticks',
+      feel: 'le talisman s\'envole et la statue redevient de la pierre.',
+      read: 'le talisman qui part : il est mort.',
+      frames: [
+        {ticks: '0 → 10', phase: 'talisman arraché', pose: TAL_OFF, from: STAND, trace: 'neck', note: 'Le talisman '
+          + 'se décolle et s\'envole ; les runes et les yeux s\'éteignent.'},
+        {ticks: '11 → 24', phase: 'se fige', pose: KNEES, from: TAL_OFF, trace: 'neck', note: 'Il tombe à genoux '
+          + 'et ne bouge plus, redevenu statue.'},
+        {ticks: '25 → 40', phase: 's\'effondre', pose: RUBBLE, note: 'Il s\'effondre en blocs de pierre ; '
+          + 'le talisman retombe sur les débris.'},
+      ]},
+  ],
+});
+// This sheet's two boxes say how it fights and what keeps it fair.
+const boxes = document.querySelectorAll('.panelbox h2');
+boxes[0].textContent = 'Comment il se bat';
+boxes[1].textContent = 'Ce qui le rend juste';
+boxes[0].style.color = '#7a2020';
+document.querySelector('.wrong').classList.remove('wrong');
+// Frames in an open window get a green frame.
+document.querySelectorAll('.frame').forEach(f => {
+  if (f.querySelector('text:nth-of-type(2)')?.textContent.includes('OUVERT')) {
+    f.querySelector('svg').style.outline = '3px solid #2f6b4f';
+  }
+});
+</script></body></html>
