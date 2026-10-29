@@ -89,7 +89,8 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         Minecraft mc = Minecraft.getInstance();
         boolean visible = !mob.isInvisible();
         boolean ghost = !visible && mc.player != null && !mob.isInvisibleTo(mc.player);
-        RenderType type = visible ? RenderType.entityCutoutNoCull(look.texture())
+        RenderType type = visible ? SkeletalMobs.translucent(look) ? RenderType.entityTranslucent(look.texture())
+                : RenderType.entityCutoutNoCull(look.texture())
                 : ghost ? RenderType.itemEntityTranslucentCull(look.texture())
                 : mc.shouldEntityAppearGlowing(mob) ? RenderType.outline(look.texture()) : null;
         poseStack.pushPose();

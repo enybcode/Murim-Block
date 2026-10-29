@@ -95,7 +95,8 @@ public final class MobCloth {
         Matrix4f hips = joints[armature.get(Biped.ROOT).index()];
         Matrix4f torso = joints[armature.get(Biped.TORSO).index()];
         Map<String, Hanging> hanging = HANGING.computeIfAbsent(mob, key -> new HashMap<>());
-        VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(look.texture()));
+        VertexConsumer consumer = buffers.getBuffer(SkeletalMobs.translucent(look)
+                ? RenderType.entityTranslucent(look.texture()) : RenderType.entityCutoutNoCull(look.texture()));
         long now = System.nanoTime();
         for (Piece piece : spec.pieces) {
             Hanging state = hanging.computeIfAbsent(piece.name, key -> new Hanging(piece, scale));

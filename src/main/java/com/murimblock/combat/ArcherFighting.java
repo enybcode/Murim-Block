@@ -72,10 +72,11 @@ public final class ArcherFighting extends Goal {
         setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
-    /** The skeleton (the plain one: strays and wither skeletons keep vanilla's ways) fights as the archer. */
+    /** The skeleton and the stray (the Esprit de l'Archer) fight as the archer; wither skeletons keep vanilla's ways. */
     @SubscribeEvent
     public static void join(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide() || event.getEntity().getType() != EntityType.SKELETON
+                && event.getEntity().getType() != EntityType.STRAY
                 || !(event.getEntity() instanceof AbstractSkeleton skeleton)) {
             return;
         }
@@ -273,6 +274,11 @@ public final class ArcherFighting extends Goal {
         double spread = 1 + 0.12 * (time > 30 ? 1 : 0);
         arrow.shoot(dx * spread, at.y - arrow.getY() + flat * spread, dz * spread,
                 (float) (0.6 + flat * 0.045), 6);
+        if (mob.getType() == EntityType.STRAY && arrow instanceof net.minecraft.world.entity.projectile.Arrow tipped) {
+            // The Esprit's arrows of ice, as vanilla's stray (Stray.getArrow).
+            tipped.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 600));
+        }
         mob.playSound(SoundEvents.SKELETON_SHOOT, 1, 1 / (mob.getRandom().nextFloat() * 0.4f + 0.8f));
         mob.level().addFreshEntity(arrow);
     }

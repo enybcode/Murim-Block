@@ -248,6 +248,36 @@ final class MobLookChecks {
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Skeleton.class,
                         new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                // The Esprit de l'Archer (the stray): one standing, one aiming its bow.
+                for (double x : new double[] {X - 1.4, X + 1.4}) {
+                    var stray = EntityType.STRAY.create(player.serverLevel());
+                    stray.moveTo(x, Y, Z + 3.4, 180, 0);
+                    stray.setYHeadRot(180);
+                    stray.setYBodyRot(180);
+                    stray.setNoAi(true);
+                    stray.addTag(TAG);
+                    stray.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+                    stray.setAggressive(x > X);
+                    player.serverLevel().addFreshEntity(stray);
+                }
+                player.connection.teleport(X, Y, Z, 0, 10);
+            });
+        }));
+        steps.add(new Step("esprit look", mc -> {
+            var stray = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.Stray.class,
+                    mc.player.getBoundingBox().inflate(8)).stream().findFirst().orElse(null);
+            EngineTest.check("the Esprit's model is loaded", SkeletalModels.get(SkeletalMobs.ESPRIT.model()) != null);
+            EngineTest.check("strays wear the Esprit's look, see-through", stray != null
+                    && SkeletalMobs.look(stray) == SkeletalMobs.ESPRIT && SkeletalMobs.translucent(SkeletalMobs.ESPRIT)
+                    && mc.getEntityRenderDispatcher().getRenderer(stray) instanceof SkeletalMobRenderer<?>);
+            EngineTest.shoot(mc, "mob_esprit_front");
+            EngineTest.server(mc, player -> player.connection.teleport(X + 3.2, Y + 0.6, Z + 1, 58, 15));
+        }));
+        steps.add(new Step("esprit three quarters", mc -> {
+            EngineTest.shoot(mc, "mob_esprit_three_quarter");
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Stray.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
                 // The Fileuse de linceuls, on a skeleton of its own.
                 var spider = EntityType.SPIDER.create(player.serverLevel());
                 spider.moveTo(X, Y, Z + 3.5, 160, 0);

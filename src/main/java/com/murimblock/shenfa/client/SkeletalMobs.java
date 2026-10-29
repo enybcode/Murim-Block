@@ -54,6 +54,9 @@ public final class SkeletalMobs {
     public static final Look DISCIPLE = new Look(id("mobs/disciple"), id("textures/entity/disciple.png"),
             id("textures/entity/disciple_glow.png"), "disciple");
     public static final Look ARCHER = new Look(id("mobs/archer"), id("textures/entity/archer.png"), null, "archer");
+    /** The stray as the Esprit de l'Archer: the archer's clips on a body of mist, drawn see-through. */
+    public static final Look ESPRIT = new Look(id("mobs/esprit"), id("textures/entity/esprit.png"),
+            id("textures/entity/esprit_glow.png"), "archer");
     /** The zombie family: the disciple's clips on looks of their own ({@code docs/mobs/zombie-family.png}). */
     public static final Look SABLES = disciple("sables"), NOYE = disciple("noye"), PAYSAN = disciple("paysan"),
             SANGLIER = disciple("sanglier");
@@ -69,10 +72,11 @@ public final class SkeletalMobs {
     /** The Iron Golem as the Gardien-talisman: the biped's joints set to its build, a joint for its talisman. */
     public static final Look GOLEM = new Look(id("mobs/golem"), id("textures/entity/golem.png"),
             id("textures/entity/golem_glow.png"), "golem");
-    private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER,
-            EntityType.HUSK, SABLES, EntityType.DROWNED, NOYE, EntityType.ZOMBIE_VILLAGER, PAYSAN,
-            EntityType.ZOMBIFIED_PIGLIN, SANGLIER, EntityType.SPIDER, FILEUSE, EntityType.CREEPER, FOURNEAU,
-            EntityType.ENDERMAN, MOINE, EntityType.IRON_GOLEM, GOLEM);
+    private static final Map<EntityType<?>, Look> LOOKS = Map.ofEntries(Map.entry(EntityType.ZOMBIE, DISCIPLE),
+            Map.entry(EntityType.SKELETON, ARCHER), Map.entry(EntityType.HUSK, SABLES), Map.entry(EntityType.DROWNED, NOYE),
+            Map.entry(EntityType.ZOMBIE_VILLAGER, PAYSAN), Map.entry(EntityType.ZOMBIFIED_PIGLIN, SANGLIER),
+            Map.entry(EntityType.SPIDER, FILEUSE), Map.entry(EntityType.CREEPER, FOURNEAU), Map.entry(EntityType.ENDERMAN, MOINE),
+            Map.entry(EntityType.IRON_GOLEM, GOLEM), Map.entry(EntityType.STRAY, ESPRIT));
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -151,6 +155,11 @@ public final class SkeletalMobs {
         enabled = on;
     }
 
+    /** Whether {@code look} is drawn see-through (its texture's alpha blended, not cut out). */
+    public static boolean translucent(Look look) {
+        return look == ESPRIT;
+    }
+
     /** The look {@code entity} wears, or null to draw it as vanilla does. */
     public static Look look(Entity entity) {
         return enabled() ? LOOKS.get(entity.getType()) : null;
@@ -174,6 +183,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.ZombieRenderer(context)));
         event.registerEntityRenderer(EntityType.SKELETON, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.SkeletonRenderer(context)));
+        event.registerEntityRenderer(EntityType.STRAY, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.StrayRenderer(context)));
         event.registerEntityRenderer(EntityType.HUSK, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.HuskRenderer(context)));
         event.registerEntityRenderer(EntityType.DROWNED, context -> new SkeletalMobRenderer<>(context,
@@ -234,6 +245,29 @@ public final class SkeletalMobs {
         state.hurtTime = mob.hurtTime;
         if (mob instanceof Creeper creeper) {
             fuse(creeper, look, state);
+        }
+        if (look == ESPRIT) {
+            trail(mob);
+        }
+    }
+
+    /**
+     * The Esprit de l'Archer's mist: flakes shed from the end of its tail, more as it glides, and now and then a
+     * frosted breath from the hood.
+     */
+    private static void trail(Mob mob) {
+        var random = mob.getRandom();
+        double moved = mob.getDeltaMovement().horizontalDistance();
+        if (random.nextFloat() < 0.12f + moved * 3) {
+            mob.level().addParticle(net.minecraft.core.particles.ParticleTypes.SNOWFLAKE,
+                    mob.getX() + (random.nextFloat() - 0.5f) * 0.3, mob.getY() + 0.25 + random.nextFloat() * 0.3,
+                    mob.getZ() + (random.nextFloat() - 0.5f) * 0.3, 0, -0.01, 0);
+        }
+        if (random.nextInt(60) == 0) {
+            float yaw = mob.getYHeadRot() * Mth.DEG_TO_RAD;
+            mob.level().addParticle(net.minecraft.core.particles.ParticleTypes.SNOWFLAKE,
+                    mob.getX() - Mth.sin(yaw) * 0.35, mob.getEyeY() - 0.15, mob.getZ() + Mth.cos(yaw) * 0.35,
+                    -Mth.sin(yaw) * 0.04, 0.01, Mth.cos(yaw) * 0.04);
         }
     }
 
