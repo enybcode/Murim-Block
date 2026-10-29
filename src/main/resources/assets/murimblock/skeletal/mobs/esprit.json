@@ -1,0 +1,128 @@
+{
+ "texture": [
+  128,
+  64
+ ],
+ "cloth": [
+  {
+   "name": "wisp_0",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    -2.2,
+    11.5,
+    -2.1
+   ],
+   "width": 2,
+   "length": 9,
+   "front": [
+    47,
+    18,
+    2,
+    9
+   ],
+   "back": [
+    50,
+    18,
+    2,
+    9
+   ]
+  },
+  {
+   "name": "wisp_1",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    0.2,
+    11.5,
+    -2.1
+   ],
+   "width": 2,
+   "length": 11,
+   "front": [
+    117,
+    1,
+    2,
+    11
+   ],
+   "back": [
+    120,
+    1,
+    2,
+    11
+   ]
+  },
+  {
+   "name": "wisp_2",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    2.3,
+    11.5,
+    -2.1
+   ],
+   "width": 2,
+   "length": 8,
+   "front": [
+    101,
+    18,
+    2,
+    8
+   ],
+   "back": [
+    104,
+    18,
+    2,
+    8
+   ]
+  },
+  {
+   "name": "wisp_3",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    -1.4,
+    11.5,
+    2.1
+   ],
+   "width": 2,
+   "length": 6,
+   "front": [
+    79,
+    29,
+    2,
+    6
+   ],
+   "back": [
+    82,
+    29,
+    2,
+    6
+   ]
+  },
+  {
+   "name": "wisp_4",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    1.6,
+    11.5,
+    2.1
+   ],
+   "width": 2,
+   "length": 5,
+   "front": [
+    109,
+    29,
+    2,
+    5
+   ],
+   "back": [
+    112,
+    29,
+    2,
+    5
+   ]
+  }
+ ]
+}
