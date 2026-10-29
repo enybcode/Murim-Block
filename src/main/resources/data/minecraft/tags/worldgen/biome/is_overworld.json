@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    "murimblock:frozen_tundra",
+    "murimblock:cold_desert",
+    "murimblock:frozen_steppe",
+    "murimblock:qinghai_plateau",
+    "murimblock:western_snow_peaks",
+    "murimblock:loess_plateau",
+    "murimblock:central_plains",
+    "murimblock:shandong_hills",
+    "murimblock:sacred_mountain",
+    "murimblock:red_basin",
+    "murimblock:bamboo_mountains",
+    "murimblock:hubei_waterlands",
+    "murimblock:river_delta",
+    "murimblock:stone_forest",
+    "murimblock:western_gorges",
+    "murimblock:unnam_jungle",
+    "murimblock:stone_peaks",
+    "murimblock:rice_terraces",
+    "murimblock:subtropical_forest",
+    "murimblock:southeast_coast"
+  ]
+}

@@ -59,6 +59,15 @@ neoForge {
             programArguments.addAll('--width', '1280', '--height', '720')
         }
 
+        // Dev only: a new world on the Murim map; checks the spawn and each zone's biome (PASS/FAIL in the log), shots
+        // in run/map-tour/screenshots, quits.
+        mapTour {
+            client()
+            systemProperty 'murimblock.mapTour', 'true'
+            gameDirectory = project.file('run/map-tour')
+            programArguments.addAll('--width', '1280', '--height', '720')
+        }
+
         // Dev only: checks the inner world in a real client (PASS/FAIL in the log), shots in run/screenshots, quits.
         innerWorldTour {
             client()

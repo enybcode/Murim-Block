@@ -7,6 +7,7 @@ import com.murimblock.registry.MurimBlocks;
 import com.murimblock.registry.MurimEntities;
 import com.murimblock.registry.MurimItems;
 import com.murimblock.registry.MurimParticles;
+import com.murimblock.registry.MurimWorldgen;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -28,6 +29,8 @@ public final class Murimblock {
         MurimItems.ITEMS.register(modBus);
         MurimEntities.ENTITIES.register(modBus);
         MurimParticles.PARTICLES.register(modBus);
+        MurimWorldgen.BIOME_SOURCES.register(modBus);
+        MurimWorldgen.DENSITY_FUNCTIONS.register(modBus);
         modBus.addListener(Murimblock::fillCreativeTabs);
         LOGGER.info("Murimblock V2 loaded");
     }

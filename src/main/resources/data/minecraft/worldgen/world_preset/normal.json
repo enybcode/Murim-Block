@@ -1,0 +1,63 @@
+{
+  "dimensions": {
+    "minecraft:overworld": {
+      "type": "minecraft:overworld",
+      "generator": {
+        "type": "minecraft:noise",
+        "biome_source": {
+          "type": "murimblock:murim_map",
+          "biomes": {
+            "frozen_tundra": "murimblock:frozen_tundra",
+            "cold_desert": "murimblock:cold_desert",
+            "frozen_steppe": "murimblock:frozen_steppe",
+            "qinghai_plateau": "murimblock:qinghai_plateau",
+            "western_snow_peaks": "murimblock:western_snow_peaks",
+            "loess_plateau": "murimblock:loess_plateau",
+            "central_plains": "murimblock:central_plains",
+            "shandong_hills": "murimblock:shandong_hills",
+            "sacred_mountain": "murimblock:sacred_mountain",
+            "red_basin": "murimblock:red_basin",
+            "bamboo_mountains": "murimblock:bamboo_mountains",
+            "hubei_waterlands": "murimblock:hubei_waterlands",
+            "river_delta": "murimblock:river_delta",
+            "stone_forest": "murimblock:stone_forest",
+            "western_gorges": "murimblock:western_gorges",
+            "unnam_jungle": "murimblock:unnam_jungle",
+            "stone_peaks": "murimblock:stone_peaks",
+            "rice_terraces": "murimblock:rice_terraces",
+            "subtropical_forest": "murimblock:subtropical_forest",
+            "southeast_coast": "murimblock:southeast_coast",
+            "beach": "minecraft:beach",
+            "ocean": "minecraft:ocean"
+          },
+          "fallback": {
+            "type": "minecraft:multi_noise",
+            "preset": "minecraft:overworld"
+          }
+        },
+        "settings": "minecraft:overworld"
+      }
+    },
+    "minecraft:the_end": {
+      "type": "minecraft:the_end",
+      "generator": {
+        "type": "minecraft:noise",
+        "biome_source": {
+          "type": "minecraft:the_end"
+        },
+        "settings": "minecraft:end"
+      }
+    },
+    "minecraft:the_nether": {
+      "type": "minecraft:the_nether",
+      "generator": {
+        "type": "minecraft:noise",
+        "biome_source": {
+          "type": "minecraft:multi_noise",
+          "preset": "minecraft:nether"
+        },
+        "settings": "minecraft:nether"
+      }
+    }
+  }
+}

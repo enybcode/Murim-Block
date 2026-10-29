@@ -68,13 +68,32 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 
 ## Steps
 
-1. Biomes in place: `MurimMap`, the biome source, the 21 biome JSONs with the guide's colours and vanilla flora,
+1. Biomes in place: `MurimMap`, the biome source, the 20 biome JSONs with the guide's colours and vanilla flora,
    ocean around. Relief still vanilla. Checks: map PNG, GameTest that the preset loads, real-client tour.
 2. Big relief: plateaus, plains, north wall and passes, chains, west peaks, Sichuan gorges, reserved ground.
 3. Water: the two rivers, Wuhan confluence, delta, the two lakes.
 4. Landforms and soils: loess ravines, stone forest, Honam peaks, rice terraces, V1 generators adapted, tree
    density rising to the south.
 5. Ambience: fog, particles and sounds per zone.
+
+## Step 1: biomes in place (29 Oct 2026)
+
+- `world/MurimMap`: the zones in Java (the mockup's math). `SPOTS` lists one sure point per biome, in guide
+  coordinates. `MurimMapTest` checks them, the sea around, and that every biome is there, and draws
+  `build/murim-map/murim-map.png` (1 px = 25 blocks).
+- `world/MurimBiomeSource` (`murimblock:murim_map`) and `world/MurimContinents` (`murimblock:murim_continents`,
+  wrapped around vanilla's `overworld/continents`), registered in `registry/MurimWorldgen`.
+- Data: `data/minecraft/worldgen/world_preset/normal.json`, `.../density_function/overworld/continents.json`,
+  20 biomes in `data/murimblock/worldgen/biome/` (added to `#minecraft:is_overworld`), names in `en_us.json`.
+- The biomes come from `node tools/worldgen/generate-biomes.cjs <vanilla biome folder>`: each copies a vanilla
+  biome's flora and mobs (snowy plains, meadow, savanna plateau, swamp, bamboo jungle...) with the guide's colours.
+  Vanilla villages and most vanilla structures do not spawn in them yet (their biome tags do not list them).
+- The continentalness override applies to every world using vanilla's overworld noise (default and amplified);
+  worlds made before keep their old chunks and get Murim chunks beyond them.
+- In game: `gradlew runMapTour` makes a new world (seed 29102026) in `run/map-tour`, checks the spawn and each spot's
+  biome (PASS/FAIL in the log), and shoots each zone to `run/map-tour/screenshots` (as a spectator, so the
+  first-person body does not hide the view).
+- Verified 29 Oct 2026: `gradlew build` (all tests), `runMapTour` 21/21 PASS; spawn at 0, 88, 0 in the loess plateau.
 
 ## Open points
 
