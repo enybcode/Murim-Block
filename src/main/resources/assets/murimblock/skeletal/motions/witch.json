@@ -1,0 +1,15 @@
+{
+  "motions": {
+    "idle": "murimblock:witch/idle",
+    "walk": "murimblock:witch/walk",
+    "run": "murimblock:witch/walk",
+    "jump": "murimblock:witch/idle",
+    "fall": "murimblock:witch/idle"
+  },
+  "combat": {
+    "idle": "murimblock:witch/idle",
+    "walk": "murimblock:witch/walk",
+    "run": "murimblock:witch/walk"
+  },
+  "additive": []
+}

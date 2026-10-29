@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Empoisonneuse des Cinq Venins — animations</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+const P = o => o;
+const BLACK = '#1b1424', BLACK_FAR = '#120c18', SKIN_C = '#f0cdbc', SKIN_FAR = '#d8b2a0', HAIR_C = '#131019';
+const COLLAR = '#f2eef8', GOLD_C = '#d9b444', JADE_C = '#38b06c', VIOLET_C = '#8a48c8', VENOM_C = '#5fd17a';
+const LANGUOR = '#b06ae0';
+const fwd = (a, l) => [Math.cos(rad(a)) * l, Math.sin(rad(a)) * l];
+
+function poly(points, fill, extra = '') {
+  return `<path d="M${points.map(p => p.join(',')).join(' L')} Z" fill="${fill}" ${extra}/>`;
+}
+
+// A glowing vial: green venom or violet languor.
+function vial(at, colour, glow) {
+  return (glow ? `<circle cx="${at[0]}" cy="${at[1]}" r="9" fill="${colour}" opacity=".35"/>` : '')
+    + `<rect x="${at[0] - 3}" y="${at[1] - 5}" width="6" height="8" fill="${colour}" stroke="#2a2a2a" stroke-width=".8"/>`
+    + `<rect x="${at[0] - 2}" y="${at[1] - 7}" width="4" height="2" fill="#c9c9d6"/>`;
+}
+
+// The poisoner over the shared skeleton: long black hair and a high bun, a black robe with a white crossed collar, a
+// jade sash, a short skirt and a long violet panel to the ankles, violet cuffs, dark stockings; her vials, needles,
+// clouds and the mist of her death.
+window.FIGURE = (x, y, p, ghost) => {
+  const r = body(x, y, p);
+  const col = c => ghost ? C.ghost : c;
+  const lean = p.lean || 0;
+  const turn = lean + (p.head || 0);
+  const head = add(r.neck, up(turn, 11));
+  let s = `<g${ghost ? ' opacity="0.28"' : ''}>`;
+  // Long hair falling behind, swaying.
+  const back = add(head, fwd(turn + 180, 10));
+  s += poly([add(head, [-10, -6]), add(back, [-2, 4]), add(r.hip, up(lean, 16)).map((v, i) => v + (i ? 0 : -9 - (p.sway || 0))),
+    add(r.hip, up(lean, 20))], col(HAIR_C));
+  // Far leg and arm.
+  s += line(r.hip, r.kneeB, col(BLACK_FAR), 6) + line(r.kneeB, r.footB, col(BLACK_FAR), 5);
+  s += line(r.footB, add(r.footB, [5, 0]), col('#08060c'), 3);
+  s += line(r.shoulder, r.elbowL, col(BLACK_FAR), 6) + line(r.elbowL, r.handL, col(VIOLET_C), 7);
+  s += line(add(r.handL, [0, 0]), add(r.handL, down(p.fL, 3)), col(SKIN_FAR), 4);
+  // The robe: torso, the bust's wedge in front, the crossed collar, the sash.
+  s += line(r.hip, r.neck, col(BLACK), 13);
+  const chest = add(r.hip, up(lean, 25));
+  s += poly([add(chest, fwd(lean, 5)), add(add(chest, fwd(lean, 9)), up(lean, -6)), add(add(chest, fwd(lean, 5)),
+    up(lean, -7))], col(BLACK));
+  s += line(add(r.neck, fwd(lean, -2)), add(add(r.hip, up(lean, 14)), fwd(lean, 6)), col(COLLAR), 3);
+  s += line(add(r.neck, fwd(lean, -3)), add(add(r.hip, up(lean, 15)), fwd(lean, 4)), col(GOLD_C), 1.2);
+  s += line(add(r.hip, up(lean, 7)), add(r.hip, up(lean, 11)), col(JADE_C), 15);
+  // The short skirt to the knees, flaring.
+  const kneeMid = [(r.kneeF[0] + r.kneeB[0]) / 2, (r.kneeF[1] + r.kneeB[1]) / 2];
+  s += poly([add(r.hip, [-7, -4]), add(r.hip, [7, -4]), add(kneeMid, [11, 2]), add(kneeMid, [-11, 2])], col(BLACK));
+  s += line(add(kneeMid, [-11, 2]), add(kneeMid, [11, 2]), col(VIOLET_C), 2);
+  // The long violet panel from the sash to the ankles, swinging (p.panel: degrees forward).
+  const top = add(add(r.hip, up(lean, 6)), fwd(lean, 6));
+  const end = add(top, down(p.panel || 0, 36));
+  s += line(top, end, col(VIOLET_C), 7) + line(add(end, [-3.5, 0]), add(end, [3.5, 0]), col(GOLD_C), 2);
+  if (!ghost) {
+    [8, 16, 24].forEach(d => {
+      const at = add(top, down(p.panel || 0, d));
+      s += `<rect x="${at[0] - 1.5}" y="${at[1] - 1.5}" width="3" height="3" fill="${GOLD_C}"/>`;
+    });
+  }
+  // Head: face, hair over it, the bun and its pin, an eye, the lips.
+  s += `<g transform="rotate(${turn} ${head[0]} ${head[1]})">
+    <rect x="${head[0] - 10}" y="${head[1] - 10}" width="20" height="21" fill="${col(SKIN_C)}"/>
+    <rect x="${head[0] - 11}" y="${head[1] - 12}" width="22" height="7" fill="${col(HAIR_C)}"/>
+    <rect x="${head[0] - 11}" y="${head[1] - 12}" width="9" height="20" fill="${col(HAIR_C)}"/>
+    <rect x="${head[0] - 5}" y="${head[1] - 21}" width="10" height="9" fill="${col(HAIR_C)}"/>
+    <rect x="${head[0] - 9}" y="${head[1] - 18}" width="20" height="2" fill="${col('#c9c9d6')}"/>
+    <rect x="${head[0] + 9}" y="${head[1] - 18}" width="2" height="2" fill="${col('#b02a1e')}"/>`;
+  if (!ghost) {
+    s += p.dead ? `<rect x="${head[0] + 3}" y="${head[1] - 1}" width="5" height="1.5" fill="#140c18"/>`
+      : `<rect x="${head[0] + 3}" y="${head[1] - 3}" width="5" height="2" fill="#0e0812"/>
+         <rect x="${head[0] + 4}" y="${head[1] - 1}" width="3" height="3" fill="#40c070"/>`;
+    s += `<rect x="${head[0] + 6}" y="${head[1] + 5}" width="3" height="1.5" fill="#cc5a6e"/>`;
+  }
+  s += '</g>';
+  // Near leg in its stocking, the slipper.
+  s += line(r.hip, r.kneeF, col('#271d34'), 6) + line(r.kneeF, r.footF, col('#271d34'), 5);
+  s += line(r.footF, add(r.footF, [5, 0]), col('#08060c'), 3);
+  // Near arm: black sleeve, violet cuff, the hand.
+  s += line(r.shoulder, r.elbowR, col(BLACK), 6) + line(r.elbowR, r.handR, col(VIOLET_C), 7);
+  s += line(r.handR, add(r.handR, down(p.fR, 3)), col(SKIN_C), 4);
+  s += '</g>';
+  if (ghost) return s;
+  const h = add(r.handR, down(p.fR, 4));
+  if (p.vial) s += vial(h, p.vial === 'languor' ? LANGUOR : VENOM_C, p.glow);
+  if (p.drink) s += vial(add(head, [8, 6]), VENOM_C, true);
+  if (p.flying) {
+    // The vial in flight, its arc, and where it lands.
+    const [fx, fy, colour] = p.flying;
+    s += vial([fx, fy], colour === 'languor' ? LANGUOR : VENOM_C, true);
+  }
+  if (p.cloud) {
+    const [cx, colour] = p.cloud;
+    const c = colour === 'languor' ? LANGUOR : VENOM_C;
+    s += [0, 1, 2].map(i => `<circle cx="${cx + (i - 1) * 12}" cy="${y + 22 - (i % 2) * 8}" r="${14 - i * 2}" fill="${c}"
+      opacity="${0.45 - i * 0.08}"/>`).join('');
+  }
+  if (p.needles) {
+    // Three needles in a fan ahead of the sleeve.
+    [-12, 0, 12].forEach(a => {
+      const from = add(h, fwd(a, 8)), to = add(h, fwd(a, 40));
+      s += line(from, to, '#2f8f5a', 1.6) + `<circle cx="${to[0]}" cy="${to[1]}" r="2" fill="${VENOM_C}"/>`;
+    });
+  }
+  if (p.glide) {
+    // A gliding step back: lines trailing ahead of her.
+    [-10, 0, 10].forEach(dy => {
+      s += line(add(r.hip, [16, dy]), add(r.hip, [40, dy]), '#9a90b0', 1.5, 'stroke-dasharray="4 3"');
+    });
+  }
+  if (p.mist) {
+    s += [0, 1, 2, 3].map(i => `<circle cx="${x - 20 + i * 16}" cy="${y + 24 - (i % 2) * 10}" r="${10 + (i % 2) * 4}"
+      fill="${VENOM_C}" opacity=".35"/>`).join('');
+  }
+  return s;
+};
+
+// Calm.
+const STAND = P({lean: 2, head: 4, aR: 20, fR: 70, vial: 'venom', aL: -4, fL: 10, tF: 4, sF: 0, tB: -4, sB: -8});
+const STAND_B = P({...STAND, head: 8, fR: 80, sway: 2});
+const WALK_A = P({lean: 4, head: 2, aR: -10, fR: 0, aL: 14, fL: 18, tF: 22, sF: 10, tB: -16, sB: -22, panel: -8});
+const WALK_B = P({lean: 4, head: 2, aR: 14, fR: 18, aL: -10, fL: 0, tF: -16, sF: -22, tB: 22, sB: 10, panel: 6});
+// The throw.
+const DRAW = P({lean: -10, head: -8, aR: -60, fR: -110, vial: 'venom', glow: true, aL: 40, fL: 70, tF: 10, sF: 4,
+  tB: -24, sB: -30, panel: 8});
+const THROW = P({lean: 14, head: -6, hx: 6, aR: 150, fR: 140, aL: -30, fL: -10, tF: 34, sF: 6, tB: -30, sB: -36,
+  panel: -14, flying: [176, 20, 'venom']});
+const AFTER = P({lean: 10, head: -4, hx: 6, aR: 100, fR: 90, aL: -20, fL: 0, tF: 30, sF: 6, tB: -28, sB: -34,
+  cloud: [176, 'venom']});
+const DRAW_L = P({...DRAW, vial: 'languor'});
+const THROW_L = P({...THROW, flying: [176, 20, 'languor']});
+const AFTER_L = P({...AFTER, cloud: [176, 'languor']});
+// The scorpion needles.
+const WIND = P({lean: -4, head: -6, aR: 20, fR: 160, aL: 10, fL: 30, tF: 10, sF: 4, tB: -16, sB: -22, sway: 4});
+const LASH = P({lean: 12, head: -10, hx: 4, aR: 90, fR: 95, needles: true, aL: -20, fL: 0, tF: 26, sF: 6, tB: -24,
+  sB: -30, panel: -10});
+const LASH_HOLD = P({...LASH, needles: false});
+// The glide back.
+const GLIDE = P({lean: -16, head: 6, hx: -14, glide: true, aR: -30, fR: -20, aL: 30, fL: 40, tF: 20, sF: 10,
+  tB: -30, sB: -20, panel: 24, sway: 8});
+const LAND = P({lean: 4, head: -4, hx: -30, aR: 20, fR: 70, vial: 'venom', aL: -4, fL: 10, tF: 14, sF: 0, tB: -14,
+  sB: -20});
+// The elixir.
+const LIFT = P({lean: -2, head: -4, aR: 60, fR: 120, vial: 'venom', glow: true, aL: 0, fL: 20, tF: 4, sF: 0, tB: -4,
+  sB: -8});
+const DRINK = P({lean: -8, head: -26, aR: 110, fR: 175, drink: true, aL: 0, fL: 20, tF: 4, sF: 0, tB: -4, sB: -8});
+// Hurt and death.
+const KNEEL = P({lean: 10, head: 18, hy: 17, aR: 10, fR: 20, aL: 0, fL: 10, tF: 90, sF: -10, tB: 80, sB: -20, dead: true,
+  mist: true, panel: 40});
+const FALLEN = P({lean: 76, head: 16, hy: 34, hx: 10, aR: 70, fR: 60, aL: 60, fL: 50, tF: 90, sF: 0, tB: 86, sB: -10,
+  dead: true, mist: true, panel: 80});
+const GREEN = '#2f6b4f';
+sheet({
+  weapon: 'none',
+  colors: {ghost: '#9aa3ad'},
+  title: 'EMPOISONNEUSE DES CINQ VENINS — ANIMATIONS (v1)',
+  sub: 'Proposition avant animation · rapide, élégante, lisible : chaque fiole brille avant de partir, puis elle reste '
+    + 'un instant OUVERTE (vert) · vue de profil, elle regarde vers la droite · 26 PV ≈ 4 coups d\'épée',
+  wrong: [
+    'Elle garde ses distances : de 4 à 10 blocs, elle lance ses fioles (une toutes les 3 s).',
+    '<b>Fiole de venin</b> (vert, poison) quand tu es près ou immobile ; <b>de langueur</b> (violet, lenteur) quand tu fuis.',
+    'À moins de 3 blocs : <b>Aiguilles du scorpion</b> (3 aiguilles en éventail), puis <b>pas glissé</b> en arrière.',
+    'Blessée sous la moitié de sa vie, elle <b>boit un élixir</b> (soin, comme le vanilla).',
+  ],
+  fix: [
+    'Chaque fiole <b>brille dans sa main</b> avant d\'être lancée : un pas de côté l\'évite, le nuage reste 3 s.',
+    'Après chaque lancer et chaque coup d\'aiguilles, une fenêtre <b>OUVERTE</b>.',
+    'Le pas glissé a une recharge de 6 s : on peut la rattraper.',
+    'Pendant qu\'elle boit (32 ticks), elle ne fait <b>rien</b> : c\'est le moment de foncer.',
+    'Les aiguilles se gardent et se parent ; parées, elle reste désarmée 1 s.',
+  ],
+  anims: [
+    {name: 'Calme', meta: 'idle 60 ticks · walk 24 ticks',
+      feel: 'une beauté dangereuse : posée, sûre d\'elle, un poison toujours à la main.',
+      read: 'la fiole qu\'elle fait tourner entre ses doigts.',
+      frames: [
+        {ticks: 'idle', phase: 'joue avec une fiole', pose: STAND, note: 'Debout, légèrement de côté, elle fait '
+          + 'tourner une fiole verte dans sa main.'},
+        {ticks: 'idle 30', phase: 'regarde', pose: STAND_B, from: STAND, trace: 'handR', note: 'Elle incline la tête, '
+          + 'la fiole remonte, les cheveux bougent.'},
+        {ticks: 'walk 0 → 12', phase: 'démarche souple', pose: WALK_A, from: WALK_B, trace: 'footF', bend: 6,
+          note: 'Pas courts et souples, les hanches marquées, le pan violet balance entre ses jambes.'},
+      ]},
+    {name: 'Fiole de venin', meta: '30 ticks · lancer au tick 14 · 4 à 10 blocs · poison II 5 s (nuage 3 s)',
+      feel: 'un geste de danseuse : la fiole part en cloche, le nuage s\'ouvre là où tu étais.',
+      read: 'la fiole qui brille derrière sa tête : bouge de côté.',
+      frames: [
+        {ticks: '0 → 12', phase: 'arme (signal)', phaseColor: '#a32020', pose: DRAW, from: STAND, trace: 'handR',
+          bend: 12, target: 176, note: 'Elle recule le bras, la fiole brille fort derrière sa tête.'},
+        {ticks: '13 → 14', phase: 'LANCE', phaseColor: '#c46a00', pose: THROW, from: DRAW, trace: 'handR', bend: -20,
+          target: 176, note: 'Le bras fouette vers l\'avant : la fiole part en cloche vers toi.'},
+        {ticks: '15 → 30', phase: 'OUVERT', phaseColor: GREEN, pose: AFTER, target: 176, note: 'La fiole éclate en '
+          + 'nuage vert ; elle reste le bras tendu 15 ticks.'},
+      ]},
+    {name: 'Fiole de langueur', meta: 'même geste · quand tu fuis · lenteur II et faiblesse 6 s',
+      feel: 'elle ne te laisse pas partir : tes jambes s\'alourdissent.',
+      read: 'une fiole violette au lieu de verte.',
+      frames: [
+        {ticks: '0 → 12', phase: 'arme (signal)', phaseColor: '#a32020', pose: DRAW_L, from: STAND, trace: 'handR',
+          bend: 12, target: 176, note: 'Même geste, la fiole luit violet.'},
+        {ticks: '13 → 14', phase: 'LANCE', phaseColor: '#c46a00', pose: THROW_L, from: DRAW_L, trace: 'handR',
+          bend: -20, target: 176, note: 'Lancée loin devant toi, là où tu vas.'},
+        {ticks: '15 → 30', phase: 'OUVERT', phaseColor: GREEN, pose: AFTER_L, target: 176, note: 'Nuage violet ; '
+          + 'si tu es déjà dedans, retourne-toi et fonce sur elle.'},
+      ]},
+    {name: 'Aiguilles du scorpion', meta: '22 ticks · tir au tick 8 · 4 blocs · 2 dégâts + poison 3 s par aiguille',
+      feel: 'un revers de manche sec : on ne la touche pas facilement.',
+      read: 'le bras replié contre l\'épaule : garde ou pare.',
+      frames: [
+        {ticks: '0 → 7', phase: 'replie (signal)', phaseColor: '#a32020', pose: WIND, from: STAND, trace: 'handR',
+          bend: 8, target: 150, note: 'Elle ramène la main contre l\'épaule opposée.'},
+        {ticks: '8', phase: 'AIGUILLES', phaseColor: '#c46a00', pose: LASH, from: WIND, trace: 'handR', bend: -16,
+          impact: true, target: 150, note: 'Revers de manche : trois aiguilles en éventail.'},
+        {ticks: '9 → 22', phase: 'OUVERT', phaseColor: GREEN, pose: LASH_HOLD, target: 150, note: 'Le bras reste '
+          + 'tendu ; parées, elle reste désarmée 1 s de plus.'},
+      ]},
+    {name: 'Pas glissé', meta: '16 ticks · quand tu arrives à moins de 3 blocs · recule de 3 blocs · recharge 6 s',
+      feel: 'elle s\'échappe comme de la soie.',
+      read: 'elle bascule en arrière : suis-la, elle ne peut pas le refaire tout de suite.',
+      frames: [
+        {ticks: '0 → 10', phase: 'glisse', pose: GLIDE, from: STAND, trace: 'hip', bend: -6, target: 150,
+          arrows: [{at: 'hip', from: [10, 30], to: [-18, 30], color: '#3a6fb0'}], note: 'Elle glisse en arrière sur la '
+          + 'pointe des pieds, le pan et les cheveux volent.'},
+        {ticks: '11 → 16', phase: 'se repose', pose: LAND, from: GLIDE, trace: 'hip', target: 150, note: 'Elle se '
+          + 'repose, une nouvelle fiole déjà en main.'},
+      ]},
+    {name: 'Élixir', meta: '32 ticks · sous la moitié de sa vie · soin (comme le vanilla)',
+      feel: 'elle prend le temps de boire : le seul vrai répit qu\'elle te laisse.',
+      read: 'la fiole portée aux lèvres : fonce.',
+      frames: [
+        {ticks: '0 → 8', phase: 'sort la fiole', pose: LIFT, from: STAND, trace: 'handR', bend: 8, note: 'Elle sort '
+          + 'une fiole verte qui luit.'},
+        {ticks: '9 → 32', phase: 'BOIT · OUVERT', phaseColor: GREEN, pose: DRINK, from: LIFT, trace: 'handR',
+          note: 'Tête en arrière, elle boit : 24 ticks sans pouvoir rien faire.'},
+      ]},
+    {name: 'Mort', meta: '20 ticks',
+      feel: 'son propre poison la rattrape.',
+      read: 'les gourdes qui se brisent : elle est morte.',
+      frames: [
+        {ticks: '0 → 10', phase: 'à genoux', pose: KNEEL, from: STAND, trace: 'neck', note: 'Elle tombe à genoux ; '
+          + 'les gourdes se brisent, une brume verte monte.'},
+        {ticks: '11 → 20', phase: 'tombe', pose: FALLEN, from: KNEEL, trace: 'neck', note: 'Elle s\'effondre sur le '
+          + 'côté dans la brume.'},
+      ]},
+  ],
+});
+// This sheet's two boxes say how she fights and what keeps it fair.
+const boxes = document.querySelectorAll('.panelbox h2');
+boxes[0].textContent = 'Comment elle se bat';
+boxes[1].textContent = 'Ce qui la rend juste';
+boxes[0].style.color = '#7a2020';
+document.querySelector('.wrong').classList.remove('wrong');
+document.querySelectorAll('.frame').forEach(f => {
+  if (f.querySelector('text:nth-of-type(2)')?.textContent.includes('OUVERT')) {
+    f.querySelector('svg').style.outline = '3px solid #2f6b4f';
+  }
+});
+</script></body></html>

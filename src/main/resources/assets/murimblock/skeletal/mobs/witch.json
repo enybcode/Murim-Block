@@ -1,0 +1,104 @@
+{
+ "texture": [
+  128,
+  64
+ ],
+ "cloth": [
+  {
+   "name": "tassel_1",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    -0.6,
+    14,
+    2.9
+   ],
+   "width": 1,
+   "length": 5,
+   "front": [
+    57,
+    32,
+    1,
+    5
+   ],
+   "back": [
+    59,
+    32,
+    1,
+    5
+   ]
+  },
+  {
+   "name": "tassel_2",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    0.5,
+    14,
+    2.9
+   ],
+   "width": 1,
+   "length": 4,
+   "front": [
+    69,
+    32,
+    1,
+    4
+   ],
+   "back": [
+    71,
+    32,
+    1,
+    4
+   ]
+  },
+  {
+   "name": "panel_front",
+   "joint": "Torso",
+   "side": "front",
+   "pin": [
+    0,
+    12.5,
+    2.8
+   ],
+   "width": 5,
+   "length": 12,
+   "front": [
+    27,
+    17,
+    5,
+    12
+   ],
+   "back": [
+    33,
+    17,
+    5,
+    12
+   ]
+  },
+  {
+   "name": "panel_back",
+   "joint": "Torso",
+   "side": "back",
+   "pin": [
+    0,
+    12.5,
+    -2.8
+   ],
+   "width": 6,
+   "length": 12,
+   "front": [
+    13,
+    17,
+    6,
+    12
+   ],
+   "back": [
+    20,
+    17,
+    6,
+    12
+   ]
+  }
+ ]
+}

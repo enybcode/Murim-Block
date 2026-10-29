@@ -33,7 +33,8 @@ def main():
         import murim_mob
         mob = importlib.import_module(args.mob)
         murim_clips.SETS[args.set] = mob.CLIPS
-        armature = murim_mob.build([], 16, 16, args.set, joints=mob.JOINTS, helpers=mob.HELPERS)
+        # A mob on the biped (no JOINTS of its own) keys its clips on the biped.
+        armature = murim_mob.build([], 16, 16, args.set, joints=mob.JOINTS, helpers=mob.HELPERS)             if hasattr(mob, "JOINTS") else murim_biped.build()
     else:
         armature = murim_biped.build()
     lengths = murim_clips.build_set(armature, args.set)

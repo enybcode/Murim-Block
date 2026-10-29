@@ -1,0 +1,16 @@
+{
+  "clips": {
+    "idle": {"loop": true, "transition": 0.3},
+    "walk": {"loop": true, "transition": 0.15, "move_speed": 3.2},
+    "throw": {"transition": 0.08},
+    "needles": {"transition": 0.06,
+      "events": [{"at": 0.4, "type": "sound", "sound": "minecraft:entity.player.attack.sweep", "volume": 0.6, "pitch": 1.6}]},
+    "glide": {"transition": 0.05,
+      "events": [{"at": 0.1, "type": "particle", "particle": "minecraft:cloud", "count": 4, "spread": 0.3}]},
+    "drink": {"transition": 0.1},
+    "flinch": {"transition": 0.04},
+    "death": {"transition": 0.05,
+      "events": [{"at": 0.2, "type": "sound", "sound": "minecraft:block.glass.break", "volume": 0.8, "pitch": 0.8},
+        {"at": 0.2, "type": "particle", "particle": "minecraft:sneeze", "count": 24, "spread": 0.6, "speed": 0.02}]}
+  }
+}

@@ -75,12 +75,15 @@ public final class SkeletalMobs {
     /** The Iron Golem as the Gardien-talisman: the biped's joints set to its build, a joint for its talisman. */
     public static final Look GOLEM = new Look(id("mobs/golem"), id("textures/entity/golem.png"),
             id("textures/entity/golem_glow.png"), "golem");
+    /** The witch as the Empoisonneuse des Cinq Venins, on the biped with clips of her own. */
+    public static final Look EMPOISONNEUSE = new Look(id("mobs/witch"), id("textures/entity/witch.png"),
+            id("textures/entity/witch_glow.png"), "witch");
     private static final Map<EntityType<?>, Look> LOOKS = Map.ofEntries(Map.entry(EntityType.ZOMBIE, DISCIPLE),
             Map.entry(EntityType.SKELETON, ARCHER), Map.entry(EntityType.HUSK, SABLES), Map.entry(EntityType.DROWNED, NOYE),
             Map.entry(EntityType.ZOMBIE_VILLAGER, PAYSAN), Map.entry(EntityType.ZOMBIFIED_PIGLIN, SANGLIER),
             Map.entry(EntityType.SPIDER, FILEUSE), Map.entry(EntityType.CREEPER, FOURNEAU), Map.entry(EntityType.ENDERMAN, MOINE),
             Map.entry(EntityType.IRON_GOLEM, GOLEM), Map.entry(EntityType.STRAY, ESPRIT),
-            Map.entry(EntityType.CAVE_SPIDER, VENINS));
+            Map.entry(EntityType.CAVE_SPIDER, VENINS), Map.entry(EntityType.WITCH, EMPOISONNEUSE));
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -201,6 +204,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.CaveSpiderRenderer(context)));
         event.registerEntityRenderer(EntityType.SPIDER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.SpiderRenderer<>(context)));
+        event.registerEntityRenderer(EntityType.WITCH, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.WitchRenderer(context)));
         event.registerEntityRenderer(EntityType.IRON_GOLEM, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.IronGolemRenderer(context)));
         event.registerEntityRenderer(EntityType.ENDERMAN, context -> new SkeletalMobRenderer<>(context,

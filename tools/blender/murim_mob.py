@@ -37,9 +37,12 @@ def trunk_weights(y):
 class Part:
     """One box. bind: a joint name (rigid), "trunk", or ("limb", upper, lower, helper, hinge y, opens)."""
 
-    def __init__(self, name, bind, corner, size, paint, inflate=0.0, emissive=None, cloth=None):
+    def __init__(self, name, bind, corner, size, paint, inflate=0.0, emissive=None, cloth=None, tilt=None):
         self.name, self.bind, self.corner, self.size = name, bind, corner, size
         self.paint, self.inflate, self.emissive = paint, inflate, emissive
+        # Tilt (degrees, pivot y, pivot z): the box turned about the model's X axis, its bottom swung forward by that
+        # many degrees about the pivot (a wedge, such as a bust: flush with the body at the top, out at the bottom).
+        self.tilt = tilt
         # Cloth ("front" or "back": the side of the body it hangs on) is simulated in game, not built: its corner is
         # the middle of its top edge, its size (width, length, 1); only its texture is packed here.
         self.cloth = cloth
@@ -165,9 +168,30 @@ def build(parts, width, height, name, collection=None, joints=None, helpers=None
                 box.sides(lo, hi, weights(lo), weights(hi))
             box.top(weights(y0 + h))
             box.bottom(weights(y0))
+        if part.tilt:
+            _tilt(box, *part.tilt)
         obj = box.finish(armature)
         collection.objects.link(obj)
     return armature
+
+
+def _tilt(box, degrees, pivot_y, pivot_z):
+    """Turns a built box about the model's X axis (Blender: model (x, y, z) is (x, -z, y)), its normals too."""
+    a = -math.radians(degrees)
+    c, s = math.cos(a), math.sin(a)
+
+    def turn(y, z, py, pz):
+        dy, dz = y - py, z - pz
+        return py + dy * c - dz * s, pz + dy * s + dz * c
+
+    for v in box.bm.verts:
+        y, z = turn(v.co.z, -v.co.y, pivot_y, pivot_z)
+        v.co.z, v.co.y = y, -z
+    turned = []
+    for n in box.normals:
+        y, z = turn(n[2], -n[1], 0, 0)
+        turned.append((n[0], -z, y))
+    box.normals = turned
 
 
 # Painting helpers.

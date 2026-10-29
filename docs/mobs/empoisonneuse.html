@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Empoisonneuse des Cinq Venins</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>EMPOISONNEUSE DES CINQ VENINS</h1>
+<div class="sub">Remplace la Sorcière · <code>minecraft:witch</code> (même identifiant, même apparition, mêmes drops, taille 1,95 bloc) · Murimblock V2 — fiche de conception</div>
+<div class="seal">五毒<br>仙子</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<defs>
+<radialGradient id="glowG"><stop offset="0" stop-color="#9dffb8"/><stop offset="1" stop-color="#5fd17a" stop-opacity="0"/></radialGradient>
+<radialGradient id="glowV"><stop offset="0" stop-color="#e2b8ff"/><stop offset="1" stop-color="#a24bd6" stop-opacity="0"/></radialGradient>
+<g id="vial"><rect x="-3" y="-13" width="6" height="4" fill="#c9c9d6"/><path d="M-6 -9 L6 -9 L8 4 Q0 10 -8 4 Z" fill="#5fd17a" stroke="#2f7a45" stroke-width="1.2"/><rect x="-4" y="-5" width="3" height="6" fill="#c8ffd8" opacity=".7"/></g>
+<g id="gourd"><circle cx="0" cy="0" r="5" fill="#6b3f22"/><circle cx="0" cy="9" r="7.5" fill="#7a4a28"/><rect x="-1.5" y="-8" width="3" height="4" fill="#b02a1e"/></g>
+</defs>
+<!-- front -->
+<g transform="translate(30,18)">
+<!-- long black hair behind -->
+<path d="M76 36 Q66 110 72 182 L128 182 Q134 110 124 36 Z" fill="#14101a"/>
+<!-- skirt: layered, flaring to the ground -->
+<path d="M80 146 L120 146 L156 300 L44 300 Z" fill="#3a1f4f"/>
+<path d="M88 146 L112 146 L124 300 L76 300 Z" fill="#1a1220"/>
+<path d="M44 300 L156 300 L152 292 L48 292 Z" fill="#a24bd6"/>
+<!-- the five venoms embroidered in gold on the front panel -->
+<g fill="none" stroke="#d4af37" stroke-width="1.6">
+<path d="M94 178 q6 -5 0 -10 q-6 -5 0 -10 q6 -5 1 -8"/>
+<path d="M104 196 l8 0 m-4 -5 l0 10 m-6 -8 l-3 -3 m11 3 l3 -3 m-14 9 l-3 3 m17 -3 l3 3"/>
+<path d="M90 226 q10 -6 20 0 m-17 -3 l-2 -4 m6 3 l-1 -4 m6 4 l1 -4 m5 5 l2 -4"/>
+<circle cx="100" cy="254" r="5"/><path d="M96 258 l-4 4 m12 -4 l4 4"/>
+<path d="M98 278 l4 0 m-2 -3 l0 8 m-4 -6 l-3 -2 m10 2 l3 -2 m-10 6 l-3 2 m10 -2 l3 2"/>
+</g>
+<!-- bodice in a crossed collar -->
+<path d="M78 80 L122 80 L126 148 L74 148 Z" fill="#3a1f4f"/>
+<path d="M86 80 L100 112 L114 80 L108 80 L100 98 L92 80 Z" fill="#1a1220"/>
+<path d="M92 80 L100 98 L108 80" fill="none" stroke="#a24bd6" stroke-width="2"/>
+<!-- jade sash, gold knot, tassels; poison gourds on the hip -->
+<rect x="74" y="136" width="52" height="12" fill="#2f8f5a"/>
+<rect x="74" y="136" width="52" height="2" fill="#d4af37"/>
+<circle cx="100" cy="142" r="4" fill="#d4af37"/>
+<path d="M98 146 l-3 26 M102 146 l3 24" stroke="#2f8f5a" stroke-width="2.5"/>
+<use href="#gourd" x="128" y="152"/><use href="#gourd" x="136" y="166" transform="scale(.8) translate(34 41)"/>
+<!-- wide sleeves -->
+<path d="M78 82 L60 92 L30 196 L66 204 L82 120 Z" fill="#3a1f4f"/>
+<path d="M30 196 L66 204 L64 210 L28 202 Z" fill="#a24bd6"/>
+<path d="M122 82 L140 92 L170 196 L134 204 L118 120 Z" fill="#3a1f4f"/>
+<path d="M170 196 L134 204 L136 210 L172 202 Z" fill="#a24bd6"/>
+<!-- hands: a vial in the right, the serpent bracelet on the left wrist -->
+<rect x="42" y="206" width="12" height="14" fill="#ecd6c4"/>
+<rect x="146" y="206" width="12" height="14" fill="#ecd6c4"/>
+<path d="M144 206 q8 -4 16 0" stroke="#c9c9d6" stroke-width="3" fill="none"/><circle cx="160" cy="205" r="2" fill="#5fd17a"/>
+<circle cx="48" cy="230" r="13" fill="url(#glowG)" opacity=".8"/>
+<use href="#vial" x="48" y="232"/>
+<!-- neck, face, veil -->
+<rect x="94" y="68" width="12" height="14" fill="#e3c9b6"/>
+<rect x="82" y="32" width="36" height="40" fill="#ecd6c4"/>
+<path d="M84 46 L95 44 L95 49 L86 50 Z M116 46 L105 44 L105 49 L114 50 Z" fill="#1a1220"/>
+<rect x="88" y="46" width="5" height="3" fill="#5fd17a"/><rect x="107" y="46" width="5" height="3" fill="#5fd17a"/>
+<path d="M84 43 L96 42 M116 43 L104 42" stroke="#a24bd6" stroke-width="1.5"/>
+<rect x="98" y="38" width="4" height="4" fill="#b02a1e"/>
+<path d="M80 54 L120 54 L118 76 Q100 84 82 76 Z" fill="#a24bd6" opacity=".72"/>
+<g fill="#c9c9d6"><circle cx="84" cy="77" r="1.8"/><circle cx="92" cy="80" r="1.8"/><circle cx="100" cy="82" r="1.8"/><circle cx="108" cy="80" r="1.8"/><circle cx="116" cy="77" r="1.8"/></g>
+<!-- hair: a fringe, a high bun, a silver serpent hairpin with jade drops -->
+<path d="M80 28 L120 28 L122 40 L112 36 L100 40 L88 36 L78 40 Z" fill="#14101a"/>
+<ellipse cx="100" cy="20" rx="17" ry="12" fill="#14101a"/>
+<ellipse cx="100" cy="16" rx="9" ry="6" fill="#221a2a"/>
+<path d="M76 30 L128 6" stroke="#c9c9d6" stroke-width="3"/>
+<path d="M126 7 q6 -4 9 1 q-3 4 -9 1" fill="#c9c9d6"/><circle cx="133" cy="7" r="1" fill="#b02a1e"/>
+<path d="M80 29 l0 14 M84 27 l0 10" stroke="#c9c9d6" stroke-width="1"/><circle cx="80" cy="45" r="2.5" fill="#5fd17a"/><circle cx="84" cy="39" r="2" fill="#5fd17a"/>
+<rect x="88" y="300" width="9" height="5" fill="#1a1220"/><rect x="104" y="300" width="9" height="5" fill="#1a1220"/>
+</g>
+<!-- action: a turn and a throw, the vial flying, the green mist trailing -->
+<g transform="translate(250,18)">
+<path d="M70 36 Q50 100 40 170 L96 176 Q104 110 116 40 Z" fill="#14101a" transform="rotate(-8 90 100)"/>
+<path d="M84 146 L120 146 L168 296 L52 300 Z" fill="#3a1f4f"/>
+<path d="M90 146 L112 146 L136 298 L82 300 Z" fill="#1a1220"/>
+<path d="M52 300 L168 296 L166 288 L54 292 Z" fill="#a24bd6"/>
+<path d="M80 80 L120 80 L126 148 L78 148 Z" fill="#3a1f4f"/>
+<path d="M88 80 L100 108 L112 80" fill="none" stroke="#a24bd6" stroke-width="2"/>
+<rect x="78" y="136" width="48" height="12" fill="#2f8f5a"/><rect x="78" y="136" width="48" height="2" fill="#d4af37"/>
+<path d="M118 146 q10 18 26 22" stroke="#2f8f5a" stroke-width="2.5" fill="none"/>
+<!-- the left sleeve swept back -->
+<path d="M80 84 L54 104 L14 168 L44 180 L82 120 Z" fill="#3a1f4f"/>
+<path d="M14 168 L44 180 L40 186 L10 174 Z" fill="#a24bd6"/>
+<!-- the right arm flung up and forward, its sleeve flying -->
+<path d="M118 84 L150 54 L196 34 L204 60 L156 82 L124 116 Z" fill="#3a1f4f"/>
+<path d="M196 34 L204 60 L210 58 L202 30 Z" fill="#a24bd6"/>
+<rect x="204" y="38" width="12" height="12" fill="#ecd6c4" transform="rotate(-20 210 44)"/>
+<!-- head turned toward the throw, the veil fluttering -->
+<rect x="84" y="32" width="36" height="40" fill="#ecd6c4" transform="rotate(6 102 52)"/>
+<path d="M98 46 L110 44 L110 49 L100 50 Z" fill="#1a1220" transform="rotate(6 102 52)"/><rect x="103" y="46" width="5" height="3" fill="#5fd17a" transform="rotate(6 102 52)"/>
+<path d="M82 56 L122 54 L138 70 Q118 86 84 78 Z" fill="#a24bd6" opacity=".72"/>
+<path d="M82 28 L122 30 L124 40 L104 38 L86 40 Z" fill="#14101a"/>
+<ellipse cx="100" cy="20" rx="17" ry="12" fill="#14101a"/>
+<path d="M78 30 L128 6" stroke="#c9c9d6" stroke-width="3"/><circle cx="80" cy="45" r="2.5" fill="#5fd17a"/>
+<!-- the vial in the air and its trail -->
+<g fill="none" stroke="#5fd17a"><path d="M214 34 Q232 0 232 -2" stroke-width="3" stroke-dasharray="4 4" opacity=".8"/></g>
+<circle cx="232" cy="6" r="16" fill="url(#glowG)"/>
+<use href="#vial" x="232" y="8" transform="rotate(30 232 8)"/>
+<circle cx="200" cy="100" r="22" fill="url(#glowV)" opacity=".7"/><circle cx="214" cy="120" r="16" fill="url(#glowG)" opacity=".7"/>
+<rect x="96" y="296" width="9" height="5" fill="#1a1220"/><rect x="120" y="294" width="9" height="5" fill="#1a1220"/>
+</g>
+<text x="130" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE</text>
+<text x="370" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">ACTION (lancer de fiole)</text>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="380" width="36" height="22" fill="#3a1f4f"/><text x="20" y="418">Robe</text>
+<rect x="78" y="380" width="36" height="22" fill="#1a1220"/><text x="78" y="418">Noir</text>
+<rect x="136" y="380" width="36" height="22" fill="#a24bd6"/><text x="136" y="418">Voile</text>
+<rect x="194" y="380" width="36" height="22" fill="#2f8f5a"/><text x="194" y="418">Ceinture</text>
+<rect x="252" y="380" width="36" height="22" fill="#5fd17a"/><text x="252" y="418">Venin</text>
+<rect x="310" y="380" width="36" height="22" fill="#d4af37"/><text x="310" y="418">Broderie</text>
+<rect x="368" y="380" width="36" height="22" fill="#c9c9d6"/><text x="368" y="418">Argent</text>
+</g>
+<text x="20" y="450" font-size="12.5" fill="#6b5a4c">1,95 bloc · squelette humain · jupe, manches et voile en tissu animé</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Disciple de la secte des Cinq Venins, chassée des cités pour avoir empoisonné un maître de clan. Elle vit dans les marais, où elle élève serpents, scorpions, mille-pattes, crapauds et araignées pour leur venin. Ceux qui la trouvent belle ne remarquent ses fioles qu'une fois qu'il est trop tard.</p>
+</div>
+<div class="panel">
+<h2>Détails en relief</h2>
+<ul>
+<li>Chignon haut, longue chevelure noire, épingle d'argent en serpent avec gouttes de jade</li>
+<li>Voile violet translucide sur le bas du visage, bordé de piécettes d'argent ; yeux verts, fard violet</li>
+<li>Robe violette et noire à col croisé ; les <b>cinq venins</b> brodés d'or sur le pan avant</li>
+<li>Ceinture de jade nouée d'or ; gourdes de poison à la hanche</li>
+<li>Grandes manches et longue jupe évasée (tissu animé) ; bracelet serpent au poignet</li>
+<li>Fioles de venin qui luisent vert ou violet dans sa main</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">26 PV</td><td style="width:45%"><div class="bar"><i style="width:45%"></i></div></td></tr>
+<tr><td>Dégâts</td><td class="v">poison</td><td><div class="bar"><i style="width:55%"></i></div></td></tr>
+<tr><td>Vitesse</td><td class="v">0,25</td><td><div class="bar"><i style="width:45%"></i></div></td></tr>
+<tr><td>Portée</td><td class="v">10 blocs</td><td><div class="bar"><i style="width:80%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Base vanilla, à régler en jeu.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaques</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Réponse</th></tr>
+<tr><td><b>Fiole de venin</b><br><span class="small">Lancée en cloche : nuage vert, poison</span></td><td class="v">10</td><td><span class="tag ok">Esquive</span><span class="tag no">Garde</span></td></tr>
+<tr><td><b>Fiole de langueur</b><br><span class="small">Nuage violet : lenteur et faiblesse</span></td><td class="v">10</td><td><span class="tag ok">Esquive</span><span class="tag no">Garde</span></td></tr>
+<tr><td><b>Aiguilles du scorpion</b><br><span class="small">Revers de manche, trois aiguilles en éventail</span></td><td class="v">4</td><td><span class="tag ok">Garde</span><span class="tag ok">Parade</span></td></tr>
+</table>
+</div>
+<div class="panel">
+<h2>Comportement</h2>
+<ul>
+<li>Garde ses distances : recule d'un pas glissé quand on s'approche</li>
+<li>Blessée, soulève son voile et <b>boit un élixir</b> (soin, résistance au feu, vitesse — comme le vanilla)</li>
+<li>Vit dans les cabanes des marais ; aide les raids comme la sorcière vanilla</li>
+<li>Choisit sa fiole : venin de près, langueur si on fuit</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">idle / walk</td><td>Démarche souple, manches et jupe qui ondulent, joue avec une fiole</td></tr>
+<tr><td class="v">lancer</td><td>Pivote, bras fouetté vers le haut, la manche vole</td></tr>
+<tr><td class="v">aiguilles</td><td>Revers de manche rapide, trois éclats verts</td></tr>
+<tr><td class="v">boire</td><td>Soulève le voile d'une main, boit, la fiole luit</td></tr>
+<tr><td class="v">mort</td><td>S'effondre, les gourdes se brisent, brume verte</td></tr>
+</table>
+</div>
+</div>
+</div>
+</body></html>
