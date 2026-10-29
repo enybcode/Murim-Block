@@ -49,7 +49,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID)
 public final class CombatServer {
-    private static final String PROTOCOL = "2";
+    private static final String PROTOCOL = "3";
     private static final Map<LivingEntity, CombatState> STATES = new WeakHashMap<>();
     /** The blow being dealt, for the damage event: who deals it and how hard. */
     private static Entity pendingAttacker;
@@ -71,6 +71,8 @@ public final class CombatServer {
                 (payload, context) -> CombatClient.mode(payload));
         registrar.playToClient(CombatPayloads.Self.TYPE, CombatPayloads.Self.STREAM_CODEC,
                 (payload, context) -> CombatClient.self(payload));
+        registrar.playToClient(CombatPayloads.Fracture.TYPE, CombatPayloads.Fracture.STREAM_CODEC,
+                (payload, context) -> com.murimblock.shenfa.client.GroundFractures.start(payload));
         registrar.playToServer(CombatPayloads.Input.TYPE, CombatPayloads.Input.STREAM_CODEC,
                 (payload, context) -> input((ServerPlayer) context.player(), payload));
     }

@@ -110,4 +110,17 @@ public final class CombatPayloads {
             return TYPE;
         }
     }
+
+    /** Server to everyone near: the ground fractures round a point (shenfa.GroundFracture). */
+    public record Fracture(double x, double y, double z, float radius, int seed) implements CustomPacketPayload {
+        public static final Type<Fracture> TYPE = payloadType("shenfa_fracture");
+        public static final StreamCodec<ByteBuf, Fracture> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.DOUBLE, Fracture::x, ByteBufCodecs.DOUBLE, Fracture::y, ByteBufCodecs.DOUBLE, Fracture::z,
+                ByteBufCodecs.FLOAT, Fracture::radius, ByteBufCodecs.INT, Fracture::seed, Fracture::new);
+
+        @Override
+        public Type<Fracture> type() {
+            return TYPE;
+        }
+    }
 }

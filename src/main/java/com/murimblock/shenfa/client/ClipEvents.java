@@ -48,6 +48,13 @@ public final class ClipEvents {
                 case "sound" -> sound(player, event);
                 case "particle" -> particle(player, event);
                 case "footstep" -> Footsteps.step(player, player.position(), event.number("volume", 1));
+                case "fracture" -> {
+                    // The ground breaks this far ahead of the body; every client draws it the same.
+                    Vec3 at = player.position().add(Vec3.directionFromRotation(0, player.yBodyRot)
+                            .scale(event.number("ahead", 0)));
+                    GroundFractures.start(player.level(), at, event.number("radius", 3), player.getId() * 31
+                            + player.tickCount);
+                }
                 case "shake" -> {
                     if (player == Minecraft.getInstance().player) {
                         CameraShake.start(event.number("strength", 0.5f), (int) event.number("ticks", 5));

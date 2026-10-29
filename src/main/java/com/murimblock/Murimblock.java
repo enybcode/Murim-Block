@@ -3,6 +3,7 @@ package com.murimblock;
 import com.mojang.logging.LogUtils;
 import com.murimblock.client.MurimClientConfig;
 import com.murimblock.registry.MurimAttachments;
+import com.murimblock.registry.MurimBlocks;
 import com.murimblock.registry.MurimEntities;
 import com.murimblock.registry.MurimItems;
 import com.murimblock.registry.MurimParticles;
@@ -23,6 +24,7 @@ public final class Murimblock {
     public Murimblock(IEventBus modBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, MurimClientConfig.SPEC);
         MurimAttachments.ATTACHMENTS.register(modBus);
+        MurimBlocks.BLOCKS.register(modBus);
         MurimItems.ITEMS.register(modBus);
         MurimEntities.ENTITIES.register(modBus);
         MurimParticles.PARTICLES.register(modBus);

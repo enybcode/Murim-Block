@@ -12,7 +12,8 @@ import java.util.Set;
  *     {"at": 0.1, "type": "sound", "sound": "minecraft:entity.player.attack.sweep", "volume": 0.6},
  *     {"at": 0.15, "type": "footstep", "foot": "left"},
  *     {"at": 0.15, "type": "particle", "particle": "minecraft:cloud", "joint": "Hand_L", "count": 3},
- *     {"at": 0.15, "type": "shake", "strength": 0.4, "ticks": 4}]
+ *     {"at": 0.15, "type": "shake", "strength": 0.4, "ticks": 4},
+ *     {"at": 0.7, "type": "fracture", "radius": 4, "ahead": 1.5}]
  * </pre>
  *
  * Each type takes its own settings ({@link #TYPES}); {@code side} says where it runs: {@code client} (the default),
@@ -37,6 +38,7 @@ public record ClipEvent(float time, String type, Side side, JsonObject settings)
             "particle", Set.of("particle", "joint", "count", "spread", "speed"),
             "footstep", Set.of("foot", "volume"),
             "shake", Set.of("strength", "ticks"),
+            "fracture", Set.of("radius", "ahead"),
             "callback", Set.of("name"));
 
     public String string(String key, String otherwise) {
