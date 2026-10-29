@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Bête des Cinq Venins — mort</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cell { background: #f5efe2; border: 1px solid #d8cbb1; border-radius: 4px; padding: 6px 8px; }
+.cell b { font-size: 13px; } .cell .ph { font-size: 12px; color: #a32020; margin-left: 6px; }
+.cell p { font-size: 12.5px; line-height: 1.4; margin-top: 4px; color: #3d332b; }
+svg { display: block; width: 100%; height: auto; }
+</style></head><body>
+<h1>BÊTE DES CINQ VENINS — MORT</h1>
+<div class="sub">Proposition avant de la construire · elle bascule sur le dos comme la Fileuse, mais sa poche de venin
+  crève et laisse une flaque verte qui empoisonne · vue de profil, elle regarde vers la droite</div>
+<div class="top">
+  <div class="panelbox wrong"><h2>Ce qui ne va pas aujourd'hui</h2><ul>
+    <li>Elle meurt exactement comme la Fileuse : rien ne rappelle son venin.</li>
+    <li>Sa poche lumineuse disparaît avec elle dans la fumée vanilla.</li>
+  </ul></div>
+  <div class="panelbox fix"><h2>Ce qui change</h2><ul>
+    <li>Le clip de mort de la Fileuse (elle roule sur le dos, pattes repliées, sursauts), à 0,7.</li>
+    <li>La poche enfle et pulse pendant qu'elle bascule, puis <b>crève</b> entre les barreaux : giclée de gouttes vertes.</li>
+    <li>Le venin se répand en <b>flaque</b> qui fume vert ; elle reste 5 s après que le corps a disparu.</li>
+    <li><b>Gameplay :</b> marcher dans la flaque empoisonne (un nuage de Poison au sol, rayon 1,2 bloc, 5 s,
+      comme une potion persistante) — à valider.</li>
+  </ul></div>
+</div>
+<div class="anim"><div class="label">
+  <div class="name">Mort</div><div class="meta">clip de la Fileuse, 20 ticks · flaque 5 s (100 ticks)</div>
+  <div class="feel"><b>Sensation :</b> une outre de poison qu'on crève : elle se tord, la poche gonfle, « PLOC », et
+    tout le venin des cinq bêtes se répand.</div>
+  <div class="read"><b>Pour le joueur :</b> la tuer de près est risqué ; mieux vaut reculer d'un pas quand la poche
+    se met à briller.</div>
+  <div class="read"><b>Son :</b> un sifflement, un « ploc » mouillé, puis le grésillement de la flaque.</div>
+</div><div class="strip" id="strip"></div></div>
+<div style="font-size:12.5px;color:#5b4a3e;margin-top:4px">vert vif : venin · vert pâle : vapeurs · ticks : 20 par
+  seconde</div>
+<script>
+const W = 300, H = 210, GROUND = 178, OX = 150;
+const JADE = '#1f3a2c', DARK = '#16231c', GOLD = '#e0c25a', BRONZE = '#8a6a28', VENOM = '#6fe07a', PALE = '#c6ffcb',
+  EYE = '#ffd23a', FANG = '#d8d0b8';
+// The beast in profile, its belly at y; flip 1 standing, -1 on its back, between: rolling on its side. curl folds the
+// legs in; swell grows the sac.
+function beast(y, o) {
+  const f = o.flip ?? 1, curl = o.curl || 0, swell = o.swell || 1;
+  let s = `<g transform="translate(${OX},${y}) scale(1.5,${1.5 * f})">`, legs = "";
+  // Legs: four on the near side, from the body down to the ground (or folded up when curled).
+  const hips = [-26, -12, 2, 16];
+  for (let i = 0; i < 4; i++) {
+    const hx = hips[i], spread = (i - 1.5) * 16 * (1 - curl);
+    let kx = hx + spread * 0.6, ky = -44 + curl * 22, fx = hx + spread * (1 - curl * 0.5), fy = 10 - curl * 30;
+    if (f < 0 && curl >= 0.8) {
+      // On its back: the legs folded up from the belly, in the air.
+      kx = hx + 5 - i * 2; ky = 18 + (i % 2) * 4 + (1 - curl) * 20; fx = hx - 3; fy = 8;
+    }
+    legs += `<path d="M${hx},-10 L${kx},${ky} L${fx},${fy}" stroke="${DARK}" stroke-width="5" fill="none"
+      stroke-linecap="square"/><path d="M${hx},-10 L${kx},${ky} L${fx},${fy}" stroke="${GOLD}" stroke-width="5"
+      fill="none" stroke-dasharray="2 9"/><rect x="${kx - 3}" y="${ky - 3}" width="6" height="6" fill="${BRONZE}"/>`;
+  }
+  // Abdomen (behind, left), cephalothorax, head with its eyes and fangs, the horn.
+  s += `<rect x="-62" y="-30" width="54" height="30" fill="${JADE}"/><rect x="-62" y="-30" width="54" height="4" fill="#2f5a43"/>
+    <rect x="-58" y="-30" width="3" height="30" fill="${GOLD}"/><rect x="-16" y="-30" width="3" height="30" fill="${GOLD}"/>
+    <rect x="-8" y="-24" width="30" height="20" fill="#1a3125"/><rect x="22" y="-22" width="18" height="16" fill="${DARK}"/>
+    <rect x="34" y="-19" width="4" height="4" fill="${EYE}"/><rect x="28" y="-19" width="3" height="3" fill="${EYE}"/>
+    <path d="M38,-6 L36,2 L41,-3 Z" fill="${FANG}"/><path d="M2,-24 L6,-34 L10,-24 Z" fill="${BRONZE}"/>
+    <rect x="4.5" y="-30" width="3" height="3" fill="#a32020"/>`;
+  s += legs;
+  // The sac under the abdomen, in its cage, swelling and glowing.
+  const sw = 26 * swell, sh = 9 * swell;
+  if (!o.burst) {
+    s += `<circle cx="-35" cy="${4 + sh / 2}" r="${sh * 1.6}" fill="${VENOM}" opacity="${0.2 * (o.glow || 0)}"/>
+      <rect x="${-35 - sw / 2}" y="0" width="${sw}" height="${sh}" fill="${VENOM}"/>
+      <rect x="${-35 - sw / 2 + 3}" y="2" width="${sw - 6}" height="${sh - 4}" fill="${PALE}" opacity="${0.5 + 0.5 * (o.glow || 0)}"/>`;
+  } else {
+    s += `<path d="M-48,0 L-44,${sh} L-40,3 L-36,${sh + 2} L-31,2 L-27,${sh} L-22,0 Z" fill="#2f9a3e" opacity=".8"/>`;
+  }
+  s += `<g fill="${BRONZE}">${[-48, -35, -22].map(x => `<rect x="${x - 1}" y="-1" width="3" height="${sh + 2}"/>`).join('')}
+    <rect x="-49" y="${sh}" width="29" height="2"/></g>`;
+  return s + '</g>';
+}
+function drops(cx, cy, t) {
+  let s = '';
+  for (let i = 0; i < 16; i++) {
+    const a = -Math.PI * (0.1 + 0.8 * ((i * 0.618) % 1)), v = 3 + (i * 1.3) % 4;
+    const x = cx + Math.cos(a) * v * t, y = cy + Math.sin(a) * v * t + 0.4 * t * t;
+    if (y < GROUND) s += `<circle cx="${x}" cy="${y}" r="${2 + i % 3}" fill="${VENOM}"/>`;
+  }
+  return s;
+}
+function puddle(r, o = 1) {
+  let s = `<ellipse cx="${OX - 20}" cy="${GROUND + 1}" rx="${r}" ry="${r * 0.12}" fill="#2f9a3e" opacity="${0.85 * o}"/>
+    <ellipse cx="${OX - 26}" cy="${GROUND}" rx="${r * 0.6}" ry="${r * 0.07}" fill="${VENOM}" opacity="${0.8 * o}"/>`;
+  for (let i = 0; i < 4; i++) {
+    const x = OX - 20 - r * 0.6 + i * r * 0.4;
+    s += `<path d="M${x},${GROUND - 4} q-5,-10 2,-18 q6,-8 -1,-16" stroke="${PALE}" stroke-width="3" fill="none"
+      opacity="${0.55 * o}"/>`;
+  }
+  return s;
+}
+function frame(o) {
+  let s = `<svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#f8f2e6"/>`
+    + `<line x1="10" y1="${GROUND}" x2="${W - 10}" y2="${GROUND}" stroke="#c9bfa6" stroke-width="3"/>`;
+  if (o.puddle) s += puddle(o.puddle, o.fade);
+  if (o.beast) s += beast(o.beast[0], o.beast[1]);
+  if (o.drops !== undefined) s += drops(OX - 35, o.beast ? o.beast[0] - 14 : GROUND - 30, o.drops);
+  if (o.cloud) s += `<circle cx="${OX - 20}" cy="${GROUND - 12}" r="44" fill="none" stroke="${VENOM}" stroke-width="1.5"
+    stroke-dasharray="4 4" opacity=".8"/><text x="${OX + 30}" y="${GROUND - 42}" font-size="11" fill="#2f6b4f">nuage de
+    Poison</text>`;
+  if (o.word) s += `<text x="${o.word[1]}" y="${o.word[2]}" font-size="17" font-weight="800" fill="#a32020"
+    font-family="Georgia">${o.word[0]}</text>`;
+  return s + '</svg>';
+}
+const CELLS = [
+  ['tick 0', 'touchée', {beast: [GROUND - 15, {glow: 1, swell: 1.1}], word: ['ssss', 200, 46]},
+    'Le coup fatal : elle se tasse en sifflant, sa poche s\'illumine d\'un coup.'],
+  ['ticks 0 → 6', 'elle bascule', {beast: [GROUND - 26, {flip: -0.25, curl: 0.4, glow: 0.8, swell: 1.3}]},
+    'Elle roule sur le côté, les pattes se replient ; la poche enfle et pulse entre les barreaux.'],
+  ['ticks 6 → 10', 'sur le dos', {beast: [GROUND - 46, {flip: -1, curl: 0.8, glow: 1, swell: 1.5}]},
+    'Sur le dos, pattes repliées en l\'air ; la poche, maintenant en haut, gonfle à craquer.'],
+  ['tick 10', 'la poche crève', {beast: [GROUND - 46, {flip: -1, curl: 0.9, burst: true, swell: 1.5}], drops: 4,
+    word: ['PLOC', 200, 46]},
+    'Elle crève entre les barreaux : une giclée de venin vert jaillit et retombe en pluie autour d\'elle.'],
+  ['ticks 10 → 20', 'la flaque', {beast: [GROUND - 46, {flip: -1, curl: 1, burst: true, swell: 1.5}], puddle: 58,
+    cloud: true},
+    'Le venin s\'étale en flaque qui fume vert ; les pattes ont un dernier sursaut. Marcher dedans empoisonne.'],
+  ['ticks 20 → 120', 'les restes', {puddle: 64, fade: 0.55},
+    'Le corps disparaît (fumée vanilla) ; la flaque reste, bouillonne puis s\'efface en 5 s.'],
+];
+document.getElementById('strip').innerHTML = CELLS.map(([ticks, ph, opts, note]) =>
+  `<div class="cell"><b>${ticks}</b><span class="ph">${ph}</span>${frame(opts)}<p>${note}</p></div>`).join('');
+</script></body></html>
