@@ -1,0 +1,12 @@
+{
+  "clips": {
+    "stand": {"loop": true, "transition": 0.2},
+    "idle": {"loop": true, "transition": 0.25},
+    "air": {"loop": true, "transition": 0.08},
+    "land": {"transition": 0.03},
+    "strike": {"transition": 0.05},
+    "flinch": {"transition": 0.03},
+    "death": {"transition": 0.05},
+    "rise": {"transition": 0.0}
+  }
+}

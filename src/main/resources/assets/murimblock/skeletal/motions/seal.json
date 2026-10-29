@@ -1,0 +1,11 @@
+{
+  "motions": {
+    "idle": "murimblock:seal/idle",
+    "walk": "murimblock:seal/idle",
+    "run": "murimblock:seal/idle",
+    "jump": "murimblock:seal/air",
+    "fall": "murimblock:seal/air"
+  },
+  "combat": {},
+  "additive": []
+}

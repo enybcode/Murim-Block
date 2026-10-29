@@ -251,3 +251,63 @@ def parts():
     for side in ("front", "back", "left", "right"):
         p += clouds(side)
     return p
+
+
+def pose(lean=0, roll=0, up=0, clutch=0, head=0, turn=0, swing=0, out=0):
+    """A key: the block's lean (forward +) and roll, its lift (px); the beast pressed down on the block (px); its head
+    looking down (+) and turned (left +); the tassel swung back (+) and out from the side (+)."""
+    return {"Root": {"rot": (lean, 0, roll), "loc": (0, up, 0)}, "Beast": {"rot": (0, 0, 0), "loc": (0, -clutch, 0)},
+            "Head": (head, turn, 0), "Tassel": (swing, 0, out)}
+
+
+def tipped(roll, **rest):
+    """Rolled on its side by roll degrees, lifted so its lowest edge stays on the ground."""
+    import math
+    return pose(roll=roll, up=14 * math.sin(math.radians(abs(roll))), **rest)
+
+
+REST = pose()
+# The beast looks down at its prey, the tassel at rest.
+LOOK = pose(head=18, turn=22, out=2)
+CLUTCH = dict(clutch=1.2)
+
+
+def shudder(start, end, base, grow=0.4):
+    """The block trembling from start to end, harder and harder."""
+    keys = []
+    for i, t in enumerate(range(start, end + 1, 2)):
+        s = 1 if i % 2 else -1
+        keys.append((t, pose(roll=s * (1 + grow * i), up=0.25 * (1 + grow * i), **base)))
+    return keys
+
+
+CLIPS = {
+    "stand": [(0, REST), (20, REST)],
+    # A sacred object on an altar: still, only the beast alive; it looks at its prey and back, the tassel swaying.
+    "idle": [(0, pose(out=3)), (14, pose(out=-2)), (20, LOOK), (34, pose(head=18, turn=22, out=-3)),
+             (40, pose(head=4, turn=4, out=1)), (46, pose(out=3)), (60, pose(out=3))],
+    # In the air (its hops and falls): nose down a little, the beast clinging, the tassel trailing up.
+    "air": [(0, pose(lean=6, head=-8, swing=22, out=8, **CLUTCH)), (5, pose(lean=7, head=-10, swing=26, out=4, **CLUTCH)),
+            (10, pose(lean=6, head=-8, swing=22, out=8, **CLUTCH))],
+    # Tok: it lands flat, the beast pressed down and nodding, the tassel slapping down then bouncing.
+    "land": [(0, pose(head=12, swing=-25, **CLUTCH)), (3, pose(head=-4, swing=15, out=-6)), (6, pose(swing=-5, out=2)),
+             (8, REST)],
+    # The seal's blow (docs/mobs/boards/seal.png): the server lifts it, holds it over its prey and slams it down at
+    # tick 22; the squash is drawn by the renderer. Here the beast fixes its prey, clings on and braces.
+    "strike": [(0, REST), (8, pose(head=24, swing=-12, **CLUTCH)), (10, pose(lean=-4, head=10, swing=40, **CLUTCH)),
+               (12, pose(head=38, swing=12, **CLUTCH)), (17, pose(head=42, swing=8, out=4, **CLUTCH)),
+               (22, pose(head=44, swing=6, out=-3, **CLUTCH)), (24, pose(head=10, swing=-40, **CLUTCH)),
+               (27, pose(roll=1.5, up=0.4, head=-5, swing=25, out=-8)), (29, pose(roll=-1.5, up=0.4, swing=-10, out=5)),
+               (31, pose(roll=1, up=0.25, swing=6, out=-2)), (34, REST)],
+    # Hit: a dry knock, it rocks back on its rear edge, the beast snarls up.
+    "flinch": [(0, REST), (2, pose(lean=-10, up=2.4, head=-16, swing=30)), (5, pose(lean=3, up=0.7, head=4, swing=-8)),
+               (8, REST)],
+    # The division: the jade cracks and the block trembles harder and harder, the beast clinging and looking down at its
+    # cracks; it bursts at tick 17 (VenomBurst-like effects on the client, the halves are vanilla's smaller slimes).
+    "death": [(0, REST), *shudder(2, 14, dict(head=30, turn=-10, **CLUTCH)),
+              (16, pose(roll=5, up=1.2, head=36, swing=20, **CLUTCH)), (17, pose(roll=-6, up=1.5, head=36, **CLUTCH)),
+              (20, pose(roll=-6, up=1.5, head=36, **CLUTCH))],
+    # A piece of a burst seal rolls over and rights itself, a little dizzy.
+    "rise": [(0, tipped(80, head=-20, swing=40)), (4, tipped(40, head=-10, swing=20)), (7, tipped(-8, head=6, swing=-10)),
+             (9, tipped(3, turn=-15)), (12, pose(turn=10)), (14, REST)],
+}

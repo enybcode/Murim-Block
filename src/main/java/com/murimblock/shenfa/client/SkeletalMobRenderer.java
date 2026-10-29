@@ -51,6 +51,12 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
             vanilla.render(mob, yaw, partialTick, poseStack, buffers, light);
             return;
         }
+        net.minecraft.world.entity.monster.Slime seal = look == SkeletalMobs.SCEAU
+                ? (net.minecraft.world.entity.monster.Slime) mob : null;
+        if (seal != null && seal.deathTime >= SealStamp.BURST) {
+            // The Sceau has burst: its pieces are the smaller seals vanilla makes of it.
+            return;
+        }
         float bodyYaw = Mth.rotLerp(partialTick, mob.yBodyRotO, mob.yBodyRot);
         float headYaw = Mth.rotLerp(partialTick, mob.yHeadRotO, mob.yHeadRot);
         float pitch = Mth.lerp(partialTick, mob.xRotO, mob.getXRot());
@@ -77,6 +83,18 @@ public final class SkeletalMobRenderer<T extends Mob> extends EntityRenderer<T> 
         if (mob instanceof net.minecraft.world.entity.monster.CaveSpider) {
             // Vanilla's cave spider is a smaller spider (CaveSpiderRenderer).
             poseStack.scale(0.7f, 0.7f, 0.7f);
+        }
+        if (seal != null) {
+            // Built at the big one's size (4); squashed as vanilla squashes its hops (SlimeRenderer.scale), and by its
+            // blow.
+            float size = seal.getSize();
+            shadowRadius = 0.25f * size;
+            float squish = Mth.lerp(partialTick, seal.oSquish, seal.squish) / (size * 0.5f + 1);
+            float wide = 1 / (squish + 1), flat = SkeletalMobs.squash(mob, partialTick);
+            float s = size / 4;
+            poseStack.scale(wide * (1 + 0.3f * flat) * s, 1 / wide * (1 - 0.35f * flat) * s, wide * (1 + 0.3f * flat) * s);
+        } else {
+            shadowRadius = 0.5f;
         }
         if (mob instanceof net.minecraft.world.entity.monster.Creeper creeper) {
             // Vanilla's fuse: the body swells and wobbles as it is about to burst (CreeperRenderer.scale).

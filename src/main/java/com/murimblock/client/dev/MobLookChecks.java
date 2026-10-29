@@ -4,6 +4,7 @@ import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.shenfa.client.FurnaceBurst;
 import com.murimblock.shenfa.client.SkeletalMobRenderer;
 import com.murimblock.shenfa.client.SkeletalMobs;
+import com.murimblock.shenfa.client.SealStamp;
 import com.murimblock.shenfa.client.SpiritRemains;
 import com.murimblock.shenfa.client.VenomBurst;
 import com.murimblock.shenfa.client.SkeletalModels;
@@ -41,6 +42,8 @@ final class MobLookChecks {
 
     /** The moves the swelling Fourneau starts, seen by the move probe. */
     private static final List<String> fuses = new ArrayList<>();
+    /** The blows the Sceau starts, seen by its probe. */
+    private static final List<net.minecraft.world.entity.monster.Slime> strikes = new ArrayList<>();
 
     static List<Step> steps() {
         List<Step> steps = new ArrayList<>();
@@ -455,9 +458,110 @@ final class MobLookChecks {
             GifRecorder.stop();
             EngineTest.server(mc, player -> player.serverLevel().getGameRules()
                     .getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(true, player.server));
-            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             EngineTest.server(mc, player -> {
                 player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                // The Sceau de jade vivant at its three sizes, still.
+                double[][] seals = {{X - 2.2, 4}, {X + 1.0, 2}, {X + 2.6, 1}};
+                for (double[] at : seals) {
+                    var slime = EntityType.SLIME.create(player.serverLevel());
+                    slime.setSize((int) at[1], true);
+                    slime.moveTo(at[0], Y, Z + 4.5, 180, 0);
+                    slime.setYHeadRot(180);
+                    slime.setYBodyRot(180);
+                    slime.setNoAi(true);
+                    slime.setPersistenceRequired();
+                    slime.addTag(TAG);
+                    player.serverLevel().addFreshEntity(slime);
+                }
+                player.connection.teleport(X, Y + 0.4, Z - 1, 0, 15);
+            });
+            long until = mc.level.getGameTime() + 20;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("sceau look", mc -> {
+            EngineTest.busy = () -> false;
+            var seals = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.Slime.class,
+                    mc.player.getBoundingBox().inflate(10));
+            var model = SkeletalModels.get(SkeletalMobs.SCEAU.model());
+            EngineTest.check("the Sceau's model is loaded on a skeleton of its own", model != null
+                    && model.armature().find(com.murimblock.shenfa.Biped.CHEST) == null);
+            EngineTest.check("slimes wear the Sceau's look (" + seals.size() + ")", seals.size() == 3
+                    && SkeletalMobs.look(seals.get(0)) == SkeletalMobs.SCEAU
+                    && mc.getEntityRenderDispatcher().getRenderer(seals.get(0)) instanceof SkeletalMobRenderer<?>);
+            var idle = seals.isEmpty() ? null : SkeletalMobs.baseAnimation(seals.get(0));
+            EngineTest.check("and rests in its idle (" + (idle == null ? null : idle.id()) + ")",
+                    idle != null && idle.id().equals("seal/idle"));
+            EngineTest.shoot(mc, "mob_sceau_front");
+            EngineTest.server(mc, player -> player.connection.teleport(X + 3.6, Y + 1.4, Z + 1.4, 50, 22));
+        }));
+        steps.add(new Step("sceau three quarters", mc -> {
+            EngineTest.shoot(mc, "mob_sceau_three_quarter");
+            // A big one, free, strikes a pig held still 3 blocks off.
+            strikes.clear();
+            MOVES.clear();
+            com.murimblock.combat.SealFighting.probe = strikes::add;
+            SkeletalMobs.moveProbe = (mob, move) -> MOVES.add(move);
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Slime.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                var pig = EntityType.PIG.create(player.serverLevel());
+                pig.moveTo(X, Y, Z + 6.5, 0, 0);
+                pig.setNoAi(true);
+                pig.addTag(TAG);
+                player.serverLevel().addFreshEntity(pig);
+                var slime = EntityType.SLIME.create(player.serverLevel());
+                slime.setSize(4, true);
+                slime.moveTo(X, Y, Z + 3.5, 0, 0);
+                slime.setPersistenceRequired();
+                slime.addTag(TAG);
+                player.serverLevel().addFreshEntity(slime);
+                slime.setTarget(pig);
+                player.connection.teleport(X + 6, Y + 1.5, Z + 4.5, 90, 12);
+            });
+            GifRecorder.start("sceau_strike", 0.6f);
+            long until = mc.level.getGameTime() + 140;
+            EngineTest.busy = () -> mc.level.getGameTime() < until && SealStamp.marks() == 0;
+        }));
+        steps.add(new Step("sceau strike", mc -> {
+            EngineTest.check("the big Sceau strikes with the seal's blow (" + strikes.size() + ")", !strikes.isEmpty());
+            EngineTest.check("its blow lands and stamps its mark (" + SealStamp.marks() + ")", SealStamp.marks() > 0);
+            EngineTest.shoot(mc, "mob_sceau_slam");
+            long until = mc.level.getGameTime() + 4;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("sceau mark", mc -> {
+            var pigs = mc.level.getEntitiesOfClass(net.minecraft.world.entity.animal.Pig.class,
+                    mc.player.getBoundingBox().inflate(16));
+            EngineTest.check("the pig under it is struck (" + pigs.stream().map(p -> p.getHealth()).toList() + ")",
+                        pigs.stream().anyMatch(p -> p.getHealth() < p.getMaxHealth()));
+            EngineTest.shoot(mc, "mob_sceau_mark");
+            // It dies: it cracks, trembles, bursts, and its pieces stand up as smaller seals.
+            com.murimblock.combat.SealFighting.probe = null;
+            EngineTest.server(mc, player -> player.serverLevel().getEntitiesOfClass(
+                    net.minecraft.world.entity.monster.Slime.class, new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20))
+                    .forEach(net.minecraft.world.entity.LivingEntity::kill));
+            long until = mc.level.getGameTime() + 34;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("sceau division", mc -> {
+            var pieces = mc.level.getEntitiesOfClass(net.minecraft.world.entity.monster.Slime.class,
+                    mc.player.getBoundingBox().inflate(16), slime -> slime.isAlive() && slime.getSize() == 2);
+            EngineTest.check("it splits into middle seals (" + pieces.size() + ")", pieces.size() >= 2);
+            EngineTest.check("which roll over and stand up (" + MOVES + ")", MOVES.contains("rise"));
+            EngineTest.shoot(mc, "mob_sceau_division");
+            long until = mc.level.getGameTime() + 30;
+            EngineTest.busy = () -> mc.level.getGameTime() < until;
+        }));
+        steps.add(new Step("mob looks done", mc -> {
+            EngineTest.busy = () -> false;
+            GifRecorder.stop();
+            SkeletalMobs.moveProbe = null;
+            mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            EngineTest.server(mc, player -> {
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.monster.Slime.class,
+                        new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
+                player.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.animal.Pig.class,
                         new AABB(AREA - 20, Y - 5, -20, AREA + 20, Y + 10, 20)).forEach(Entity::discard);
                 player.removeEffect(MobEffects.NIGHT_VISION);
                 player.serverLevel().setDayTime(6000);

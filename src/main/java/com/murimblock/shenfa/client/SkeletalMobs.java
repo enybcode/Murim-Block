@@ -21,6 +21,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Slime;
+import com.murimblock.combat.SealFighting;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -78,12 +80,16 @@ public final class SkeletalMobs {
     /** The witch as the Empoisonneuse des Cinq Venins, on the biped with clips of her own. */
     public static final Look EMPOISONNEUSE = new Look(id("mobs/witch"), id("textures/entity/witch.png"),
             id("textures/entity/witch_glow.png"), "witch");
+    /** The slime as the Sceau de jade vivant, on a skeleton of its own, built at the big one's size. */
+    public static final Look SCEAU = new Look(id("mobs/seal"), id("textures/entity/seal.png"),
+            id("textures/entity/seal_glow.png"), "seal");
     private static final Map<EntityType<?>, Look> LOOKS = Map.ofEntries(Map.entry(EntityType.ZOMBIE, DISCIPLE),
             Map.entry(EntityType.SKELETON, ARCHER), Map.entry(EntityType.HUSK, SABLES), Map.entry(EntityType.DROWNED, NOYE),
             Map.entry(EntityType.ZOMBIE_VILLAGER, PAYSAN), Map.entry(EntityType.ZOMBIFIED_PIGLIN, SANGLIER),
             Map.entry(EntityType.SPIDER, FILEUSE), Map.entry(EntityType.CREEPER, FOURNEAU), Map.entry(EntityType.ENDERMAN, MOINE),
             Map.entry(EntityType.IRON_GOLEM, GOLEM), Map.entry(EntityType.STRAY, ESPRIT),
-            Map.entry(EntityType.CAVE_SPIDER, VENINS), Map.entry(EntityType.WITCH, EMPOISONNEUSE));
+            Map.entry(EntityType.CAVE_SPIDER, VENINS), Map.entry(EntityType.WITCH, EMPOISONNEUSE),
+            Map.entry(EntityType.SLIME, SCEAU));
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -91,6 +97,11 @@ public final class SkeletalMobs {
     private static Boolean enabled;
     /** Dev: told of each move a mob starts (strike, double, flinch, death). */
     public static java.util.function.BiConsumer<Mob, String> moveProbe;
+
+    static {
+        // Its specks are jade where it is drawn as the Sceau.
+        com.murimblock.combat.SealFighting.jade = entity -> look(entity) == SCEAU;
+    }
 
     private SkeletalMobs() {
     }
@@ -125,6 +136,10 @@ public final class SkeletalMobs {
         int hurtTime;
         /** A creeper's fuse: 1 while it swells, -1 while it cools (or idles). */
         int swellDir = -1;
+        /** The Sceau: whether it was in the air last tick; the ticks since its blow landed (-1: none); whether it
+         * was checked for being a piece of a burst one. */
+        boolean airborne, born, slammed;
+        int slam = -1;
     }
 
     /**
@@ -200,6 +215,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.ZombieVillagerRenderer(context)));
         event.registerEntityRenderer(EntityType.CREEPER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.CreeperRenderer(context)));
+        event.registerEntityRenderer(EntityType.SLIME, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.SlimeRenderer(context)));
         event.registerEntityRenderer(EntityType.CAVE_SPIDER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.CaveSpiderRenderer(context)));
         event.registerEntityRenderer(EntityType.SPIDER, context -> new SkeletalMobRenderer<>(context,
@@ -252,6 +269,8 @@ public final class SkeletalMobs {
                 SpiritRemains.dying(mob);
             } else if (look == VENINS) {
                 VenomBurst.dying(mob);
+            } else if (look == SCEAU && mob instanceof Slime seal) {
+                SealStamp.dying(seal);
             }
             return;
         }
@@ -264,6 +283,9 @@ public final class SkeletalMobs {
         }
         if (look == ESPRIT) {
             trail(mob);
+        }
+        if (look == SCEAU && mob instanceof Slime seal) {
+            seal(seal, look, state);
         }
         if (look == VENINS && mob.getRandom().nextInt(25) == 0) {
             // Venom dripping from its fangs.
@@ -291,6 +313,70 @@ public final class SkeletalMobs {
                     mob.getX() - Mth.sin(yaw) * 0.35, mob.getEyeY() - 0.15, mob.getZ() + Mth.cos(yaw) * 0.35,
                     -Mth.sin(yaw) * 0.04, 0.01, Mth.cos(yaw) * 0.04);
         }
+    }
+
+    /**
+     * The Sceau de jade vivant: a piece of a burst seal rolls over and rights itself; each hop lands with a knock
+     * (vanilla squashes it), and its blow (SealFighting, ticks 21 on) lands in dust and stamps its red mark.
+     */
+    private static void seal(Slime seal, Look look, State state) {
+        if (!state.born) {
+            state.born = true;
+            if (seal.tickCount < 5 && SealStamp.fromBurst(seal)) {
+                play(seal, state, look, Animator.Priority.MIDDLE, "rise");
+            }
+        }
+        boolean air = state.airTicks > 1;
+        Animation clip = state.animator.playing(Animator.Priority.MIDDLE);
+        boolean striking = clip != null && clip.id().endsWith("seal/strike");
+        if (striking) {
+            // Hanging still over its prey reads as standing: only the ground it reaches after the drop counts.
+            // The client eases a fall over a few ticks: the knock waits until it is drawn on the ground.
+            if (state.slam < 0 && !state.slammed && seal.onGround() && Math.abs(seal.getY() - seal.yo) < 0.05
+                    && state.animator.time(Animator.Priority.MIDDLE) * 20 > SealFighting.DROP) {
+                state.slam = 0;
+                state.slammed = true;
+                SealStamp.slam(seal);
+            }
+        } else {
+            state.slammed = false;
+            if (state.airborne && !air) {
+                play(seal, state, look, Animator.Priority.LOW, "land");
+            }
+        }
+        state.airborne = air;
+        if (state.slam >= 0 && ++state.slam > 20) {
+            state.slam = -1;
+        }
+    }
+
+    /**
+     * How flat the Sceau is pressed (+) or stretched (-) by its blow, besides vanilla's squash of its hops: braced
+     * low, stretched as it leaves, flattened as it lands, then wobbling back.
+     */
+    static float squash(Mob mob, float partialTick) {
+        State state = STATES.get(mob);
+        if (state == null) {
+            return 0;
+        }
+        float s = 0;
+        Animation clip = state.animator.playing(Animator.Priority.MIDDLE);
+        if (clip != null && clip.id().endsWith("seal/strike")) {
+            float t = state.animator.time(Animator.Priority.MIDDLE) * 20 + partialTick;
+            if (t < SealFighting.CROUCH) {
+                float k = t / SealFighting.CROUCH;
+                s = k * k * (3 - 2 * k);
+            } else if (t < SealFighting.CROUCH + 2) {
+                s = Mth.lerp((t - SealFighting.CROUCH) / 2, 1, -0.4f);
+            } else if (t < SealFighting.RISE + 2) {
+                s = Mth.lerp((t - SealFighting.CROUCH - 2) / 4, -0.4f, 0);
+            }
+        }
+        if (state.slam >= 0) {
+            float a = state.slam + partialTick;
+            s += a < 2 ? 0.9f : a < 5 ? Mth.lerp((a - 2) / 3, 0.9f, -0.15f) : a < 9 ? Mth.lerp((a - 5) / 4, -0.15f, 0) : 0;
+        }
+        return s;
     }
 
     /**
