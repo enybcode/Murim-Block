@@ -20,7 +20,8 @@ public final class TrialZombie extends Zombie {
     private static final double HEALTH = 10;
     private static final double DAMAGE = 2;
     private static final double SPEED = 0.21;
-    private static final double WARDEN_HEALTH = 30;
+    private static final double WARDEN_HEALTH = 60;
+    private static final double WARDEN_DAMAGE = 8;
     private static final EntityDataAccessor<Boolean> WARDEN =
             SynchedEntityData.defineId(TrialZombie.class, EntityDataSerializers.BOOLEAN);
 
@@ -44,12 +45,15 @@ public final class TrialZombie extends Zombie {
                 .add(Attributes.MOVEMENT_SPEED, SPEED).add(Attributes.FOLLOW_RANGE, 64);
     }
 
-    /** Makes this one the Grave Warden: 1.6 times as big, three times the health, harder blows, hard to push back. */
+    /**
+     * Makes this one the Grave Warden: 1.6 times as big, six times the health, four times the damage, hard to push
+     * back.
+     */
     public void makeWarden() {
         entityData.set(WARDEN, true);
         getAttribute(Attributes.SCALE).setBaseValue(1.6);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(WARDEN_HEALTH);
-        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4);
+        getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(WARDEN_DAMAGE);
         getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0.8);
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.2);
         setHealth((float) WARDEN_HEALTH);
