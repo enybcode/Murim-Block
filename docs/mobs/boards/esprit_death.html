@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Esprit de l'Archer — mort</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cell { background: #f5efe2; border: 1px solid #d8cbb1; border-radius: 4px; padding: 6px 8px; }
+.cell b { font-size: 13px; } .cell .ph { font-size: 12px; color: #a32020; margin-left: 6px; }
+.cell p { font-size: 12.5px; line-height: 1.4; margin-top: 4px; color: #3d332b; }
+svg { display: block; width: 100%; height: auto; }
+</style></head><body>
+<h1>ESPRIT DE L'ARCHER — MORT</h1>
+<div class="sub">Proposition avant de la construire · il ne tombe plus comme un squelette : sa brume se défait en flocons,
+  son cœur s'éteint et ce qui reste de son armure tombe au sol · vue de profil, il regarde vers la droite</div>
+<div class="top">
+  <div class="panelbox wrong"><h2>Ce qui ne va pas aujourd'hui</h2><ul>
+    <li>Il joue la mort de l'Archer : il s'effondre comme un corps, alors qu'il n'a ni corps ni jambes.</li>
+    <li>Puis il disparaît dans le nuage de fumée vanilla ; rien ne reste de lui.</li>
+  </ul></div>
+  <div class="panelbox fix"><h2>Ce qui change</h2><ul>
+    <li>Un clip à lui : touché, il se cambre et monte un peu, les bras écartés, les yeux et le cœur s'allument.</li>
+    <li>La brume s'efface <b>de bas en haut</b> (traîne, torse, bras, capuche) en tourbillon de flocons qui montent.</li>
+    <li>Le cœur éclate en dernier, puis les vraies pièces de l'armure (épaulière, lamelles, ceinture, bracelet,
+      carquois, capuche vide, arc) tombent et tintent au sol.</li>
+    <li>Décor seulement, côté client (comme les débris du Fourneau) : le butin reste celui du vanilla ; les restes
+      s'effacent en 5 s.</li>
+  </ul></div>
+</div>
+<div class="anim"><div class="label">
+  <div class="name">Mort</div><div class="meta">clip de 14 ticks · pièces au sol 5 s (100 ticks)</div>
+  <div class="feel"><b>Sensation :</b> une âme qui se libère : elle s'élève, se défait comme du givre au soleil, et ne
+    laisse que l'armure vide d'un soldat mort il y a longtemps.</div>
+  <div class="read"><b>Pour le joueur :</b> on sait tout de suite qu'il est vaincu (la lumière qui monte), et les
+    restes givrés au sol rappellent ce qu'il était.</div>
+  <div class="read"><b>Son :</b> un craquement de glace au coup, un souffle qui s'éloigne, des tintements de métal.</div>
+</div><div class="strip" id="strip"></div></div>
+<div style="font-size:12.5px;color:#5b4a3e;margin-top:4px">pointillés : chute des pièces · blanc : flocons ·
+  bleu clair : brume · ticks : 20 par seconde</div>
+<script>
+const W = 300, H = 210, GROUND = 186, OX = 130, OY = 142, GRAV = 0.55;
+const MIST = '#a9d4e8', MIST_D = '#7fb3cf', HOOD = '#7a9fb4', VOID = '#1d2a36', EYE = '#7ff0ff';
+const FROST = '#e9f6fb', LACQ = '#6b4048', BRASS = '#8f8a6a', LEATHER = '#3b2f2c', WOOD = '#4a3a30';
+// The armour, in the spirit's frame (hips at 0,0, facing right): [name, x, y, w, h, colour, fall vx, spin].
+const ARMOUR = [
+  ['hood', -14, -96, 30, 30, HOOD, -0.6, -4],
+  ['pauldron', -10, -58, 18, 10, LACQ, -1.2, -9],
+  ['lamella', 0, -44, 14, 5, LACQ, 1.4, 12],
+  ['lamella 2', -6, -30, 12, 5, LACQ, -0.8, -10],
+  ['belt', -12, -6, 26, 7, LEATHER, 0.3, 3],
+  ['bracer', 20, -48, 7, 11, LEATHER, 1.8, 15],
+  ['quiver', -22, -56, 9, 34, LEATHER, -1.6, -6],
+  ['bow', 34, -60, 5, 52, WOOD, 2.2, 7],
+];
+// Falls from rest under gravity, bounces once (tink), then lies.
+function drop(x, y, vx, t, h) {
+  let px = x, py = y, vy = -1.5, bounced = 0;
+  for (let i = 0; i < t; i++) {
+    vy += GRAV; px += vx; py += vy;
+    if (py > GROUND - h / 2) { py = GROUND - h / 2; vy = -vy * 0.3; vx *= 0.5; bounced++; if (Math.abs(vy) < 1) vy = 0; }
+  }
+  return [px, py, bounced];
+}
+let clip = 0;
+// The spirit: lean (back is negative), rise, how much of the mist is gone (0 to 1, from the bottom up), the heart's
+// radius, the eyes' brightness, the arms (degrees from straight down, forward positive).
+function spirit(o) {
+  const id = 'c' + (clip++);
+  const cut = 34 - o.gone * 140;
+  let s = `<defs><clipPath id="${id}"><rect x="-80" y="-140" width="160" height="${cut + 140}"/></clipPath>
+    <radialGradient id="${id}h"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#e8fbff"/>
+    <stop offset="1" stop-color="#bfe3f2" stop-opacity="0"/></radialGradient></defs>`;
+  s += `<g transform="translate(${OX},${OY - (o.rise || 0)}) rotate(${o.lean || 0})">`;
+  // Mist: tail, trunk, arms; cut away from below.
+  const arm = (a, dx) => `<g transform="translate(${dx},-50) rotate(${-a})"><rect x="-4" y="0" width="8" height="40"
+    fill="${MIST}" opacity=".8"/></g>`;
+  s += `<g clip-path="url(#${id})" opacity="${o.mist || 1}">`
+    + `<path d="M-12,0 Q-20,18 -30,30 Q-12,26 -6,36 Q0,22 12,0 Z" fill="${MIST_D}" opacity=".75"/>`
+    + `<rect x="-13" y="-56" width="26" height="58" fill="${MIST}" opacity=".85"/>`
+    + arm(o.armB ?? 70, -4) + arm(o.armF ?? 80, 6) + `</g>`;
+  // The flakes where the mist comes undone, swirling up.
+  if (o.gone > 0 && o.gone < 1) for (let i = 0; i < 16; i++) {
+    const fx = -30 + (i * 37) % 60, fy = cut - 6 - (i * 13) % 34;
+    s += `<rect x="${fx}" y="${fy}" width="3" height="3" fill="${FROST}" opacity="${0.9 - (i % 4) * 0.15}"
+      transform="rotate(45 ${fx + 1.5} ${fy + 1.5})"/>`;
+  }
+  if (o.armour !== false) for (const [name, x, y, w, h, col] of ARMOUR) {
+    if (name === 'hood') {
+      s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${HOOD}"/>`
+        + `<rect x="${x + 14}" y="${y + 6}" width="16" height="20" fill="${VOID}"/>`
+        + `<rect x="${x + 4}" y="${y - 3}" width="22" height="4" fill="${FROST}"/>`;
+      if (o.eyes) s += `<rect x="${x + 23}" y="${y + 13}" width="5" height="4" fill="${EYE}" opacity="${o.eyes}"/>`
+        + `<circle cx="${x + 25}" cy="${y + 15}" r="${6 * o.eyes}" fill="${EYE}" opacity="${0.3 * o.eyes}"/>`;
+    } else if (name === 'bow') {
+      s += `<path d="M${x},${y} Q${x + 12},${y + 26} ${x},${y + 52}" stroke="${WOOD}" stroke-width="5" fill="none"/>`
+        + `<line x1="${x}" y1="${y}" x2="${x}" y2="${y + 52}" stroke="${EYE}" stroke-width="1.5" opacity="${o.eyes || 0.3}"/>`;
+    } else {
+      s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${col}"/>`
+        + `<rect x="${x}" y="${y}" width="${w}" height="2" fill="${FROST}"/>`;
+    }
+  }
+  if (o.heart) s += `<circle cx="0" cy="-34" r="${o.heart}" fill="url(#${id}h)"/>`;
+  return s + '</g>';
+}
+// The armour once the spirit is gone: each piece falls from where it floated.
+function fallen(t, o) {
+  let s = '';
+  for (const [name, x, y, w, h, col, vx, spin] of ARMOUR) {
+    const sx = OX + x + w / 2, sy = OY - o.rise + y + h / 2;
+    const [px, py, b] = drop(sx, sy, vx, t, Math.min(w, h));
+    if (o.trail) {
+      let d = '';
+      for (let i = 0; i <= t; i++) { const [tx, ty] = drop(sx, sy, vx, i, Math.min(w, h)); d += (i ? ' L' : 'M') + tx + ',' + ty; }
+      s += `<path d="${d}" stroke="#a32020" stroke-width="1.2" stroke-dasharray="3 3" fill="none" opacity="0.6"/>`;
+    }
+    const rot = b ? (h > w * 1.5 ? 90 : 0) : spin * t * 0.4;
+    s += `<g transform="translate(${px},${py}) rotate(${rot})" opacity="${o.fade || 1}">`;
+    if (name === 'bow') s += `<path d="M0,-26 Q12,0 0,26" stroke="${WOOD}" stroke-width="5" fill="none"/>`;
+    else s += `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" fill="${col}" stroke="#2a2420" stroke-width="0.6"/>`
+      + `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="2" fill="${FROST}"/>`;
+    s += `</g>`;
+  }
+  return s;
+}
+function frame(o) {
+  let s = `<svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#f8f2e6"/>`
+    + `<line x1="10" y1="${GROUND}" x2="${W - 10}" y2="${GROUND}" stroke="#c9bfa6" stroke-width="3"/>`;
+  if (o.frost) s += `<ellipse cx="${OX}" cy="${GROUND + 2}" rx="62" ry="5" fill="${FROST}" stroke="#b8d8e6"
+    stroke-width="1" opacity="${o.frost}"/>`;
+  if (o.burst) for (let i = 0; i < 22; i++) {
+    const a = i * 2.4, r = o.burst * (0.5 + (i % 5) / 8), x = OX + Math.cos(a) * r, y = OY - o.rise - 34 + Math.sin(a) * r - o.burst * 0.4;
+    s += `<rect x="${x}" y="${y}" width="3.5" height="3.5" fill="${FROST}" stroke="#9cc4d6" stroke-width=".5"
+      transform="rotate(45 ${x} ${y})"/>`;
+  }
+  if (o.wisp) s += `<path d="M${OX},${GROUND - 20} q-8,-20 4,-40 q10,-18 -2,-40" stroke="${MIST}" stroke-width="5"
+    fill="none" stroke-linecap="round" opacity="${o.wisp}"/>`;
+  if (o.spirit) s += spirit(o.spirit);
+  if (o.fall !== undefined) s += fallen(o.fall, o);
+  if (o.word) s += `<text x="${o.word[1]}" y="${o.word[2]}" font-size="17" font-weight="800" fill="#a32020"
+    font-family="Georgia">${o.word[0]}</text>`;
+  return s + '</svg>';
+}
+const CELLS = [
+  ['tick 0', 'le coup fatal', {spirit: {lean: -10, eyes: 1, heart: 14, gone: 0, armB: 40, armF: 60},
+    word: ['CRAC', 196, 40]},
+    'Le dernier coup : il recule, un craquement de glace ; ses yeux et son cœur brillent d\'un coup.'],
+  ['ticks 0 → 6', 'il s\'élève', {spirit: {lean: -18, rise: 14, eyes: 1, heart: 18, gone: 0.18, armB: 130, armF: 150}},
+    'Il se cambre et monte, les bras écartés vers le ciel ; le bout de sa traîne se défait déjà en flocons.'],
+  ['ticks 6 → 12', 'la brume se défait', {spirit: {lean: -16, rise: 18, eyes: 0.8, heart: 16, gone: 0.6, mist: 0.7,
+    armB: 140, armF: 150}},
+    'La brume s\'efface de bas en haut en tourbillon de flocons qui montent ; l\'armure flotte encore, sans rien dedans.'],
+  ['ticks 12 → 14', 'le cœur s\'éteint', {spirit: {lean: -16, rise: 18, eyes: 0.3, gone: 1}, burst: 30, rise: 18,
+    word: ['tchh', 200, 46]},
+    'Le cœur éclate en une gerbe de givre ; les yeux s\'éteignent en dernier. Il n\'y a plus personne dans l\'armure.'],
+  ['ticks 14 → 30', 'l\'armure tombe', {fall: 16, rise: 18, trail: true, frost: 0.5, word: ['tink', 218, 168]},
+    'Les pièces tombent d\'où elles flottaient, tintent une fois et se couchent ; la capuche vide se pose au milieu.'],
+  ['ticks 30 → 130', 'les restes', {fall: 60, rise: 18, frost: 0.9, wisp: 0.45, fade: 0.55},
+    'L\'armure givrée gît sur une plaque de givre, un dernier filet de brume monte et se perd ; tout s\'efface en 5 s.'],
+];
+document.getElementById('strip').innerHTML = CELLS.map(([ticks, ph, opts, note]) =>
+  `<div class="cell"><b>${ticks}</b><span class="ph">${ph}</span>${frame(opts)}<p>${note}</p></div>`).join('');
+</script></body></html>
