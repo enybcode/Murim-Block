@@ -57,7 +57,7 @@ final class CombatChecks {
     private static Run running;
     private static int at;
     private static final List<CombatPayloads.Hit> hits = new ArrayList<>();
-    private static final List<ResourceLocation> moves = new ArrayList<>();
+    private static final List<ResourceLocation> moves = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private CombatChecks() {
     }
@@ -69,23 +69,36 @@ final class CombatChecks {
         steps.add(new Step("fists combo on a zombie", mc -> {
             LivingEntity[] zombie = new LivingEntity[1];
             float[] health = new float[1];
+            int[] begun = {-1};
+            at(mc, X, Z, 0);
             spawn(mc, EntityType.ZOMBIE, X, Z + 1.6, true, mob -> {
             });
-            start(new Run(60, t -> {
-                if (t == 0) {
+            start(new Run(100, t -> {
+                // The combo starts once the player stands on the ground before its zombie (out of the air, a strike
+                // is the air strike); then a press every 6 ticks.
+                if (begun[0] < 0) {
                     zombie[0] = nearest(mc, EntityType.ZOMBIE);
-                    health[0] = zombie[0] == null ? 0 : server(zombie[0]).getHealth();
+                    if (zombie[0] == null || !mc.player.onGround() || t > 40) {
+                        return;
+                    }
+                    begun[0] = t;
+                    health[0] = server(zombie[0]).getHealth();
                     hits.clear();
                     moves.clear();
                     face(mc, zombie[0]);
                 }
-                if (t % 6 == 0 && t <= 36) {
+                int since = t - begun[0];
+                if (since % 6 == 0 && since <= 36) {
                     CombatClient.pressAttack();
                 }
-                ResourceLocation clip = CombatClient.local().clip;
-                if (clip != null && (moves.isEmpty() || !moves.get(moves.size() - 1).equals(clip))) {
-                    moves.add(clip);
-                }
+                // The moves the server plays: the client only predicts them, and a guess it corrects is no move.
+                EngineTest.server(mc, player -> {
+                    CombatState state = CombatServer.existing(player);
+                    ResourceLocation clip = state == null ? null : state.clip;
+                    if (clip != null && (moves.isEmpty() || !moves.get(moves.size() - 1).equals(clip))) {
+                        moves.add(clip);
+                    }
+                });
             }, () -> {
                 List<String> names = moves.stream().map(ResourceLocation::getPath).toList();
                 EngineTest.check("the combo chains jab, cross, hook, uppercut (" + names + ")",
@@ -229,10 +242,12 @@ final class CombatChecks {
                 List<String> names = moveNames();
                 EngineTest.check("the disciple attacks every two seconds or so (" + names + ")",
                         names.size() >= 3 && names.size() <= 6);
-                long first = MOVES.isEmpty() ? -1 : MOVES.get(0)[1];
-                long wound = WOUNDS.stream().filter(at -> at >= first).findFirst().orElse(-100L);
-                EngineTest.check("its blow lands at the clip's impact, not when it starts (" + (wound - first)
-                        + " ticks after)", first >= 0 && wound - first >= 3 && wound - first <= 12);
+                // Each wound after the move it came from (a blow may miss, the prey knocked out of reach: then the
+                // wound is the next move's, not a late one).
+                List<Long> after = WOUNDS.stream().map(at -> at - MOVES.stream().mapToLong(move -> move[1])
+                        .filter(start -> start <= at).max().orElse(at + 100)).toList();
+                EngineTest.check("its blow lands at the clip's impact, not when it starts (" + after
+                        + " ticks after its move)", !after.isEmpty() && after.stream().allMatch(gap -> gap >= 3 && gap <= 12));
                 discard(mc);
             }));
         }));
@@ -743,6 +758,13 @@ final class CombatChecks {
                         null);
                 mob.setNoAi(still);
                 mob.setPersistenceRequired();
+                // The same fighter every run: never a baby, nor a chicken jockey (finalizeSpawn's dice).
+                mob.setBaby(false);
+                Entity mount = mob.getVehicle();
+                if (mount != null) {
+                    mob.stopRiding();
+                    mount.discard();
+                }
                 if (type == EntityType.ZOMBIE || type == EntityType.HUSK) {
                     mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                     if (cap) {
@@ -760,7 +782,6 @@ final class CombatChecks {
     /** Disciple moves the server started ({move ordinal, game tick}) and the ticks the player was wounded. */
     private static final List<long[]> MOVES = new java.util.concurrent.CopyOnWriteArrayList<>();
     private static final List<Long> WOUNDS = new java.util.concurrent.CopyOnWriteArrayList<>();
-    private static float lastHealth;
 
     private static List<String> moveNames() {
         return MOVES.stream().map(move -> DiscipleFighting.Move.values()[(int) move[0]].name()).toList();
@@ -775,28 +796,39 @@ final class CombatChecks {
         EngineTest.server(mc, player -> {
             player.setGameMode(GameType.SURVIVAL);
             player.setHealth(player.getMaxHealth());
-            lastHealth = player.getHealth();
         });
         for (int i = 0; i < count; i++) {
             double angle = (i - (count - 1) / 2.0) * 0.9;
             spawn(mc, EntityType.ZOMBIE, X + Math.sin(angle) * distance, z + Math.cos(angle) * distance, false, mob -> {
-                ((Mob) mob).setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+                // Unbreakable: the sun wears a helmet down, and a burning zombie flinches out of its moves.
+                ItemStack helmet = new ItemStack(Items.LEATHER_HELMET);
+                helmet.set(net.minecraft.core.component.DataComponents.UNBREAKABLE,
+                        new net.minecraft.world.item.component.Unbreakable(false));
+                ((Mob) mob).setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, helmet);
                 ((Mob) mob).setTarget(serverPlayer(mc));
             });
         }
     }
 
-    /** Notes the tick the player loses health, then heals it so the fight goes on. */
+    /** Heals the player so the fight goes on (its wounds are noted as they come, by {@link #wounded}). */
     private static void wounds(Minecraft mc) {
         EngineTest.server(mc, player -> {
-            if (player.getHealth() < lastHealth) {
-                WOUNDS.add(player.level().getGameTime());
-            }
             if (player.getHealth() < 8) {
                 player.setHealth(player.getMaxHealth());
             }
-            lastHealth = player.getHealth();
         });
+    }
+
+    /**
+     * The tick a mob's blow hurts the player. Not read off its health: with the regeneration it keeps, a light blow
+     * and a heal in the same tick leave the health as it was.
+     */
+    @SubscribeEvent
+    public static void wounded(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+        if (running != null && event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player
+                && event.getSource().getEntity() instanceof Mob && event.getNewDamage() > 0) {
+            WOUNDS.add(player.level().getGameTime());
+        }
     }
 
     private static void discard(Minecraft mc) {

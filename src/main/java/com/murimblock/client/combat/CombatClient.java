@@ -408,6 +408,10 @@ public final class CombatClient {
             CombatState.Kind kind = Moveset.DODGES.contains(id) ? CombatState.Kind.DODGE : CombatState.Kind.ATTACK;
             LOCAL.start(id, animation, kind);
             LOCAL.time = LOCAL.previousTime = payload.time();
+            if (kind == CombatState.Kind.ATTACK) {
+                // Its place in the combo too, or the next strike predicted would follow the move the client guessed.
+                LOCAL.combo = Moveset.of(player).combo().indexOf(id);
+            }
             Animation drawn = SkeletalClips.get(id);
             if (drawn != null) {
                 PlayerAnimators.play(player, Animator.Priority.HIGH, drawn, 1, false);

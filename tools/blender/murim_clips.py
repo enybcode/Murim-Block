@@ -615,9 +615,10 @@ def poses(**named):
     return {name: board(p) for name, p in named.items()}
 
 
-# Sword: the arm alone; the left hand makes the sword fingers behind.
-SWORD_GUARD = dict(lean=8, head=-4, aR=38, fR=80, w=100, aL=-100, fL=175, tF=22, sF=4, tB=-24, sB=14, hy=2,
-                   armZ=-6, hips=-14, twist=-6)
+# Sword: the arm alone. In its guard, where every move starts and ends, the left arm hangs along the body (Enzo,
+# 28 Oct 2026).
+SWORD_GUARD = dict(lean=8, head=-4, aR=38, fR=80, w=100, aL=-6, fL=4, tF=22, sF=4, tB=-24, sB=14, hy=2, armZ=-6,
+                   hips=-14, twist=-6)
 S = poses(
     guard=SWORD_GUARD,
     sway=dict(SWORD_GUARD, w=106, fR=84, head=-8, hy=3),
@@ -770,7 +771,7 @@ N = dict(
                         hips=-10, twist=-25, armZ=-20), Head=(-2, 35, 0)),
     whip=board(dict(lean=14, head=2, aR=150, fR=150, w=115, aL=-20, fL=-10, twist=10, hy=4, hx=9, tF=-12, sF=-56,
                     tB=30, sB=26, armZ=-10)),
-    whip_2=board(dict(lean=24, head=6, aR=105, fR=95, w=95, aL=-30, fL=-20, hips=8, twist=18, hy=5, hx=10, tF=4,
+    whip_2=board(dict(lean=24, head=6, aR=105, fR=108, w=100, aL=-30, fL=-20, hips=8, twist=18, hy=5, hx=10, tF=4,
                       sF=-40, tB=26, sB=20, armZ=-5)),
     brake=noye_pose(dict(lean=34, head=10, aR=0, fR=0, w=0, aL=-30, fL=-10, hips=15, twist=25, hx=10, hy=5, tF=36,
                          sF=10, tB=6, sB=2), Arm_R=(-60, 0, 30), Hand_R=(-20, 0, 0)),
@@ -786,7 +787,7 @@ N = dict(
                     sB=-148)),
     lunge=board(dict(lean=84, head=-66, hy=-22, hx=12, aR=92, fR=96, w=96, aL=90, fL=94, tF=-86, sF=-90, tB=-88,
                      sB=-92)),
-    clutch=board(dict(lean=86, head=-66, hy=-22, hx=12, aR=80, fR=60, w=60, aL=78, fL=56, tF=-84, sF=-88, tB=-86,
+    clutch=board(dict(lean=86, head=-66, hy=-22, hx=12, aR=80, fR=84, w=84, aL=78, fL=82, tF=-84, sF=-88, tB=-86,
                       sB=-90)),
     pull_in=board(dict(lean=88, head=-68, hy=-23, hx=5, aR=0, fR=100, w=100, aL=0, fL=100, tF=-92, sF=-96, tB=-94,
                        sB=-98)),
