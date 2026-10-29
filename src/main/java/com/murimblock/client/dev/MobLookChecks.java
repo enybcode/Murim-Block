@@ -54,6 +54,10 @@ final class MobLookChecks {
             EngineTest.server(mc, player -> {
                 ServerLevel level = player.serverLevel();
                 player.server.setDifficulty(Difficulty.NORMAL, true);
+                // The player first, the area loaded: zombies spawned in an unloaded chunk would be lost (the player may
+                // have been left far away by another group).
+                player.connection.teleport(X, Y, Z, 0, 10);
+                level.getChunkAt(BlockPos.containing(X, Y, Z + 3));
                 level.setDayTime(18000);
                 player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 20 * 60, 0, false, false));
                 for (BlockPos pos : BlockPos.betweenClosed(AREA - 6, (int) Y - 1, -6, AREA + 6, (int) Y - 1, 12)) {

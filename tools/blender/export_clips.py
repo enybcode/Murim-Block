@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--set", required=True)
     parser.add_argument("--mob", help="a mob of tools/blender/mobs with its own JOINTS and CLIPS")
     parser.add_argument("--gltf", required=True)
+    parser.add_argument("--declip", help="mobs (tools/blender/mobs) whose bodies the arms are kept out of, as a,b")
     parser.add_argument("--blend", help="also save the scene with the actions here, to edit them")
     args = parser.parse_args(argv)
 
@@ -37,6 +38,11 @@ def main():
         armature = murim_mob.build([], 16, 16, args.set, joints=mob.JOINTS, helpers=mob.HELPERS)             if hasattr(mob, "JOINTS") else murim_biped.build()
     else:
         armature = murim_biped.build()
+    if args.declip:
+        import murim_declip
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "mobs"))
+        murim_clips.DECLIP = murim_declip.bodies(args.declip.split(","))
+        murim_declip.settle_rest(armature, murim_clips.DECLIP)
     lengths = murim_clips.build_set(armature, args.set)
     scene = bpy.context.scene
     scene.frame_start = 0

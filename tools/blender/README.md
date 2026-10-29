@@ -31,6 +31,19 @@ Needs Blender 5.2 (`C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`
   `masks` by motion, `additive`, `move_speed`, `events`, `root_motion`, `attack`; see `ClipLoader`, `ClipEvent`,
   `RootMotion`, `AttackData`) go in the hand-written sidecar `<set>.json` next to the `.gltf`. In game: `/skeletal anim play murimblock:test/bounce [speed]`, `/skeletal anim speed 0.25`,
   `/skeletal anim stop`; F3+T reloads the clips.
+- Mobs' clip sets are exported with `--declip <bodies>` (the mobs that play them), which keeps the arms out of the
+  body (`murim_declip.py`: the shoulder moved out or forward and the elbow bent the least it takes, frame by frame;
+  a two-handed grip moved whole, the left hand sliding on the haft); it prints the frames still meeting. As of
+  29 Oct 2026:
+
+  ```
+  export_clips.py -- --set disciple --declip disciple,sables,noye,paysan,sanglier --gltf .../animations/disciple.gltf
+  export_clips.py -- --set archer --declip archer,esprit --gltf .../animations/archer.gltf
+  export_clips.py -- --set witch --mob witch --declip witch --gltf .../animations/witch.gltf
+  ```
+
+  `limb_check.py -- --mob <mob> [--set <set>] [--declip ...]` lists, clip by clip, the frames where an arm or the held
+  item enters the body; `mob.py --film ... --declip ...` films the corrected clips.
 
 ## Rig rules
 

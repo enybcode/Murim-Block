@@ -170,6 +170,7 @@ def main():
     parser.add_argument("--view", default="three_quarter", choices=["three_quarter", "side", "front", "top"])
     parser.add_argument("--held", choices=["sword", "axe", "tool", "bow", "fork"],
                         help="a stand-in item in the right hand")
+    parser.add_argument("--declip", help="mobs whose bodies the filmed clips keep the arms out of, as a,b")
     parser.add_argument("--film", help="clips of murim_clips.py as <set>/<clip>,... filmed frame by frame into --renders")
     args = parser.parse_args(argv)
 
@@ -214,6 +215,11 @@ def main():
         # A mob with a skeleton of its own keeps its clips beside its parts.
         import murim_clips
         murim_clips.SETS[args.mob] = mob.CLIPS
+    if args.declip:
+        import murim_clips
+        import murim_declip
+        murim_clips.DECLIP = murim_declip.bodies(args.declip.split(","))
+        murim_declip.settle_rest(armature, murim_clips.DECLIP)
     if args.renders and args.film:
         film(armature, args.film.split(","), os.path.abspath(args.renders), args.size, args.view)
     elif args.renders:

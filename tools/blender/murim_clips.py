@@ -871,6 +871,10 @@ def rotation(degrees):
 LINEAR = {"walk", "run", "sneak_walk", "stance_walk", "climb", "noye_swim"}  # also the spider's walk and climb
 
 
+# Bodies (murim_declip.Body) whose arms the clips keep out of them, or None (export_clips.py --declip).
+DECLIP = None
+
+
 def make_action(armature, name, keys):
     """Keys the clip into a new action named `name` (assigned to the armature) and returns it."""
     bpy.context.scene.render.fps = FPS
@@ -902,12 +906,29 @@ def make_action(armature, name, keys):
             if loc is not None:
                 bone.location = Vector(loc)
                 bone.keyframe_insert("location", frame=frame)
+    if DECLIP:
+        # Arms kept out of the body; the left arm of a two-handed hold or a bow's draw is solved after, on the haft or
+        # the string.
+        import murim_declip
+        bowed = any("_aim" in values for _, values in keys)
+        report = murim_declip.declip(armature, keys[-1][0], DECLIP, "R" if name in TWO_HANDED or bowed else "LR")
+        print("MURIM declip", name, report)
     if name in ARMED:
         bake_clear_item(armature, keys[-1][0], ARMED[name])
     if name in TWO_HANDED:
         bake_second_hand(armature, keys[-1][0], TWO_HANDED[name])
     if any("_aim" in values for _, values in keys):
         bake_bow(armature, keys)
+    if DECLIP:
+        import murim_declip
+        still = [frame for frame in range(keys[-1][0] + 1)
+                 if bpy.context.scene.frame_set(frame) or murim_declip.hits(armature, DECLIP, "LR")]
+        pairs = set()
+        for frame in still[:1]:
+            bpy.context.scene.frame_set(frame)
+            for body in DECLIP:
+                pairs |= {f"{body.name}:{a}>{b}" for a, b in body.meets(armature.pose.bones)}
+        print("MURIM declip", name, "arms still in the body on", len(still), "frames", still[:20], sorted(pairs)[:8])
     return action
 
 
@@ -1053,37 +1074,53 @@ def bake_second_hand(armature, last, item):
     scene = bpy.context.scene
     for frame in range(0, last + 1):
         scene.frame_set(frame)
-        # Out of the left arm's reach, the right arm swings the haft in toward the left shoulder until it is in reach.
-        left = pose["Arm_L"].head.copy()
-        reach = (pose["Hand_L"].head - left).length + (pose["Tool_L"].head - pose["Hand_L"].head).length
-        for _ in range(12):
-            target = pose["Tool_R"].matrix @ on_haft
-            if (target - left).length <= reach * 0.96:
-                break
-            right = pose["Arm_R"].head.copy()
-            axis = (target - right).cross(left - right)
-            if axis.length < 1e-6:
-                break
-            turn(pose["Arm_R"], right, Quaternion(axis.normalized(), math.radians(6)))
-            bpy.context.view_layer.update()
-        clear_frame(armature, True)
-        target = pose["Tool_R"].matrix @ on_haft
-        shoulder, elbow, wrist = pose["Arm_L"].head.copy(), pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
-        upper, lower = (elbow - shoulder).length, (wrist - elbow).length
-        toward = target - shoulder
-        distance = min(max(toward.length, 1e-3), upper + lower - 1e-3)
-        toward.normalize()
-        bend = (elbow - shoulder) - toward * (elbow - shoulder).dot(toward)
-        bend = bend.normalized() if bend.length > 1e-4 else Vector((0, 0, -1))
-        cos = max(-1.0, min(1.0, (upper * upper + distance * distance - lower * lower) / (2 * upper * distance)))
-        new_elbow = shoulder + toward * upper * cos + bend * upper * math.sqrt(1 - cos * cos)
-        turn(pose["Arm_L"], shoulder, (elbow - shoulder).rotation_difference(new_elbow - shoulder))
-        bpy.context.view_layer.update()
-        elbow, wrist = pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
-        turn(pose["Hand_L"], elbow, (wrist - elbow).rotation_difference(target - elbow))
-        bpy.context.view_layer.update()
-        for name in ("Arm_R", "Arm_L", "Hand_L"):
+        second_hand_frame(armature, on_haft)
+        if DECLIP:
+            # Arms still in the body: the whole grip is moved (the right arm, the left following on the haft).
+            import murim_declip
+            slide = lambda t, pole: second_hand_frame(
+                armature, Vector(murim_items.point(murim_items.SECOND_HAND[item] + t)), pole)
+            murim_declip.declip_grip(armature, DECLIP, slide)
+        for name in ("Arm_R", "Arm_L", "Hand_L", "Hand_R"):
             pose[name].keyframe_insert("rotation_quaternion", frame=frame)
+
+
+def second_hand_frame(armature, on_haft, pole=None):
+    """
+    The left hand put on the haft this frame (not keyed), as bake_second_hand says; the elbow bends toward `pole`
+    (armature space) if given, else the way it already bent.
+    """
+    pose = armature.pose.bones
+    # Out of the left arm's reach, the right arm swings the haft in toward the left shoulder until it is in reach.
+    left = pose["Arm_L"].head.copy()
+    reach = (pose["Hand_L"].head - left).length + (pose["Tool_L"].head - pose["Hand_L"].head).length
+    for _ in range(12):
+        target = pose["Tool_R"].matrix @ on_haft
+        if (target - left).length <= reach * 0.96:
+            break
+        right = pose["Arm_R"].head.copy()
+        axis = (target - right).cross(left - right)
+        if axis.length < 1e-6:
+            break
+        turn(pose["Arm_R"], right, Quaternion(axis.normalized(), math.radians(6)))
+        bpy.context.view_layer.update()
+    clear_frame(armature, True)
+    target = pose["Tool_R"].matrix @ on_haft
+    shoulder, elbow, wrist = pose["Arm_L"].head.copy(), pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
+    upper, lower = (elbow - shoulder).length, (wrist - elbow).length
+    toward = target - shoulder
+    distance = min(max(toward.length, 1e-3), upper + lower - 1e-3)
+    toward.normalize()
+    bend = Vector(pole) if pole else elbow - shoulder
+    bend = bend - toward * bend.dot(toward)
+    bend = bend.normalized() if bend.length > 1e-4 else Vector((0, 0, -1))
+    cos = max(-1.0, min(1.0, (upper * upper + distance * distance - lower * lower) / (2 * upper * distance)))
+    new_elbow = shoulder + toward * upper * cos + bend * upper * math.sqrt(1 - cos * cos)
+    turn(pose["Arm_L"], shoulder, (elbow - shoulder).rotation_difference(new_elbow - shoulder))
+    bpy.context.view_layer.update()
+    elbow, wrist = pose["Hand_L"].head.copy(), pose["Tool_L"].head.copy()
+    turn(pose["Hand_L"], elbow, (wrist - elbow).rotation_difference(target - elbow))
+    bpy.context.view_layer.update()
 
 
 def turn(bone, about, rotation):
