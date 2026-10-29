@@ -98,10 +98,11 @@ public final class SkeletalClips implements ResourceManagerReloadListener {
 
     /**
      * The skeleton a clip set moves: the biped's, or for a mob with a skeleton of its own (no chest) the one of its
-     * model {@code skeletal/mobs/<set>.gltf}, so the clips' joints line up with what draws them.
+     * model {@code skeletal/mobs/<set>.gltf} (also a stretched biped, {@link SkeletalModels#STRETCHED}), so the
+     * clips' joints line up with what draws them.
      */
     static Armature armature(ResourceManager manager, ResourceLocation file, String set, String json) throws IOException {
-        if (json.contains("\"" + Biped.CHEST + "\"")) {
+        if (json.contains("\"" + Biped.CHEST + "\"") && !SkeletalModels.STRETCHED.contains(set)) {
             return Biped.ARMATURE;
         }
         ResourceLocation model = file.withPath(SkeletalModels.FOLDER + "/mobs/" + set + ".gltf");

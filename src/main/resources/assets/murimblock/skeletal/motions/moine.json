@@ -1,0 +1,15 @@
+{
+  "motions": {
+    "idle": "murimblock:moine/idle",
+    "walk": "murimblock:moine/walk",
+    "run": "murimblock:moine/walk",
+    "jump": "murimblock:moine/idle",
+    "fall": "murimblock:moine/idle"
+  },
+  "combat": {
+    "idle": "murimblock:moine/stance",
+    "walk": "murimblock:moine/stance_walk",
+    "run": "murimblock:moine/stance_walk"
+  },
+  "additive": []
+}

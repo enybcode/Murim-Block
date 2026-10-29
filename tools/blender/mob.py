@@ -113,8 +113,8 @@ def render(armature, out, size, mob=None):
         ("head", b(fx + 30, fy + 4, fz + 49), face, face_scale, 1.0),
     ]
     os.makedirs(out, exist_ok=True)
-    for name, position, target, scale, aspect in views:
-        scene.camera = camera(name, position, target, scale)
+    for name, position, target, view_scale, aspect in views:
+        scene.camera = camera(name, position, target, view_scale)
         scene.render.resolution_x = size
         scene.render.resolution_y = int(size * aspect)
         scene.render.filepath = os.path.join(out, f"{name}.png")

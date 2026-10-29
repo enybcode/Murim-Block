@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.murimblock.Murimblock;
+import com.murimblock.shenfa.Armature;
 import com.murimblock.shenfa.Biped;
 import com.murimblock.shenfa.Cloth;
 import java.io.IOException;
@@ -84,19 +85,21 @@ public final class MobCloth {
      */
     static void render(Mob mob, SkeletalMobs.Look look, Matrix4f model, Matrix4f[] joints, float scale,
                        MultiBufferSource buffers, int light, int overlay) {
-        Spec spec = SPECS.computeIfAbsent(look.model(), MobCloth::load).orElse(null);
+        // The look's skeleton: the biped's, or a stretched one of its own (the Moine du Vide).
+        Armature armature = SkeletalMobs.armature(look);
+        Spec spec = SPECS.computeIfAbsent(look.model(), key -> load(key, armature)).orElse(null);
         if (spec == null || spec.pieces.isEmpty()) {
             return;
         }
         Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-        Matrix4f hips = joints[Biped.ARMATURE.get(Biped.ROOT).index()];
-        Matrix4f torso = joints[Biped.ARMATURE.get(Biped.TORSO).index()];
+        Matrix4f hips = joints[armature.get(Biped.ROOT).index()];
+        Matrix4f torso = joints[armature.get(Biped.TORSO).index()];
         Map<String, Hanging> hanging = HANGING.computeIfAbsent(mob, key -> new HashMap<>());
         VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(look.texture()));
         long now = System.nanoTime();
         for (Piece piece : spec.pieces) {
             Hanging state = hanging.computeIfAbsent(piece.name, key -> new Hanging(piece, scale));
-            Matrix4f joint = joints[Biped.ARMATURE.get(piece.joint).index()];
+            Matrix4f joint = joints[armature.get(piece.joint).index()];
             Cloth cloth = state.cloth;
             Vector3f[] top = new Vector3f[cloth.columns()];
             for (int c = 0; c < top.length; c++) {
@@ -117,7 +120,7 @@ public final class MobCloth {
             // (a rope end over a panel) stays that much further out.
             float lowest = (float) spec.pieces.stream().filter(other -> other.side == piece.side)
                     .mapToDouble(Piece::lowest).min().orElse(piece.lowest);
-            Cloth.Plane legs = plane(model, hips, camera, legsEdge(joints, hips, piece.side, lowest)
+            Cloth.Plane legs = plane(model, hips, camera, legsEdge(armature, joints, hips, piece.side, lowest)
                     + piece.side * piece.outward, piece.side);
             cloth.update(top, down, seconds, body, legs);
             draw(cloth, piece, spec, camera, consumer, light, overlay);
@@ -128,12 +131,12 @@ public final class MobCloth {
      * Where a plane before ({@code side} 1) or behind (-1) the legs stands (pixels, along the hips' z): past the parts
      * of the thighs a piece reaching down to {@code lowest} (model pixels) can touch, further when a leg swings that way.
      */
-    private static float legsEdge(Matrix4f[] joints, Matrix4f hips, int side, float lowest) {
+    private static float legsEdge(Armature armature, Matrix4f[] joints, Matrix4f hips, int side, float lowest) {
         Matrix4f toHips = new Matrix4f(hips).invert();
         float edge = LEGS_LEAST;
         for (String leg : new String[] {"L", "R"}) {
-            Matrix4f thigh = joints[Biped.ARMATURE.get("Thigh_" + leg).index()];
-            Matrix4f shin = joints[Biped.ARMATURE.get("Leg_" + leg).index()];
+            Matrix4f thigh = joints[armature.get("Thigh_" + leg).index()];
+            Matrix4f shin = joints[armature.get("Leg_" + leg).index()];
             // The thigh's middle (9 px up at rest) and the knee (6 px), for a piece hanging that low.
             if (lowest < 9) {
                 Vector3f thighSide = thigh.transformPosition(new Vector3f(0, -3, 2 * side));
@@ -216,7 +219,7 @@ public final class MobCloth {
                 .setNormal(pose, normal.x, normal.y, normal.z);
     }
 
-    private static Optional<Spec> load(ResourceLocation model) {
+    private static Optional<Spec> load(ResourceLocation model, Armature armature) {
         ResourceLocation file = ResourceLocation.fromNamespaceAndPath(model.getNamespace(),
                 "skeletal/" + model.getPath() + ".json");
         var resource = Minecraft.getInstance().getResourceManager().getResource(file);
@@ -233,7 +236,7 @@ public final class MobCloth {
                 String joint = piece.get("joint").getAsString();
                 // The pin is written in model space: the joint's own space is the one its matrices move.
                 Vector3f at = new Vector3f(pin.get(0).getAsFloat(), pin.get(1).getAsFloat(), pin.get(2).getAsFloat());
-                Vector3f local = Biped.ARMATURE.inverseBind(Biped.ARMATURE.get(joint).index())
+                Vector3f local = armature.inverseBind(armature.get(joint).index())
                         .transformPosition(new Vector3f(at));
                 float length = piece.get("length").getAsFloat();
                 int side = "back".equals(piece.get("side").getAsString()) ? -1 : 1;

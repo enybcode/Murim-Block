@@ -1,0 +1,16 @@
+{
+  "clips": {
+    "idle": {"loop": true, "transition": 0.3},
+    "walk": {"loop": true, "transition": 0.15, "move_speed": 2.2},
+    "stance": {"loop": true, "transition": 0.2},
+    "stance_walk": {"loop": true, "transition": 0.12, "move_speed": 2.4},
+    "anger": {"transition": 0.1},
+    "palm": {"transition": 0.08},
+    "stagger": {"transition": 0.04},
+    "volley": {"transition": 0.08},
+    "step": {"transition": 0.06},
+    "burst": {"transition": 0.05},
+    "flinch": {"transition": 0.04},
+    "death": {"transition": 0.05}
+  }
+}

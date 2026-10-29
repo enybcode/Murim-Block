@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Moine du Vide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>MOINE DU VIDE</h1>
+<div class="sub">Remplace l'Enderman · <code>minecraft:enderman</code> (même identifiant, même apparition, mêmes drops, taille 2,9 blocs) · Murimblock V2 — fiche de conception</div>
+<div class="seal">虛空<br>僧人</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<!-- front -->
+<g transform="translate(30,22)">
+<rect x="78" y="2" width="44" height="46" fill="#b9b2c4"/>
+<rect x="84" y="36" width="32" height="3" fill="#8e86a0"/><rect x="82" y="14" width="36" height="2" fill="#a59db4"/>
+<rect x="76" y="20" width="48" height="10" fill="#18131d"/>
+<path d="M124 22 L140 40 L134 44 L122 30 Z M124 24 L134 52 L128 54 L122 30 Z" fill="#18131d"/>
+<path d="M66 50 L134 50 L148 120 L144 296 L130 288 L122 298 L110 288 L100 300 L90 288 L78 298 L70 288 L56 296 L52 120 Z" fill="#1d1824"/>
+<path d="M66 50 L134 50 L140 70 L60 70 Z" fill="#2a2333"/>
+<path d="M88 50 L100 96 L112 50 Z" fill="#b9b2c4"/><g stroke="#8e86a0" stroke-width="1.5"><line x1="92" y1="62" x2="108" y2="62"/><line x1="94" y1="72" x2="106" y2="72"/><line x1="96" y1="82" x2="104" y2="82"/></g>
+<path d="M100 96 L100 290" stroke="#2a2333" stroke-width="2"/>
+<rect x="56" y="128" width="88" height="10" fill="#3a2a1e"/><rect x="96" y="126" width="10" height="14" fill="#6b5a40"/>
+<path d="M52 56 L66 56 L72 160 L40 166 Z" fill="#1d1824"/><path d="M148 56 L134 56 L128 160 L160 166 Z" fill="#1d1824"/>
+<rect x="52" y="160" width="8" height="70" fill="#b9b2c4"/><rect x="140" y="160" width="8" height="70" fill="#b9b2c4"/>
+<g fill="#b9b2c4"><rect x="48" y="230" width="3" height="16"/><rect x="52" y="230" width="3" height="20"/><rect x="56" y="230" width="3" height="18"/><rect x="141" y="230" width="3" height="18"/><rect x="145" y="230" width="3" height="20"/><rect x="149" y="230" width="3" height="16"/></g>
+<rect x="88" y="290" width="8" height="14" fill="#b9b2c4"/><rect x="104" y="290" width="8" height="14" fill="#b9b2c4"/>
+<rect x="84" y="302" width="14" height="5" fill="#a08a5a"/><rect x="102" y="302" width="14" height="5" fill="#a08a5a"/>
+<g fill="#a050f0" opacity=".25"><circle cx="100" cy="84" r="12"/></g>
+<g fill="#a050f0" stroke="#e0b8ff" stroke-width="1"><circle cx="58" cy="60" r="5"/><circle cx="68" cy="72" r="5"/><circle cx="82" cy="80" r="5"/><circle cx="100" cy="84" r="6"/><circle cx="118" cy="80" r="5"/><circle cx="132" cy="72" r="5"/><circle cx="142" cy="60" r="5"/><circle cx="130" cy="50" r="4" opacity=".7"/><circle cx="70" cy="50" r="4" opacity=".7"/></g>
+</g>
+<!-- action: palm strike, blindfold torn -->
+<g transform="translate(250,22)">
+<g transform="rotate(14 90 160)">
+<rect x="70" y="4" width="44" height="46" fill="#b9b2c4"/>
+<rect x="88" y="18" width="28" height="12" fill="#a050f0" opacity=".25"/><rect x="94" y="22" width="16" height="4" fill="#d79cff"/>
+<path d="M70 22 L56 40 L50 34 L66 20 Z" fill="#18131d"/><path d="M68 26 L60 52 L54 50 L64 26 Z" fill="#18131d"/>
+<path d="M58 52 L114 52 L126 120 L130 292 L118 284 L108 294 L96 284 L84 294 L72 284 L60 292 L50 120 Z" fill="#1d1824"/>
+<rect x="52" y="128" width="76" height="10" fill="#3a2a1e"/>
+<path d="M62 60 L50 60 L30 150 L56 156 Z" fill="#1d1824"/><rect x="36" y="150" width="8" height="64" fill="#b9b2c4" transform="rotate(14 40 150)"/>
+<rect x="84" y="290" width="8" height="14" fill="#b9b2c4"/><rect x="104" y="290" width="8" height="14" fill="#b9b2c4"/>
+</g>
+<path d="M108 74 L174 70 L176 96 L112 100 Z" fill="#1d1824"/>
+<rect x="174" y="78" width="40" height="8" fill="#b9b2c4"/>
+<rect x="212" y="64" width="10" height="34" fill="#b9b2c4"/><g fill="#b9b2c4"><rect x="222" y="64" width="6" height="3"/><rect x="222" y="70" width="7" height="3"/><rect x="222" y="76" width="7" height="3"/><rect x="222" y="82" width="6" height="3"/></g>
+<g fill="none" stroke="#a050f0"><path d="M232 54 Q246 81 232 108" stroke-width="4" opacity=".7"/><path d="M216 38 Q256 81 216 124" stroke-width="3" opacity=".45"/></g>
+<g fill="#a050f0" stroke="#e0b8ff" stroke-width="1"><circle cx="60" cy="58" r="5"/><circle cx="72" cy="76" r="5"/><circle cx="92" cy="84" r="6"/><circle cx="114" cy="78" r="5"/><circle cx="124" cy="62" r="5"/><circle cx="104" cy="44" r="4" opacity=".7"/></g>
+</g>
+<text x="130" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE</text>
+<text x="360" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">ACTION (bandeau arraché, paume du Vide)</text>
+<line x1="18" y1="16" x2="18" y2="330" stroke="#7d6a5a"/><line x1="12" y1="16" x2="24" y2="16" stroke="#7d6a5a"/><line x1="12" y1="330" x2="24" y2="330" stroke="#7d6a5a"/>
+<text x="10" y="176" font-size="12" fill="#6b5a4c" transform="rotate(-90 10 176)" text-anchor="middle">2,9 blocs (comme le vanilla)</text>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="380" width="36" height="22" fill="#1d1824"/><text x="20" y="418">Robe</text>
+<rect x="78" y="380" width="36" height="22" fill="#b9b2c4"/><text x="78" y="418">Peau</text>
+<rect x="136" y="380" width="36" height="22" fill="#18131d"/><text x="136" y="418">Bandeau</text>
+<rect x="194" y="380" width="36" height="22" fill="#a050f0"/><text x="194" y="418">Perles</text>
+<rect x="252" y="380" width="36" height="22" fill="#d79cff"/><text x="252" y="418">Yeux</text>
+<rect x="310" y="380" width="36" height="22" fill="#3a2a1e"/><text x="310" y="418">Corde</text>
+<rect x="368" y="380" width="36" height="22" fill="#a08a5a"/><text x="368" y="418">Paille</text>
+</g>
+<text x="20" y="450" font-size="12.5" fill="#6b5a4c">Squelette de l'Enderman · robe longue animée (tissu) · hitbox vanilla</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Moine d'un temple qui méditait sur le Vide jusqu'à ce que le Vide lui réponde. Il s'est bandé les yeux pour ne plus le voir. Celui qui croise son regard arrache ce bandeau : le moine voit alors à nouveau, et ce qu'il voit, c'est toi.</p>
+</div>
+<div class="panel">
+<h2>Détails en relief</h2>
+<ul>
+<li>Crâne rasé, peau grise et creusée, côtes visibles dans l'encolure</li>
+<li>Bandeau noir sur les yeux, deux pans qui pendent sur le côté</li>
+<li>Chapelet de perles violettes qui <b>flotte</b> autour du cou et tourne lentement</li>
+<li>Robe noire déchirée jusqu'aux chevilles, manches larges (tissu animé)</li>
+<li>Corde de chanvre à la taille, sandales de paille</li>
+<li>Mains très longues et maigres, doigts fins</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">40 PV</td><td style="width:45%"><div class="bar"><i style="width:80%"></i></div></td></tr>
+<tr><td>Dégâts</td><td class="v">7</td><td><div class="bar"><i style="width:70%"></i></div></td></tr>
+<tr><td>Vitesse</td><td class="v">0,30</td><td><div class="bar"><i style="width:60%"></i></div></td></tr>
+<tr><td>Téléportation</td><td class="v">32 blocs</td><td><div class="bar"><i style="width:80%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Base vanilla, à régler en jeu.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaques</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Réponse</th></tr>
+<tr><td><b>Paume du Vide</b><br><span class="small">Paume ouverte, onde violette, gros recul</span></td><td class="v">3</td><td><span class="tag ok">Esquive</span><span class="tag warn">Garde</span></td></tr>
+<tr><td><b>Chapelet fouet</b><br><span class="small">Lance le chapelet en arc devant lui</span></td><td class="v">4</td><td><span class="tag ok">Garde</span><span class="tag ok">Parade</span></td></tr>
+<tr><td><b>Pas du Vide</b><br><span class="small">Disparaît, réapparaît collé à toi, paume</span></td><td class="v">8</td><td><span class="tag ok">Esquive</span><span class="tag no">Garde</span></td></tr>
+</table>
+</div>
+<div class="panel">
+<h2>Comportement</h2>
+<ul>
+<li>Neutre : marche lentement, mains jointes, ramasse et repose des blocs</li>
+<li>Le regarder : il porte la main au bandeau, l'<b>arrache</b>, ses yeux brillent</li>
+<li>Lent mais frappe fort : la paume te projette à plusieurs blocs</li>
+<li>Eau et pluie : fuit en se téléportant (comme le vanilla)</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">idle / walk</td><td>Voûté, mains jointes, pas lents, la robe traîne</td></tr>
+<tr><td class="v">colère</td><td>Arrache le bandeau, se redresse de toute sa taille</td></tr>
+<tr><td class="v">paume</td><td>Recule l'épaule, pousse la paume, onde violette</td></tr>
+<tr><td class="v">téléport</td><td>Les perles se resserrent, il disparaît</td></tr>
+<tr><td class="v">mort</td><td>Tombe à genoux, le chapelet se brise</td></tr>
+</table>
+</div>
+</div>
+</div>
+</body></html>

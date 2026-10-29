@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Assassin de l'Ombre</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>ASSASSIN DE L'OMBRE</h1>
+<div class="sub">Remplace l'Enderman · <code>minecraft:enderman</code> (même identifiant, même apparition, mêmes drops, taille 2,9 blocs) · Murimblock V2 — fiche de conception</div>
+<div class="seal">虛影<br>刺客</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<!-- front -->
+<g transform="translate(30,22)">
+<path d="M96 52 Q150 40 168 66 Q150 58 132 68 Q154 76 160 98 Q140 78 118 70 Z" fill="#5a2a8a"/>
+<path d="M70 6 L100 -6 L130 6 L132 50 L68 50 Z" fill="#1a141f"/>
+<rect x="78" y="14" width="44" height="34" fill="#ece6da"/>
+<rect x="84" y="28" width="12" height="3" fill="#b06cf0"/><rect x="104" y="28" width="12" height="3" fill="#b06cf0"/>
+<path d="M100 16 L98 26 L101 34" stroke="#c9c0b0" stroke-width="1.2" fill="none"/>
+<rect x="76" y="48" width="48" height="72" fill="#16121b"/>
+<path d="M76 54 L124 96 L124 106 L76 64 Z" fill="#5a2a8a"/>
+<rect x="76" y="110" width="48" height="8" fill="#2b2233"/><rect x="96" y="110" width="8" height="8" fill="#8a8f9a"/>
+<rect x="62" y="48" width="14" height="14" fill="#221b29"/><rect x="124" y="48" width="14" height="14" fill="#221b29"/>
+<rect x="64" y="60" width="10" height="176" fill="#16121b"/><rect x="126" y="60" width="10" height="176" fill="#16121b"/>
+<g fill="#3a2f44"><rect x="64" y="150" width="10" height="4"/><rect x="64" y="160" width="10" height="4"/><rect x="64" y="170" width="10" height="4"/><rect x="126" y="150" width="10" height="4"/><rect x="126" y="160" width="10" height="4"/><rect x="126" y="170" width="10" height="4"/></g>
+<path d="M62 142 Q44 196 60 252 Q54 198 66 146 Z" fill="#c9ccd6" stroke="#7b7f8a"/>
+<path d="M138 142 Q156 196 140 252 Q146 198 134 146 Z" fill="#c9ccd6" stroke="#7b7f8a"/>
+<rect x="86" y="120" width="10" height="182" fill="#16121b"/><rect x="104" y="120" width="10" height="182" fill="#16121b"/>
+<g fill="#3a2f44"><rect x="86" y="240" width="10" height="4"/><rect x="86" y="250" width="10" height="4"/><rect x="86" y="260" width="10" height="4"/><rect x="104" y="240" width="10" height="4"/><rect x="104" y="250" width="10" height="4"/><rect x="104" y="260" width="10" height="4"/></g>
+<rect x="82" y="300" width="16" height="6" fill="#2b2233"/><rect x="102" y="300" width="16" height="6" fill="#2b2233"/>
+<g fill="#9a5ad8" opacity=".5"><rect x="40" y="280" width="6" height="6"/><rect x="150" y="270" width="5" height="5"/><rect x="30" y="230" width="4" height="4"/><rect x="160" y="210" width="4" height="4"/></g>
+</g>
+<!-- action: reappears behind and strikes -->
+<g transform="translate(222,22)">
+<g fill="#9a5ad8"><rect x="10" y="250" width="8" height="8" opacity=".7"/><rect x="24" y="268" width="6" height="6" opacity=".5"/><rect x="4" y="284" width="10" height="10" opacity=".35"/><rect x="40" y="290" width="6" height="6" opacity=".5"/><rect x="18" y="300" width="5" height="5" opacity=".3"/></g>
+<path d="M30 220 Q10 260 20 300 Q50 280 60 300 Q70 260 50 220 Z" fill="#5a2a8a" opacity=".35"/>
+<g transform="rotate(18 110 140)">
+<path d="M84 60 Q30 50 6 70 Q30 66 52 74 Q24 86 14 104 Q44 84 74 80 Z" fill="#5a2a8a"/>
+<path d="M78 10 L108 -2 L138 10 L140 54 L76 54 Z" fill="#1a141f"/>
+<rect x="104" y="18" width="34" height="34" fill="#ece6da"/>
+<rect x="124" y="32" width="12" height="3" fill="#d79cff"/>
+<rect x="88" y="52" width="40" height="72" fill="#16121b"/>
+<path d="M88 58 L128 96 L128 106 L88 68 Z" fill="#5a2a8a"/>
+<rect x="88" y="114" width="40" height="8" fill="#2b2233"/>
+<rect x="76" y="56" width="10" height="150" fill="#16121b" transform="rotate(20 81 56)"/>
+<path d="M44 168 Q30 210 52 240 Q44 206 54 172 Z" fill="#c9ccd6" stroke="#7b7f8a"/>
+</g>
+<g transform="rotate(-48 150 70)"><rect x="146" y="70" width="10" height="170" fill="#16121b"/>
+<path d="M158 150 Q178 200 160 250 Q166 202 152 156 Z" fill="#e2e6f0" stroke="#7b7f8a"/></g>
+<path d="M218 70 Q244 110 222 170" stroke="#b06cf0" stroke-width="3" fill="none" opacity=".6"/>
+<path d="M210 64 Q238 110 214 176" stroke="#b06cf0" stroke-width="1.5" fill="none" opacity=".4"/>
+<rect x="78" y="124" width="10" height="120" fill="#16121b" transform="rotate(28 83 124)"/>
+<rect x="104" y="128" width="10" height="110" fill="#16121b" transform="rotate(-22 109 128)"/>
+<rect x="138" y="226" width="10" height="70" fill="#16121b" transform="rotate(-6 143 226)"/>
+<rect x="18" y="226" width="10" height="70" fill="#16121b" transform="rotate(10 23 226)"/>
+</g>
+<text x="130" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE</text>
+<text x="360" y="356" font-size="13" text-anchor="middle" fill="#6b5a4c">ACTION (réapparaît dans le dos, frappe)</text>
+<line x1="18" y1="16" x2="18" y2="330" stroke="#7d6a5a"/><line x1="12" y1="16" x2="24" y2="16" stroke="#7d6a5a"/><line x1="12" y1="330" x2="24" y2="330" stroke="#7d6a5a"/>
+<text x="10" y="176" font-size="12" fill="#6b5a4c" transform="rotate(-90 10 176)" text-anchor="middle">2,9 blocs (comme le vanilla)</text>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="380" width="36" height="22" fill="#16121b"/><text x="20" y="418">Ombre</text>
+<rect x="78" y="380" width="36" height="22" fill="#ece6da" stroke="#b9ad96"/><text x="78" y="418">Masque</text>
+<rect x="136" y="380" width="36" height="22" fill="#5a2a8a"/><text x="136" y="418">Écharpe</text>
+<rect x="194" y="380" width="36" height="22" fill="#b06cf0"/><text x="194" y="418">Yeux</text>
+<rect x="252" y="380" width="36" height="22" fill="#c9ccd6"/><text x="252" y="418">Lames</text>
+<rect x="310" y="380" width="36" height="22" fill="#3a2f44"/><text x="310" y="418">Bandes</text>
+<rect x="368" y="380" width="36" height="22" fill="#9a5ad8" opacity=".6"/><text x="368" y="418">Fumée</text>
+</g>
+<text x="20" y="450" font-size="12.5" fill="#6b5a4c">Squelette de l'Enderman · bras et jambes très longs et fins · hitbox vanilla</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Ancien assassin d'une secte disparue, qui a pratiqué l'art de marcher entre les ombres jusqu'à s'y perdre. Il n'a plus de visage, seulement le masque blanc de sa secte. Croiser son regard, c'est accepter le contrat : il vient alors pour toi.</p>
+</div>
+<div class="panel">
+<h2>Détails en relief</h2>
+<ul>
+<li>Capuche serrée sur la tête, masque blanc lisse, deux fentes violettes</li>
+<li>Fêlure fine sur le masque</li>
+<li>Écharpe violette qui flotte derrière lui (tissu animé)</li>
+<li>Lames courbes fixées sur les avant-bras, plus longues que la main</li>
+<li>Bandes enroulées sur avant-bras et tibias, ceinture à boucle de fer</li>
+<li>Fumée violette en carrés quand il se téléporte</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">40 PV</td><td style="width:45%"><div class="bar"><i style="width:80%"></i></div></td></tr>
+<tr><td>Dégâts</td><td class="v">7</td><td><div class="bar"><i style="width:70%"></i></div></td></tr>
+<tr><td>Vitesse</td><td class="v">0,30</td><td><div class="bar"><i style="width:60%"></i></div></td></tr>
+<tr><td>Téléportation</td><td class="v">32 blocs</td><td><div class="bar"><i style="width:80%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Base vanilla, à régler en jeu.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaques</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Réponse</th></tr>
+<tr><td><b>Double taille</b><br><span class="small">Deux coups de lame croisés, rapides</span></td><td class="v">3</td><td><span class="tag ok">Garde</span><span class="tag ok">Parade</span></td></tr>
+<tr><td><b>Pas de l'ombre</b><br><span class="small">Disparaît, réapparaît dans ton dos, frappe</span></td><td class="v">8</td><td><span class="tag ok">Esquive</span><span class="tag warn">Garde</span></td></tr>
+<tr><td><b>Feinte</b><br><span class="small">Fait mine de frapper, recule d'un pas, frappe</span></td><td class="v">3</td><td><span class="tag warn">Parade</span><span class="tag ok">Garde</span></td></tr>
+</table>
+</div>
+<div class="panel">
+<h2>Comportement</h2>
+<ul>
+<li>Neutre : marche lentement, ramasse et repose des blocs</li>
+<li>Le regarder : il se fige, ses yeux s'allument, puis il attaque</li>
+<li>Bloqué deux fois : <b>pas de l'ombre</b> dans le dos</li>
+<li>Eau et pluie : fuit en fumée (comme le vanilla)</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">idle / walk</td><td>Voûté, bras pendants, pas longs et silencieux</td></tr>
+<tr><td class="v">colère</td><td>Se redresse d'un coup, lames sorties</td></tr>
+<tr><td class="v">double taille</td><td>Croisé haut puis bas, l'écharpe suit</td></tr>
+<tr><td class="v">téléport</td><td>Se dissout en fumée, réapparaît accroupi</td></tr>
+<tr><td class="v">mort</td><td>Le masque tombe, le corps part en fumée</td></tr>
+</table>
+</div>
+</div>
+</div>
+</body></html>

@@ -63,9 +63,13 @@ public final class SkeletalMobs {
     /** The creeper, on a skeleton of its own. */
     public static final Look FOURNEAU = new Look(id("mobs/furnace"), id("textures/entity/furnace.png"),
             id("textures/entity/furnace_glow.png"), "furnace");
+    /** The Enderman as the Moine du Vide: the biped's joints stretched to its height, a joint per rosary bead. */
+    public static final Look MOINE = new Look(id("mobs/moine"), id("textures/entity/moine.png"),
+            id("textures/entity/moine_glow.png"), "moine");
     private static final Map<EntityType<?>, Look> LOOKS = Map.of(EntityType.ZOMBIE, DISCIPLE, EntityType.SKELETON, ARCHER,
             EntityType.HUSK, SABLES, EntityType.DROWNED, NOYE, EntityType.ZOMBIE_VILLAGER, PAYSAN,
-            EntityType.ZOMBIFIED_PIGLIN, SANGLIER, EntityType.SPIDER, FILEUSE, EntityType.CREEPER, FOURNEAU);
+            EntityType.ZOMBIFIED_PIGLIN, SANGLIER, EntityType.SPIDER, FILEUSE, EntityType.CREEPER, FOURNEAU,
+            EntityType.ENDERMAN, MOINE);
     private static final float MOVING = 0.6f, RUNNING = 4.5f;
     /** A baby's head, relative to its half-size body. */
     private static final float BABY_HEAD = 1.5f;
@@ -110,12 +114,13 @@ public final class SkeletalMobs {
     }
 
     /**
-     * The skeleton {@code look} moves: its model's when it brings its own (no chest), else the biped's; the biped's too
-     * until the model is loaded.
+     * The skeleton {@code look} moves: its model's when it brings its own (no chest, or the Moine's stretched biped),
+     * else the biped's; the biped's too until the model is loaded.
      */
     static Armature armature(Look look) {
         SkinnedModel model = look == null ? null : SkeletalModels.get(look.model());
-        return model == null || model.armature().find(Biped.CHEST) != null ? Biped.ARMATURE : model.armature();
+        return model == null || model.armature().find(Biped.CHEST) != null && look != MOINE ? Biped.ARMATURE
+                : model.armature();
     }
 
     private static State state(Mob mob) {
@@ -170,6 +175,8 @@ public final class SkeletalMobs {
                 new net.minecraft.client.renderer.entity.CreeperRenderer(context)));
         event.registerEntityRenderer(EntityType.SPIDER, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.SpiderRenderer<>(context)));
+        event.registerEntityRenderer(EntityType.ENDERMAN, context -> new SkeletalMobRenderer<>(context,
+                new net.minecraft.client.renderer.entity.EndermanRenderer(context)));
         event.registerEntityRenderer(EntityType.ZOMBIFIED_PIGLIN, context -> new SkeletalMobRenderer<>(context,
                 new net.minecraft.client.renderer.entity.PiglinRenderer(context,
                         net.minecraft.client.model.geom.ModelLayers.ZOMBIFIED_PIGLIN,
@@ -317,6 +324,9 @@ public final class SkeletalMobs {
         }
         if (state.biped && !state.dying) {
             BipedPoses.look(pose, netHeadYaw, headPitch);
+        }
+        if (look == MOINE) {
+            MoineRosary.apply(mob, state.animator, state.armature, pose, partialTick);
         }
         if (state.biped && mob.isBaby()) {
             // A child's big head, as vanilla's baby models: the head at three quarters of the adult's on a half-size body.

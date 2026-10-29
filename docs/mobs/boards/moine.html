@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Moine du Vide — animations</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The Enderman's long limbs: longer arms and legs, the hips raised to keep the feet on the ground.
+Object.assign(L, {torso: 36, upper: 24, fore: 24, thigh: 24, shin: 24});
+const P = o => ({...o, hy: (o.hy || 0) - 14});
+const BEAD = '#a050f0', BEAD_EDGE = '#e0b8ff';
+const dot = (x, y, r = 3, o = 1) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${BEAD}" stroke="${BEAD_EDGE}"
+  stroke-width=".8" opacity="${o}"/>`;
+// The beads of the torn rosary orbiting the body: those behind are drawn before the body, the others after.
+function orbit(r, p, behind) {
+  const c = [(r.hip[0] + r.neck[0]) / 2, (r.hip[1] + r.neck[1]) / 2 + 4];
+  const rx = {tight: 13, burst: 48}[p.orbit] || 30, ry = {tight: 4, burst: 13}[p.orbit] || 8;
+  let s = '';
+  for (let i = 0; i < 11; i++) {
+    const a = (p.spin || 0) + i * 2 * Math.PI / 11;
+    if ((Math.sin(a) < 0) !== behind) continue;
+    s += dot(c[0] + Math.cos(a) * rx, c[1] + Math.sin(a) * ry - Math.cos(a) * 5, i ? 3 : 4, behind ? 0.55 : 1);
+  }
+  return s;
+}
+// The monk over the shared figure: a long torn robe, the rosary (floating round the neck, held, orbiting, flung or
+// fallen), the blindfold or the Enderman's eyes, the Void's wave in front of the palm.
+window.FIGURE = (x, y, p, ghost) => {
+  const r = body(x, y, p);
+  const col = c => ghost ? C.ghost : c;
+  let s = '';
+  if (!ghost && p.orbit) s += orbit(r, p, true);
+  s += figure(x, y, p, ghost);
+  const hemF = add(r.footF, [6, -14]), hemB = add(r.footB, [-6, -14]);
+  const mid = [(hemF[0] + hemB[0]) / 2, (hemF[1] + hemB[1]) / 2];
+  s += `<path d="M${r.hip[0] - 9},${r.hip[1] - 4} L${r.hip[0] + 9},${r.hip[1] - 4} L${hemF[0]},${hemF[1]}
+    L${mid[0] + 5},${mid[1] - 5} L${mid[0]},${mid[1] + 3} L${mid[0] - 5},${mid[1] - 5} L${hemB[0]},${hemB[1]} Z"
+    fill="${col(C.robeDark)}"${ghost ? ' opacity="0.28"' : ''}/>`;
+  const turn = (p.lean || 0) + (p.head || 0);
+  const head = add(r.neck, up(turn, 11));
+  if (p.blind) {
+    s += `<g transform="rotate(${turn} ${head[0]} ${head[1]})"${ghost ? ' opacity="0.28"' : ''}>
+      <rect x="${head[0] - 12}" y="${head[1] - 5}" width="24" height="6" fill="${col('#18131d')}"/>
+      <path d="M${head[0] - 12},${head[1] - 3} l-9,12 l4,2 l7,-10 Z" fill="${col('#18131d')}"/></g>`;
+  } else if (!ghost) {
+    // The Enderman's eyes: a black band, a magenta bar.
+    s += `<g transform="rotate(${turn} ${head[0]} ${head[1]})"><rect x="${head[0] - 1}" y="${head[1] - 4}" width="12"
+      height="5" fill="#1a1420"/><rect x="${head[0] + 3}" y="${head[1] - 3}" width="7" height="3" fill="#cc00fa"/>
+      <rect x="${head[0] + 5}" y="${head[1] - 3}" width="3" height="3" fill="#f0a0ff"/></g>`;
+  }
+  if (p.band) {
+    // The torn blindfold flying off.
+    const b = add(head, p.band);
+    s += `<path d="M${b[0]},${b[1]} q8,-6 16,0 q-6,4 -2,10 q-8,-4 -14,-10 Z" fill="${col('#18131d')}"/>`;
+  }
+  if (!ghost) {
+    if (p.rosary === 'neck') {
+      const at = add(r.neck, [0, 6]);
+      for (let i = 0; i < 7; i++) {
+        const a = Math.PI * (0.15 + 0.7 * i / 6) + (p.spin || 0);
+        s += dot(at[0] + Math.cos(a) * 16, at[1] + Math.sin(a) * 9 - 3);
+      }
+    } else if (p.rosary === 'torn') {
+      // Torn off in the hand: the cord snapping, the beads flying loose.
+      const h = r.handR;
+      s += `<path d="M${h[0]},${h[1]} q10,-8 18,-2" stroke="#a8832e" stroke-width="1.5" fill="none"/>`;
+      s += [[6, -10], [14, -16], [22, -8], [-6, -14], [28, -18]].map(([dx, dy], i) => dot(h[0] + dx, h[1] + dy,
+        i ? 3 : 4)).join('');
+    } else if (p.rosary === 'gather') {
+      // Called in front of the palm.
+      const h = add(r.handR, [12, 0]);
+      for (let i = 0; i < 9; i++) {
+        const a = i * 2 * Math.PI / 9;
+        s += dot(h[0] + Math.cos(a) * 9, h[1] + Math.sin(a) * 9);
+      }
+    } else if (p.rosary === 'volley') {
+      // Flung in a line at the prey.
+      const h = r.handR;
+      for (let i = 0; i < 9; i++) s += dot(h[0] + 12 + i * 8, h[1] - 2 + Math.sin(i) * 3, 3, 1 - i * 0.05);
+    } else if (p.rosary === 'fallen') {
+      [[-22, 0], [-12, 2], [-2, -1], [10, 1], [20, 0], [30, 2], [40, 1]].forEach(([dx, dy]) => {
+        s += dot(r.hip[0] + dx, 150 + dy, 3, 0.85);
+      });
+    }
+    if (p.orbit) s += orbit(r, p, false);
+  }
+  if (p.wave && !ghost) {
+    const h = r.handR;
+    s += [10, 20, 30].map((d, i) => `<path d="M${h[0] + d},${h[1] - 10 - d / 2} q${8 + d / 3},${10 + d / 2}
+      0,${20 + d}" fill="none" stroke="#a050f0" stroke-width="${3.5 - i}" opacity="${0.8 - i * 0.22}"/>`).join('');
+  }
+  return s;
+};
+// Calm: hands joined in front of the chest, stooped, blindfolded, the rosary floating round his neck.
+const PRAY = P({lean: 16, head: 10, blind: true, rosary: 'neck', aR: 4, fR: 112, aL: 10, fL: 116, tF: 6, sF: 2,
+  tB: -6, sB: -2});
+const PRAY_STEP = P({...PRAY, spin: 0.5, hy: 2, tF: 22, sF: 10, tB: -18, sB: -12});
+// Anger: the hand to the blindfold, both torn off, the beads loosed round him.
+const HAND_UP = P({lean: 8, head: -6, blind: true, rosary: 'neck', aR: 150, fR: 210, aL: 20, fL: 150, tF: 6, sF: 2,
+  tB: -6, sB: -2});
+const TEAR = P({lean: -6, head: -14, rosary: 'torn', aR: 120, fR: 150, aL: -10, fL: 10, band: [-30, -20], tF: 8,
+  sF: 2, tB: -8, sB: -4});
+const TALL = P({lean: -4, head: -4, hy: -2, orbit: 'wide', aR: 40, fR: 30, aL: -40, fL: -30, tF: 10, sF: 4, tB: -10,
+  sB: -6});
+// Fighting: the beads always orbit him.
+const GUARD = P({lean: 8, head: -4, orbit: 'wide', spin: 0.3, aR: 30, fR: 90, aL: 10, fL: 60, tF: 12, sF: 4, tB: -14,
+  sB: -8});
+const WIND = P({lean: -2, head: -2, hx: -6, orbit: 'wide', spin: 0.9, aR: -50, fR: 40, aL: 50, fL: 90, tF: 6, sF: 0,
+  tB: -24, sB: -16});
+const PALM = P({lean: 18, head: -10, hx: 12, hy: 4, orbit: 'wide', spin: 1.5, aR: 92, fR: 90, aL: -40, fL: -20,
+  wave: true, tF: 40, sF: 4, tB: -36, sB: -24});
+const CALL = P({lean: 4, head: -6, rosary: 'gather', aR: 80, fR: 70, aL: -20, fL: 0, tF: 12, sF: 4, tB: -14, sB: -8});
+const DRAW = P({lean: -8, head: -6, hx: -4, rosary: 'gather', aR: 20, fR: 60, aL: 30, fL: 50, tF: 6, sF: 0, tB: -22,
+  sB: -14});
+const FLING = P({lean: 18, head: -6, hx: 8, rosary: 'volley', aR: 92, fR: 88, aL: -30, fL: -10, tF: 34, sF: 4,
+  tB: -30, sB: -20});
+const TIGHT = P({lean: 8, head: -4, orbit: 'tight', spin: 0.6, aR: 30, fR: 90, aL: 10, fL: 60, tF: 12, sF: 4,
+  tB: -14, sB: -8});
+const APPEAR = P({lean: 24, head: -6, hx: 30, hy: 10, orbit: 'tight', aR: 70, fR: 100, aL: 30, fL: 60, tF: 70, sF: 0,
+  tB: -40, sB: -60});
+const PALM_NEAR = P({lean: 18, head: -10, hx: 34, hy: 4, orbit: 'wide', spin: 1.5, aR: 92, fR: 90, aL: -40, fL: -20,
+  wave: true, tF: 40, sF: 4, tB: -36, sB: -24});
+const KNEES = P({lean: 10, head: 20, hy: 34, rosary: 'fallen', aR: 10, fR: 0, aL: 0, fL: -10, tF: 90, sF: -10, tB: 80,
+  sB: -20});
+const FALLEN = P({lean: 80, head: 20, hy: 50, hx: 10, rosary: 'fallen', aR: 70, fR: 60, aL: 60, fL: 50, tF: 90, sF: 0,
+  tB: 90, sB: 10});
+// Staggered after a parried palm: thrown back, arms loose, the beads drifting slow and low.
+const STAGGER = P({lean: -18, head: -24, hx: -8, orbit: 'wide', spin: 2.2, aR: -30, fR: -10, aL: 40, fL: 20, tF: 20,
+  sF: 4, tB: -30, sB: -24});
+const STAGGER_2 = P({lean: 6, head: 16, hy: 4, orbit: 'tight', spin: 2.6, aR: 10, fR: 0, aL: 6, fL: -6, tF: 10,
+  sF: 2, tB: -12, sB: -8});
+// The bead burst: arms crossed in front, the beads pulled in and flashing, then flung outward all around.
+const CROSS = P({lean: 10, head: 4, orbit: 'tight', spin: 1.2, aR: 40, fR: 140, aL: 46, fL: 150, tF: 10, sF: 2,
+  tB: -12, sB: -6});
+const BURST = P({lean: -6, head: -8, orbit: 'burst', spin: 1.6, aR: 100, fR: 110, aL: -80, fL: -100, tF: 14, sF: 4,
+  tB: -16, sB: -8});
+const OPEN = (o, name) => ({...o, open: true});
+const GREEN = '#2f6b4f';
+sheet({
+  weapon: 'none',
+  colors: {robe: '#2a2333', robeDark: '#1d1824', skin: '#b9b2c4', skinDark: '#8e86a0', hair: '#b9b2c4',
+    belt: '#3a2a1e', eye: '#b9b2c4'},
+  title: 'MOINE DU VIDE — COMBAT ÉQUILIBRÉ (v3)',
+  sub: 'Proposition avant animation · lent, lourd, lisible : chaque attaque a son signal et laisse ensuite une fenêtre '
+    + 'OUVERTE (vert) pour le frapper · vue de profil, il regarde vers la droite · 40 PV ≈ 6 coups d\'épée',
+  wrong: [
+    'Il <b>marche</b> vers toi, lentement ; il ne court jamais.',
+    'À moins de 3 blocs : <b>Paume du Vide</b> (préparation 10 ticks, recul 3 blocs). Jamais deux fois de suite.',
+    'Tu restes à plus de 5 blocs : <b>Volée de perles</b> (recharge 6 s).',
+    'Plus de 10 blocs, ou une flèche le touche : <b>Pas du Vide</b> (recharge 8 s). Il arrive <b>devant</b> toi, '
+      + 'puis prépare sa paume : jamais de coup instantané.',
+    'Tu le frappes 3 fois d\'affilée : <b>Éclat de perles</b>, il te repousse (2 dégâts) pour casser le spam de M1.',
+  ],
+  fix: [
+    'Après chaque attaque, une fenêtre <b>OUVERTE</b> : il ne peut ni attaquer ni se téléporter. C\'est là qu\'on frappe.',
+    'Parer la paume au bon moment : il <b>vacille</b> 1 s et prend +50 % de dégâts.',
+    'Au corps à corps, il ne se téléporte <b>jamais</b> quand on le frappe (seulement contre les flèches et dans l\'eau).',
+    'Après la paume, il ne te poursuit pas : il revient en marchant, le temps de te replacer.',
+    'Pendant la volée, ses perles sont parties : il n\'a plus rien pour l\'Éclat, on peut enchaîner librement.',
+  ],
+  anims: [
+    {name: 'Colère', meta: '28 ticks · quand on le regarde · il ne peut pas être frappé avant le tick 13',
+      feel: 'le moment où il « voit » : il se libère de tout ce qui le retenait.',
+      read: 'il lève la main vers son bandeau : prépare-toi, le combat commence.',
+      frames: [
+        {ticks: '0 → 8', phase: 'main au bandeau', phaseColor: '#a32020', pose: HAND_UP, from: PRAY, trace: 'handR',
+          bend: 8, note: 'Il se fige, puis lève lentement la main vers ses yeux.'},
+        {ticks: '9 → 12', phase: 'ARRACHE', phaseColor: '#c46a00', pose: TEAR, from: HAND_UP, trace: 'handR',
+          bend: -10, note: 'Il arrache le bandeau et le chapelet : le tissu s\'envole, le fil casse.'},
+        {ticks: '13 → 28', phase: 'OUVERT', phaseColor: GREEN, pose: TALL, from: TEAR, trace: 'neck',
+          note: 'Il se déplie, les perles se mettent à tourner. Première ouverture : frappe-le maintenant.'},
+      ]},
+    {name: 'Paume du Vide', meta: '40 ticks · impact au tick 14 · 3 blocs · 7 dégâts, recul 3 blocs',
+      feel: 'un coup de paume de maître : lent à venir, lourd, puis il reste en appui.',
+      read: 'l\'épaule reculée et les perles qui accélèrent : esquive ou parade au moment de l\'impact.',
+      frames: [
+        {ticks: '0 → 10', phase: 'prépare (signal)', phaseColor: '#a32020', pose: WIND, from: GUARD, trace: 'handR',
+          bend: 10, target: 170, note: 'Recule l\'épaule, la paume à la hanche ; les perles accélèrent.'},
+        {ticks: '11 → 14', phase: 'PAUME', phaseColor: '#c46a00', pose: PALM, from: WIND, trace: 'handR', bend: -4,
+          impact: true, target: 170, arrows: [{at: 'footF', from: [-24, 0], to: [0, 0], color: '#3a6fb0'}],
+          note: 'Grand pas, la paume pousse : onde violette. Gardé : pas de dégâts mais tu recules.'},
+        {ticks: '15 → 30', phase: 'OUVERT', phaseColor: GREEN, pose: PALM, target: 170, note: 'Il reste en appui, '
+          + 'le bras tendu, 15 ticks : il ne peut rien faire. Fenêtre pour 2 à 3 coups.'},
+        {ticks: '31 → 40', phase: 'retour', pose: GUARD, from: PALM, trace: 'handR', target: 170,
+          note: 'Il se replace et revient en marchant, sans foncer.'},
+      ]},
+    {name: 'Vacille', meta: '20 ticks · après une paume parée au bon moment',
+      feel: 'le maître perd l\'équilibre pour la première fois : la récompense du joueur précis.',
+      read: 'il part en arrière et ses perles ralentissent : c\'est le moment de tout donner.',
+      frames: [
+        {ticks: '0 → 6', phase: 'PARÉ', phaseColor: '#c46a00', pose: STAGGER, from: PALM, trace: 'neck',
+          impact: true, target: 170, note: 'La paume est déviée : il bascule en arrière, bras ballants.'},
+        {ticks: '7 → 20', phase: 'OUVERT +50 %', phaseColor: GREEN, pose: STAGGER_2, from: STAGGER, trace: 'neck',
+          target: 170, note: 'Il se courbe, sonné, les perles traînent bas. Chaque coup fait +50 % de dégâts.'},
+      ]},
+    {name: 'Volée de perles', meta: '46 ticks · tir au tick 15 · 5 à 10 blocs · 3 dégâts par perle touchée (max 3)',
+      feel: 'le chapelet devient une arme : il ne te laisse pas fuir trop loin.',
+      read: 'les perles qui se rassemblent devant sa main : esquive de côté, ou garde.',
+      frames: [
+        {ticks: '0 → 13', phase: 'appelle (signal)', phaseColor: '#a32020', pose: DRAW, from: GUARD, trace: 'handR',
+          bend: 8, note: 'Les perles quittent leur orbite et se rassemblent en cercle devant sa paume ; il ramène la main.'},
+        {ticks: '14 → 15', phase: 'JETTE', phaseColor: '#c46a00', pose: FLING, from: DRAW, trace: 'handR',
+          bend: -6, impact: true, target: 175, note: 'Les perles partent en ligne droite : un pas de côté suffit.'},
+        {ticks: '16 → 36', phase: 'OUVERT', phaseColor: GREEN, pose: OPEN(P({lean: 6, head: -4, aR: 40, fR: 70,
+          aL: 0, fL: 20, tF: 12, sF: 4, tB: -14, sB: -8})), note: 'Ses perles reviennent lentement : 20 ticks sans '
+          + 'perles, sans Éclat ni téléport. Fonce sur lui.'},
+        {ticks: '37 → 46', phase: 'retour', pose: GUARD, note: 'Les perles reprennent leur orbite.'},
+      ]},
+    {name: 'Pas du Vide', meta: '36 ticks · plus de 10 blocs ou touché par une flèche · recharge 8 s',
+      feel: 'il disparaît en silence et réapparaît devant toi, déjà prêt à frapper.',
+      read: 'les perles qui se serrent contre lui : il va arriver devant toi, recule ou prépare l\'esquive.',
+      frames: [
+        {ticks: '0 → 8', phase: 'perles serrées', phaseColor: '#a32020', pose: TIGHT, note: 'Les perles se '
+          + 'resserrent contre son corps : c\'est le signal.'},
+        {ticks: '9', phase: 'disparaît', phaseColor: '#a32020', pose: APPEAR, from: TIGHT, trace: 'neck', bend: -20,
+          target: 175, note: 'Il réapparaît accroupi à 2 blocs, devant toi (jamais dans ton dos).'},
+        {ticks: '10 → 20', phase: 'prépare', phaseColor: '#a32020', pose: P({...WIND, hx: 24}), target: 175,
+          note: 'Il se relève et prépare sa paume : 10 ticks pour esquiver.'},
+        {ticks: '21 → 36', phase: 'PAUME puis OUVERT', phaseColor: GREEN, pose: PALM_NEAR, target: 175,
+          note: 'Même paume, même fenêtre ouverte de 15 ticks après.'},
+      ]},
+    {name: 'Éclat de perles', meta: '30 ticks · après 3 coups reçus d\'affilée · 2 dégâts, recul 4 blocs',
+      feel: 'le maître se dégage : on ne l\'enferme pas sous une pluie de coups.',
+      read: 'il croise les bras et les perles brillent : recule ou garde, ça ne fait presque pas mal.',
+      frames: [
+        {ticks: '0 → 8', phase: 'croise (signal)', phaseColor: '#a32020', pose: CROSS, note: 'Il croise les bras ; '
+          + 'les perles se serrent et brillent fort.'},
+        {ticks: '9 → 10', phase: 'ÉCLAT', phaseColor: '#c46a00', pose: BURST, from: CROSS, trace: 'handR',
+          impact: true, note: 'Il ouvre les bras : les perles partent en cercle tout autour et repoussent.'},
+        {ticks: '11 → 30', phase: 'OUVERT', phaseColor: GREEN, pose: GUARD, from: BURST, trace: 'handR',
+          note: 'Les perles reviennent ; 20 ticks où il ne peut pas refaire d\'Éclat.'},
+      ]},
+    {name: 'Mort', meta: '30 ticks',
+      feel: 'un moine qui retrouve enfin la paix.',
+      read: 'les perles qui tombent au sol : il est mort.',
+      frames: [
+        {ticks: '0 → 12', phase: 'à genoux', pose: KNEES, from: TALL, trace: 'neck', note: 'Il tombe à genoux ; '
+          + 'les perles cessent de tourner et tombent au sol.'},
+        {ticks: '13 → 30', phase: 'tombe', pose: FALLEN, from: KNEES, trace: 'neck', note: 'Il bascule en avant '
+          + 'et part en particules violettes.'},
+      ]},
+  ],
+});
+// This sheet's two boxes say how he fights and what makes him killable.
+const boxes = document.querySelectorAll('.panelbox h2');
+boxes[0].textContent = 'Comment il se bat';
+boxes[1].textContent = 'Ce qui le rend tuable';
+boxes[0].style.color = '#7a2020';
+document.querySelector('.wrong').classList.remove('wrong');
+// Frames in an open window get a green frame.
+document.querySelectorAll('.frame').forEach(f => {
+  if (f.querySelector('text:nth-of-type(2)')?.textContent.startsWith('OUVERT')
+      || f.querySelector('text:nth-of-type(2)')?.textContent.includes('OUVERT')) {
+    f.querySelector('svg').style.outline = '3px solid #2f6b4f';
+  }
+});
+</script></body></html>
