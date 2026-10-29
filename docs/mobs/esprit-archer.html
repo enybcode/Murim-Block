@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Esprit de l'Archer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:860px;background:#efe7d6;font-family:"Segoe UI",Arial,sans-serif;color:#2a2420;padding:28px 36px;position:relative}
+body:before{content:"";position:absolute;inset:12px;border:3px double #7a2020;pointer-events:none}
+h1{font-family:Georgia,serif;font-size:44px;font-weight:600;color:#7a2020;letter-spacing:1px}
+.sub{font-size:17px;color:#5b4a3e;margin-top:2px}
+.seal{position:absolute;right:48px;top:24px;width:84px;height:84px;border:4px solid #a32020;color:#a32020;font-family:"KaiTi","SimSun",serif;font-size:30px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;transform:rotate(-6deg)}
+.grid{display:grid;grid-template-columns:520px 1fr 1fr;gap:22px;margin-top:26px}
+.panel{background:#f8f2e6;border:1.5px solid #c9b89a;border-radius:6px;padding:14px 16px}
+h2{font-size:17px;text-transform:uppercase;letter-spacing:1.5px;color:#7a2020;border-bottom:1.5px solid #c9b89a;padding-bottom:5px;margin-bottom:9px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{padding:4px 5px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:#7d6a5a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #d8cab0}
+tr+tr td{border-top:1px solid #e6dcc8}
+td.v{font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:10px;background:#e4d9c3;margin-right:4px}
+.ok{background:#cfe3c0}.warn{background:#f3d9a8}.no{background:#f0c4c0}
+.bar{height:9px;background:#e1d6c0;border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#7a2020}
+ul{list-style:none;font-size:14.5px}li{padding:3px 0 3px 16px;position:relative}li:before{content:"◆";position:absolute;left:0;color:#a32020;font-size:10px;top:7px}
+.small{font-size:13px;color:#6b5a4c}
+</style></head><body>
+<h1>ESPRIT DE L'ARCHER</h1>
+<div class="sub">Remplace le stray · <code>minecraft:stray</code> (même identifiant, même apparition, mêmes drops) · variante de l'Archer impérial · Murimblock V2 — fiche de conception</div>
+<div class="seal">冰魄<br>弓靈</div>
+
+<div class="grid">
+<div class="panel" style="padding-bottom:8px">
+<h2>Apparence</h2>
+<svg viewBox="0 0 490 470" width="490" height="470">
+<defs>
+<linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#bfe3f2" stop-opacity=".95"/><stop offset=".55" stop-color="#8fc3dc" stop-opacity=".8"/><stop offset="1" stop-color="#6fa7c8" stop-opacity="0"/>
+</linearGradient>
+<linearGradient id="mistSide" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#6fa7c8" stop-opacity="0"/><stop offset=".6" stop-color="#8fc3dc" stop-opacity=".8"/><stop offset="1" stop-color="#bfe3f2" stop-opacity=".95"/>
+</linearGradient>
+<radialGradient id="core"><stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#e8fbff" stop-opacity=".9"/><stop offset="1" stop-color="#bfe3f2" stop-opacity="0"/></radialGradient>
+<radialGradient id="eye"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#7ff0ff"/><stop offset="1" stop-color="#7ff0ff" stop-opacity="0"/></radialGradient>
+</defs>
+
+<!-- front -->
+<g transform="translate(40,40) scale(1.15)">
+<!-- the mist tail where the legs were: it hangs and thins out, never touching the ground -->
+<path d="M30 140 Q20 180 44 206 Q62 226 52 248 Q72 230 70 208 Q92 228 84 252 Q104 222 96 196 Q112 170 98 140 Z" fill="url(#mist)"/>
+<path d="M44 160 Q56 190 50 214" stroke="#e8fbff" stroke-width="2" fill="none" opacity=".55"/>
+<path d="M82 158 Q78 186 90 210" stroke="#e8fbff" stroke-width="2" fill="none" opacity=".45"/>
+<ellipse cx="64" cy="262" rx="30" ry="4" fill="#6fa7c8" opacity=".25"/>
+<!-- torso of mist with a glowing core -->
+<path d="M30 76 Q26 112 30 146 L98 146 Q102 112 98 76 Z" fill="#a9d4e8" opacity=".85"/>
+<circle cx="64" cy="104" r="22" fill="url(#core)"/>
+<!-- floating armour: frosted lamellar plates, the brass bands broken -->
+<g transform="translate(0,-3)">
+<rect x="34" y="88" width="26" height="5" fill="#6b4048"/><rect x="68" y="90" width="26" height="5" fill="#6b4048"/>
+<rect x="36" y="99" width="20" height="5" fill="#8f8a6a"/><rect x="74" y="101" width="18" height="5" fill="#8f8a6a"/>
+<rect x="40" y="122" width="16" height="5" fill="#6b4048"/><rect x="72" y="124" width="18" height="5" fill="#6b4048"/>
+<g fill="#e9f6fb"><rect x="34" y="88" width="10" height="2"/><rect x="80" y="90" width="12" height="2"/><rect x="40" y="122" width="8" height="2"/></g>
+</g>
+<rect x="32" y="140" width="64" height="8" fill="#3b2f2c"/><rect x="58" y="139" width="12" height="10" fill="#8f8a6a"/>
+<!-- left pauldron (frosted, rusted), right one lost -->
+<path d="M16 74 L36 70 L38 92 L14 96 Z" fill="#6b4048"/><path d="M16 74 L36 70 L36 75 L16 79 Z" fill="#e9f6fb"/>
+<g fill="#e9f6fb"><path d="M18 96 L20 104 L22 96 Z"/><path d="M26 95 L27 101 L29 95 Z"/><path d="M33 93 L35 102 L36 93 Z"/></g>
+<!-- arms of mist, ending in long fingers -->
+<path d="M18 92 Q12 130 20 166 L28 166 Q30 130 30 96 Z" fill="#a9d4e8" opacity=".8"/>
+<path d="M110 92 Q116 130 108 166 L100 166 Q98 130 98 96 Z" fill="#a9d4e8" opacity=".8"/>
+<rect x="100" y="140" width="10" height="14" fill="#3b2f2c"/><rect x="100" y="144" width="10" height="3" fill="#8f8a6a"/>
+<!-- the hood, empty but for the eyes -->
+<path d="M64 0 Q30 8 28 48 Q30 70 40 78 L88 78 Q98 70 100 48 Q98 8 64 0 Z" fill="#7a9fb4"/>
+<path d="M64 6 Q38 14 36 48 Q38 66 46 74 L82 74 Q90 66 92 48 Q90 14 64 6 Z" fill="#1d2a36"/>
+<path d="M28 48 Q30 70 40 78 L88 78 Q98 70 100 48 Q96 60 88 64 L40 64 Q32 60 28 48 Z" fill="#6b4048" opacity=".9"/>
+<g fill="#e9f6fb"><path d="M42 78 L44 88 L46 78 Z"/><path d="M54 78 L55 84 L57 78 Z"/><path d="M70 78 L72 90 L74 78 Z"/><path d="M84 78 L85 85 L87 78 Z"/></g>
+<circle cx="52" cy="42" r="8" fill="url(#eye)"/><circle cx="76" cy="42" r="8" fill="url(#eye)"/>
+<!-- the bow, held low -->
+<path d="M120 60 Q134 134 120 210" stroke="#4a3a30" stroke-width="6" fill="none"/>
+<path d="M120 60 Q134 134 120 210" stroke="#e9f6fb" stroke-width="2" stroke-dasharray="6 14" fill="none"/>
+<line x1="120" y1="60" x2="118" y2="210" stroke="#7ff0ff" stroke-width="1.5"/>
+<!-- breath and loose wisps -->
+<g fill="#e8fbff" opacity=".6"><circle cx="64" cy="86" r="3"/><circle cx="70" cy="80" r="2"/><circle cx="12" cy="150" r="2.5"/><circle cx="116" cy="176" r="2"/><circle cx="24" cy="200" r="2"/></g>
+</g>
+
+<!-- side: drawing the bow, the tail streaming back -->
+<g transform="translate(250,40) scale(1.15)">
+<path d="M18 140 Q0 172 -6 210 Q-14 236 -30 250 Q4 244 14 212 Q22 236 10 258 Q40 232 40 200 Q48 170 56 140 Z" fill="url(#mistSide)"/>
+<path d="M28 150 Q16 190 2 230" stroke="#e8fbff" stroke-width="2" fill="none" opacity=".5"/>
+<path d="M16 76 Q12 112 18 146 L56 146 Q62 112 58 76 Z" fill="#a9d4e8" opacity=".85"/>
+<circle cx="40" cy="104" r="18" fill="url(#core)"/>
+<rect x="16" y="88" width="40" height="5" fill="#6b4048"/><rect x="18" y="99" width="34" height="5" fill="#8f8a6a"/><rect x="20" y="122" width="34" height="5" fill="#6b4048"/>
+<rect x="16" y="140" width="42" height="8" fill="#3b2f2c"/>
+<!-- quiver on the back, its fletchings turned to frost -->
+<rect x="0" y="70" width="14" height="62" fill="#3b2f2c" transform="rotate(-8 7 100)"/>
+<g fill="#e9f6fb"><path d="M2 60 L4 72 L6 60 Z"/><path d="M7 56 L9 70 L11 56 Z"/><path d="M12 60 L13 70 L15 60 Z"/></g>
+<!-- hood in profile -->
+<path d="M40 0 Q8 6 6 46 Q8 70 18 78 L62 78 Q72 60 70 40 Q66 6 40 0 Z" fill="#7a9fb4"/>
+<path d="M48 14 Q66 22 66 46 Q64 66 56 72 L44 72 Q52 50 48 14 Z" fill="#1d2a36"/>
+<circle cx="58" cy="42" r="7" fill="url(#eye)"/>
+<!-- drawing arm of mist and bow arm forward -->
+<path d="M36 90 L124 88 L124 98 L36 102 Z" fill="#a9d4e8" opacity=".85"/>
+<path d="M36 90 Q30 84 30 94 L42 100 Z" fill="#a9d4e8" opacity=".85"/>
+<rect x="104" y="86" width="12" height="14" fill="#3b2f2c"/><rect x="104" y="91" width="12" height="3" fill="#8f8a6a"/>
+<path d="M124 20 Q156 94 124 172" stroke="#4a3a30" stroke-width="7" fill="none"/>
+<path d="M124 20 Q156 94 124 172" stroke="#e9f6fb" stroke-width="2" stroke-dasharray="6 14" fill="none"/>
+<line x1="124" y1="20" x2="36" y2="94" stroke="#7ff0ff" stroke-width="2"/><line x1="124" y1="172" x2="36" y2="94" stroke="#7ff0ff" stroke-width="2"/>
+<!-- the ice arrow -->
+<line x1="36" y1="94" x2="166" y2="94" stroke="#bfe3f2" stroke-width="3"/>
+<path d="M166 88 L182 94 L166 100 Z" fill="#e8fbff" stroke="#7ff0ff" stroke-width="1"/>
+<g fill="#7ff0ff" opacity=".7"><circle cx="146" cy="90" r="1.5"/><circle cx="152" cy="99" r="1.5"/><circle cx="160" cy="91" r="1"/></g>
+</g>
+
+<text x="114" y="366" font-size="13" text-anchor="middle" fill="#6b5a4c">FACE (sans jambes)</text>
+<text x="330" y="366" font-size="13" text-anchor="middle" fill="#6b5a4c">PROFIL (il bande l'arc)</text>
+<line x1="18" y1="40" x2="18" y2="340" stroke="#7d6a5a"/><line x1="12" y1="40" x2="24" y2="40" stroke="#7d6a5a"/><line x1="12" y1="340" x2="24" y2="340" stroke="#7d6a5a"/>
+<text x="10" y="190" font-size="12" fill="#6b5a4c" transform="rotate(-90 10 190)" text-anchor="middle">2 blocs, flotte à ¼ de bloc du sol</text>
+<g font-size="11.5" fill="#4a3d32">
+<rect x="20" y="392" width="36" height="22" fill="#a9d4e8"/><text x="20" y="430">Brume</text>
+<rect x="78" y="392" width="36" height="22" fill="#e8fbff" stroke="#b9ad96"/><text x="78" y="430">Cœur</text>
+<rect x="136" y="392" width="36" height="22" fill="#7ff0ff"/><text x="136" y="430">Yeux</text>
+<rect x="194" y="392" width="36" height="22" fill="#7a9fb4"/><text x="194" y="430">Capuche</text>
+<rect x="252" y="392" width="36" height="22" fill="#6b4048"/><text x="252" y="430">Laque</text>
+<rect x="310" y="392" width="36" height="22" fill="#8f8a6a"/><text x="310" y="430">Laiton</text>
+<rect x="368" y="392" width="36" height="22" fill="#e9f6fb" stroke="#b9ad96"/><text x="368" y="430">Givre</text>
+<rect x="426" y="392" width="36" height="22" fill="#4a3a30"/><text x="426" y="430">Arc</text>
+</g>
+<text x="20" y="462" font-size="12.5" fill="#6b5a4c">Squelette de l'Archer · pas de jambes : une traîne de brume · hitbox vanilla</text>
+</svg>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Lore</h2>
+<p style="font-size:14.5px;line-height:1.5">Un archer de la garde impériale, mort de froid au col qu'il gardait. Son corps est resté sous la neige ; son âme s'est relevée avec son arc. Il n'a plus de jambes pour fuir : il flotte, et la brume qui le forme gèle tout ce que touchent ses flèches.</p>
+</div>
+<div class="panel">
+<h2>Détails en relief</h2>
+<ul>
+<li>Capuche vide, seulement deux yeux de glace qui brillent</li>
+<li>Torse et bras de brume translucide, un cœur lumineux dans la poitrine</li>
+<li><b>Pas de jambes</b> : sous la ceinture, une traîne de brume qui s'effiloche et ne touche jamais le sol</li>
+<li>Restes d'armure solides qui flottent sur la brume : une épaulière, des lamelles, la ceinture, le bracelet d'arc</li>
+<li>Glaçons sous le bord de la capuche et de l'épaulière</li>
+<li>Arc usé couvert de givre, corde de lumière bleue, carquois aux plumes gelées</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Statistiques</h2>
+<table>
+<tr><td>Vie</td><td class="v">20 ♥</td><td style="width:45%"><div class="bar"><i style="width:40%"></i></div></td></tr>
+<tr><td>Dégâts d'une flèche</td><td class="v">2 à 5 + Lenteur</td><td><div class="bar"><i style="width:45%"></i></div></td></tr>
+<tr><td>Vitesse</td><td class="v">0,25</td><td><div class="bar"><i style="width:50%"></i></div></td></tr>
+<tr><td>Distance de tir</td><td class="v">8 à 15 blocs</td><td><div class="bar"><i style="width:60%"></i></div></td></tr>
+</table>
+<p class="small" style="margin-top:6px">Stray vanilla : Lenteur 30 s à chaque flèche.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="panel">
+<h2>Attaques (celles de l'Archer)</h2>
+<table>
+<tr><th>Attaque</th><th>Portée</th><th>Réponse</th></tr>
+<tr><td><b>Flèche de glace</b><br><span class="small">Tir posé, la corde s'illumine, Lenteur</span></td><td class="v">8–15</td><td><span class="tag ok">Garde</span><span class="tag ok">Esquive</span></td></tr>
+<tr><td><b>Volée</b><br><span class="small">2 flèches en cloche quand on se cache</span></td><td class="v">8–15</td><td><span class="tag ok">Bouger</span><span class="tag warn">Garde</span></td></tr>
+<tr><td><b>Coup de crosse</b><br><span class="small">Repousse avec l'arc si on est collé</span></td><td class="v">2</td><td><span class="tag ok">Garde</span><span class="tag ok">Parade</span></td></tr>
+</table>
+</div>
+<div class="panel">
+<h2>Comportement</h2>
+<ul>
+<li>Même combat que l'Archer impérial (<code>ArcherFighting</code>)</li>
+<li>Il <b>glisse</b> au lieu de marcher : la traîne ondule derrière lui</li>
+<li>Laisse un fin sillage de brume et un souffle givré</li>
+<li>Apparition vanilla : biomes enneigés, squelette gelé dans la neige poudreuse</li>
+</ul>
+</div>
+<div class="panel" style="flex:1">
+<h2>Animations</h2>
+<table>
+<tr><td class="v">idle / glisse</td><td>Clips de l'Archer ; le haut du corps flotte, la traîne suit</td></tr>
+<tr><td class="v">tir / volée</td><td>Clips de l'Archer ; la corde s'allume en bandant</td></tr>
+<tr><td class="v">recul / crosse</td><td>Clips de l'Archer, il recule en glissant</td></tr>
+<tr><td class="v">mort</td><td>La brume se dissipe, l'armure et l'arc tombent au sol</td></tr>
+</table>
+<p class="small" style="margin-top:6px"><b>Moteur :</b> rendu translucide pour la brume (armure opaque), traîne de brume animée comme un tissu.</p>
+</div>
+</div>
+</div>
+</body></html>
