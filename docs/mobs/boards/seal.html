@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Sceau de jade vivant — animations</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The seal in profile, facing right (the beast's head in front). A pose: hx/hy (moved, px, hy down +), lean (tilt,
+// degrees, forward +), squash (flattened +, stretched -), head (the beast's head turned down +), clutch (the beast
+// pressed flat on the block, 0 to 1), tassel (the cord swung back, degrees), shadow (its shadow on the ground, 0 to 1),
+// mark (the red mark stamped on the ground), dust, cracks (0 to 1), split (the halves apart, px), chip.
+// Points: base (bottom middle), top, head, tip (the top of the beast).
+const G = 34;
+function sealPoints(x, y, p) {
+  const a = rad(p.lean || 0), ca = Math.cos(a), sa = Math.sin(a);
+  const sq = p.squash || 0, sx = 1 + sq * 0.3, sy = 1 - sq * 0.35;
+  const base = [x + 22 + (p.hx || 0), y + G + (p.hy || 0)];
+  const at = (u, v) => [base[0] + u * sx * ca - v * sy * sa, base[1] + u * sx * sa + v * sy * ca];
+  return {at, sx, sy, base, bottom: base, top: at(0, -46), head: at(26, -60), tip: at(0, -70)};
+}
+window.BODY = (x, y, p) => sealPoints(x, y, p);
+const JADE = '#6fa58a', JADE_D = '#4f8a6f', JADE_L = '#9fd0b4', GOLD = '#d2a849', RED = '#b3262a', SILK = '#8a1c1c';
+function sealShape(r, p, ghost, cut) {
+  // One block; cut: 'back' or 'front' draws only that half (the division).
+  const col = c => ghost ? C.ghost : c;
+  const A = r.at;
+  const box = (u0, v0, u1, v1, fill) =>
+    `<path d="M${[A(u0, v0), A(u1, v0), A(u1, v1), A(u0, v1)].map(q => q.join(',')).join(' L')} Z" fill="${col(fill)}"/>`;
+  const [l, rgt] = cut === 'back' ? [-34, 0] : cut === 'front' ? [0, 34] : [-34, 34];
+  let out = '';
+  out += box(l, 0, rgt, -46, JADE);
+  out += box(l, -42, rgt, -46, JADE_L);
+  out += box(l, 0, rgt, -2, RED);
+  out += box(l, -30, rgt, -34, GOLD);
+  if (rgt === 34) out += box(22, -34, 34, -46, GOLD);
+  // Carved clouds on the side.
+  for (const [u, v, w, h] of [[-26, -24, 16, 3], [-26, -24, 3, -12], [8, -26, 16, 3], [21, -26, 3, -12],
+    [-10, -8, 20, 3]]) {
+    if (u >= l && u + w <= rgt) out += box(u, v, u + w, v + h, JADE_D);
+  }
+  if (cut) {
+    // The broken face, rough and pale.
+    const e = cut === 'back' ? 0 : 0;
+    out += `<path d="M${A(e, 0).join(',')} L${A(e + 3, -12).join(',')} L${A(e - 2, -24).join(',')}
+      L${A(e + 3, -36).join(',')} L${A(e, -46).join(',')}" stroke="${col('#e8efe0')}" stroke-width="3" fill="none"/>`;
+  }
+  return out;
+}
+function beastShape(r, p, ghost) {
+  const col = c => ghost ? C.ghost : c;
+  const A = r.at, c = p.clutch || 0;
+  const box = (u0, v0, u1, v1, fill) =>
+    `<path d="M${[A(u0, v0), A(u1, v0), A(u1, v1), A(u0, v1)].map(q => q.join(',')).join(' L')} Z" fill="${col(fill)}"/>`;
+  const lift = 12 - 4 * c;
+  let out = '';
+  // Tail curling up at the back, the body, the haunch, the paws gripping.
+  out += box(-24, -46, -18, -46 - lift - 8, JADE_D) + box(-28, -46 - lift - 8, -18, -46 - lift - 11, JADE_D);
+  out += box(-20, -46, 16, -46 - lift, JADE);
+  out += box(-22, -46, -8, -46 - lift - 4, JADE_L);
+  out += box(-20, -46, -14, -49, JADE_D) + box(12, -46, 18, -49, JADE_D);
+  // The head, turned by p.head (down +) about the neck.
+  const h = rad(p.head || 0), neck = A(16, -46 - lift + 2);
+  const H = (u, v) => {
+    const q = [u * Math.cos(h) - v * Math.sin(h), u * Math.sin(h) + v * Math.cos(h)];
+    const t = rad(p.lean || 0);
+    return [neck[0] + q[0] * Math.cos(t) - q[1] * Math.sin(t), neck[1] + q[0] * Math.sin(t) + q[1] * Math.cos(t)];
+  };
+  const hb = (u0, v0, u1, v1, fill) =>
+    `<path d="M${[H(u0, v0), H(u1, v0), H(u1, v1), H(u0, v1)].map(q => q.join(',')).join(' L')} Z" fill="${col(fill)}"/>`;
+  out += hb(-4, 2, 10, -13, JADE) + hb(10, -2, 15, -8, JADE_D) + hb(-2, -13, 2, -18, JADE_D) + hb(-6, 0, -2, -12, JADE_D);
+  if (!ghost) out += hb(5, -9, 8, -6, '#e8402e');
+  return out;
+}
+window.FIGURE = (x, y, p, ghost) => {
+  const r = sealPoints(x, y, p);
+  const col = c => ghost ? C.ghost : c;
+  let out = `<g${ghost ? ' opacity="0.28"' : ''}>`;
+  const ground = y + G;
+  if (!ghost && p.mark) {
+    out += `<rect x="${r.base[0] - 40}" y="${ground - 1}" width="80" height="5" fill="${RED}" opacity="${p.mark}"/>`;
+  }
+  if (!ghost && p.shadow) {
+    const w = 26 + 40 * p.shadow;
+    out += `<ellipse cx="${r.base[0]}" cy="${ground + 1}" rx="${w}" ry="4" fill="#2a2420" opacity="${0.15 + 0.3 * p.shadow}"/>`;
+  }
+  if (p.split) {
+    // Two halves sliding apart, each with half the beast left behind.
+    const back = sealPoints(x - p.split, y, {...p, lean: (p.lean || 0) - p.split * 0.6});
+    const front = sealPoints(x + p.split, y, {...p, lean: (p.lean || 0) + p.split * 0.6});
+    out += sealShape(back, p, ghost, 'back') + sealShape(front, p, ghost, 'front');
+  } else if (!p.hide) {
+    out += sealShape(r, p, ghost);
+    out += beastShape(r, p, ghost);
+  }
+  // The cord down the side and its tassel, swinging.
+  if (!p.split && !p.hide) {
+    const t = rad((p.tassel || 0) + (p.lean || 0)), from = r.at(10, -46);
+    const end = [from[0] - Math.sin(t) * 26, from[1] + Math.cos(t) * 26];
+    out += line(from, end, col(SILK), 2.5) + line(end, [end[0] - Math.sin(t) * 9, end[1] + Math.cos(t) * 9], col(RED), 5);
+    out += line(end, [end[0] - Math.sin(t) * 2, end[1] + Math.cos(t) * 2], col(GOLD), 6);
+  }
+  if (!ghost && p.cracks) {
+    const A = r.at;
+    out += `<path d="M${A(-8, 0).join(',')} L${A(-4, -14).join(',')} L${A(-10, -28).join(',')} L${A(-3, -46).join(',')}
+      M${A(14, -2).join(',')} L${A(10, -16).join(',')} L${A(16, -30).join(',')}" stroke="#f4f8ee" stroke-width="${1.5 + p.cracks * 2}"
+      fill="none" opacity="${0.5 + 0.5 * p.cracks}"/>`;
+  }
+  if (!ghost && p.dust) {
+    for (const s of [-1, 1]) {
+      out += `<circle cx="${r.base[0] + s * (40 + 10 * p.dust)}" cy="${ground - 6}" r="${5 + 5 * p.dust}" fill="#d9cfbd" opacity="0.9"/>
+        <circle cx="${r.base[0] + s * (54 + 14 * p.dust)}" cy="${ground - 3}" r="${3 + 3 * p.dust}" fill="#d9cfbd" opacity="0.8"/>`;
+    }
+  }
+  if (!ghost && p.chip) {
+    const q = r.at(-30, -40);
+    out += `<rect x="${q[0] - 14}" y="${q[1] - 16}" width="6" height="6" fill="${JADE_L}" transform="rotate(30 ${q[0] - 11} ${q[1] - 13})"/>`;
+  }
+  if (!ghost && p.minis) {
+    // The small seals the pieces become, standing up.
+    for (const [dx, s, lean] of p.minis) {
+      const m = sealPoints(x + dx, y, {lean, squash: 0});
+      const k = (u, v) => [m.base[0] + (u * s), m.base[1] + v * s];
+      const mb = (u0, v0, u1, v1, f) => `<rect x="${k(u0, v0)[0]}" y="${k(u0, v1)[1]}" width="${(u1 - u0) * s}" height="${(v0 - v1) * s}" fill="${f}"/>`;
+      out += mb(-34, 0, 34, -46, JADE) + mb(-34, -30, 34, -34, GOLD) + mb(-34, 0, 34, -2, RED) + mb(-18, -46, 16, -56, JADE_D)
+        + mb(10, -52, 22, -62, JADE);
+    }
+  }
+  return out + '</g>';
+};
+
+const REST = {tassel: 0};
+const LOOK = {head: 25, tassel: 8};
+const CROUCH = {squash: 0.7, clutch: 1, tassel: -10};
+const LAUNCH = {hy: -30, squash: -0.35, clutch: 1, tassel: 40, lean: -6, shadow: 0.3};
+const AIR = {hx: 30, hy: -48, squash: 0, lean: 8, clutch: 0.6, tassel: 25, shadow: 0.4};
+const LAND = {hx: 56, squash: 0.6, clutch: 1, tassel: -30, dust: 0.3};
+const SETTLE = {hx: 56, squash: -0.1, tassel: 12};
+const DEEP = {squash: 1, clutch: 1, tassel: -14, head: 20};
+const RISE = {hy: -50, squash: -0.4, clutch: 1, tassel: 45, lean: -4, shadow: 0.5};
+const HANG = {hx: 26, hy: -80, squash: 0, lean: 0, clutch: 1, head: 40, tassel: 10, shadow: 1};
+const SLAM = {hx: 26, squash: 0.9, clutch: 1, tassel: -40, dust: 1, mark: 1, head: 10};
+const WOBBLE = {hx: 26, squash: -0.15, tassel: 20, mark: 0.8};
+const HIT = {hx: -8, lean: -12, squash: 0.15, tassel: 30, head: -15, cracks: 0.3, chip: true};
+const CRACK = {squash: 0.2, cracks: 1, clutch: 1, head: 30, tassel: -10};
+const SPLIT = {split: 22, squash: 0.1, dust: 0.6};
+const MINIS = {split: 0, minis: [[-46, 0.45, 0], [54, 0.45, 0], [6, 0.3, 0]], hy: 0, hide: true};
+
+sheet({
+  weapon: 'none',
+  colors: {robe: JADE},
+  title: 'SCEAU DE JADE VIVANT — ANIMATIONS',
+  sub: 'Proposition avant animation · modèle validé, qui bouge comme un sceau qu\'on abat sur le papier : il se tasse, '
+    + 'saute, retombe d\'un coup sec et laisse sa marque · profil, la bête regarde à droite',
+  wrong: [
+    'Le slime vanilla n\'a pas de poids : il rebondit mou, comme de la gelée.',
+    'Rien ne prévient du coup : on prend les dégâts au contact, sans signal.',
+    'La division fait juste apparaître des petits slimes à la place du grand.',
+  ],
+  fix: [
+    'De la pierre, pas de la gelée : il se tasse avant de partir, retombe d\'un coup sec, avec de la poussière et un « tok ».',
+    'Le Coup de sceau se lit : il monte haut, se fige en l\'air, son ombre grandit au sol, puis il s\'abat.',
+    'Chaque coup de sceau laisse au sol la marque rouge (3 s) ; qui est touché est ralenti.',
+    'La division : le jade se fend le long des veines, les éclats roulent et se relèvent en petits sceaux.',
+    'La bête vit sur le dessus : elle tourne la tête, se cramponne au saut ; le pompon suit chaque mouvement.',
+  ],
+  anims: [
+    {name: 'Repos', meta: 'boucle · 60 ticks',
+      feel: 'un objet sacré posé sur un autel : immobile, seule la bête est vivante.',
+      read: 'il a l\'air d\'une statue ; la tête qui tourne vers toi trahit qu\'il est vivant.',
+      frames: [
+        {ticks: '0', phase: 'posé', pose: REST, note: 'Immobile, le pompon pend droit.'},
+        {ticks: '20 → 40', phase: 'il regarde', pose: LOOK, from: REST, trace: 'head', bend: 0,
+          note: 'La bête tourne la tête et baisse les yeux vers sa proie, puis revient.'},
+      ]},
+    {name: 'Saut', meta: '20 ticks · sa seule façon d\'avancer (comme le slime)',
+      feel: 'un bloc de pierre qui saute : lourd au départ, sec à l\'arrivée.',
+      read: 'le tassement annonce chaque saut.',
+      frames: [
+        {ticks: '0 → 4', phase: 'il se tasse', pose: CROUCH, from: REST, trace: 'tip', bend: 0,
+          note: 'Il s\'écrase un peu, la bête se plaque sur le bloc.'},
+        {ticks: '4 → 7', phase: 'départ', pose: LAUNCH, from: CROUCH, trace: 'base', bend: 0,
+          note: 'Il part en s\'étirant, le pompon fouette vers le bas.'},
+        {ticks: '7 → 14', phase: 'en l\'air', pose: AIR, from: LAUNCH, trace: 'base', bend: -10,
+          note: 'Il pique du nez vers l\'avant pendant le vol.'},
+        {ticks: '14 → 16', phase: 'tok', phaseColor: '#c46a00', pose: LAND, from: AIR, trace: 'base', bend: 0,
+          note: 'Il retombe à plat d\'un coup sec : un « tok », un peu de poussière.'},
+        {ticks: '16 → 20', phase: 'il se pose', pose: SETTLE, from: LAND, trace: 'tip', bend: 0,
+          note: 'Il reprend sa forme, le pompon rebondit.'},
+      ]},
+    {name: 'Coup de sceau', meta: '34 ticks · l\'attaque (grande : 4 dégâts + Lenteur 2 s ; moyenne : 2) · impact au tick 24',
+      feel: 'un sceau qu\'on lève puis qu\'on abat de toutes ses forces sur le papier.',
+      read: 'il reste figé en l\'air et son ombre grandit sous toi = sors de l\'ombre tout de suite.',
+      frames: [
+        {ticks: '0 → 8', phase: 'il se tasse fort', phaseColor: '#a32020', pose: DEEP, from: REST, trace: 'tip', bend: 0,
+          note: 'Tassement plus long et plus bas qu\'un saut : la bête fixe sa proie.'},
+        {ticks: '8 → 12', phase: 'il monte', phaseColor: '#a32020', pose: RISE, from: DEEP, trace: 'base', bend: 0,
+          note: 'Il part tout droit, très haut, vers la proie.'},
+        {ticks: '12 → 22', phase: 'figé en l\'air', phaseColor: '#a32020', pose: HANG, from: RISE, trace: 'base', bend: -6,
+          note: 'Il s\'arrête au-dessus d\'elle, à plat ; son ombre grandit au sol. C\'est le moment d\'esquiver.'},
+        {ticks: '22 → 24', phase: 'IMPACT', phaseColor: '#c46a00', pose: SLAM, from: HANG, trace: 'base', bend: 0,
+          note: 'Il s\'abat d\'un coup : poussière, éclats, la marque rouge reste au sol.'},
+        {ticks: '24 → 34', phase: 'il tremble', pose: WOBBLE, from: SLAM, trace: 'tip', bend: 0,
+          note: 'Le bloc vibre, la marque s\'efface en 3 s. Fenêtre pour le frapper.'},
+      ]},
+    {name: 'Touché', meta: '8 ticks',
+      feel: 'de la pierre qui encaisse : un choc sec, un éclat saute.',
+      read: 'ton coup a porté : une fêlure apparaît, de plus en plus marquée avec sa vie.',
+      frames: [
+        {ticks: '0 → 2', phase: 'choc', pose: HIT, from: REST, trace: 'tip', bend: 0,
+          note: 'Il recule en basculant, un éclat de jade saute, la bête grogne.'},
+        {ticks: '2 → 8', phase: 'retour', pose: REST, from: HIT, trace: 'tip', bend: 0,
+          note: 'Il se repose ; la fêlure reste visible.'},
+      ]},
+    {name: 'Division (mort)', meta: '24 ticks · la grande donne 2 à 4 moyennes, la moyenne 2 à 4 petites, comme le vanilla',
+      feel: 'un sceau qui se brise : le Mandat ne meurt pas, il se partage.',
+      read: 'il n\'est pas fini : chaque éclat se relève et revient.',
+      frames: [
+        {ticks: '0 → 6', phase: 'il se fend', phaseColor: '#a32020', pose: CRACK, from: REST, trace: 'tip', bend: 0,
+          note: 'Les veines blanches s\'ouvrent, la bête se cramponne et regarde ses fêlures.'},
+        {ticks: '6 → 12', phase: 'il éclate', phaseColor: '#c46a00', pose: SPLIT, from: CRACK, trace: 'base', bend: 0,
+          note: 'Le bloc s\'ouvre en morceaux qui glissent, poussière de jade.'},
+        {ticks: '12 → 24', phase: 'ils se relèvent', pose: MINIS, note: 'Chaque morceau roule et se redresse en petit sceau, '
+          + 'avec sa propre petite bête.'},
+      ]},
+  ],
+});
+</script></body></html>
