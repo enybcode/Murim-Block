@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat J3 — nouveau visuel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Silkscreen&display=swap">
+<style>
+/* J3 kept (bottom right, Qi above the technique boxes), redrawn in the System menu's own look (K, Techniques page):
+   pixel font, thin cyan frames, bright corner brackets, a title tag on the top border. Three looks to choose from.
+   Drawn in GUI px (1 GUI px = S board px), so it reads like the game at a given interface scale. */
+:root { --bg: rgba(8, 22, 38, .88); --line: #3d9fd6; --glow: #63cfff; --bright: #d6f4ff; --text: #e8f7ff; --dim: #7fa7c2;
+  --warn: #ff8c9a; --gold: #ffd36b; --gold-dim: #8a6a2a; --px: "Pixelify Sans", "Silkscreen", monospace; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: #8fb8d6; max-width: 1100px; }
+h2 { margin: 0 0 4px; font-size: 18px; color: var(--glow); letter-spacing: 1px; }
+.sub { margin: 0 0 12px; color: #9fb7c9; font-size: 14px; }
+.row { display: grid; gap: 22px; padding: 10px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+.strip { display: grid; grid-template-columns: 1.35fr 1fr 1fr 1fr 1fr; gap: 12px; }
+.stage { position: relative; height: 230px; border-radius: 4px; overflow: hidden;
+  background: linear-gradient(#5d86b8 0, #8fb3d9 55%, #4f7a35 55.2%, #355e26 100%); }
+.stage.big { height: 230px; }
+.cap { margin-top: 6px; text-align: center; font-size: 13px; color: #c8d6e2; }
+.cap b { display: block; color: var(--glow); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.px { position: absolute; font-family: var(--px); white-space: nowrap; }
+.notes { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
+</style></head><body>
+<div class="top"><h1>Barre de combat J3 — nouveau visuel</h1>
+<p>Même idée et même place (bas à droite, Qi au-dessus des techniques), redessinée dans le style des menus du jeu (K). L'art actif se choisit dans K, onglet Techniques ; la barre montre seulement son nom. Trois visuels au choix, chacun à l'échelle d'interface 3, dans cinq états.</p></div>
+
+<div class="row"><div class="card"><h2>A · Fenêtre System</h2><p class="sub">Une petite fenêtre comme le menu : étiquette « FLOWING RIVER SWORD » sur le bord, coins lumineux, Qi en barre fine graduée tous les 10, techniques en cases carrées avec leur touche dans le coin.</p><div class="strip" id="A"></div></div></div>
+<div class="row"><div class="card"><h2>B · Rangée de sceaux</h2><p class="sub">Sans cadre autour : le nom de l'art en petit, une barre de Qi lumineuse, les techniques en losanges, l'ultime dans un octogone doré plus grand.</p><div class="strip" id="B"></div></div></div>
+<div class="row"><div class="card"><h2>C · Liste compacte</h2><p class="sub">Comme la liste « Techniques of the art » du menu, en petit : une ligne par technique avec sa touche, son nom et son coût, l'ultime en bas avec sa jauge dorée.</p><div class="strip" id="C"></div></div></div>
+
+<div class="row"><div class="card notes">
+  <div><h2>Ce qui change par rapport à la planche J3</h2><ul>
+    <li><b>Police pixel</b> du menu, plus de petite police de code.</li>
+    <li><b>Icônes en pixels</b> (coup droit, tourbillon, cascade, mille courants) au lieu des dégradés flous.</li>
+    <li><b>Qi en une barre fine graduée</b> (A, C) ou lumineuse (B), au lieu de gros pavés.</li>
+    <li>Plus de touche pour changer d'art : on le fait dans <b>K → Techniques</b>, hors combat (le menu le dit déjà).</li>
+  </ul></div>
+  <div><h2>Les états montrés</h2><ul>
+    <li><b>Prêt</b> : tout est payable.</li>
+    <li><b>Visée</b> : touche 2 tenue, son coût brille sur la barre de Qi.</li>
+    <li><b>Recharge</b> : la case s'assombrit et une ombre descend avec les secondes.</li>
+    <li><b>Pas assez de Qi</b> : la case passe en rose, la part manquante est marquée sur la barre.</li>
+    <li><b>Ultime prête</b> : l'ultime brille en or. La touche de l'ultime est <b>R</b> comme dans le menu (la planche J3 disait 4).</li>
+  </ul></div>
+</div></div>
+
+<script>
+const S = 3; // board px per GUI px (interface scale 3)
+const TECH = [
+  {key: '1', name: 'River Thrust', cost: 20},
+  {key: '2', name: 'Whirlpool Cut', cost: 30},
+  {key: '3', name: 'Waterfall Descent', cost: 40},
+  {key: 'R', name: 'Thousand Streams', ult: true},
+];
+// 8 x 8 pixel icons ('#' bright, '+' soft).
+const ICONS = [
+  ['.......#', '......#+', '.....#+.', '....#+..', '#..#+...', '.##+....', '.##.....', '#..#....'],
+  ['..####..', '.#....#.', '#..##..#', '#.#..#.#', '#.#.##.#', '#..#...#', '.#....#.', '..####..'],
+  ['#.+.#.+.', '#.+.#.+.', '+.#.+.#.', '+.#.+.#.', '#.+.#.+.', '#.+.#.+.', '........', '########'],
+  ['#..#..#.', '.#.#.#..', '..###...', '#######.', '..###...', '.#.#.#..', '#..#..#.', '........'],
+];
+function icon(x, y, i, color, size = 8) {
+  const p = size / 8;
+  let h = '';
+  ICONS[i].forEach((row, r) => [...row].forEach((c, k) => {
+    if (c === '.') return;
+    h += `<i style="position:absolute;left:${(x + k * p) * S}px;top:${(y + r * p) * S}px;width:${p * S}px;height:${p * S}px;background:${color};opacity:${c === '#' ? 1 : .55}"></i>`;
+  }));
+  return h;
+}
+const box = (x, y, w, h, o = {}) => `<div style="position:absolute;left:${x * S}px;top:${y * S}px;width:${w * S}px;height:${h * S}px;
+  background:${o.bg ?? 'var(--bg)'};border:${S / 3 * 1}px solid ${o.line ?? 'var(--line)'};${o.glow ? `box-shadow:0 0 ${3 * S}px ${o.glow}` : ''};${o.css ?? ''}"></div>`;
+const brackets = (x, y, w, h, color = 'var(--bright)') => {
+  const t = S * .67, L = 4 * S;
+  return [['left', 'top', x, y], ['right', 'top', x + w, y], ['left', 'bottom', x, y + h], ['right', 'bottom', x + w, y + h]].map(([a, b, px, py]) =>
+    `<i style="position:absolute;left:${px * S - (a === 'right' ? L : 0)}px;top:${py * S - (b === 'bottom' ? L : 0)}px;width:${L}px;height:${L}px;border-${a}:${t}px solid ${color};border-${b}:${t}px solid ${color}"></i>`).join('');
+};
+const text = (x, y, s, color, str, o = '') => `<span class="px" style="left:${x * S}px;top:${y * S}px;font-size:${s * S}px;line-height:1;color:${color};${o}">${str}</span>`;
+
+// The Qi bar: w GUI px, 120 max, ticks every 10; aim [from, to] Qi lit white, miss [from, to] Qi marked pink.
+function qibar(x, y, w, h, qi, o = {}) {
+  const at = v => x + w * v / 120;
+  let s = box(x, y, w, h, {bg: 'rgba(4,12,22,.8)', line: 'rgba(99,207,255,.5)'});
+  s += `<div style="position:absolute;left:${(x + .33) * S}px;top:${(y + .33) * S}px;width:${(at(qi) - x - .33) * S}px;height:${(h - .67) * S}px;background:linear-gradient(#9fe3ff,#3fb4ec);box-shadow:0 0 ${2 * S}px rgba(99,207,255,.7)"></div>`;
+  if (o.aim) s += `<div style="position:absolute;left:${at(o.aim[0]) * S}px;top:${(y + .33) * S}px;width:${(at(o.aim[1]) - at(o.aim[0])) * S}px;height:${(h - .67) * S}px;background:#f2fcff;box-shadow:0 0 ${3 * S}px #e4f8ff"></div>`;
+  if (o.miss) s += `<div style="position:absolute;left:${at(o.miss[0]) * S}px;top:${(y - .33) * S}px;width:${(at(o.miss[1]) - at(o.miss[0])) * S}px;height:${(h + .67) * S}px;border:${S * .67}px dashed var(--warn)"></div>`;
+  if (o.ticks !== false) for (let v = 10; v < 120; v += 10) s += `<i style="position:absolute;left:${at(v) * S}px;top:${(y + h - 1.4) * S}px;width:${S * .5}px;height:${S}px;background:rgba(5,15,28,.75)"></i>`;
+  return s;
+}
+// One technique box (A): size GUI px, state: ready | aim | cd (seconds, fraction) | poor | ult (charge) | ultReady.
+function slotA(x, y, size, i, st) {
+  const t = TECH[i], poor = st.poor && !t.ult;
+  const line = poor ? 'var(--warn)' : st.aim ? 'var(--glow)' : t.ult ? (st.ultReady ? 'var(--gold)' : 'var(--gold-dim)') : 'var(--line)';
+  const glow = st.aim ? 'rgba(99,207,255,.9)' : st.ultReady && t.ult ? 'rgba(255,211,107,.85)' : null;
+  let h = box(x, y, size, size, {line, glow, bg: 'rgba(6,18,32,.92)'});
+  const ic = poor ? '#8b5a62' : t.ult ? 'var(--gold)' : st.cd ? '#5f8aa6' : 'var(--bright)';
+  h += icon(x + (size - 8 * size / 14) / 2, y + (size - 8 * size / 14) / 2 + .5, i, ic, 8 * size / 14);
+  if (t.ult && !st.ultReady) h += `<div style="position:absolute;left:${(x + .33) * S}px;top:${(y + size * (1 - st.charge)) * S}px;width:${(size - .67) * S}px;height:${size * st.charge * S - S * .33}px;background:rgba(255,211,107,.22);border-top:${S * .67}px solid var(--gold)"></div>`;
+  if (st.cd && !t.ult && st.cd.i === i) {
+    h += `<div style="position:absolute;left:${(x + .33) * S}px;top:${(y + .33) * S}px;width:${(size - .67) * S}px;height:${(size - .67) * st.cd.f * S}px;background:rgba(2,8,16,.78)"></div>`;
+    h += text(x + size / 2 - 2.4, y + size / 2 - 2.6, 6, 'var(--text)', st.cd.s, 'text-shadow:0 0 6px #000');
+  }
+  h += text(x + 1.2, y + .8, 3.4, t.ult ? 'var(--gold)' : poor ? 'var(--warn)' : 'var(--dim)', t.key);
+  return h;
+}
+
+// A · System window.
+function lookA(st) {
+  const x = 4, y = 6, w = 80, hgt = 36;
+  let h = box(x, y, w, hgt, {line: 'rgba(99,207,255,.65)', glow: 'rgba(99,207,255,.25)'}) + brackets(x, y, w, hgt);
+  // Title tag across the top border.
+  h += box(x + 8, y - 3.2, 52, 6.4, {bg: 'rgba(6,18,32,.98)', line: 'var(--line)'});
+  h += text(x + 10.5, y - 2.1, 4, 'var(--text)', 'FLOWING RIVER SWORD', 'letter-spacing:1px');
+  h += text(x + 4, y + 5.2, 3.6, 'var(--dim)', 'QI');
+  h += text(x + w - 21, y + 5.2, 3.6, 'var(--text)', `${st.qi} / 120`);
+  h += qibar(x + 4, y + 9.5, w - 8, 3.4, st.qi, st);
+  [0, 1, 2].forEach(i => { h += slotA(x + 4 + i * 16, y + 16, 14, i, st); });
+  h += slotA(x + w - 21, y + 15, 17, 3, st);
+  return h;
+}
+// B · A row of seals: diamonds and a gold octagon.
+function lookB(st) {
+  const x = 6, y = 8;
+  const shade = 'text-shadow:0 0 3px #04101c,0 0 6px #04101c';
+  let h = text(x, y, 3.6, 'var(--bright)', 'FLOWING RIVER SWORD', 'letter-spacing:1px;' + shade);
+  h += text(x + 62, y, 3.6, 'var(--text)', `${st.qi}`, shade);
+  h += qibar(x, y + 5, 70, 2.6, st.qi, {...st, ticks: false});
+  [0, 1, 2].forEach(i => {
+    const t = TECH[i], poor = st.poor, cx = x + 7 + i * 17, cy = y + 21, r = 7;
+    const line = poor ? 'var(--warn)' : st.aim && i === 1 ? 'var(--glow)' : 'var(--line)';
+    h += `<div style="position:absolute;left:${(cx - r) * S}px;top:${(cy - r) * S}px;width:${2 * r * S}px;height:${2 * r * S}px;transform:rotate(45deg) scale(.72);background:rgba(6,18,32,.92);border:${S * .67}px solid ${line};${st.aim && i === 1 ? 'box-shadow:0 0 9px var(--glow)' : ''}"></div>`;
+    h += icon(cx - 3.5, cy - 3.5, i, poor ? '#8b5a62' : st.cd && st.cd.i === i ? '#4d7590' : 'var(--bright)', 7);
+    if (st.cd && st.cd.i === i) h += text(cx - 2, cy - 2.5, 5.5, 'var(--text)', st.cd.s, 'text-shadow:0 0 6px #000');
+    h += text(cx - 1, cy + 7.5, 3.4, poor ? 'var(--warn)' : 'var(--dim)', t.key);
+  });
+  // Ultimate: gold octagon.
+  const cx = x + 63, cy = y + 20, r = 9.5, clip = 'polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)';
+  h += `<div style="position:absolute;left:${(cx - r) * S}px;top:${(cy - r) * S}px;width:${2 * r * S}px;height:${2 * r * S}px;clip-path:${clip};background:${st.ultReady ? 'var(--gold)' : 'var(--gold-dim)'}"></div>`;
+  h += `<div style="position:absolute;left:${(cx - r + .8) * S}px;top:${(cy - r + .8) * S}px;width:${(2 * r - 1.6) * S}px;height:${(2 * r - 1.6) * S}px;clip-path:${clip};background:linear-gradient(transparent ${(1 - (st.ultReady ? 1 : st.charge)) * 100}%,rgba(255,211,107,.35) 0),rgba(10,20,34,.95)"></div>`;
+  if (st.ultReady) h += `<div style="position:absolute;left:${(cx - r - 3) * S}px;top:${(cy - r - 3) * S}px;width:${(2 * r + 6) * S}px;height:${(2 * r + 6) * S}px;border-radius:50%;background:radial-gradient(circle,rgba(255,211,107,.35),transparent 65%)"></div>`;
+  h += icon(cx - 4.5, cy - 4.5, 3, 'var(--gold)', 9);
+  h += text(cx - 1, cy + 10, 3.4, 'var(--gold)', 'R');
+  return h;
+}
+// C · Compact list.
+function lookC(st) {
+  const x = 4, y = 4, w = 78;
+  let h = box(x, y, w, 45, {line: 'rgba(99,207,255,.6)'}) + brackets(x, y, w, 45);
+  h += text(x + 3, y + 2.5, 3.6, 'var(--text)', 'FLOWING RIVER SWORD', 'letter-spacing:1px');
+  h += qibar(x + 3, y + 7.5, w - 6, 2.6, st.qi, st);
+  TECH.forEach((t, i) => {
+    const ry = y + 12.5 + i * 7.8, poor = st.poor && !t.ult, cd = st.cd && st.cd.i === i, aim = st.aim && i === 1;
+    const line = poor ? 'var(--warn)' : aim ? 'var(--glow)' : t.ult ? (st.ultReady ? 'var(--gold)' : 'var(--gold-dim)') : 'rgba(99,207,255,.45)';
+    h += box(x + 3, ry, w - 6, 6.6, {line, bg: aim ? 'rgba(40,110,160,.35)' : 'rgba(6,18,32,.85)', glow: aim ? 'rgba(99,207,255,.6)' : t.ult && st.ultReady ? 'rgba(255,211,107,.6)' : null});
+    if (t.ult) h += `<div style="position:absolute;left:${(x + 3.33) * S}px;top:${(ry + .33) * S}px;width:${(w - 6.67) * (st.ultReady ? 1 : st.charge) * S}px;height:${6 * S}px;background:rgba(255,211,107,.18)"></div>`;
+    if (cd) h += `<div style="position:absolute;left:${(x + 3.33) * S}px;top:${(ry + .33) * S}px;width:${(w - 6.67) * st.cd.f * S}px;height:${6 * S}px;background:rgba(2,8,16,.7)"></div>`;
+    h += box(x + 4.3, ry + 1, 4.6, 4.6, {line: t.ult ? 'var(--gold)' : poor ? 'var(--warn)' : 'var(--line)', bg: 'transparent'});
+    h += text(x + 5.4, ry + 1.6, 3.4, t.ult ? 'var(--gold)' : poor ? 'var(--warn)' : 'var(--text)', t.key);
+    h += text(x + 11, ry + 1.6, 3.6, poor ? '#c78a93' : cd ? 'var(--dim)' : t.ult ? 'var(--gold)' : 'var(--text)', t.name);
+    const right = cd ? `${st.cd.s} s` : t.ult ? (st.ultReady ? 'PRÊTE' : `${Math.round(st.charge * 100)} %`) : `${t.cost}`;
+    h += text(x + w - 15, ry + 1.6, 3.4, poor ? 'var(--warn)' : t.ult ? 'var(--gold)' : 'var(--dim)', right);
+  });
+  return h;
+}
+const STATES = [
+  ['Prêt', 'tout est payable', {qi: 84, charge: .6}],
+  ['Visée', 'touche 2 tenue : son coût brille', {qi: 84, charge: .6, aim: [54, 84]}],
+  ['Recharge', 'touche 2 : ombre qui descend', {qi: 54, charge: .7, cd: {i: 1, s: '4', f: .65}}],
+  ['Pas assez de Qi', 'les techniques trop chères passent en rose', {qi: 12, charge: .8, poor: 1, miss: [12, 20]}],
+  ['Ultime prête', 'R brille en or', {qi: 70, charge: 1, ultReady: 1}],
+];
+for (const [id, look] of [['A', lookA], ['B', lookB], ['C', lookC]]) {
+  document.getElementById(id).innerHTML = STATES.map(([n, d, st], k) =>
+    `<div><div class="stage"><div style="position:absolute;right:${k === 0 ? 46 : 18}px;bottom:${k === 0 ? 24 : 18}px;width:${88 * S}px;height:${52 * S}px">${look(st)}</div></div><div class="cap"><b>${n}</b>${d}</div></div>`).join('');
+}
+</script>
+</body></html>
