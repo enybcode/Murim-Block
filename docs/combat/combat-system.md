@@ -80,6 +80,26 @@ the System menu's style in three looks (A window, B seals, C list); B is develop
 - The lock (choice B): a turning pink diamond above the locked foe and a thin health bar facing the camera, the
   health just lost white while it melts.
 
+### Look B, validated (30 Oct 2026)
+
+Enzo validated look B as drawn in `docs/gui/boards/combat-bar-b.png` (source `combat-bar-b.html`, whose canvas code
+is the reference for the shapes). It replaces the J3 boxes above when the HUD is redrawn. Every technique of every art
+gets its own icon in this style:
+
+- Block: 108 x 52 GUI px, 6 GUI px from the bottom-right corner, drawn in GUI pixels (no smoothing).
+- Art banner with pointed ends, the name in the 3 x 5 pixel font (white, shadow one pixel down-right); Qi number at its
+  right.
+- Qi bar: a 5 px tube (light, core, shadow rows), a dark notch every 10 Qi, a small diamond at each end, a white
+  shine gliding along.
+- Techniques: diamonds of half-width 10 (dark outline, cyan line, dark, night-blue fill with a deeper lower half), a
+  pearl on top, the key under. Pink when Qi is lacking, grey with a padlock until mastered, a shadow turning clockwise
+  with the seconds during cooldown.
+- Ultimate: gold octagon of half-size 13 with four rivets, filled with gold from the bottom as it charges, a
+  three-frame spark when ready. Key R, as in the System menu.
+- Technique icons: 11 x 11 pixels in the board's palette (`P` in `combat-bar-b.html`): `w` white highlight, `l` light
+  cyan, `c` cyan, `m` mid blue, `y`/`Y` gold for an art's accent or the ultimate, `G` dark gold. One readable shape per
+  technique, at most three or four colours, no outline (the seal gives it). Ultimates use gold.
+
 Waiting for real techniques (`MartialArtsData` is still the menu's placeholder): keys 1-4 cast nothing yet, so the
 aim (cost segments blinking), cast (spent segments flash), cooldown (dark box and seconds) and ultimate charge (gold
 filling while fighting) states of the board are not drawn yet. Checked by the shot `combat_hud_lock` in the
