@@ -48,6 +48,27 @@ class MurimMapTest {
         }
     }
 
+    @Test
+    void reliefFollowsTheGuide() {
+        assertEquals(132, relief(-3000, -800).height(), 6, "Qinghai plateau");
+        assertEquals(67, relief(1100, -1100).height(), 4, "central plains");
+        assertEquals(65, relief(950, 2000).height(), 4, "Hubei");
+        assertEquals(100, relief(-1300, -700).height(), 0.5, "Chang-An is flat at Y 100");
+        assertEquals(1, relief(-1300, -700).weight(), 1e-6, "Chang-An replaces vanilla's ground");
+        assertEquals(66, relief(950, 1100).height(), 0.5, "Wuhan is flat at Y 66");
+        assertTrue(relief(3400, -1100).height() > 190, "the sacred mountain rises above 190");
+        // The north wall stands 20 to 40 above its feet, and its passes cut through it.
+        double wall = relief(-2000, -2100).height();
+        assertTrue(wall - relief(-2000, -2600).height() > 20, "wall above the steppe: " + wall);
+        assertTrue(relief(-900, -2100).height() < wall - 15, "a pass is lower than the wall");
+        assertEquals(0, relief(0, 7000).weight(), 1e-6, "the sea stays vanilla");
+    }
+
+    private static MurimMap.Relief relief(int wx, int wz) {
+        double[] block = MurimMap.unwarp(wx, wz);
+        return MurimMap.relief((int) Math.round(block[0]), (int) Math.round(block[1]));
+    }
+
     /** Every biome takes a real share of the land, and the map is drawn to build/murim-map/murim-map.png. */
     @Test
     void everyBiomeIsThereAndTheMapIsDrawn() throws IOException {

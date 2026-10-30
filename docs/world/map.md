@@ -95,6 +95,20 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
   first-person body does not hide the view).
 - Verified 29 Oct 2026: `gradlew build` (all tests), `runMapTour` 21/21 PASS; spawn at 0, 88, 0 in the loess plateau.
 
+## Step 2: big relief (29 Oct 2026)
+
+- `MurimMap.relief(x, z)` gives each column a wanted ground height, a weight (how much it replaces vanilla) and a
+  jaggedness. Each biome has its own (`RELIEF` table; blended over 170 blocks), then the features are added: the
+  north wall and its four passes, the chain along Z 0 (peaks west, hills east), the gorge walls between the Sichuan
+  and the Hubei, the sacred mountain, and the capitals' flat ground (Chang-An Y 100, Wuhan Y 66, weight 1).
+- `murimblock:murim_relief` (`MurimRelief`) mixes it into vanilla's `overworld/depth` (part `offset`) and
+  `overworld/sloped_cheese` (part `jaggedness`), both overridden in `data/minecraft`. The sea keeps vanilla (weight 0).
+- Vanilla's noise squashes high ground, so heights above Y 90 get a 20 % boost; the tour reads the middle of five points around each stop (measured in game).
+- `runMapTour` now also checks each stop's ground height (within 20 blocks where the weight is 0.7 or more) and
+  shoots four relief views: the north wall, a pass, the Qinghai escarpment and the Sichuan gorges.
+- Verified 30 Oct 2026: `gradlew build` (all tests), `runMapTour` 0 failures: every biome and height checked, the west
+  peaks at Y 207, the sacred mountain at 217, the north wall at 141 with its pass at 103, the gorges at 188.
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

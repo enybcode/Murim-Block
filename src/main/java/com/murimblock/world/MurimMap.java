@@ -34,7 +34,118 @@ public final class MurimMap {
             new Spot("subtropical forest", MurimBiome.SUBTROPICAL_FOREST, 1400, 4200),
             new Spot("southeast coast", MurimBiome.SOUTHEAST_COAST, 2900, 3000));
 
+    /** A reserved flat ground: a capital's site, in warped coordinates. */
+    public record Site(String name, int x, int z, int radius, int y) {
+    }
+
+    public static final List<Site> CAPITALS = List.of(
+            new Site("Chang-An", -1300, -700, 270, 100),
+            new Site("Wuhan", 950, 1100, 270, 66));
+
+    /**
+     * The relief wanted at a column: the ground {@code height} (Y), how strongly it replaces vanilla's ({@code weight},
+     * 0 = vanilla, 1 = ours) and the wanted jaggedness (vanilla's peaks, 0 = smooth).
+     */
+    public record Relief(double height, double weight, double jaggedness) {
+    }
+
+    /** Wanted ground, weight and jaggedness of each biome, in {@link MurimBiome} order. */
+    private static final double[][] RELIEF = {
+        {80, .8, 0}, {90, .8, .1}, {82, .8, .1}, {132, .9, 0}, {175, .8, 1.2},
+        {100, .9, 0}, {67, .9, 0}, {82, .6, .2}, {84, .6, .3}, {78, .8, 0},
+        {125, .6, .8}, {65, .9, 0}, {64, .95, 0}, {100, .9, 0}, {145, .6, 1.0},
+        {80, .6, .2}, {76, .7, .2}, {78, .7, .1}, {84, .6, .2}, {78, .6, .2},
+        {64, .9, 0}, {40, 0, 0},
+    };
+    /** Biome blending: the relief is averaged over the column and four neighbours this far away. */
+    private static final int BLEND = 170;
+    private static final int[] WALL_PASSES = {-3400, -900, 1200, 3800};
+    private static final ThreadLocal<Object[]> LAST_RELIEF = ThreadLocal.withInitial(() -> new Object[] {null, null});
+
     private MurimMap() {
+    }
+
+    /** The relief wanted at this block column (cached for the last column asked, per thread). */
+    public static Relief relief(int x, int z) {
+        Object[] cache = LAST_RELIEF.get();
+        long key = (long) x << 32 | z & 0xffffffffL;
+        if (cache[0] instanceof Long last && last == key) {
+            return (Relief) cache[1];
+        }
+        Relief relief = computeRelief(x, z);
+        cache[0] = key;
+        cache[1] = relief;
+        return relief;
+    }
+
+    private static Relief computeRelief(double x, double z) {
+        double wx = x + dwx(x, z);
+        double wz = z + dwz(x, z);
+        MurimBiome here = biomeWarped(wx, wz);
+        double height = 0;
+        double weight = 0;
+        double jag = 0;
+        double[][] around = {{0, 0}, {BLEND, 0}, {-BLEND, 0}, {0, BLEND}, {0, -BLEND}};
+        for (double[] o : around) {
+            double[] r = RELIEF[(o[0] == 0 && o[1] == 0 ? here : biome(x + o[0], z + o[1])).ordinal()];
+            height += r[0] / around.length;
+            weight += r[1] / around.length;
+            jag += r[2] / around.length;
+        }
+        if (here == MurimBiome.OCEAN) {
+            return new Relief(height, weight, jag);
+        }
+        // The north wall: a ridge along Z -2100, lower above the central plains, cut by four passes.
+        if (wz > -2550 && wz < -1650) {
+            double pass = 0;
+            for (int p : WALL_PASSES) {
+                pass = Math.max(pass, Math.exp(-sq((wx - p) / 120)));
+            }
+            double f = Math.exp(-sq((wz + 2100) / 115)) * (1 - .92 * pass) * (.75 + .5 * noise(wx / 220, .5, 3));
+            height += f * (wx > 0 && wx < 2300 ? 16 : 34);
+            weight = Math.max(weight, Math.min(1, f) * .95);
+            jag *= 1 - Math.min(1, f);
+        }
+        // Along Z 0: a wooded chain west of the Hubei, low hills east of it.
+        if (wz > -600 && wz < 600) {
+            double f = Math.exp(-sq(wz / (wx < -200 ? 210 : 160)));
+            height += wx < -200 ? 55 * f * (.7 + .6 * noise(wx / 320, 1.5, 5)) : wx < 2100 ? 18 * f : 0;
+            weight = Math.max(weight, f * .95);
+        }
+        // The gorge walls between the Sichuan and the Hubei.
+        if (wz > 0 && wz < 2300 && wx > -700 && wx < 300) {
+            double f = Math.exp(-sq((wx + 200) / 170));
+            height += 85 * f;
+            weight = Math.max(weight, f * .95);
+            jag *= 1 - f;
+        }
+        // The sacred mountain of the Shandong.
+        double d = Math.hypot(wx - 3400, wz + 1100);
+        if (d < 520) {
+            double f = Math.pow(1 - d / 520, 1.4);
+            height += 125 * f;
+            weight = Math.max(weight, .95 * Math.min(1, f * 3));
+        }
+        // Capitals: flat ground at their own height.
+        for (Site c : CAPITALS) {
+            double dc = Math.hypot(wx - c.x(), wz - c.z());
+            if (dc < c.radius()) {
+                double t = smooth((dc - c.radius() * .65) / (c.radius() * .35));
+                height = c.y() + (height - c.y()) * t;
+                weight = 1 + (weight - 1) * t;
+                jag *= t;
+            }
+        }
+        return new Relief(height, weight, jag);
+    }
+
+    private static double sq(double v) {
+        return v * v;
+    }
+
+    private static double smooth(double t) {
+        t = Math.max(0, Math.min(1, t));
+        return t * t * (3 - 2 * t);
     }
 
     /** The biome of the map at this block column. */

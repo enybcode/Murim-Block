@@ -3,8 +3,11 @@ package com.murimblock.client.dev;
 import com.murimblock.Murimblock;
 import com.murimblock.world.MurimBiome;
 import com.murimblock.world.MurimMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -39,7 +42,14 @@ public final class MapTour {
     private static final long SEED = 29102026L;
     private static final int WORLD_FRAMES = 200;
     /** Frames to let the chunks around a spot load and draw before the shot. */
-    private static final int LOAD_FRAMES = 300;
+    private static final int LOAD_FRAMES = 600;
+
+    /** Relief views after the biome spots, in guide coordinates; no biome is checked there. */
+    private static final List<MurimMap.Spot> VIEWS = List.of(
+            new MurimMap.Spot("north wall", null, -2000, -2050),
+            new MurimMap.Spot("north wall pass", null, -900, -2050),
+            new MurimMap.Spot("Qinghai escarpment", null, -2000, -1200),
+            new MurimMap.Spot("Sichuan gorges", null, -200, 1100));
 
     private static boolean started;
     private static int frames = -1;
@@ -74,6 +84,10 @@ public final class MapTour {
         if (step == 0) {
             if (frames >= WORLD_FRAMES) {
                 mc.options.hideGui = true;
+                // Clouds would hide the high ground.
+                mc.options.cloudStatus().set(CloudStatus.OFF);
+                // The pause menu would stop the tour whenever the window loses focus.
+                mc.options.pauseOnLostFocus = false;
                 server(mc, player -> {
                     ServerLevel level = player.serverLevel();
                     BlockPos spawn = level.getSharedSpawnPos();
@@ -85,44 +99,62 @@ public final class MapTour {
             }
             return;
         }
-        int spot = (step - 1) / 2;
-        if (spot >= MurimMap.SPOTS.size()) {
+        int stop = (step - 1) / 2;
+        if (stop >= MurimMap.SPOTS.size() + VIEWS.size()) {
             Murimblock.LOGGER.info("Map tour: done, {} failure(s)", failures);
             mc.stop();
             return;
         }
-        MurimMap.Spot s = MurimMap.SPOTS.get(spot);
+        MurimMap.Spot s = stop < MurimMap.SPOTS.size() ? MurimMap.SPOTS.get(stop) : VIEWS.get(stop - MurimMap.SPOTS.size());
         double[] block = MurimMap.unwarp(s.x(), s.z());
         int x = (int) Math.round(block[0]);
         int z = (int) Math.round(block[1]);
         if (step % 2 == 1) {
-            // Go there, high up, then sit 40 blocks above the ground, south of the spot, looking north at it.
+            // Sit above the ground 100 blocks south of the spot, looking north at it.
             server(mc, player -> {
                 // A spectator: the first-person body would hide the view.
                 player.setGameMode(GameType.SPECTATOR);
-                int ground = Math.max(ground(player.serverLevel(), x, z), ground(player.serverLevel(), x, z + 60));
-                player.connection.teleport(x + 0.5, ground + 30, z + 60.5, 180, 25);
+                ServerLevel level = player.serverLevel();
+                int ground = Math.max(ground(level, x, z, Heightmap.Types.MOTION_BLOCKING),
+                        ground(level, x, z + 100, Heightmap.Types.MOTION_BLOCKING));
+                player.connection.teleport(x + 0.5, ground + 35, z + 100.5, 180, 25);
             });
             step++;
             frames = 0;
         } else if (frames >= LOAD_FRAMES) {
             server(mc, player -> {
                 ServerLevel level = player.serverLevel();
-                int ground = ground(level, x, z);
-                Holder<Biome> biome = level.getBiome(new BlockPos(x, ground, z));
-                String id = biome.unwrapKey().map(k -> k.location().getPath()).orElse("?");
-                check(s.name() + " at " + x + ", " + z + " (Y " + ground + ") is " + s.biome().key + ", found " + id,
-                        id.equals(s.biome().key));
+                // The middle of five points 8 blocks apart: neither a stray tree nor a crack between peaks.
+                int[][] offsets = {{0, 0}, {8, 0}, {-8, 0}, {0, 8}, {0, -8}};
+                int[] grounds = new int[offsets.length];
+                for (int i = 0; i < offsets.length; i++) {
+                    grounds[i] = ground(level, x + offsets[i][0], z + offsets[i][1], Heightmap.Types.MOTION_BLOCKING_NO_LEAVES);
+                }
+                Arrays.sort(grounds);
+                int ground = grounds[2];
+                MurimMap.Relief relief = MurimMap.relief(x, z);
+                if (relief.weight() >= .7) {
+                    check(s.name() + " ground Y " + ground + ", wanted " + Math.round(relief.height()),
+                            Math.abs(ground - relief.height()) <= 20);
+                } else {
+                    Murimblock.LOGGER.info("Map tour: {} ground Y {} (wanted about {}, loosely)", s.name(), ground,
+                            Math.round(relief.height()));
+                }
+                if (s.biome() != null) {
+                    Holder<Biome> biome = level.getBiome(new BlockPos(x, ground, z));
+                    String id = biome.unwrapKey().map(k -> k.location().getPath()).orElse("?");
+                    check(s.name() + " at " + x + ", " + z + " is " + s.biome().key + ", found " + id, id.equals(s.biome().key));
+                }
             });
-            shoot(mc, String.format("murim_map_%02d_%s.png", spot, s.biome().key));
+            shoot(mc, String.format("murim_map_%02d_%s.png", stop, s.name().replaceAll("[^A-Za-z]+", "_").toLowerCase()));
             step++;
             frames = 0;
         }
     }
 
     /** The ground height, generating the chunk first: a chunk not loaded yet reads as the bottom of the world. */
-    private static int ground(ServerLevel level, int x, int z) {
-        return level.getChunk(x >> 4, z >> 4).getHeight(Heightmap.Types.MOTION_BLOCKING, x & 15, z & 15) + 1;
+    private static int ground(ServerLevel level, int x, int z, Heightmap.Types type) {
+        return level.getChunk(x >> 4, z >> 4).getHeight(type, x & 15, z & 15) + 1;
     }
 
     private static void check(String what, boolean ok) {

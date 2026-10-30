@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.murimblock.Murimblock;
 import com.murimblock.world.MurimBiomeSource;
 import com.murimblock.world.MurimContinents;
+import com.murimblock.world.MurimRelief;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -19,6 +20,7 @@ public final class MurimWorldgen {
     static {
         BIOME_SOURCES.register("murim_map", () -> MurimBiomeSource.CODEC);
         DENSITY_FUNCTIONS.register("murim_continents", () -> MurimContinents.MAP_CODEC);
+        DENSITY_FUNCTIONS.register("murim_relief", () -> MurimRelief.MAP_CODEC);
     }
 
     private MurimWorldgen() {

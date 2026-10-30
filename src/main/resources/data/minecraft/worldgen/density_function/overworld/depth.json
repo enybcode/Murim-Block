@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:add",
+  "argument1": {
+    "type": "minecraft:y_clamped_gradient",
+    "from_value": 1.5,
+    "from_y": -64,
+    "to_value": -1.5,
+    "to_y": 320
+  },
+  "argument2": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "murimblock:murim_relief",
+      "part": "offset",
+      "input": "minecraft:overworld/offset"
+    }
+  }
+}
