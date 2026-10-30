@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Épreuve mortelle — Shenfa</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// The mortal trial on Shenfa. Poses (see board.js), in profile facing right: lean = torso, head, aR/fR = near arm,
+// aL/fL = far arm, tF/sF = near thigh / shin, tB/sB = far leg, hx/hy = hips moved (px). dead: drawn as one of the
+// dead (rotten skin, torn rags); buried: the earth of the grave drawn over everything below the ground.
+const STAND = {lean: 0, head: 0, aR: 4, fR: 6, aL: -4, fL: -2, tF: 2, sF: 0, tB: -2, sB: -4};
+// The player getting up (64 ticks, the physiotherapists' way up from the floor).
+const PRONE = {lean: 90, head: 6, hy: 28, hx: -16, aR: 60, fR: 150, aL: 52, fL: 140, tF: -88, sF: -93, tB: -92, sB: -97};
+const PRESS = {lean: 66, head: -14, hy: 26, hx: -16, aR: 4, fR: 18, aL: -2, fL: 12, tF: -80, sF: -92, tB: -86, sB: -95};
+const FOURS = {lean: 78, head: -10, hy: 14, hx: -14, aR: 12, fR: 4, aL: 6, fL: -2, tF: 4, sF: -86, tB: -2, sB: -90};
+const FOOT = {lean: 52, head: -8, hy: 14, hx: -10, aR: 34, fR: 20, aL: 22, fL: 10, tF: 78, sF: 2, tB: 0, sB: -88};
+const KNEEL = {lean: 6, head: -2, hy: 14, hx: -8, aR: 52, fR: 92, aL: 10, fL: 20, tF: 86, sF: 0, tB: 0, sB: -88};
+const DRIVE = {lean: 18, head: 0, hy: 5, hx: -2, aR: -18, fR: 10, aL: 30, fL: 50, tF: 42, sF: -4, tB: -24, sB: -44};
+const LOOK = {...STAND, head: -6, aR: 10, fR: 24, aL: -8, fL: 4};
+// One of the dead climbing out of its grave (40 ticks).
+const UNDER = {dead: 1, buried: 1, lean: 4, head: -18, hy: 66, aR: 176, fR: 172, aL: 150, fL: 150, tF: 0, sF: -4, tB: -4, sB: -8};
+const GRIP = {dead: 1, buried: 1, lean: 32, head: -12, hy: 46, aR: 128, fR: 96, aL: 118, fL: 90, tF: 8, sF: 0, tB: 0, sB: -4};
+const HAUL = {dead: 1, buried: 1, lean: 62, head: -16, hy: 30, hx: 4, aR: 20, fR: 8, aL: 12, fL: 2, tF: 10, sF: -4, tB: 0, sB: -6};
+const KNEE_OUT = {dead: 1, lean: 44, head: 6, hy: 14, hx: -2, aR: 30, fR: 14, aL: 18, fL: 8, tF: 82, sF: 2, tB: -4, sB: -80};
+const HUNCH = {dead: 1, lean: 24, head: 16, hy: 3, aR: 34, fR: 44, aL: 26, fL: 38, tF: 16, sF: -6, tB: -10, sB: -16};
+// The Grave Warden out of the mausoleum (60 ticks).
+const DUCK = {dead: 1, warden: 1, door: 1, lean: 48, head: 22, hy: 12, hx: -22, aR: 44, fR: 30, aL: 36, fL: 24, tF: 34, sF: -8, tB: -18, sB: -30};
+const STOMP = {dead: 1, warden: 1, door: 1, lean: 30, head: 12, hy: 5, hx: 6, aR: 28, fR: 52, aL: -14, fL: 6, tF: 30, sF: 0, tB: -22, sB: -34};
+const RISEW = {dead: 1, warden: 1, door: 1, lean: 4, head: -4, hy: 1, hx: 6, aR: 10, fR: 24, aL: -6, fL: 6, tF: 8, sF: 0, tB: -8, sB: -10};
+const ROAR = {dead: 1, warden: 1, door: 1, lean: -12, head: -30, hy: 2, hx: 6, aR: 128, fR: 156, aL: -128, fL: -156, tF: 10, sF: 0, tB: -10, sB: -14};
+const GUARD = {dead: 1, warden: 1, door: 1, lean: 26, head: 12, hy: 4, hx: 6, aR: 40, fR: 64, aL: 24, fL: 40, tF: 20, sF: -4, tB: -14, sB: -20};
+
+const SKIN = {skin: '#d6a77f', skinDark: '#b0835e', robe: '#3c5a7a', robeDark: '#2c4258', hair: '#2a2220', eye: '#26222a'};
+const DEAD = {skin: '#7f9a6a', skinDark: '#61784f', robe: '#6b6458', robeDark: '#4f4a41', hair: '#3b4a33', eye: '#e03a2a'};
+const WARDEN = {...DEAD, skin: '#748c63', skinDark: '#566a48', robe: '#5a5248', robeDark: '#433d35'};
+window.FIGURE = (x, y, p, ghost) => {
+  Object.assign(C, p.warden ? WARDEN : p.dead ? DEAD : SKIN);
+  let s = '';
+  if (p.door && !ghost) {
+    // The mausoleum's dark doorway, left, with its lintel.
+    s += `<rect x="12" y="44" width="44" height="108" fill="#5c5650"/><rect x="18" y="52" width="32" height="100" fill="#241f22"/>`;
+    s += `<rect x="6" y="38" width="56" height="10" fill="#8a8178"/>`;
+  }
+  s += figure(x, y, p, ghost);
+  if (p.buried && !ghost) {
+    // The grave's earth, over all that is still under it, and the mound pushed up.
+    s += `<rect x="-6" y="152" width="212" height="40" fill="#6d5a45"/>`;
+    s += `<path d="M30 153 q48 -12 96 0" fill="#7d684f"/>`;
+  }
+  return s;
+};
+const earth = (x) => ({from: [x, 150], to: [x + 8, 128], color: '#7d684f', dash: '3 3'});
+sheet({
+  colors: SKIN,
+  title: 'ÉPREUVE MORTELLE — SUR SHENFA',
+  sub: 'Proposition avant animation · toutes les animations du cimetière : le joueur se relève, les morts sortent '
+    + 'des tombes et se battent, le Gardien sort du mausolée · vue de profil, ils regardent vers la droite',
+  wrong: [
+    'Le joueur qui se relève : animation PAL, et un calque à part (BentLimbsLayer) redessine bras et jambes en '
+      + 'deux moitiés pour avoir des genoux ; l\'armure et les mods de skin ne suivent pas.',
+    'Les 14 morts : zombies vanilla, bras tendus tout raides, pas de genoux ni de coudes, coups sans élan.',
+    'Ils apparaissent d\'un coup debout sur la tombe, avec un peu de terre : ils ne sortent pas vraiment.',
+    'Le Gardien : un zombie vanilla grossi, avec ses excroissances en calque ; il sort du mausolée en marchant '
+      + 'comme les autres, sans présence.',
+  ],
+  fix: [
+    'Le joueur se relève sur Shenfa (vrais genoux, vrais coudes) : même déroulé de 3,2 s, en plus lourd et plus '
+      + 'lisible. Plus de PAL ni de BentLimbsLayer dans le mod.',
+    'Les 15 morts passent en Disciple déchu sur Shenfa et reprennent ses clips : marche, course, garde, coup, '
+      + 'double coup, ruée, recul, mort.',
+    'Nouveau clip : sortir de la tombe (40 ticks) — une main perce la terre, il se hisse, un genou, debout voûté.',
+    'Le Gardien : son corps Shenfa (fiche gardien-tombes), les clips du Disciple à 85 % de vitesse, et une sortie '
+      + 'du mausolée (60 ticks) avec un cri.',
+    'La plongée dans le dantian ne change pas : le corps assis est déjà le lotus Shenfa.',
+  ],
+  anims: [
+    {name: 'Se relever (joueur)', meta: '64 ticks · comme aujourd\'hui · vu de dos puis de trois quarts',
+      feel: 'lourd et humain : un corps qui revient à lui, pousse sur ses mains, puis sur sa jambe.',
+      read: 'il vient d\'arriver au cimetière ; quand il est debout, la main lui revient.',
+      frames: [
+        {ticks: '0 → 10', phase: 'face au sol', pose: PRONE, note: 'Allongé face contre terre, joue au sol, '
+          + 'mains près des épaules ; un léger souffle soulève le dos.'},
+        {ticks: '10 → 28', phase: 'pousse · quatre pattes', phaseColor: '#a32020', pose: FOURS, from: PRONE, trace: 'hip', bend: -8,
+          arrows: [{at: 'hip', from: [0, 14], to: [0, -2], color: '#3a6fb0'}],
+          note: 'Les mains poussent le sol, le buste se décolle, puis les hanches remontent sur les genoux : à quatre pattes, dos rond, tête basse.'},
+        {ticks: '28 → 46', phase: 'pied devant · un genou', pose: KNEEL, from: FOURS, trace: 'neck', bend: 6,
+          note: 'Le pied droit vient se poser à plat devant, il se redresse sur un genou, la main droite posée sur le genou avant ; un temps d\'appui.'},
+        {ticks: '46 → 56', phase: 'monte', phaseColor: '#c46a00', pose: DRIVE, from: KNEEL, trace: 'hip', bend: -6,
+          arrows: [earth(70)], note: 'Il pousse sur la jambe avant, l\'autre pied racle et soulève de la terre.'},
+        {ticks: '56 → 64', phase: 'debout', phaseColor: '#2f6b4f', pose: LOOK, from: DRIVE, trace: 'neck', bend: 0,
+          note: 'Debout, la tête se tourne un peu : il regarde le cimetière. Retour à la première personne.'},
+      ]},
+    {name: 'Sortir de la tombe (les morts)', meta: '40 ticks · 2 au départ, puis un toutes les 3 s',
+      feel: 'inquiétant et maladroit : quelque chose qui n\'aurait pas dû remonter s\'arrache à la terre.',
+      read: 'on voit d\'où il sort et on a le temps de se préparer avant qu\'il ne marche.',
+      frames: [
+        {ticks: '0 → 8', phase: 'la main', phaseColor: '#a32020', pose: UNDER, arrows: [earth(96), earth(112)],
+          note: 'La terre du monticule tremble, puis une main perce et griffe l\'air ; de la terre vole.'},
+        {ticks: '8 → 18', phase: 'agrippe', pose: GRIP, from: UNDER, trace: 'handR', bend: 8,
+          note: 'Les deux mains s\'abattent sur le bord, la tête sort, penchée, les yeux rouges.'},
+        {ticks: '18 → 28', phase: 'se hisse', pose: HAUL, from: GRIP, trace: 'neck', bend: -8,
+          arrows: [{at: 'hip', from: [0, 16], to: [0, 0], color: '#3a6fb0'}],
+          note: 'Bras tendus, il tire le buste hors de la terre par saccades.'},
+        {ticks: '28 → 34', phase: 'un genou', pose: KNEE_OUT, from: HAUL, trace: 'footF', bend: -8,
+          note: 'Une jambe sort et se pose sur le bord ; il reste un instant à genou.'},
+        {ticks: '34 → 40', phase: 'debout', phaseColor: '#2f6b4f', pose: HUNCH, from: KNEE_OUT, trace: 'neck',
+          bend: 4, note: 'Il se redresse voûté, tête basse, bras ballants : la marche du Disciple déchu prend le '
+            + 'relais. Il ne frappe pas pendant la sortie.'},
+      ]},
+    {name: 'Le Gardien sort du mausolée', meta: '60 ticks · ×1,6 · après les 14 autres',
+      feel: 'massif : la porte est trop basse pour lui, chaque pas fait trembler le sol.',
+      read: 'c\'est le dernier, et il est bien plus dangereux que les autres.',
+      frames: [
+        {ticks: '0 → 14', phase: 'se baisse', pose: DUCK, note: 'Il sort de l\'ombre plié en deux sous le '
+          + 'linteau, la tête d\'abord, les yeux rouges allumés.'},
+        {ticks: '14 → 26', phase: 'pas lourd', phaseColor: '#c46a00', pose: STOMP, from: DUCK, trace: 'footF', bend: -10,
+          arrows: [earth(108), earth(124)], note: 'Un grand pas dehors : le pied frappe, légère secousse de '
+            + 'caméra, poussière.'},
+        {ticks: '26 → 36', phase: 'se redresse', pose: RISEW, from: STOMP, trace: 'neck', bend: 6,
+          note: 'Il se déplie de toute sa hauteur, épaules en arrière.'},
+        {ticks: '36 → 48', phase: 'CRI', phaseColor: '#a32020', pose: ROAR, from: RISEW, trace: 'handR', bend: -8,
+          note: 'Tête renversée, bras ouverts, poitrine en avant : il hurle (son grave), la caméra tremble.'},
+        {ticks: '48 → 60', phase: 'garde', phaseColor: '#2f6b4f', pose: GUARD, from: ROAR, trace: 'neck', bend: 4,
+          note: 'Il retombe voûté, l\'avant-bras enflé en avant, et charge : les clips du Disciple à 85 %.'},
+      ]},
+  ],
+});
+document.querySelector('.legend span').lastChild.textContent = "trajet d'un point du corps (pointillés rouges)";
+</script></body></html>
