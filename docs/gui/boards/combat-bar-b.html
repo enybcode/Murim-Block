@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat B — pixel art</title>
+<style>
+/* Look B of combat-bar-j3-look.html (row of seals), drawn as real pixel art: every frame, icon and letter is placed
+   pixel by pixel at GUI resolution on a canvas, then scaled up without smoothing, as the game would draw it. */
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: #8fb8d6; max-width: 1200px; }
+h2 { margin: 0 0 10px; font-size: 16px; color: #63cfff; text-transform: uppercase; letter-spacing: 2px; }
+.row { display: grid; gap: 22px; padding: 10px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+canvas { image-rendering: pixelated; display: block; }
+.sky { background: linear-gradient(#5d86b8 0, #8fb3d9 58%, #4f7a35 58.2%, #355e26 100%); border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.grid { display: grid; gap: 12px; }
+.cap { margin-top: 6px; text-align: center; font-size: 13px; color: #c8d6e2; }
+.cap b { display: block; color: #63cfff; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
+.sheet { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; }
+.sheet div { text-align: center; font-size: 12px; color: #9fb7c9; }
+</style></head><body>
+<div class="top"><h1>Barre de combat B — en pixel art</h1>
+<p>Le visuel B (rangée de sceaux), dessiné pixel par pixel comme le jeu le dessinera : losanges à double filet, octogone doré riveté pour l'ultime, barre de Qi en jade avec ses graduations, lettres en police pixel 3 × 5. Valeurs fictives (Flowing River Sword, 120 Qi max).</p></div>
+
+<div class="row" style="grid-template-columns: 1060px 1fr">
+  <div class="card"><h2>1 · De près (×9)</h2><div class="sky" style="height:520px"><canvas id="close"></canvas></div></div>
+  <div class="card"><h2>Les pièces</h2><ul>
+    <li><b>Le nom de l'art</b> sur un petit bandeau à bouts pointus, en lettres pixel.</li>
+    <li><b>La barre de Qi</b> : un tube à trois rangs de couleur (reflet, cœur, ombre), un cran sombre tous les 10 Qi, un losange à chaque bout, un reflet blanc qui glisse lentement. Le nombre est à droite.</li>
+    <li><b>Les techniques</b> : un losange de 19 px à double filet (contour sombre, filet cyan, fond bleu nuit), une perle en haut, l'icône 11 × 11 au centre, la touche en dessous.</li>
+    <li><b>L'ultime</b> : un octogone doré de 25 px, quatre rivets, un fond qui se remplit d'or par le bas, l'icône des Mille Courants.</li>
+    <li><b>Lecture</b> : tout tient en 108 × 52 GUI px, soit à l'échelle 3 un coin de 324 × 156 pixels écran.</li>
+  </ul></div>
+</div>
+
+<div class="row"><div class="card"><h2>2 · Les états (×3,3)</h2><div class="grid" id="states" style="grid-template-columns:repeat(4,1fr)"></div></div></div>
+
+<div class="row" style="grid-template-columns: 1fr 1fr">
+  <div class="card"><h2>3 · Recharge : l'ombre tourne (×6)</h2><div class="grid" id="cd" style="grid-template-columns:repeat(4,1fr)"></div></div>
+  <div class="card"><h2>4 · Ultime prête : l'éclat (×6)</h2><div class="grid" id="spark" style="grid-template-columns:repeat(3,1fr)"></div></div>
+</div>
+
+<div class="row" style="grid-template-columns: 1fr 1fr">
+  <div class="card"><h2>5 · Planche de sprites (×8)</h2><div class="sheet" id="sheet"></div></div>
+  <div class="card"><h2>6 · Taille réelle (échelle 3)</h2><div class="sky" style="height:300px;justify-content:flex-end;align-items:flex-end;padding:18px"><canvas id="real"></canvas></div>
+    <p style="margin:8px 0 0;font-size:13px;color:#9fb7c9">Le bloc tel qu'il apparaîtra sur un écran 1920 × 1080 à l'échelle d'interface 3, à 6 GUI px des bords.</p></div>
+</div>
+
+<script>
+// Palette.
+const P = {
+  o: '#05101b', d: '#0d2238', n: '#123250', m: '#1d4a73', c: '#3fb4ec', l: '#7fd6ff', w: '#e9fbff',
+  G: '#5a3d10', g: '#c98d2a', y: '#ffd36b', Y: '#fff1b8', r: '#ff8c9a', R: '#7a2a36', s: '#6b8aa3', k: '#24384c',
+};
+// 3 x 5 pixel font.
+const FONT = {
+  A: '010101111101101', B: '110101110101110', C: '011100100100011', D: '110101101101110', E: '111100110100111',
+  F: '111100110100100', G: '011100101101011', H: '101101111101101', I: '111010010010111', J: '001001001101010',
+  K: '101101110101101', L: '100100100100111', M: '101111111101101', N: '110101101101101', O: '010101101101010',
+  P: '110101110100100', Q: '010101101110011', R: '110101110101101', S: '011100010001110', T: '111010010010010',
+  U: '101101101101111', V: '101101101101010', W: '101101111111101', X: '101101010101101', Y: '101101010010010',
+  Z: '111001010100111', 0: '111101101101111', 1: '010110010010111', 2: '110001010100111', 3: '110001010001110',
+  4: '101101111001001', 5: '111100110001110', 6: '011100111101111', 7: '111001010010010', 8: '111101111101111',
+  9: '111101111001110', ' ': '000000000000000', '/': '001001010100100', '%': '101001010100101',
+};
+// Icons, 11 x 11.
+const ICON = {
+  thrust: [
+    '..........w', '.........wl', '........wl.', '.......wl..', '......wl...', '..c..wl....', '...cwl.....', '...ywc.....', '..yGy.c....', '.yG..c.....', 'G..........'],
+  whirl: [
+    '...lllll...', '..l.....l..', '.l..ccc..l.', 'l..c...c..l', 'l.c..w..c.l', 'l.c.w.w.c.l', 'l.c..w.c..l', 'l..c...c...', '.l..ccc..c.', '..l.....c..', '...lllll...'],
+  fall: [
+    '.....w.....', '.....l.....', '.c...l...c.', '.l..yGy..l.', '.c...l...c.', '.l...l...l.', '.c...l...c.', '.l...l...l.', '.c...w...c.', '...........', 'lclclclclcl'],
+  streams: [
+    'y....y....y', '.y...y...y.', '..y..Y..y..', '...yYYYy...', '....YwY....', 'yyYYwwwYYyy', '....YwY....', '...yYYYy...', '..y..Y..y..', '.y...y...y.', 'y....y....y'],
+  lock: [
+    '...sssss...', '..s.....s..', '..s.....s..', '..s.....s..', '.kkkkkkkkk.', '.kssssssskk', '.ksss.sssk.', '.kss...ssk.', '.ksss.sssk.', '.ksssssssk.', '.kkkkkkkkk.'],
+};
+function canvas(id, w, h, scale) {
+  const c = typeof id === 'string' ? document.getElementById(id) : id;
+  c.width = w; c.height = h; c.style.width = w * scale + 'px'; c.style.height = h * scale + 'px';
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false; return x;
+}
+const px = (g, x, y, col, w = 1, h = 1) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+function text(g, x, y, str, col, shadow = P.o) {
+  for (const ch of str.toUpperCase()) {
+    const f = FONT[ch] ?? FONT[' '];
+    for (let i = 0; i < 15; i++) if (f[i] === '1') { if (shadow) px(g, x + i % 3 + 1, y + (i / 3 | 0) + 1, shadow); }
+    for (let i = 0; i < 15; i++) if (f[i] === '1') px(g, x + i % 3, y + (i / 3 | 0), col);
+    x += 4;
+  }
+  return x;
+}
+function sprite(g, x, y, rows, tint) {
+  rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') px(g, x + i, y + j, tint ? tint(ch) : P[ch]); }));
+}
+// A diamond of half-width r centred on (cx, cy): fills each row from |dy|.
+function diamond(g, cx, cy, r, col) {
+  for (let dy = -r; dy <= r; dy++) { const w = r - Math.abs(dy); px(g, cx - w, cy + dy, col, 2 * w + 1, 1); }
+}
+// Octagon of half-size r with corner cut k.
+function octagon(g, cx, cy, r, k, col) {
+  for (let dy = -r; dy <= r; dy++) { const cut = Math.max(0, Math.abs(dy) - (r - k)); px(g, cx - r + cut, cy + dy, col, 2 * (r - cut) + 1, 1); }
+}
+
+// The Qi bar: x, y, length, Qi now, aim [from, to] lit white, miss [from, to] pink, shine column.
+function qiBar(g, x, y, len, qi, o = {}) {
+  const at = v => x + 2 + Math.round((len - 4) * v / 120);
+  // End diamonds.
+  for (const ex of [x, x + len - 1]) { diamond(g, ex, y + 2, 3, P.o); diamond(g, ex, y + 2, 2, P.m); px(g, ex, y + 2, P.l); }
+  px(g, x + 2, y, P.o, len - 4, 5);
+  px(g, x + 2, y + 1, P.d, len - 4, 3);
+  for (let v = 0; v < qi; v += 120 / (len - 4)) {
+    const cx = at(v); if (cx >= at(qi)) break;
+    px(g, cx, y + 1, P.l); px(g, cx, y + 2, P.c); px(g, cx, y + 3, P.m);
+  }
+  if (o.aim) for (let cx = at(o.aim[0]); cx < at(o.aim[1]); cx++) { px(g, cx, y + 1, P.w); px(g, cx, y + 2, P.w); px(g, cx, y + 3, P.l); }
+  if (o.spent) for (let cx = at(o.spent[0]); cx < at(o.spent[1]); cx++) { px(g, cx, y + 1, (cx % 2) ? P.w : P.d); px(g, cx, y + 3, (cx % 2) ? P.d : P.w); }
+  if (o.miss) { for (let cx = at(o.miss[0]); cx < at(o.miss[1]); cx++) { px(g, cx, y - 1, P.r); px(g, cx, y + 5, P.r); } px(g, at(o.miss[1]), y, P.r, 1, 5); }
+  for (let v = 10; v < 120; v += 10) px(g, at(v), y + 1, P.o, 1, 3);
+  if (o.shine !== undefined && at(o.shine) < at(qi)) { px(g, at(o.shine), y + 1, P.w); px(g, at(o.shine) + 1, y + 1, P.w); px(g, at(o.shine) + 1, y + 2, P.l); }
+}
+// The art banner: pointed ends, letters inside.
+function banner(g, x, y, str) {
+  const w = str.length * 4 + 5;
+  px(g, x + 2, y, P.o, w, 9); px(g, x + 1, y + 1, P.o, w + 2, 7); px(g, x, y + 3, P.o, w + 4, 3);
+  px(g, x + 2, y + 1, P.n, w, 7); px(g, x + 1, y + 3, P.n, w + 2, 3);
+  px(g, x + 2, y + 1, P.m, w, 1);
+  text(g, x + 4, y + 2, str, P.w, P.d);
+  return w + 4;
+}
+// A technique seal: diamond r 9 at (cx, cy). state: ready | aim | cd (fraction left) | poor | locked | spent.
+function seal(g, cx, cy, icon, key, st = {}) {
+  const line = st.poor ? P.r : st.locked ? P.s : st.aim || st.spent ? P.w : P.c;
+  if (st.aim || st.spent) { diamond(g, cx, cy, 11, st.spent ? 'rgba(233,251,255,.5)' : 'rgba(127,214,255,.35)'); }
+  diamond(g, cx, cy, 10, P.o);
+  diamond(g, cx, cy, 9, line);
+  diamond(g, cx, cy, 8, P.o);
+  diamond(g, cx, cy, 7, st.poor ? P.R : P.n);
+  // Lower half a shade deeper.
+  for (let dy = 1; dy <= 7; dy++) { const w = 7 - dy; px(g, cx - w, cy + dy, st.poor ? '#5c1f29' : P.d, 2 * w + 1, 1); }
+  // Pearl on top.
+  px(g, cx, cy - 12, P.o, 1, 3); px(g, cx - 1, cy - 11, P.o, 3, 1); px(g, cx, cy - 11, st.poor ? P.r : P.l);
+  if (st.locked) sprite(g, cx - 5, cy - 5, ICON.lock);
+  else sprite(g, cx - 5, cy - 5, ICON[icon], st.poor ? (ch => (ch === 'G' || ch === 'o') ? P.o : P.r) : st.cd !== undefined ? (ch => ch === 'w' || ch === 'l' ? P.s : ch === 'y' || ch === 'G' ? '#6d5a35' : P.k) : null);
+  if (st.cd !== undefined) {
+    // A shadow sweeping round from the top, clockwise, over what is left.
+    for (let dy = -7; dy <= 7; dy++) for (let dx = -7; dx <= 7; dx++) {
+      if (Math.abs(dx) + Math.abs(dy) > 7) continue;
+      const a = (Math.atan2(dx, -dy) / (2 * Math.PI) + 1) % 1;
+      if (a < st.cd) px(g, cx + dx, cy + dy, 'rgba(3,9,16,.62)');
+    }
+    text(g, cx - 1, cy - 2, String(st.secs), P.w, P.o);
+  }
+  text(g, cx - 1, cy + 12, key, st.poor ? P.r : P.l);
+}
+// The ultimate: octagon r 12, gold, filled from the bottom by charge; frame: spark frame 0-2 when ready.
+function ultimate(g, cx, cy, st = {}) {
+  const ready = st.charge >= 1;
+  octagon(g, cx, cy, 13, 5, P.o);
+  octagon(g, cx, cy, 12, 4, ready ? P.y : P.g);
+  octagon(g, cx, cy, 11, 4, P.G);
+  octagon(g, cx, cy, 10, 4, P.o);
+  octagon(g, cx, cy, 9, 4, '#14243a');
+  const top = cy + 9 - Math.round(18 * Math.min(1, st.charge));
+  for (let y = top; y <= cy + 9; y++) {
+    const cut = Math.max(0, Math.abs(y - cy) - 5);
+    px(g, cx - 9 + cut, y, ready ? '#7a5a1a' : '#4a3610', 2 * (9 - cut) + 1, 1);
+  }
+  if (!ready && st.charge > 0) { const cut = Math.max(0, Math.abs(top - cy) - 5); px(g, cx - 9 + cut, top, P.y, 2 * (9 - cut) + 1, 1); }
+  // Rivets.
+  for (const [dx, dy] of [[-12, 0], [12, 0], [0, -12], [0, 12]]) { px(g, cx + dx, cy + dy, P.o); px(g, cx + dx, cy + dy, ready ? P.Y : P.y); }
+  sprite(g, cx - 5, cy - 5, ICON.streams, ready ? null : (ch => ch === 'w' ? P.y : ch === 'Y' ? P.g : '#8a6a2a'));
+  if (ready && st.frame !== undefined) {
+    const f = st.frame, r = 15 + f * 2;
+    for (const [dx, dy] of [[0, -r], [r, 0], [0, r], [-r, 0]]) { px(g, cx + dx, cy + dy, P.Y); if (f < 2) { px(g, cx + dx - 1, cy + dy, P.y); px(g, cx + dx + 1, cy + dy, P.y); px(g, cx + dx, cy + dy - 1, P.y); px(g, cx + dx, cy + dy + 1, P.y); } }
+    const d = Math.round(r * .7);
+    if (f > 0) for (const [dx, dy] of [[d, -d], [d, d], [-d, d], [-d, -d]]) px(g, cx + dx, cy + dy, f === 1 ? P.Y : P.y);
+  }
+  text(g, cx - 1, cy + 15, 'R', P.y);
+}
+// The whole block, 92 x 40 GUI px.
+const W = 108, H = 52;
+function block(g, ox, oy, st = {}) {
+  banner(g, ox + 1, oy + 1, 'FLOWING RIVER SWORD');
+  text(g, ox + 94, oy + 3, String(st.qi ?? 84).padStart(3, ' '), P.w);
+  qiBar(g, ox + 2, oy + 12, 86, st.qi ?? 84, st);
+  const icons = ['thrust', 'whirl', 'fall'];
+  [0, 1, 2].forEach(i => seal(g, ox + 13 + i * 22, oy + 30, icons[i], String(i + 1), (st.seals ?? {})[i] ?? (st.poor ? {poor: 1} : {})));
+  ultimate(g, ox + 80, oy + 30, {charge: st.charge ?? .6, frame: st.frame});
+}
+
+block(canvas('close', W, H + 2, 9), 0, 2, {shine: 40});
+const STATES = [
+  ['Prêt', 'tout est payable', {}],
+  ['Visée', 'touche 2 tenue : 30 Qi blanchis sur la barre', {seals: {1: {aim: 1}}, aim: [54, 84]}],
+  ['Lancée', 'les 30 Qi payés scintillent puis s’éteignent', {qi: 54, seals: {1: {spent: 1}}, spent: [54, 84]}],
+  ['Recharge', 'l’ombre tourne sur la case, 4 s restantes', {qi: 60, seals: {1: {cd: .6, secs: 4}}}],
+  ['Pas assez de Qi', 'losanges roses, le manque cerclé sur la barre', {qi: 12, poor: 1, miss: [12, 20], charge: .8}],
+  ['Pas maîtrisée', 'cadenas : la technique 3 attend 50 % de maîtrise', {seals: {2: {locked: 1}}}],
+  ['Ultime en charge', 'l’or monte en frappant et en encaissant', {charge: .35}],
+  ['Ultime prête', 'octogone doré plein, rivets clairs, éclat', {charge: 1, frame: 1}],
+];
+document.getElementById('states').innerHTML = STATES.map((s, k) => `<div><div class="sky" style="height:220px"><canvas id="st${k}"></canvas></div><div class="cap"><b>${s[0]}</b>${s[1]}</div></div>`).join('');
+STATES.forEach((s, k) => block(canvas('st' + k, W, H + 2, 3.3), 0, 2, s[2]));
+
+document.getElementById('cd').innerHTML = [1, .7, .4, .1].map((f, k) => `<div><div class="sky" style="height:170px"><canvas id="cd${k}"></canvas></div><div class="cap"><b>${['6 s', '4 s', '2 s', '1 s'][k]}</b>${['juste lancée', 'l’ombre recule', 'plus que le quart', 'presque prête'][k]}</div></div>`).join('');
+[1, .7, .4, .1].forEach((f, k) => { const g = canvas('cd' + k, 26, 30, 5); seal(g, 13, 14, 'whirl', '2', {cd: f, secs: [6, 4, 2, 1][k]}); });
+
+document.getElementById('spark').innerHTML = [0, 1, 2].map(f => `<div><div class="sky" style="height:220px"><canvas id="sp${f}"></canvas></div><div class="cap"><b>Image ${f + 1}</b>${['l’éclat naît aux rivets', 'il s’écarte en croix', 'il s’éteint, puis recommence'][f]}</div></div>`).join('');
+[0, 1, 2].forEach(f => { const g = canvas('sp' + f, 40, 44, 5); ultimate(g, 20, 20, {charge: 1, frame: f}); });
+
+// Sprite sheet.
+const sheet = [['thrust', 'River Thrust'], ['whirl', 'Whirlpool Cut'], ['fall', 'Waterfall Descent'], ['streams', 'Thousand Streams'], ['lock', 'Cadenas']];
+document.getElementById('sheet').innerHTML = sheet.map(([k, n]) => `<div><canvas id="sh-${k}"></canvas>${n}</div>`).join('')
+  + `<div><canvas id="sh-font"></canvas>Police 3 × 5</div>`;
+sheet.forEach(([k]) => { const g = canvas('sh-' + k, 13, 13, 8); px(g, 0, 0, P.n, 13, 13); sprite(g, 1, 1, ICON[k]); });
+{ const g = canvas('sh-font', 54, 14, 5); px(g, 0, 0, P.n, 54, 14); text(g, 2, 2, 'ABCDEFGHIJKLM', P.w); text(g, 2, 8, '0123456789/%', P.l); }
+
+block(canvas('real', W, H, 3 * 0.75), 0, 0, {});
+</script>
+</body></html>

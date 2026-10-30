@@ -69,7 +69,8 @@ reactions on players' skeletons, lock-on with flick switching and retargeting af
 Direction J3 chosen by Enzo on 30 Oct 2026 (`docs/gui/boards/combat-bar-j3.png`; its second board `combat-bar-j3-2.png`
 proposes the whole screen, guard, parry, dodge, combo and the ultimate cast; the rejected ones are
 `combat-bar*.png` beside it). On 30 Oct Enzo kept the placement but not the look: `combat-bar-j3-look.png` redraws it in
-the System menu's style in three looks (A window, B seals, C list), to choose. The active art is chosen in K, Techniques
+the System menu's style in three looks (A window, B seals, C list); B is developed as pixel art in `combat-bar-b.png`
+(seals, gold octagon, jade Qi bar, 3 x 5 pixel font). The active art is chosen in K, Techniques
 (no combat key for it). The vanilla hotbar stays. In combat mode a System block slides in from the bottom right:
 
 - The Qi as segments of 10 Qi (a round ten past 200 max Qi, so at most 20), the started one half full, numbers above.
