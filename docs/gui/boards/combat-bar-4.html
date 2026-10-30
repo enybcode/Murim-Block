@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat — variantes de J</title>
+<style>
+/* Variants of direction J, the skill boxes (combat-bar-3.html). */
+:root { --panel: rgba(7, 18, 31, .88); --cyan: #63cfff; --soft: rgba(99, 207, 255, .45); --faint: rgba(99, 207, 255, .2);
+  --corner: #d2f3ff; --text: #e6f6ff; --muted: #8fb8d6; --warn: #ff8c9a; --gold: #ffd77a; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: var(--muted); }
+.row { display: grid; grid-template-columns: 790px 1fr; gap: 22px; padding: 12px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+h2 { margin: 0 0 8px; font-size: 20px; color: var(--cyan); } h2 small { color: var(--muted); font-size: 14px; font-weight: 400; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; } .plus { color: #9fe8b0; } .moins { color: var(--warn); }
+
+.screen { position: relative; width: 758px; height: 426px; overflow: hidden; border-radius: 4px; font-family: Consolas, monospace;
+  background: linear-gradient(#6f9fd6 0, #a9c8e8 46%, #5d8a3e 46.2%, #4c7633 60%, #3f6a2c 100%); }
+.hill { position: absolute; bottom: 54%; height: 60px; border-radius: 50% 50% 0 0; background: #3d6a49; }
+.mob { position: absolute; left: 440px; top: 150px; width: 38px; height: 100px; }
+.mob div { position: absolute; }
+.lock i { position: absolute; width: 10px; height: 10px; border: 0 solid var(--warn); }
+.cross { position: absolute; left: 375px; top: 209px; width: 8px; height: 8px; }
+.cross:before, .cross:after { content: ""; position: absolute; background: #fff; opacity: .85; }
+.cross:before { left: 3px; top: -3px; width: 2px; height: 14px; } .cross:after { left: -3px; top: 3px; width: 14px; height: 2px; }
+.hotbar { position: absolute; left: 233px; top: 388px; width: 292px; height: 34px; background: rgba(40, 40, 40, .8); border: 3px solid #777; }
+.hotbar:after { content: ""; position: absolute; inset: 3px; background: repeating-linear-gradient(90deg, #3c3c3c 0 29px, #8b8b8b 29px 32px); }
+.hearts { position: absolute; left: 233px; top: 366px; font-size: 15px; color: #e33; letter-spacing: -2px; text-shadow: 1px 1px 0 #400; }
+.food { position: absolute; left: 400px; top: 366px; font-size: 15px; color: #c77b2a; letter-spacing: -2px; text-shadow: 1px 1px 0 #402; }
+
+.sys { position: absolute; background: var(--panel); border: 1px solid var(--soft); box-shadow: 0 0 6px var(--faint), inset 0 0 4px var(--faint); }
+.sys:before, .sys:after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--corner); }
+.sys:before { left: -1px; top: -1px; border-left-width: 2px; border-top-width: 2px; }
+.sys:after { right: -1px; bottom: -1px; border-right-width: 2px; border-bottom-width: 2px; }
+.t { color: var(--text); } .m { color: var(--muted); } .c { color: var(--cyan); } .g { color: var(--gold); } .w { color: var(--warn); }
+.tag { position: absolute; top: -9px; left: 10px; padding: 0 6px; background: var(--cyan); color: #04101d; font-weight: bold; font-size: 10px; letter-spacing: 1px; line-height: 15px; }
+
+/* A: System window, bottom right. */
+.skills { right: 14px; bottom: 16px; width: 214px; padding: 14px 10px 8px; font-size: 11px; }
+.skill { position: relative; height: 26px; margin-bottom: 5px; padding-left: 26px; }
+.skill .k { position: absolute; left: 0; top: 2px; width: 19px; height: 19px; border: 1px solid var(--soft); text-align: center; line-height: 18px; color: var(--text); font-weight: bold; }
+.skill .n { color: var(--text); letter-spacing: .5px; }
+.skill .q { position: absolute; right: 0; top: 0; color: #9fe0ff; }
+.skill .cd { position: absolute; left: 26px; right: 0; bottom: 3px; height: 3px; background: rgba(99, 207, 255, .15); }
+.skill .cd i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cyan); box-shadow: 0 0 4px var(--cyan); }
+.qiline { position: relative; height: 8px; margin: 0 0 10px; background: rgba(99, 207, 255, .12); border: 1px solid var(--soft); }
+.qiline i { position: absolute; left: 0; top: 0; bottom: 0; width: 70%; background: linear-gradient(#a8e6ff, #3aa6e6); }
+.alert { position: absolute; padding: 5px 12px 5px; font-size: 12px; letter-spacing: 1px; }
+
+/* B: around the crosshair. */
+.ring { position: absolute; left: 329px; top: 163px; width: 100px; height: 100px; }
+.pip { position: absolute; width: 22px; height: 22px; transform: rotate(45deg); background: var(--panel); border: 1px solid var(--soft); }
+.pip span { position: absolute; inset: 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: var(--text); }
+
+/* C: the meridian. */
+.meridian { position: absolute; left: 22px; top: 70px; width: 240px; height: 280px; }
+.node { position: absolute; left: 0; white-space: nowrap; display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.node .o { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--cyan); background: var(--panel); box-shadow: 0 0 8px var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; font-size: 10px; }
+</style></head><body>
+<div class="top"><h1>Barre de combat — variantes de J (cases de compétence)</h1>
+<p>Base commune : cases carrées System en bas à droite, ultime qui se charge en se battant. Ce qui change : disposition, place du Qi, infos affichées. Valeurs fictives.</p></div>
+<div class="row"><div class="card"><div class="screen" id="j1"></div></div>
+  <div class="card"><h2>J1 · Rangée nette <small>— J, touches 1–4</small></h2><ul>
+    <li>3 cases + l'ultime en <b>rangée</b> en bas à droite, touches <b>1, 2, 3, 4</b>.</li>
+    <li>Recharge : la case se <b>remplit de bas en haut</b> de cyan, secondes au centre.</li>
+    <li>Ultime : grande case, <b>anneau doré</b> qui se charge en frappant et en encaissant ; pleine, elle pulse.</li>
+    <li>Qi : <b>arc sous le viseur</b>, visible seulement quand il bouge.</li>
+    <li>Au lancer, le nom s'écrit au-dessus de la rangée une seconde.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="j2"></div></div>
+  <div class="card"><h2>J2 · Colonne avec noms <small>— J + noms écrits</small></h2><ul>
+    <li>Cases en <b>colonne</b> au bord droit, l'ultime en haut.</li>
+    <li>Le <b>nom et le coût</b> écrits à gauche de chaque case (les noms se replient au bout de 5 s sans combat).</li>
+    <li>Qi : <b>barre verticale</b> collée à la colonne, avec un <b>trait par case</b> à la hauteur de son coût : on voit ce qu'on peut payer.</li>
+    <li>Ultime : jauge dorée autour de sa case.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="j3"></div></div>
+  <div class="card"><h2>J3 · Qi en segments <small>— J + Qi au-dessus des cases</small></h2><ul>
+    <li>Rangée de cases en bas à droite ; <b>au-dessus</b>, le Qi en <b>segments</b> (1 segment = 10 Qi).</li>
+    <li>Au survol de la touche (ou quand une case est prête), les segments qu'elle coûterait <b>clignotent</b>.</li>
+    <li>Pas d'arc au viseur : tout le combat est dans le coin.</li>
+    <li>Ultime : sa case se remplit d'or de bas en haut en frappant.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="j4"></div></div>
+  <div class="card"><h2>J4 · Croix autour de l'ultime <small>— J resserré</small></h2><ul>
+    <li>L'ultime <b>au centre</b>, les 3 techniques autour (gauche, haut, bas), comme un pavé.</li>
+    <li>Deux anneaux autour de l'ultime : <b>extérieur doré</b> = charge de l'ultime, <b>intérieur cyan</b> = Qi.</li>
+    <li>Tout tient dans un carré compact en bas à droite.</li>
+    <li>Recharge : la case noircit et affiche les secondes.</li></ul></div></div>
+<script>
+function world(el, extra) {
+  el.innerHTML = `<div class="hill" style="left:-30px;width:330px"></div><div class="hill" style="left:420px;width:400px;background:#365f43"></div>
+    <div class="mob"><div style="left:9px;top:0;width:20px;height:20px;background:#7f9a6a"></div>
+    <div style="left:12px;top:8px;width:3px;height:3px;background:#e03a2a"></div><div style="left:22px;top:8px;width:3px;height:3px;background:#e03a2a"></div>
+    <div style="left:7px;top:20px;width:24px;height:34px;background:#3c4f62"></div><div style="left:0;top:20px;width:7px;height:32px;background:#7f9a6a"></div>
+    <div style="left:31px;top:20px;width:7px;height:32px;background:#7f9a6a"></div><div style="left:7px;top:54px;width:11px;height:44px;background:#4f4a41"></div>
+    <div style="left:20px;top:54px;width:11px;height:44px;background:#4f4a41"></div></div>
+    <div class="lock" style="position:absolute;left:428px;top:140px;width:62px;height:120px">
+    <i style="left:0;top:0;border-left-width:2px;border-top-width:2px"></i><i style="right:0;top:0;border-right-width:2px;border-top-width:2px"></i>
+    <i style="left:0;bottom:0;border-left-width:2px;border-bottom-width:2px"></i><i style="right:0;bottom:0;border-right-width:2px;border-bottom-width:2px"></i></div>
+    <div class="cross"></div><div class="hearts">♥♥♥♥♥♥♥♥♥♡</div><div class="food">◆◆◆◆◆◆◆◆◆◆</div><div class="hotbar"></div>` + extra;
+}
+const T = [['RIVER THRUST', 10], ['WHIRLPOOL CUT', 18], ['WATERFALL DESCENT', 25], ['THOUSAND STREAMS', 60]];
+const box = (x, y, w, h, inner, extra = '') => `<div class="sys" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${extra}">${inner}</div>`;
+const icon = i => `<div style="position:absolute;inset:4px;background:${['linear-gradient(135deg,transparent 42%,#bfefff 43% 57%,transparent 58%),#1b4e74',
+  'radial-gradient(circle,transparent 28%,#9fe6ff 30% 38%,transparent 40% 52%,#5fc4f0 54% 60%,transparent 62%),#173f63',
+  'linear-gradient(90deg,transparent 20%,#bfefff 21% 30%,transparent 31% 45%,#8fd8ff 46% 55%,transparent 56% 70%,#bfefff 71% 80%,transparent 81%),#163a5c',
+  'radial-gradient(circle,#fff6d6 0 14%,#ffd77a 15% 26%,transparent 28%),repeating-conic-gradient(#8fd8ff 0 6deg,transparent 6deg 30deg),#13304d'][i]}"></div>`;
+// Cooldown kinds: fill (cyan rising), dark (black with seconds).
+const cdFill = (f, s) => `<div style="position:absolute;inset:0;background:linear-gradient(0deg, rgba(99,207,255,.35) ${f * 100}%, rgba(2,8,14,.7) ${f * 100}%)"></div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#e6f6ff;font-weight:bold;font-size:12px;text-shadow:0 0 3px #000">${s}</div>`;
+const cdDark = s => `<div style="position:absolute;inset:0;background:rgba(2,8,14,.72);display:flex;align-items:center;justify-content:center;color:#e6f6ff;font-weight:bold;font-size:12px">${s}</div>`;
+const key = (x, y, k, gold) => `<div style="position:absolute;left:${x}px;top:${y}px;font-size:9px;color:${gold ? 'var(--gold)' : 'var(--muted)'}">${k}</div>`;
+const ring = (x, y, r, f, color, back, w = 4) => `<svg style="position:absolute;left:${x - r - w}px;top:${y - r - w}px" width="${2 * (r + w)}" height="${2 * (r + w)}">
+  <circle cx="${r + w}" cy="${r + w}" r="${r}" fill="none" stroke="${back}" stroke-width="${w}"/>
+  <circle cx="${r + w}" cy="${r + w}" r="${r}" fill="none" stroke="${color}" stroke-width="${w}" stroke-dasharray="${2 * Math.PI * r * f} 999" transform="rotate(-90 ${r + w} ${r + w})"/></svg>`;
+const arcUnder = `<svg style="position:absolute;left:339px;top:224px" width="80" height="30"><path d="M8 4 Q40 26 72 4" fill="none" stroke="rgba(99,207,255,.2)" stroke-width="4" stroke-linecap="round"/><path d="M8 4 Q30 20 52 13" fill="none" stroke="#63cfff" stroke-width="4" stroke-linecap="round"/></svg>`;
+
+// J1: row, keys 1-4.
+world(document.getElementById('j1'), [0, 1, 2].map(i => box(556 + i * 34, 362, 28, 28, icon(i) + (i === 1 ? cdFill(.4, 6) : '')) + key(567 + i * 34, 393, i + 1)).join('')
+  + ring(704, 372, 27, .65, '#ffd77a', 'rgba(255,215,122,.2)') + box(684, 352, 40, 40, icon(3), 'border-color:rgba(255,215,122,.6)') + key(700, 404, 4, 1)
+  + `<div class="sys" style="left:556px;top:330px;padding:2px 8px;font-size:10px"><span class="t">RIVER THRUST</span></div>` + arcUnder);
+
+// J2: column with names, vertical Qi with cost ticks.
+world(document.getElementById('j2'), `<div style="position:absolute;left:718px;top:70px;width:6px;height:300px;background:rgba(99,207,255,.15);border:1px solid rgba(99,207,255,.4)">
+  <div style="position:absolute;bottom:0;left:0;right:0;height:70%;background:linear-gradient(#cdf3ff,#3aa6e6);box-shadow:0 0 6px #63cfff"></div>
+  ${[10, 18, 25, 60].map((q, i) => `<div style="position:absolute;left:-4px;right:-4px;bottom:${q / 120 * 100}%;height:2px;background:${i === 3 ? '#ffd77a' : '#e6f6ff'}"></div>`).join('')}</div>`
+  + [3, 0, 1, 2].map((t, r) => { const y = 80 + r * 52 + (r ? 14 : 0), ult = t === 3, s = ult ? 40 : 30, x = 714 - s - 12;
+    return (ult ? ring(x + s / 2, y + s / 2, s / 2 + 7, .65, '#ffd77a', 'rgba(255,215,122,.2)') : '') + box(x, y, s, s, icon(t) + (t === 1 ? cdDark(6) : ''), ult ? 'border-color:rgba(255,215,122,.6)' : '')
+      + `<div style="position:absolute;right:${758 - x + 8}px;top:${y + s / 2 - 12}px;text-align:right;font-size:10px;white-space:nowrap"><span class="${ult ? 'g' : 't'}">${T[t][0]}</span><br><span class="m">${t + 1} · ${T[t][1]} QI</span></div>`; }).join(''));
+
+// J3: row with segmented Qi above.
+world(document.getElementById('j3'), `<div style="position:absolute;left:556px;top:336px;display:flex;gap:2px">${Array.from({length: 12}, (_, i) =>
+    `<div style="width:12px;height:7px;border:1px solid rgba(99,207,255,.45);background:${i < 6 ? '#63cfff' : i < 8 ? '#cdf3ff' : 'rgba(99,207,255,.12)'};${i >= 6 && i < 8 ? 'box-shadow:0 0 6px #cdf3ff' : ''}"></div>`).join('')}</div>
+  <div class="m" style="position:absolute;left:556px;top:322px;font-size:9px">QI 84 / 120 · <span class="t">2 coûte 2 segments</span></div>`
+  + [0, 1, 2].map(i => box(556 + i * 34, 352, 28, 28, icon(i) + (i === 2 ? cdDark(9) : ''), i === 1 ? 'border-color:#63cfff;box-shadow:0 0 6px #63cfff' : '') + key(567 + i * 34, 383, i + 1)).join('')
+  + box(662, 344, 40, 40, icon(3) + `<div style="position:absolute;left:0;right:0;bottom:0;height:65%;background:rgba(255,215,122,.28);border-top:2px solid #ffd77a"></div>`, 'border-color:rgba(255,215,122,.6)') + key(678, 388, 4, 1));
+
+// J4: cross around the ultimate, two rings.
+const cx = 676, cy = 320;
+world(document.getElementById('j4'), ring(cx, cy, 34, .65, '#ffd77a', 'rgba(255,215,122,.2)', 4) + ring(cx, cy, 27, .7, '#63cfff', 'rgba(99,207,255,.18)', 4)
+  + box(cx - 20, cy - 20, 40, 40, icon(3), 'border-color:rgba(255,215,122,.6)') + key(cx - 3, cy + 22, 4, 1)
+  + [[cx - 76, cy - 14, 0], [cx - 14, cy - 82, 1], [cx - 14, cy + 50, 2]].map(([x, y, i]) => box(x, y, 28, 28, icon(i) + (i === 1 ? cdDark(6) : '')) + key(x + 11, y + 30, i + 1)).join('')
+  + `<div class="m" style="position:absolute;left:${cx + 44}px;top:${cy - 6}px;font-size:9px;line-height:12px"><span class="g">ULT 65%</span><br><span class="c">QI 84</span></div>`);
+</script>
+</body></html>
