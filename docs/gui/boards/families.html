@@ -17,19 +17,19 @@ h2 { margin: 0 0 10px; font-size: 16px; color: #63cfff; text-transform: uppercas
 ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
 
 .han { font-family: "Noto Serif SC", serif !important; }
-.grid12 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.grid12 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
 </style></head><body>
 <div class="top"><h1>Le système de familles — maquette</h1>
 <p>Proposition (docs/world/families.md). À la première connexion, la fenêtre Destin tire la famille du joueur : un sceau tourne et s'arrête sur une maison, avec sa rareté et son héritage. Une relance gratuite, puis des Talismans du Destin. Style pixel du menu System.</p></div>
 
 <div class="row" style="grid-template-columns: 1fr 1fr 1fr">
   <div class="card"><h2>1 · Le sceau tourne</h2><div class="scene" id="spin" style="width:470px;height:380px"></div></div>
-  <div class="card"><h2>2 · Commune : Zhou</h2><div class="scene" id="common" style="width:470px;height:380px"></div></div>
-  <div class="card"><h2>3 · Légendaire : Nangong</h2><div class="scene" id="legend" style="width:470px;height:380px"></div></div>
+  <div class="card"><h2>2 · Commune : Zhang</h2><div class="scene" id="common" style="width:470px;height:380px"></div></div>
+  <div class="card"><h2>3 · Légendaire : Namgung</h2><div class="scene" id="legend" style="width:470px;height:380px"></div></div>
 </div>
 <div class="row" style="grid-template-columns: 1.15fr 1fr">
-  <div class="card"><h2>4 · Les douze familles</h2><div class="grid12" id="all"></div>
-    <p style="margin:12px 0 0;font-size:13px;color:#9fb7c9">Commune 60 % (cyan) · Rare 32 % (violet) · Légendaire 8 % (or). Après 10 tirages sans légendaire, le suivant est rare ou mieux.</p></div>
+  <div class="card"><h2>4 · Les maisons</h2><div class="grid12" id="all"></div>
+    <p style="margin:12px 0 0;font-size:13px;color:#9fb7c9">Commune 60 % (gris, rien) · Rare 25 % (bleu : pilules et équipement) · Épique 11 % (violet : stats et équipement rare) · Légendaire 4 % (or : art martial et stats). Grandes maisons du genre de <i>The Legend of the Northern Blade</i> ; chaque héritage est « Coming soon » et sera conçu maison par maison.</p></div>
   <div class="card"><h2>5 · Dans le Profil</h2><div class="scene" id="profile" style="width:640px;height:330px"></div></div>
 </div>
 
@@ -187,22 +187,18 @@ function pose(g, x, y, k) {
 }
 
 
-const RAR = {c: {line: P.c, fill: '#0f2a46', glow: 'rgba(63,180,236,.35)', name: 'COMMON', col: P.l},
-  r: {line: '#b07cff', fill: '#24163f', glow: 'rgba(176,124,255,.4)', name: 'RARE', col: '#d4b8ff'},
+const RAR = {c: {line: '#7d8a94', fill: '#1a2229', glow: 'rgba(125,138,148,.3)', name: 'COMMON', col: '#c3cdd4'},
+  r: {line: P.c, fill: '#0f2a46', glow: 'rgba(63,180,236,.35)', name: 'RARE', col: P.l},
+  e: {line: '#b07cff', fill: '#24163f', glow: 'rgba(176,124,255,.4)', name: 'EPIC', col: '#d4b8ff'},
   l: {line: P.y, fill: '#3a2a0e', glow: 'rgba(255,211,107,.5)', name: 'LEGENDARY', col: P.y}};
+const SOON = ['Coming soon', 'Designed with Enzo, house by house'];
 const FAM = [
-  ['Wang', '王', 'Central plains', 'c', 'Rooted Stance', '−20 % knockback taken'],
-  ['Ma', '马', 'Northern wastes', 'c', 'Born in the Saddle', 'A saddle; horses run 15 % faster'],
-  ['Zhou', '周', 'Hubei waterlands', 'c', 'River Lungs', 'Swim 30 % faster, breath ×2'],
-  ['Hu', '胡', 'Loess plateau', 'c', 'Loess Hands', 'Dig earth 25 % faster, +1 fist'],
-  ['Liang', '梁', 'Rice terraces', 'c', 'Harvest Blessing', 'Eating: Regeneration I, 5 s'],
-  ['Kong', '孔', 'Shandong hills', 'c', "Scholar's Mind", '+10 % art mastery'],
-  ['Tang', '唐', 'Sichuan', 'r', 'Tang Darts', '16 throwing darts'],
-  ['Duan', '段', 'Unnam', 'r', 'One Finger Qi', 'A Qi bolt, 12 blocks'],
-  ['Murong', '慕容', 'Qinghai plateau', 'r', 'Return to Sender', '10 % melee damage returned'],
-  ['Shangguan', '上官', 'Southeast coast', 'r', 'Coastal Fortune', '30 taels and a fine sword'],
-  ['Zhuge', '诸葛', 'Chang-An', 'l', 'Eight Gates', 'A slowing formation, 6 s'],
-  ['Nangong', '南宫', 'Sacred mountain', 'l', "Heaven's Favour", '+10 % max Qi, +5 % breakthrough'],
+  ['Jin', '陳', 'North Sky', 'l', ...SOON], ['Namgung', '南宮', 'Hubei waterlands', 'l', ...SOON],
+  ['Moyong', '慕容', 'Qinghai plateau', 'e', ...SOON], ['Jegal', '諸葛', 'Shandong hills', 'e', ...SOON],
+  ['Dang', '唐', 'Sichuan', 'r', ...SOON], ['Paeng', '彭', 'Central plains', 'r', ...SOON], ['Hwangbo', '皇甫', 'Loess plateau', 'r', ...SOON],
+  ['Wang', '王', 'Anywhere', 'c', 'No inheritance', 'A name, and the whole road to walk'], ['Li', '李', 'Anywhere', 'c', 'No inheritance', ''],
+  ['Zhang', '张', 'Anywhere', 'c', 'No inheritance', 'A name, and the whole road to walk'], ['Liu', '刘', 'Anywhere', 'c', 'No inheritance', ''],
+  ['Chen', '陈', 'Anywhere', 'c', 'No inheritance', ''], ['Zhao', '赵', 'Anywhere', 'c', 'No inheritance', ''],
 ];
 function scene(id, w, h, scale) {
   const host = document.getElementById(id), c = document.createElement('canvas');
@@ -240,10 +236,10 @@ function destiny(id, fam, o = {}) {
   win(p, 300, 240, 'DESTINY');
   T(108, 20, 'THE SYSTEM DRAWS YOUR HOUSE', 6.5, P.s, 'letter-spacing:1px');
   if (o.spin) {
-    for (const [dx, f, a] of [[-58, FAM[6], .35], [58, FAM[2], .35]]) { crest(p, 150 + dx, 90, 22, f); }
-    crest(p, 150, 90, 34, FAM[10], {glow: true});
+    for (const [dx, f, a] of [[-58, FAM[4], .35], [58, FAM[2], .35]]) { crest(p, 150 + dx, 90, 22, f); }
+    crest(p, 150, 90, 34, FAM[0], {glow: true});
     for (let k = 0; k < 3; k++) { px(g, 108 - k * 6, 90, 'rgba(127,214,255,.5)', 3, 1); px(g, 190 + k * 6, 90, 'rgba(127,214,255,.5)', 3, 1); }
-    T(119, 136, 'Wang · Tang · Zhuge…', 8, P.l);
+    T(116, 136, 'Dang · Jin · Moyong…', 8, P.l);
     frame(g, 70, 156, 160, 30, {cut: 2, line: P.m, fill: P.d});
     T(84, 166, 'The seal turns: let it land.', 8, P.s);
     button(p, 100, 206, 100, 15, 'SKIP', {dim: 1});
@@ -254,14 +250,14 @@ function destiny(id, fam, o = {}) {
   T(150 - (fam[2].length * 2.4), 142, fam[2], 7, P.s);
   tag(p, 150 - (RAR[fam[3]].name.length * 6 + 12) / 2, 152, fam);
   frame(g, 40, 170, 220, 30, {cut: 2, line: RAR[fam[3]].line, fill: P.d});
-  T(48, 175, 'HERITAGE · ' + fam[4], 7.5, RAR[fam[3]].col, 'letter-spacing:.5px;font-weight:600');
+  T(48, 175, 'INHERITANCE · ' + fam[4], 7.5, RAR[fam[3]].col, 'letter-spacing:.5px;font-weight:600');
   T(48, 187, fam[5], 7.5, P.l);
   button(p, 52, 210, 90, 15, 'ACCEPT');
   button(p, 158, 210, 90, 15, o.final ? 'FINAL' : 'REROLL (1)', o.final ? {dim: 1} : {});
 }
 destiny('spin', null, {spin: true});
-destiny('common', FAM[2]);
-destiny('legend', FAM[11], {final: true});
+destiny('common', FAM[9]);
+destiny('legend', FAM[1], {final: true});
 
 document.getElementById('all').innerHTML = FAM.map((f, i) => `<div><div class="scene" id="f${i}" style="width:100%;height:150px;background:#0c131b"></div></div>`).join('');
 FAM.forEach((f, i) => { const p = scene('f' + i, 70, 70, 1.6); crest(p, 35, 27, 20, f); p.T(35 - f[0].length * 2.6, 52, f[0], 7.5, P.w, 'font-weight:600'); p.T(35 - f[2].length * 1.8, 61, f[2], 5.5, RAR[f[3]].col); });
@@ -271,15 +267,15 @@ FAM.forEach((f, i) => { const p = scene('f' + i, 70, 70, 1.6); crest(p, 35, 27, 
   const p = scene('profile', 400, 200, 1.55), {g, T} = p;
   win(p, 400, 200, 'STATUS');
   frame(g, 16, 26, 90, 160, {cut: 2, fill: '#0b2038'}); T(30, 172, '3D player model', 6.5, P.s);
-  const rows = [['FAMILY', 'Zhou'], ['NAME', 'Dev'], ['REALM', 'Mortal'], ['TITLE', 'None'], ['SECT', 'Unaffiliated']];
+  const rows = [['FAMILY', 'Namgung'], ['NAME', 'Dev'], ['REALM', 'Mortal'], ['TITLE', 'None'], ['SECT', 'Unaffiliated']];
   rows.forEach(([k, v], i) => { diamond(g, 120, 34 + i * 14, 1, P.c); label(p, 126, 30 + i * 14, k, i === 0 ? P.l : P.s); T(190, 30 + i * 14, v, 8, P.w, i < 2 ? 'font-weight:600' : ''); });
-  crest(p, 236, 34, 7, FAM[2], {blank: true});
+  crest(p, 246, 34, 7, FAM[1], {blank: true});
   frame(g, 118, 106, 150, 44, {cut: 2, line: P.c, fill: P.d});
-  T(126, 111, 'HERITAGE', 6.5, P.s, 'letter-spacing:1px'); T(126, 121, 'River Lungs', 8.5, P.w, 'font-weight:600'); T(126, 134, 'Swim 30 % faster, breath ×2', 7, P.l);
+  T(126, 111, 'INHERITANCE · LEGENDARY', 6.5, P.y, 'letter-spacing:1px'); T(126, 121, 'Coming soon', 8.5, P.w, 'font-weight:600'); T(126, 134, 'An art and extra stats', 7, P.l);
   frame(g, 118, 160, 150, 26, {cut: 2, line: '#b07cff', fill: '#1b1230'});
   spr(g, 124, 167, 'scroll', 1); T(138, 166, 'Talisman × 1', 7.5, '#d4b8ff');
   button(p, 206, 166, 56, 13, 'REROLL');
   T(280, 30, 'THE SYSTEM LOG', 6.5, P.s, 'letter-spacing:1px');
-  ['[!] You were born into', '    the Zhou family.', '[!] Heritage: River Lungs.'].forEach((l, i) => T(280, 42 + i * 10, l, 7, P.l));
+  ['[!] You were born into', '    the Namgung family.', '[!] A legendary house.'].forEach((l, i) => T(280, 42 + i * 10, l, 7, P.l));
 }
 </script></body></html>
