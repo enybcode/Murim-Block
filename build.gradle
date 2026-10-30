@@ -97,7 +97,6 @@ repositories {
 
 dependencies {
     implementation("maven.modrinth:geckolib:${geckolib_artifact}") { transitive = false }
-    implementation("maven.modrinth:player-animation-library:${pal_artifact}") { transitive = false }
     implementation("maven.modrinth:photon-editor:${photon_artifact}") { transitive = false }
     implementation("maven.modrinth:ldlib:${ldlib_artifact}") { transitive = false }
     implementation("maven.modrinth:kilagraph:${kilagraph_artifact}") { transitive = false }
@@ -120,7 +119,6 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
             neo_version            : neo_version,
             loader_version_range   : loader_version_range,
             geckolib_version       : geckolib_version,
-            pal_version            : pal_version,
             photon_version         : photon_version,
             mod_id                 : mod_id,
             mod_name               : mod_name,

@@ -11,7 +11,7 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.Level;
 
 /**
- * A zombie of the mortal trial: it climbs out of a grave and hunts the player. It drops nothing, gives no
+ * A zombie of the mortal trial, drawn as a Disciple déchu: it climbs out of a grave and hunts the player. It drops nothing, gives no
  * experience, never burns, never turns into a drowned, stays even in Peaceful, and is never saved: each trial
  * summons its own. The Grave Warden of the last wave is a bigger, tougher one.
  */
@@ -22,6 +22,10 @@ public final class TrialZombie extends Zombie {
     private static final double SPEED = 0.21;
     private static final double WARDEN_HEALTH = 60;
     private static final double WARDEN_DAMAGE = 8;
+    /** The Warden's fighting clips play this much slower, and its blows land as much later: it is heavy. */
+    public static final float WARDEN_PACE = 0.85f;
+    /** Ticks it takes to climb out of a grave, and the Warden to come out of the mausoleum (their clips). */
+    private static final int CLIMB = 40, ENTRANCE = 60;
     private static final EntityDataAccessor<Boolean> WARDEN =
             SynchedEntityData.defineId(TrialZombie.class, EntityDataSerializers.BOOLEAN);
 
@@ -59,6 +63,16 @@ public final class TrialZombie extends Zombie {
         setHealth((float) WARDEN_HEALTH);
         setCustomName(Component.translatable("entity.murimblock.grave_warden"));
         setCustomNameVisible(true);
+    }
+
+    /** Whether it is still coming out (its grave or the mausoleum): it neither moves nor strikes meanwhile. */
+    public boolean emerging() {
+        return tickCount < (isWarden() ? ENTRANCE : CLIMB);
+    }
+
+    @Override
+    protected boolean isImmobile() {
+        return super.isImmobile() || emerging();
     }
 
     @Override

@@ -1,12 +1,9 @@
 package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
-import com.murimblock.client.cultivation.ClientCultivation;
 import com.murimblock.client.innerworld.TrialEntry;
 import com.murimblock.innerworld.TrialZombie;
 import com.murimblock.registry.MurimEntities;
-import com.zigythebird.playeranim.animation.PlayerAnimationController;
-import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import java.io.File;
 import java.util.UUID;
 import net.minecraft.client.CameraType;
@@ -33,7 +30,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * Dev tool, off unless {@code murimblock.riseFilm} is set (run {@code gradlew runRiseFilm}): stands the player on a
  * platform in the sky, plays the trial's getting-up animation seen from the side (body turned, not the camera),
  * saves one shot per tick to {@code screenshots/rise/}, then shoots the Grave Warden from four sides (front, three
- * quarters, back, at night) and quits. For tuning {@code trial_rise.json} and the Warden's look quickly.
+ * quarters, back, at night) once it is out of the mausoleum, and quits. For tuning the {@code trial/rise} clip and the
+ * Warden's look quickly.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class RiseFilm {
@@ -94,9 +92,8 @@ public final class RiseFilm {
         mc.player.setYHeadRot(mc.player.getYRot() - 55);
         mc.player.yHeadRotO = mc.player.yHeadRot;
         int frame = ticks - SETTLE;
-        if (frame == 0 && PlayerAnimationAccess.getPlayerAnimationLayer(mc.player, ClientCultivation.LAYER)
-                instanceof PlayerAnimationController controller) {
-            controller.triggerAnimation(TrialEntry.RISE);
+        if (frame == 0) {
+            TrialEntry.rise(mc.player);
         }
         if (frame >= 0 && frame < FRAMES) {
             Screenshot.grab(mc.gameDirectory, String.format("rise/murim_rise_%02d.png", frame), mc.getMainRenderTarget(),
@@ -105,7 +102,10 @@ public final class RiseFilm {
         warden(mc, frame - FRAMES);
     }
 
-    /** Then the Grave Warden, 5 blocks away: from the front, three quarters, the back, and at night. */
+    /**
+     * Then the Grave Warden, 5 blocks away, once out of the mausoleum (60 ticks): from the front, three quarters, the
+     * back, and at night.
+     */
     private static void warden(Minecraft mc, int step) {
         MinecraftServer server = mc.getSingleplayerServer();
         switch (step) {
@@ -124,14 +124,14 @@ public final class RiseFilm {
                     warden = zombie;
                 });
             }
-            case 30 -> shoot(mc, "warden_front", 50);
-            case 40 -> shoot(mc, "warden_three_quarters", 180);
-            case 50 -> {
+            case 75 -> shoot(mc, "warden_front", 50);
+            case 85 -> shoot(mc, "warden_three_quarters", 180);
+            case 95 -> {
                 shoot(mc, "warden_back", 0);
                 server.execute(() -> server.overworld().setDayTime(18000));
             }
-            case 70 -> shoot(mc, "warden_night", 0);
-            case 75 -> {
+            case 115 -> shoot(mc, "warden_night", 0);
+            case 120 -> {
                 Murimblock.LOGGER.info("Rise film: done");
                 mc.stop();
             }

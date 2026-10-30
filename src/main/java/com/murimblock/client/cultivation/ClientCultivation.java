@@ -4,26 +4,18 @@ import com.murimblock.Murimblock;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationRules;
-import com.zigythebird.playeranim.animation.PlayerAnimationController;
-import com.zigythebird.playeranim.api.PlayerAnimationFactory;
-import com.zigythebird.playeranimcore.enums.PlayState;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 
 /** The client's copy of its own cultivation, and who meditates (the lotus itself is {@link LotusBody}). */
 public final class ClientCultivation {
-    /** PAL layer playing Murimblock animations on players (the trial's getting up). */
-    public static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "main");
-    private static final int LAYER_PRIORITY = 1000;
 
     private static Cultivation.Snapshot current = Cultivation.Snapshot.START;
     /** Meditating players by entity id, with the Qi each holds. */
@@ -86,12 +78,6 @@ public final class ClientCultivation {
     @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
     public static final class Events {
         private Events() {
-        }
-
-        @SubscribeEvent
-        public static void setup(FMLClientSetupEvent event) {
-            PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(LAYER, LAYER_PRIORITY,
-                    player -> new PlayerAnimationController(player, (controller, data, setter) -> PlayState.STOP));
         }
 
         @SubscribeEvent

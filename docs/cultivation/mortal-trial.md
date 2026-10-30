@@ -20,17 +20,27 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
     `trial_dive`); for the player the screen darkens from the edges to black over a slowing Warden heartbeat, the
     breathing lane hidden. Standing up or being struck cancels it, at no cost.
   - Arrival: a low bell, the screen opens on the graveyard; seen from behind, the player lies face down and gets up
-    (seen three quarters from the side: the body turns 55° from the camera; PAL animation `player_animations/trial_rise.json`, 3.2 s, after the physiotherapists' way up from the floor: lying face down, onto hands and knees, one foot forward, upright on one knee, driving up through the front leg; earth thrown up), then back to first person and the
+    (seen three quarters from the side: the body turns 55° from the camera; Shenfa clip `trial/rise`, 3.2 s, from the
+    storyboard `docs/mobs/boards/epreuve.png` validated on 30 Oct, after the physiotherapists' way up from the floor:
+    lying face down while the screen opens, pushing up onto hands and knees, one foot forward, upright on one knee,
+    driving up through the front leg with earth thrown up, a look around), then back to first person and the
     title **SURVIVE DEATH** (dark red) with "Mortal Trial · fifteen of the dead". The dead rise 7 s after arriving.
 - The wave: 15 dead in all. Two climb out of the graves when it starts (7 s after arriving, the arrival plays
   meanwhile), then one every 3 s while fewer than 4 stand, always from graves away from the player, earth thrown up.
+  Since 30 Oct the dead are drawn on Shenfa as Disciples déchus and fight as they do (`DiscipleFighting`). Each
+  climbs out of its grave (clip `disciple/climb`, 40 ticks: a hand through the earth, the grip on the edge, the haul,
+  a knee, up and hunched), held still meanwhile (`TrialZombie.emerging`).
   The 15th is the **Grave Warden** (1.6x size, 60 health, 8 damage; doubled on 29 Oct at Enzo's request), out of the mausoleum once the 14 others are down.
-  It looks like a zombie gone wrong (Enzo, 25 Oct: "a bit mutant, do not change too much"): an original texture
-  (`tools/textures/grave-warden.cjs`: grey-green rotting skin with sores, bare ribs through a torn shirt, ragged trousers,
-  bare clawed hands and feet), red eyes glowing in the dark, and growths that follow its body and arm
-  (`GraveWardenMutationLayer`): three bone spikes down the spine, a hunch with bone nubs, a bone knot and spur on
-  the right shoulder, a swollen right forearm. `runRiseFilm` ends with shots of it from the front, three quarters,
-  the back and at night.
+  It looks like a zombie gone wrong (Enzo, 25 Oct: "a bit mutant, do not change too much"). On Shenfa since 30 Oct
+  (design sheet `docs/mobs/gardien-tombes.png`; `tools/blender/mobs/warden.py`, `skeletal/mobs/warden.gltf`): grey-green
+  rotting skin with sores, red eyes glowing in sunken sockets, a torn mouth and swollen cheek, bare ribs through a
+  torn shirt, a hunch and three bone spikes down the spine, a bone knot and spur on the right shoulder, a swollen
+  right forearm, claws, bare clawed feet under ragged trousers. It ducks out of the mausoleum, takes a heavy step,
+  unfolds and roars (clip `disciple/warden_entrance`, 60 ticks), then plays the Disciple's clips and blows at 0.85
+  of their pace (`TrialZombie.WARDEN_PACE`): its step, its roar and each blow shake the camera of a player within
+  14 blocks and throw up earth. With Shenfa mobs off, the old look is drawn (`TrialZombieRenderer`, texture
+  `tools/textures/grave-warden.cjs`, growths `GraveWardenMutationLayer`). `runRiseFilm` ends with shots of it
+  from the front, three quarters, the back and at night.
   Trial zombies are softer than vanilla ones (10 health, 2 damage, a little slower), hunt the player (follow range 64),
   drop nothing, give no experience, never burn or turn into drowned, stay in Peaceful (where they do no damage) and
   are never saved. The spirit arrives with full health and food.
@@ -60,13 +70,12 @@ world's guards apply: nothing breaks, nothing is placed.
 `gradlew runInnerWorldTour` ends with the trial: the BEGIN TRIAL page, arrival, the first two out of the graves, a lost
 trial (−30 %, zombies gone), then all 15 put down and Third-Rate Warrior. Shots `murim_trial_page`, `murim_trial_dive`, `murim_trial_rise_1`, `_rise_2`, `murim_trial_title`,
 `murim_trial_arrival`, `murim_trial_island`, `murim_trial_won`. Unit tests: `CultivationTest` (realm breakthrough,
-scatter). Not yet played by hand with real fights.
+scatter). `gradlew runEngineTest -PengineGroups=trial [-PengineGifs=true]`: one of the dead climbs out and then
+comes, the Warden comes out and fights at its pace, the player gets up (GIFs `trial_climb`, `trial_warden`,
+`trial_rise`). Not yet played by hand with real fights.
 The tour also films the entry, one shot per tick in `screenshots/film/`; make the GIF (kept local, out of the
 repository) with `java tools/frames-to-gif.java run/inner-world-tour/screenshots/film run/gifs/murim_trial_entry.gif`.
-Knees and elbows: Minecraft limbs have no joint, and PAL reads a `"bend"` track per limb (degrees, Emotecraft format)
-without drawing it on 1.21.1 (that needs bendable-cuboids, 1.21.7+). `client/cultivation/BentLimbsLayer` draws any bent
-limb in two halves from the player's skin (thigh and shin, upper arm and forearm): knees fold back, elbows forward.
 
 To tune the getting up alone: `gradlew runRiseFilm` (`run/rise-film`) films it three quarters from the side, one shot per tick, in
-`screenshots/rise/`. PAL turns the `body` bone around the hips, 12 px above the feet: lying needs the body lowered by
-10 px, or the player floats (Enzo saw it float on 25 Oct).
+`screenshots/rise/`. The getting up is drawn by Shenfa only (Shenfa players off: no animation). PAL, which played
+it until 30 Oct, is out of the mod.

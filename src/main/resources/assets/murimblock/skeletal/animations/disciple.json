@@ -24,6 +24,8 @@
     "noye_grab": {"transition": 0.05},
     "flinch": {"transition": 0.03,
       "mask": ["Torso", "Chest", "Head", "Shoulder_L", "Shoulder_R", "Arm_L", "Arm_R", "Hand_L", "Hand_R"]},
-    "death": {"transition": 0.05}
+    "death": {"transition": 0.05},
+    "climb": {"transition": 0},
+    "warden_entrance": {"transition": 0}
   }
 }

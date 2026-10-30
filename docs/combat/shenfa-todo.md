@@ -41,8 +41,8 @@ on it. `engine-roadmap.md` is the record of what was built and how; `epic-fight-
 6. Cloth: robes, sashes and hair ribbons once murim outfits exist; collisions with the arms.
 7. Walking leftovers: stairs still turn a leg up to about 78° for a frame; the knee peaks 35 to 55° a frame on the
    flat.
-8. Compatibility: Iris, Sodium, OptiFine; the trial's getting up (PAL, BentLimbsLayer) moves to Shenfa
-   (the lotus moved on 29 Oct 2026).
+8. Compatibility: Iris, Sodium, OptiFine (the lotus moved to Shenfa on 29 Oct 2026, the trial's getting up on
+   30 Oct; PAL is out of the mod).
 9. Combat, more: grabs and throws for the fists, mounted strikes, boss fights, datapack movesets with an editor.
 10. Feel, more: slow motion on a finishing blow, an over-the-shoulder camera, hit sparks as Photon effects.
 11. Tools: a dev screen to play and scrub clips, an emote wheel, an event API for other mods.

@@ -925,6 +925,59 @@ SETS["meditation"] = {
 }
 
 
+# The mortal trial (storyboard docs/mobs/boards/epreuve.png, validated 30 Oct 2026), its poses as on the board.
+def trial(**p):
+    # No item: the wrist straight.
+    return board({"w": p["fR"] + WRIST_REST, **p})
+
+
+TRIAL_STAND = trial(lean=0, head=0, aR=4, fR=6, aL=-4, fL=-2, tF=2, sF=0, tB=-2, sB=-4)
+# The player gets up from the graveyard's floor, the physiotherapists' way (64 ticks, as the PAL one was).
+RISE = dict(
+    prone=trial(lean=90, head=6, hy=28, hx=-16, aR=60, fR=150, aL=52, fL=140, tF=-88, sF=-93, tB=-92, sB=-97),
+    breath=trial(lean=88, head=4, hy=27.5, hx=-16, aR=60, fR=150, aL=52, fL=140, tF=-88, sF=-93, tB=-92, sB=-97),
+    press=trial(lean=66, head=-14, hy=26, hx=-16, aR=4, fR=18, aL=-2, fL=12, tF=-80, sF=-92, tB=-86, sB=-95),
+    fours=trial(lean=78, head=-10, hy=14, hx=-14, aR=12, fR=4, aL=6, fL=-2, tF=4, sF=-86, tB=-2, sB=-90),
+    foot=trial(lean=52, head=-8, hy=14, hx=-10, aR=34, fR=20, aL=22, fL=10, tF=78, sF=2, tB=0, sB=-88),
+    kneel=trial(lean=6, head=-2, hy=14, hx=-8, aR=52, fR=92, aL=10, fL=20, tF=86, sF=0, tB=0, sB=-88),
+    drive=trial(lean=18, head=0, hy=5, hx=-2, aR=-18, fR=10, aL=30, fL=50, tF=42, sF=-4, tB=-24, sB=-44),
+    look=trial(lean=0, head=-6, aR=10, fR=24, aL=-8, fL=4, tF=2, sF=0, tB=-2, sB=-4),
+)
+SETS["trial"] = {
+    # Held lying while the screen opens (the arrival fades in over its first 20 ticks), then up in 48 ticks.
+    "rise": [(0, RISE["prone"]), (8, RISE["breath"]), (16, RISE["prone"]), (24, RISE["press"]), (31, RISE["fours"]),
+             (38, RISE["foot"]), (45, RISE["kneel"]), (48, RISE["kneel"]), (56, RISE["drive"]), (61, RISE["look"]),
+             (64, TRIAL_STAND)],
+}
+# One of the dead climbs out of its grave (40 ticks): all of it under the earth at first, then a hand, the grip on
+# the edge, the haul, a knee, up and hunched (the Disciple's slump takes over).
+CLIMB = dict(
+    deep=trial(lean=4, head=-18, hy=96, aR=176, fR=172, aL=150, fL=150, tF=0, sF=-4, tB=-4, sB=-8),
+    hand=trial(lean=4, head=-18, hy=66, aR=176, fR=172, aL=150, fL=150, tF=0, sF=-4, tB=-4, sB=-8),
+    grip=trial(lean=32, head=-12, hy=46, aR=128, fR=96, aL=118, fL=90, tF=8, sF=0, tB=0, sB=-4),
+    haul=trial(lean=62, head=-16, hy=30, hx=4, aR=20, fR=8, aL=12, fL=2, tF=10, sF=-4, tB=0, sB=-6),
+    knee=trial(lean=44, head=6, hy=14, hx=-2, aR=30, fR=14, aL=18, fL=8, tF=82, sF=2, tB=-4, sB=-80),
+    hunch=trial(lean=24, head=16, hy=3, aR=34, fR=44, aL=26, fL=38, tF=16, sF=-6, tB=-10, sB=-16),
+)
+# The Grave Warden out of the mausoleum (60 ticks): ducking under the lintel from half a block back, a heavy step
+# (tick 22), unfolding, the roar (42 to 48), its guard.
+WARDEN = dict(
+    duck=trial(lean=48, head=22, hy=12, hx=-22, aR=44, fR=30, aL=36, fL=24, tF=34, sF=-8, tB=-18, sB=-30),
+    edge=trial(lean=44, head=18, hy=11, hx=-14, aR=40, fR=36, aL=30, fL=26, tF=40, sF=-4, tB=-22, sB=-34),
+    stomp=trial(lean=30, head=12, hy=5, aR=28, fR=52, aL=-14, fL=6, tF=30, sF=0, tB=-22, sB=-34),
+    rise=trial(lean=4, head=-4, hy=1, aR=10, fR=24, aL=-6, fL=6, tF=8, sF=0, tB=-8, sB=-10),
+    roar=trial(lean=-12, head=-30, hy=2, aR=128, fR=156, aL=128, fL=156, tF=10, sF=0, tB=-10, sB=-14, armZ=-40,
+               armLZ=40),
+    guard=trial(lean=26, head=12, hy=4, aR=40, fR=64, aL=24, fL=40, tF=20, sF=-4, tB=-14, sB=-20),
+)
+SETS["disciple"].update({
+    "climb": [(0, CLIMB["deep"]), (5, CLIMB["hand"]), (8, CLIMB["hand"]), (18, CLIMB["grip"]), (28, CLIMB["haul"]),
+              (34, CLIMB["knee"]), (40, CLIMB["hunch"])],
+    "warden_entrance": [(0, WARDEN["duck"]), (14, WARDEN["edge"]), (22, WARDEN["stomp"]), (26, WARDEN["stomp"]),
+                        (36, WARDEN["rise"]), (42, WARDEN["roar"]), (48, WARDEN["roar"]), (60, WARDEN["guard"])],
+})
+
+
 def rotation(degrees):
     x, y, z = (math.radians(d) for d in degrees)
     return Quaternion((1, 0, 0), x) @ Quaternion((0, 1, 0), y) @ Quaternion((0, 0, 1), z)

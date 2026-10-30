@@ -444,8 +444,14 @@ public final class CombatServer {
 
     /** Plays (or stops, with a null clip) a layer of {@code body} on every client that sees it. */
     public static void anim(LivingEntity body, Animator.Priority layer, ResourceLocation clip, boolean notSelf) {
+        anim(body, layer, clip, notSelf, 1);
+    }
+
+    /** As {@link #anim(LivingEntity, Animator.Priority, ResourceLocation, boolean)}, the clip played at {@code speed}. */
+    public static void anim(LivingEntity body, Animator.Priority layer, ResourceLocation clip, boolean notSelf,
+                            float speed) {
         CombatPayloads.Anim payload = new CombatPayloads.Anim(body.getId(), layer.ordinal(),
-                clip == null ? "" : clip.toString(), 1, false);
+                clip == null ? "" : clip.toString(), speed, false);
         if (notSelf) {
             PacketDistributor.sendToPlayersTrackingEntity(body, payload);
         } else {

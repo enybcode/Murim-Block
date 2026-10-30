@@ -31,13 +31,6 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
-modId = "player_animation_library"
-type = "required"
-versionRange = "[${pal_version},)"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.${mod_id}]]
 modId = "photon"
 type = "required"
 versionRange = "[${photon_version},)"

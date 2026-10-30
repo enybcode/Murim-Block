@@ -6,8 +6,7 @@ Murim (wuxia) mod for Minecraft, restarted from zero on 23 Oct 2026. Owner: Enzo
 
 - Minecraft 1.21.1, NeoForge 21.1.248 (ModDevGradle), Java 21, Gradle wrapper.
 - GeckoLib 4.9.3: models and animations of items, blocks, effects and non-combat models.
-- Player Animation Library 1.1.6 (`player_animation_library`): non-combat player animations (the trial's getting up).
-- Shenfa (身法, "the art of the body"): our own skeletal animation engine; it draws players and our mob looks (zombie = Disciple déchu, `SkeletalMobs`)
+- Shenfa (身法, "the art of the body"): our own skeletal animation engine; it draws players (lotus, the trial's getting up) and our mob looks (zombie = Disciple déchu, `SkeletalMobs`)
   (`com.murimblock.shenfa`, glTF from Blender); combat (`com.murimblock.combat`) builds on it. To-do:
   `docs/combat/shenfa-todo.md`.
 - Photon 2.2.8 (with LDLib2, KilaGraph): effects and dynamic lights.

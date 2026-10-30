@@ -359,7 +359,7 @@ public final class CombatClient {
                 }
             }
         } else if (entity instanceof net.minecraft.world.entity.Mob mob) {
-            com.murimblock.shenfa.client.SkeletalMobs.play(mob, layer, id);
+            com.murimblock.shenfa.client.SkeletalMobs.play(mob, layer, id, payload.speed());
         }
     }
 

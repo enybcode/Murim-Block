@@ -42,7 +42,9 @@ public final class InnerWorldClient {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(MurimEntities.MEDITATING_BODY.get(), MeditatingBodyRenderer::new);
         event.registerEntityRenderer(MurimEntities.OLD_MASTER.get(), OldMasterRenderer::new);
-        event.registerEntityRenderer(MurimEntities.TRIAL_ZOMBIE.get(), TrialZombieRenderer::new);
+        // Drawn on Shenfa (SkeletalMobs: Disciples déchus and the Grave Warden), vanilla's model when Shenfa mobs are off.
+        event.registerEntityRenderer(MurimEntities.TRIAL_ZOMBIE.get(), context -> new com.murimblock.shenfa.client.SkeletalMobRenderer<>(
+                context, new TrialZombieRenderer(context)));
     }
 
     /** Right-clicking the Old Master opens the talk; nothing is sent to the server. */

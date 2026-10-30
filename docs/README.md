@@ -23,7 +23,7 @@ One file per feature or decision, added as the work goes.
   `client/combat/` the fight (server rules, client keys and feel), `cultivation/`, `innerworld/`, `registry/`,
   `client/gui/` the System screen, `client/dev/` the scripted in-game checks (off unless a dev run sets them), `mixin/`.
 - `src/main/resources/assets/murimblock/`: `skeletal/` the biped and its clip sets (glTF and sidecars), `lang/`,
-  textures, GeckoLib models, particles, `player_animations/` (PAL).
+  textures, GeckoLib models, particles.
 - `tools/`: `blender/` builds the biped and the clips, `textures/` paints original textures and models (Node),
   `gifs.sh` and `frames-to-gif.java` turn recorded frames into GIFs.
 - `docs/`: this index; `playtest/` the in-game checklist.

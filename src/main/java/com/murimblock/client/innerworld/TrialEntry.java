@@ -2,12 +2,14 @@ package com.murimblock.client.innerworld;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.murimblock.Murimblock;
-import com.murimblock.client.cultivation.ClientCultivation;
 import com.murimblock.cultivation.QiParticleOptions;
 import com.murimblock.innerworld.MortalTrial;
 import com.murimblock.registry.MurimParticles;
-import com.zigythebird.playeranim.animation.PlayerAnimationController;
-import com.zigythebird.playeranim.api.PlayerAnimationAccess;
+import com.murimblock.shenfa.Animation;
+import com.murimblock.shenfa.Animator;
+import com.murimblock.shenfa.client.PlayerAnimators;
+import com.murimblock.shenfa.client.SkeletalClips;
+import com.murimblock.shenfa.client.SkeletalPlayers;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -16,6 +18,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,6 +33,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
@@ -43,7 +47,9 @@ public final class TrialEntry {
     private static final ResourceLocation LAYER = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "trial_entry");
     private static final ResourceLocation VIGNETTE =
             ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "textures/gui/breath_vignette.png");
-    public static final ResourceLocation RISE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "trial_rise");
+    /** The getting up, on Shenfa (storyboard docs/mobs/boards/epreuve.png): 64 ticks, on the lowest layer. */
+    public static final ResourceLocation RISE = ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, "trial/rise");
+    private static final Animator.Priority RISE_LAYER = Animator.Priority.LOWEST;
     /** Heartbeats of the dive, each a little further from the last. */
     private static final int[] HEARTBEATS = {0, 11, 23, 36, 50};
     /** The last ticks of the dive are fully black. */
@@ -53,8 +59,8 @@ public final class TrialEntry {
     private static final int FADE_IN_START = 4;
     private static final int FADE_IN_END = 20;
     private static final int LIE_DOWN = 2;
-    /** The push-up begins (the animation holds its lying pose 0.9 s): earth is thrown up. */
-    private static final int RISE_START = 20;
+    /** It drives up through the front leg (tick 48 of the clip): earth is thrown up. */
+    private static final int RISE_START = 50;
     private static final int RISE_END = 66;
     private static final int TITLE = 66;
     private static final int ARRIVAL_END = 74;
@@ -163,10 +169,7 @@ public final class TrialEntry {
                 cameraBefore = CameraType.FIRST_PERSON;
                 mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             }
-            if (PlayerAnimationAccess.getPlayerAnimationLayer(mc.player, ClientCultivation.LAYER)
-                    instanceof PlayerAnimationController controller) {
-                controller.triggerAnimation(RISE);
-            }
+            rise(mc.player);
         }
         if (arrival == RISE_START) {
             RandomSource random = mc.player.getRandom();
@@ -230,6 +233,20 @@ public final class TrialEntry {
         }
     }
 
+    /** Plays the getting up on {@code player}'s body (drawn by Shenfa only). */
+    public static void rise(AbstractClientPlayer player) {
+        Animation clip = SkeletalClips.get(RISE);
+        if (SkeletalPlayers.enabled() && clip != null) {
+            PlayerAnimators.play(player, RISE_LAYER, clip, 1, false);
+        }
+    }
+
+    /** Whether the getting up holds {@code player}'s body (no planted feet, no vanilla pose, no held item). */
+    private static boolean rising(AbstractClientPlayer player) {
+        Animation clip = PlayerAnimators.playing(player, RISE_LAYER);
+        return clip != null && clip.id().endsWith(RISE.getPath());
+    }
+
     private static float smooth(float k) {
         k = Mth.clamp(k, 0, 1);
         return k * k * (3 - 2 * k);
@@ -238,6 +255,11 @@ public final class TrialEntry {
     @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
     public static final class Events {
         private Events() {
+        }
+
+        @SubscribeEvent
+        public static void setup(FMLClientSetupEvent event) {
+            PlayerAnimators.bodyHeld = PlayerAnimators.bodyHeld.or(TrialEntry::rising);
         }
 
         @SubscribeEvent

@@ -131,7 +131,9 @@ public final class DiscipleFighting extends Goal {
     private final Mob mob;
     private Move move;
     private Timing timing;
-    private int time, rest = 20, lungeRest, blocked, path;
+    private int rest = 20, lungeRest, blocked, path;
+    /** Ticks into the move, at its pace (the Grave Warden is slower). */
+    private float time, pace = 1;
     private boolean landed;
     /** The distance to its prey over the last half second, a tick apart (a ring). */
     private final double[] distances = new double[10];
@@ -145,11 +147,12 @@ public final class DiscipleFighting extends Goal {
     /**
      * The zombie family, all with the disciple's clips and fighting ({@code docs/mobs/zombie-family.png}): the zombie,
      * the husk (Disciple des sables), the drowned (Disciple noyé), the zombie villager (Paysan possédé) and the
-     * zombified piglin (Sanglier du culte). Not our own zombies (the trial's).
+     * zombified piglin (Sanglier du culte), and the mortal trial's dead (Disciples déchus and their Grave Warden).
      */
     public static boolean family(EntityType<?> type) {
         return type == EntityType.ZOMBIE || type == EntityType.HUSK || type == EntityType.DROWNED
-                || type == EntityType.ZOMBIE_VILLAGER || type == EntityType.ZOMBIFIED_PIGLIN;
+                || type == EntityType.ZOMBIE_VILLAGER || type == EntityType.ZOMBIFIED_PIGLIN
+                || type == com.murimblock.registry.MurimEntities.TRIAL_ZOMBIE.get();
     }
 
     /**
@@ -298,16 +301,19 @@ public final class DiscipleFighting extends Goal {
             blocked = 0;
         }
         time = 0;
+        pace = mob instanceof com.murimblock.innerworld.TrialZombie trial && trial.isWarden()
+                ? com.murimblock.innerworld.TrialZombie.WARDEN_PACE : 1;
         landed = false;
         mob.getNavigation().stop();
-        CombatServer.anim(mob, Animator.Priority.MIDDLE, timing.clip(), false);
+        CombatServer.anim(mob, Animator.Priority.MIDDLE, timing.clip(), false, pace);
         if (probe != null) {
             probe.accept(mob, next);
         }
     }
 
     private void play(LivingEntity target) {
-        time++;
+        float before = time;
+        time += pace;
         boolean windUp = time < timing.impacts()[0];
         if (target != null && windUp) {
             // It turns to its prey while it winds up; once the blow is thrown, it is thrown.
@@ -315,7 +321,7 @@ public final class DiscipleFighting extends Goal {
             mob.setYRot(mob.getYHeadRot());
             mob.yBodyRot = mob.getYHeadRot();
         }
-        if (move == Move.LUNGE && time == 6 && target != null) {
+        if (move == Move.LUNGE && before < 6 && time >= 6 && target != null) {
             Vec3 toward = target.position().subtract(mob.position()).multiply(1, 0, 1);
             double speed = Mth.clamp((toward.length() - 1.2) * 0.16, 0.3, 0.75);
             Vec3 push = toward.normalize().scale(speed);
@@ -323,7 +329,7 @@ public final class DiscipleFighting extends Goal {
             mob.hasImpulse = true;
         }
         for (int i = 0; i < timing.impacts().length; i++) {
-            if (time == timing.impacts()[i] && target != null && !(move == Move.LUNGE && landed)) {
+            if (before < timing.impacts()[i] && time >= timing.impacts()[i] && target != null && !(move == Move.LUNGE && landed)) {
                 impact(target, move.damage[Math.min(i, move.damage.length - 1)]);
             }
         }

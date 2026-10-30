@@ -23,6 +23,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Slime;
 import com.murimblock.combat.SealFighting;
+import com.murimblock.innerworld.TrialZombie;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -83,6 +84,12 @@ public final class SkeletalMobs {
     /** The slime as the Sceau de jade vivant, on a skeleton of its own, built at the big one's size. */
     public static final Look SCEAU = new Look(id("mobs/seal"), id("textures/entity/seal.png"),
             id("textures/entity/seal_glow.png"), "seal");
+    /**
+     * The mortal trial's Grave Warden ({@code docs/mobs/gardien-tombes.png}): the disciple's clips on a mutant body,
+     * played at {@link TrialZombie#WARDEN_PACE}; the trial's other dead are Disciples déchus.
+     */
+    public static final Look WARDEN = new Look(id("mobs/warden"), id("textures/entity/warden.png"),
+            id("textures/entity/warden_glow.png"), "disciple");
     private static final Map<EntityType<?>, Look> LOOKS = Map.ofEntries(Map.entry(EntityType.ZOMBIE, DISCIPLE),
             Map.entry(EntityType.SKELETON, ARCHER), Map.entry(EntityType.HUSK, SABLES), Map.entry(EntityType.DROWNED, NOYE),
             Map.entry(EntityType.ZOMBIE_VILLAGER, PAYSAN), Map.entry(EntityType.ZOMBIFIED_PIGLIN, SANGLIER),
@@ -108,6 +115,13 @@ public final class SkeletalMobs {
 
     private static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(Murimblock.MOD_ID, path);
+    }
+
+    private static Look find(Entity entity) {
+        if (entity instanceof TrialZombie trial) {
+            return trial.isWarden() ? WARDEN : DISCIPLE;
+        }
+        return LOOKS.get(entity.getType());
     }
 
     private static Look disciple(String name) {
@@ -140,6 +154,8 @@ public final class SkeletalMobs {
          * was checked for being a piece of a burst one. */
         boolean airborne, born, slammed;
         int slam = -1;
+        /** The Grave Warden: how far its fighting clip had played last tick (clip ticks). */
+        float clipTicks;
     }
 
     /**
@@ -159,7 +175,7 @@ public final class SkeletalMobs {
     }
 
     private static State state(Mob mob) {
-        Armature armature = armature(LOOKS.get(mob.getType()));
+        Armature armature = armature(find(mob));
         State state = STATES.get(mob);
         if (state == null || state.armature != armature) {
             state = new State(armature);
@@ -184,13 +200,19 @@ public final class SkeletalMobs {
 
     /** The look {@code entity} wears, or null to draw it as vanilla does. */
     public static Look look(Entity entity) {
-        return enabled() ? LOOKS.get(entity.getType()) : null;
+        return enabled() ? find(entity) : null;
     }
 
     /** For checks: the clip {@code mob} plays at {@code priority}, or null. */
     public static Animation playing(Mob mob, Animator.Priority priority) {
         State state = STATES.get(mob);
         return state == null ? null : state.animator.playing(priority);
+    }
+
+    /** For checks: how far (seconds) the clip {@code mob} plays at {@code priority} has gone. */
+    public static float time(Mob mob, Animator.Priority priority) {
+        State state = STATES.get(mob);
+        return state == null ? 0 : state.animator.time(priority);
     }
 
     /** For checks: the clip of {@code mob}'s living motion, or null. */
@@ -241,8 +263,8 @@ public final class SkeletalMobs {
             return;
         }
         for (Entity entity : mc.level.entitiesForRendering()) {
-            if (entity instanceof Mob mob && LOOKS.containsKey(mob.getType())) {
-                Look look = LOOKS.get(mob.getType());
+            if (entity instanceof Mob mob && find(mob) != null) {
+                Look look = find(mob);
                 State state = state(mob);
                 update(mob, look, state);
                 if (look.clips() != null) {
@@ -274,6 +296,9 @@ public final class SkeletalMobs {
             }
             return;
         }
+        if (mob instanceof TrialZombie trial) {
+            trial(trial, look, state);
+        }
         if (mob.hurtTime > state.hurtTime) {
             play(mob, state, look, Animator.Priority.LOW, "flinch");
         }
@@ -292,6 +317,63 @@ public final class SkeletalMobs {
             float yaw = mob.yBodyRot * Mth.DEG_TO_RAD;
             mob.level().addParticle(net.minecraft.core.particles.ParticleTypes.ITEM_SLIME,
                     mob.getX() - Mth.sin(yaw) * 0.45, mob.getY() + 0.2, mob.getZ() + Mth.cos(yaw) * 0.45, 0, -0.05, 0);
+        }
+    }
+
+    /**
+     * The mortal trial's dead ({@code docs/mobs/boards/epreuve.png}): each climbs out of its grave, the Warden ducks out
+     * of the mausoleum and roars, while the server holds them still ({@link TrialZombie#emerging}). The Warden's
+     * weight shakes the camera of a player near when its foot comes down, when it roars and when its blows land,
+     * earth thrown up at its feet.
+     */
+    private static void trial(TrialZombie mob, Look look, State state) {
+        if (!state.born) {
+            state.born = true;
+            if (mob.emerging()) {
+                play(mob, state, look, Animator.Priority.MIDDLE, look == WARDEN ? "warden_entrance" : "climb", 1);
+            }
+        }
+        if (look != WARDEN) {
+            return;
+        }
+        Animation clip = state.animator.playing(Animator.Priority.MIDDLE);
+        float now = state.animator.time(Animator.Priority.MIDDLE) * 20;
+        if (clip == null || now < state.clipTicks) {
+            state.clipTicks = 0;
+        }
+        if (clip != null) {
+            String name = clip.id().substring(clip.id().indexOf('/') + 1);
+            for (int at : switch (name) {
+                case "warden_entrance" -> new int[] {22, 42};
+                case "strike" -> new int[] {5};
+                case "double" -> new int[] {3, 10};
+                case "lunge" -> new int[] {9};
+                default -> new int[0];
+            }) {
+                if (state.clipTicks < at && now >= at) {
+                    quake(mob, name.equals("warden_entrance") && at == 42);
+                }
+            }
+            state.clipTicks = now;
+        }
+    }
+
+    private static void quake(Mob mob, boolean roar) {
+        Minecraft mc = Minecraft.getInstance();
+        var random = mob.getRandom();
+        for (int i = 0; i < 18; i++) {
+            mob.level().addParticle(new net.minecraft.core.particles.BlockParticleOption(
+                            net.minecraft.core.particles.ParticleTypes.BLOCK,
+                            net.minecraft.world.level.block.Blocks.COARSE_DIRT.defaultBlockState()),
+                    mob.getX() + (random.nextDouble() - 0.5) * 1.6, mob.getY() + 0.1,
+                    mob.getZ() + (random.nextDouble() - 0.5) * 1.6, 0, 0.12, 0);
+        }
+        if (roar) {
+            mob.level().playLocalSound(mob.getX(), mob.getEyeY(), mob.getZ(),
+                    net.minecraft.sounds.SoundEvents.RAVAGER_ROAR, mob.getSoundSource(), 1.2f, 0.55f, false);
+        }
+        if (mc.player != null && mc.player.distanceToSqr(mob) < 14 * 14) {
+            CameraShake.start(roar ? 0.7f : 0.4f, roar ? 14 : 5);
         }
     }
 
@@ -405,17 +487,21 @@ public final class SkeletalMobs {
     }
 
     private static void play(Mob mob, State state, Look look, Animator.Priority priority, String clip) {
+        play(mob, state, look, priority, clip, 1);
+    }
+
+    private static void play(Mob mob, State state, Look look, Animator.Priority priority, String clip, float speed) {
         if (moveProbe != null) {
             moveProbe.accept(mob, clip);
         }
         Animation animation = SkeletalClips.get(look.clip(clip));
         if (animation != null) {
-            state.animator.play(priority, animation, 1, false);
+            state.animator.play(priority, animation, speed, false);
         }
     }
 
     /** A clip the server tells {@code mob} to play on {@code layer} (null stops the layer): its fighting moves. */
-    public static void play(Mob mob, Animator.Priority layer, ResourceLocation id) {
+    public static void play(Mob mob, Animator.Priority layer, ResourceLocation id, float speed) {
         State state = state(mob);
         if (id == null) {
             state.animator.stop(layer);
@@ -426,7 +512,7 @@ public final class SkeletalMobs {
         }
         Animation animation = SkeletalClips.get(id);
         if (animation != null && !state.dying) {
-            state.animator.play(layer, animation, 1, false);
+            state.animator.play(layer, animation, speed, false);
         }
     }
 
@@ -452,7 +538,7 @@ public final class SkeletalMobs {
 
     /** {@code mob}'s pose this frame: its motion and moves, its head's look. */
     public static Pose pose(Mob mob, float partialTick, float netHeadYaw, float headPitch) {
-        Look look = LOOKS.get(mob.getType());
+        Look look = find(mob);
         State state = state(mob);
         if (state.animator.baseAnimation() == null && look != null) {
             update(mob, look, state);
