@@ -134,7 +134,9 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 - The salt lake lies at Y 130 on the plateau: the relief digs its bowl and `HighLakeFeature` (`high_lake`, in the
   Qinghai plateau's lakes step) fills it to its level and lays a calcite salt crust on the shore.
 - The map PNG from the tests (`build/murim-map/murim-map.png`) shows rivers and lakes in blue; `MurimMapRenderTest`
-  draws a shaded view from above (`murim-map-relief.png`, 10 blocks a pixel) with label positions (`labels.json`). The tour reads the
+  draws a shaded view from above (`murim-map-relief.png`, 10 blocks a pixel) with label positions (`labels.json`) and a
+  biome and height grid every 20 blocks (`grid.json`), the data of the interactive atlas (claude.ai artifact "Atlas de
+  Murim"). The tour reads the
   ground under the water (`OCEAN_FLOOR`) and adds four views: the yellow river, the delta, the great lake, the salt lake.
 - Verified 30 Oct 2026: `gradlew build` (6 map tests), `runMapTour` 0 failures; the river and salt lake shots show
   water at the right places. The Sichuan gorges view still shoots into the jungle canopy.
