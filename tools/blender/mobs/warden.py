@@ -260,9 +260,9 @@ def parts():
           for i in range(3) for side in (-3.2, 1.2)],
         Part("hunch", "Chest", (-3, 19, -3.8), (6, 4, 2.2), hunch),
         *spine,
-        # The right shoulder's bone knot and its spur.
+        # The right shoulder's bone knot and its spur, short and out on the shoulder's edge to keep clear of the head.
         Part("knot", "Arm_R", (-7.5, 22.6, -1.5), (3, 3, 3), knot),
-        Part("spur", "Arm_R", (-6.7, 25.4, -0.7), (1.4, 3, 1.4), bone, tilt=(20, 25.4, 0)),
+        Part("spur", "Arm_R", (-8.1, 25.4, -0.7), (1.2, 2.2, 1.2), bone, tilt=(20, 25.4, 0)),
         # Arms: the right forearm swollen, the left sleeve torn, claws on both hands.
         Part("arm_r", arm("R"), (-8, 12, -2), (4, 12, 4), arm_paint),
         Part("swell_r", "Hand_R", (-8.6, 13.4, -2.6), (5, 4, 5), swelling),
