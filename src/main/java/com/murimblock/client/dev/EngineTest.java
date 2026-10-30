@@ -91,6 +91,7 @@ public final class EngineTest {
         groups.put("witch", WitchChecks::steps);
         groups.put("meditation", MeditationChecks::steps);
         groups.put("trial", TrialChecks::steps);
+        groups.put("showcase", ShowcaseChecks::steps);
         String wanted = System.getProperty("murimblock.engineGroups", "");
         Set<String> only = wanted.isBlank() ? groups.keySet() : Set.of(wanted.split(","));
         return groups.entrySet().stream().filter(entry -> only.contains(entry.getKey()))
