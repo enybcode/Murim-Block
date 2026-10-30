@@ -198,6 +198,10 @@ final class CombatChecks {
                 if (t <= 60 && LockOn.target() != locked[0]) {
                     kept[0] = false;
                 }
+                if (t == 30) {
+                    // The combat HUD (CombatHud) and the lock's diamond and health bar over the foe.
+                    EngineTest.shoot(mc, "combat_hud_lock");
+                }
                 if (t == 62) {
                     LockOn.mouse(3);
                     nudge[0] = LockOn.target() == locked[0];

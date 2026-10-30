@@ -41,6 +41,9 @@ public final class LockOn {
     /** How long the foe may stay hidden behind a wall (ticks) before the lock lets go. */
     private static final int HIDDEN = 40;
     private static LivingEntity target;
+    /** The health the lock's bar shows for {@code shownFor}: it catches up with a loss slowly, a heal at once. */
+    private static LivingEntity shownFor;
+    private static float shownHealth;
     private static int hidden;
     /** The mouse's turn (degrees) since {@link #sweepStart}, and when the target last switched. */
     private static float sweep;
@@ -170,7 +173,9 @@ public final class LockOn {
                 .getType() == HitResult.Type.MISS;
     }
 
-    /** A turning diamond above the locked foe. */
+    /** The lock's marks (board {@code docs/gui/boards/combat-bar-j3.png}, choice B): a turning pink diamond above the
+     * locked foe and, under it, a thin bar of its health facing the camera, the health just lost showing white while
+     * it melts away. */
     @SubscribeEvent
     public static void marker(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES || target == null) {
@@ -179,9 +184,10 @@ public final class LockOn {
         Minecraft mc = Minecraft.getInstance();
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         Vec3 camera = event.getCamera().getPosition();
-        Vec3 at = target.getPosition(partialTick).add(0, target.getBbHeight() + 0.45, 0).subtract(camera);
+        Vec3 top = target.getPosition(partialTick).add(0, target.getBbHeight(), 0).subtract(camera);
+        Vec3 at = top.add(0, 0.62, 0);
         float turn = (mc.level.getGameTime() + partialTick) * 0.15f;
-        float size = 0.18f;
+        float size = 0.14f;
         MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
         VertexConsumer lines = buffers.getBuffer(RenderType.lines());
         PoseStack.Pose pose = event.getPoseStack().last();
@@ -190,11 +196,43 @@ public final class LockOn {
         for (int i = 0; i < 4; i++) {
             Vec3 a = at.add(corners[i]), b = at.add(corners[(i + 1) % 4]);
             Vec3 normal = b.subtract(a).normalize();
-            lines.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(1f, 0.25f, 0.2f, 1f)
+            lines.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(1f, 0.55f, 0.6f, 1f)
                     .setNormal(pose, (float) normal.x, (float) normal.y, (float) normal.z);
-            lines.addVertex(pose, (float) b.x, (float) b.y, (float) b.z).setColor(1f, 0.25f, 0.2f, 1f)
+            lines.addVertex(pose, (float) b.x, (float) b.y, (float) b.z).setColor(1f, 0.55f, 0.6f, 1f)
                     .setNormal(pose, (float) normal.x, (float) normal.y, (float) normal.z);
         }
         buffers.endBatch(RenderType.lines());
+
+        float health = Mth.clamp(target.getHealth() / target.getMaxHealth(), 0, 1);
+        if (target != shownFor) {
+            shownFor = target;
+            shownHealth = health;
+        }
+        shownHealth = health > shownHealth ? health : Mth.lerp(0.04f, shownHealth, health);
+        PoseStack stack = event.getPoseStack();
+        stack.pushPose();
+        stack.translate(top.x, top.y + 0.32, top.z);
+        stack.mulPose(event.getCamera().rotation());
+        PoseStack.Pose bar = stack.last();
+        VertexConsumer quads = buffers.getBuffer(RenderType.debugQuads());
+        float half = 0.38f, high = 0.035f;
+        quad(quads, bar, -half - 0.02f, -high - 0.02f, half + 0.02f, high + 0.02f, 0.03f, 0.07f, 0.12f, 0.75f, 0f);
+        quad(quads, bar, -half, -high, half, high, 1f, 0.55f, 0.6f, 0.22f, 0.001f);
+        quad(quads, bar, -half + 2 * half * health, -high, -half + 2 * half * shownHealth, high, 1f, 1f, 1f, 0.8f, 0.0015f);
+        quad(quads, bar, -half, -high, -half + 2 * half * health, high, 1f, 0.55f, 0.6f, 1f, 0.002f);
+        buffers.endBatch(RenderType.debugQuads());
+        stack.popPose();
+    }
+
+    /** A flat quad facing the camera in the pose's plane, from (x0, y0) to (x1, y1), brought toward the camera by {@code depth}. */
+    private static void quad(VertexConsumer quads, PoseStack.Pose pose, float x0, float y0, float x1, float y1,
+                             float r, float g, float b, float a, float depth) {
+        if (x1 <= x0) {
+            return;
+        }
+        quads.addVertex(pose, x0, y0, depth).setColor(r, g, b, a);
+        quads.addVertex(pose, x1, y0, depth).setColor(r, g, b, a);
+        quads.addVertex(pose, x1, y1, depth).setColor(r, g, b, a);
+        quads.addVertex(pose, x0, y1, depth).setColor(r, g, b, a);
     }
 }

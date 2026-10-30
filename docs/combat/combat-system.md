@@ -12,7 +12,7 @@ his design, and mobs designed with him. They are in git history before that day 
 
 | Key | Default | Does |
 | --- | --- | --- |
-| Combat Mode | B | toggles combat mode (D4); the HUD shows the Qi bar |
+| Combat Mode | B | toggles combat mode (D4); the combat HUD slides in (see below) |
 | Attack | left click | in combat mode: the next strike (no mining, no vanilla swing) |
 | Guard | right click (held) | in combat mode: raises the guard (no item use) |
 | Dodge | Left Alt | a dodge the way the movement keys point (back with none held) |
@@ -63,3 +63,20 @@ their blows meet our guard, parry and dodges.
 Sparks by result (blunt, cut, guard, parry flash, guard break), sounds (vanilla's), camera shake for the one hit
 (less for the striker), a white flash on heavy blows and broken guards, ribbons behind fists in the hit window,
 reactions on players' skeletons, lock-on with flick switching and retargeting after a kill.
+
+## Combat HUD (`CombatHud`, `LockOn`)
+
+Direction J3 chosen by Enzo on 30 Oct 2026 (`docs/gui/boards/combat-bar-j3.png`; the rejected ones are
+`combat-bar*.png` beside it). The vanilla hotbar stays. In combat mode a System block slides in from the bottom right:
+
+- The Qi as segments of 10 Qi (a round ten past 200 max Qi, so at most 20), the started one half full, numbers above.
+- Under it, the active art's techniques in boxes on keys 1 to 3 and its ultimate, gold, on 4. A box goes pink when its
+  Qi is lacking and shows a padlock with the mastery it waits for. Boxes show the technique's initials until each has
+  its icon.
+- The lock (choice B): a turning pink diamond above the locked foe and a thin health bar facing the camera, the
+  health just lost white while it melts.
+
+Waiting for real techniques (`MartialArtsData` is still the menu's placeholder): keys 1-4 cast nothing yet, so the
+aim (cost segments blinking), cast (spent segments flash), cooldown (dark box and seconds) and ultimate charge (gold
+filling while fighting) states of the board are not drawn yet. Checked by the shot `combat_hud_lock` in the
+`combat` engine test group.
