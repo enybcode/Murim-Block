@@ -15,10 +15,15 @@ hinge (flat at rest) joins them: its outer edge follows the Elbow or Knee helper
 the forearm or shin, so the outer corner of a bent limb is filled with the texture row at the joint.
 """
 
+import math
+
 import bmesh
 import bpy
 
 SKIN_SIZE = 64
+# How far a limb's lower block (forearm, shin) sits inside the upper one's side planes, in pixels: enough depth
+# between the overlapping faces of a bent joint, too little to see.
+LIMB_INSET = 0.05
 
 # name, parent, model position (x, y, z) at rest. Parents before children.
 JOINTS = [
@@ -175,22 +180,23 @@ class BoxBuilder:
             loop[self.uv_layer].uv = (pu / self.tex_width, 1 - pv / self.tex_height)
         self.normals.append(blender(*normal))
 
-    def sides(self, lo, hi, weights_lo, weights_hi):
-        """The four side faces between two heights."""
+    def sides(self, lo, hi, weights_lo, weights_hi, inset=0.0):
+        """The four side faces between two heights; inset pulls the two X sides in (the texture stays put)."""
         X0, X1, Z0, Z1 = self.X0, self.X1, self.Z0, self.Z1
+        x0, x1 = X0 + inset, X1 - inset
         ylo, yhi, vlo, vhi = self.place_y(lo), self.place_y(hi), self.v_of(lo), self.v_of(hi)
         lo_w, hi_w = weights_lo, weights_hi
-        self.face([((X0, ylo, Z1), (self.u_front(X0), vlo), lo_w), ((X1, ylo, Z1), (self.u_front(X1), vlo), lo_w),
-                   ((X1, yhi, Z1), (self.u_front(X1), vhi), hi_w), ((X0, yhi, Z1), (self.u_front(X0), vhi), hi_w)],
+        self.face([((x0, ylo, Z1), (self.u_front(X0), vlo), lo_w), ((x1, ylo, Z1), (self.u_front(X1), vlo), lo_w),
+                   ((x1, yhi, Z1), (self.u_front(X1), vhi), hi_w), ((x0, yhi, Z1), (self.u_front(X0), vhi), hi_w)],
                   (0, 0, 1))
-        self.face([((X1, ylo, Z0), (self.u_back(X1), vlo), lo_w), ((X0, ylo, Z0), (self.u_back(X0), vlo), lo_w),
-                   ((X0, yhi, Z0), (self.u_back(X0), vhi), hi_w), ((X1, yhi, Z0), (self.u_back(X1), vhi), hi_w)],
+        self.face([((x1, ylo, Z0), (self.u_back(X1), vlo), lo_w), ((x0, ylo, Z0), (self.u_back(X0), vlo), lo_w),
+                   ((x0, yhi, Z0), (self.u_back(X0), vhi), hi_w), ((x1, yhi, Z0), (self.u_back(X1), vhi), hi_w)],
                   (0, 0, -1))
-        self.face([((X0, ylo, Z0), (self.u_right(Z0), vlo), lo_w), ((X0, ylo, Z1), (self.u_right(Z1), vlo), lo_w),
-                   ((X0, yhi, Z1), (self.u_right(Z1), vhi), hi_w), ((X0, yhi, Z0), (self.u_right(Z0), vhi), hi_w)],
+        self.face([((x0, ylo, Z0), (self.u_right(Z0), vlo), lo_w), ((x0, ylo, Z1), (self.u_right(Z1), vlo), lo_w),
+                   ((x0, yhi, Z1), (self.u_right(Z1), vhi), hi_w), ((x0, yhi, Z0), (self.u_right(Z0), vhi), hi_w)],
                   (-1, 0, 0))
-        self.face([((X1, ylo, Z1), (self.u_left(Z1), vlo), lo_w), ((X1, ylo, Z0), (self.u_left(Z0), vlo), lo_w),
-                   ((X1, yhi, Z0), (self.u_left(Z0), vhi), hi_w), ((X1, yhi, Z1), (self.u_left(Z1), vhi), hi_w)],
+        self.face([((x1, ylo, Z1), (self.u_left(Z1), vlo), lo_w), ((x1, ylo, Z0), (self.u_left(Z0), vlo), lo_w),
+                   ((x1, yhi, Z0), (self.u_left(Z0), vhi), hi_w), ((x1, yhi, Z1), (self.u_left(Z1), vhi), hi_w)],
                   (1, 0, 0))
 
     def top(self, weights):
@@ -199,21 +205,29 @@ class BoxBuilder:
         self.face([((X0, Y, Z1), (u + d, v + d), weights), ((X1, Y, Z1), (u + d + w, v + d), weights),
                    ((X1, Y, Z0), (u + d + w, v), weights), ((X0, Y, Z0), (u + d, v), weights)], (0, 1, 0))
 
-    def bottom(self, weights):
+    def bottom(self, weights, inset=0.0):
         X0, X1, Z0, Z1, Y, u, v, w, d = self.X0, self.X1, self.Z0, self.Z1, self.Ybot, self.u, self.v, self.w, self.d
+        X0, X1 = X0 + inset, X1 - inset
         # u from -X to +X, v from the front (v) to the back (v + d). To check against vanilla in step 3.
         self.face([((X0, Y, Z0), (u + d + w, v + d), weights), ((X1, Y, Z0), (u + d + 2 * w, v + d), weights),
                    ((X1, Y, Z1), (u + d + 2 * w, v), weights), ((X0, Y, Z1), (u + d + w, v), weights)], (0, -1, 0))
 
-    def hinge(self, y, upper, lower, helper, opens):
+    def hinge(self, y, upper, lower, helper, opens, inset=0.0):
         """
         Flat at rest at height y: on the face the joint opens on (back for an elbow, front for a knee), a strip
         from the upper part's edge to the helper's edge to the lower part's edge; on each side, two triangles
         from the joint's axis to the same three points. All textured with the texel row just below the joint.
+        Pulled in by inset as the lower part's sides are, so its edges meet them exactly; the cap under the upper part
+        (joint_cap) closes the step to the upper part's edges.
         """
         X0, X1 = self.X0, self.X1
         up, mid, low = {upper: 1.0}, {helper: 1.0}, {lower: 1.0}
-        row = self.v_of(y) + 0.5
+
+        def pulled(x):
+            return x + inset if x == X0 else x - inset
+        # The middle of the texel at the joint: slim arms put the joint half a texel down, where v + 0.5 would fall on
+        # the line between two rows and sample both in a hatch.
+        row = math.floor(self.v_of(y)) + 0.5
         axis_z = self.z0 + self.d / 2
         if opens == "back":
             z, u_of, normal = self.Z0, self.u_back, (0, 0, -1)
@@ -223,14 +237,23 @@ class BoxBuilder:
             z, u_of, normal = self.Z1, self.u_front, (0, 0, 1)
             strip = [(X0, low), (X1, low), (X1, mid), (X0, mid)], [(X0, mid), (X1, mid), (X1, up), (X0, up)]
         for quad in strip:
-            self.face([((x, y, z), (u_of(x), row), weights) for x, weights in quad], normal)
+            self.face([((pulled(x), y, z), (u_of(x), row), weights) for x, weights in quad], normal)
         for x, u_side, side_normal in ((X0, self.u_right, (-1, 0, 0)), (X1, self.u_left, (1, 0, 0))):
-            center = ((x, y, axis_z), (u_side(axis_z), row), up)
-            outer = [((x, y, z), (u_side(z), row), weights) for weights in (up, mid, low)]
+            center = ((pulled(x), y, axis_z), (u_side(axis_z), row), up)
+            outer = [((pulled(x), y, z), (u_side(z), row), weights) for weights in (up, mid, low)]
             # Seen from that side: counter-clockwise when the hinge opens behind on the -X side, else reversed.
             forward = (opens == "back") == (x == X0)
             for a, b in ((outer[0], outer[1]), (outer[1], outer[2])):
                 self.face([center, a, b] if forward else [center, b, a], side_normal)
+
+    def joint_cap(self, y, upper):
+        """Under the upper part at the joint, facing down, textured with the joint's row: hidden inside the limb, it
+        fills the step between the upper part's edges and the pulled-in hinge and lower part."""
+        X0, X1, Z0, Z1 = self.X0, self.X1, self.Z0, self.Z1
+        row, weights = math.floor(self.v_of(y)) + 0.5, {upper: 1.0}
+        self.face([((X0, y, Z0), (self.u_front(X0), row), weights), ((X1, y, Z0), (self.u_front(X1), row), weights),
+                   ((X1, y, Z1), (self.u_front(X1), row), weights), ((X0, y, Z1), (self.u_front(X0), row), weights)],
+                  (0, -1, 0))
 
     def finish(self, armature):
         self.bm.to_mesh(self.mesh)
@@ -260,12 +283,14 @@ def build_part(armature, name, layer, corner, size, tex, inflate, shape):
         box.bottom(weights(y0))
     else:
         hinge, upper, lower = shape["hinge"], {shape["upper"]: 1.0}, {shape["lower"]: 1.0}
-        # Two rigid blocks open at the joint, then the hinge between them.
+        # Two rigid blocks open at the joint, then the hinge between them. Bent, the blocks' X sides stay in the same
+        # planes and overlap by the joint: the lower block is pulled in a little so they do not z-fight.
         box.sides(hinge, y0 + h, upper, upper)
         box.top(upper)
-        box.sides(y0, hinge, lower, lower)
-        box.bottom(lower)
-        box.hinge(hinge, shape["upper"], shape["lower"], shape["helper"], shape["opens"])
+        box.sides(y0, hinge, lower, lower, LIMB_INSET)
+        box.bottom(lower, LIMB_INSET)
+        box.hinge(hinge, shape["upper"], shape["lower"], shape["helper"], shape["opens"], LIMB_INSET)
+        box.joint_cap(hinge, shape["upper"])
     return box.finish(armature)
 
 

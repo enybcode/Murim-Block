@@ -296,6 +296,17 @@ final class PlayerChecks {
             look(mc, 15);
             keys(mc, true, false, false, false, false);
         }, LivingMotion.WALK));
+        // The combat stance's raised arms up close, looking down on the bent elbows (their sides once z-fought,
+        // and the slim arms' hinge sampled two texel rows in a hatch).
+        for (int pitch : new int[] {35, 60}) {
+            PARTS.add(new Part("fp_stance_down" + pitch, 30, 0, mc -> {
+                SkeletalPlayers.stop(Animator.Priority.MIDDLE);
+                at(mc, X, Y, Z, 0);
+            }, (mc, t) -> {
+                look(mc, pitch);
+                keys(mc, false, false, false, false, false);
+            }, LivingMotion.IDLE));
+        }
         for (int fov : new int[] {70, 30, 110}) {
             PARTS.add(new Part("fp_jabs_fov" + fov, 40, 0, mc -> {
                 SkeletalPlayers.stop(Animator.Priority.MIDDLE);
