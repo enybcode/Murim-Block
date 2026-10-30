@@ -20,7 +20,7 @@ his design, and mobs designed with him. They are in git history before that day 
 
 ## Moves (`Moveset`)
 
-- Fists, whatever is held: combo jab, cross, hook, uppercut; dash strike `fists/step_in` (sprinting); air strike
+- Fists, whatever is held: three light M1 (jab, cross, hook; `docs/mobs/boards/fists.html`); dash strike `fists/step_in` (sprinting); air strike
   `fists/hammer` (once per jump).
 - Dodges (`combat/dodge_*`): forward roll, back, left, right; 6 Qi; invulnerable to melee and projectiles in their
   window (D5); root motion carries the body.

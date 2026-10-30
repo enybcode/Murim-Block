@@ -18,9 +18,9 @@ public record Moveset(String id, List<ResourceLocation> combo, ResourceLocation 
     public static final List<ResourceLocation> DODGES = List.of(clip("combat/dodge_forward"),
             clip("combat/dodge_back"), clip("combat/dodge_left"), clip("combat/dodge_right"));
 
-    /** Bare hands: boxing, legs first (jab, cross, lead hook, rear uppercut). */
+    /** Bare hands, before any martial art: three light M1 (left, right, left in an arc). */
     public static final Moveset FISTS = new Moveset("fists", List.of(clip("fists/jab"), clip("fists/cross"),
-            clip("fists/hook"), clip("fists/uppercut")), clip("fists/step_in"), clip("fists/hammer"),
+            clip("fists/hook")), clip("fists/step_in"), clip("fists/hammer"),
             clip("fists/guard"));
 
     public static ResourceLocation clip(String path) {

@@ -218,7 +218,7 @@ function panel(frame, weaponKind) {
     s += arc(from, to, extra.bend || 0, extra.color || '#3a6fb0', extra.dash || '', 2.5);
   }
   if (frame.impact) {
-    const p = now.tip;
+    const p = now[frame.impactAt || 'tip'];
     s += `<g stroke="#e8a20c" stroke-width="3">${[0, 60, 120, 180, 240, 300].map(a =>
       line(add(p, [Math.cos(rad(a)) * 6, Math.sin(rad(a)) * 6]), add(p, [Math.cos(rad(a)) * 15,
         Math.sin(rad(a)) * 15]), '#e8a20c', 3)).join('')}</g>`;

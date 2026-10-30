@@ -101,13 +101,13 @@ final class CombatChecks {
                 });
             }, () -> {
                 List<String> names = moves.stream().map(ResourceLocation::getPath).toList();
-                EngineTest.check("the combo chains jab, cross, hook, uppercut (" + names + ")",
+                EngineTest.check("the combo chains jab, cross, hook and starts again (" + names + ")",
                         names.size() >= 4 && names.subList(0, 4).equals(List.of("fists/jab", "fists/cross", "fists/hook",
-                                "fists/uppercut")));
+                                "fists/jab")));
                 long landed = hits.stream().filter(hit -> hit.result() == CombatPayloads.Result.HIT).count();
                 float lost = zombie[0] == null ? 0 : health[0] - server(zombie[0]).getHealth();
                 EngineTest.check("the blows land on the zombie (" + landed + " hits, " + lost + " health lost)",
-                        landed >= 3 && lost > 4);
+                        landed >= 3 && lost > 3);
                 EngineTest.check("they stagger it and freeze both a few ticks (" + hits.stream()
                                 .map(hit -> hit.stun() + "/" + hit.hitStop()).toList() + ")",
                         hits.stream().anyMatch(hit -> hit.stun() > 0 && hit.hitStop() >= 2));
@@ -213,7 +213,7 @@ final class CombatChecks {
                     LockOn.mouse(-15);
                 }
             }, () -> {
-                EngineTest.check("the lock holds its foe through the combo and the uppercut's launch",
+                EngineTest.check("the lock holds its foe through the combo",
                         locked[0] != null && kept[0]);
                 EngineTest.check("a small mouse move keeps the foe", nudge[0]);
                 EngineTest.check("a flick of the mouse switches foe", LockOn.target() != null
