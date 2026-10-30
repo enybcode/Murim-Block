@@ -1,284 +1,163 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat — planche</title>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat — trois pistes</title>
 <style>
-/* The combat bar in the System style (docs/gui/system-gui.md): dark translucent panels, glowing cyan edges, bright
-   corner brackets. One GUI pixel = 3 board pixels in the close-ups, 2 in the screen view. */
-:root {
-  --panel: rgba(7, 18, 31, .92); --cyan: #63cfff; --cyan-soft: rgba(99, 207, 255, .45);
-  --cyan-faint: rgba(99, 207, 255, .22); --corner: #d2f3ff; --text: #e6f6ff; --muted: #8fb8d6; --warn: #ff8c9a;
-  --gold: #ffd77a;
-}
+/* Three directions for the combat HUD, all in the V2 System style (docs/gui/system-gui.md), none from V1:
+   the vanilla hotbar stays, the techniques live elsewhere. Screens are 480 x 270 GUI px at 1x... drawn at 1.6x. */
+:root { --panel: rgba(7, 18, 31, .88); --cyan: #63cfff; --soft: rgba(99, 207, 255, .45); --faint: rgba(99, 207, 255, .2);
+  --corner: #d2f3ff; --text: #e6f6ff; --muted: #8fb8d6; --warn: #ff8c9a; --gold: #ffd77a; }
 * { box-sizing: border-box; }
 body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
-h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
-h2 { margin: 0 0 10px; font-size: 16px; color: var(--cyan); text-transform: uppercase; letter-spacing: 2px; }
-.top { display: flex; justify-content: space-between; align-items: baseline; padding: 22px 32px 10px; }
-.top p { margin: 0; color: var(--muted); }
-.grid { display: grid; grid-template-columns: 1000px 1fr; gap: 24px; padding: 8px 32px; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: var(--muted); }
+.row { display: grid; grid-template-columns: 790px 1fr; gap: 22px; padding: 12px 32px; }
 .card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
-.mono { font-family: Consolas, monospace; }
+h2 { margin: 0 0 8px; font-size: 20px; color: var(--cyan); } h2 small { color: var(--muted); font-size: 14px; font-weight: 400; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; } .plus { color: #9fe8b0; } .moins { color: var(--warn); }
 
-/* Screen mockup: 500 x 280 GUI px at 2x. */
-.screen { position: relative; width: 968px; height: 544px; overflow: hidden; border-radius: 4px;
-  background: linear-gradient(#6f9fd6 0, #a9c8e8 46%, #5d8a3e 46.2%, #4c7633 60%, #3f6a2c 100%); image-rendering: pixelated; }
-.screen .hill { position: absolute; bottom: 54%; background: #3d6a49; }
-.screen .tree { position: absolute; width: 26px; background: #5b3e24; }
-.screen .leaves { position: absolute; background: #2f6a2a; }
-.mob { position: absolute; left: 560px; top: 210px; width: 46px; height: 120px; }
+.screen { position: relative; width: 758px; height: 426px; overflow: hidden; border-radius: 4px; font-family: Consolas, monospace;
+  background: linear-gradient(#6f9fd6 0, #a9c8e8 46%, #5d8a3e 46.2%, #4c7633 60%, #3f6a2c 100%); }
+.hill { position: absolute; bottom: 54%; height: 60px; border-radius: 50% 50% 0 0; background: #3d6a49; }
+.mob { position: absolute; left: 440px; top: 150px; width: 38px; height: 100px; }
 .mob div { position: absolute; }
-.lockbox { position: absolute; left: 544px; top: 196px; width: 78px; height: 148px; }
-.lockbox i { position: absolute; width: 14px; height: 14px; border: 0 solid var(--warn); }
-.crosshair { position: absolute; left: 480px; top: 268px; width: 8px; height: 8px; }
-.crosshair:before, .crosshair:after { content: ""; position: absolute; background: #fff; opacity: .8; }
-.crosshair:before { left: 3px; top: -4px; width: 2px; height: 16px; } .crosshair:after { left: -4px; top: 3px; width: 16px; height: 2px; }
+.lock i { position: absolute; width: 10px; height: 10px; border: 0 solid var(--warn); }
+.cross { position: absolute; left: 375px; top: 209px; width: 8px; height: 8px; }
+.cross:before, .cross:after { content: ""; position: absolute; background: #fff; opacity: .85; }
+.cross:before { left: 3px; top: -3px; width: 2px; height: 14px; } .cross:after { left: -3px; top: 3px; width: 14px; height: 2px; }
+.hotbar { position: absolute; left: 233px; top: 388px; width: 292px; height: 34px; background: rgba(40, 40, 40, .8); border: 3px solid #777; }
+.hotbar:after { content: ""; position: absolute; inset: 3px; background: repeating-linear-gradient(90deg, #3c3c3c 0 29px, #8b8b8b 29px 32px); }
+.hearts { position: absolute; left: 233px; top: 366px; font-size: 15px; color: #e33; letter-spacing: -2px; text-shadow: 1px 1px 0 #400; }
+.food { position: absolute; left: 400px; top: 366px; font-size: 15px; color: #c77b2a; letter-spacing: -2px; text-shadow: 1px 1px 0 #402; }
 
-/* System pieces (sizes in GUI px times --s). */
-.sys { position: absolute; background: var(--panel); border: calc(1px * var(--s)) solid var(--cyan-soft);
-  box-shadow: 0 0 calc(4px * var(--s)) var(--cyan-faint), inset 0 0 calc(3px * var(--s)) var(--cyan-faint); }
-.sys > .c { position: absolute; width: calc(4px * var(--s)); height: calc(4px * var(--s)); border: 0 solid var(--corner); }
-.c.tl { left: calc(-1px * var(--s)); top: calc(-1px * var(--s)); border-left-width: calc(1px * var(--s)); border-top-width: calc(1px * var(--s)); }
-.c.tr { right: calc(-1px * var(--s)); top: calc(-1px * var(--s)); border-right-width: calc(1px * var(--s)); border-top-width: calc(1px * var(--s)); }
-.c.bl { left: calc(-1px * var(--s)); bottom: calc(-1px * var(--s)); border-left-width: calc(1px * var(--s)); border-bottom-width: calc(1px * var(--s)); }
-.c.br { right: calc(-1px * var(--s)); bottom: calc(-1px * var(--s)); border-right-width: calc(1px * var(--s)); border-bottom-width: calc(1px * var(--s)); }
+.sys { position: absolute; background: var(--panel); border: 1px solid var(--soft); box-shadow: 0 0 6px var(--faint), inset 0 0 4px var(--faint); }
+.sys:before, .sys:after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--corner); }
+.sys:before { left: -1px; top: -1px; border-left-width: 2px; border-top-width: 2px; }
+.sys:after { right: -1px; bottom: -1px; border-right-width: 2px; border-bottom-width: 2px; }
+.t { color: var(--text); } .m { color: var(--muted); } .c { color: var(--cyan); } .g { color: var(--gold); } .w { color: var(--warn); }
+.tag { position: absolute; top: -9px; left: 10px; padding: 0 6px; background: var(--cyan); color: #04101d; font-weight: bold; font-size: 10px; letter-spacing: 1px; line-height: 15px; }
 
-.bar { position: absolute; width: calc(150px * var(--s)); height: calc(38px * var(--s)); }
-.slot { position: absolute; top: calc(12px * var(--s)); width: calc(20px * var(--s)); height: calc(20px * var(--s)); }
-.slot .icon { position: absolute; inset: calc(3px * var(--s)); border-radius: 1px; }
-.slot .key { position: absolute; left: calc(1px * var(--s)); bottom: calc(0px * var(--s)); font: bold calc(5px * var(--s)) Consolas, monospace; color: var(--text); text-shadow: 0 0 2px #000; }
-.slot .cost { position: absolute; right: calc(1px * var(--s)); top: calc(0px * var(--s)); font: calc(4px * var(--s)) Consolas, monospace; color: #9fe0ff; text-shadow: 0 0 2px #000; }
-.slot .cd { position: absolute; inset: calc(1px * var(--s)); }
-.slot .secs { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: bold calc(7px * var(--s)) Consolas, monospace; color: var(--text); text-shadow: 0 0 3px #000; }
-.ult { top: calc(9px * var(--s)); width: calc(26px * var(--s)); height: calc(26px * var(--s)); border-color: rgba(255, 215, 122, .6); }
-.ult > .c { border-color: var(--gold); }
-.dantian { position: absolute; left: calc(59px * var(--s)); top: calc(4px * var(--s)); width: calc(32px * var(--s)); height: calc(32px * var(--s));
-  border-radius: 50%; background: var(--panel); border: calc(1px * var(--s)) solid var(--cyan); overflow: hidden;
-  box-shadow: 0 0 calc(5px * var(--s)) var(--cyan-soft); }
-.dantian .qi { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(#8fe0ff, #2f9fe0); opacity: .75; }
-.dantian .qi:before { content: ""; position: absolute; left: -10%; right: -10%; top: calc(-1.5px * var(--s)); height: calc(3px * var(--s)); background: #c9f1ff; border-radius: 50%; opacity: .9; }
-.dantian .weapon { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(45deg); width: calc(3px * var(--s)); height: calc(20px * var(--s)); background: linear-gradient(#f2f6fa 70%, #6b4a2a 70%); box-shadow: 0 0 2px #000; }
-.dantian .weapon:after { content: ""; position: absolute; left: calc(-3px * var(--s)); top: 68%; width: calc(9px * var(--s)); height: calc(1.5px * var(--s)); background: var(--gold); }
-.qinum { position: absolute; left: calc(55px * var(--s)); width: calc(40px * var(--s)); top: calc(37px * var(--s)); text-align: center; font: calc(5px * var(--s)) Consolas, monospace; color: #9fe0ff; text-shadow: 0 0 3px #000; }
-.tag { position: absolute; left: 50%; transform: translateX(-50%); top: calc(-4px * var(--s)); white-space: nowrap; padding: 0 calc(4px * var(--s));
-  height: calc(8px * var(--s)); line-height: calc(8px * var(--s)); background: var(--cyan); color: #04101d;
-  font: bold calc(4.5px * var(--s)) Consolas, monospace; letter-spacing: calc(.6px * var(--s)); }
-.passive { position: absolute; left: calc(2px * var(--s)); top: calc(16px * var(--s)); width: calc(12px * var(--s)); height: calc(12px * var(--s)); transform: rotate(45deg);
-  background: var(--panel); border: calc(1px * var(--s)) solid var(--gold); box-shadow: 0 0 calc(3px * var(--s)) rgba(255, 215, 122, .4); }
-.passive i { position: absolute; inset: calc(3px * var(--s)); background: #e9c46a; border-radius: 1px; }
+/* A: System window, bottom right. */
+.skills { right: 14px; bottom: 16px; width: 214px; padding: 14px 10px 8px; font-size: 11px; }
+.skill { position: relative; height: 26px; margin-bottom: 5px; padding-left: 26px; }
+.skill .k { position: absolute; left: 0; top: 2px; width: 19px; height: 19px; border: 1px solid var(--soft); text-align: center; line-height: 18px; color: var(--text); font-weight: bold; }
+.skill .n { color: var(--text); letter-spacing: .5px; }
+.skill .q { position: absolute; right: 0; top: 0; color: #9fe0ff; }
+.skill .cd { position: absolute; left: 26px; right: 0; bottom: 3px; height: 3px; background: rgba(99, 207, 255, .15); }
+.skill .cd i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cyan); box-shadow: 0 0 4px var(--cyan); }
+.qiline { position: relative; height: 8px; margin: 0 0 10px; background: rgba(99, 207, 255, .12); border: 1px solid var(--soft); }
+.qiline i { position: absolute; left: 0; top: 0; bottom: 0; width: 70%; background: linear-gradient(#a8e6ff, #3aa6e6); }
+.alert { position: absolute; padding: 5px 12px 5px; font-size: 12px; letter-spacing: 1px; }
 
-/* Technique icons (placeholders: real 32 x 32 icons per technique). */
-.i-thrust { background: radial-gradient(circle at 70% 30%, #e8fbff 0 12%, transparent 13%), linear-gradient(135deg, transparent 42%, #bfefff 43% 57%, transparent 58%), #1b4e74; }
-.i-whirl { background: radial-gradient(circle, transparent 28%, #9fe6ff 30% 38%, transparent 40% 52%, #5fc4f0 54% 60%, transparent 62%), #173f63; }
-.i-fall { background: linear-gradient(90deg, transparent 20%, #bfefff 21% 30%, transparent 31% 45%, #8fd8ff 46% 55%, transparent 56% 70%, #bfefff 71% 80%, transparent 81%), #163a5c; }
-.i-ult { background: radial-gradient(circle, #fff6d6 0 14%, #ffd77a 15% 26%, transparent 28%), repeating-conic-gradient(#8fd8ff 0 6deg, transparent 6deg 30deg), #13304d; }
+/* B: around the crosshair. */
+.ring { position: absolute; left: 329px; top: 163px; width: 100px; height: 100px; }
+.pip { position: absolute; width: 22px; height: 22px; transform: rotate(45deg); background: var(--panel); border: 1px solid var(--soft); }
+.pip span { position: absolute; inset: 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: var(--text); }
 
-/* Lock-on panel. */
-.target { position: absolute; width: calc(120px * var(--s)); height: calc(22px * var(--s)); }
-.target .name { position: absolute; left: calc(5px * var(--s)); top: calc(4px * var(--s)); font: bold calc(5.5px * var(--s)) Consolas, monospace; color: var(--text); letter-spacing: calc(.4px * var(--s)); }
-.target .rank { position: absolute; right: calc(5px * var(--s)); top: calc(4px * var(--s)); font: calc(4.5px * var(--s)) Consolas, monospace; color: var(--muted); }
-.target .hp { position: absolute; left: calc(5px * var(--s)); right: calc(5px * var(--s)); top: calc(13px * var(--s)); height: calc(4px * var(--s)); background: rgba(255, 140, 154, .15); border: 1px solid rgba(255, 140, 154, .5); }
-.target .hp b { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#ffb3bd, #ff6f82); }
-.target .hp s { position: absolute; top: 0; bottom: 0; background: rgba(255, 255, 255, .55); }
-
-.states { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.state { position: relative; height: 150px; background: #0c131b; border: 1px solid #1f2d3a; border-radius: 6px; }
-.state .lbl { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 13px; color: #c8d6e2; }
-.state .lbl b { display: block; color: var(--cyan); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-.notes { margin: 0; padding-left: 18px; } .notes li { margin: 0 0 7px; }
-.notes b { color: #fff; }
-.q { color: var(--gold); }
-.timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.tl { position: relative; height: 128px; background: #0c131b; border: 1px solid #1f2d3a; border-radius: 6px; overflow: hidden; }
-.tl .lbl { position: absolute; left: 10px; top: 8px; right: 10px; font-size: 12.5px; color: #c8d6e2; }
-.tl .lbl b { color: var(--cyan); }
-.hotbar { position: absolute; width: 182px; height: 22px; background: #2a2a2a; border: 2px solid #777; }
-.hotbar:after { content: ""; position: absolute; inset: 2px; background: repeating-linear-gradient(90deg, #3c3c3c 0 18px, #8b8b8b 18px 20px); }
-.hearts { position: absolute; font: 13px monospace; color: #e33; letter-spacing: -1px; text-shadow: 1px 1px 0 #400; }
-.food { position: absolute; font: 13px monospace; color: #c77b2a; letter-spacing: -1px; text-shadow: 1px 1px 0 #402; }
-.warn { position: absolute; font: bold 12px Consolas, monospace; color: var(--warn); text-shadow: 0 0 4px rgba(255, 140, 154, .7); white-space: nowrap; }
+/* C: the meridian. */
+.meridian { position: absolute; left: 22px; top: 70px; width: 240px; height: 280px; }
+.node { position: absolute; left: 0; white-space: nowrap; display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.node .o { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--cyan); background: var(--panel); box-shadow: 0 0 8px var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; font-size: 10px; }
 </style></head><body>
+<div class="top"><h1>Barre de combat — trois pistes, rien de la V1</h1>
+<p>Toutes en style System V2. La hotbar vanilla reste en place : les techniques vivent ailleurs. Touches 1–4 = techniques de l'art actif (4 = ultime). Valeurs fictives.</p></div>
 
-<div class="top">
-  <h1>Barre de combat — mode combat (B)</h1>
-  <p>Style System de la V2 · un seul art actif · touches 1–4 · cyan = Qi, or = passive et ultime, rose = danger</p>
+<!-- A -->
+<div class="row">
+  <div class="card"><div class="screen" id="a"></div></div>
+  <div class="card"><h2>A · Fenêtre System <small>— en bas à droite</small></h2>
+    <ul>
+      <li>Une vraie fenêtre System, comme le menu K : étiquette <b>MARTIAL ART</b>, nom de l'art.</li>
+      <li>Une ligne par technique : touche, <b>nom écrit</b>, coût en Qi, et dessous un trait cyan qui se remplit pendant la recharge.</li>
+      <li>Le Qi en haut de la fenêtre, une barre pleine largeur.</li>
+      <li>Les événements arrivent en <b>messages System</b> au-dessus : <span class="g">[!] ULTIMATE READY</span>, <span class="w">[!] NOT ENOUGH QI</span>.</li>
+      <li>Verrouillage : petite fenêtre TARGET sous la cible, qui la suit.</li>
+      <li class="plus">+ lisible, on apprend les noms des techniques, très « System ».</li>
+      <li class="moins">− prend de la place dans le coin.</li>
+    </ul></div>
 </div>
-
-<div class="grid">
-  <!-- 1. The screen in combat mode. -->
-  <div class="card">
-    <h2>1 · L'écran en mode combat (cible verrouillée avec V)</h2>
-    <div class="screen" id="screen">
-      <div class="hill" style="left:-40px;width:420px;height:70px;border-radius:50% 50% 0 0"></div>
-      <div class="hill" style="left:520px;width:520px;height:90px;border-radius:50% 50% 0 0;background:#365f43"></div>
-      <div class="tree" style="left:120px;top:150px;height:110px"></div><div class="leaves" style="left:84px;top:96px;width:98px;height:74px"></div>
-      <div class="tree" style="left:820px;top:170px;height:90px"></div><div class="leaves" style="left:790px;top:126px;width:86px;height:60px"></div>
-      <!-- A Disciple déchu, locked. -->
-      <div class="mob">
-        <div style="left:11px;top:0;width:24px;height:24px;background:#7f9a6a"></div>
-        <div style="left:15px;top:9px;width:4px;height:3px;background:#e03a2a"></div><div style="left:26px;top:9px;width:4px;height:3px;background:#e03a2a"></div>
-        <div style="left:9px;top:24px;width:28px;height:40px;background:#3c4f62"></div>
-        <div style="left:0;top:24px;width:9px;height:38px;background:#7f9a6a"></div><div style="left:37px;top:24px;width:9px;height:38px;background:#7f9a6a"></div>
-        <div style="left:9px;top:64px;width:13px;height:52px;background:#4f4a41"></div><div style="left:24px;top:64px;width:13px;height:52px;background:#4f4a41"></div>
-      </div>
-      <div class="lockbox" id="lockbox"></div>
-      <div class="crosshair"></div>
-      <!-- Lock-on panel, top centre. -->
-      <div class="sys target" style="--s:2;left:364px;top:18px">
-        <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
-        <div class="tag" style="--s:2">TARGET</div>
-        <div class="name">DISCIPLE DÉCHU</div><div class="rank">Third-rate</div>
-        <div class="hp"><b style="width:58%"></b><s style="left:58%;width:9%"></s></div>
-      </div>
-      <!-- Vanilla hearts and food stay. -->
-      <div class="hearts" style="left:334px;top:404px">♥♥♥♥♥♥♥♥♥♡</div>
-      <div class="food" style="left:530px;top:404px">◆◆◆◆◆◆◆◆◆◆</div>
-      <!-- The combat bar, bottom centre (in place of the hotbar and the XP bar). -->
-      <div class="sys bar" id="bar" style="--s:2;left:334px;top:440px"></div>
-    </div>
-  </div>
-
-  <!-- 4. Rules. -->
-  <div class="card">
-    <h2>Comment ça marche</h2>
-    <ul class="notes">
-      <li><b>B</b> entre en mode combat : la hotbar et la barre d'XP glissent vers le bas, la barre de combat monte à leur place (6 ticks). Cœurs et faim restent vanilla.</li>
-      <li><b>Au centre, le dantian</b> : le Qi le remplit comme un récipient (vague claire en surface), l'arme tenue est dessinée dedans. Le chiffre de Qi juste dessous. Il remplace la barre de Qi actuelle.</li>
-      <li><b>1, 2, 3</b> : les techniques de l'art actif (2 à gauche, 1 à droite). <b>4</b> : l'ultime, plus grande, cadre doré.</li>
-      <li><b>Losange doré</b> à gauche : la passive de l'art (pas de touche, survol = nom).</li>
-      <li>Au-dessus, l'étiquette System : <b>nom de l'art · rang</b>.</li>
-      <li>Coût en Qi en haut à droite de chaque case, touche en bas à gauche (lue depuis les réglages, modifiable).</li>
-      <li>La molette change toujours l'objet tenu ; le dantian montre lequel.</li>
-      <li><b>V</b> verrouille : crochets roses autour de la cible, et en haut le panneau TARGET : nom, rang, vie (le blanc = dégâts qui viennent d'être pris, qui fondent).</li>
-      <li>Pas assez de Qi : la case clignote rose et <span style="color:var(--warn)">[!] NOT ENOUGH QI</span> apparaît une seconde au-dessus de la barre.</li>
-      <li>Hors mode combat : hotbar vanilla, rien d'autre.</li>
-    </ul>
-    <p class="q" style="margin:14px 0 0">À trancher : garder cœurs et faim vanilla, ou une barre de vie System à gauche du dantian ?</p>
-  </div>
+<!-- B -->
+<div class="row">
+  <div class="card"><div class="screen" id="b"></div></div>
+  <div class="card"><h2>B · Autour du viseur <small>— les yeux restent sur le combat</small></h2>
+    <ul>
+      <li>Les 4 techniques sont <b>4 losanges autour du viseur</b>, placés comme les touches : 1 en haut, 2 à droite, 3 en bas, 4 (ultime, doré) à gauche.</li>
+      <li>Un losange s'éteint en recharge et se rallume par le bas ; il clignote rose sans Qi.</li>
+      <li>Le Qi : un <b>arc cyan</b> à gauche du viseur. À droite, quand on verrouille, un <b>arc rose</b> = la vie de la cible.</li>
+      <li>Rien d'autre à l'écran ; noms et coûts seulement dans le menu K.</li>
+      <li class="plus">+ minimal, immersif, on voit tout sans quitter la cible des yeux.</li>
+      <li class="moins">− moins d'infos (pas de noms), il faut connaître ses touches.</li>
+    </ul></div>
 </div>
-
-<div class="grid" style="grid-template-columns: 1000px 1fr">
-  <!-- 2. Close-up of the bar. -->
-  <div class="card">
-    <h2>2 · La barre de près (×3)</h2>
-    <div style="position:relative;height:150px"><div class="sys bar" id="bar3" style="--s:3;left:270px;top:22px"></div></div>
-    <h2 style="margin-top:14px">3 · Les états d'une case</h2>
-    <div class="states" id="states"></div>
-  </div>
-  <!-- 5. Timing. -->
-  <div class="card">
-    <h2>Le temps</h2>
-    <div class="timeline" style="grid-template-columns:1fr 1fr">
-      <div class="tl"><div class="lbl"><b>t0 · B</b> hotbar descend</div>
-        <div class="hotbar" style="left:30px;top:84px;transform:scale(.8)"></div></div>
-      <div class="tl"><div class="lbl"><b>t6</b> barre de combat en place</div>
-        <div class="sys bar" id="mini1" style="--s:1;left:68px;top:62px"></div></div>
-      <div class="tl"><div class="lbl"><b>touche 2</b> la case s'allume pendant la technique</div>
-        <div class="sys bar" id="mini2" style="--s:1;left:68px;top:62px"></div></div>
-      <div class="tl"><div class="lbl"><b>fin du coup</b> la recharge se vide en sens horaire</div>
-        <div class="sys bar" id="mini3" style="--s:1;left:68px;top:62px"></div></div>
-    </div>
-  </div>
+<!-- C -->
+<div class="row">
+  <div class="card"><div class="screen" id="c"></div></div>
+  <div class="card"><h2>C · Le méridien <small>— le Qi circule vers les techniques</small></h2>
+    <ul>
+      <li>À gauche de l'écran, un <b>méridien vertical</b> : une ligne de Qi qui part du dantian (en bas) et monte.</li>
+      <li>Les techniques sont des <b>points d'acupuncture</b> sur la ligne (1, 2, 3, puis l'ultime en haut) avec leur nom à côté.</li>
+      <li>Le Qi monte dans la ligne : un point n'<b>s'allume</b> que si le Qi l'atteint (assez de Qi) et qu'il n'est pas en recharge. On lance une technique : une impulsion part du point.</li>
+      <li>Verrouillage : barre TARGET fine en haut au centre.</li>
+      <li class="plus">+ propre au mod (cultivation, méridiens du menu K), raconte le coût en Qi sans chiffres.</li>
+      <li class="moins">− plus original, donc à bien régler pour rester lisible.</li>
+    </ul></div>
 </div>
 
 <script>
-// One slot: x in GUI px, its icon, key, cost, and a state (ready, cooldown, noqi, casting, locked, empty, ultready, ultcd).
-function slot(x, icon, key, cost, state, opts = {}) {
-  const ult = icon === 'i-ult';
-  const s = document.createElement('div');
-  s.className = 'sys slot' + (ult ? ' ult' : '');
-  s.style.left = `calc(${x}px * var(--s))`;
-  s.innerHTML = '<i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>';
-  if (state !== 'empty' && state !== 'locked') {
-    s.innerHTML += `<div class="icon ${icon}"></div>`;
-  }
-  const sweep = opts.left ?? .62;
-  if (state === 'cooldown' || state === 'ultcd') {
-    s.innerHTML += `<div class="cd" style="background:conic-gradient(rgba(2,8,14,.78) 0 ${sweep * 360}deg, transparent 0)"></div>`
-      + `<div class="secs">${opts.secs ?? 5}</div>`;
-  }
-  if (state === 'noqi') {
-    s.querySelector('.icon').style.filter = 'grayscale(1) brightness(.5)';
-    s.style.borderColor = 'rgba(255,140,154,.7)';
-  }
-  if (state === 'casting') {
-    s.style.borderColor = 'var(--cyan)';
-    s.style.boxShadow = '0 0 calc(7px * var(--s)) var(--cyan), inset 0 0 calc(5px * var(--s)) var(--cyan-soft)';
-    s.style.transform = 'translateY(calc(-1px * var(--s)))';
-  }
-  if (state === 'ultready') {
-    s.style.boxShadow = '0 0 calc(8px * var(--s)) rgba(255,215,122,.8), inset 0 0 calc(4px * var(--s)) rgba(255,215,122,.5)';
-    s.style.borderColor = 'var(--gold)';
-  }
-  if (state === 'locked') {
-    s.innerHTML += `<div class="secs" style="font-size:calc(5px * var(--s));color:var(--muted);flex-direction:column">`
-      + `<span style="font-size:calc(7px * var(--s))">🔒</span>${opts.mastery ?? 50}%</div>`;
-    s.style.borderColor = 'rgba(143,184,214,.35)';
-  }
-  if (state !== 'empty') {
-    s.innerHTML += `<div class="key">${key}</div>`;
-    if (cost && state !== 'locked') {
-      s.innerHTML += `<div class="cost" style="${state === 'noqi' ? 'color:var(--warn)' : ''}">${cost}</div>`;
-    }
-  }
-  return s;
+function world(el, extra) {
+  el.innerHTML = `<div class="hill" style="left:-30px;width:330px"></div><div class="hill" style="left:420px;width:400px;background:#365f43"></div>
+    <div class="mob"><div style="left:9px;top:0;width:20px;height:20px;background:#7f9a6a"></div>
+    <div style="left:12px;top:8px;width:3px;height:3px;background:#e03a2a"></div><div style="left:22px;top:8px;width:3px;height:3px;background:#e03a2a"></div>
+    <div style="left:7px;top:20px;width:24px;height:34px;background:#3c4f62"></div><div style="left:0;top:20px;width:7px;height:32px;background:#7f9a6a"></div>
+    <div style="left:31px;top:20px;width:7px;height:32px;background:#7f9a6a"></div><div style="left:7px;top:54px;width:11px;height:44px;background:#4f4a41"></div>
+    <div style="left:20px;top:54px;width:11px;height:44px;background:#4f4a41"></div></div>
+    <div class="lock" style="position:absolute;left:428px;top:140px;width:62px;height:120px">
+    <i style="left:0;top:0;border-left-width:2px;border-top-width:2px"></i><i style="right:0;top:0;border-right-width:2px;border-top-width:2px"></i>
+    <i style="left:0;bottom:0;border-left-width:2px;border-bottom-width:2px"></i><i style="right:0;bottom:0;border-right-width:2px;border-bottom-width:2px"></i></div>
+    <div class="cross"></div><div class="hearts">♥♥♥♥♥♥♥♥♥♡</div><div class="food">◆◆◆◆◆◆◆◆◆◆</div><div class="hotbar"></div>` + extra;
 }
-// The whole bar; states: per key 1..4.
-function bar(el, st = {}, qi = .7) {
-  el.style.width = `calc(150px * var(--s))`;
-  el.style.height = `calc(38px * var(--s))`;
-  el.style.background = 'transparent'; el.style.border = 'none'; el.style.boxShadow = 'none';
-  el.innerHTML = '';
-  const strip = document.createElement('div');
-  strip.className = 'sys';
-  strip.style.cssText = 'left:calc(16px * var(--s));right:calc(12px * var(--s));top:calc(14px * var(--s));height:calc(16px * var(--s));opacity:.55';
-  el.append(strip);
-  const p = document.createElement('div'); p.className = 'passive'; p.innerHTML = '<i></i>'; el.append(p);
-  el.append(slot(17, 'i-thrust', '1', 10, st[1] ?? 'ready'));
-  el.append(slot(38, 'i-whirl', '2', 18, st[2] ?? 'ready', {secs: 6}));
-  const d = document.createElement('div'); d.className = 'dantian';
-  d.innerHTML = `<div class="qi" style="height:${qi * 100}%"></div><div class="weapon"></div>`;
-  el.append(d);
-  const n = document.createElement('div'); n.className = 'qinum'; n.textContent = `${Math.round(qi * 120)} / 120`; el.append(n);
-  el.append(slot(92, 'i-fall', '3', 25, st[3] ?? 'ready', {secs: 9, left: .8}));
-  el.append(slot(115, 'i-ult', '4', 60, st[4] ?? 'ultcd', {secs: 42, left: .7}));
-  const t = document.createElement('div'); t.className = 'tag'; t.style.top = 'calc(-6px * var(--s))';
-  t.textContent = 'FLOWING RIVER SWORD · C'; el.append(t);
-}
-bar(document.getElementById('bar'), {2: 'cooldown'}, .7);
-bar(document.getElementById('bar3'), {2: 'cooldown'}, .7);
-bar(document.getElementById('mini1'), {}, .9);
-bar(document.getElementById('mini2'), {2: 'casting'}, .75);
-bar(document.getElementById('mini3'), {2: 'cooldown'}, .75);
-// The lock-on brackets around the mob.
-const lb = document.getElementById('lockbox');
-[['left:0;top:0', 'border-left-width:3px;border-top-width:3px'], ['right:0;top:0', 'border-right-width:3px;border-top-width:3px'],
- ['left:0;bottom:0', 'border-left-width:3px;border-bottom-width:3px'], ['right:0;bottom:0', 'border-right-width:3px;border-bottom-width:3px']]
-  .forEach(([pos, b]) => lb.insertAdjacentHTML('beforeend', `<i style="${pos};${b}"></i>`));
-// "Not enough Qi" over the screen bar.
-document.getElementById('screen').insertAdjacentHTML('beforeend', '');
-// The slot states, at 4x.
-const states = [
-  ['ready', 'i-whirl', 'Prête', 'bord cyan, icône pleine'],
-  ['cooldown', 'i-whirl', 'Recharge', 'encre sombre qui tourne, secondes'],
-  ['noqi', 'i-whirl', 'Pas assez de Qi', 'grisée, coût en rose'],
-  ['casting', 'i-whirl', 'En cours', 'halo cyan, la case monte d\'un pixel'],
-  ['locked', 'i-whirl', 'Pas encore maîtrisée', 'cadenas + maîtrise requise'],
-  ['empty', 'i-whirl', 'Vide', 'l\'art a moins de 3 techniques'],
-  ['ultcd', 'i-ult', 'Ultime en recharge', 'cadre doré éteint, 42 s'],
-  ['ultready', 'i-ult', 'Ultime prête', 'halo doré qui respire'],
-];
-const host = document.getElementById('states');
-for (const [st, icon, name, desc] of states) {
-  const box = document.createElement('div'); box.className = 'state';
-  const ult = icon === 'i-ult';
-  const s = slot(0, icon, ult ? '4' : '2', ult ? 60 : 18, st, {secs: ult ? 42 : 6});
-  s.style.setProperty('--s', 3);
-  s.style.left = ult ? '86px' : '95px'; s.style.top = ult ? '14px' : '22px';
-  box.append(s);
-  box.insertAdjacentHTML('beforeend', `<div class="lbl"><b>${name}</b>${desc}</div>`);
-  host.append(box);
-}
-// The [!] warning above the screen bar.
-document.getElementById('screen').insertAdjacentHTML('beforeend',
-  '<div class="warn" style="left:420px;top:432px;display:none">[!] NOT ENOUGH QI</div>');
+const TECH = [['1', 'RIVER THRUST', 10, 1], ['2', 'WHIRLPOOL CUT', 18, .35], ['3', 'WATERFALL DESCENT', 25, 1], ['4', 'THOUSAND STREAMS', 60, .3]];
+
+// A
+world(document.getElementById('a'), `
+  <div class="sys alert" style="right:14px;top:150px"><span class="w">[!]</span> <span class="t">NOT ENOUGH QI — WATERFALL DESCENT</span></div>
+  <div class="sys skills"><div class="tag">MARTIAL ART</div>
+    <div style="margin-bottom:6px"><span class="t" style="letter-spacing:1px">FLOWING RIVER SWORD</span> <span class="m">· C</span></div>
+    <div class="qiline"><i></i></div><div class="m" style="position:absolute;right:10px;top:14px;font-size:10px">QI 84 / 120</div>
+    ${TECH.map(([k, n, q, f], i) => `<div class="skill"><div class="k" style="${i === 3 ? 'border-color:var(--gold);color:var(--gold)' : ''}">${k}</div>
+      <span class="n" style="${f < 1 ? 'opacity:.55' : ''}${i === 2 ? ';color:var(--warn)' : ''}">${n}</span><span class="q" style="${i === 2 ? 'color:var(--warn)' : ''}">${q}</span>
+      <div class="cd"><i style="width:${f * 100}%;${i === 3 ? 'background:var(--gold);box-shadow:0 0 4px var(--gold)' : ''}"></i></div></div>`).join('')}
+  </div>
+  <div class="sys" style="left:400px;top:268px;width:118px;height:26px;font-size:10px;padding:3px 6px">
+    <span class="t">DISCIPLE DÉCHU</span><div style="margin-top:3px;height:4px;background:rgba(255,140,154,.2)"><div style="width:58%;height:4px;background:var(--warn)"></div></div></div>`);
+
+// B
+const arc = (r, from, to, color, w) => {
+  const p = a => [50 + r * Math.cos(a * Math.PI / 180), 50 + r * Math.sin(a * Math.PI / 180)];
+  const [x1, y1] = p(from), [x2, y2] = p(to);
+  return `<path d="M${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round"/>`;
+};
+world(document.getElementById('b'), `
+  <svg class="ring" viewBox="0 0 100 100" style="overflow:visible">
+    ${arc(30, 120, 240, 'rgba(99,207,255,.18)', 3)}${arc(30, 156, 240, '#63cfff', 3)}
+    ${arc(30, -60, 60, 'rgba(255,140,154,.18)', 3)}${arc(30, -60, 10, '#ff8c9a', 3)}
+  </svg>
+  <div class="pip" style="left:368px;top:150px"><span>1</span></div>
+  <div class="pip" style="left:430px;top:202px;opacity:.5;background:linear-gradient(0deg, rgba(99,207,255,.35) 35%, var(--panel) 35%)"><span>2</span></div>
+  <div class="pip" style="left:368px;top:254px;border-color:var(--warn)"><span class="w">3</span></div>
+  <div class="pip" style="left:306px;top:202px;border-color:var(--gold);opacity:.55;background:linear-gradient(0deg, rgba(255,215,122,.35) 30%, var(--panel) 30%)"><span class="g">4</span></div>
+  <div class="m" style="position:absolute;left:300px;top:275px;font-size:10px">QI</div>`);
+
+// C
+const nodes = [[230, '1', 'RIVER THRUST', 'on'], [176, '2', 'WHIRLPOOL CUT', 'cd'], [122, '3', 'WATERFALL DESCENT', 'off'], [62, '4', 'THOUSAND STREAMS', 'ult']];
+world(document.getElementById('c'), `
+  <div class="meridian">
+    <div style="position:absolute;left:9px;top:70px;width:3px;height:205px;background:rgba(99,207,255,.18)"></div>
+    <div style="position:absolute;left:9px;top:140px;width:3px;height:135px;background:linear-gradient(#cdf3ff,#3aa6e6);box-shadow:0 0 8px var(--cyan)"></div>
+    <div style="position:absolute;left:-4px;top:268px;width:30px;height:30px;border-radius:50%;border:2px solid var(--cyan);background:radial-gradient(#9fe0ff 0 35%, var(--panel) 40%);box-shadow:0 0 12px var(--cyan)"></div>
+    <div class="m" style="position:absolute;left:34px;top:276px;font-size:10px">DANTIAN · 84 QI</div>
+    ${nodes.map(([y, k, n, s]) => `<div class="node" style="top:${y}px">
+      <div class="o" style="${s === 'cd' ? 'border-color:var(--soft);box-shadow:none;background:conic-gradient(var(--soft) 0 40%, var(--panel) 0)' : ''}${s === 'off' ? 'border-color:rgba(143,184,214,.3);box-shadow:none;color:var(--muted)' : ''}${s === 'ult' ? 'border-color:rgba(255,215,122,.4);box-shadow:none;color:var(--gold)' : ''}">${k}</div>
+      <span style="color:${s === 'on' ? 'var(--text)' : s === 'ult' ? 'rgba(255,215,122,.6)' : 'var(--muted)'};letter-spacing:.5px">${n}</span></div>`).join('')}
+  </div>
+  <div class="sys" style="left:279px;top:14px;width:200px;height:28px;font-size:10px;padding:4px 8px">
+    <span class="t">DISCIPLE DÉCHU</span> <span class="m">· third-rate</span><div style="margin-top:3px;height:4px;background:rgba(255,140,154,.2)"><div style="width:58%;height:4px;background:var(--warn)"></div></div></div>`);
 </script>
 </body></html>
