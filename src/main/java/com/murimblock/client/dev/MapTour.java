@@ -60,7 +60,8 @@ public final class MapTour {
             new MurimMap.Spot("border loess and Sichuan", null, -1000, 0),
             new MurimMap.Spot("border red basin rim", null, -2450, 380),
             new MurimMap.Spot("border Hubei and delta", null, 2100, 1900),
-            new MurimMap.Spot("border stone forest and jungle", null, -1500, 3500));
+            new MurimMap.Spot("border stone forest and jungle", null, -1500, 3500),
+            new MurimMap.Spot("rice terraces hills", null, 1100, 3550));
 
     private static boolean started;
     private static int frames = -1;

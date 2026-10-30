@@ -66,6 +66,22 @@ class MurimMapTest {
     }
 
     @Test
+    void riceTerraceHillsKeepWoodedTops() {
+        int terraces = 0;
+        int crowns = 0;
+        for (int z = 2000; z <= 5000; z += 20) {
+            for (int x = -500; x <= 3000; x += 20) {
+                if (MurimMap.biome(x, z) == MurimBiome.RICE_TERRACES) {
+                    terraces++;
+                    crowns += MurimMap.riceCrown(x, z) ? 1 : 0;
+                }
+            }
+        }
+        double share = (double) crowns / terraces;
+        assertTrue(share > .08 && share < .3, "wooded hilltops cover " + share + " of the rice terraces");
+    }
+
+    @Test
     void ravinesCutTheLoess() {
         // Somewhere on a line across the loess, a gully 15 blocks or more below the tableland.
         double lowest = Double.MAX_VALUE;

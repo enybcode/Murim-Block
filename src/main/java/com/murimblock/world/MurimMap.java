@@ -42,6 +42,16 @@ public final class MurimMap {
             new Site("Chang-An", -1300, -700, 270, 100),
             new Site("Wuhan", 950, 1100, 270, 66));
 
+    /** How high the rice terraces' hills rise here, from 0 (valley floor) to 1 (the highest tops), in warped space. */
+    static double riceHill(double wx, double wz) {
+        return Math.min(1, Math.max(0, .45 + fbm(wx / 230, wz / 230, 61)) / 1.1);
+    }
+
+    /** Whether this block column is a rice terrace hill's top, left wooded above the paddies (Hani style). */
+    public static boolean riceCrown(double x, double z) {
+        return riceHill(x + dwx(x, z), z + dwz(x, z)) > .62;
+    }
+
     /** Whether this block column lies on a capital's reserved ground, or within {@code margin} blocks of it. */
     public static boolean nearSite(double x, double z, int margin) {
         double wx = x + dwx(x, z), wz = z + dwz(x, z);
@@ -65,7 +75,7 @@ public final class MurimMap {
         {80, .8, 0}, {90, .8, .1}, {82, .8, .1}, {132, .9, 0}, {175, .8, 1.2},
         {100, .9, 0}, {67, .9, 0}, {82, .6, .2}, {84, .6, .3}, {78, .8, 0},
         {125, .6, .8}, {65, .9, 0}, {64, .95, 0}, {100, .9, 0}, {145, .6, 1.0},
-        {80, .6, .2}, {76, .7, .2}, {78, .7, .1}, {84, .6, .2}, {78, .6, .2},
+        {80, .6, .2}, {76, .7, .2}, {72, .95, 0}, {84, .6, .2}, {78, .6, .2},
         {64, .9, 0}, {40, 0, 0},
     };
     /** Biome blending: the relief is averaged over the column and four neighbours this far away. */
@@ -202,9 +212,9 @@ public final class MurimMap {
             height += 125 * f;
             weight = Math.max(weight, .95 * Math.min(1, f * 3));
         }
-        // Rice terraces: rounded hills for the paddies to climb (TerraceFeature cuts the steps).
+        // Rice terraces: steep rounded hills, up to 60 blocks, for the paddies to climb (TerraceFeature cuts the steps).
         if (terraces > 0) {
-            height += terraces * 34 * Math.max(0, .45 + fbm(wx / 230, wz / 230, 61));
+            height += terraces * 60 * riceHill(wx, wz);
         }
         // Loess ravines: branching gullies 15 to 30 deep cut into the tablelands, fading out at the plateau's edge.
         if (loess > 0) {

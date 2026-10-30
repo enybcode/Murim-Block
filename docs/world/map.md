@@ -205,6 +205,19 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
   - `runMapTour` 0 failures, with six border views: snow peaks / Qinghai, steppe / Gobi, loess / Sichuan, red basin
     rim, Hubei / delta, stone forest / jungle.
 
+## Rice terraces, improved (30 Oct 2026)
+
+- Hills: the rice terraces' relief now fully replaces vanilla's (weight 0.95, no jaggedness), and its hills rise up
+  to 60 blocks (`MurimMap.riceHill`).
+- Steps: the step height grows with the relief's slope (1 block on gentle ground, then 2, 3, and 4 on the steepest),
+  so the terraces are thinner and more numerous where it climbs. A wall column gets a retaining face of packed mud
+  or mossy cobblestone (by noise) down to the next step, and a dirt path along its rim.
+- Paddies: seagrass stands in most of the water as young rice, until a rice block of our own exists.
+- Hilltops (`MurimMap.riceCrown`, about 10-30 % of the biome) stay uncut and wooded with jungle trees, Hani style.
+  The plains template's oaks, sugar cane and pumpkins are removed (`REMOVE` in `generate-biomes.cjs`).
+- Verified 30 Oct 2026: `gradlew build` (9 map tests, one on the wooded share), `runMapTour` 0 failures, with a rice
+  terraces hills view.
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

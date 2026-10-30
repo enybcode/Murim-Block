@@ -60,6 +60,12 @@ const EXTRA = {
   rice_terraces: [[2, 'murimblock:rice_terrace']],
 };
 
+// Template features taken out: id: [placed features]. The rice terraces keep no plains oaks, cane or pumpkins (the
+// paddies and their wooded tops are TerraceFeature's).
+const REMOVE = {
+  rice_terraces: ['minecraft:trees_plains', 'minecraft:patch_sugar_cane', 'minecraft:patch_pumpkin'],
+};
+
 // Ambient particles (docs/world/map.md, step 5): id: [particle, probability per block shown]. Drifting snow in the
 // north and on the peaks, dust over the Gobi and the loess, floating motes in the southern forests.
 const PARTICLES = {
@@ -94,6 +100,8 @@ for (const [id, [template, temperature, downfall, colours]] of Object.entries(BI
     effects.particle = {options: {type: "minecraft:" + PARTICLES[id][0]}, probability: PARTICLES[id][1]};
   }
   biome.effects = effects;
+  const removed = REMOVE[id] || [];
+  biome.features = biome.features.map(list => list.filter(f => !removed.includes(f)));
   for (const [step, feature] of EXTRA[id] || []) {
     while (biome.features.length <= step) biome.features.push([]);
     biome.features[step] = [feature, ...biome.features[step]];
