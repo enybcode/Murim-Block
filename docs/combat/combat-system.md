@@ -17,6 +17,8 @@ his design, and mobs designed with him. They are in git history before that day 
 | Guard | right click (held) | in combat mode: raises the guard (no item use) |
 | Dodge | Left Alt | a dodge the way the movement keys point (back with none held) |
 | Lock On | V | locks the camera on the foe nearest the crosshair |
+| Technique 1-6 | 1-6 | in combat mode: the active art's techniques (nothing cast yet); the hotbar keeps 1-9 outside combat |
+| Ultimate | R | in combat mode: the art's ultimate (nothing cast yet) |
 
 ## Moves (`Moveset`)
 
@@ -93,9 +95,11 @@ gets its own icon in this style:
   right.
 - Qi bar: a 5 px tube (light, core, shadow rows), a dark notch every 10 Qi, a small diamond at each end, a white
   shine gliding along.
-- Techniques: up to six diamonds of half-width 9 interlocked on two rows (1, 3, 5 above; 2, 4, 6 below, half a seal
+- Techniques: one diamond (half-width 9) per technique of the art: up to three in one row with keys under; four to
+  six interlocked on two rows (1, 3, 5 above; 2, 4, 6 below, half a seal
   to the right), each a dark outline, cyan line, dark, night-blue fill with a deeper lower half; its key in a small tag
-  on its outer tip. Pink when Qi is lacking, grey with a padlock until mastered, an empty grey frame for a free slot;
+  on its outer tip. The block's width and Qi bar follow (board `combat-bar-b-counts.png`). Keys as bound in Controls
+  (`TechniqueKeys`; the number row reads as digits on any layout). Pink when Qi is lacking, grey with a padlock until mastered;
   a shadow turning clockwise with the seconds during cooldown (not built yet).
 - Ultimate: gold octagon of half-size 11 with rivets, filled with gold from the bottom as it charges, a
   three-frame spark when ready. Key R, as in the System menu.

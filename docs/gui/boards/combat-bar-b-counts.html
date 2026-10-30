@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat B — selon le nombre de techniques</title>
+<style>
+/* Look B of combat-bar-j3-look.html (row of seals), drawn as real pixel art: every frame, icon and letter is placed
+   pixel by pixel at GUI resolution on a canvas, then scaled up without smoothing, as the game would draw it. */
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: #8fb8d6; max-width: 1200px; }
+h2 { margin: 0 0 10px; font-size: 16px; color: #63cfff; text-transform: uppercase; letter-spacing: 2px; }
+.row { display: grid; gap: 22px; padding: 10px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+canvas { image-rendering: pixelated; display: block; }
+.sky { background: linear-gradient(#5d86b8 0, #8fb3d9 58%, #4f7a35 58.2%, #355e26 100%); border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.grid { display: grid; gap: 12px; }
+.cap { margin-top: 6px; text-align: center; font-size: 13px; color: #c8d6e2; }
+.cap b { display: block; color: #63cfff; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
+.sheet { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; }
+.sheet div { text-align: center; font-size: 12px; color: #9fb7c9; }
+</style></head><body>
+<div class="top"><h1>Barre de combat B — selon le nombre de techniques</h1>
+<p>Même style, le bloc suit l’art : jusqu’à 3 techniques, une rangée de losanges avec la touche dessous ; de 4 à 6, deux rangées imbriquées (1, 3, 5 en haut avec la touche au-dessus ; 2, 4, 6 en bas avec la touche dessous). La largeur du bloc et la barre de Qi suivent, l’ultime reste à droite. Échelle ×5.</p></div>
+<div class="row"><div class="card"><h2>De 1 à 6 techniques</h2><div class="grid" id="counts" style="grid-template-columns:repeat(3,1fr)"></div></div></div>
+<script>
+
+// Palette.
+const P = {
+  o: '#05101b', d: '#0d2238', n: '#123250', m: '#1d4a73', c: '#3fb4ec', l: '#7fd6ff', w: '#e9fbff',
+  G: '#5a3d10', g: '#c98d2a', y: '#ffd36b', Y: '#fff1b8', r: '#ff8c9a', R: '#7a2a36', s: '#6b8aa3', k: '#24384c',
+};
+// 3 x 5 pixel font.
+const FONT = {
+  A: '010101111101101', B: '110101110101110', C: '011100100100011', D: '110101101101110', E: '111100110100111',
+  F: '111100110100100', G: '011100101101011', H: '101101111101101', I: '111010010010111', J: '001001001101010',
+  K: '101101110101101', L: '100100100100111', M: '101111111101101', N: '110101101101101', O: '010101101101010',
+  P: '110101110100100', Q: '010101101110011', R: '110101110101101', S: '011100010001110', T: '111010010010010',
+  U: '101101101101111', V: '101101101101010', W: '101101111111101', X: '101101010101101', Y: '101101010010010',
+  Z: '111001010100111', 0: '111101101101111', 1: '010110010010111', 2: '110001010100111', 3: '110001010001110',
+  4: '101101111001001', 5: '111100110001110', 6: '011100111101111', 7: '111001010010010', 8: '111101111101111',
+  9: '111101111001110', ' ': '000000000000000', '/': '001001010100100', '%': '101001010100101',
+};
+// Icons, 11 x 11.
+const ICON = {
+  thrust: [
+    '..........w', '.........wl', '........wl.', '.......wl..', '......wl...', '..c..wl....', '...cwl.....', '...ywc.....', '..yGy.c....', '.yG..c.....', 'G..........'],
+  whirl: [
+    '...lllll...', '..l.....l..', '.l..ccc..l.', 'l..c...c..l', 'l.c..w..c.l', 'l.c.w.w.c.l', 'l.c..w.c..l', 'l..c...c...', '.l..ccc..c.', '..l.....c..', '...lllll...'],
+  fall: [
+    '.....w.....', '.....l.....', '.c...l...c.', '.l..yGy..l.', '.c...l...c.', '.l...l...l.', '.c...l...c.', '.l...l...l.', '.c...w...c.', '...........', 'lclclclclcl'],
+  streams: [
+    'y....y....y', '.y...y...y.', '..y..Y..y..', '...yYYYy...', '....YwY....', 'yyYYwwwYYyy', '....YwY....', '...yYYYy...', '..y..Y..y..', '.y...y...y.', 'y....y....y'],
+  lock: [
+    '...sssss...', '..s.....s..', '..s.....s..', '..s.....s..', '.kkkkkkkkk.', '.kssssssskk', '.ksss.sssk.', '.kss...ssk.', '.ksss.sssk.', '.ksssssssk.', '.kkkkkkkkk.'],
+};
+function canvas(id, w, h, scale) {
+  const c = typeof id === 'string' ? document.getElementById(id) : id;
+  c.width = w; c.height = h; c.style.width = w * scale + 'px'; c.style.height = h * scale + 'px';
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false; return x;
+}
+const px = (g, x, y, col, w = 1, h = 1) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+function text(g, x, y, str, col, shadow = P.o) {
+  for (const ch of str.toUpperCase()) {
+    const f = FONT[ch] ?? FONT[' '];
+    for (let i = 0; i < 15; i++) if (f[i] === '1') { if (shadow) px(g, x + i % 3 + 1, y + (i / 3 | 0) + 1, shadow); }
+    for (let i = 0; i < 15; i++) if (f[i] === '1') px(g, x + i % 3, y + (i / 3 | 0), col);
+    x += 4;
+  }
+  return x;
+}
+function sprite(g, x, y, rows, tint) {
+  rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') px(g, x + i, y + j, tint ? tint(ch) : P[ch]); }));
+}
+// A diamond of half-width r centred on (cx, cy): fills each row from |dy|.
+function diamond(g, cx, cy, r, col) {
+  for (let dy = -r; dy <= r; dy++) { const w = r - Math.abs(dy); px(g, cx - w, cy + dy, col, 2 * w + 1, 1); }
+}
+// Octagon of half-size r with corner cut k.
+function octagon(g, cx, cy, r, k, col) {
+  for (let dy = -r; dy <= r; dy++) { const cut = Math.max(0, Math.abs(dy) - (r - k)); px(g, cx - r + cut, cy + dy, col, 2 * (r - cut) + 1, 1); }
+}
+
+// The Qi bar: x, y, length, Qi now, aim [from, to] lit white, miss [from, to] pink, shine column.
+function qiBar(g, x, y, len, qi, o = {}) {
+  const at = v => x + 2 + Math.round((len - 4) * v / 120);
+  // End diamonds.
+  for (const ex of [x, x + len - 1]) { diamond(g, ex, y + 2, 3, P.o); diamond(g, ex, y + 2, 2, P.m); px(g, ex, y + 2, P.l); }
+  px(g, x + 2, y, P.o, len - 4, 5);
+  px(g, x + 2, y + 1, P.d, len - 4, 3);
+  for (let v = 0; v < qi; v += 120 / (len - 4)) {
+    const cx = at(v); if (cx >= at(qi)) break;
+    px(g, cx, y + 1, P.l); px(g, cx, y + 2, P.c); px(g, cx, y + 3, P.m);
+  }
+  if (o.aim) for (let cx = at(o.aim[0]); cx < at(o.aim[1]); cx++) { px(g, cx, y + 1, P.w); px(g, cx, y + 2, P.w); px(g, cx, y + 3, P.l); }
+  if (o.spent) for (let cx = at(o.spent[0]); cx < at(o.spent[1]); cx++) { px(g, cx, y + 1, (cx % 2) ? P.w : P.d); px(g, cx, y + 3, (cx % 2) ? P.d : P.w); }
+  if (o.miss) { for (let cx = at(o.miss[0]); cx < at(o.miss[1]); cx++) { px(g, cx, y - 1, P.r); px(g, cx, y + 5, P.r); } px(g, at(o.miss[1]), y, P.r, 1, 5); }
+  for (let v = 10; v < 120; v += 10) px(g, at(v), y + 1, P.o, 1, 3);
+  if (o.shine !== undefined && at(o.shine) < at(qi)) { px(g, at(o.shine), y + 1, P.w); px(g, at(o.shine) + 1, y + 1, P.w); px(g, at(o.shine) + 1, y + 2, P.l); }
+}
+// The art banner: pointed ends, letters inside.
+function banner(g, x, y, str) {
+  const w = str.length * 4 + 5;
+  px(g, x + 2, y, P.o, w, 9); px(g, x + 1, y + 1, P.o, w + 2, 7); px(g, x, y + 3, P.o, w + 4, 3);
+  px(g, x + 2, y + 1, P.n, w, 7); px(g, x + 1, y + 3, P.n, w + 2, 3);
+  px(g, x + 2, y + 1, P.m, w, 1);
+  text(g, x + 4, y + 2, str, P.w, P.d);
+  return w + 4;
+}
+// A technique seal: diamond r 9 at (cx, cy). state: ready | aim | cd (fraction left) | poor | locked | spent.
+function seal(g, cx, cy, icon, key, st = {}) {
+  const line = st.poor ? P.r : st.locked ? P.s : st.aim || st.spent ? P.w : P.c;
+  if (st.aim || st.spent) { diamond(g, cx, cy, 11, st.spent ? 'rgba(233,251,255,.5)' : 'rgba(127,214,255,.35)'); }
+  diamond(g, cx, cy, 10, P.o);
+  diamond(g, cx, cy, 9, line);
+  diamond(g, cx, cy, 8, P.o);
+  diamond(g, cx, cy, 7, st.poor ? P.R : P.n);
+  // Lower half a shade deeper.
+  for (let dy = 1; dy <= 7; dy++) { const w = 7 - dy; px(g, cx - w, cy + dy, st.poor ? '#5c1f29' : P.d, 2 * w + 1, 1); }
+  // Pearl on top.
+  px(g, cx, cy - 12, P.o, 1, 3); px(g, cx - 1, cy - 11, P.o, 3, 1); px(g, cx, cy - 11, st.poor ? P.r : P.l);
+  if (st.locked) sprite(g, cx - 5, cy - 5, ICON.lock);
+  else sprite(g, cx - 5, cy - 5, ICON[icon], st.poor ? (ch => (ch === 'G' || ch === 'o') ? P.o : P.r) : st.cd !== undefined ? (ch => ch === 'w' || ch === 'l' ? P.s : ch === 'y' || ch === 'G' ? '#6d5a35' : P.k) : null);
+  if (st.cd !== undefined) {
+    // A shadow sweeping round from the top, clockwise, over what is left.
+    for (let dy = -7; dy <= 7; dy++) for (let dx = -7; dx <= 7; dx++) {
+      if (Math.abs(dx) + Math.abs(dy) > 7) continue;
+      const a = (Math.atan2(dx, -dy) / (2 * Math.PI) + 1) % 1;
+      if (a < st.cd) px(g, cx + dx, cy + dy, 'rgba(3,9,16,.62)');
+    }
+    text(g, cx - 1, cy - 2, String(st.secs), P.w, P.o);
+  }
+  text(g, cx - 1, cy + 12, key, st.poor ? P.r : P.l);
+}
+// The ultimate: octagon r 12, gold, filled from the bottom by charge; frame: spark frame 0-2 when ready.
+function ultimate(g, cx, cy, st = {}) {
+  const ready = st.charge >= 1;
+  octagon(g, cx, cy, 13, 5, P.o);
+  octagon(g, cx, cy, 12, 4, ready ? P.y : P.g);
+  octagon(g, cx, cy, 11, 4, P.G);
+  octagon(g, cx, cy, 10, 4, P.o);
+  octagon(g, cx, cy, 9, 4, '#14243a');
+  const top = cy + 9 - Math.round(18 * Math.min(1, st.charge));
+  for (let y = top; y <= cy + 9; y++) {
+    const cut = Math.max(0, Math.abs(y - cy) - 5);
+    px(g, cx - 9 + cut, y, ready ? '#7a5a1a' : '#4a3610', 2 * (9 - cut) + 1, 1);
+  }
+  if (!ready && st.charge > 0) { const cut = Math.max(0, Math.abs(top - cy) - 5); px(g, cx - 9 + cut, top, P.y, 2 * (9 - cut) + 1, 1); }
+  // Rivets.
+  for (const [dx, dy] of [[-12, 0], [12, 0], [0, -12], [0, 12]]) { px(g, cx + dx, cy + dy, P.o); px(g, cx + dx, cy + dy, ready ? P.Y : P.y); }
+  sprite(g, cx - 5, cy - 5, ICON.streams, ready ? null : (ch => ch === 'w' ? P.y : ch === 'Y' ? P.g : '#8a6a2a'));
+  if (ready && st.frame !== undefined) {
+    const f = st.frame, r = 15 + f * 2;
+    for (const [dx, dy] of [[0, -r], [r, 0], [0, r], [-r, 0]]) { px(g, cx + dx, cy + dy, P.Y); if (f < 2) { px(g, cx + dx - 1, cy + dy, P.y); px(g, cx + dx + 1, cy + dy, P.y); px(g, cx + dx, cy + dy - 1, P.y); px(g, cx + dx, cy + dy + 1, P.y); } }
+    const d = Math.round(r * .7);
+    if (f > 0) for (const [dx, dy] of [[d, -d], [d, d], [-d, d], [-d, -d]]) px(g, cx + dx, cy + dy, f === 1 ? P.Y : P.y);
+  }
+  text(g, cx - 1, cy + 15, 'R', P.y);
+}
+
+// Seals in game size (half 9, 20 apart), as CombatHud.sealAt.
+const HALF2 = 9, STEP2 = 20;
+function sealAt(i, n) {
+  if (n <= 3) return [HALF2 + i * (2 * HALF2 + 2), HALF2 + 5, 0];
+  const top = i % 2 === 0;
+  return [HALF2 + Math.floor(i / 2) * STEP2 + (top ? 0 : STEP2 / 2), HALF2 + (top ? 0 : STEP2 / 2), top ? 1 : 0];
+}
+function seal9(g, cx, cy, icon, key, top) {
+  diamond(g, cx, cy, 9, P.o); diamond(g, cx, cy, 8, P.c); diamond(g, cx, cy, 7, P.o); diamond(g, cx, cy, 6, P.n);
+  for (let dy = 1; dy <= 6; dy++) { const w = 6 - dy; px(g, cx - w, cy + dy, P.d, 2 * w + 1, 1); }
+  const rows = ICON7[icon]; rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== ".") px(g, cx - 3 + i, cy - 3 + j, P[ch]); }));
+  const ty = top ? cy - 11 : cy + 5;
+  px(g, cx - 3, ty, P.c, 7, 7); px(g, cx - 2, ty + 1, P.o, 5, 5); text(g, cx - 1, ty + 1, key, P.l, null);
+}
+const ICON7 = {
+  a: ["......w", ".....wl", "....wl.", "..cwl..", "..yc...", ".y..c..", "G......"],
+  b: ["..lll..", ".l...l.", "l..c..l", "l.cwc.l", "l..c..l", ".l...c.", "..lll.."],
+  c: ["...w...", "c..l..c", "l.yGy.l", "c..l..c", "l..l..l", ".c.w.c.", "..lcl.."],
+  d: [".......", "lllll..", ".....l.", ".cccc.l", "......l", "wwwww..", "......."],
+  e: ["...w...", "..wlw..", ".wlcl w".replace(" ", "."), "wlc.clw", ".wlclw.", "..wlw..", "...w..."],
+  f: ["l.....l", ".l...l.", "..lwl..", "..wcw..", "..lwl..", ".l...l.", "l.....l"],
+};
+function ult(g, cx, cy) {
+  octagon(g, cx, cy, 11, 4, P.o); octagon(g, cx, cy, 10, 3, P.g); octagon(g, cx, cy, 9, 3, P.G); octagon(g, cx, cy, 8, 3, P.o); octagon(g, cx, cy, 7, 3, "#14243a");
+  for (const [dx, dy] of [[-10, 0], [10, 0], [0, -10]]) px(g, cx + dx, cy + dy, P.y);
+  sprite(g, cx - 5, cy - 5, ICON.streams, ch => ch === "w" ? P.y : ch === "Y" ? P.g : "#8a6a2a");
+  px(g, cx - 3, cy + 9, P.g, 7, 7); px(g, cx - 2, cy + 10, P.o, 5, 5); text(g, cx - 1, cy + 10, "R", P.y, null);
+}
+function blockN(g, n, name) {
+  let sw = 0; for (let i = 0; i < n; i++) sw = Math.max(sw, sealAt(i, n)[0] + HALF2 + 1);
+  const ux = sw + (n > 0 ? 3 : 0) + 11, bw = Math.max(ux + 12, name.length * 4 + 11, 60);
+  banner(g, 1, 1, name); text(g, bw - 1 - 11, 11, "84", P.w);
+  qiBar(g, 1, 11, bw - 24, 84, {shine: 20});
+  const keys = ["a", "b", "c", "d", "e", "f"];
+  for (let i = 0; i < n; i++) { const [x, y, top] = sealAt(i, n); seal9(g, x, 19 + y, keys[i], String(i + 1), top); }
+  ult(g, ux, 19 + 14);
+  return bw;
+}
+const names = ["IRON PALM", "WANDERING STAFF", "FLOWING RIVER SWORD", "FLOWING RIVER SWORD", "FLOWING RIVER SWORD", "FLOWING RIVER SWORD"];
+document.getElementById("counts").innerHTML = [1, 2, 3, 4, 5, 6].map(n => `<div><div class="sky" style="height:330px"><canvas id="n${n}"></canvas></div><div class="cap"><b>${n} technique${n > 1 ? "s" : ""} + ultime</b>${n <= 3 ? "une rangée, touches dessous" : "deux rangées imbriquées"}</div></div>`).join("");
+[1, 2, 3, 4, 5, 6].forEach(n => { const c = document.getElementById("n" + n); const g = canvas(c, 110, 54, 4.2); blockN(g, n, names[n - 1]); });
+</script></body></html>

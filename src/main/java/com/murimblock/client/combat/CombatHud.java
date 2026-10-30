@@ -30,10 +30,10 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
 public final class CombatHud {
-    /** The block's size and its distance from the screen's edges, in GUI pixels. */
-    private static final int WIDTH = 96, HEIGHT = 52, MARGIN = 6;
-    /** The Qi tube's length, the longest art name the banner holds. */
-    private static final int BAR = 66, NAME = 19;
+    /** The block's height with two rows of seals and its distance from the screen's edges, in GUI pixels. */
+    private static final int HEIGHT = 52, MARGIN = 6;
+    /** The longest art name the banner holds. */
+    private static final int NAME = 19;
     /** Technique seals: how many, their half-width, the distance between two on a row (one pixel apart diagonally). */
     private static final int SEALS = 6, HALF = 9, STEP = 20;
     /** Ticks the block takes to slide in. */
@@ -79,35 +79,61 @@ public final class CombatHud {
         if (!local.mode || mc.player == null || mc.options.hideGui || mc.player.isSpectator()) {
             return;
         }
-        float slide = Mth.clamp((shown + delta.getGameTimeDeltaPartialTick(false)) / SLIDE, 0, 1);
-        int offset = Math.round((1 - slide) * (1 - slide) * (WIDTH + MARGIN));
-        int x = width - MARGIN - WIDTH + offset, y = height - MARGIN - HEIGHT;
-        // On a narrow screen the corner would cover the hotbar: the block then sits above it.
-        if (width - MARGIN - WIDTH < width / 2 + 91 + 4) {
-            y -= 40;
-        }
         var qi = ClientCultivation.get();
         MartialArtsData.Art art = MartialArtsData.active();
         float now = (float) qi.qi();
         String name = art.name().getString();
-        banner(graphics, x + 1, y + 1, name.length() > NAME ? name.substring(0, NAME) : name);
-        String amount = String.valueOf((int) now);
-        text(graphics, x + WIDTH - 1 - width(amount), y + 11, amount, WHITE, OUTLINE);
-        long time = mc.level == null ? 0 : mc.level.getGameTime();
-        qiBar(graphics, x + 1, y + 11, now, qi.maxQi(), (int) (time % 60));
+        name = name.length() > NAME ? name.substring(0, NAME) : name;
         List<MartialArtsData.Technique> techniques = art.techniques().stream()
                 .filter(t -> t.kind() == MartialArtsData.Kind.TECHNIQUE).limit(SEALS).toList();
-        // Interlocked: 1, 3, 5 on the top row, 2, 4, 6 on the bottom row half a seal to the right.
-        int lx = x, ly = y + 19;
-        for (int i = 0; i < SEALS; i++) {
-            boolean top = i % 2 == 0;
-            int cx = lx + HALF + (i / 2) * STEP + (top ? 0 : STEP / 2), cy = ly + HALF + (top ? 0 : STEP / 2);
-            seal(graphics, cx, cy, i < techniques.size() ? techniques.get(i) : null, art, now, top);
+        int n = techniques.size();
+        // The block fits the art: as wide as its seals and ultimate (or its name), as tall as one or two rows.
+        int ultimateX = sealsWidth(n) + (n > 0 ? 3 : 0) + 11;
+        int blockWidth = Math.max(Math.max(ultimateX + 12, width(name) + 12), 60);
+        int blockHeight = n > 3 ? HEIGHT : HEIGHT - 5;
+        float slide = Mth.clamp((shown + delta.getGameTimeDeltaPartialTick(false)) / SLIDE, 0, 1);
+        int offset = Math.round((1 - slide) * (1 - slide) * (blockWidth + MARGIN));
+        int x = width - MARGIN - blockWidth + offset, y = height - MARGIN - blockHeight;
+        // On a narrow screen the corner would cover the hotbar: the block then sits above it.
+        if (width - MARGIN - blockWidth < width / 2 + 91 + 4) {
+            y -= 40;
+        }
+        banner(graphics, x + 1, y + 1, name);
+        String amount = String.valueOf((int) now);
+        text(graphics, x + blockWidth - 1 - width(amount), y + 11, amount, WHITE, OUTLINE);
+        long time = mc.level == null ? 0 : mc.level.getGameTime();
+        qiBar(graphics, x + 1, y + 11, blockWidth - 24, now, qi.maxQi(), (int) (time % 60));
+        int ly = y + 19;
+        for (int i = 0; i < n; i++) {
+            int[] at = sealAt(i, n);
+            seal(graphics, x + at[0], ly + at[1], techniques.get(i), art, now, at[2] == 1);
         }
         MartialArtsData.Technique ultimate = art.techniques().stream()
                 .filter(t -> t.kind() == MartialArtsData.Kind.ULTIMATE).findFirst().orElse(null);
         // No ultimate charge exists yet: the octagon stays empty.
-        ultimate(graphics, x + 84, ly + 14, ultimate, 0, (int) (time / 4 % 3));
+        ultimate(graphics, x + ultimateX, ly + 14, ultimate, 0, (int) (time / 4 % 3));
+    }
+
+    /**
+     * Where technique seal {@code i} of {@code n} sits, from the seals' top-left corner: {x, y, key on top (1) or under
+     * (0)}. Up to three stand in one row, keys under; from four they interlock on two rows (1, 3, 5 above with their
+     * keys on top; 2, 4, 6 below with theirs under), half a seal apart.
+     */
+    static int[] sealAt(int i, int n) {
+        if (n <= 3) {
+            return new int[] {HALF + i * (2 * HALF + 2), HALF + 5, 0};
+        }
+        boolean top = i % 2 == 0;
+        return new int[] {HALF + (i / 2) * STEP + (top ? 0 : STEP / 2), HALF + (top ? 0 : STEP / 2), top ? 1 : 0};
+    }
+
+    /** How wide {@code n} seals stand, in GUI pixels. */
+    static int sealsWidth(int n) {
+        int right = 0;
+        for (int i = 0; i < n; i++) {
+            right = Math.max(right, sealAt(i, n)[0] + HALF + 1);
+        }
+        return right;
     }
 
     /** The art's name on a banner with pointed ends. */
@@ -123,10 +149,10 @@ public final class CombatHud {
     }
 
     /** The Qi tube: three rows of colour, a dark notch every segment, a diamond at each end, a shine gliding along. */
-    private static void qiBar(GuiGraphics g, int x, int y, float qi, int maxQi, int shine) {
-        int inner = BAR - 4;
+    private static void qiBar(GuiGraphics g, int x, int y, int length, float qi, int maxQi, int shine) {
+        int inner = length - 4;
         int filled = maxQi <= 0 ? 0 : Math.round(inner * Mth.clamp(qi / maxQi, 0, 1));
-        for (int ex : new int[] {x, x + BAR - 1}) {
+        for (int ex : new int[] {x, x + length - 1}) {
             diamond(g, ex, y + 2, 3, OUTLINE);
             diamond(g, ex, y + 2, 2, MID);
             px(g, ex, y + 2, LIGHT);
@@ -224,7 +250,7 @@ public final class CombatHud {
                 px(g, cx + d[0], cy + d[1], GOLD_PALE);
             }
         }
-        tag(g, cx, cy + 9, "R", ready ? GOLD_LIGHT : GOLD, GOLD_LIGHT);
+        tag(g, cx, cy + 9, TechniqueKeys.ultimateLabel(), ready ? GOLD_LIGHT : GOLD, GOLD_LIGHT);
     }
 
     /** "River Thrust" → "RT": what a seal shows until its technique has an icon. */

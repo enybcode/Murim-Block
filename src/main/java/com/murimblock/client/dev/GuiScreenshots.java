@@ -61,7 +61,7 @@ public final class GuiScreenshots {
     private static final int GUI_SCALE = 0;
     private static final String WATCHER = "murim_gui_shots_watcher";
 
-    private enum Step { TITLE, LOADING, MEDITATION, PAGES, DONE }
+    private enum Step { TITLE, LOADING, MEDITATION, PAGES, CONTROLS, DONE }
 
     /** Frames before closing the eyes, then before the first shot of the dark (the fade takes a second). */
     private static final int EYES_FRAMES = 70;
@@ -205,11 +205,36 @@ public final class GuiScreenshots {
                 if (page + 1 < SHOTS.size()) {
                     open(mc, page + 1);
                 } else {
-                    // The game draws a few more frames while stopping: no second shot of the last page.
-                    step = Step.DONE;
+                    // Then Minecraft's Controls, scrolled down to the Murimblock keys.
                     MurimClientConfig.setShowGuide(showGuide);
-                    mc.stop();
+                    mc.setScreen(new net.minecraft.client.gui.screens.options.controls.KeyBindsScreen(null, mc.options));
+                    step = Step.CONTROLS;
+                    frames = 0;
                 }
+            }
+            case CONTROLS -> {
+                if (++frames == SETTLE_FRAMES / 2) {
+                    mc.screen.mouseScrolled(mc.screen.width / 2.0, mc.screen.height / 2.0, 0, -10000);
+                    for (net.minecraft.client.KeyMapping key : mc.options.keyMappings) {
+                        if (key.getCategory().equals(com.murimblock.client.MurimKeys.CATEGORY)) {
+                            Murimblock.LOGGER.info("GUI shots: key {} = {}", key.getName(), key.getTranslatedKeyMessage().getString());
+                            for (net.minecraft.client.KeyMapping other : mc.options.keyMappings) {
+                                if (other != key && other.getKey().equals(key.getKey())) {
+                                    Murimblock.LOGGER.info("GUI shots:   shares it with {} ({}), clash {}", other.getName(),
+                                            other.getKeyConflictContext(), key.same(other));
+                                }
+                            }
+                        }
+                    }
+                }
+                if (frames < SETTLE_FRAMES) {
+                    return;
+                }
+                Screenshot.grab(mc.gameDirectory, "murim_controls.png", mc.getMainRenderTarget(),
+                        message -> Murimblock.LOGGER.info("GUI shot: {}", message.getString()));
+                // The game draws a few more frames while stopping: no second shot.
+                step = Step.DONE;
+                mc.stop();
             }
             case DONE -> {
             }

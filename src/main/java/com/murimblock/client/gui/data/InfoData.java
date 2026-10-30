@@ -1,6 +1,7 @@
 package com.murimblock.client.gui.data;
 
 import com.murimblock.client.MurimKeys;
+import com.murimblock.client.combat.TechniqueKeys;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 
@@ -84,9 +85,9 @@ public final class InfoData {
     public static List<Control> controls() {
         return List.of(
                 new Control(MurimKeys.OPEN_SYSTEM.getTranslatedKeyMessage(), Component.translatable("key.murimblock.open_system")),
-                control("C", "gui.murimblock.guide.key.meditate"),
-                control("1-4", "gui.murimblock.guide.key.techniques"),
-                control("R", "gui.murimblock.guide.key.ultimate"),
+                new Control(MurimKeys.MEDITATE.getTranslatedKeyMessage(), Component.translatable("gui.murimblock.guide.key.meditate")),
+                control(TechniqueKeys.label(0) + "-" + TechniqueKeys.label(TechniqueKeys.COUNT - 1), "gui.murimblock.guide.key.techniques"),
+                new Control(TechniqueKeys.ULTIMATE.getTranslatedKeyMessage(), Component.translatable("gui.murimblock.guide.key.ultimate")),
                 control("G", "gui.murimblock.guide.key.sense_qi"),
                 control("V", "gui.murimblock.guide.key.guard"));
     }

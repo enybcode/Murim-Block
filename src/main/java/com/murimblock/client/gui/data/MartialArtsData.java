@@ -1,5 +1,6 @@
 package com.murimblock.client.gui.data;
 
+import com.murimblock.client.combat.TechniqueKeys;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 
@@ -78,13 +79,13 @@ public final class MartialArtsData {
         return false;
     }
 
-    /** The key shown before a technique: none for the passive, R for the ultimate, 1, 2, 3... otherwise. */
+    /** The key shown before a technique, as bound in Controls: none for the passive, the ultimate key, the n-th technique key. */
     public static String keyOf(Art art, Technique technique) {
         if (technique.kind() == Kind.PASSIVE) {
             return "-";
         }
         if (technique.kind() == Kind.ULTIMATE) {
-            return "R";
+            return TechniqueKeys.ultimateLabel();
         }
         int n = 0;
         for (Technique t : art.techniques()) {
@@ -95,6 +96,6 @@ public final class MartialArtsData {
                 break;
             }
         }
-        return String.valueOf(n);
+        return TechniqueKeys.label(n - 1);
     }
 }
