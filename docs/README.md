@@ -14,6 +14,7 @@ One file per feature or decision, added as the work goes.
 - [Visual rules](art/visual-rules.md): the art direction, relief on every model, hand-shaded textures, the process.
 - [Mob sheets](mobs/): one validated design sheet per mob and its model renders (Disciple déchu = zombie).
 - [Murim map](world/map.md): the fixed Murim continent, its ten zones and biomes, relief, rivers and reserved sites (plan).
+- [Families](world/families.md): the house each player is born into, drawn with rerolls, and its heritage (proposal).
 - [Two PCs](two-pcs.md): how the two PCs stay in sync through GitHub, phone access, and the second PC's setup prompt.
 - [Playtest checklist](playtest/tests-en-jeu.pdf): what Enzo tests in game, to tick and annotate (in French; source
   `tests-en-jeu.html`, printed to PDF with Chrome headless).

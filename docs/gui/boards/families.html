@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Familles — maquette</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Noto+Serif+SC:wght@700&display=swap">
+<style>
+/* The System menu (K) redrawn in the combat bar's pixel art (combat-bar-b.html): every frame, tab, bar and ornament is
+   drawn pixel by pixel at GUI resolution (window 530 x 310 GUI px) on a canvas, then scaled without smoothing. The text
+   stays the game's own font (here a pixel web font standing in for it). */
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: #8fb8d6; max-width: 1250px; }
+h2 { margin: 0 0 10px; font-size: 16px; color: #63cfff; text-transform: uppercase; letter-spacing: 2px; }
+.row { display: grid; gap: 22px; padding: 10px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+.scene { position: relative; background: linear-gradient(#4c6f99 0, #7e9fc4 60%, #46693a 60.2%, #2f4f25 100%); border-radius: 4px; overflow: hidden; }
+.scene canvas { position: absolute; image-rendering: pixelated; }
+.t { position: absolute; font-family: "Pixelify Sans", monospace; white-space: nowrap; line-height: 1; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
+
+.han { font-family: "Noto Serif SC", serif !important; }
+.grid12 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+</style></head><body>
+<div class="top"><h1>Le système de familles — maquette</h1>
+<p>Proposition (docs/world/families.md). À la première connexion, la fenêtre Destin tire la famille du joueur : un sceau tourne et s'arrête sur une maison, avec sa rareté et son héritage. Une relance gratuite, puis des Talismans du Destin. Style pixel du menu System.</p></div>
+
+<div class="row" style="grid-template-columns: 1fr 1fr 1fr">
+  <div class="card"><h2>1 · Le sceau tourne</h2><div class="scene" id="spin" style="width:470px;height:380px"></div></div>
+  <div class="card"><h2>2 · Commune : Zhou</h2><div class="scene" id="common" style="width:470px;height:380px"></div></div>
+  <div class="card"><h2>3 · Légendaire : Nangong</h2><div class="scene" id="legend" style="width:470px;height:380px"></div></div>
+</div>
+<div class="row" style="grid-template-columns: 1.15fr 1fr">
+  <div class="card"><h2>4 · Les douze familles</h2><div class="grid12" id="all"></div>
+    <p style="margin:12px 0 0;font-size:13px;color:#9fb7c9">Commune 60 % (cyan) · Rare 32 % (violet) · Légendaire 8 % (or). Après 10 tirages sans légendaire, le suivant est rare ou mieux.</p></div>
+  <div class="card"><h2>5 · Dans le Profil</h2><div class="scene" id="profile" style="width:640px;height:330px"></div></div>
+</div>
+
+<script>
+
+const P = {o: '#05101b', d: '#0d2238', n: '#123250', N: '#0f2944', m: '#1d4a73', c: '#3fb4ec', l: '#7fd6ff', w: '#e9fbff',
+  r: '#ff8c9a', R: '#7a2a36', s: '#6b8aa3', k: '#24384c', h: '#e8565f', H: '#8e2830', y: '#ffd36b', g: '#c98d2a'};
+const W = 530, H = 310;
+
+function makePage(id, scale) {
+  const host = document.getElementById(id);
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H; c.style.left = (host.clientWidth - W * scale) / 2 + 'px'; c.style.top = (host.clientHeight - H * scale) / 2 + 'px';
+  c.style.width = W * scale + 'px'; c.style.height = H * scale + 'px';
+  host.appendChild(c);
+  const g = c.getContext('2d');
+  const ox = parseFloat(c.style.left), oy = parseFloat(c.style.top);
+  const T = (x, y, str, size = 8, color = P.w, extra = '') => {
+    const s = document.createElement('span'); s.className = 't'; s.textContent = str;
+    s.style.cssText += `left:${ox + x * scale}px;top:${oy + y * scale}px;font-size:${size * scale}px;color:${color};${extra}`;
+    host.appendChild(s);
+  };
+  return {g, T, scale};
+}
+const px = (g, x, y, col, w = 1, h = 1) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+function diamond(g, cx, cy, r, col) { for (let dy = -r; dy <= r; dy++) { const w = r - Math.abs(dy); px(g, cx - w, cy + dy, col, 2 * w + 1, 1); } }
+function pearl(g, cx, cy, col = P.l) { diamond(g, cx, cy, 3, P.o); diamond(g, cx, cy, 2, P.c); px(g, cx, cy, col); px(g, cx, cy - 1, P.w); }
+// A frame with corners cut by `cut` px: outline, line, outline, fill.
+function cutRect(g, x, y, w, h, cut, col) { for (let j = 0; j < h; j++) { const k = Math.max(0, cut - j, cut - (h - 1 - j)); px(g, x + k, y + j, col, w - 2 * k, 1); } }
+function frame(g, x, y, w, h, o = {}) {
+  const cut = o.cut ?? 2, line = o.line ?? P.c, fill = o.fill ?? P.N;
+  cutRect(g, x, y, w, h, cut, P.o);
+  cutRect(g, x + 1, y + 1, w - 2, h - 2, Math.max(0, cut - 1), line);
+  cutRect(g, x + 2, y + 2, w - 4, h - 4, Math.max(0, cut - 1), P.o);
+  cutRect(g, x + 3, y + 3, w - 6, h - 6, Math.max(0, cut - 2), fill);
+  if (o.shine !== false) px(g, x + 3 + cut, y + 3, o.shineCol ?? 'rgba(127,214,255,.25)', w - 6 - 2 * cut, 1);
+}
+function windowFrame(page, title) {
+  const {g, T} = page;
+  frame(g, 4, 8, W - 8, H - 12, {cut: 4, fill: 'rgba(10,26,44,.94)'});
+  // Inner second line, faint; auspicious clouds in the background; filigree in the corners.
+  cutRect(g, 7, 11, W - 14, 1, 0, 'rgba(63,180,236,.25)');
+  clouds(g, 8, 14, W - 16, H - 22);
+  for (const [x, y, sx, sy] of [[9, 13, 1, 1], [W - 10, 13, -1, 1], [9, H - 10, 1, -1], [W - 10, H - 10, -1, -1]]) {
+    for (let k = 0; k < 14; k++) { px(g, x + k * sx, y, 'rgba(127,214,255,.35)'); px(g, x, y + k * sy, 'rgba(127,214,255,.35)'); }
+    px(g, x + 3 * sx, y + 3 * sy, P.c); px(g, x + 4 * sx, y + 3 * sy, 'rgba(63,180,236,.6)'); px(g, x + 3 * sx, y + 4 * sy, 'rgba(63,180,236,.6)');
+  }
+  for (const [x, y] of [[4, 8], [W - 5, 8], [4, H - 5], [W - 5, H - 5], [W / 2, H - 5], [4, H / 2 + 2], [W - 5, H / 2 + 2]]) pearl(g, x, y);
+  // Title banner.
+  const tw = title.length * 7 + 18, tx = (W - tw) / 2;
+  px(g, tx + 3, 1, P.o, tw - 6, 15); px(g, tx + 1, 3, P.o, tw - 2, 11); px(g, tx, 6, P.o, tw, 5);
+  px(g, tx + 3, 2, P.n, tw - 6, 13); px(g, tx + 2, 4, P.n, tw - 4, 9); px(g, tx + 1, 7, P.n, tw - 2, 3);
+  px(g, tx + 3, 2, P.m, tw - 6, 1); px(g, tx + 3, 14, P.d, tw - 6, 1);
+  diamond(g, tx + 6, 8, 2, P.c); diamond(g, tx + tw - 7, 8, 2, P.c);
+  T(tx + 11, 4, title, 9, P.w, 'letter-spacing:1.5px;font-weight:600');
+}
+function tabs(page, active) {
+  const {g, T} = page;
+  const names = ['PROFILE', 'TECHNIQUES', 'CULTIVATION', 'INFO'];
+  const widths = names.map(n => n.length * 6 + 22);
+  let x = (W - widths.reduce((a, b) => a + b) - 15) / 2;
+  names.forEach((n, i) => {
+    const on = i === active, w = widths[i];
+    frame(page.g, x, 22, w, 18, {cut: 2, line: on ? P.l : P.m, fill: on ? P.c : P.N, shineCol: on ? P.w : 'rgba(127,214,255,.2)'});
+    if (on) { diamond(g, x + 7, 31, 2, P.o); diamond(g, x + 7, 31, 1, P.w); }
+    T(x + (on ? 13 : 11), 27, n, 8, on ? P.o : P.l, 'letter-spacing:1px;font-weight:600');
+    x += w + 5;
+  });
+}
+function label(page, x, y, str, col = P.s) { page.T(x, y, str, 7, col, 'letter-spacing:1.2px'); }
+function rowItem(page, x, y, w, h, title, sub, o = {}) {
+  const {g, T} = page;
+  frame(g, x, y, w, h, {cut: 1, line: o.on ? P.w : P.m, fill: o.on ? '#1a4268' : P.N, shine: o.on});
+  diamond(g, x + 8, y + h / 2, 2, o.on ? P.w : P.c);
+  if (o.key) { frame(g, x + 4, y + (h - 12) / 2, 12, 12, {cut: 1, line: P.c, fill: P.d, shine: false}); T(x + 7.5, y + (h - 12) / 2 + 2.5, o.key, 7, P.w); }
+  T(x + (o.key ? 20 : 15), y + 3, title, 8, o.dim ? P.s : P.w);
+  if (sub) T(x + (o.key ? 20 : 15), y + 12, sub, 7, P.s);
+  if (o.right) T(x + w - 8 - o.right.length * 5, y + 7, o.right, 8, P.w);
+  if (o.button) { button(page, x + w - 50, y + (h - 12) / 2, 44, 12, o.button); }
+}
+function button(page, x, y, w, h, str, o = {}) {
+  const {g, T} = page;
+  px(g, x + 2, y + h, P.o, w - 2, 1);
+  frame(g, x, y, w, h, {cut: 1, line: o.dim ? P.k : P.c, fill: o.dim ? P.d : P.n});
+  T(x + (w - str.length * 5.2) / 2, y + (h - 7) / 2, str, 7, o.dim ? P.s : P.w, 'letter-spacing:1px;font-weight:600');
+}
+function tube(g, x, y, len, frac, light, core, shade) {
+  for (const ex of [x, x + len - 1]) { diamond(g, ex, y + 2, 3, P.o); diamond(g, ex, y + 2, 2, shade); px(g, ex, y + 2, light); }
+  px(g, x + 2, y, P.o, len - 4, 5); px(g, x + 2, y + 1, P.d, len - 4, 3);
+  const f = Math.round((len - 4) * frac);
+  px(g, x + 2, y + 1, light, f, 1); px(g, x + 2, y + 2, core, f, 1); px(g, x + 2, y + 3, shade, f, 1);
+  for (let k = 1; k < 10; k++) px(g, x + 2 + Math.round((len - 4) * k / 10), y + 1, P.o, 1, 3);
+}
+function note(page, x, y, w, h, lines, warn) {
+  const {g, T} = page;
+  frame(g, x, y, w, h, {cut: 2, line: warn ? P.r : P.c, fill: warn ? '#2a0f18' : P.d});
+  px(g, x + 3, y + 4, warn ? P.r : P.c, 2, h - 8);
+  lines.forEach((l, i) => T(x + 9, y + 5 + i * 10, l, 7.5, warn ? '#ffd0d6' : P.l));
+}
+function subTabs(page, x, y, names, active, wTotal) {
+  const {g, T} = page;
+  let cx = x;
+  names.forEach((n, i) => {
+    const w = n.length * 6 + 14;
+    T(cx + 6, y, n, 8, i === active ? P.w : P.s, 'letter-spacing:1px;font-weight:600');
+    if (i === active) { px(g, cx, y + 11, P.c, w, 2); diamond(g, cx + w / 2, y + 12, 2, P.l); }
+    cx += w + 8;
+  });
+  px(g, x, y + 13, 'rgba(63,180,236,.35)', wTotal, 1);
+}
+
+// Faint cloud scrolls tiled behind the content.
+const CLOUD = ['..xxx......', '.x...x.xx..', 'x..x..x..x.', 'x.x.x.x.x.x', '.x...x...x.'];
+function clouds(g, x, y, w, h) {
+  for (let ty = 0; ty < h - 5; ty += 26) for (let tx = (ty / 26 % 2) * 24; tx < w - 11; tx += 48) {
+    CLOUD.forEach((r, j) => [...r].forEach((c, i) => { if (c === 'x') px(g, x + tx + i, y + ty + j, 'rgba(63,180,236,.07)'); }));
+  }
+}
+// Sprites in palette letters; scale s.
+const SPR = {
+  crest: ['.....w.....', '.....l.....', '....wlw....', '.....l.....', '..y..l..y..', '...yGGGy...', '..y..c..y..', '.....c.....', '.....c.....', '....ccc....', '.....c.....'],
+  thrust: ['..........w', '.........wl', '........wl.', '.......wl..', '......wl...', '..c..wl....', '...cwl.....', '...ywc.....', '..yGy.c....', '.yG..c.....', 'G..........'],
+  calm: ['...........', '.lllll.....', '......l....', '..ccccc.l..', '........l..', '.wwwwww..l.', '.........l.', '..ccccccc..', '...........', '.lllllllll.', '...........'],
+  orb: ['..lll..', '.lwccl.', 'lwcccml', 'lcccmml', 'lccmmml', '.lmmml.', '..lll..'],
+  pill: ['..yyy..', '.yYwyy.', 'yYwyyyg', 'yyyyygg', 'yyyyggg', '.yyggg.', '..ggg..'],
+  scroll: ['.yyyyyyy.', 'yGwwwwwGy', '.ywlwlwy.', '.ywwwwwy.', '.ywlwlwy.', 'yGwwwwwGy', '.yyyyyyy.'],
+  grave: ['....sss....', '...sssss...', '...s.s.s...', '...sssss...', '...s.s.s...', '...sssss...', '.kkkkkkkkk.', 'k.k.k.k.k.k', 'kkkkkkkkkkk', '..r.....r..', '.rr.....rr.'],
+  swirl: ['...lllll...', '..l.....l..', '.l..ccc..l.', 'l..c...c..l', 'l.c..w..c.l', 'l.c.w.w.c.l', 'l.c..w.c..l', 'l..c...c...', '.l..ccc..c.', '..l.....c..', '...lllll...'],
+  face: ['..kkkkk..', '.kkkkkkk.', '.kwwwwwk.', '.ww.w.ww.', '.wwwwwww.', '..wwlww..', '...www...', '..sssss..', '.sssssss.'],
+};
+const COL = {o: P.o, d: P.d, n: P.n, m: P.m, c: P.c, l: P.l, w: P.w, y: P.y, Y: '#fff1b8', G: '#5a3d10', g: P.g, s: P.s, k: P.k, r: P.r};
+function spr(g, x, y, key, s = 1, dim) {
+  SPR[key].forEach((r, j) => [...r].forEach((c, i) => { if (c !== '.') px(g, x + i * s, y + j * s, dim ? P.k : COL[c], s, s); }));
+}
+function sealBig(g, cx, cy, r, key, s = 1) {
+  diamond(g, cx, cy, r, P.o); diamond(g, cx, cy, r - 1, P.c); diamond(g, cx, cy, r - 2, P.o); diamond(g, cx, cy, r - 3, P.n);
+  for (let dy = 1; dy <= r - 3; dy++) { const w = r - 3 - dy; px(g, cx - w, cy + dy, P.d, 2 * w + 1, 1); }
+  px(g, cx, cy - r - 2, P.o, 1, 3); px(g, cx, cy - r - 1, P.l);
+  const n = SPR[key][0].length * s; spr(g, cx - Math.floor(n / 2), cy - Math.floor(SPR[key].length * s / 2), key, s);
+}
+// A divider: a faint line with a diamond in the middle and dots at the ends.
+function divider(g, x, y, w) {
+  px(g, x + 3, y, 'rgba(63,180,236,.35)', w - 6, 1); px(g, x, y, P.c); px(g, x + w - 1, y, P.c);
+  diamond(g, x + w / 2, y, 2, P.o); diamond(g, x + w / 2, y, 1, P.l);
+}
+function check(g, x, y, on) { diamond(g, x, y, 3, P.o); diamond(g, x, y, 2, on ? P.c : P.k); if (on) px(g, x, y, P.w); }
+// A pixel figure in a pose: 0 stand, 1 draw, 2 thrust.
+function pose(g, x, y, k) {
+  px(g, x + 4, y, P.l, 3, 3);
+  px(g, x + 5, y + 3, P.l, 1, 6);
+  if (k === 0) { px(g, x + 3, y + 4, P.l, 1, 3); px(g, x + 7, y + 4, P.l, 1, 3); px(g, x + 7, y + 1, P.w, 1, 6); }
+  if (k === 1) { px(g, x + 6, y + 4, P.l, 3, 1); px(g, x + 8, y - 2, P.w, 1, 7); px(g, x + 3, y + 5, P.l, 2, 1); }
+  if (k === 2) { px(g, x + 6, y + 4, P.l, 3, 1); px(g, x + 9, y + 4, P.w, 6, 1); px(g, x + 15, y + 4, P.c); px(g, x + 3, y + 5, P.l, 2, 1); }
+  px(g, x + 4, y + 9, P.l, 1, 4); px(g, x + 6, y + 9, P.l, 1, 4); if (k === 2) px(g, x + 7, y + 11, P.l, 2, 1);
+}
+
+
+const RAR = {c: {line: P.c, fill: '#0f2a46', glow: 'rgba(63,180,236,.35)', name: 'COMMON', col: P.l},
+  r: {line: '#b07cff', fill: '#24163f', glow: 'rgba(176,124,255,.4)', name: 'RARE', col: '#d4b8ff'},
+  l: {line: P.y, fill: '#3a2a0e', glow: 'rgba(255,211,107,.5)', name: 'LEGENDARY', col: P.y}};
+const FAM = [
+  ['Wang', '王', 'Central plains', 'c', 'Rooted Stance', '−20 % knockback taken'],
+  ['Ma', '马', 'Northern wastes', 'c', 'Born in the Saddle', 'A saddle; horses run 15 % faster'],
+  ['Zhou', '周', 'Hubei waterlands', 'c', 'River Lungs', 'Swim 30 % faster, breath ×2'],
+  ['Hu', '胡', 'Loess plateau', 'c', 'Loess Hands', 'Dig earth 25 % faster, +1 fist'],
+  ['Liang', '梁', 'Rice terraces', 'c', 'Harvest Blessing', 'Eating: Regeneration I, 5 s'],
+  ['Kong', '孔', 'Shandong hills', 'c', "Scholar's Mind", '+10 % art mastery'],
+  ['Tang', '唐', 'Sichuan', 'r', 'Tang Darts', '16 throwing darts'],
+  ['Duan', '段', 'Unnam', 'r', 'One Finger Qi', 'A Qi bolt, 12 blocks'],
+  ['Murong', '慕容', 'Qinghai plateau', 'r', 'Return to Sender', '10 % melee damage returned'],
+  ['Shangguan', '上官', 'Southeast coast', 'r', 'Coastal Fortune', '30 taels and a fine sword'],
+  ['Zhuge', '诸葛', 'Chang-An', 'l', 'Eight Gates', 'A slowing formation, 6 s'],
+  ['Nangong', '南宫', 'Sacred mountain', 'l', "Heaven's Favour", '+10 % max Qi, +5 % breakthrough'],
+];
+function scene(id, w, h, scale) {
+  const host = document.getElementById(id), c = document.createElement('canvas');
+  c.width = w; c.height = h; c.style.left = (host.clientWidth - w * scale) / 2 + 'px'; c.style.top = (host.clientHeight - h * scale) / 2 + 'px';
+  c.style.width = w * scale + 'px'; c.style.height = h * scale + 'px'; host.appendChild(c);
+  const ox = parseFloat(c.style.left), oy = parseFloat(c.style.top);
+  const T = (x, y, str, size = 8, color = P.w, extra = '', cls = '') => { const e = document.createElement('span'); e.className = 't ' + cls; e.textContent = str;
+    e.style.cssText += `left:${ox + x * scale}px;top:${oy + y * scale}px;font-size:${size * scale}px;color:${color};${extra}`; host.appendChild(e); };
+  return {g: c.getContext('2d'), T, scale};
+}
+function win(p, w, h, title) {
+  const {g, T} = p;
+  frame(g, 4, 8, w - 8, h - 12, {cut: 4, fill: 'rgba(10,26,44,.95)'}); clouds(g, 8, 14, w - 16, h - 22);
+  for (const [x, y] of [[4, 8], [w - 5, 8], [4, h - 5], [w - 5, h - 5]]) pearl(g, x, y);
+  const tw = title.length * 7 + 18, tx = (w - tw) / 2;
+  px(g, tx + 3, 1, P.o, tw - 6, 15); px(g, tx + 1, 3, P.o, tw - 2, 11); px(g, tx, 6, P.o, tw, 5);
+  px(g, tx + 3, 2, P.n, tw - 6, 13); px(g, tx + 2, 4, P.n, tw - 4, 9); px(g, tx + 1, 7, P.n, tw - 2, 3); px(g, tx + 3, 2, P.m, tw - 6, 1);
+  diamond(g, tx + 6, 8, 2, P.c); diamond(g, tx + tw - 7, 8, 2, P.c);
+  T(tx + 11, 4, title, 9, P.w, 'letter-spacing:1.5px;font-weight:600');
+}
+// A family crest: a big diamond seal in the rarity's colours with the surname's character.
+function crest(p, cx, cy, r, fam, o = {}) {
+  const {g, T} = p, R = RAR[fam[3]];
+  if (o.rays) for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; for (let d = r + 4; d < r + 4 + (k % 2 ? 10 : 18); d++) px(g, Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d), k % 2 ? 'rgba(255,211,107,.45)' : R.line); }
+  if (o.glow) diamond(g, cx, cy, r + 3, R.glow);
+  diamond(g, cx, cy, r, P.o); diamond(g, cx, cy, r - 1, R.line); diamond(g, cx, cy, r - 2, P.o); diamond(g, cx, cy, r - 3, R.fill);
+  diamond(g, cx, cy, r - 6, 'rgba(255,255,255,.04)');
+  px(g, cx, cy - r - 2, P.o, 1, 3); px(g, cx, cy - r - 1, R.line);
+  const size = fam[1].length > 1 ? r * 0.62 : r * 0.95;
+  if (!o.blank) T(cx - (fam[1].length * size) / 2, cy - size * 0.58, fam[1], size, R.col, `text-shadow:0 0 ${o.glow ? 6 : 0}px ${R.line}`, 'han');
+}
+function tag(p, x, y, fam) { const R = RAR[fam[3]]; frame(p.g, x, y, R.name.length * 6 + 12, 12, {cut: 1, line: R.line, fill: R.fill, shine: false}); p.T(x + 6, y + 2.5, R.name, 7, R.col, 'letter-spacing:1px;font-weight:600'); }
+function destiny(id, fam, o = {}) {
+  const p = scene(id, 300, 240, 1.5), {g, T} = p;
+  win(p, 300, 240, 'DESTINY');
+  T(108, 20, 'THE SYSTEM DRAWS YOUR HOUSE', 6.5, P.s, 'letter-spacing:1px');
+  if (o.spin) {
+    for (const [dx, f, a] of [[-58, FAM[6], .35], [58, FAM[2], .35]]) { crest(p, 150 + dx, 90, 22, f); }
+    crest(p, 150, 90, 34, FAM[10], {glow: true});
+    for (let k = 0; k < 3; k++) { px(g, 108 - k * 6, 90, 'rgba(127,214,255,.5)', 3, 1); px(g, 190 + k * 6, 90, 'rgba(127,214,255,.5)', 3, 1); }
+    T(119, 136, 'Wang · Tang · Zhuge…', 8, P.l);
+    frame(g, 70, 156, 160, 30, {cut: 2, line: P.m, fill: P.d});
+    T(84, 166, 'The seal turns: let it land.', 8, P.s);
+    button(p, 100, 206, 100, 15, 'SKIP', {dim: 1});
+    return;
+  }
+  crest(p, 150, 82, 36, fam, {glow: true, rays: fam[3] === 'l'});
+  T(150 - fam[0].length * 5.2, 124, fam[0], 14, P.w, 'font-weight:600');
+  T(150 - (fam[2].length * 2.4), 142, fam[2], 7, P.s);
+  tag(p, 150 - (RAR[fam[3]].name.length * 6 + 12) / 2, 152, fam);
+  frame(g, 40, 170, 220, 30, {cut: 2, line: RAR[fam[3]].line, fill: P.d});
+  T(48, 175, 'HERITAGE · ' + fam[4], 7.5, RAR[fam[3]].col, 'letter-spacing:.5px;font-weight:600');
+  T(48, 187, fam[5], 7.5, P.l);
+  button(p, 52, 210, 90, 15, 'ACCEPT');
+  button(p, 158, 210, 90, 15, o.final ? 'FINAL' : 'REROLL (1)', o.final ? {dim: 1} : {});
+}
+destiny('spin', null, {spin: true});
+destiny('common', FAM[2]);
+destiny('legend', FAM[11], {final: true});
+
+document.getElementById('all').innerHTML = FAM.map((f, i) => `<div><div class="scene" id="f${i}" style="width:100%;height:150px;background:#0c131b"></div></div>`).join('');
+FAM.forEach((f, i) => { const p = scene('f' + i, 70, 70, 1.6); crest(p, 35, 27, 20, f); p.T(35 - f[0].length * 2.6, 52, f[0], 7.5, P.w, 'font-weight:600'); p.T(35 - f[2].length * 1.8, 61, f[2], 5.5, RAR[f[3]].col); });
+
+// 5 · Profile: the FAMILY row, the heritage and the reroll button.
+{
+  const p = scene('profile', 400, 200, 1.55), {g, T} = p;
+  win(p, 400, 200, 'STATUS');
+  frame(g, 16, 26, 90, 160, {cut: 2, fill: '#0b2038'}); T(30, 172, '3D player model', 6.5, P.s);
+  const rows = [['FAMILY', 'Zhou'], ['NAME', 'Dev'], ['REALM', 'Mortal'], ['TITLE', 'None'], ['SECT', 'Unaffiliated']];
+  rows.forEach(([k, v], i) => { diamond(g, 120, 34 + i * 14, 1, P.c); label(p, 126, 30 + i * 14, k, i === 0 ? P.l : P.s); T(190, 30 + i * 14, v, 8, P.w, i < 2 ? 'font-weight:600' : ''); });
+  crest(p, 236, 34, 7, FAM[2], {blank: true});
+  frame(g, 118, 106, 150, 44, {cut: 2, line: P.c, fill: P.d});
+  T(126, 111, 'HERITAGE', 6.5, P.s, 'letter-spacing:1px'); T(126, 121, 'River Lungs', 8.5, P.w, 'font-weight:600'); T(126, 134, 'Swim 30 % faster, breath ×2', 7, P.l);
+  frame(g, 118, 160, 150, 26, {cut: 2, line: '#b07cff', fill: '#1b1230'});
+  spr(g, 124, 167, 'scroll', 1); T(138, 166, 'Talisman × 1', 7.5, '#d4b8ff');
+  button(p, 206, 166, 56, 13, 'REROLL');
+  T(280, 30, 'THE SYSTEM LOG', 6.5, P.s, 'letter-spacing:1px');
+  ['[!] You were born into', '    the Zhou family.', '[!] Heritage: River Lungs.'].forEach((l, i) => T(280, 42 + i * 10, l, 7, P.l));
+}
+</script></body></html>
