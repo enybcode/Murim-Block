@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Menu System — pixel art</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap">
+<style>
+/* The System menu (K) redrawn in the combat bar's pixel art (combat-bar-b.html): every frame, tab, bar and ornament is
+   drawn pixel by pixel at GUI resolution (window 530 x 310 GUI px) on a canvas, then scaled without smoothing. The text
+   stays the game's own font (here a pixel web font standing in for it). */
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: #8fb8d6; max-width: 1250px; }
+h2 { margin: 0 0 10px; font-size: 16px; color: #63cfff; text-transform: uppercase; letter-spacing: 2px; }
+.row { display: grid; gap: 22px; padding: 10px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+.scene { position: relative; background: linear-gradient(#4c6f99 0, #7e9fc4 60%, #46693a 60.2%, #2f4f25 100%); border-radius: 4px; overflow: hidden; }
+.scene canvas { position: absolute; image-rendering: pixelated; }
+.t { position: absolute; font-family: "Pixelify Sans", monospace; white-space: nowrap; line-height: 1; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
+</style></head><body>
+<div class="top"><h1>Menu System (K) — en pixel art</h1>
+<p>Les quatre onglets redessinés dans le style de la barre de combat B : cadres à double filet, coins en losange, étiquette de titre à bouts pointus, onglets en pastilles, barres en tube avec un losange à chaque bout, cases à cocher en losange. Même contenu et même disposition qu'aujourd'hui ; seul le dessin change.</p></div>
+
+<div class="row" style="grid-template-columns: 1090px 1fr">
+  <div class="card"><h2>1 · Techniques (×2)</h2><div class="scene" id="techniques" style="width:1060px;height:620px"></div></div>
+  <div class="card"><h2>Les pièces</h2><ul>
+    <li><b>Fenêtre</b> : contour sombre, filet cyan, contour sombre, fond bleu nuit ; un losange perlé à chaque coin et au milieu des côtés.</li>
+    <li><b>Titre</b> : le même bandeau à bouts pointus que le nom de l'art dans la barre de combat, posé sur le bord du haut.</li>
+    <li><b>Onglets</b> : pastilles à coins coupés ; l'onglet ouvert est plein cyan avec un losange à gauche, les autres en filet.</li>
+    <li><b>Panneaux</b> : double filet fin, coins coupés d'un pixel, un trait plus clair en haut comme un reflet.</li>
+    <li><b>Lignes de liste</b> : un losange à gauche ; la ligne choisie a un filet blanc et un fond plus clair.</li>
+    <li><b>Barres</b> : tubes à trois tons avec un cran tous les dix et un losange à chaque bout (PV en rose, Qi en cyan).</li>
+    <li><b>Boutons</b> : coins coupés, ombre d'un pixel dessous ; enfoncés, ils descendent d'un pixel.</li>
+    <li><b>Messages [!]</b> : panneau à liseré cyan ; les avertissements en rose.</li>
+    <li><b>Jauge de percée</b> : un anneau en pixels, neuf crans pour les neuf étapes.</li>
+  </ul></div>
+</div>
+
+<div class="row" style="grid-template-columns: 1fr 1fr">
+  <div class="card"><h2>2 · Profil (×1,36)</h2><div class="scene" id="profile" style="width:742px;height:434px"></div></div>
+  <div class="card"><h2>3 · Cultivation (×1,36)</h2><div class="scene" id="cultivation" style="width:742px;height:434px"></div></div>
+</div>
+<div class="row" style="grid-template-columns: 1fr 1fr">
+  <div class="card"><h2>4 · Info (×1,36)</h2><div class="scene" id="info" style="width:742px;height:434px"></div></div>
+  <div class="card"><h2>5 · Les pièces de près (×4)</h2><div class="scene" id="parts" style="width:742px;height:434px;background:#0c131b"></div></div>
+</div>
+
+<script>
+const P = {o: '#05101b', d: '#0d2238', n: '#123250', N: '#0f2944', m: '#1d4a73', c: '#3fb4ec', l: '#7fd6ff', w: '#e9fbff',
+  r: '#ff8c9a', R: '#7a2a36', s: '#6b8aa3', k: '#24384c', h: '#e8565f', H: '#8e2830', y: '#ffd36b', g: '#c98d2a'};
+const W = 530, H = 310;
+
+function makePage(id, scale) {
+  const host = document.getElementById(id);
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H; c.style.left = (host.clientWidth - W * scale) / 2 + 'px'; c.style.top = (host.clientHeight - H * scale) / 2 + 'px';
+  c.style.width = W * scale + 'px'; c.style.height = H * scale + 'px';
+  host.appendChild(c);
+  const g = c.getContext('2d');
+  const ox = parseFloat(c.style.left), oy = parseFloat(c.style.top);
+  const T = (x, y, str, size = 8, color = P.w, extra = '') => {
+    const s = document.createElement('span'); s.className = 't'; s.textContent = str;
+    s.style.cssText += `left:${ox + x * scale}px;top:${oy + y * scale}px;font-size:${size * scale}px;color:${color};${extra}`;
+    host.appendChild(s);
+  };
+  return {g, T, scale};
+}
+const px = (g, x, y, col, w = 1, h = 1) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+function diamond(g, cx, cy, r, col) { for (let dy = -r; dy <= r; dy++) { const w = r - Math.abs(dy); px(g, cx - w, cy + dy, col, 2 * w + 1, 1); } }
+function pearl(g, cx, cy, col = P.l) { diamond(g, cx, cy, 3, P.o); diamond(g, cx, cy, 2, P.c); px(g, cx, cy, col); px(g, cx, cy - 1, P.w); }
+// A frame with corners cut by `cut` px: outline, line, outline, fill.
+function cutRect(g, x, y, w, h, cut, col) { for (let j = 0; j < h; j++) { const k = Math.max(0, cut - j, cut - (h - 1 - j)); px(g, x + k, y + j, col, w - 2 * k, 1); } }
+function frame(g, x, y, w, h, o = {}) {
+  const cut = o.cut ?? 2, line = o.line ?? P.c, fill = o.fill ?? P.N;
+  cutRect(g, x, y, w, h, cut, P.o);
+  cutRect(g, x + 1, y + 1, w - 2, h - 2, Math.max(0, cut - 1), line);
+  cutRect(g, x + 2, y + 2, w - 4, h - 4, Math.max(0, cut - 1), P.o);
+  cutRect(g, x + 3, y + 3, w - 6, h - 6, Math.max(0, cut - 2), fill);
+  if (o.shine !== false) px(g, x + 3 + cut, y + 3, o.shineCol ?? 'rgba(127,214,255,.25)', w - 6 - 2 * cut, 1);
+}
+function windowFrame(page, title) {
+  const {g, T} = page;
+  frame(g, 4, 8, W - 8, H - 12, {cut: 4, fill: 'rgba(10,26,44,.94)'});
+  // Inner second line, faint.
+  cutRect(g, 7, 11, W - 14, 1, 0, 'rgba(63,180,236,.25)');
+  for (const [x, y] of [[4, 8], [W - 5, 8], [4, H - 5], [W - 5, H - 5], [W / 2, H - 5], [4, H / 2 + 2], [W - 5, H / 2 + 2]]) pearl(g, x, y);
+  // Title banner.
+  const tw = title.length * 7 + 18, tx = (W - tw) / 2;
+  px(g, tx + 3, 1, P.o, tw - 6, 15); px(g, tx + 1, 3, P.o, tw - 2, 11); px(g, tx, 6, P.o, tw, 5);
+  px(g, tx + 3, 2, P.n, tw - 6, 13); px(g, tx + 2, 4, P.n, tw - 4, 9); px(g, tx + 1, 7, P.n, tw - 2, 3);
+  px(g, tx + 3, 2, P.m, tw - 6, 1); px(g, tx + 3, 14, P.d, tw - 6, 1);
+  diamond(g, tx + 6, 8, 2, P.c); diamond(g, tx + tw - 7, 8, 2, P.c);
+  T(tx + 11, 4, title, 9, P.w, 'letter-spacing:1.5px;font-weight:600');
+}
+function tabs(page, active) {
+  const {g, T} = page;
+  const names = ['PROFILE', 'TECHNIQUES', 'CULTIVATION', 'INFO'];
+  const widths = names.map(n => n.length * 6 + 22);
+  let x = (W - widths.reduce((a, b) => a + b) - 15) / 2;
+  names.forEach((n, i) => {
+    const on = i === active, w = widths[i];
+    frame(page.g, x, 22, w, 18, {cut: 2, line: on ? P.l : P.m, fill: on ? P.c : P.N, shineCol: on ? P.w : 'rgba(127,214,255,.2)'});
+    if (on) { diamond(g, x + 7, 31, 2, P.o); diamond(g, x + 7, 31, 1, P.w); }
+    T(x + (on ? 13 : 11), 27, n, 8, on ? P.o : P.l, 'letter-spacing:1px;font-weight:600');
+    x += w + 5;
+  });
+}
+function label(page, x, y, str, col = P.s) { page.T(x, y, str, 7, col, 'letter-spacing:1.2px'); }
+function rowItem(page, x, y, w, h, title, sub, o = {}) {
+  const {g, T} = page;
+  frame(g, x, y, w, h, {cut: 1, line: o.on ? P.w : P.m, fill: o.on ? '#1a4268' : P.N, shine: o.on});
+  diamond(g, x + 8, y + h / 2, 2, o.on ? P.w : P.c);
+  if (o.key) { frame(g, x + 4, y + (h - 12) / 2, 12, 12, {cut: 1, line: P.c, fill: P.d, shine: false}); T(x + 7.5, y + (h - 12) / 2 + 2.5, o.key, 7, P.w); }
+  T(x + (o.key ? 20 : 15), y + 3, title, 8, o.dim ? P.s : P.w);
+  if (sub) T(x + (o.key ? 20 : 15), y + 12, sub, 7, P.s);
+  if (o.right) T(x + w - 8 - o.right.length * 5, y + 7, o.right, 8, P.w);
+  if (o.button) { button(page, x + w - 50, y + (h - 12) / 2, 44, 12, o.button); }
+}
+function button(page, x, y, w, h, str, o = {}) {
+  const {g, T} = page;
+  px(g, x + 2, y + h, P.o, w - 2, 1);
+  frame(g, x, y, w, h, {cut: 1, line: o.dim ? P.k : P.c, fill: o.dim ? P.d : P.n});
+  T(x + (w - str.length * 5.2) / 2, y + (h - 7) / 2, str, 7, o.dim ? P.s : P.w, 'letter-spacing:1px;font-weight:600');
+}
+function tube(g, x, y, len, frac, light, core, shade) {
+  for (const ex of [x, x + len - 1]) { diamond(g, ex, y + 2, 3, P.o); diamond(g, ex, y + 2, 2, shade); px(g, ex, y + 2, light); }
+  px(g, x + 2, y, P.o, len - 4, 5); px(g, x + 2, y + 1, P.d, len - 4, 3);
+  const f = Math.round((len - 4) * frac);
+  px(g, x + 2, y + 1, light, f, 1); px(g, x + 2, y + 2, core, f, 1); px(g, x + 2, y + 3, shade, f, 1);
+  for (let k = 1; k < 10; k++) px(g, x + 2 + Math.round((len - 4) * k / 10), y + 1, P.o, 1, 3);
+}
+function note(page, x, y, w, h, lines, warn) {
+  const {g, T} = page;
+  frame(g, x, y, w, h, {cut: 2, line: warn ? P.r : P.c, fill: warn ? '#2a0f18' : P.d});
+  px(g, x + 3, y + 4, warn ? P.r : P.c, 2, h - 8);
+  lines.forEach((l, i) => T(x + 9, y + 5 + i * 10, l, 7.5, warn ? '#ffd0d6' : P.l));
+}
+function subTabs(page, x, y, names, active, wTotal) {
+  const {g, T} = page;
+  let cx = x;
+  names.forEach((n, i) => {
+    const w = n.length * 6 + 14;
+    T(cx + 6, y, n, 8, i === active ? P.w : P.s, 'letter-spacing:1px;font-weight:600');
+    if (i === active) { px(g, cx, y + 11, P.c, w, 2); diamond(g, cx + w / 2, y + 12, 2, P.l); }
+    cx += w + 8;
+  });
+  px(g, x, y + 13, 'rgba(63,180,236,.35)', wTotal, 1);
+}
+
+// 1 · Techniques.
+function drawTechniques(id, scale) {
+  const p = makePage(id, scale), {g, T} = p;
+  windowFrame(p, 'MARTIAL ART'); tabs(p, 1);
+  // Active art.
+  frame(g, 16, 50, 160, 64, {cut: 2, line: P.l, fill: '#143a5e'});
+  label(p, 24, 56, 'ACTIVE ART', P.l);
+  T(24, 66, 'Flowing River Sword', 9, P.w, 'font-weight:600');
+  T(24, 78, 'Sword · Rank C', 8, P.s);
+  T(24, 90, 'Mastery', 8, P.s); T(150, 90, '42 %', 8, P.w);
+  tube(g, 22, 101, 148, .42, P.l, P.c, P.m);
+  label(p, 18, 122, 'OTHER ARTS LEARNED');
+  rowItem(p, 16, 133, 160, 24, 'Iron Mountain Fist', 'Bare hands · Rank D', {button: 'SWITCH'});
+  rowItem(p, 16, 161, 160, 24, 'Wandering Staff', 'Staff · Rank E', {button: 'SWITCH'});
+  note(p, 16, 252, 160, 44, ['[!] Only one martial art flows', '    through your meridians.', '    Switch freely outside combat.']);
+  // Techniques list.
+  label(p, 186, 52, 'TECHNIQUES OF THE ART');
+  const list = [['-', 'Calm Current', 'Passive'], ['1', 'River Thrust', 'Technique'], ['2', 'Whirlpool Cut', 'Technique'], ['3', 'Waterfall Descent', 'Technique'], ['4', '— empty —', 'Technique slot'], ['5', '— empty —', 'Technique slot'], ['6', '— empty —', 'Technique slot'], ['R', 'Thousand Streams', 'Ultimate']];
+  list.forEach(([k, n, s], i) => rowItem(p, 184, 62 + i * 29, 150, 25, n, s, {key: k, on: i === 0, dim: n.startsWith('—')}));
+  // Detail.
+  frame(g, 344, 50, 172, 246, {cut: 2});
+  frame(g, 352, 58, 50, 14, {cut: 1, line: P.c, fill: P.d, shine: false}); T(357, 61, 'PASSIVE', 7, P.l, 'letter-spacing:1px;font-weight:600');
+  T(352, 80, 'Calm Current', 9, P.w, 'font-weight:600');
+  frame(g, 352, 94, 76, 30, {cut: 1, line: P.m, fill: P.d}); label(p, 358, 99, 'QI COST'); T(358, 110, '—', 8, P.w);
+  frame(g, 432, 94, 76, 30, {cut: 1, line: P.m, fill: P.d}); label(p, 438, 99, 'COOLDOWN'); T(438, 110, '—', 8, P.w);
+  ['Every third sword strike', 'flows into the next one', 'and costs no time.'].forEach((l, i) => T(352, 134 + i * 11, l, 8, P.l));
+  T(352, 282, 'Known from the start', 7.5, P.s);
+}
+// 2 · Profile.
+function drawProfile(id, scale) {
+  const p = makePage(id, scale), {g, T} = p;
+  windowFrame(p, 'STATUS'); tabs(p, 0);
+  frame(g, 16, 50, 124, 246, {cut: 2, fill: '#0b2038'});
+  // A pixel stand-in for the 3D player.
+  const mx = 58, my = 120;
+  px(g, mx + 8, my, '#6b3fa0', 24, 8); px(g, mx + 8, my + 8, '#8a5a3c', 24, 16); px(g, mx + 13, my + 13, P.w, 4, 3); px(g, mx + 23, my + 13, P.w, 4, 3);
+  px(g, mx + 4, my + 24, '#b7e2df', 32, 30); px(g, mx + 16, my + 24, P.o, 8, 12); px(g, mx - 2, my + 26, '#b7e2df', 6, 26); px(g, mx + 36, my + 26, '#b7e2df', 6, 26);
+  px(g, mx + 6, my + 54, '#3a1d2a', 12, 30); px(g, mx + 22, my + 54, '#3a1d2a', 12, 30); px(g, mx + 4, my + 52, P.y, 32, 2);
+  T(40, 280, '3D player model', 7.5, P.s);
+  const rows = [['NAME', 'Dev'], ['REALM', 'Mortal'], ['TITLE', 'None'], ['SECT', 'Unaffiliated'], ['MARTIAL ART', 'Flowing River Sword']];
+  rows.forEach(([k, v], i) => { diamond(g, 154, 58 + i * 14, 1, P.c); label(p, 160, 54 + i * 14, k); T(232, 54 + i * 14, v, 8, P.w, i < 2 ? 'font-weight:600' : ''); });
+  px(g, 150, 128, 'rgba(63,180,236,.35)', 182, 1);
+  T(152, 138, 'HP', 8, P.r, 'font-weight:600'); tube(g, 168, 139, 124, 1, '#ffb3b9', P.h, P.H); T(298, 138, '20 / 20', 8, P.w);
+  T(152, 154, 'QI', 8, P.l, 'font-weight:600'); tube(g, 168, 155, 124, 1, P.l, P.c, P.m); T(298, 154, '100 / 100', 8, P.w);
+  note(p, 150, 262, 182, 34, ['[!] Your strength comes from Qi', '    alone. Cultivate to grow stronger.']);
+  label(p, 346, 54, 'QI', P.l);
+  frame(g, 344, 64, 172, 46, {cut: 2, line: P.l, fill: '#143a5e'});
+  label(p, 410, 70, 'MAX QI'); T(408, 82, '100', 18, P.w, 'font-weight:600');
+  [['Regeneration', '2.5 Qi / s'], ['Breakthrough', '33 %'], ['Next realm', 'Third-Rate Warrior']].forEach(([k, v], i) => {
+    T(346, 120 + i * 18, k, 8, P.l); T(514 - v.length * 4.6, 120 + i * 18, v, 8, P.w); px(g, 344, 131 + i * 18, 'rgba(63,180,236,.3)', 172, 1);
+  });
+}
+// 3 · Cultivation.
+function drawCultivation(id, scale) {
+  const p = makePage(id, scale), {g, T} = p;
+  windowFrame(p, 'CULTIVATION'); tabs(p, 2);
+  subTabs(p, 16, 48, ['REALM', 'MERIDIANS · 4 / 12'], 0, 498);
+  const realms = [['Mortal', 'Body Tempering'], ['Third-Rate Warrior', 'Qi Condensation'], ['???', '???'], ['???', '???'], ['???', '???'], ['???', '???'], ['???', '???'], ['???', '???']];
+  realms.forEach(([a, b], i) => rowItem(p, 16, 68 + i * 28, 150, 24, a, b, {key: String(i + 1), on: i === 0, dim: a === '???'}));
+  frame(g, 174, 68, 168, 228, {cut: 2});
+  // Pixel ring: 9 notches, 3 done, full gauge.
+  const cx = 258, cy = 120, R = 32;
+  for (let a = 0; a < 360; a += 1.2) {
+    const t = a * Math.PI / 180, x = Math.round(cx + Math.sin(t) * R), y = Math.round(cy - Math.cos(t) * R);
+    px(g, x - 1, y - 1, P.o, 3, 3);
+  }
+  for (let a = 0; a < 360; a += 1.2) {
+    const t = a * Math.PI / 180, x = Math.round(cx + Math.sin(t) * R), y = Math.round(cy - Math.cos(t) * R);
+    px(g, x, y, P.c); const x2 = Math.round(cx + Math.sin(t) * (R - 1)), y2 = Math.round(cy - Math.cos(t) * (R - 1)); px(g, x2, y2, P.l);
+  }
+  for (let k = 0; k < 9; k++) { const t = k / 9 * 2 * Math.PI; pearl(g, Math.round(cx + Math.sin(t) * (R + 6)), Math.round(cy - Math.cos(t) * (R + 6)), k < 3 ? P.w : P.m); }
+  T(244, 112, '100 %', 9, P.w, 'font-weight:600'); T(234, 124, '156 / 156 Qi', 7.5, P.l);
+  T(240, 168, 'Mortal', 9, P.w, 'font-weight:600'); T(196, 180, 'Body Tempering · Stage 3 / 9', 7.5, P.l);
+  for (let k = 0; k < 9; k++) diamond(g, 202 + k * 14, 196, 3, k < 3 ? P.c : P.k);
+  [['Meditation', '+2 Qi / s'], ['Combat', '+5 per foe'], ['Pills and herbs', 'varies']].forEach(([a, b], i) => { T(184, 206 + i * 11, a, 7.5, P.l); T(334 - b.length * 4.4, 206 + i * 11, b, 7.5, P.w); });
+  button(p, 184, 248, 148, 15, 'ADVANCE TO STAGE 4');
+  button(p, 184, 270, 148, 15, 'STOP MEDITATING [C]');
+  label(p, 352, 70, 'BREAKTHROUGH TRIAL');
+  frame(g, 350, 80, 166, 66, {cut: 2});
+  T(358, 87, 'The Rising Dead', 9, P.w, 'font-weight:600');
+  ['Survive five waves of the dead', 'climbing out of their graves to', 'leave the mortal realm.'].forEach((l, i) => T(358, 100 + i * 10, l, 7.5, P.l));
+  diamond(g, 356, 158, 3, P.o); diamond(g, 356, 158, 2, P.k); T(364, 154, 'Stage 9, full gauge (3 / 9)', 7.5, P.l);
+  diamond(g, 356, 172, 3, P.o); diamond(g, 356, 172, 2, P.c); px(g, 356, 172, P.w); T(364, 168, 'Open 4 meridians (4 / 4)', 7.5, P.l);
+  note(p, 350, 184, 166, 30, ['[WARNING] Losing the trial', 'scatters 30 % of your Qi.'], true);
+  T(366, 256, 'INNER WORLD · THIRD-RATE', 7, P.s, 'letter-spacing:1px');
+  button(p, 350, 270, 166, 15, 'BEGIN TRIAL', {dim: 1});
+}
+// 4 · Info.
+function drawInfo(id, scale) {
+  const p = makePage(id, scale), {g, T} = p;
+  windowFrame(p, 'INFO'); tabs(p, 3);
+  subTabs(p, 16, 48, ['QUESTS', 'SYSTEM LOG', 'GUIDE'], 0, 498);
+  button(p, 452, 46, 64, 14, 'HIDE GUIDE');
+  label(p, 18, 70, 'DAILY');
+  rowItem(p, 16, 80, 150, 24, 'Daily Training', 'The System', {on: 1, right: '1 / 3'});
+  label(p, 18, 110, 'MAIN QUESTS');
+  [['The First Step', 'Old Master', '2 / 3'], ['Bandits on the Road', 'Village Elder', '0 / 1'], ['The Heart Demon', 'The System', '1 / 2']].forEach(([a, b, c], i) => rowItem(p, 16, 120 + i * 28, 150, 24, a, b, {right: c}));
+  frame(g, 174, 68, 342, 228, {cut: 2});
+  T(184, 76, 'Daily Training', 9, P.w, 'font-weight:600'); T(432, 77, 'Resets in 14:22:05', 7.5, P.s);
+  T(184, 90, 'Complete the training of a martial artist.', 8, P.l);
+  [['Defeat enemies', '32 / 50', .64], ['Meditate (minutes)', '10 / 10', 1], ['Travel (blocks)', '1200 / 5000', .24]].forEach(([a, b, f], i) => {
+    T(184, 106 + i * 26, a, 8, P.w); T(504 - b.length * 4.6, 106 + i * 26, b, 8, P.w); tube(g, 184, 118 + i * 26, 322, f, P.l, P.c, P.m);
+  });
+  label(p, 184, 248, 'REWARD'); T(222, 247, '50 Qi · 1 Spirit Pill', 8, P.w);
+  note(p, 182, 262, 326, 24, ['[WARNING] Neglecting training slows your cultivation.'], true);
+}
+drawTechniques('techniques', 2);
+drawProfile('profile', 1.36);
+drawCultivation('cultivation', 1.36);
+drawInfo('info', 1.36);
+
+// 5 · Parts close up.
+{
+  const host = document.getElementById('parts'), c = document.createElement('canvas'), s = 4, w = 180, h = 104;
+  c.width = w; c.height = h; c.style.left = '11px'; c.style.top = '9px'; c.style.width = w * s + 'px'; c.style.height = h * s + 'px'; host.appendChild(c);
+  const g = c.getContext('2d');
+  const page = {g, T: (x, y, str, size = 8, color = P.w, extra = '') => { const e = document.createElement('span'); e.className = 't'; e.textContent = str; e.style.cssText += `left:${11 + x * s}px;top:${9 + y * s}px;font-size:${size * s}px;color:${color};${extra}`; host.appendChild(e); }};
+  frame(g, 2, 4, 60, 30, {cut: 4}); pearl(g, 2, 4); pearl(g, 61, 4); pearl(g, 2, 33); pearl(g, 61, 33);
+  page.T(10, 38, 'fenêtre', 3, P.s);
+  frame(g, 72, 6, 44, 14, {cut: 2, line: P.l, fill: P.c, shineCol: P.w}); diamond(g, 79, 13, 2, P.o); diamond(g, 79, 13, 1, P.w);
+  frame(g, 120, 6, 44, 14, {cut: 2, line: P.m, fill: P.N});
+  page.T(80, 23, 'onglet ouvert / fermé', 3, P.s);
+  tube(page.g, 74, 32, 90, .64, P.l, P.c, P.m); tube(page.g, 74, 42, 90, .9, '#ffb3b9', P.h, P.H);
+  page.T(96, 49, 'barres Qi / PV', 3, P.s);
+  button(page, 4, 56, 54, 14, 'BEGIN', {});
+  px(g, 64, 57, P.o, 52, 1); frame(g, 62, 57, 54, 14, {cut: 1, line: P.l, fill: '#1a4268'});
+  page.T(70, 60, 'PRESSED', 3.5, P.w, 'font-weight:600');
+  page.T(8, 74, 'bouton / enfoncé', 3, P.s);
+  [[132, P.k], [146, P.c]].forEach(([x, col]) => { diamond(g, x, 64, 4, P.o); diamond(g, x, 64, 3, col); if (col === P.c) px(g, x, 64, P.w); });
+  page.T(124, 72, 'à cocher', 3, P.s);
+  frame(g, 4, 82, 100, 18, {cut: 2, line: P.r, fill: '#2a0f18'}); px(g, 7, 86, P.r, 2, 10);
+  page.T(13, 87, '[WARNING] avertissement', 3.2, '#ffd0d6');
+  frame(g, 112, 82, 64, 18, {cut: 1, line: P.w, fill: '#1a4268'}); diamond(g, 120, 91, 2, P.w);
+  page.T(126, 87, 'ligne choisie', 3.2, P.w);
+}
+</script>
+</body></html>

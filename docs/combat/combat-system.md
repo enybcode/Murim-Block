@@ -86,17 +86,20 @@ Enzo validated look B as drawn in `docs/gui/boards/combat-bar-b.png` (source `co
 is the reference for the shapes). It replaces the J3 boxes above when the HUD is redrawn. Every technique of every art
 gets its own icon in this style:
 
-- Block: 108 x 52 GUI px, 6 GUI px from the bottom-right corner, drawn in GUI pixels (no smoothing).
+- Block: 96 x 52 GUI px, 6 GUI px from the bottom-right corner (raised above the hotbar on narrow screens), drawn in
+  GUI pixels (no smoothing). Built on 30 Oct 2026 in `CombatHud` (`HudPixels`, `TechniqueIcons`); in game it holds six
+  technique seals (Enzo, same day), smaller than the board.
 - Art banner with pointed ends, the name in the 3 x 5 pixel font (white, shadow one pixel down-right); Qi number at its
   right.
 - Qi bar: a 5 px tube (light, core, shadow rows), a dark notch every 10 Qi, a small diamond at each end, a white
   shine gliding along.
-- Techniques: diamonds of half-width 10 (dark outline, cyan line, dark, night-blue fill with a deeper lower half), a
-  pearl on top, the key under. Pink when Qi is lacking, grey with a padlock until mastered, a shadow turning clockwise
-  with the seconds during cooldown.
-- Ultimate: gold octagon of half-size 13 with four rivets, filled with gold from the bottom as it charges, a
+- Techniques: up to six diamonds of half-width 9 interlocked on two rows (1, 3, 5 above; 2, 4, 6 below, half a seal
+  to the right), each a dark outline, cyan line, dark, night-blue fill with a deeper lower half; its key in a small tag
+  on its outer tip. Pink when Qi is lacking, grey with a padlock until mastered, an empty grey frame for a free slot;
+  a shadow turning clockwise with the seconds during cooldown (not built yet).
+- Ultimate: gold octagon of half-size 11 with rivets, filled with gold from the bottom as it charges, a
   three-frame spark when ready. Key R, as in the System menu.
-- Technique icons: 11 x 11 pixels in the board's palette (`P` in `combat-bar-b.html`): `w` white highlight, `l` light
+- Technique icons: 7 x 7 pixels for a seal (11 x 11 for an ultimate) in the board's palette (`P` in `combat-bar-b.html`): `w` white highlight, `l` light
   cyan, `c` cyan, `m` mid blue, `y`/`Y` gold for an art's accent or the ultimate, `G` dark gold. One readable shape per
   technique, at most three or four colours, no outline (the seal gives it). Ultimates use gold.
 
