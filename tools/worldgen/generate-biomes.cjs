@@ -1,6 +1,6 @@
 // Writes the Murim map's biome JSONs and biome tags (docs/world/map.md).
 // Each biome starts from a vanilla biome (its features, carvers and mobs), with the colours, temperature and rain of
-// Enzo's biome guide. Step 1 of the map: vanilla flora only; our own features come in step 4.
+// Enzo's biome guide, plus our own features (EXTRA).
 //
 // Usage: node tools/worldgen/generate-biomes.cjs <vanilla biome folder>
 // The vanilla folder is data/minecraft/worldgen/biome extracted from the client-extra jar in build/moddev/artifacts.
@@ -49,7 +49,14 @@ const BIOMES = {
   southeast_coast: ['forest', 0.85, 0.8, ['#5FAA48', '#519A38', '#3AA0B8', '#DDE8EC', '#8FBCE0'], 'Southeast Coast'],
 };
 
-const rgb = hex => parseInt(hex.slice(1), 16);
+// Our own features, added to the template's: id: [[decoration step, placed feature]]. Step 2 is local_modifications,
+// before the vegetation, so trees grow on the rock tops.
+const EXTRA = {
+  sacred_mountain: [[2, 'murimblock:granite_spire']],
+  stone_peaks: [[2, 'murimblock:pillar_forest']],
+};
+
+const rgb = hex =>parseInt(hex.slice(1), 16);
 const write = (file, data) => {
   fs.mkdirSync(path.dirname(file), {recursive: true});
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
@@ -66,6 +73,10 @@ for (const [id, [template, temperature, downfall, colours]] of Object.entries(BI
     fog_color: fog, sky_color: sky};
   delete effects.grass_color_modifier;
   biome.effects = effects;
+  for (const [step, feature] of EXTRA[id] || []) {
+    while (biome.features.length <= step) biome.features.push([]);
+    biome.features[step] = [feature, ...biome.features[step]];
+  }
   write(path.join(root, 'murimblock', 'worldgen', 'biome', id + '.json'), biome);
 }
 

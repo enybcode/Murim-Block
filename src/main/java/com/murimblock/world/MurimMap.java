@@ -42,6 +42,17 @@ public final class MurimMap {
             new Site("Chang-An", -1300, -700, 270, 100),
             new Site("Wuhan", 950, 1100, 270, 66));
 
+    /** Whether this block column lies on a capital's reserved ground, or within {@code margin} blocks of it. */
+    public static boolean nearSite(double x, double z, int margin) {
+        double wx = x + dwx(x, z), wz = z + dwz(x, z);
+        for (Site c : CAPITALS) {
+            if (Math.hypot(wx - c.x(), wz - c.z()) < c.radius() + margin) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * The relief wanted at a column: the ground {@code height} (Y), how strongly it replaces vanilla's ({@code weight},
      * 0 = vanilla, 1 = ours) and the wanted jaggedness (vanilla's peaks, 0 = smooth).

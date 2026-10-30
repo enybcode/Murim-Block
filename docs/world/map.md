@@ -109,6 +109,19 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 - Verified 30 Oct 2026: `gradlew build` (all tests), `runMapTour` 0 failures: every biome and height checked, the west
   peaks at Y 207, the sacred mountain at 217, the north wall at 141 with its pass at 103, the gorges at 188.
 
+## V1 pillars and spires (30 Oct 2026)
+
+- Enzo asked for V1's peaks before step 3. `PillarForestFeature` (the Wulingyuan stone forest) now fills the Honam's
+  `stone_peaks`, and `RockPillarFeature` (style `spire`, placed feature `granite_spire`) stands on the
+  `sacred_mountain`. The code comes from V1, with `MurimMap` in place of V1's biome and site lookups
+  (`MurimMap.nearSite`).
+- Vanilla blocks only for now: V1's `pale_granite`, `pillar_sandstone` and Huangshan pine are not ported, so the
+  spires are stone with diorite and andesite streaks, topped with spruces. V1's `CliffPineFeature` waits for the pine.
+- The features are added in `tools/worldgen/generate-biomes.cjs` (`EXTRA`), in step 2 (local_modifications), so the
+  trees grow on the rock tops.
+- The tour's camera now sits 45 blocks above the bare terrain (`getBaseHeight`), not above a pillar or a tree.
+- Verified 30 Oct 2026: `gradlew build`, `runMapTour` 0 failures; the shots show the pillar forest and the spires.
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

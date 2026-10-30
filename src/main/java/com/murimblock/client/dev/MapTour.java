@@ -115,9 +115,12 @@ public final class MapTour {
                 // A spectator: the first-person body would hide the view.
                 player.setGameMode(GameType.SPECTATOR);
                 ServerLevel level = player.serverLevel();
-                int ground = Math.max(ground(level, x, z, Heightmap.Types.MOTION_BLOCKING),
-                        ground(level, x, z + 100, Heightmap.Types.MOTION_BLOCKING));
-                player.connection.teleport(x + 0.5, ground + 35, z + 100.5, 180, 25);
+                // From the terrain alone: a rock pillar or a tree under the camera would lift it out of the view.
+                var generator = level.getChunkSource().getGenerator();
+                var noise = level.getChunkSource().randomState();
+                int ground = Math.max(generator.getBaseHeight(x, z, Heightmap.Types.OCEAN_FLOOR_WG, level, noise),
+                        generator.getBaseHeight(x, z + 100, Heightmap.Types.OCEAN_FLOOR_WG, level, noise));
+                player.connection.teleport(x + 0.5, ground + 45, z + 100.5, 180, 20);
             });
             step++;
             frames = 0;

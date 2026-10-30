@@ -31,6 +31,7 @@ public final class Murimblock {
         MurimParticles.PARTICLES.register(modBus);
         MurimWorldgen.BIOME_SOURCES.register(modBus);
         MurimWorldgen.DENSITY_FUNCTIONS.register(modBus);
+        MurimWorldgen.FEATURES.register(modBus);
         modBus.addListener(Murimblock::fillCreativeTabs);
         LOGGER.info("Murimblock V2 loaded");
     }
