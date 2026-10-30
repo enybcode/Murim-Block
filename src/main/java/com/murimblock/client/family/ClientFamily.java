@@ -24,6 +24,10 @@ public final class ClientFamily {
     private static boolean pendingOpen;
     /** Increases with each draw received, so an open window replays its spin. */
     private static int draws;
+    /** The dev runs that play the game by script: the window would pause them at the first join. */
+    private static final boolean SCRIPTED = Boolean.getBoolean("murimblock.engineTest")
+            || Boolean.getBoolean("murimblock.mapTour") || Boolean.getBoolean("murimblock.innerWorldTour")
+            || Boolean.getBoolean("murimblock.riseFilm");
 
     private ClientFamily() {
     }
@@ -63,6 +67,9 @@ public final class ClientFamily {
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        if (SCRIPTED) {
+            pendingOpen = false;
+        }
         if (pendingOpen && mc.player != null && (mc.screen == null || mc.screen instanceof DestinyScreen)) {
             pendingOpen = false;
             if (!(mc.screen instanceof DestinyScreen)) {
