@@ -122,6 +122,22 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 - The tour's camera now sits 45 blocks above the bare terrain (`getBaseHeight`), not above a pillar or a tree.
 - Verified 30 Oct 2026: `gradlew build`, `runMapTour` 0 failures; the shots show the pillar forest and the spires.
 
+## Step 3: water (30 Oct 2026)
+
+- `MurimMap.RIVERS` (polylines with widths, warped space) and `MurimMap.LAKES` cut the relief last, after the
+  capitals: the yellow river south along X 0 to Wuhan (30-60 wide), the great river east from the Sichuan basin
+  through the gorges to Wuhan (36-70), then 80-100 wide to its three-armed delta; the great lake (1250, 2350, r 380)
+  and the Qinghai salt lake (-3500, -1100, r 220). A small extra meander keeps the banks from running straight.
+- Sea-level water needs no code: beds dug below Y 63 fill from vanilla's sea level. Banks are steeper on high
+  ground, so rivers cut gorges through the loess and the Sichuan rim. Where the cut is 8 blocks deep, the relief
+  fully replaces vanilla's (weight 1, no jaggedness).
+- The salt lake lies at Y 130 on the plateau: the relief digs its bowl and `HighLakeFeature` (`high_lake`, in the
+  Qinghai plateau's lakes step) fills it to its level and lays a calcite salt crust on the shore.
+- The map PNG from the tests (`build/murim-map/murim-map.png`) shows rivers and lakes in blue. The tour reads the
+  ground under the water (`OCEAN_FLOOR`) and adds four views: the yellow river, the delta, the great lake, the salt lake.
+- Verified 30 Oct 2026: `gradlew build` (6 map tests), `runMapTour` 0 failures; the river and salt lake shots show
+  water at the right places. The Sichuan gorges view still shoots into the jungle canopy.
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

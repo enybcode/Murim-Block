@@ -147,7 +147,94 @@ public final class MurimMap {
                 jag *= t;
             }
         }
+        // Water last: rivers and lakes cut through everything, the Wuhan confluence included.
+        double bed = waterBed(wx, wz, height);
+        if (bed < height) {
+            // Fully ours once the cut is 8 blocks deep: vanilla's hills would fill the channel.
+            double t = Math.min(1, (height - bed) / 8);
+            height = bed;
+            weight += (1 - weight) * t;
+            jag *= 1 - t;
+        }
         return new Relief(height, weight, jag);
+    }
+
+    /**
+     * Rivers, in warped coordinates: points {x, z, width}. The yellow river runs south along X 0 to Wuhan; the great
+     * river runs east from the Sichuan basin through the gorges to Wuhan, then splits into its delta at the coast.
+     */
+    static final double[][][] RIVERS = {
+            {{-150, -2200, 30}, {-60, -1600, 36}, {120, -900, 44}, {-40, -250, 50}, {150, 300, 56}, {550, 750, 60}, {950, 1100, 60}},
+            {{-2700, 1250, 36}, {-2000, 1000, 40}, {-1300, 1150, 44}, {-700, 1000, 48}, {-200, 1100, 50}, {350, 1200, 56},
+                    {950, 1100, 70}, {1550, 1350, 80}, {2150, 1450, 90}, {2700, 1650, 100}},
+            {{2700, 1650, 70}, {3300, 2050, 60}, {3900, 2300, 60}, {4700, 2500, 60}},
+            {{2700, 1650, 60}, {3400, 1550, 55}, {4100, 1350, 55}, {4800, 1250, 55}},
+            {{2700, 1650, 60}, {3500, 1800, 50}, {4300, 1900, 50}, {5000, 1950, 50}}};
+
+    /** A lake in warped coordinates; {@code level} is its surface, or 0 for one at sea level. */
+    public record Lake(String name, int x, int z, int radius, int level) {
+    }
+
+    public static final List<Lake> LAKES = List.of(
+            new Lake("Qinghai salt lake", -3500, -1100, 220, 130),
+            new Lake("great lake", 1250, 2350, 380, 0));
+
+    /** The wanted ground under sea-level water (the water itself comes from vanilla's sea level, Y 63). */
+    private static final double BED = 56;
+
+    /** The ground that rivers and lakes want here: below {@code height} near water, {@code height} elsewhere. */
+    private static double waterBed(double wx, double wz, double height) {
+        double ground = height;
+        // A small meander on top of the warp, so the banks are never straight.
+        double mx = wx + 45 * fbm(wx / 420, wz / 420, 41);
+        double mz = wz + 45 * fbm(wx / 420, wz / 420, 43);
+        for (double[][] river : RIVERS) {
+            for (int i = 0; i + 1 < river.length; i++) {
+                double[] a = river[i];
+                double[] b = river[i + 1];
+                double dx = b[0] - a[0];
+                double dz = b[1] - a[1];
+                double t = Math.max(0, Math.min(1, ((mx - a[0]) * dx + (mz - a[1]) * dz) / (dx * dx + dz * dz)));
+                double d = Math.hypot(mx - a[0] - t * dx, mz - a[1] - t * dz);
+                double half = (a[2] + t * (b[2] - a[2])) / 2;
+                ground = Math.min(ground, carve(d, half, BED, 3 + half / 10, height));
+            }
+        }
+        for (Lake lake : LAKES) {
+            double d = Math.hypot(mx - lake.x(), mz - lake.z());
+            double surface = lake.level() == 0 ? BED : lake.level() - 2;
+            ground = Math.min(ground, carve(d, lake.radius(), surface, 4 + lake.radius() / 40.0, height));
+        }
+        return ground;
+    }
+
+    /**
+     * A channel's profile: {@code edge} at its brim ({@code half} from the centre), {@code depth} lower in the middle,
+     * then banks rising to {@code height}, steeper where the ground is high (a gorge rather than a wide valley).
+     */
+    private static double carve(double d, double half, double edge, double depth, double height) {
+        if (d < half) {
+            return edge - depth * (1 - sq(d / half));
+        }
+        double bank = 14 + Math.min(half, 50) * .4 + Math.max(0, 40 - (height - edge) * .3);
+        if (d > half + bank) {
+            return height;
+        }
+        return edge + (height - edge) * smooth((d - half) / bank);
+    }
+
+    /** The lake whose shore or water this block column lies in (within {@code margin} of its edge), or null. */
+    public static Lake lakeAt(double x, double z, int margin) {
+        double wx = x + dwx(x, z);
+        double wz = z + dwz(x, z);
+        double mx = wx + 45 * fbm(wx / 420, wz / 420, 41);
+        double mz = wz + 45 * fbm(wx / 420, wz / 420, 43);
+        for (Lake lake : LAKES) {
+            if (Math.hypot(mx - lake.x(), mz - lake.z()) < lake.radius() + margin) {
+                return lake;
+            }
+        }
+        return null;
     }
 
     private static double sq(double v) {

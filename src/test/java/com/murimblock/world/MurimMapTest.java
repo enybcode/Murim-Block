@@ -52,10 +52,11 @@ class MurimMapTest {
     void reliefFollowsTheGuide() {
         assertEquals(132, relief(-3000, -800).height(), 6, "Qinghai plateau");
         assertEquals(67, relief(1100, -1100).height(), 4, "central plains");
-        assertEquals(65, relief(950, 2000).height(), 4, "Hubei");
+        assertEquals(65, relief(500, 1700).height(), 4, "Hubei");
         assertEquals(100, relief(-1300, -700).height(), 0.5, "Chang-An is flat at Y 100");
         assertEquals(1, relief(-1300, -700).weight(), 1e-6, "Chang-An replaces vanilla's ground");
-        assertEquals(66, relief(950, 1100).height(), 0.5, "Wuhan is flat at Y 66");
+        // Off the confluence, which the rivers cut through.
+        assertEquals(66, relief(1000, 950).height(), 0.5, "Wuhan is flat at Y 66");
         assertTrue(relief(3400, -1100).height() > 190, "the sacred mountain rises above 190");
         // The north wall stands 20 to 40 above its feet, and its passes cut through it.
         double wall = relief(-2000, -2100).height();
@@ -64,12 +65,37 @@ class MurimMapTest {
         assertEquals(0, relief(0, 7000).weight(), 1e-6, "the sea stays vanilla");
     }
 
+    @Test
+    void riversAndLakesHoldWater() {
+        // Each river's bed lies under sea level (Y 63) somewhere across it, wherever the meander puts it.
+        assertTrue(lowestAcross(30, -1250) < 56, "the yellow river through the loess");
+        assertTrue(lowestAcross(-1300, 1150) < 56, "the great river in the Sichuan basin");
+        assertTrue(lowestAcross(-200, 1100) < 56, "the great river through the gorges");
+        assertTrue(lowestAcross(2150, 1450) < 56, "the great river below Wuhan");
+        assertTrue(relief(1250, 2350).height() < 50, "the great lake");
+        // The salt lake's bowl lies under its level, high on the plateau.
+        double salt = relief(-3500, -1100).height();
+        assertTrue(salt < 128 && salt > 110, "the Qinghai salt lake's bed: " + salt);
+        double[] block = MurimMap.unwarp(-3500, -1100);
+        assertEquals(130, MurimMap.lakeAt(block[0], block[1], 0).level());
+    }
+
+    /** The lowest ground along a north-south line 240 blocks long through this point. */
+    private static double lowestAcross(int wx, int wz) {
+        double lowest = Double.MAX_VALUE;
+        for (int d = -120; d <= 120; d += 4) {
+            lowest = Math.min(Math.min(lowest, relief(wx, wz + d).height()), relief(wx + d, wz).height());
+        }
+        return lowest;
+    }
+
     private static MurimMap.Relief relief(int wx, int wz) {
         double[] block = MurimMap.unwarp(wx, wz);
         return MurimMap.relief((int) Math.round(block[0]), (int) Math.round(block[1]));
     }
 
-    /** Every biome takes a real share of the land, and the map is drawn to build/murim-map/murim-map.png. */
+    /** Every biome takes a real share of the land, and the map is drawn to build/murim-map/murim-map.png (rivers and
+     * lakes in blue). */
     @Test
     void everyBiomeIsThereAndTheMapIsDrawn() throws IOException {
         int size = 2 * EXTENT / STEP;
@@ -79,7 +105,11 @@ class MurimMapTest {
             for (int i = 0; i < size; i++) {
                 MurimBiome biome = MurimMap.biome(-EXTENT + (i + .5) * STEP, -EXTENT + (j + .5) * STEP);
                 counts.merge(biome, 1, Integer::sum);
-                image.setRGB(i, j, COLORS[biome.ordinal()]);
+                int x = -EXTENT + i * STEP;
+                int z = -EXTENT + j * STEP;
+                // Not the low shore, which falls toward the sea.
+                boolean water = biome.ours() && (MurimMap.relief(x, z).height() < 60 && MurimMap.landDistance(x, z) > 250 || MurimMap.lakeAt(x, z, 0) != null);
+                image.setRGB(i, j, water ? 0x3D7FC4 : COLORS[biome.ordinal()]);
             }
         }
         File out = new File("build/murim-map/murim-map.png");

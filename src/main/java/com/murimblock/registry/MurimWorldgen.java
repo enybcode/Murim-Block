@@ -5,6 +5,7 @@ import com.murimblock.Murimblock;
 import com.murimblock.world.MurimBiomeSource;
 import com.murimblock.world.MurimContinents;
 import com.murimblock.world.MurimRelief;
+import com.murimblock.world.feature.HighLakeFeature;
 import com.murimblock.world.feature.PillarForestFeature;
 import com.murimblock.world.feature.RockPillarFeature;
 import net.minecraft.core.registries.Registries;
@@ -27,6 +28,7 @@ public final class MurimWorldgen {
         DENSITY_FUNCTIONS.register("murim_relief", () -> MurimRelief.MAP_CODEC);
         FEATURES.register("pillar_forest", PillarForestFeature::new);
         FEATURES.register("rock_pillar", RockPillarFeature::new);
+        FEATURES.register("high_lake", HighLakeFeature::new);
     }
 
     private MurimWorldgen() {

@@ -49,7 +49,11 @@ public final class MapTour {
             new MurimMap.Spot("north wall", null, -2000, -2050),
             new MurimMap.Spot("north wall pass", null, -900, -2050),
             new MurimMap.Spot("Qinghai escarpment", null, -2000, -1200),
-            new MurimMap.Spot("Sichuan gorges", null, -200, 1100));
+            new MurimMap.Spot("Sichuan gorges", null, -200, 1100),
+            new MurimMap.Spot("yellow river", null, 30, -1250),
+            new MurimMap.Spot("great river delta", null, 3300, 2050),
+            new MurimMap.Spot("great lake", null, 1250, 2350),
+            new MurimMap.Spot("Qinghai salt lake", null, -3500, -1100));
 
     private static boolean started;
     private static int frames = -1;
@@ -127,11 +131,11 @@ public final class MapTour {
         } else if (frames >= LOAD_FRAMES) {
             server(mc, player -> {
                 ServerLevel level = player.serverLevel();
-                // The middle of five points 8 blocks apart: neither a stray tree nor a crack between peaks.
+                // The middle of five points 8 blocks apart, under any water: neither a stray tree nor a crack between peaks.
                 int[][] offsets = {{0, 0}, {8, 0}, {-8, 0}, {0, 8}, {0, -8}};
                 int[] grounds = new int[offsets.length];
                 for (int i = 0; i < offsets.length; i++) {
-                    grounds[i] = ground(level, x + offsets[i][0], z + offsets[i][1], Heightmap.Types.MOTION_BLOCKING_NO_LEAVES);
+                    grounds[i] = ground(level, x + offsets[i][0], z + offsets[i][1], Heightmap.Types.OCEAN_FLOOR);
                 }
                 Arrays.sort(grounds);
                 int ground = grounds[2];
