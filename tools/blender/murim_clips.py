@@ -264,15 +264,15 @@ SETS["fists"] = {
     # turn the left shoulder in a little, the arm goes last and reaches a touch past the hit; slower back to guard.
     "jab": [
         (0, {**GUARD_LEGS, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 0)}}),
-        (1, {"Root": {"rot": (0, 4, 0), "loc": (0, -1.1, -0.3)}, "Chest": (5, 6, 0), "Head": (-9, -6, 0),
+        (2, {"Root": {"rot": (0, 4, 0), "loc": (0, -1.1, -0.3)}, "Chest": (5, 6, 0), "Head": (-9, -6, 0),
              "Arm_L": (-62, -22, 0), "Hand_L": (-110, 0, 0)}),
-        (2, {"Root": {"rot": (0, -8, 0), "loc": (0, -1.2, 0.9)}, "Thigh_R": (20, 0, 0), "Leg_R": (32, 0, 0),
+        (3, {"Root": {"rot": (0, -8, 0), "loc": (0, -1.2, 0.9)}, "Thigh_R": (20, 0, 0), "Leg_R": (32, 0, 0),
              "Thigh_L": (-26, 0, 0), "Leg_L": (34, 0, 0), "Chest": (7, -15, 0), "Head": (-11, 16, 0),
              "Arm_L": (-88, -2, 0), "Hand_L": (-6, 0, 0)}),
-        (3, {"Root": {"rot": (0, -9, 0), "loc": (0, -1.25, 1.0)}, "Chest": (8, -17, 0), "Head": (-11, 18, 0),
+        (4, {"Root": {"rot": (0, -9, 0), "loc": (0, -1.25, 1.0)}, "Chest": (8, -17, 0), "Head": (-11, 18, 0),
              "Arm_L": (-91, 0, 0), "Hand_L": (-2, 0, 0)}),
-        (4, {"Chest": (7, -13, 0), "Arm_L": (-86, -5, 0), "Hand_L": (-20, 0, 0)}),
-        (7, {**GUARD_LEGS, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 0)}}),
+        (5, {"Chest": (7, -13, 0), "Arm_L": (-86, -5, 0), "Hand_L": (-20, 0, 0)}),
+        (9, {**GUARD_LEGS, "Root": {"rot": (0, 0, 0), "loc": (0, -1.0, 0)}}),
     ],
     # A jab stepping in (root motion, see fists.json): the rear foot pushes the body forward, the lead foot reaches
     # ahead and lands as the fist does, then the rear foot drags back under; the root ends 12 px (0.7 block) ahead,
@@ -315,28 +315,28 @@ SETS["fists"].update({
     # the hip and shoulder go through and the fist last, a touch past the hit; the left hand comes back to the chin.
     "cross": [
         (0, READY),
-        (1, {**hips(-5, 1.1, -0.2), "Chest": (5, -8, 0), "Head": (-9, 8, 0),
+        (2, {**hips(-5, 1.1, -0.2), "Chest": (5, -8, 0), "Head": (-9, 8, 0),
              "Arm_R": (-42, 26, 0), "Hand_R": (-118, 0, 0)}),
-        (2, {**hips(-6, 1.15, -0.3)}),
-        (3, {**hips(10, 1.3, 1.1), **legs(-26, 34, 26, 32), "Chest": (7, 18, 0), "Head": (-11, -16, 0),
+        (3, {**hips(-6, 1.15, -0.3)}),
+        (4, {**hips(10, 1.3, 1.1), **legs(-26, 34, 26, 32), "Chest": (7, 18, 0), "Head": (-11, -16, 0),
              "Arm_R": (-88, 4, 0), "Hand_R": (-6, 0, 0), "Arm_L": (-72, -16, 0), "Hand_L": (-108, 0, 0)}),
-        (4, {**hips(11, 1.35, 1.2), "Chest": (8, 20, 0), "Head": (-11, -18, 0),
+        (5, {**hips(11, 1.35, 1.2), "Chest": (8, 20, 0), "Head": (-11, -18, 0),
              "Arm_R": (-91, 2, 0), "Hand_R": (-2, 0, 0)}),
-        (5, {"Chest": (7, 15, 0), "Arm_R": (-85, 8, 0), "Hand_R": (-22, 0, 0)}),
-        (8, READY),
+        (7, {"Chest": (7, 15, 0), "Arm_R": (-85, 8, 0), "Hand_R": (-22, 0, 0)}),
+        (10, READY),
     ],
     # M1 3, the left in an arc that ends the series: the weight goes onto the lead leg and the left elbow opens at
     # shoulder height, then the hips and shoulders turn right and the bent arm follows round, past the target.
     "hook": [
         (0, READY),
-        (1, {**hips(6, 1.3, 0), **legs(-24, 40, 18, 30), "Chest": (5, 10, 0), "Head": (-9, -8, 0),
+        (2, {**hips(6, 1.3, 0), **legs(-24, 40, 18, 30), "Chest": (5, 10, 0), "Head": (-9, -8, 0),
              "Arm_L": (-50, -10, 45), "Hand_L": (-100, 0, 0)}),
-        (2, {"Arm_L": (-45, -12, 55)}),
-        (3, {**hips(-12, 1.4, 0.5), "Chest": (6, -20, 0), "Head": (-10, 16, 0),
+        (3, {"Arm_L": (-45, -12, 55)}),
+        (4, {**hips(-12, 1.4, 0.5), "Chest": (6, -20, 0), "Head": (-10, 16, 0),
              "Arm_L": (-5, -20, 85), "Hand_L": (-92, 0, 0)}),
-        (4, {**hips(-16, 1.4, 0.5), "Chest": (6, -24, 0), "Head": (-10, 20, 0), "Arm_L": (0, -32, 86)}),
-        (5, {**hips(-18, 1.4, 0.5), "Chest": (6, -26, 0), "Arm_L": (0, -42, 84), "Hand_L": (-88, 0, 0)}),
-        (9, READY),
+        (5, {**hips(-16, 1.4, 0.5), "Chest": (6, -24, 0), "Head": (-10, 20, 0), "Arm_L": (0, -32, 86)}),
+        (7, {**hips(-18, 1.4, 0.5), "Chest": (6, -26, 0), "Arm_L": (0, -42, 84), "Hand_L": (-88, 0, 0)}),
+        (11, READY),
     ],
     # The rear uppercut: the knees dip, the right hand drops a little, then the legs drive the body up and the hips
     # turn left as the fist rises in front of the chin.

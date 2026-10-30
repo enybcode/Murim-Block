@@ -41,10 +41,11 @@ sheet({
     'Une préparation d\'un tick (le poing recule d\'un cran), un impact tenu un tick, un petit suivi.',
     'Le bassin et l\'épaule partent juste avant le bras ; la tête et la main libre suivent avec un tick de retard.',
     'Retour un peu plus lent que le coup : la fin d\'un coup prépare le suivant.',
-    'Faibles : environ 1 cœur chacun, petit étourdissement, presque pas de recul (au lieu de 1,5 à 3 aujourd\'hui).',
+    'Un peu plus forts qu\'un poing vanilla (2, 2 et 3 de dégâts), petit étourdissement, peu de recul ; un coup '
+      + 'part quand le précédent revient en garde : cliquer plus vite ne frappe pas plus vite.',
   ],
   anims: [
-    {name: 'M1 · 1 · Gauche', meta: '7 ticks · impact ticks 2 → 3 · dégâts 1',
+    {name: 'M1 · 1 · Gauche', meta: '9 ticks · impact ticks 3 → 5 · dégâts 2',
       feel: 'un petit coup sec, juste pour toucher.',
       read: 'le poing gauche qui recule d\'un cran.',
       frames: [
@@ -60,7 +61,7 @@ sheet({
         {ticks: '5 → 7', phase: 'retour', pose: READY, from: ONE_FOLLOW, trace: 'handL', bend: -10,
           note: 'Le poing revient, le buste après.'},
       ]},
-    {name: 'M1 · 2 · Droite', meta: '8 ticks · impact ticks 3 → 4 · dégâts 1',
+    {name: 'M1 · 2 · Droite', meta: '10 ticks · impact ticks 4 → 6 · dégâts 2',
       feel: 'le même coup de l\'autre main, un peu plus appuyé.',
       read: 'l\'épaule droite qui s\'efface.',
       frames: [
@@ -75,7 +76,7 @@ sheet({
         {ticks: '6 → 8', phase: 'retour', pose: READY, from: TWO_FOLLOW, bend: -10,
           note: 'Le poids revient au milieu, retour en garde.'},
       ]},
-    {name: 'M1 · 3 · Gauche en arc', meta: '9 ticks · impact ticks 3 → 5 · dégâts 1,5 · fin de série',
+    {name: 'M1 · 3 · Gauche en arc', meta: '11 ticks · impact ticks 4 → 7 · dégâts 3 · fin de série',
       feel: 'un coup qui vient de côté et clôt la série, sans plus.',
       read: 'le coude gauche qui s\'ouvre : le dernier coup arrive en arc.',
       frames: [

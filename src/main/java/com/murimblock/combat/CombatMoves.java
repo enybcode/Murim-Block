@@ -46,6 +46,12 @@ public final class CombatMoves {
                 if (body.isSprinting()) {
                     yield choice(moves.dash(), CombatState.Kind.ATTACK, 0, -1);
                 }
+                if (state.kind == CombatState.Kind.ATTACK) {
+                    // A combo strike waits for the last one to end, so clicking fast does not hit faster; kept, it
+                    // starts as the last one is back in guard, so the chain flows.
+                    state.buffer(input, direction, now);
+                    yield null;
+                }
                 int next = state.nextCombo(now, moves.combo().size());
                 yield choice(moves.combo().get(next), CombatState.Kind.ATTACK, 0, next);
             }

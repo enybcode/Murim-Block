@@ -70,12 +70,14 @@ final class CombatChecks {
             LivingEntity[] zombie = new LivingEntity[1];
             float[] health = new float[1];
             int[] begun = {-1};
+            List<Integer> starts = new ArrayList<>();
+            ResourceLocation[] playing = new ResourceLocation[1];
             at(mc, X, Z, 0);
             spawn(mc, EntityType.ZOMBIE, X, Z + 1.6, true, mob -> {
             });
-            start(new Run(100, t -> {
+            start(new Run(150, t -> {
                 // The combo starts once the player stands on the ground before its zombie (out of the air, a strike
-                // is the air strike); then a press every 6 ticks.
+                // is the air strike); then a press every 6 ticks, faster than the strikes may follow.
                 if (begun[0] < 0) {
                     zombie[0] = nearest(mc, EntityType.ZOMBIE);
                     if (zombie[0] == null || !mc.player.onGround() || t > 40) {
@@ -88,13 +90,17 @@ final class CombatChecks {
                     face(mc, zombie[0]);
                 }
                 int since = t - begun[0];
-                if (since % 6 == 0 && since <= 36) {
+                if (since % 6 == 0 && since <= 72) {
                     CombatClient.pressAttack();
                 }
                 // The moves the server plays: the client only predicts them, and a guess it corrects is no move.
                 EngineTest.server(mc, player -> {
                     CombatState state = CombatServer.existing(player);
                     ResourceLocation clip = state == null ? null : state.clip;
+                    if (clip != null && clip != playing[0]) {
+                        starts.add(t);
+                    }
+                    playing[0] = clip;
                     if (clip != null && (moves.isEmpty() || !moves.get(moves.size() - 1).equals(clip))) {
                         moves.add(clip);
                     }
@@ -104,6 +110,13 @@ final class CombatChecks {
                 EngineTest.check("the combo chains jab, cross, hook and starts again (" + names + ")",
                         names.size() >= 4 && names.subList(0, 4).equals(List.of("fists/jab", "fists/cross", "fists/hook",
                                 "fists/jab")));
+                // Each strike waits for the last to end: the shortest M1 is 9 ticks.
+                List<Integer> gaps = new ArrayList<>();
+                for (int i = 1; i < starts.size(); i++) {
+                    gaps.add(starts.get(i) - starts.get(i - 1));
+                }
+                EngineTest.check("pressing fast does not strike faster (ticks between strikes " + gaps + ")",
+                        !gaps.isEmpty() && gaps.stream().allMatch(gap -> gap >= 9));
                 long landed = hits.stream().filter(hit -> hit.result() == CombatPayloads.Result.HIT).count();
                 float lost = zombie[0] == null ? 0 : health[0] - server(zombie[0]).getHealth();
                 EngineTest.check("the blows land on the zombie (" + landed + " hits, " + lost + " health lost)",
