@@ -9,6 +9,7 @@ import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
@@ -122,12 +123,16 @@ public final class DestinyScreen extends Screen {
         y += 18;
         Rect box = new Rect(panel.x() + 20, y, panel.width() - 40, 38);
         PixelArt.frame(g, box.x(), box.y(), box.width(), box.height(), 2, drawn.rarity.line, 0xE60D2238, 0);
-        Component inheritance = drawn.great() ? Component.translatable("family.murimblock.coming_soon")
-                : Component.translatable("family.murimblock.inheritance.common");
+        MutableComponent inheritance = Component.empty();
+        for (Component line : ClientFamily.inheritance(drawn)) {
+            if (!inheritance.getSiblings().isEmpty()) {
+                inheritance.append(" · ");
+            }
+            inheritance.append(line);
+        }
         g.drawString(font, Component.translatable("family.murimblock.inheritance_label"), box.x() + 7, box.y() + 5,
                 drawn.rarity.text, false);
-        List<FormattedCharSequence> lines = font.split(drawn.great()
-                ? Component.translatable(drawn.rarity.inheritanceKey()).copy().append(" · ").append(inheritance) : inheritance, box.width() - 14);
+        List<FormattedCharSequence> lines = font.split(inheritance, box.width() - 14);
         for (int i = 0; i < Math.min(2, lines.size()); i++) {
             g.drawString(font, lines.get(i), box.x() + 7, box.y() + 16 + i * 10, 0xFFCFEEFF, false);
         }

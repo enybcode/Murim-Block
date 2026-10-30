@@ -36,8 +36,8 @@ then each shows **Coming soon**.
 - **Rerolls:**
   - one free reroll in the first Destiny window: **ACCEPT** keeps the house, **REROLL** draws again (the second draw is
     final);
-  - later, a **Destiny Talisman** (rare: boss drops, quest rewards; never crafted) gives one more reroll, spent from the
-    Profile page; a reroll draws among all houses, the current one included;
+  - a **Destiny Talisman** (Enzo, 30 Oct: an item rather than a command, crafted from every ore but netherite) gives
+    one more reroll: used (right click), it is burnt and draws again among all houses, the current one included;
   - **pity:** after 10 draws in a row without an epic or legendary house, the next one is epic or better.
 - **One house per player**, saved with their data under a stable id (like arts). Kept on death. In multiplayer each
   player draws their own.
@@ -64,11 +64,15 @@ else is taken from the work: no characters, story or events. Seats are proposals
 | **Ha** | 夏 | Rare | Rice terraces | healers and herb growers | Coming soon |
 | Wang, Li, Zhang, Liu, Zhao, Sun, Wu, Zhou | 王 李 张 刘 赵 孙 吴 周 | Common | anywhere | ordinary families of the Murim | Nothing |
 
+## Inheritances
+
+Enzo, 30 Oct 2026: every house stays **Coming soon** for now; the houses will be designed later, but the system that
+grants an inheritance must be ready (see Built). A first draft of all twelve was written that day and set aside (git
+history, commit 12d09291); nothing of it is decided.
 
 ## Where it shows
 
-- **Profile:** a FAMILY row (crest, name, rarity colour) above TITLE, the inheritance in the Qi column, and a REROLL
-  button while the player holds a talisman.
+- **Profile:** a FAMILY row (crest, name, rarity colour) above TITLE, the inheritance in the Qi column.
 - **System log:** "[!] You were born into the Namgung family." and every reroll.
 - A legendary house's art joins the player's known arts in K, Techniques.
 
@@ -92,4 +96,18 @@ to be built with every inheritance "coming soon": nothing is granted but the hou
   next login.
 - Profile: a FAMILY row at the top (a diamond and the name in the rarity's colour); hovering it shows the house, its
   rarity, its seat and what its rarity hands down, "Coming soon".
-- Not built yet: the Destiny Talisman, the inheritances themselves, the System log page (still placeholders).
+- Inheritance system (Enzo, 30 Oct: houses later, system ready): `family/Inheritance` is what a house hands down
+  (attribute bonuses, items, an art id, or COMING_SOON / NONE); `Inheritance.of(house)` is the one place to fill in
+  when a house is designed. `InheritanceGrants.apply` runs when the house is settled (ACCEPT, the final reroll,
+  `/family set`, `/family draw`), at login and respawn: the old house's bonuses come off (permanent modifiers
+  `murimblock:family`, their attributes saved as `stats`), the new ones go on, items and art are given once per house
+  (`gifts_for`). The art goes to `InheritanceGrants.teachArt`, which only logs until the server has an art system.
+  Destiny and the Profile tooltip list each bonus, item and art ("+2 Armor", "3 × Bread", "Art: ..."), or the rarity's
+  promise and "Coming soon". `runGuiShots` gives every house a test inheritance (+2 armour, 3 bread, an art), checks
+  it is granted after ACCEPT and taken back once the real ones return, and logs PASS or FAIL.
+- Destiny Talisman (`murimblock:destiny_talisman`, `DestinyTalismanItem`, texture by
+  `tools/textures/destiny-talisman.cjs`): shapeless recipe of coal, copper, iron, gold, redstone, lapis, diamond,
+  emerald and quartz; right click burns it (totem sound), draws a final new house (`FamilyEvents.redraw`: old bonuses
+  off, new inheritance granted, the Destiny window shows it with FINAL); refused while the first window's free reroll
+  waits. The `/family` commands stay for ops and the dev checks; `runGuiShots` burns one and logs PASS or FAIL.
+- Not built yet: each house's inheritance, the System log page (still placeholders).

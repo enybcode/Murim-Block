@@ -80,9 +80,19 @@ public final class FamilyEvents {
                 draw(player, state);
                 sync(player, true);
             } else {
-                // A player who left before choosing finds the window again.
+                // A player who left before choosing finds the window again; a settled house's bonuses are put back.
+                if (!state.freeReroll()) {
+                    InheritanceGrants.apply(player, state);
+                }
                 sync(player, state.freeReroll());
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && !state(player).freeReroll()) {
+            InheritanceGrants.apply(player, state(player));
         }
     }
 
@@ -115,8 +125,17 @@ public final class FamilyEvents {
         sync(player, reroll);
     }
 
-    /** The System's message: the house the player was born into. */
+    /** A Destiny Talisman burnt: a final new draw, granted and shown in the Destiny window. */
+    public static void redraw(ServerPlayer player) {
+        FamilyState state = state(player);
+        draw(player, state);
+        announce(player, state.family());
+        sync(player, true);
+    }
+
+    /** The house is settled: the System's message, and its inheritance granted (the old house's bonuses taken back). */
     private static void announce(ServerPlayer player, Family house) {
+        InheritanceGrants.apply(player, state(player));
         player.sendSystemMessage(Component.literal("[!] ").withStyle(ChatFormatting.AQUA)
                 .append(Component.translatable("family.murimblock.born", Component.translatable(house.nameKey()).copy()
                         .withStyle(s -> s.withColor(house.rarity.text)))));
@@ -152,6 +171,7 @@ public final class FamilyEvents {
                 .then(Commands.literal("reset").executes(c -> {
                     ServerPlayer player = c.getSource().getPlayerOrException();
                     FamilyState state = state(player);
+                    InheritanceGrants.removeStats(player, state);
                     state.reset();
                     draw(player, state);
                     sync(player, true);

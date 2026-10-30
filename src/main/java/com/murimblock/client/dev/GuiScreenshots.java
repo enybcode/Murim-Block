@@ -132,6 +132,8 @@ public final class GuiScreenshots {
                     // A fresh draw every run, so the Destiny window is shot whatever the world remembers.
                     MinecraftServer server = mc.getSingleplayerServer();
                     UUID id = mc.player.getUUID();
+                    // Every house hands down a test inheritance this run, to check the grants (checkInheritance).
+                    com.murimblock.family.Inheritance.override(TEST_INHERITANCE);
                     server.execute(() -> server.getCommands().performPrefixedCommand(
                             server.getPlayerList().getPlayer(id).createCommandSourceStack().withPermission(4), "family reset"));
                     step = Step.DESTINY;
@@ -153,6 +155,9 @@ public final class GuiScreenshots {
                 }
             }
             case MEDITATION -> {
+                if (frames == 20) {
+                    checkInheritance(mc, true);
+                }
                 if (++frames == PLATFORM_FRAMES) {
                     startMeditation(mc);
                 }
@@ -236,6 +241,9 @@ public final class GuiScreenshots {
                 }
             }
             case CONTROLS -> {
+                if (frames == 0) {
+                    checkInheritance(mc, false);
+                }
                 if (++frames == SETTLE_FRAMES / 2) {
                     mc.screen.mouseScrolled(mc.screen.width / 2.0, mc.screen.height / 2.0, 0, -10000);
                     for (net.minecraft.client.KeyMapping key : mc.options.keyMappings) {
@@ -255,13 +263,63 @@ public final class GuiScreenshots {
                 }
                 Screenshot.grab(mc.gameDirectory, "murim_controls.png", mc.getMainRenderTarget(),
                         message -> Murimblock.LOGGER.info("GUI shot: {}", message.getString()));
-                // The game draws a few more frames while stopping: no second shot.
+                // Then burn a Destiny Talisman, and stop once the server has answered (no second shot).
+                checkTalisman(mc);
                 step = Step.DONE;
-                mc.stop();
+                frames = 0;
             }
             case DONE -> {
+                if (++frames == 20) {
+                    mc.stop();
+                }
             }
         }
+    }
+
+    private static final com.murimblock.family.Inheritance TEST_INHERITANCE = new com.murimblock.family.Inheritance(false,
+            List.of(new com.murimblock.family.Inheritance.Stat("minecraft:generic.armor", 2, false)),
+            List.of(new com.murimblock.family.Inheritance.Gift("minecraft:bread", 3)), "test_art");
+
+    /** Logs PASS or FAIL: the test inheritance granted after ACCEPT, or its bonus taken back once the real ones return. */
+    private static void checkInheritance(Minecraft mc, boolean granted) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            com.murimblock.family.FamilyState state = com.murimblock.family.FamilyEvents.state(player);
+            if (!granted) {
+                com.murimblock.family.Inheritance.override(null);
+                com.murimblock.family.InheritanceGrants.apply(player, state);
+            }
+            boolean modifier = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR)
+                    .getModifier(com.murimblock.family.InheritanceGrants.MODIFIER) != null;
+            int bread = player.getInventory().countItem(net.minecraft.world.item.Items.BREAD);
+            boolean pass = granted ? modifier && bread >= 3 && state.family().id().equals(state.giftsFor()) : !modifier;
+            Murimblock.LOGGER.info("GUI shots: inheritance {} {} (house {}, armor modifier {}, bread {}, armor {})",
+                    granted ? "granted" : "taken back", pass ? "PASS" : "FAIL", state.family().id(), modifier, bread,
+                    player.getArmorValue());
+        });
+    }
+
+    /** Logs PASS or FAIL: the talisman's recipe is loaded, and burning one is consumed and settles a new final draw.
+     * (A creative player keeps it.) */
+    private static void checkTalisman(Minecraft mc) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            boolean recipe = server.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                    Murimblock.MOD_ID, "destiny_talisman")).isPresent();
+            int before = com.murimblock.family.FamilyEvents.state(player).sinceEpic();
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.DESTINY_TALISMAN.get(), 2));
+            player.getMainHandItem().use(player.level(), player, InteractionHand.MAIN_HAND);
+            com.murimblock.family.FamilyState state = com.murimblock.family.FamilyEvents.state(player);
+            boolean drawn = state.sinceEpic() != before || state.sinceEpic() == 0;
+            int left = player.getMainHandItem().getCount();
+            Murimblock.LOGGER.info("GUI shots: talisman {} (recipe {}, talismans left {}, house {}, free reroll {})",
+                    recipe && left == (player.hasInfiniteMaterials() ? 2 : 1) && drawn && !state.freeReroll() ? "PASS" : "FAIL", recipe, left,
+                    state.family().id(), state.freeReroll());
+        });
     }
 
     private static void openWorld(Minecraft mc) {

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:coal" },
+    { "item": "minecraft:copper_ingot" },
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:gold_ingot" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:lapis_lazuli" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:emerald" },
+    { "item": "minecraft:quartz" }
+  ],
+  "result": { "id": "murimblock:destiny_talisman", "count": 1 }
+}

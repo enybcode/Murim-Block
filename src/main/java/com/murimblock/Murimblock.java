@@ -39,6 +39,7 @@ public final class Murimblock {
     private static void fillCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
             event.accept(MurimItems.MERIDIAN_PILL);
+            event.accept(MurimItems.DESTINY_TALISMAN);
         }
     }
 }
