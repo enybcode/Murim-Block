@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat J3 — détail</title>
+<style>
+/* Direction J3 in detail (combat-bar-4.html): skill boxes bottom right, the Qi as segments above them. System
+   style (docs/gui/system-gui.md). Close-ups at 3 board px per GUI px. */
+:root { --panel: rgba(7, 18, 31, .9); --cyan: #63cfff; --soft: rgba(99, 207, 255, .45); --faint: rgba(99, 207, 255, .2);
+  --corner: #d2f3ff; --text: #e6f6ff; --muted: #8fb8d6; --warn: #ff8c9a; --gold: #ffd77a; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: var(--muted); }
+h2 { margin: 0 0 10px; font-size: 16px; color: var(--cyan); text-transform: uppercase; letter-spacing: 2px; }
+.row { display: grid; gap: 22px; padding: 10px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; position: relative; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
+.g { color: var(--gold); } .c { color: var(--cyan); } .w { color: var(--warn); } .m { color: var(--muted); }
+.stage { position: relative; background: #0c131b; border: 1px solid #1f2d3a; border-radius: 6px; overflow: hidden; }
+.cap { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 13px; color: #c8d6e2; }
+.cap b { display: block; color: var(--cyan); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.grid4 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.screen { position: relative; height: 230px; border-radius: 4px; overflow: hidden;
+  background: linear-gradient(#6f9fd6 0, #a9c8e8 50%, #5d8a3e 50.2%, #3f6a2c 100%); }
+</style></head><body>
+<div class="top"><h1>Barre de combat J3 — en détail</h1>
+<p>Cases System en bas à droite, Qi en segments au-dessus. Valeurs fictives (art « Flowing River Sword », 120 Qi max).</p></div>
+
+<div class="row" style="grid-template-columns: 1000px 1fr">
+  <div class="card"><h2>1 · De près</h2><div class="stage" id="close" style="height:260px"></div></div>
+  <div class="card"><h2>Comment ça marche</h2><ul>
+    <li><b>Segments</b> : 1 segment = 10 Qi. La barre <b>s'allonge en cultivant</b> (plus de Qi max = plus de segments) ; au-delà de 20 segments, chacun vaut 20 Qi.</li>
+    <li>Le dernier segment entamé est <b>à moitié plein</b> : on lit le Qi exact sans chiffres. Le nombre est écrit au-dessus, petit.</li>
+    <li><b>Touches 1, 2, 3</b> = techniques de l'art actif, <b>4</b> = ultime. Touche écrite sous chaque case (vraie touche des réglages).</li>
+    <li>Quand une case est <b>prête et payable</b>, rien ne clignote ; en <b>maintenant</b> sa touche (visée), ses segments <b>clignotent</b> blanc.</li>
+    <li>Au lancer, les segments payés <b>se vident de droite à gauche</b> avec un éclat blanc.</li>
+    <li><b>Ultime</b> : sa case se remplit d'or de bas en haut : <b>+ en frappant, + en encaissant</b>, et redescend doucement hors combat.</li>
+    <li>Le bloc apparaît en mode combat (B), glisse depuis la droite ; hors combat il s'efface.</li>
+  </ul></div>
+</div>
+
+<div class="row"><div class="card"><h2>2 · Les états</h2><div class="grid4" id="states"></div></div></div>
+
+<div class="row" style="grid-template-columns: 1fr 1fr">
+  <div class="card"><h2>3 · Le temps d'une technique</h2><div class="grid4" id="time" style="grid-template-columns:repeat(4,1fr)"></div></div>
+  <div class="card"><h2>4 · Marquer la cible verrouillée (V)</h2><div class="grid3" id="lock"></div>
+    <p class="m" style="margin:10px 0 0;font-size:13px">Le carré rose de la planche, c'est le <b>verrouillage</b> (touche V, déjà dans le jeu) : il dit quelle cible la caméra et les coups suivent. Aujourd'hui en jeu il n'y a qu'un texte. Trois façons de le montrer :</p></div>
+</div>
+
+<script>
+const S = 3;
+const icon = i => ['linear-gradient(135deg,transparent 42%,#bfefff 43% 57%,transparent 58%),#1b4e74',
+  'radial-gradient(circle,transparent 28%,#9fe6ff 30% 38%,transparent 40% 52%,#5fc4f0 54% 60%,transparent 62%),#173f63',
+  'linear-gradient(90deg,transparent 20%,#bfefff 21% 30%,transparent 31% 45%,#8fd8ff 46% 55%,transparent 56% 70%,#bfefff 71% 80%,transparent 81%),#163a5c',
+  'radial-gradient(circle,#fff6d6 0 14%,#ffd77a 15% 26%,transparent 28%),repeating-conic-gradient(#8fd8ff 0 6deg,transparent 6deg 30deg),#13304d'][i];
+// A System box at scale s: GUI px x, y, size; state decorates it.
+function cell(x, y, size, s, i, state = {}) {
+  const gold = i === 3;
+  const border = state.warn ? 'var(--warn)' : state.glow ? 'var(--cyan)' : gold ? 'rgba(255,215,122,.65)' : 'var(--soft)';
+  const shadow = state.glow ? `0 0 ${6 * s}px var(--cyan)` : state.ready ? `0 0 ${5 * s}px rgba(255,215,122,.8)` : `0 0 ${2 * s}px var(--faint)`;
+  let h = `<div style="position:absolute;left:${x * s}px;top:${y * s}px;width:${size * s}px;height:${size * s}px;background:var(--panel);border:${s}px solid ${border};box-shadow:${shadow}">`;
+  h += `<div style="position:absolute;left:-${s}px;top:-${s}px;width:${3 * s}px;height:${3 * s}px;border-left:${s}px solid var(--corner);border-top:${s}px solid var(--corner)"></div>`;
+  h += `<div style="position:absolute;right:-${s}px;bottom:-${s}px;width:${3 * s}px;height:${3 * s}px;border-right:${s}px solid var(--corner);border-bottom:${s}px solid var(--corner)"></div>`;
+  if (!state.empty && !state.locked) {
+    h += `<div style="position:absolute;inset:${2 * s}px;background:${icon(i)};${state.warn ? 'filter:grayscale(1) brightness(.55)' : ''}"></div>`;
+  }
+  if (gold && state.charge !== undefined) {
+    h += `<div style="position:absolute;left:0;right:0;bottom:0;height:${state.charge * 100}%;background:rgba(255,215,122,.3);border-top:${s}px solid var(--gold)"></div>`;
+  }
+  if (state.cd) {
+    h += `<div style="position:absolute;inset:0;background:rgba(2,8,14,.74);display:flex;align-items:center;justify-content:center;font:bold ${6 * s}px Consolas;color:var(--text)">${state.cd}</div>`;
+  }
+  if (state.locked) {
+    h += `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:${4 * s}px Consolas;color:var(--muted)"><span style="font-size:${6 * s}px">🔒</span>${state.locked}%</div>`;
+  }
+  h += '</div>';
+  if (!state.empty) {
+    h += `<div style="position:absolute;left:${x * s}px;width:${size * s}px;top:${(y + size + 1) * s}px;text-align:center;font:${4 * s}px Consolas;color:${gold ? 'var(--gold)' : 'var(--muted)'}">${state.key ?? i + 1}</div>`;
+  }
+  return h;
+}
+// The Qi segments: count, how many full, a half one, which blink (white), which are missing for a cost (pink).
+function segs(x, y, s, n, full, opts = {}) {
+  let h = '';
+  for (let k = 0; k < n; k++) {
+    let bg = 'rgba(99,207,255,.1)', bd = 'rgba(99,207,255,.45)', glow = '';
+    if (k < full) { bg = '#63cfff'; }
+    if (k === full && opts.half) { bg = 'linear-gradient(90deg,#63cfff 50%,rgba(99,207,255,.1) 50%)'; }
+    if (opts.blink && k >= opts.blink[0] && k < opts.blink[1]) { bg = '#e9fbff'; glow = `box-shadow:0 0 ${3 * s}px #cdf3ff`; }
+    if (opts.miss && k >= opts.miss[0] && k < opts.miss[1]) { bd = 'var(--warn)'; }
+    if (opts.spent && k >= opts.spent[0] && k < opts.spent[1]) { bg = 'rgba(255,255,255,.55)'; glow = `box-shadow:0 0 ${4 * s}px #fff`; }
+    h += `<div style="position:absolute;left:${(x + k * 7) * s}px;top:${y * s}px;width:${6 * s}px;height:${4 * s}px;background:${bg};border:${Math.max(1, s / 2)}px solid ${bd};${glow}"></div>`;
+  }
+  if (opts.label !== false) {
+    h += `<div style="position:absolute;left:${x * s}px;top:${(y - 6) * s}px;font:${4 * s}px Consolas;color:var(--muted)">QI ${opts.qi ?? 84} / 120</div>`;
+  }
+  return h;
+}
+function block(x, y, s, st = {}, segOpts = {}) {
+  return segs(x, y, s, 12, segOpts.full ?? 8, {half: true, ...segOpts})
+    + [0, 1, 2].map(i => cell(x + i * 18, y + 7, 15, s, i, st[i] ?? {})).join('')
+    + cell(x + 56, y + 5, 19, s, 3, st[3] ?? {charge: .65});
+}
+
+document.getElementById('close').innerHTML = block(72, 16, 4.2, {1: {glow: 1}}, {blink: [6, 8], full: 8});
+
+const states = [
+  ['Prête', 'icône pleine, bord cyan', {}, {}],
+  ['Visée (touche tenue)', 'ses segments clignotent', {glow: 1}, {blink: [6, 8]}],
+  ['Lancée', 'segments payés : éclat, puis vides', {glow: 1}, {spent: [6, 8], full: 6}],
+  ['Recharge', 'case noire + secondes', {cd: 6}, {}],
+  ['Pas assez de Qi', 'case rose, segments manquants cerclés', {warn: 1}, {full: 1, half: false, miss: [1, 2], qi: 12}],
+  ['Pas maîtrisée', 'cadenas + maîtrise requise', {locked: 25}, {}],
+  ['Vide', "l'art a moins de techniques", {empty: 1}, {}],
+  ['Ultime en charge', 'or qui monte en se battant', null, {}, {charge: .35}],
+  ['Ultime prête', 'case dorée pleine qui pulse', null, {}, {charge: 1, ready: 1}],
+  ['Qi qui revient', 'le segment entamé se remplit', {}, {full: 4, half: true, qi: 45}],
+];
+document.getElementById('states').innerHTML = states.map(([n, d, st, so, ult]) => {
+  const s = 3, inner = st ? segs(4, 8, s, 6, so.full ?? 4, {half: so.half ?? false, label: false, ...so, blink: so.blink && [so.blink[0] - 4, so.blink[1] - 4], spent: so.spent && [so.spent[0] - 4, so.spent[1] - 4], miss: so.miss}) + cell(14, 15, 15, s, 1, st)
+    : cell(12, 12, 19, s, 3, ult);
+  return `<div class="stage" style="height:170px"><div style="position:absolute;left:24px;top:4px">${inner}</div><div class="cap"><b>${n}</b>${d}</div></div>`;
+}).join('');
+
+const time = [
+  ['t0 · B', 'le bloc glisse depuis la droite', 'translateX(60px)', .3, {}, {}],
+  ['touche 2 tenue', 'ses 2 segments clignotent', '', 1, {1: {glow: 1}}, {blink: [6, 8]}],
+  ['relâchée', 'segments payés, la case noircit', '', 1, {1: {cd: 6}}, {spent: [6, 8], full: 6}],
+  ['+6 s', 'case prête, Qi revenu en partie', '', 1, {}, {full: 7}],
+];
+document.getElementById('time').innerHTML = time.map(([n, d, tr, op, st, so]) =>
+  `<div class="stage" style="height:150px"><div style="position:absolute;left:4px;top:10px;transform:${tr};opacity:${op}">${block(2, 8, 1.8, st, {label: false, ...so})}</div><div class="cap"><b>${n}</b>${d}</div></div>`).join('');
+
+const mob = (x, y) => `<div style="position:absolute;left:${x}px;top:${y}px;width:30px;height:80px">
+  <div style="position:absolute;left:7px;top:0;width:16px;height:16px;background:#7f9a6a"></div><div style="position:absolute;left:5px;top:16px;width:20px;height:28px;background:#3c4f62"></div>
+  <div style="position:absolute;left:5px;top:44px;width:9px;height:36px;background:#4f4a41"></div><div style="position:absolute;left:16px;top:44px;width:9px;height:36px;background:#4f4a41"></div></div>`;
+const corners = (x, y, w, h) => [['left', 'top'], ['right', 'top'], ['left', 'bottom'], ['right', 'bottom']].map(([a, b]) =>
+  `<i style="position:absolute;${a}:0;${b}:0;width:8px;height:8px;border-${a}:2px solid var(--warn);border-${b}:2px solid var(--warn)"></i>`).join('');
+const locks = [
+  ['A · Crochets', 'les 4 coins autour (la planche)', `${mob(100, 80)}<div style="position:absolute;left:90px;top:70px;width:50px;height:100px">${corners()}</div>`],
+  ['B · Losange au-dessus', 'un petit losange rose et une fine barre de vie au-dessus de la tête', `${mob(100, 80)}
+    <div style="position:absolute;left:106px;top:46px;width:12px;height:12px;transform:rotate(45deg);border:2px solid var(--warn);background:rgba(255,140,154,.25)"></div>
+    <div style="position:absolute;left:92px;top:66px;width:46px;height:4px;background:rgba(255,140,154,.2)"><div style="width:58%;height:4px;background:var(--warn)"></div></div>`],
+  ['C · Anneau au sol', 'un cercle rose sous les pieds de la cible', `${mob(100, 80)}
+    <div style="position:absolute;left:80px;top:150px;width:70px;height:20px;border:2px solid var(--warn);border-radius:50%;box-shadow:0 0 8px rgba(255,140,154,.6)"></div>`],
+];
+document.getElementById('lock').innerHTML = locks.map(([n, d, inner]) =>
+  `<div><div class="screen" style="height:200px">${inner}</div><div style="text-align:center;font-size:13px;margin-top:6px"><b class="c">${n}</b><br><span class="m">${d}</span></div></div>`).join('');
+</script>
+</body></html>
