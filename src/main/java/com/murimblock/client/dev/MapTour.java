@@ -53,7 +53,8 @@ public final class MapTour {
             new MurimMap.Spot("yellow river", null, 30, -1250),
             new MurimMap.Spot("great river delta", null, 3300, 2050),
             new MurimMap.Spot("great lake", null, 1250, 2350),
-            new MurimMap.Spot("Qinghai salt lake", null, -3500, -1100));
+            new MurimMap.Spot("Qinghai salt lake", null, -3500, -1100),
+            new MurimMap.Spot("loess ravines", null, -600, -1600));
 
     private static boolean started;
     private static int frames = -1;

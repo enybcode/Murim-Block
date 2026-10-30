@@ -138,6 +138,27 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 - Verified 30 Oct 2026: `gradlew build` (6 map tests), `runMapTour` 0 failures; the river and salt lake shots show
   water at the right places. The Sichuan gorges view still shoots into the jungle canopy.
 
+## Step 4, first pass: soils and landforms (30 Oct 2026)
+
+- Soils: `tools/worldgen/generate-surface.cjs` writes `data/minecraft/worldgen/noise_settings/overworld.json`, which is
+  vanilla's with our surface rules first in its above-surface branch. The palettes are V1's `MurimSurfaceRules`
+  in vanilla blocks:
+  - loess: terracotta with a red band at Y 96-99;
+  - Gobi: sand over gravel;
+  - snow peaks: stone, packed ice and snow;
+  - the north: stone and snow drifts;
+  - sacred mountain: stone and andesite, snow above Y 170;
+  - bamboo: coarse and rooted dirt, podzol;
+  - red basin: red terracotta;
+  - waterlands: mud and clay;
+  - karst and gorges: bare stone, mossy cobblestone.
+- Loess ravines: two scales of gullies (28 and 16 deep) in `MurimMap`, faded by the loess share around, erased on
+  Chang-An's ground.
+- Stone forest: `karst_blade` (`rock_pillar`, style `spire`, small: radius 2-3, 9-22 high, 3-6 per chunk).
+- Verified 30 Oct 2026: `gradlew build` (7 map tests), `runMapTour` 0 failures, plus a loess ravines view.
+- Left for the second pass: rice terraces, tree density rising to the south, real loess and limestone blocks
+  (terracotta reads more orange than loess).
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

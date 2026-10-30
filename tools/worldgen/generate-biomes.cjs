@@ -55,6 +55,7 @@ const EXTRA = {
   sacred_mountain: [[2, 'murimblock:granite_spire']],
   stone_peaks: [[2, 'murimblock:pillar_forest']],
   qinghai_plateau: [[1, 'murimblock:high_lake']],
+  stone_forest: [[2, 'murimblock:karst_blade']],
 };
 
 const rgb = hex =>parseInt(hex.slice(1), 16);

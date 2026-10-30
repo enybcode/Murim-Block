@@ -97,8 +97,11 @@ public final class MurimMap {
         double weight = 0;
         double jag = 0;
         double[][] around = {{0, 0}, {BLEND, 0}, {-BLEND, 0}, {0, BLEND}, {0, -BLEND}};
+        double loess = 0;
         for (double[] o : around) {
-            double[] r = RELIEF[(o[0] == 0 && o[1] == 0 ? here : biome(x + o[0], z + o[1])).ordinal()];
+            MurimBiome b = o[0] == 0 && o[1] == 0 ? here : biome(x + o[0], z + o[1]);
+            double[] r = RELIEF[b.ordinal()];
+            loess += b == MurimBiome.LOESS_PLATEAU ? 1.0 / around.length : 0;
             height += r[0] / around.length;
             weight += r[1] / around.length;
             jag += r[2] / around.length;
@@ -136,6 +139,18 @@ public final class MurimMap {
             double f = Math.pow(1 - d / 520, 1.4);
             height += 125 * f;
             weight = Math.max(weight, .95 * Math.min(1, f * 3));
+        }
+        // Loess ravines: branching gullies 15 to 30 deep cut into the tablelands, fading out at the plateau's edge.
+        if (loess > 0) {
+            double main = 1 - Math.abs(fbm(wx / 330, wz / 330, 51)) / .07;
+            double branch = 1 - Math.abs(fbm(wx / 150, wz / 150, 53)) / .09;
+            double cut = Math.max(28 * Math.pow(Math.max(0, main), 1.3), 16 * Math.pow(Math.max(0, branch), 1.3)) * loess;
+            if (cut > 0) {
+                height -= cut;
+                double t = Math.min(1, cut / 6);
+                weight += (1 - weight) * t;
+                jag *= 1 - t;
+            }
         }
         // Capitals: flat ground at their own height.
         for (Site c : CAPITALS) {

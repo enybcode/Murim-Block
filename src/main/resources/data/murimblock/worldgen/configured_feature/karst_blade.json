@@ -1,0 +1,18 @@
+{
+  "type": "murimblock:rock_pillar",
+  "config": {
+    "style": "spire",
+    "rock": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:stone"}},
+    "accent": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {"data": {"Name": "minecraft:andesite"}, "weight": 2},
+        {"data": {"Name": "minecraft:tuff"}, "weight": 1}
+      ]
+    },
+    "top": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:moss_block"}},
+    "plant": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:moss_carpet"}},
+    "radius": {"type": "minecraft:uniform", "min_inclusive": 2, "max_inclusive": 3},
+    "height": {"type": "minecraft:uniform", "min_inclusive": 9, "max_inclusive": 22}
+  }
+}

@@ -66,6 +66,19 @@ class MurimMapTest {
     }
 
     @Test
+    void ravinesCutTheLoess() {
+        // Somewhere on a line across the loess, a gully 15 blocks or more below the tableland.
+        double lowest = Double.MAX_VALUE;
+        double highest = 0;
+        for (int wx = -1900; wx <= -100; wx += 6) {
+            double h = relief(wx, -1600).height();
+            lowest = Math.min(lowest, h);
+            highest = Math.max(highest, h);
+        }
+        assertTrue(highest - lowest > 15, "loess ravines: " + lowest + " to " + highest);
+    }
+
+    @Test
     void riversAndLakesHoldWater() {
         // Each river's bed lies under sea level (Y 63) somewhere across it, wherever the meander puts it.
         assertTrue(lowestAcross(30, -1250) < 56, "the yellow river through the loess");
