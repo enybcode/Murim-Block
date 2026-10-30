@@ -231,7 +231,7 @@ public final class SkeletalPlayerRenderer {
         }
         poseStack.popPose();
 
-        if (!spectator && ownArms) {
+        if (!spectator && ownArms && !(firstPerson && armsOut)) {
             boolean slim = skin.model() == PlayerSkin.Model.SLIM;
             holdItem(player, HumanoidArm.RIGHT, jointMatrices[model.armature().get("Tool_R").index()], slim, poseStack,
                     buffers, light);
@@ -452,8 +452,14 @@ public final class SkeletalPlayerRenderer {
         }
     }
 
+    /** Seen in first person, looking down further than this (degrees) leaves our arms out: raised in the stance,
+     * their shoulders would fill the view while looking at one's feet or flying head down. */
+    private static final float ARMS_OUT_LOOKING_DOWN = 40;
+    /** Whether the arms are left out this frame, set by {@link #seenFromTheEye}. */
+    private static boolean armsOut;
+
     private static boolean hiddenInFirstPerson(String part, boolean ownArms) {
-        return HEAD_PARTS.contains(part) || !ownArms && ARM_PARTS.contains(part);
+        return HEAD_PARTS.contains(part) || ARM_PARTS.contains(part) && (!ownArms || armsOut);
     }
 
     /**
@@ -467,6 +473,7 @@ public final class SkeletalPlayerRenderer {
         Vector3f neck = joints[model.armature().get(Biped.HEAD).index()].getTranslation(new Vector3f());
         Vector3f eye = toWorld(neck.add(0, FirstPerson.EYE_ABOVE_NECK, 0), toBlocks, bodyYaw, lift);
         FirstPerson.eye(new Vector3f(eye).sub(0, player.getEyeHeight(), 0));
+        armsOut = player.getXRot() > ARMS_OUT_LOOKING_DOWN;
         if (ownArms) {
             for (String tool : new String[] {"Tool_L", "Tool_R", "Hand_L", "Hand_R"}) {
                 Vector3f hand = toWorld(joints[model.armature().get(tool).index()].getTranslation(new Vector3f()),
