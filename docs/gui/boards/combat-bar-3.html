@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat — d.après des mods</title>
+<style>
+/* Combat HUD directions after released mods (earlier ones: combat-bar.html, combat-bar-2.html). */
+:root { --panel: rgba(7, 18, 31, .88); --cyan: #63cfff; --soft: rgba(99, 207, 255, .45); --faint: rgba(99, 207, 255, .2);
+  --corner: #d2f3ff; --text: #e6f6ff; --muted: #8fb8d6; --warn: #ff8c9a; --gold: #ffd77a; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: var(--muted); }
+.row { display: grid; grid-template-columns: 790px 1fr; gap: 22px; padding: 12px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+h2 { margin: 0 0 8px; font-size: 20px; color: var(--cyan); } h2 small { color: var(--muted); font-size: 14px; font-weight: 400; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; } .plus { color: #9fe8b0; } .moins { color: var(--warn); }
+
+.screen { position: relative; width: 758px; height: 426px; overflow: hidden; border-radius: 4px; font-family: Consolas, monospace;
+  background: linear-gradient(#6f9fd6 0, #a9c8e8 46%, #5d8a3e 46.2%, #4c7633 60%, #3f6a2c 100%); }
+.hill { position: absolute; bottom: 54%; height: 60px; border-radius: 50% 50% 0 0; background: #3d6a49; }
+.mob { position: absolute; left: 440px; top: 150px; width: 38px; height: 100px; }
+.mob div { position: absolute; }
+.lock i { position: absolute; width: 10px; height: 10px; border: 0 solid var(--warn); }
+.cross { position: absolute; left: 375px; top: 209px; width: 8px; height: 8px; }
+.cross:before, .cross:after { content: ""; position: absolute; background: #fff; opacity: .85; }
+.cross:before { left: 3px; top: -3px; width: 2px; height: 14px; } .cross:after { left: -3px; top: 3px; width: 14px; height: 2px; }
+.hotbar { position: absolute; left: 233px; top: 388px; width: 292px; height: 34px; background: rgba(40, 40, 40, .8); border: 3px solid #777; }
+.hotbar:after { content: ""; position: absolute; inset: 3px; background: repeating-linear-gradient(90deg, #3c3c3c 0 29px, #8b8b8b 29px 32px); }
+.hearts { position: absolute; left: 233px; top: 366px; font-size: 15px; color: #e33; letter-spacing: -2px; text-shadow: 1px 1px 0 #400; }
+.food { position: absolute; left: 400px; top: 366px; font-size: 15px; color: #c77b2a; letter-spacing: -2px; text-shadow: 1px 1px 0 #402; }
+
+.sys { position: absolute; background: var(--panel); border: 1px solid var(--soft); box-shadow: 0 0 6px var(--faint), inset 0 0 4px var(--faint); }
+.sys:before, .sys:after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--corner); }
+.sys:before { left: -1px; top: -1px; border-left-width: 2px; border-top-width: 2px; }
+.sys:after { right: -1px; bottom: -1px; border-right-width: 2px; border-bottom-width: 2px; }
+.t { color: var(--text); } .m { color: var(--muted); } .c { color: var(--cyan); } .g { color: var(--gold); } .w { color: var(--warn); }
+.tag { position: absolute; top: -9px; left: 10px; padding: 0 6px; background: var(--cyan); color: #04101d; font-weight: bold; font-size: 10px; letter-spacing: 1px; line-height: 15px; }
+
+/* A: System window, bottom right. */
+.skills { right: 14px; bottom: 16px; width: 214px; padding: 14px 10px 8px; font-size: 11px; }
+.skill { position: relative; height: 26px; margin-bottom: 5px; padding-left: 26px; }
+.skill .k { position: absolute; left: 0; top: 2px; width: 19px; height: 19px; border: 1px solid var(--soft); text-align: center; line-height: 18px; color: var(--text); font-weight: bold; }
+.skill .n { color: var(--text); letter-spacing: .5px; }
+.skill .q { position: absolute; right: 0; top: 0; color: #9fe0ff; }
+.skill .cd { position: absolute; left: 26px; right: 0; bottom: 3px; height: 3px; background: rgba(99, 207, 255, .15); }
+.skill .cd i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cyan); box-shadow: 0 0 4px var(--cyan); }
+.qiline { position: relative; height: 8px; margin: 0 0 10px; background: rgba(99, 207, 255, .12); border: 1px solid var(--soft); }
+.qiline i { position: absolute; left: 0; top: 0; bottom: 0; width: 70%; background: linear-gradient(#a8e6ff, #3aa6e6); }
+.alert { position: absolute; padding: 5px 12px 5px; font-size: 12px; letter-spacing: 1px; }
+
+/* B: around the crosshair. */
+.ring { position: absolute; left: 329px; top: 163px; width: 100px; height: 100px; }
+.pip { position: absolute; width: 22px; height: 22px; transform: rotate(45deg); background: var(--panel); border: 1px solid var(--soft); }
+.pip span { position: absolute; inset: 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: var(--text); }
+
+/* C: the meridian. */
+.meridian { position: absolute; left: 22px; top: 70px; width: 240px; height: 280px; }
+.node { position: absolute; left: 0; white-space: nowrap; display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.node .o { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--cyan); background: var(--panel); box-shadow: 0 0 8px var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; font-size: 10px; }
+</style></head><body>
+<div class="top"><h1>Barre de combat — inspirées de mods sortis</h1>
+<p>Chaque piste reprend une idée qui marche dans un mod connu, redessinée en style System V2 (rien de leurs textures). Valeurs fictives.</p></div>
+<div class="row"><div class="card"><div class="screen" id="h"></div></div>
+  <div class="card"><h2>H · Arc + roue <small>— d'après Iron's Spells 'n Spellbooks</small></h2><ul>
+    <li>Les techniques en <b>arc de cases</b> collé à droite de la hotbar ; la case choisie est mise en avant.</li>
+    <li>On <b>choisit</b> avec une touche + molette, on <b>lance</b> avec une seule touche (R).</li>
+    <li>Maintenir <b>R long</b> : une <b>roue</b> au centre de l'écran avec toutes les techniques de l'art (noms, coûts) pour choisir vite.</li>
+    <li>Qi : barre fine au-dessus de la hotbar, à côté des cœurs.</li>
+    <li class="plus">+ marche avec beaucoup de techniques (pas limité à 4), une seule touche à retenir.</li><li class="moins">− choisir puis lancer = un geste de plus en combat.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="i"></div></div>
+  <div class="card"><h2>I · Panneau de statut <small>— d'après Dragon Block C et les mods Jujutsu Kaisen</small></h2><ul>
+    <li>En <b>haut à gauche</b>, une fenêtre System : visage du joueur, rang, et <b>barres empilées</b> vie / Qi / souffle.</li>
+    <li>Sous les barres, la <b>technique sélectionnée</b> écrite en grand, ses voisines plus petites au-dessus et dessous (on fait défiler).</li>
+    <li>Le bas de l'écran reste <b>100 % vanilla</b>.</li>
+    <li class="plus">+ très lisible, place pour le rang et la cultivation.</li><li class="moins">− les yeux doivent aller dans le coin.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="j"></div></div>
+  <div class="card"><h2>J · Cases de compétence <small>— d'après Epic Fight</small></h2><ul>
+    <li>Petites <b>cases carrées en bas à droite</b>, une par technique, avec la touche dessous ; la recharge noircit la case et affiche les secondes.</li>
+    <li>Une case plus grande pour l'ultime, entourée d'une <b>jauge circulaire</b> qui se charge en frappant (et non avec le temps).</li>
+    <li>Le Qi en <b>barre courbe sous le viseur</b>, visible seulement quand il bouge.</li>
+    <li class="plus">+ familier pour les joueurs de mods de combat, ultime gagnée en se battant.</li><li class="moins">− classique, peu de personnalité murim.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="k"></div></div>
+  <div class="card"><h2>K · Enchaînements de clics <small>— d'après les sorts de Wynncraft</small></h2><ul>
+    <li><b>Pas de touches de technique</b> : chaque technique est une <b>suite de 3 clics</b> (G-D-G, G-G-D...) en mode combat, comme des enchaînements d'arts martiaux.</li>
+    <li>Pendant la saisie, les clics apparaissent <b>sous le viseur</b> (◀ ▶ ◀) et les techniques possibles se resserrent.</li>
+    <li>Réussi : nom de la technique en message System. Le Qi : un arc sous le viseur.</li>
+    <li class="plus">+ très « arts martiaux », mains sur la souris, aucune case à l'écran.</li><li class="moins">− se mélange avec la combo de poings du clic gauche ; à régler.</li></ul></div></div>
+<script>
+function world(el, extra) {
+  el.innerHTML = `<div class="hill" style="left:-30px;width:330px"></div><div class="hill" style="left:420px;width:400px;background:#365f43"></div>
+    <div class="mob"><div style="left:9px;top:0;width:20px;height:20px;background:#7f9a6a"></div>
+    <div style="left:12px;top:8px;width:3px;height:3px;background:#e03a2a"></div><div style="left:22px;top:8px;width:3px;height:3px;background:#e03a2a"></div>
+    <div style="left:7px;top:20px;width:24px;height:34px;background:#3c4f62"></div><div style="left:0;top:20px;width:7px;height:32px;background:#7f9a6a"></div>
+    <div style="left:31px;top:20px;width:7px;height:32px;background:#7f9a6a"></div><div style="left:7px;top:54px;width:11px;height:44px;background:#4f4a41"></div>
+    <div style="left:20px;top:54px;width:11px;height:44px;background:#4f4a41"></div></div>
+    <div class="lock" style="position:absolute;left:428px;top:140px;width:62px;height:120px">
+    <i style="left:0;top:0;border-left-width:2px;border-top-width:2px"></i><i style="right:0;top:0;border-right-width:2px;border-top-width:2px"></i>
+    <i style="left:0;bottom:0;border-left-width:2px;border-bottom-width:2px"></i><i style="right:0;bottom:0;border-right-width:2px;border-bottom-width:2px"></i></div>
+    <div class="cross"></div><div class="hearts">♥♥♥♥♥♥♥♥♥♡</div><div class="food">◆◆◆◆◆◆◆◆◆◆</div><div class="hotbar"></div>` + extra;
+}
+const T = [['RIVER THRUST', 10], ['WHIRLPOOL CUT', 18], ['WATERFALL DESCENT', 25], ['THOUSAND STREAMS', 60]];
+const box = (x, y, w, h, inner, extra = '') => `<div class="sys" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${extra}">${inner}</div>`;
+const icon = i => `<div style="position:absolute;inset:4px;background:${['linear-gradient(135deg,transparent 42%,#bfefff 43% 57%,transparent 58%),#1b4e74',
+  'radial-gradient(circle,transparent 28%,#9fe6ff 30% 38%,transparent 40% 52%,#5fc4f0 54% 60%,transparent 62%),#173f63',
+  'linear-gradient(90deg,transparent 20%,#bfefff 21% 30%,transparent 31% 45%,#8fd8ff 46% 55%,transparent 56% 70%,#bfefff 71% 80%,transparent 81%),#163a5c',
+  'radial-gradient(circle,#fff6d6 0 14%,#ffd77a 15% 26%,transparent 28%),repeating-conic-gradient(#8fd8ff 0 6deg,transparent 6deg 30deg),#13304d'][i]}"></div>`;
+const qiBar = (x, y, w) => `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:5px;background:rgba(99,207,255,.18);border:1px solid rgba(99,207,255,.5)"><div style="width:70%;height:100%;background:linear-gradient(#a8e6ff,#3aa6e6)"></div></div>`;
+
+// H: arc beside the hotbar, wheel in the centre.
+world(document.getElementById('h'), [0, 1, 2, 3].map(i => {
+  const a = (-150 + i * 30) * Math.PI / 180, x = 600 + 80 * Math.cos(a), y = 420 + 80 * Math.sin(a), sel = i === 0;
+  return box(x + 14, y, sel ? 30 : 24, sel ? 30 : 24, icon(i), sel ? 'border-color:#63cfff;box-shadow:0 0 8px #63cfff' : 'opacity:.7');
+}).join('') + `<div class="sys" style="left:640px;top:396px;padding:1px 6px;font-size:9px"><span class="t">R : lancer</span></div>` + qiBar(233, 356, 140)
+  + `<svg style="position:absolute;left:279px;top:113px" width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="92" fill="rgba(7,18,31,.78)" stroke="rgba(99,207,255,.5)"/><circle cx="100" cy="100" r="34" fill="none" stroke="rgba(99,207,255,.35)"/>
+    ${[0, 1, 2, 3].map(i => `<line x1="${100 + 34 * Math.cos((i * 90 + 45) * Math.PI / 180)}" y1="${100 + 34 * Math.sin((i * 90 + 45) * Math.PI / 180)}" x2="${100 + 92 * Math.cos((i * 90 + 45) * Math.PI / 180)}" y2="${100 + 92 * Math.sin((i * 90 + 45) * Math.PI / 180)}" stroke="rgba(99,207,255,.35)"/>`).join('')}
+    <path d="M${100 + 34 * Math.cos(-135 * Math.PI / 180)} ${100 + 34 * Math.sin(-135 * Math.PI / 180)} L${100 + 92 * Math.cos(-135 * Math.PI / 180)} ${100 + 92 * Math.sin(-135 * Math.PI / 180)} A92 92 0 0 1 ${100 + 92 * Math.cos(-45 * Math.PI / 180)} ${100 + 92 * Math.sin(-45 * Math.PI / 180)} L${100 + 34 * Math.cos(-45 * Math.PI / 180)} ${100 + 34 * Math.sin(-45 * Math.PI / 180)} A34 34 0 0 0 ${100 + 34 * Math.cos(-135 * Math.PI / 180)} ${100 + 34 * Math.sin(-135 * Math.PI / 180)}" fill="rgba(99,207,255,.25)"/>
+    ${T.map(([n, q], i) => { const a = (i * 90 - 90) * Math.PI / 180; return `<text x="${100 + 62 * Math.cos(a)}" y="${100 + 62 * Math.sin(a)}" fill="${i === 3 ? '#ffd77a' : '#e6f6ff'}" font-size="8" text-anchor="middle" font-family="Consolas">${n.split(' ')[0]}</text><text x="${100 + 62 * Math.cos(a)}" y="${110 + 62 * Math.sin(a)}" fill="#9fe0ff" font-size="7" text-anchor="middle" font-family="Consolas">${q} QI</text>`; }).join('')}
+    <text x="100" y="104" fill="#8fb8d6" font-size="8" text-anchor="middle" font-family="Consolas">R long</text></svg>`);
+
+// I: status panel top left.
+world(document.getElementById('i'), box(12, 12, 236, 150, `<div class="tag">STATUS</div>
+  <div style="position:absolute;left:10px;top:14px;width:34px;height:34px;background:#d6a77f;border:1px solid rgba(99,207,255,.5)"><div style="position:absolute;left:0;right:0;top:0;height:10px;background:#2a2220"></div>
+    <div style="position:absolute;left:7px;top:16px;width:5px;height:4px;background:#26222a"></div><div style="position:absolute;left:21px;top:16px;width:5px;height:4px;background:#26222a"></div></div>
+  <div style="position:absolute;left:52px;top:14px;font-size:11px" class="t">ENZO <span class="m">· third-rate · stage 3</span></div>
+  ${[['HP', '#ff8c9a', .8, 'rgba(255,140,154,.2)'], ['QI', '#63cfff', .7, 'rgba(99,207,255,.18)'], ['SOUFFLE', '#c8f0d0', .5, 'rgba(200,240,208,.15)']].map(([l, c, f, b], i) =>
+    `<div class="m" style="position:absolute;left:52px;top:${30 + i * 11}px;font-size:8px">${l}</div><div style="position:absolute;left:92px;top:${32 + i * 11}px;width:132px;height:5px;background:${b}"><div style="width:${f * 100}%;height:5px;background:${c}"></div></div>`).join('')}
+  <div style="position:absolute;left:10px;right:10px;top:68px;height:1px;background:rgba(99,207,255,.3)"></div>
+  <div class="m" style="position:absolute;left:14px;top:76px;font-size:9px">▲ RIVER THRUST</div>
+  <div style="position:absolute;left:10px;right:10px;top:92px;height:28px;border:1px solid #63cfff;box-shadow:0 0 6px rgba(99,207,255,.4);padding:5px 8px" class="t"><b style="font-size:13px;letter-spacing:1px">WHIRLPOOL CUT</b><span style="position:absolute;right:8px;top:7px;font-size:10px;color:#9fe0ff">18 QI</span></div>
+  <div class="m" style="position:absolute;left:14px;top:128px;font-size:9px">▼ WATERFALL DESCENT</div>`));
+
+// J: skill boxes bottom right.
+world(document.getElementById('j'), [0, 1, 2].map(i => box(560 + i * 34, 360, 28, 28, icon(i) + (i === 1 ? '<div style="position:absolute;inset:0;background:rgba(2,8,14,.72);display:flex;align-items:center;justify-content:center;color:#e6f6ff;font-weight:bold;font-size:12px">6</div>' : ''))
+  + `<div class="m" style="position:absolute;left:${570 + i * 34}px;top:392px;font-size:9px">${'ZXC'[i]}</div>`).join('')
+  + `<svg style="position:absolute;left:666px;top:330px" width="72" height="72"><circle cx="36" cy="36" r="31" fill="none" stroke="rgba(255,215,122,.2)" stroke-width="4"/>
+     <circle cx="36" cy="36" r="31" fill="none" stroke="#ffd77a" stroke-width="4" stroke-dasharray="${2 * Math.PI * 31 * .65} 999" transform="rotate(-90 36 36)"/></svg>`
+  + box(682, 346, 40, 40, icon(3), 'border-color:rgba(255,215,122,.6)') + `<div class="g" style="position:absolute;left:695px;top:402px;font-size:9px">V · 65%</div>`
+  + `<svg style="position:absolute;left:339px;top:224px" width="80" height="30"><path d="M8 4 Q40 26 72 4" fill="none" stroke="rgba(99,207,255,.2)" stroke-width="4" stroke-linecap="round"/><path d="M8 4 Q30 20 52 13" fill="none" stroke="#63cfff" stroke-width="4" stroke-linecap="round"/></svg>`);
+
+// K: click chains under the crosshair.
+world(document.getElementById('k'), `<div style="position:absolute;left:330px;top:236px;width:100px;text-align:center;font-size:20px;letter-spacing:8px;font-weight:bold"><span class="c">◀</span><span class="c">▶</span><span style="color:rgba(230,246,255,.25)">◀</span></div>`
+  + box(285, 268, 190, 66, `<div class="m" style="position:absolute;left:8px;top:5px;font-size:9px">G D …</div>
+    ${[['G D G', 'RIVER THRUST', 1], ['G D D', 'WHIRLPOOL CUT', 1], ['D G G', 'WATERFALL DESCENT', .25]].map(([c, n, o], i) =>
+      `<div style="position:absolute;left:8px;top:${19 + i * 14}px;font-size:10px;opacity:${o}"><span class="c">${c}</span> <span class="t">${n}</span></div>`).join('')}`)
+  + `<svg style="position:absolute;left:339px;top:200px" width="80" height="30"><path d="M8 26 Q40 4 72 26" fill="none" stroke="rgba(99,207,255,.2)" stroke-width="3" stroke-linecap="round"/><path d="M8 26 Q28 10 50 9" fill="none" stroke="#63cfff" stroke-width="3" stroke-linecap="round"/></svg>`
+  + `<div class="sys alert" style="left:300px;top:110px;font-size:12px;padding:5px 12px"><span class="c">[!]</span> <span class="t">WHIRLPOOL CUT</span></div>`);
+</script>
+</body></html>
