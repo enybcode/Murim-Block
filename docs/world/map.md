@@ -169,6 +169,20 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 - Verified 30 Oct 2026: `gradlew build`, `runMapTour` 0 failures; the rice terraces shot shows the stepped paddies.
 - Left: real loess and limestone blocks.
 
+## Step 5: ambience (30 Oct 2026)
+
+- Mist: `client/world/MurimFog` closes the terrain fog to a share of its distance in the damp and high zones. The
+  sacred mountain keeps 0.38 (V1's cloud-sea peaks), the stone peaks 0.5, bamboo and gorges 0.55, the jungle and
+  tundra 0.6, down to 0.8 over the Gobi; other zones keep all of it. The share eases over about 4 s, so borders
+  never snap.
+- Particles (`PARTICLES` in `generate-biomes.cjs`, biome `particle` effect): drifting snow in the north and on the
+  peaks, white dust over the Gobi and the loess, floating spores in the bamboo, the stone peaks and the southern
+  forests.
+- Sounds: each biome keeps its template's vanilla music and moods. Zone sounds of our own (wind on the plateau,
+  birds, water) need original audio files, still to make.
+- Verified 30 Oct 2026: `gradlew build`, `runMapTour` 0 failures. The shots show the mist fading the far sacred
+  mountain spire and the spores in the bamboo.
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

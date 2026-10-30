@@ -25,7 +25,13 @@
     "water_color": 5017482,
     "water_fog_color": 329011,
     "grass_color": 6200906,
-    "foliage_color": 5148474
+    "foliage_color": 5148474,
+    "particle": {
+      "options": {
+        "type": "minecraft:spore_blossom_air"
+      },
+      "probability": 0.003
+    }
   },
   "features": [
     [],

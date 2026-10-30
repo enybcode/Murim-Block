@@ -60,7 +60,21 @@ const EXTRA = {
   rice_terraces: [[2, 'murimblock:rice_terrace']],
 };
 
-const rgb = hex =>parseInt(hex.slice(1), 16);
+// Ambient particles (docs/world/map.md, step 5): id: [particle, probability per block shown]. Drifting snow in the
+// north and on the peaks, dust over the Gobi and the loess, floating motes in the southern forests.
+const PARTICLES = {
+  frozen_tundra: ['snowflake', 0.004],
+  frozen_steppe: ['snowflake', 0.002],
+  western_snow_peaks: ['snowflake', 0.008],
+  cold_desert: ['white_ash', 0.006],
+  loess_plateau: ['white_ash', 0.003],
+  bamboo_mountains: ['spore_blossom_air', 0.003],
+  stone_peaks: ['spore_blossom_air', 0.002],
+  unnam_jungle: ['spore_blossom_air', 0.006],
+  subtropical_forest: ['spore_blossom_air', 0.004],
+};
+
+const rgb = hex => parseInt(hex.slice(1), 16);
 const write = (file, data) => {
   fs.mkdirSync(path.dirname(file), {recursive: true});
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
@@ -76,6 +90,9 @@ for (const [id, [template, temperature, downfall, colours]] of Object.entries(BI
   const effects = {...biome.effects, grass_color: grass, foliage_color: foliage, water_color: water,
     fog_color: fog, sky_color: sky};
   delete effects.grass_color_modifier;
+  if (PARTICLES[id]) {
+    effects.particle = {options: {type: "minecraft:" + PARTICLES[id][0]}, probability: PARTICLES[id][1]};
+  }
   biome.effects = effects;
   for (const [step, feature] of EXTRA[id] || []) {
     while (biome.features.length <= step) biome.features.push([]);

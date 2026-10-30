@@ -19,7 +19,13 @@
     "water_color": 4020843,
     "water_fog_color": 329011,
     "grass_color": 11117690,
-    "foliage_color": 8356966
+    "foliage_color": 8356966,
+    "particle": {
+      "options": {
+        "type": "minecraft:white_ash"
+      },
+      "probability": 0.006
+    }
   },
   "features": [
     [],
