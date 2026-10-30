@@ -132,6 +132,8 @@ public final class GuiScreenshots {
                     // A fresh draw every run, so the Destiny window is shot whatever the world remembers.
                     MinecraftServer server = mc.getSingleplayerServer();
                     UUID id = mc.player.getUUID();
+                    // Every house hands down a test inheritance this run, to check the grants (checkInheritance).
+                    com.murimblock.family.Inheritance.override(TEST_INHERITANCE);
                     server.execute(() -> server.getCommands().performPrefixedCommand(
                             server.getPlayerList().getPlayer(id).createCommandSourceStack().withPermission(4), "family reset"));
                     step = Step.DESTINY;
@@ -153,6 +155,9 @@ public final class GuiScreenshots {
                 }
             }
             case MEDITATION -> {
+                if (frames == 20) {
+                    checkInheritance(mc, true);
+                }
                 if (++frames == PLATFORM_FRAMES) {
                     startMeditation(mc);
                 }
@@ -236,6 +241,9 @@ public final class GuiScreenshots {
                 }
             }
             case CONTROLS -> {
+                if (frames == 0) {
+                    checkInheritance(mc, false);
+                }
                 if (++frames == SETTLE_FRAMES / 2) {
                     mc.screen.mouseScrolled(mc.screen.width / 2.0, mc.screen.height / 2.0, 0, -10000);
                     for (net.minecraft.client.KeyMapping key : mc.options.keyMappings) {
@@ -262,6 +270,31 @@ public final class GuiScreenshots {
             case DONE -> {
             }
         }
+    }
+
+    private static final com.murimblock.family.Inheritance TEST_INHERITANCE = new com.murimblock.family.Inheritance(false,
+            List.of(new com.murimblock.family.Inheritance.Stat("minecraft:generic.armor", 2, false)),
+            List.of(new com.murimblock.family.Inheritance.Gift("minecraft:bread", 3)), "test_art");
+
+    /** Logs PASS or FAIL: the test inheritance granted after ACCEPT, or its bonus taken back once the real ones return. */
+    private static void checkInheritance(Minecraft mc, boolean granted) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            com.murimblock.family.FamilyState state = com.murimblock.family.FamilyEvents.state(player);
+            if (!granted) {
+                com.murimblock.family.Inheritance.override(null);
+                com.murimblock.family.InheritanceGrants.apply(player, state);
+            }
+            boolean modifier = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR)
+                    .getModifier(com.murimblock.family.InheritanceGrants.MODIFIER) != null;
+            int bread = player.getInventory().countItem(net.minecraft.world.item.Items.BREAD);
+            boolean pass = granted ? modifier && bread >= 3 && state.family().id().equals(state.giftsFor()) : !modifier;
+            Murimblock.LOGGER.info("GUI shots: inheritance {} {} (house {}, armor modifier {}, bread {}, armor {})",
+                    granted ? "granted" : "taken back", pass ? "PASS" : "FAIL", state.family().id(), modifier, bread,
+                    player.getArmorValue());
+        });
     }
 
     private static void openWorld(Minecraft mc) {

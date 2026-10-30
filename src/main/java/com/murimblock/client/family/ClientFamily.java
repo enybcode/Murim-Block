@@ -3,11 +3,15 @@ package com.murimblock.client.family;
 import com.murimblock.Murimblock;
 import com.murimblock.family.Family;
 import com.murimblock.family.FamilyEvents;
+import com.murimblock.family.Inheritance;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -78,7 +82,7 @@ public final class ClientFamily {
         pendingOpen = false;
     }
 
-    /** What hovering the house shows: its name, rarity, seat and inheritance (every inheritance is still coming soon). */
+    /** What hovering the house shows: its name, rarity, seat and inheritance. */
     public static List<Component> tooltip(Family house) {
         List<Component> lines = new ArrayList<>();
         lines.add(Component.translatable(house.nameKey()).withStyle(s -> s.withColor(house.rarity.text).withBold(true)));
@@ -88,10 +92,46 @@ public final class ClientFamily {
             lines.add(Component.translatable("family.murimblock.tooltip.seat",
                     Component.translatable("family.murimblock.seat." + house.seat)).withStyle(ChatFormatting.GRAY));
         }
-        lines.add(Component.translatable(house.rarity.inheritanceKey()).copy().withStyle(ChatFormatting.AQUA));
-        if (house.great()) {
-            lines.add(Component.translatable("family.murimblock.coming_soon").withStyle(ChatFormatting.YELLOW));
+        for (Component line : inheritance(house)) {
+            lines.add(line.copy().withStyle(line.getStyle().getColor() == null ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         }
         return lines;
+    }
+
+    /**
+     * The house's inheritance, one line per gift: its rarity's promise then "Coming soon" (in yellow) while it is not
+     * designed, "Nothing" for common houses, else each bonus, item and art.
+     */
+    public static List<Component> inheritance(Family house) {
+        Inheritance inheritance = Inheritance.of(house);
+        List<Component> lines = new ArrayList<>();
+        if (inheritance.comingSoon()) {
+            lines.add(Component.translatable(house.rarity.inheritanceKey()));
+            lines.add(Component.translatable("family.murimblock.coming_soon").withStyle(ChatFormatting.YELLOW));
+            return lines;
+        }
+        if (inheritance.empty()) {
+            lines.add(Component.translatable(house.rarity.inheritanceKey()));
+        }
+        for (Inheritance.Stat stat : inheritance.stats()) {
+            Component name = BuiltInRegistries.ATTRIBUTE.getOptional(ResourceLocation.parse(stat.attribute()))
+                    .<Component>map(a -> Component.translatable(a.getDescriptionId()))
+                    .orElse(Component.literal(stat.attribute()));
+            String amount = stat.multiply() ? Math.round(stat.amount() * 100) + "%" : trim(stat.amount());
+            lines.add(Component.translatable("family.murimblock.gift.stat", (stat.amount() < 0 ? "" : "+") + amount, name));
+        }
+        for (Inheritance.Gift gift : inheritance.items()) {
+            Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(gift.item()));
+            lines.add(Component.translatable("family.murimblock.gift.item", gift.count(), item.getDescription()));
+        }
+        if (inheritance.art() != null) {
+            lines.add(Component.translatable("family.murimblock.gift.art",
+                    Component.translatable("art.murimblock." + inheritance.art())));
+        }
+        return lines;
+    }
+
+    private static String trim(double v) {
+        return v == Math.rint(v) ? Long.toString((long) v) : Double.toString(v);
     }
 }
