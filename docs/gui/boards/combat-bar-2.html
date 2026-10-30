@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat — autres pistes</title>
+<style>
+/* Four more directions for the combat HUD (the first three are in combat-bar.html). */
+:root { --panel: rgba(7, 18, 31, .88); --cyan: #63cfff; --soft: rgba(99, 207, 255, .45); --faint: rgba(99, 207, 255, .2);
+  --corner: #d2f3ff; --text: #e6f6ff; --muted: #8fb8d6; --warn: #ff8c9a; --gold: #ffd77a; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: var(--muted); }
+.row { display: grid; grid-template-columns: 790px 1fr; gap: 22px; padding: 12px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; }
+h2 { margin: 0 0 8px; font-size: 20px; color: var(--cyan); } h2 small { color: var(--muted); font-size: 14px; font-weight: 400; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; } .plus { color: #9fe8b0; } .moins { color: var(--warn); }
+
+.screen { position: relative; width: 758px; height: 426px; overflow: hidden; border-radius: 4px; font-family: Consolas, monospace;
+  background: linear-gradient(#6f9fd6 0, #a9c8e8 46%, #5d8a3e 46.2%, #4c7633 60%, #3f6a2c 100%); }
+.hill { position: absolute; bottom: 54%; height: 60px; border-radius: 50% 50% 0 0; background: #3d6a49; }
+.mob { position: absolute; left: 440px; top: 150px; width: 38px; height: 100px; }
+.mob div { position: absolute; }
+.lock i { position: absolute; width: 10px; height: 10px; border: 0 solid var(--warn); }
+.cross { position: absolute; left: 375px; top: 209px; width: 8px; height: 8px; }
+.cross:before, .cross:after { content: ""; position: absolute; background: #fff; opacity: .85; }
+.cross:before { left: 3px; top: -3px; width: 2px; height: 14px; } .cross:after { left: -3px; top: 3px; width: 14px; height: 2px; }
+.hotbar { position: absolute; left: 233px; top: 388px; width: 292px; height: 34px; background: rgba(40, 40, 40, .8); border: 3px solid #777; }
+.hotbar:after { content: ""; position: absolute; inset: 3px; background: repeating-linear-gradient(90deg, #3c3c3c 0 29px, #8b8b8b 29px 32px); }
+.hearts { position: absolute; left: 233px; top: 366px; font-size: 15px; color: #e33; letter-spacing: -2px; text-shadow: 1px 1px 0 #400; }
+.food { position: absolute; left: 400px; top: 366px; font-size: 15px; color: #c77b2a; letter-spacing: -2px; text-shadow: 1px 1px 0 #402; }
+
+.sys { position: absolute; background: var(--panel); border: 1px solid var(--soft); box-shadow: 0 0 6px var(--faint), inset 0 0 4px var(--faint); }
+.sys:before, .sys:after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--corner); }
+.sys:before { left: -1px; top: -1px; border-left-width: 2px; border-top-width: 2px; }
+.sys:after { right: -1px; bottom: -1px; border-right-width: 2px; border-bottom-width: 2px; }
+.t { color: var(--text); } .m { color: var(--muted); } .c { color: var(--cyan); } .g { color: var(--gold); } .w { color: var(--warn); }
+.tag { position: absolute; top: -9px; left: 10px; padding: 0 6px; background: var(--cyan); color: #04101d; font-weight: bold; font-size: 10px; letter-spacing: 1px; line-height: 15px; }
+
+/* A: System window, bottom right. */
+.skills { right: 14px; bottom: 16px; width: 214px; padding: 14px 10px 8px; font-size: 11px; }
+.skill { position: relative; height: 26px; margin-bottom: 5px; padding-left: 26px; }
+.skill .k { position: absolute; left: 0; top: 2px; width: 19px; height: 19px; border: 1px solid var(--soft); text-align: center; line-height: 18px; color: var(--text); font-weight: bold; }
+.skill .n { color: var(--text); letter-spacing: .5px; }
+.skill .q { position: absolute; right: 0; top: 0; color: #9fe0ff; }
+.skill .cd { position: absolute; left: 26px; right: 0; bottom: 3px; height: 3px; background: rgba(99, 207, 255, .15); }
+.skill .cd i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cyan); box-shadow: 0 0 4px var(--cyan); }
+.qiline { position: relative; height: 8px; margin: 0 0 10px; background: rgba(99, 207, 255, .12); border: 1px solid var(--soft); }
+.qiline i { position: absolute; left: 0; top: 0; bottom: 0; width: 70%; background: linear-gradient(#a8e6ff, #3aa6e6); }
+.alert { position: absolute; padding: 5px 12px 5px; font-size: 12px; letter-spacing: 1px; }
+
+/* B: around the crosshair. */
+.ring { position: absolute; left: 329px; top: 163px; width: 100px; height: 100px; }
+.pip { position: absolute; width: 22px; height: 22px; transform: rotate(45deg); background: var(--panel); border: 1px solid var(--soft); }
+.pip span { position: absolute; inset: 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: var(--text); }
+
+/* C: the meridian. */
+.meridian { position: absolute; left: 22px; top: 70px; width: 240px; height: 280px; }
+.node { position: absolute; left: 0; white-space: nowrap; display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.node .o { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--cyan); background: var(--panel); box-shadow: 0 0 8px var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; font-size: 10px; }
+</style></head><body>
+<div class="top"><h1>Barre de combat — quatre autres pistes</h1>
+<p>Style System V2 (cyan, fenêtres sombres), avec plus de murim. Hotbar vanilla gardée. Touches 1–4 = techniques de l'art actif (4 = ultime). Valeurs fictives.</p></div>
+<div class="row"><div class="card"><div class="screen" id="d"></div></div>
+  <div class="card"><h2>D · Le Bagua <small>— coin bas gauche</small></h2><ul>
+    <li>Un <b>octogone des huit trigrammes</b> tracé en lignes cyan. Au centre, un <b>taiji</b> qui se remplit de Qi.</li>
+    <li>Les 4 techniques sur 4 côtés (haut, droite, bas, gauche = 1, 2, 3, 4) ; chaque côté est un trigramme qui <b>se retrace trait par trait</b> pendant la recharge.</li>
+    <li>Lancer : le taiji tourne d'un huitième, le côté flashe, le nom s'écrit une seconde à côté.</li>
+    <li class="plus">+ très murim, compact, élégant.</li><li class="moins">− les trigrammes ne disent pas le nom : il faut apprendre ses touches.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="e"></div></div>
+  <div class="card"><h2>E · Les talismans <small>— bord droit</small></h2><ul>
+    <li>4 <b>talismans</b> verticaux accrochés au bord droit, en fenêtres System, nom écrit de haut en bas.</li>
+    <li>Lancer : le talisman <b>brûle</b> de bas en haut (bord incandescent) puis se <b>réécrit</b> pendant la recharge.</li>
+    <li>Sans Qi : les lettres deviennent rose pâle. L'ultime : talisman doré, plus long.</li>
+    <li>Qi : une fine colonne à gauche des talismans.</li>
+    <li class="plus">+ fort visuellement, les noms restent lisibles.</li><li class="moins">− prend la hauteur du bord droit.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="f"></div></div>
+  <div class="card"><h2>F · La ligne System <small>— juste au-dessus de la hotbar</small></h2><ul>
+    <li>Une <b>seule ligne fine</b> au-dessus des cœurs : le trait est le Qi lui-même.</li>
+    <li>4 <b>puces hexagonales</b> posées sur le trait à la place de leur coût ; en recharge l'hexagone se vide côté par côté.</li>
+    <li>Une puce <b>au-delà du bout du trait</b> coûte plus que le Qi restant : on voit d'un coup d'œil ce qu'on peut payer.</li>
+    <li>Le nom de la technique s'affiche une seconde au lancer.</li>
+    <li class="plus">+ discret, le coût se lit sans chiffres.</li><li class="moins">− petit, peu spectaculaire.</li></ul></div></div>
+<div class="row"><div class="card"><div class="screen" id="g"></div></div>
+  <div class="card"><h2>G · Le pinceau <small>— colonne à droite du viseur</small></h2><ul>
+    <li>Les noms des techniques écrits en <b>colonnes verticales</b>, comme un rouleau, en lettres System.</li>
+    <li>Prête : <b>pleine d'encre</b> et lumineuse. En recharge, le nom <b>s'efface</b> puis se repeint de haut en bas.</li>
+    <li>Le Qi : un <b>trait de pinceau</b> sous les colonnes, épais quand plein, qui s'amincit.</li>
+    <li>Pas de cases, pas d'icônes.</li>
+    <li class="plus">+ unique, se marie avec le texte System.</li><li class="moins">− lisibilité à vérifier en plein combat.</li></ul></div></div>
+<script>
+function world(el, extra) {
+  el.innerHTML = `<div class="hill" style="left:-30px;width:330px"></div><div class="hill" style="left:420px;width:400px;background:#365f43"></div>
+    <div class="mob"><div style="left:9px;top:0;width:20px;height:20px;background:#7f9a6a"></div>
+    <div style="left:12px;top:8px;width:3px;height:3px;background:#e03a2a"></div><div style="left:22px;top:8px;width:3px;height:3px;background:#e03a2a"></div>
+    <div style="left:7px;top:20px;width:24px;height:34px;background:#3c4f62"></div><div style="left:0;top:20px;width:7px;height:32px;background:#7f9a6a"></div>
+    <div style="left:31px;top:20px;width:7px;height:32px;background:#7f9a6a"></div><div style="left:7px;top:54px;width:11px;height:44px;background:#4f4a41"></div>
+    <div style="left:20px;top:54px;width:11px;height:44px;background:#4f4a41"></div></div>
+    <div class="lock" style="position:absolute;left:428px;top:140px;width:62px;height:120px">
+    <i style="left:0;top:0;border-left-width:2px;border-top-width:2px"></i><i style="right:0;top:0;border-right-width:2px;border-top-width:2px"></i>
+    <i style="left:0;bottom:0;border-left-width:2px;border-bottom-width:2px"></i><i style="right:0;bottom:0;border-right-width:2px;border-bottom-width:2px"></i></div>
+    <div class="cross"></div><div class="hearts">♥♥♥♥♥♥♥♥♥♡</div><div class="food">◆◆◆◆◆◆◆◆◆◆</div><div class="hotbar"></div>` + extra;
+}
+const T = [['1', 'RIVER THRUST', 10, 'on'], ['2', 'WHIRLPOOL CUT', 18, 'cd'], ['3', 'WATERFALL DESCENT', 25, 'noqi'], ['4', 'THOUSAND STREAMS', 60, 'ult']];
+// D: the bagua.
+const oct = (cx, cy, r) => Array.from({length: 8}, (_, i) => { const a = (i * 45 + 22.5) * Math.PI / 180; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(' ');
+const tri = (x, y, rot, lines, color, op) => `<g transform="translate(${x} ${y}) rotate(${rot})" opacity="${op}">${lines.map((l, i) => l
+  ? `<rect x="-12" y="${-7 + i * 6}" width="24" height="3" fill="${color}"/>`
+  : `<rect x="-12" y="${-7 + i * 6}" width="10" height="3" fill="${color}"/><rect x="2" y="${-7 + i * 6}" width="10" height="3" fill="${color}"/>`).join('')}</g>`;
+world(document.getElementById('d'), `<svg style="position:absolute;left:14px;top:250px;overflow:visible" width="160" height="160" viewBox="0 0 160 160">
+  <polygon points="${oct(80, 80, 70)}" fill="rgba(7,18,31,.85)" stroke="rgba(99,207,255,.55)" stroke-width="1.5"/>
+  <polygon points="${oct(80, 80, 40)}" fill="none" stroke="rgba(99,207,255,.25)"/>
+  ${tri(80, 24, 0, [1, 1, 1], '#63cfff', 1)}${tri(136, 80, 90, [1, 0, 1], '#63cfff', .35)}
+  ${tri(80, 136, 0, [0, 0, 1], '#ff8c9a', .9)}${tri(24, 80, 90, [0, 1, 0], '#ffd77a', .4)}
+  <text x="80" y="9" fill="#e6f6ff" font-size="10" text-anchor="middle" font-family="Consolas">1</text>
+  <text x="156" y="84" fill="#e6f6ff" font-size="10" font-family="Consolas">2</text>
+  <text x="80" y="162" fill="#ff8c9a" font-size="10" text-anchor="middle" font-family="Consolas">3</text>
+  <text x="-4" y="84" fill="#ffd77a" font-size="10" font-family="Consolas">4</text>
+  <circle cx="80" cy="80" r="26" fill="#0b1a2a" stroke="#63cfff" stroke-width="1.5"/>
+  <path d="M80 54 A26 26 0 0 1 80 106 A13 13 0 0 1 80 80 A13 13 0 0 0 80 54" fill="#8fe0ff"/>
+  <circle cx="80" cy="67" r="4" fill="#0b1a2a"/><circle cx="80" cy="93" r="4" fill="#8fe0ff"/></svg>
+  <div class="m" style="position:absolute;left:186px;top:286px;font-size:10px">QI 84 / 120</div>
+  <div class="sys" style="left:186px;top:262px;padding:4px 8px;font-size:11px"><span class="t">RIVER THRUST</span></div>`);
+// E: the talismans.
+world(document.getElementById('e'), `<div style="position:absolute;right:154px;top:54px;width:5px;height:170px;background:rgba(99,207,255,.15)">
+  <div style="position:absolute;bottom:0;width:5px;height:70%;background:linear-gradient(#cdf3ff,#3aa6e6);box-shadow:0 0 6px #63cfff"></div></div>
+  ${T.map(([k, n, q, s], i) => { const ult = s === 'ult'; const h = ult ? 190 : 150; const x = 14 + i * 34;
+    return `<div class="sys" style="right:${x}px;top:${ult ? 40 : 54}px;width:28px;height:${h}px;${ult ? 'border-color:rgba(255,215,122,.6);' : ''}${s === 'cd' ? 'background:linear-gradient(0deg, rgba(7,18,31,.88) 45%, rgba(7,18,31,.3) 45%);' : ''}">
+      <div style="position:absolute;top:4px;left:0;right:0;text-align:center;font-size:10px;font-weight:bold;color:${ult ? 'var(--gold)' : 'var(--text)'}">${k}</div>
+      <div style="position:absolute;top:20px;left:0;right:0;writing-mode:vertical-rl;font-size:10px;letter-spacing:1px;line-height:26px;color:${s === 'noqi' ? 'rgba(255,140,154,.75)' : ult ? 'rgba(255,215,122,.7)' : s === 'cd' ? 'rgba(230,246,255,.35)' : 'var(--text)'}">${n}</div>
+      ${s === 'cd' ? '<div style="position:absolute;left:-1px;right:-1px;bottom:44%;height:2px;background:#cdf3ff;box-shadow:0 0 6px #63cfff,0 0 12px #ffd77a"></div>' : ''}
+      <div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:9px;color:#9fe0ff">${q}</div></div>`; }).join('')}`);
+// F: the System line.
+const hex = s => `<svg width="26" height="28" viewBox="0 0 26 28"><polygon points="13,1 25,7.5 25,20.5 13,27 1,20.5 1,7.5" fill="rgba(7,18,31,.9)" stroke="${s}" stroke-width="2"/></svg>`;
+world(document.getElementById('f'), `<div style="position:absolute;left:233px;top:350px;width:292px;height:3px;background:rgba(99,207,255,.18)"></div>
+  <div style="position:absolute;left:233px;top:350px;width:205px;height:3px;background:#8fe0ff;box-shadow:0 0 6px #63cfff"></div>
+  <div class="m" style="position:absolute;left:233px;top:334px;font-size:10px">QI 84</div>
+  ${[[290, '1', '#63cfff', 1], [340, '2', 'rgba(99,207,255,.35)', .7], [395, '3', '#63cfff', 1], [480, '4', 'rgba(255,215,122,.6)', .75]].map(([x, k, c, o]) =>
+    `<div style="position:absolute;left:${x}px;top:338px;opacity:${o}">${hex(c)}<span style="position:absolute;left:0;right:0;top:6px;text-align:center;font-size:11px;font-weight:bold;color:${k === '4' ? 'var(--gold)' : 'var(--text)'}">${k}</span></div>`).join('')}
+  <div class="w" style="position:absolute;left:452px;top:322px;font-size:9px">trop cher</div>
+  <div class="sys" style="left:268px;top:296px;padding:2px 8px;font-size:10px"><span class="t">1 · RIVER THRUST</span></div>`);
+// G: the brush columns.
+world(document.getElementById('g'), `<div style="position:absolute;left:540px;top:60px;display:flex;flex-direction:row-reverse;gap:16px">
+  ${T.map(([k, n, q, s]) => `<div style="text-align:center"><div style="font-size:11px;font-weight:bold;color:${s === 'ult' ? 'var(--gold)' : 'var(--cyan)'}">${k}</div>
+    <div style="writing-mode:vertical-rl;font-size:15px;letter-spacing:3px;margin:6px auto 0;font-weight:bold;
+      ${s === 'on' ? 'color:#e6f6ff;text-shadow:0 0 6px #63cfff' : s === 'cd' ? 'color:transparent;background:linear-gradient(#e6f6ff 40%, rgba(230,246,255,.15) 40%);-webkit-background-clip:text;background-clip:text' : s === 'noqi' ? 'color:rgba(255,140,154,.75)' : 'color:rgba(255,215,122,.5)'}">${n}</div></div>`).join('')}</div>
+  <svg style="position:absolute;left:540px;top:326px" width="170" height="20"><path d="M2 10 C30 1, 90 1, 118 10 C90 18, 30 18, 2 10" fill="#8fe0ff" opacity=".9"/><path d="M118 10 L166 10" stroke="rgba(99,207,255,.25)" stroke-width="2"/></svg>
+  <div class="m" style="position:absolute;left:540px;top:348px;font-size:10px">QI</div>`);
+</script>
+</body></html>
