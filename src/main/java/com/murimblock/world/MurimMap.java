@@ -89,25 +89,79 @@ public final class MurimMap {
         return relief;
     }
 
+    /** The lattice the biome blend is sampled on, then interpolated between (blocks). */
+    private static final int LATTICE = 48;
+    private static final int LATTICE_CACHE = 4096;
+    private static final ThreadLocal<Object[]> LATTICE_VALUES =
+            ThreadLocal.withInitial(() -> new Object[] {new long[LATTICE_CACHE], new double[LATTICE_CACHE][]});
+
+    /**
+     * The biomes' relief blended around this column: {height, weight, jaggedness, loess share, terrace share}. The
+     * blend of point samples jumps whenever a sample crosses a border, so it is taken on a lattice and interpolated
+     * between: the ground then slopes smoothly from one biome's relief to the next, with no steps along the borders.
+     */
+    private static double[] blended(double x, double z) {
+        double fx = x / LATTICE;
+        double fz = z / LATTICE;
+        int i = (int) Math.floor(fx);
+        int j = (int) Math.floor(fz);
+        double u = fx - i;
+        double v = fz - j;
+        double[] a = latticeValue(i, j);
+        double[] b = latticeValue(i + 1, j);
+        double[] c = latticeValue(i, j + 1);
+        double[] d = latticeValue(i + 1, j + 1);
+        double[] out = new double[a.length];
+        for (int k = 0; k < out.length; k++) {
+            out[k] = (a[k] * (1 - u) + b[k] * u) * (1 - v) + (c[k] * (1 - u) + d[k] * u) * v;
+        }
+        return out;
+    }
+
+    private static double[] latticeValue(int i, int j) {
+        Object[] cache = LATTICE_VALUES.get();
+        long[] keys = (long[]) cache[0];
+        double[][] values = (double[][]) cache[1];
+        long key = (long) i << 32 | j & 0xffffffffL;
+        int slot = (int) ((i * 73856093L ^ j * 19349663L) & (LATTICE_CACHE - 1));
+        if (values[slot] != null && keys[slot] == key) {
+            return values[slot];
+        }
+        // Nine samples: the point and eight around it, BLEND away.
+        double x = (double) i * LATTICE;
+        double z = (double) j * LATTICE;
+        double[] sum = new double[5];
+        int n = 0;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                MurimBiome b = biome(x + dx * BLEND, z + dz * BLEND);
+                double[] r = RELIEF[b.ordinal()];
+                sum[0] += r[0];
+                sum[1] += r[1];
+                sum[2] += r[2];
+                sum[3] += b == MurimBiome.LOESS_PLATEAU ? 1 : 0;
+                sum[4] += b == MurimBiome.RICE_TERRACES ? 1 : 0;
+                n++;
+            }
+        }
+        for (int k = 0; k < sum.length; k++) {
+            sum[k] /= n;
+        }
+        keys[slot] = key;
+        values[slot] = sum;
+        return sum;
+    }
+
     private static Relief computeRelief(double x, double z) {
         double wx = x + dwx(x, z);
         double wz = z + dwz(x, z);
         MurimBiome here = biomeWarped(wx, wz);
-        double height = 0;
-        double weight = 0;
-        double jag = 0;
-        double[][] around = {{0, 0}, {BLEND, 0}, {-BLEND, 0}, {0, BLEND}, {0, -BLEND}};
-        double loess = 0;
-        double terraces = 0;
-        for (double[] o : around) {
-            MurimBiome b = o[0] == 0 && o[1] == 0 ? here : biome(x + o[0], z + o[1]);
-            double[] r = RELIEF[b.ordinal()];
-            loess += b == MurimBiome.LOESS_PLATEAU ? 1.0 / around.length : 0;
-            terraces += b == MurimBiome.RICE_TERRACES ? 1.0 / around.length : 0;
-            height += r[0] / around.length;
-            weight += r[1] / around.length;
-            jag += r[2] / around.length;
-        }
+        double[] base = blended(x, z);
+        double height = base[0];
+        double weight = base[1];
+        double jag = base[2];
+        double loess = base[3];
+        double terraces = base[4];
         if (here == MurimBiome.OCEAN) {
             return new Relief(height, weight, jag);
         }
@@ -118,19 +172,25 @@ public final class MurimMap {
                 pass = Math.max(pass, Math.exp(-sq((wx - p) / 120)));
             }
             double f = Math.exp(-sq((wz + 2100) / 115)) * (1 - .92 * pass) * (.75 + .5 * noise(wx / 220, .5, 3));
-            height += f * (wx > 0 && wx < 2300 ? 16 : 34);
+            // Lower above the central plains, easing in and out over 300 blocks.
+            double plains = smooth(wx / 300) * smooth((2300 - wx) / 300);
+            height += f * (34 - 18 * plains);
             weight = Math.max(weight, Math.min(1, f) * .95);
             jag *= 1 - Math.min(1, f);
         }
         // Along Z 0: a wooded chain west of the Hubei, low hills east of it.
         if (wz > -600 && wz < 600) {
-            double f = Math.exp(-sq(wz / (wx < -200 ? 210 : 160)));
-            height += wx < -200 ? 55 * f * (.7 + .6 * noise(wx / 320, 1.5, 5)) : wx < 2100 ? 18 * f : 0;
+            // West of X -200 the high chain, east of it the hills, easing into each other over 400 blocks and
+            // fading out toward the delta.
+            double west = smooth((-wx - 200) / 400 + .5);
+            double f = Math.exp(-sq(wz / (160 + 50 * west))) * (west + (1 - west) * smooth((2300 - wx) / 400));
+            height += f * (18 + (55 * (.7 + .6 * noise(wx / 320, 1.5, 5)) - 18) * west);
             weight = Math.max(weight, f * .95);
         }
         // The gorge walls between the Sichuan and the Hubei.
-        if (wz > 0 && wz < 2300 && wx > -700 && wx < 300) {
-            double f = Math.exp(-sq((wx + 200) / 170));
+        if (wz > -300 && wz < 2600 && wx > -700 && wx < 300) {
+            // Fading in and out over 300 blocks at both ends, so the walls never end in a cliff.
+            double f = Math.exp(-sq((wx + 200) / 170)) * smooth((wz + 300) / 300) * smooth((2600 - wz) / 300);
             height += 85 * f;
             weight = Math.max(weight, f * .95);
             jag *= 1 - f;
@@ -302,7 +362,8 @@ public final class MurimMap {
         }
         if (wz < 2300) {
             if (wx < -200) {
-                double ex = (wx + 2500) / 1750;
+                // A rim of bamboo mountains all round, the snow peaks side included.
+                double ex = (wx + 2450) / 1600;
                 double ez = (wz - 1100) / 760;
                 return ex * ex + ez * ez < 1 ? MurimBiome.RED_BASIN : MurimBiome.BAMBOO_MOUNTAINS;
             }

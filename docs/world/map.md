@@ -183,6 +183,27 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 - Verified 30 Oct 2026: `gradlew build`, `runMapTour` 0 failures. The shots show the mist fading the far sacred
   mountain spire and the spores in the bamboo.
 
+## Biome borders checked (30 Oct 2026)
+
+- `MurimBordersTest` scans the map. Every biome is one piece (beaches aside, cut-off corners over 60 pixels allowed),
+  and the wanted ground never drops 8 blocks per block or more. The patches, the neighbouring pairs and the steepest
+  columns go to `build/murim-map/borders.txt`.
+- Fixed:
+  - **The blend stepped.** Five point samples 170 apart made the ground jump whenever a sample crossed a border:
+    up to 27 blocks, in cliffs parallel to the borders. The blend is now taken from nine samples on a 48-block
+    lattice, interpolated between (`blended`).
+  - **Features ended in cliffs.** The gorge walls stopped dead at Z 0 and 2300 (85 blocks); the Z 0 chain switched
+    from peaks to hills at X -200; the north wall's height switched over the plains. All of them now ease over
+    300-400 blocks.
+  - **A stray bamboo speck** between the red basin and the snow peaks. The red basin is now a little smaller, with
+    bamboo mountains all round it.
+- What remains steep is meant: the great river's gorge walls and the snow peaks falling into the western sea.
+- Verified 30 Oct 2026:
+  - the steep columns went from 3870 to 1112;
+  - `gradlew build` (8 map tests);
+  - `runMapTour` 0 failures, with six border views: snow peaks / Qinghai, steppe / Gobi, loess / Sichuan, red basin
+    rim, Hubei / delta, stone forest / jungle.
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

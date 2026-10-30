@@ -54,7 +54,13 @@ public final class MapTour {
             new MurimMap.Spot("great river delta", null, 3300, 2050),
             new MurimMap.Spot("great lake", null, 1250, 2350),
             new MurimMap.Spot("Qinghai salt lake", null, -3500, -1100),
-            new MurimMap.Spot("loess ravines", null, -600, -1600));
+            new MurimMap.Spot("loess ravines", null, -600, -1600),
+            new MurimMap.Spot("border snow peaks and Qinghai", null, -4300, -900),
+            new MurimMap.Spot("border steppe and Gobi", null, -1000, -3000),
+            new MurimMap.Spot("border loess and Sichuan", null, -1000, 0),
+            new MurimMap.Spot("border red basin rim", null, -2450, 380),
+            new MurimMap.Spot("border Hubei and delta", null, 2100, 1900),
+            new MurimMap.Spot("border stone forest and jungle", null, -1500, 3500));
 
     private static boolean started;
     private static int frames = -1;
