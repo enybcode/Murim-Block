@@ -2,6 +2,7 @@ package com.murimblock.client.gui.page;
 
 import com.murimblock.client.MurimClientConfig;
 import com.murimblock.client.gui.SubTabs;
+import com.murimblock.client.gui.PixelArt;
 import com.murimblock.client.gui.SystemButton;
 import com.murimblock.client.gui.SystemLayout.Rect;
 import com.murimblock.client.gui.SystemPageView;
@@ -174,7 +175,7 @@ public final class InfoPage implements SystemPageView {
                     r.width() - 34);
             int h = lines.size() * 10 + 8;
             Rect box = new Rect(x, bottom - h, r.width() - 20, h);
-            g.renderOutline(box.x(), box.y(), box.width(), box.height(), SystemTheme.withAlpha(SystemTheme.WARNING, 0x80));
+            PixelArt.frame(g, box.x(), box.y(), box.width(), box.height(), 2, PixelArt.ROSE, 0xE62A0F18, 0);
             int ly = box.y() + 5;
             for (FormattedCharSequence line : lines) {
                 g.drawString(font, line, box.x() + 7, ly, 0xFFFFC4CC, false);
@@ -197,7 +198,7 @@ public final class InfoPage implements SystemPageView {
             if (y + LOG_ROW > r.bottom()) {
                 break;
             }
-            g.renderOutline(r.x(), y, r.width(), LOG_ROW, SystemTheme.CYAN_FAINT);
+            PixelArt.frame(g, r.x(), y, r.width(), LOG_ROW, 1, PixelArt.MID, 0xD20F2944, 0);
             int ty = y + (LOG_ROW - 8) / 2;
             g.drawString(font, "[!]", r.x() + 7, ty, SystemTheme.CYAN, false);
             SystemTheme.spaced(g, font, entry.kindName().getString().toUpperCase(Locale.ROOT), kindX, ty, SystemTheme.CYAN, 1);
@@ -214,7 +215,7 @@ public final class InfoPage implements SystemPageView {
         int y = c[0].y() + HEADER;
         for (Control control : InfoData.controls()) {
             int kw = Math.max(20, font.width(control.key()) + 10);
-            g.renderOutline(c[0].x(), y + 1, kw, 14, SystemTheme.CYAN);
+            PixelArt.frame(g, c[0].x(), y + 1, kw, 14, 1, PixelArt.CYAN, PixelArt.DEEP, 0);
             g.drawCenteredString(font, control.key(), c[0].x() + kw / 2, y + 4, 0xFFD6F4FF);
             g.drawString(font, control.action(), c[0].x() + 38 + Math.max(0, kw - 30), y + 4, 0xFFD5EFFF, false);
             g.fill(c[0].x(), y + CONTROL_ROW, c[0].right(), y + CONTROL_ROW + 1, SystemTheme.withAlpha(SystemTheme.CYAN, 0x20));

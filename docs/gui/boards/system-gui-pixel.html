@@ -35,12 +35,12 @@ ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
 </div>
 
 <div class="row" style="grid-template-columns: 1fr 1fr">
-  <div class="card"><h2>2 · Profil (×1,36)</h2><div class="scene" id="profile" style="width:742px;height:434px"></div></div>
-  <div class="card"><h2>3 · Cultivation (×1,36)</h2><div class="scene" id="cultivation" style="width:742px;height:434px"></div></div>
+  <div class="card"><h2>2 · Profil (×1,36)</h2><div class="scene" id="profile" style="width:724px;height:426px"></div></div>
+  <div class="card"><h2>3 · Cultivation (×1,36)</h2><div class="scene" id="cultivation" style="width:724px;height:426px"></div></div>
 </div>
 <div class="row" style="grid-template-columns: 1fr 1fr">
-  <div class="card"><h2>4 · Info (×1,36)</h2><div class="scene" id="info" style="width:742px;height:434px"></div></div>
-  <div class="card"><h2>5 · Les pièces de près (×4)</h2><div class="scene" id="parts" style="width:742px;height:434px;background:#0c131b"></div></div>
+  <div class="card"><h2>4 · Info (×1,36)</h2><div class="scene" id="info" style="width:724px;height:426px"></div></div>
+  <div class="card"><h2>5 · Les pièces de près (×4)</h2><div class="scene" id="parts" style="width:724px;height:426px;background:#0c131b"></div></div>
 </div>
 
 <script>
@@ -79,8 +79,13 @@ function frame(g, x, y, w, h, o = {}) {
 function windowFrame(page, title) {
   const {g, T} = page;
   frame(g, 4, 8, W - 8, H - 12, {cut: 4, fill: 'rgba(10,26,44,.94)'});
-  // Inner second line, faint.
+  // Inner second line, faint; auspicious clouds in the background; filigree in the corners.
   cutRect(g, 7, 11, W - 14, 1, 0, 'rgba(63,180,236,.25)');
+  clouds(g, 8, 14, W - 16, H - 22);
+  for (const [x, y, sx, sy] of [[9, 13, 1, 1], [W - 10, 13, -1, 1], [9, H - 10, 1, -1], [W - 10, H - 10, -1, -1]]) {
+    for (let k = 0; k < 14; k++) { px(g, x + k * sx, y, 'rgba(127,214,255,.35)'); px(g, x, y + k * sy, 'rgba(127,214,255,.35)'); }
+    px(g, x + 3 * sx, y + 3 * sy, P.c); px(g, x + 4 * sx, y + 3 * sy, 'rgba(63,180,236,.6)'); px(g, x + 3 * sx, y + 4 * sy, 'rgba(63,180,236,.6)');
+  }
   for (const [x, y] of [[4, 8], [W - 5, 8], [4, H - 5], [W - 5, H - 5], [W / 2, H - 5], [4, H / 2 + 2], [W - 5, H / 2 + 2]]) pearl(g, x, y);
   // Title banner.
   const tw = title.length * 7 + 18, tx = (W - tw) / 2;
@@ -145,6 +150,51 @@ function subTabs(page, x, y, names, active, wTotal) {
   px(g, x, y + 13, 'rgba(63,180,236,.35)', wTotal, 1);
 }
 
+// Faint cloud scrolls tiled behind the content.
+const CLOUD = ['..xxx......', '.x...x.xx..', 'x..x..x..x.', 'x.x.x.x.x.x', '.x...x...x.'];
+function clouds(g, x, y, w, h) {
+  for (let ty = 0; ty < h - 5; ty += 26) for (let tx = (ty / 26 % 2) * 24; tx < w - 11; tx += 48) {
+    CLOUD.forEach((r, j) => [...r].forEach((c, i) => { if (c === 'x') px(g, x + tx + i, y + ty + j, 'rgba(63,180,236,.07)'); }));
+  }
+}
+// Sprites in palette letters; scale s.
+const SPR = {
+  crest: ['.....w.....', '.....l.....', '....wlw....', '.....l.....', '..y..l..y..', '...yGGGy...', '..y..c..y..', '.....c.....', '.....c.....', '....ccc....', '.....c.....'],
+  thrust: ['..........w', '.........wl', '........wl.', '.......wl..', '......wl...', '..c..wl....', '...cwl.....', '...ywc.....', '..yGy.c....', '.yG..c.....', 'G..........'],
+  calm: ['...........', '.lllll.....', '......l....', '..ccccc.l..', '........l..', '.wwwwww..l.', '.........l.', '..ccccccc..', '...........', '.lllllllll.', '...........'],
+  orb: ['..lll..', '.lwccl.', 'lwcccml', 'lcccmml', 'lccmmml', '.lmmml.', '..lll..'],
+  pill: ['..yyy..', '.yYwyy.', 'yYwyyyg', 'yyyyygg', 'yyyyggg', '.yyggg.', '..ggg..'],
+  scroll: ['.yyyyyyy.', 'yGwwwwwGy', '.ywlwlwy.', '.ywwwwwy.', '.ywlwlwy.', 'yGwwwwwGy', '.yyyyyyy.'],
+  grave: ['....sss....', '...sssss...', '...s.s.s...', '...sssss...', '...s.s.s...', '...sssss...', '.kkkkkkkkk.', 'k.k.k.k.k.k', 'kkkkkkkkkkk', '..r.....r..', '.rr.....rr.'],
+  swirl: ['...lllll...', '..l.....l..', '.l..ccc..l.', 'l..c...c..l', 'l.c..w..c.l', 'l.c.w.w.c.l', 'l.c..w.c..l', 'l..c...c...', '.l..ccc..c.', '..l.....c..', '...lllll...'],
+  face: ['..kkkkk..', '.kkkkkkk.', '.kwwwwwk.', '.ww.w.ww.', '.wwwwwww.', '..wwlww..', '...www...', '..sssss..', '.sssssss.'],
+};
+const COL = {o: P.o, d: P.d, n: P.n, m: P.m, c: P.c, l: P.l, w: P.w, y: P.y, Y: '#fff1b8', G: '#5a3d10', g: P.g, s: P.s, k: P.k, r: P.r};
+function spr(g, x, y, key, s = 1, dim) {
+  SPR[key].forEach((r, j) => [...r].forEach((c, i) => { if (c !== '.') px(g, x + i * s, y + j * s, dim ? P.k : COL[c], s, s); }));
+}
+function sealBig(g, cx, cy, r, key, s = 1) {
+  diamond(g, cx, cy, r, P.o); diamond(g, cx, cy, r - 1, P.c); diamond(g, cx, cy, r - 2, P.o); diamond(g, cx, cy, r - 3, P.n);
+  for (let dy = 1; dy <= r - 3; dy++) { const w = r - 3 - dy; px(g, cx - w, cy + dy, P.d, 2 * w + 1, 1); }
+  px(g, cx, cy - r - 2, P.o, 1, 3); px(g, cx, cy - r - 1, P.l);
+  const n = SPR[key][0].length * s; spr(g, cx - Math.floor(n / 2), cy - Math.floor(SPR[key].length * s / 2), key, s);
+}
+// A divider: a faint line with a diamond in the middle and dots at the ends.
+function divider(g, x, y, w) {
+  px(g, x + 3, y, 'rgba(63,180,236,.35)', w - 6, 1); px(g, x, y, P.c); px(g, x + w - 1, y, P.c);
+  diamond(g, x + w / 2, y, 2, P.o); diamond(g, x + w / 2, y, 1, P.l);
+}
+function check(g, x, y, on) { diamond(g, x, y, 3, P.o); diamond(g, x, y, 2, on ? P.c : P.k); if (on) px(g, x, y, P.w); }
+// A pixel figure in a pose: 0 stand, 1 draw, 2 thrust.
+function pose(g, x, y, k) {
+  px(g, x + 4, y, P.l, 3, 3);
+  px(g, x + 5, y + 3, P.l, 1, 6);
+  if (k === 0) { px(g, x + 3, y + 4, P.l, 1, 3); px(g, x + 7, y + 4, P.l, 1, 3); px(g, x + 7, y + 1, P.w, 1, 6); }
+  if (k === 1) { px(g, x + 6, y + 4, P.l, 3, 1); px(g, x + 8, y - 2, P.w, 1, 7); px(g, x + 3, y + 5, P.l, 2, 1); }
+  if (k === 2) { px(g, x + 6, y + 4, P.l, 3, 1); px(g, x + 9, y + 4, P.w, 6, 1); px(g, x + 15, y + 4, P.c); px(g, x + 3, y + 5, P.l, 2, 1); }
+  px(g, x + 4, y + 9, P.l, 1, 4); px(g, x + 6, y + 9, P.l, 1, 4); if (k === 2) px(g, x + 7, y + 11, P.l, 2, 1);
+}
+
 // 1 · Techniques.
 function drawTechniques(id, scale) {
   const p = makePage(id, scale), {g, T} = p;
@@ -172,6 +222,23 @@ function drawTechniques(id, scale) {
   frame(g, 432, 94, 76, 30, {cut: 1, line: P.m, fill: P.d}); label(p, 438, 99, 'COOLDOWN'); T(438, 110, '—', 8, P.w);
   ['Every third sword strike', 'flows into the next one', 'and costs no time.'].forEach((l, i) => T(352, 134 + i * 11, l, 8, P.l));
   T(352, 282, 'Known from the start', 7.5, P.s);
+  // Details: the art's crest, mastery milestones, unlocks, the technique's seal, effect lines and a preview.
+  sealBig(g, 158, 70, 13, 'crest');
+  [.25, .5, .75, 1].forEach((f, i) => { const mx = 24 + Math.round(144 * f); diamond(g, mx, 98, 2, P.o); diamond(g, mx, 98, 1, f <= .42 ? P.w : P.m); });
+  label(p, 18, 194, 'MASTERY UNLOCKS');
+  divider(g, 16, 205, 160);
+  [['25 %', 'Whirlpool Cut', true], ['50 %', 'Waterfall Descent', false], ['100 %', 'Thousand Streams', false]].forEach(([a, b, on], i) => {
+    check(g, 22, 216 + i * 11, on); T(29, 212 + i * 11, a, 7.5, on ? P.l : P.s); T(56, 212 + i * 11, b, 7.5, on ? P.w : P.s);
+  });
+  sealBig(g, 492, 82, 16, 'calm');
+  divider(g, 352, 176, 156);
+  label(p, 352, 182, 'EFFECT');
+  [['Trigger', '3rd sword strike'], ['Bonus', 'no recovery'], ['Element', 'Water']].forEach(([a, b], i) => {
+    T(352, 193 + i * 11, a, 7.5, P.s); for (let d = 392; d < 500 - b.length * 4.3; d += 3) px(g, d, 199 + i * 11, 'rgba(127,214,255,.3)'); T(508 - b.length * 4.3, 193 + i * 11, b, 7.5, P.w);
+  });
+  label(p, 352, 230, 'PREVIEW');
+  [0, 1, 2].forEach(k => { frame(g, 352 + k * 52, 240, 48, 34, {cut: 1, line: P.m, fill: '#0a1d33'}); px(g, 356 + k * 52, 266, 'rgba(63,180,236,.3)', 40, 1); pose(g, 366 + k * 52, 250, k); });
+  T(352 + 0, 276, '', 7, P.s);
 }
 // 2 · Profile.
 function drawProfile(id, scale) {
@@ -196,6 +263,24 @@ function drawProfile(id, scale) {
   [['Regeneration', '2.5 Qi / s'], ['Breakthrough', '33 %'], ['Next realm', 'Third-Rate Warrior']].forEach(([k, v], i) => {
     T(346, 120 + i * 18, k, 8, P.l); T(514 - v.length * 4.6, 120 + i * 18, v, 8, P.w); px(g, 344, 131 + i * 18, 'rgba(63,180,236,.3)', 172, 1);
   });
+  // Details: a pedestal and name plate under the model, realm ladder, meridians, record, dantian, titles.
+  for (let k = 0; k < 4; k++) px(g, 40 + k * 2, 214 + k, k % 2 ? P.m : P.c, 76 - k * 4, 1);
+  px(g, 36, 218, P.o, 84, 4); px(g, 38, 219, P.n, 80, 2);
+  frame(g, 40, 230, 76, 14, {cut: 1, line: P.c, fill: P.d}); T(66, 233, 'Dev', 8, P.w, 'font-weight:600');
+  divider(g, 150, 170, 182);
+  label(p, 152, 176, 'REALM PROGRESS'); T(290, 176, 'Stage 3 / 9', 7, P.l);
+  for (let k = 0; k < 9; k++) { diamond(g, 158 + k * 20, 194, 4, P.o); diamond(g, 158 + k * 20, 194, 3, k < 3 ? P.c : P.k); if (k < 3) px(g, 158 + k * 20, 194, P.w); if (k < 8) px(g, 163 + k * 20, 194, k < 2 ? P.c : P.k, 10, 1); }
+  label(p, 152, 206, 'MERIDIANS'); T(300, 206, '4 / 12', 7, P.l);
+  for (let k = 0; k < 12; k++) { px(g, 154 + k * 15, 218, P.o, 7, 7); px(g, 155 + k * 15, 219, k < 4 ? P.c : P.k, 5, 5); if (k < 4) px(g, 156 + k * 15, 220, P.w); }
+  label(p, 152, 232, 'RECORD');
+  [['Foes defeated', '32'], ['Days in the Murim', '4'], ['Breakthroughs', '0']].forEach(([a, b], i) => { T(152 + i * 62, 242, a, 6.5, P.s); T(152 + i * 62, 250, b, 9, P.w, 'font-weight:600'); });
+  divider(g, 344, 176, 172);
+  label(p, 346, 184, 'DANTIAN');
+  frame(g, 344, 194, 64, 60, {cut: 2, line: P.m, fill: '#0a1d33'}); spr(g, 360, 208, 'swirl', 3);
+  T(414, 198, 'Qi colour', 7, P.s); T(414, 208, 'Azure', 8, P.l, 'font-weight:600');
+  T(414, 222, 'Purity', 7, P.s); tube(g, 414, 232, 100, .3, P.l, P.c, P.m);
+  label(p, 346, 262, 'TITLES');
+  [['Newcomer', true], ['???', false], ['???', false]].forEach(([a, on], i) => { frame(g, 344 + i * 58, 272, 54, 16, {cut: 1, line: on ? P.c : P.k, fill: on ? P.n : P.d}); T(352 + i * 58, 276, a, 7, on ? P.w : P.s); });
 }
 // 3 · Cultivation.
 function drawCultivation(id, scale) {
@@ -231,6 +316,14 @@ function drawCultivation(id, scale) {
   note(p, 350, 184, 166, 30, ['[WARNING] Losing the trial', 'scatters 30 % of your Qi.'], true);
   T(366, 256, 'INNER WORLD · THIRD-RATE', 7, P.s, 'letter-spacing:1px');
   button(p, 350, 270, 166, 15, 'BEGIN TRIAL', {dim: 1});
+  // Details: the trial's place, its rewards, a swirl in the ring.
+  frame(g, 486, 86, 26, 26, {cut: 1, line: P.m, fill: '#0a1d33', shine: false}); spr(g, 494, 94, 'grave', 1);
+  label(p, 352, 220, 'REWARDS');
+  [['orb', '+50 Max Qi'], ['scroll', 'Art slot'], ['pill', 'Pill recipe']].forEach(([k, n], i) => {
+    frame(g, 350 + i * 56, 230, 52, 22, {cut: 1, line: P.m, fill: P.d}); spr(g, 354 + i * 56, 237, k, 1); T(366 + i * 56, 236, n, 6.5, P.l);
+  });
+  spr(g, 252, 133, 'orb', 1);
+  divider(g, 182, 238, 152);
 }
 // 4 · Info.
 function drawInfo(id, scale) {
@@ -250,6 +343,18 @@ function drawInfo(id, scale) {
   });
   label(p, 184, 248, 'REWARD'); T(222, 247, '50 Qi · 1 Spirit Pill', 8, P.w);
   note(p, 182, 262, 326, 24, ['[WARNING] Neglecting training slows your cultivation.'], true);
+  // Details: the giver's portrait, a weekly streak, reward icons, finished quests.
+  frame(g, 262, 72, 15, 15, {cut: 1, line: P.c, fill: "#0a1d33", shine: false}); spr(g, 265, 75, "face", 1);
+  T(281, 77, "The System", 7, P.s);
+  divider(g, 184, 196, 322);
+  label(p, 184, 204, 'STREAK');
+  ['M', 'T', 'W', 'T', 'F', 'S', 'S'].forEach((d, i) => { check(g, 240 + i * 22, 208, i < 4); T(238 + i * 22, 214, d, 6.5, i < 4 ? P.l : P.s); });
+  T(400, 204, '4 days · next: +1 Spirit Pill', 7, P.l);
+  spr(g, 330, 247, 'orb', 1); spr(g, 340, 247, 'pill', 1);
+  label(p, 18, 210, 'COMPLETED');
+  [['Wake of the System', 'The System'], ['First Breath', 'Old Master']].forEach(([a, b], i) => {
+    rowItem(p, 16, 220 + i * 28, 150, 24, a, b, {dim: 1}); check(g, 156, 232 + i * 28, true);
+  });
 }
 drawTechniques('techniques', 2);
 drawProfile('profile', 1.36);

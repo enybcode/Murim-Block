@@ -319,6 +319,31 @@ final class PlayerChecks {
                 }
             }, LivingMotion.IDLE));
         }
+        // Looking straight down in a chestplate, then flying and looking down: nothing of the body may fill the view.
+        PARTS.add(new Part("fp_down_armored", 40, 0, mc -> {
+            mc.options.fov().set(70);
+            hold(mc, ItemStack.EMPTY, ItemStack.EMPTY);
+            EngineTest.server(mc, player -> player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.IRON_CHESTPLATE)));
+            at(mc, X, Y, Z, 0);
+        }, (mc, t) -> look(mc, 90), LivingMotion.IDLE));
+        PARTS.add(new Part("fp_fly_down", 40, 0, mc -> {
+            at(mc, X, Y + 3, Z, 0);
+            fly(mc, true);
+        }, (mc, t) -> {
+            look(mc, 60);
+            keys(mc, t < 30, false, false, false, false);
+        }, null));
+        PARTS.add(new Part("fp_fly_still_down", 40, 0, mc -> fly(mc, true), (mc, t) -> look(mc, 80), null));
+    }
+
+    /** Creative flight on or off, on both sides. */
+    private static void fly(Minecraft mc, boolean on) {
+        EngineTest.server(mc, player -> {
+            player.getAbilities().mayfly = on || player.isCreative();
+            player.getAbilities().flying = on;
+            player.onUpdateAbilities();
+        });
+        mc.player.getAbilities().flying = on;
     }
 
     private static void look(Minecraft mc, float pitch) {

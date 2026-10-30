@@ -3,7 +3,13 @@
 The player's menu, styled after the System windows of Solo Leveling: dark translucent panel, glowing cyan
 border, bright corner brackets, a title tag across the top border and `[!]` system messages.
 
-Mockups validated by Enzo on 23 Oct 2026 (Design canvas "Murimblock System GUI" on claude.ai). The values in
+Mockups validated by Enzo on 23 Oct 2026 (Design canvas "Murimblock System GUI" on claude.ai). Redrawn as pixel art
+on 30 Oct 2026 (board `boards/system-gui-pixel.png`, validated by Enzo): double frames with cut corners, pearls and
+filigree, cloud scrolls behind, a pointed title banner, cut-corner tabs and buttons, tube bars, diamond checks, all
+from `PixelArt` (shared with the combat bar). Built: the art crest, mastery milestones on the bar and the unlock list,
+six technique slots (free ones dimmed), the technique's large seal, the realm ladder and opened meridians on Profile.
+The board's other blocks (record, dantian, titles, trial rewards, streak, finished quests, effect lines, preview)
+wait for data that does not exist yet. The values in
 them (Qi, realms, arts, quests, keys) are placeholders, not decisions.
 
 ## Pages

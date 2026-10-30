@@ -24,7 +24,9 @@ import org.joml.Vector3f;
  * First person on Shenfa: what the player sees of itself is the body others see.
  * <ul>
  * <li>The body (chest, arms, legs, feet) is drawn in the world from the same animated pose, the head and whatever
- * sits on it left out, so looking down shows the body and its steps, right at any field of view.</li>
+ * sits on it left out, so looking down shows the body and its steps, right at any field of view. Looking down, it
+ * steps back under the eye and our arms are left out, so no shoulder, chest or chestplate fills the view, flying
+ * too.</li>
  * <li>Vanilla's first-person hands stay for ordinary play (mining, placing, eating, every item pose); while a Shenfa
  * layer plays (a guard, a strike) our arms and held items take their place, from the same pose.</li>
  * <li>The camera follows the head (the eye above the neck) as the body moves it, smoothed, at most
@@ -37,7 +39,9 @@ public final class FirstPerson {
     /** The eye above the neck (the {@code Head} joint) in model pixels: vanilla's eye height at rest. */
     static final float EYE_ABOVE_NECK = 1.62f / (SkeletalPlayerRenderer.PLAYER_SCALE / 16) - 24;
     private static final float MOST_SHIFT = 0.35f, MOST_SHIFT_HELD = 1.2f;
-    private static final float BACK_LOOKING_DOWN = 0.2f;
+    /** How far the body steps back under the eye looking straight down (blocks): far enough that the chest, a
+     * chestplate on it included, stays out of the view at any field of view, flying too. */
+    private static final float BACK_LOOKING_DOWN = 0.45f;
     /** The share of the way the camera moves toward the head each frame at 60 frames a second. */
     private static final float FOLLOW = 0.35f;
     private static final Method SET_POSITION = setPosition();

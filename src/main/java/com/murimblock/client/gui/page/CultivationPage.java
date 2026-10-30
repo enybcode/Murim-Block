@@ -1,5 +1,6 @@
 package com.murimblock.client.gui.page;
 
+import com.murimblock.client.gui.PixelArt;
 import com.murimblock.client.gui.SystemButton;
 import com.murimblock.client.gui.SystemLayout.Rect;
 import com.murimblock.client.gui.SystemPageView;
@@ -172,8 +173,8 @@ public final class CultivationPage implements SystemPageView {
                 SystemTheme.box(g, row, true);
                 text = SystemTheme.TEXT;
             } else {
-                g.renderOutline(row.x(), row.y(), row.width(), row.height(),
-                        i < current ? SystemTheme.CYAN_FAINT : SystemTheme.withAlpha(SystemTheme.CYAN, 0x1A));
+                PixelArt.frame(g, row.x(), row.y(), row.width(), row.height(), 1, i < current ? PixelArt.MID : PixelArt.SLATE,
+                        i < current ? 0xD20F2944 : 0xB40D2238, 0);
                 text = i < current ? 0xFF9FC6DD : 0xFF6F93AB;
             }
             g.drawString(font, String.valueOf(i + 1), row.x() + 6, row.y() + 9, SystemTheme.CYAN, false);
@@ -196,10 +197,11 @@ public final class CultivationPage implements SystemPageView {
             double angle = -Math.PI / 2 + i * 2 * Math.PI / RING_DOTS;
             int x = (int) Math.round(cx + Math.cos(angle) * RING_RADIUS);
             int y = (int) Math.round(cy + Math.sin(angle) * RING_RADIUS);
+            PixelArt.diamond(g, x, y, 2, PixelArt.OUTLINE);
+            PixelArt.diamond(g, x, y, 1, i < lit ? PixelArt.CYAN : PixelArt.SLATE);
             if (i < lit) {
-                g.fill(x - 2, y - 2, x + 3, y + 3, SystemTheme.withAlpha(SystemTheme.CYAN, 0x30));
+                PixelArt.px(g, x, y, PixelArt.WHITE);
             }
-            g.fill(x - 1, y - 1, x + 2, y + 2, i < lit ? SystemTheme.CYAN : SystemTheme.CYAN_FAINT);
         }
         Component percent = Component.translatable("gui.murimblock.percent", Math.round(fraction * 100))
                 .withStyle(s -> s.withBold(true));
@@ -219,11 +221,8 @@ public final class CultivationPage implements SystemPageView {
         int gap = 3;
         int px = cx - (CultivationData.STAGES * (pip + gap) - gap) / 2;
         for (int i = 0; i < CultivationData.STAGES; i++) {
-            if (i < CultivationData.stage()) {
-                g.fill(px, y, px + pip, y + 3, SystemTheme.CYAN);
-            } else {
-                g.renderOutline(px, y, pip, 3, SystemTheme.CYAN_SOFT);
-            }
+            PixelArt.diamond(g, px + pip / 2, y + 1, 3, PixelArt.OUTLINE);
+            PixelArt.diamond(g, px + pip / 2, y + 1, 2, i < CultivationData.stage() ? PixelArt.CYAN : PixelArt.SLATE);
             px += pip + gap;
         }
         y += 10;
@@ -266,7 +265,7 @@ public final class CultivationPage implements SystemPageView {
         List<FormattedCharSequence> warning = font.split(Component.translatable("gui.murimblock.cultivation.trial_warning"),
                 r.width() - 14);
         Rect box = new Rect(r.x(), y, r.width(), warning.size() * 10 + 8);
-        g.renderOutline(box.x(), box.y(), box.width(), box.height(), SystemTheme.withAlpha(SystemTheme.WARNING, 0x80));
+        PixelArt.frame(g, box.x(), box.y(), box.width(), box.height(), 2, PixelArt.ROSE, 0xE62A0F18, 0);
         int ly = box.y() + 5;
         for (FormattedCharSequence line : warning) {
             g.drawString(font, line, box.x() + 7, ly, 0xFFFFC4CC, false);
@@ -275,10 +274,7 @@ public final class CultivationPage implements SystemPageView {
     }
 
     private static void check(GuiGraphics g, Font font, int x, int y, boolean done, Component text) {
-        if (done) {
-            g.fill(x, y, x + 8, y + 8, SystemTheme.CYAN);
-        }
-        g.renderOutline(x, y, 8, 8, SystemTheme.CYAN);
+        PixelArt.check(g, x + 4, y + 4, done);
         g.drawString(font, text, x + 13, y, SystemTheme.TEXT, false);
     }
 
@@ -322,7 +318,7 @@ public final class CultivationPage implements SystemPageView {
                 : CultivationData.isNext(picked) ? "gui.murimblock.cultivation.status.next"
                 : "gui.murimblock.cultivation.status.sealed").getString();
         int tagWidth = SystemTheme.spacedWidth(font, status, 1) + 10;
-        g.renderOutline(x, y, tagWidth, 13, SystemTheme.CYAN);
+        PixelArt.frame(g, x, y, tagWidth, 13, 1, PixelArt.CYAN, PixelArt.DEEP, 0);
         SystemTheme.spaced(g, font, status, x + 5, y + 3, 0xFFBFEEFF, 1);
         Component count = Component.translatable("gui.murimblock.cultivation.open_count", Math.min(CultivationData.openMeridians(), 12), 12);
         g.drawString(font, count, r.right() - 8 - font.width(count), y + 3, SystemTheme.TEXT_MUTED, false);

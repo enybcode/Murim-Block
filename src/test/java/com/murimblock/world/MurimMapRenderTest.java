@@ -77,9 +77,40 @@ class MurimMapRenderTest {
         }
         label(json, "river", "yellow river", 100, -1000);
         label(json, "river", "great river", -1300, 1150);
+        label(json, "pass", "western pass", -3400, -2100);
+        label(json, "pass", "loess pass", -900, -2100);
         label(json, "pass", "fortified pass", 1200, -2100);
+        label(json, "pass", "eastern pass", 3800, -2100);
+        label(json, "site", "North Sky HQ", -2000, -3200);
+        label(json, "site", "Silent Night", 1000, -4300);
+        label(json, "site", "Iron Castle", 3000, -3200);
+        label(json, "site", "Tang clan", -2800, 1300);
+        label(json, "site", "Broken Fist", -2500, 3000);
+        // The world's spawn, in block coordinates.
+        json.append(String.format(java.util.Locale.ROOT, "  {\"kind\": \"spawn\", \"name\": \"spawn\", \"u\": %.4f, \"v\": %.4f},\n",
+                .5, .5));
         json.setLength(json.length() - 2);
         java.nio.file.Files.writeString(new File("build/murim-map/labels.json").toPath(), json + "\n]\n");
+        // For an interactive map: a grid every 20 blocks of each column's biome (a letter, 'a' + its MurimBiome
+        // ordinal) and wanted ground (a character, '#' + height / 4, skipping the backslash so the JSON stays plain),
+        // row by row from the north-west.
+        int cell = 20, side = 2 * EXTENT / cell;
+        StringBuilder biomes = new StringBuilder(side * side);
+        StringBuilder heights = new StringBuilder(side * side);
+        for (int j = 0; j < side; j++) {
+            for (int i = 0; i < side; i++) {
+                int x = -EXTENT + i * cell + cell / 2;
+                int z = -EXTENT + j * cell + cell / 2;
+                MurimBiome b = MurimMap.biome(x, z);
+                biomes.append((char) ('a' + b.ordinal()));
+                double h = b == MurimBiome.OCEAN ? 40 : MurimMap.relief(x, z).height();
+                int c = '#' + Math.max(0, Math.min(78, (int) Math.round(h / 4)));
+                heights.append((char) (c >= '\\' ? c + 1 : c));
+            }
+        }
+        java.nio.file.Files.writeString(new File("build/murim-map/grid.json").toPath(), String.format(java.util.Locale.ROOT,
+                "{\"extent\": %d, \"cell\": %d, \"side\": %d,%n \"biomes\": \"%s\",%n \"heights\": \"%s\"}%n",
+                EXTENT, cell, side, biomes, heights));
     }
 
     private static void label(StringBuilder json, String kind, String name, double wx, double wz) {
