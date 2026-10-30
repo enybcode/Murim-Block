@@ -64,6 +64,55 @@ else is taken from the work: no characters, story or events. Seats are proposals
 | **Ha** | 夏 | Rare | Rice terraces | healers and herb growers | Coming soon |
 | Wang, Li, Zhang, Liu, Zhao, Sun, Wu, Zhou | 王 李 张 刘 赵 孙 吴 周 | Common | anywhere | ordinary families of the Murim | Nothing |
 
+## Inheritances (proposal, 30 Oct 2026)
+
+> Enzo: "fais-les toutes". Proposal for every great house, to validate before any is granted. Names in game are in
+> English and our own (no art or item name from the genre's works). Numbers are a first pass.
+
+Given once, at the draw's ACCEPT (items in the inventory; stats are permanent while the player belongs to the house; a
+legendary art joins the arts known in K, Techniques).
+
+### Legendary: the house's martial art and extra stats
+
+| House | Art (our own) | What the art is | Stats |
+|---|---|---|---|
+| **Jin** | *Frostfall Saber* | A saber of the cold north: wide arcs that slow, a charge that drags a trail of frost, an ultimate that brings a storm of falling blades around the user. | +15 % max Qi, +10 % damage |
+| **Namgung** | *Azure Heaven Sword* | The proud sword of the plains: straight, fast thrusts, a guard that answers each blocked blow with one of its own, an ultimate of one blinding cut. | +10 % damage, +10 % attack speed |
+| **Dokgo** | *Solitary Edge* | A sword that waits: its techniques are counters, stronger the closer the parry; the ultimate cuts every foe who struck the user in the last seconds. | +25 % parry window, +10 % max health |
+
+The three arts need the combat technique system (techniques still cast nothing): until then the art is given and
+shown, its techniques wait.
+
+### Epic: extra stats and rare equipment
+
+| House | Stats | Equipment (rare) |
+|---|---|---|
+| **Moyong** | +10 % max Qi, 5 % of melee damage taken returned | *Moyong Star Jian*: a jian a little better than iron, faster |
+| **Jegal** | +15 % Qi regeneration, +5 % breakthrough chance | *Crane Feather Fan*: a war fan, light hits that push back |
+| **Sama** | +2 armour, −15 % knockback taken | *Officer's Lamellar*: a chestplate between iron and diamond |
+| **Seomun** | +8 % movement speed, +5 % damage | *Willow Saber*: a curved saber, quick and long-reaching |
+
+### Rare: pills and equipment
+
+| House | Pills | Equipment |
+|---|---|---|
+| **Dang** | 3 *Antidote Pills* (cure poison and nausea), 2 *Minor Qi Pills* (+30 Qi) | 16 *Dang Needles*: throwing needles, picked back up |
+| **Paeng** | 2 *Iron Bone Pills* (Resistance I, 60 s) | *Paeng Broad Saber*: a heavy saber, as strong as iron, slower, more knockback |
+| **Hwangbo** | 2 *Tiger Strength Pills* (Strength I, 60 s) | *Iron Fist Wraps*: worn in the off hand, +2 bare-hand damage |
+| **Yeon** | 2 *Wind Step Pills* (Speed I, 60 s) | *Yeon Horn Bow* and 32 arrows |
+| **Ha** | 4 *Healing Pills* (heal 4 hearts) | *Herbalist's Sickle*: cuts plants and herbs twice as fast |
+
+### Common: nothing
+
+A name, and the whole road to walk.
+
+### To build them
+
+- Stats: attribute modifiers held by the house (max Qi, Qi regen and breakthrough through the cultivation code), safe
+  to redo if the house changes on a reroll.
+- Items: our own textures (pills as small coloured pills in a paper twist; weapons and the chestplate after a sheet
+  validated by Enzo, as for mobs).
+- The three arts: after the combat technique system, each with its own design sheet.
 
 ## Where it shows
 
