@@ -263,11 +263,15 @@ public final class GuiScreenshots {
                 }
                 Screenshot.grab(mc.gameDirectory, "murim_controls.png", mc.getMainRenderTarget(),
                         message -> Murimblock.LOGGER.info("GUI shot: {}", message.getString()));
-                // The game draws a few more frames while stopping: no second shot.
+                // Then burn a Destiny Talisman, and stop once the server has answered (no second shot).
+                checkTalisman(mc);
                 step = Step.DONE;
-                mc.stop();
+                frames = 0;
             }
             case DONE -> {
+                if (++frames == 20) {
+                    mc.stop();
+                }
             }
         }
     }
@@ -294,6 +298,27 @@ public final class GuiScreenshots {
             Murimblock.LOGGER.info("GUI shots: inheritance {} {} (house {}, armor modifier {}, bread {}, armor {})",
                     granted ? "granted" : "taken back", pass ? "PASS" : "FAIL", state.family().id(), modifier, bread,
                     player.getArmorValue());
+        });
+    }
+
+    /** Logs PASS or FAIL: the talisman's recipe is loaded, and burning one is consumed and settles a new final draw.
+     * (A creative player keeps it.) */
+    private static void checkTalisman(Minecraft mc) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            boolean recipe = server.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                    Murimblock.MOD_ID, "destiny_talisman")).isPresent();
+            int before = com.murimblock.family.FamilyEvents.state(player).sinceEpic();
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.DESTINY_TALISMAN.get(), 2));
+            player.getMainHandItem().use(player.level(), player, InteractionHand.MAIN_HAND);
+            com.murimblock.family.FamilyState state = com.murimblock.family.FamilyEvents.state(player);
+            boolean drawn = state.sinceEpic() != before || state.sinceEpic() == 0;
+            int left = player.getMainHandItem().getCount();
+            Murimblock.LOGGER.info("GUI shots: talisman {} (recipe {}, talismans left {}, house {}, free reroll {})",
+                    recipe && left == (player.hasInfiniteMaterials() ? 2 : 1) && drawn && !state.freeReroll() ? "PASS" : "FAIL", recipe, left,
+                    state.family().id(), state.freeReroll());
         });
     }
 

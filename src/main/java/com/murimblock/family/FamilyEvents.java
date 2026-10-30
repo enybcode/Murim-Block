@@ -125,6 +125,14 @@ public final class FamilyEvents {
         sync(player, reroll);
     }
 
+    /** A Destiny Talisman burnt: a final new draw, granted and shown in the Destiny window. */
+    public static void redraw(ServerPlayer player) {
+        FamilyState state = state(player);
+        draw(player, state);
+        announce(player, state.family());
+        sync(player, true);
+    }
+
     /** The house is settled: the System's message, and its inheritance granted (the old house's bonuses taken back). */
     private static void announce(ServerPlayer player, Family house) {
         InheritanceGrants.apply(player, state(player));
