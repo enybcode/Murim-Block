@@ -1,9 +1,11 @@
 package com.murimblock.client.gui.page;
 
 import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.client.family.ClientFamily;
 import com.murimblock.client.gui.PixelArt;
 import com.murimblock.client.gui.SystemLayout.Rect;
 import com.murimblock.cultivation.CultivationRules;
+import com.murimblock.family.Family;
 import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.SystemTheme;
@@ -29,6 +31,14 @@ public final class ProfilePage implements SystemPageView {
         renderModel(g, font, layout.model(), mouseX, mouseY);
         renderIdentity(g, font, layout.identity(), data);
         renderQi(g, font, layout.qi(), data);
+        // Hovering the house shows what it hands down.
+        Family house = ClientFamily.family();
+        if (house != null && familyRow != null && showFamilyTooltip) {
+            g.renderComponentTooltip(font, ClientFamily.tooltip(house), familyRow.right() + 8, familyRow.y() + 30);
+        } else if (house != null && familyRow != null && mouseX >= familyRow.x() && mouseX < familyRow.right()
+                && mouseY >= familyRow.y() && mouseY < familyRow.bottom()) {
+            g.renderComponentTooltip(font, ClientFamily.tooltip(house), mouseX, mouseY);
+        }
     }
 
     private static void renderModel(GuiGraphics g, Font font, Rect r, int mouseX, int mouseY) {
@@ -65,8 +75,13 @@ public final class ProfilePage implements SystemPageView {
         g.renderOutline(x + 8 * unit, y + 20 * unit, 4 * unit, 12 * unit, color);
     }
 
+    /** Dev shots: show the FAMILY row's tooltip without a mouse over it. */
+    public static boolean showFamilyTooltip;
+    /** Where the FAMILY row was drawn, for its tooltip. */
+    private static Rect familyRow;
+
     private static final String[] LABELS = {
-            "gui.murimblock.profile.name", "gui.murimblock.profile.realm", "gui.murimblock.profile.title",
+            "gui.murimblock.profile.family", "gui.murimblock.profile.name", "gui.murimblock.profile.realm", "gui.murimblock.profile.title",
             "gui.murimblock.profile.sect", "gui.murimblock.profile.art"};
 
     private static void renderIdentity(GuiGraphics g, Font font, Rect r, ProfileData data) {
@@ -75,11 +90,12 @@ public final class ProfilePage implements SystemPageView {
             valueX = Math.max(valueX, r.x() + SystemTheme.spacedWidth(font, Component.translatable(key).getString(), 1) + 10);
         }
         int y = r.y() + 4;
-        y = row(g, font, r.x(), valueX, y, LABELS[0], data.name(), true);
-        y = row(g, font, r.x(), valueX, y, LABELS[1], data.realm(), true);
-        y = row(g, font, r.x(), valueX, y, LABELS[2], data.title(), false);
-        y = row(g, font, r.x(), valueX, y, LABELS[3], data.sect(), false);
-        y = row(g, font, r.x(), valueX, y, LABELS[4], data.martialArt(), false);
+        y = familyRow(g, font, r, valueX, y);
+        y = row(g, font, r.x(), valueX, y, LABELS[1], data.name(), true);
+        y = row(g, font, r.x(), valueX, y, LABELS[2], data.realm(), true);
+        y = row(g, font, r.x(), valueX, y, LABELS[3], data.title(), false);
+        y = row(g, font, r.x(), valueX, y, LABELS[4], data.sect(), false);
+        y = row(g, font, r.x(), valueX, y, LABELS[5], data.martialArt(), false);
 
         y += 4;
         PixelArt.divider(g, r.x(), y, r.width());
@@ -91,6 +107,24 @@ public final class ProfilePage implements SystemPageView {
 
         int messageTop = message(g, font, r, Component.translatable("gui.murimblock.profile.message"));
         progress(g, font, r, y, messageTop);
+    }
+
+    /** The FAMILY row: a diamond in the house's rarity colour and its name in that colour (hover for its inheritance). */
+    private static int familyRow(GuiGraphics g, Font font, Rect r, int valueX, int y) {
+        Family house = ClientFamily.family();
+        SystemTheme.spaced(g, font, Component.translatable(LABELS[0]).getString(), r.x(), y, SystemTheme.TEXT_MUTED, 1);
+        if (house == null) {
+            g.drawString(font, Component.translatable("family.murimblock.none"), valueX, y, SystemTheme.TEXT_MUTED, false);
+            familyRow = null;
+            return y + ROW;
+        }
+        PixelArt.diamond(g, valueX + 3, y + 3, 4, PixelArt.OUTLINE);
+        PixelArt.diamond(g, valueX + 3, y + 3, 3, house.rarity.line);
+        PixelArt.px(g, valueX + 3, y + 3, house.rarity.text);
+        Component name = Component.translatable(house.nameKey());
+        g.drawString(font, name, valueX + 11, y, house.rarity.text, true);
+        familyRow = new Rect(r.x(), y - 2, Math.max(valueX + 11 + font.width(name), valueX + 40) - r.x(), ROW);
+        return y + ROW;
     }
 
     private static int row(GuiGraphics g, Font font, int x, int valueX, int y, String labelKey, Component value, boolean glow) {

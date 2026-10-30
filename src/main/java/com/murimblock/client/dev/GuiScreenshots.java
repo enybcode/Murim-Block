@@ -1,6 +1,7 @@
 package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
+import com.murimblock.client.family.DestinyScreen;
 import com.murimblock.client.MurimClientConfig;
 import com.murimblock.client.gui.SystemButton;
 import com.murimblock.client.gui.SystemPage;
@@ -61,7 +62,10 @@ public final class GuiScreenshots {
     private static final int GUI_SCALE = 0;
     private static final String WATCHER = "murim_gui_shots_watcher";
 
-    private enum Step { TITLE, LOADING, MEDITATION, PAGES, CONTROLS, DONE }
+    private enum Step { TITLE, LOADING, DESTINY, MEDITATION, PAGES, CONTROLS, DONE }
+
+    /** Frames for the Destiny window's seal to land before its shot. */
+    private static final int DESTINY_FRAMES = 160;
 
     /** Frames before closing the eyes, then before the first shot of the dark (the fade takes a second). */
     private static final int EYES_FRAMES = 70;
@@ -122,9 +126,27 @@ public final class GuiScreenshots {
                 }
             }
             case LOADING -> {
-                if (mc.player == null || mc.screen != null) {
+                if (mc.player == null || mc.screen != null && !(mc.screen instanceof DestinyScreen)) {
                     frames = 0;
                 } else if (++frames >= WORLD_FRAMES) {
+                    // A fresh draw every run, so the Destiny window is shot whatever the world remembers.
+                    MinecraftServer server = mc.getSingleplayerServer();
+                    UUID id = mc.player.getUUID();
+                    server.execute(() -> server.getCommands().performPrefixedCommand(
+                            server.getPlayerList().getPlayer(id).createCommandSourceStack().withPermission(4), "family reset"));
+                    step = Step.DESTINY;
+                    frames = 0;
+                }
+            }
+            case DESTINY -> {
+                // The seal spins about two seconds, then lands: shoot, then keep the house.
+                if (!(mc.screen instanceof DestinyScreen)) {
+                    frames = 0;
+                } else if (++frames == DESTINY_FRAMES) {
+                    shoot(mc, "murim_destiny.png");
+                } else if (frames == DESTINY_FRAMES + 10) {
+                    press(mc, "family.murimblock.accept");
+                    mc.setScreen(null);
                     standOnPlatform(mc);
                     step = Step.MEDITATION;
                     frames = 0;
@@ -189,6 +211,7 @@ public final class GuiScreenshots {
                 mc.options.hideGui = false;
                 mc.options.setCameraType(CameraType.FIRST_PERSON);
                 showGuide = MurimClientConfig.showGuide();
+                com.murimblock.client.gui.page.ProfilePage.showFamilyTooltip = true;
                 open(mc, 0);
                 step = Step.PAGES;
             }

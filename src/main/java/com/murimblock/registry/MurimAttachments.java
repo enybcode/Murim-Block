@@ -3,6 +3,7 @@ package com.murimblock.registry;
 import com.murimblock.Murimblock;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationCodecs;
+import com.murimblock.family.FamilyState;
 import com.murimblock.innerworld.InnerWorldState;
 import java.util.function.Supplier;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -19,6 +20,9 @@ public final class MurimAttachments {
 
     public static final Supplier<AttachmentType<InnerWorldState>> INNER_WORLD = ATTACHMENTS.register("inner_world",
             () -> AttachmentType.builder(InnerWorldState::new).serialize(InnerWorldState.CODEC).build());
+
+    public static final Supplier<AttachmentType<FamilyState>> FAMILY = ATTACHMENTS.register("family",
+            () -> AttachmentType.builder(FamilyState::new).serialize(FamilyState.CODEC).copyOnDeath().build());
 
     private MurimAttachments() {
     }
