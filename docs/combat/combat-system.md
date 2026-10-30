@@ -66,7 +66,8 @@ reactions on players' skeletons, lock-on with flick switching and retargeting af
 
 ## Combat HUD (`CombatHud`, `LockOn`)
 
-Direction J3 chosen by Enzo on 30 Oct 2026 (`docs/gui/boards/combat-bar-j3.png`; the rejected ones are
+Direction J3 chosen by Enzo on 30 Oct 2026 (`docs/gui/boards/combat-bar-j3.png`; its second board `combat-bar-j3-2.png`
+proposes the whole screen, guard, parry, dodge, combo, art switching and the ultimate cast; the rejected ones are
 `combat-bar*.png` beside it). The vanilla hotbar stays. In combat mode a System block slides in from the bottom right:
 
 - The Qi as segments of 10 Qi (a round ten past 200 max Qi, so at most 20), the started one half full, numbers above.

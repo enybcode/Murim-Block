@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Barre de combat J3 — suite</title>
+<style>
+/* Direction J3, second board (after combat-bar-j3.html): the whole screen, guard, parry and dodge on the Qi, the combo,
+   switching arts, the ultimate cast. Same System style and helpers. */
+:root { --panel: rgba(7, 18, 31, .9); --cyan: #63cfff; --soft: rgba(99, 207, 255, .45); --faint: rgba(99, 207, 255, .2);
+  --corner: #d2f3ff; --text: #e6f6ff; --muted: #8fb8d6; --warn: #ff8c9a; --gold: #ffd77a; --red: #ff5a5a; }
+* { box-sizing: border-box; }
+body { margin: 0; width: 1600px; background: #0b1016; color: #dfe9f2; font: 15px/1.4 "Segoe UI", sans-serif; }
+.top { padding: 22px 32px 6px; } h1 { margin: 0; font-size: 26px; } .top p { margin: 4px 0 0; color: var(--muted); }
+h2 { margin: 0 0 10px; font-size: 16px; color: var(--cyan); text-transform: uppercase; letter-spacing: 2px; }
+.row { display: grid; gap: 22px; padding: 10px 32px; }
+.card { background: #111922; border: 1px solid #1f2d3a; border-radius: 8px; padding: 16px; position: relative; }
+ul { margin: 0; padding-left: 18px; } li { margin: 0 0 6px; } b { color: #fff; }
+.g { color: var(--gold); } .c { color: var(--cyan); } .w { color: var(--warn); } .m { color: var(--muted); }
+.stage { position: relative; background: #0c131b; border: 1px solid #1f2d3a; border-radius: 6px; overflow: hidden; }
+.cap { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 13px; color: #c8d6e2; padding: 0 6px; }
+.cap b { display: block; color: var(--cyan); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.grid { display: grid; gap: 12px; }
+.screen { position: relative; border-radius: 4px; overflow: hidden;
+  background: linear-gradient(#6f9fd6 0, #a9c8e8 52%, #5d8a3e 52.2%, #3f6a2c 100%); }
+.note { margin: 10px 0 0; font-size: 13px; }
+</style></head><body>
+<div class="top"><h1>Barre de combat J3 — la suite</h1>
+<p>Ce que la première planche ne montrait pas. Valeurs fictives (art « Flowing River Sword », 120 Qi max). Les cibles verrouillées suivent le choix B (losange au-dessus).</p></div>
+
+<div class="row" style="grid-template-columns: 1040px 1fr">
+  <div class="card"><h2>1 · À l'écran</h2><div class="screen" id="full" style="height:585px"></div>
+    <p class="note m">Échelle d'interface 2 (1280 × 720) : le bloc tient dans le coin, à l'écart de la barre vanilla, des cœurs et du chat.</p></div>
+  <div class="card"><h2>Ce que la planche ajoute</h2><ul>
+    <li><b>La garde mange le Qi</b> : chaque coup bloqué vide des segments par la droite, avec un éclat. La pénalité qui monte (×1, ×1,25, ×1,5…) s'affiche à gauche de la barre.</li>
+    <li><b>Garde brisée</b> : la barre passe au <span style="color:var(--red)">rouge</span>, les segments se fendent et tombent, le bloc tremble.</li>
+    <li><b>Parade</b> : aucun segment perdu ; un éclat cyan fait le tour du bloc et le mot <b>PARADE</b> passe une fraction de seconde.</li>
+    <li><b>Esquive</b> : 6 Qi, soit un peu plus d'un demi-segment, s'éclairent puis s'éteignent. Sans Qi, le contour de la barre clignote rose : l'esquive n'a pas lieu.</li>
+    <li><b>Enchaînement</b> : quatre losanges au-dessus du nom de l'art comptent les coups de poing (direct, croisé, crochet, uppercut). Une fine barre sous eux se vide pendant la fenêtre de 8 ticks.</li>
+    <li><b>Art actif</b> : son nom est écrit au-dessus de la barre. En changeant d'art, les cases se retournent l'une après l'autre.</li>
+    <li><b>Ultime lancée</b> : la case explose en or, un liseré doré borde l'écran, puis la case retombe à zéro.</li>
+  </ul>
+  <h2 style="margin-top:18px">À décider</h2><ul>
+    <li>La touche pour <b>changer d'art</b> (proposition : <b>Z</b>, ou la molette en tenant <b>Alt</b>).</li>
+    <li>Garder le <b>nombre de Qi</b> écrit, ou seulement les segments.</li>
+    <li>Le liseré doré de l'ultime : <b>tout l'écran</b> ou seulement le coin du bloc.</li>
+  </ul></div>
+</div>
+
+<div class="row"><div class="card"><h2>2 · Garde, parade, esquive</h2><div class="grid" id="guard" style="grid-template-columns:repeat(6,1fr)"></div></div></div>
+
+<div class="row" style="grid-template-columns: 1fr 1fr">
+  <div class="card"><h2>3 · L'enchaînement de coups</h2><div class="grid" id="combo" style="grid-template-columns:repeat(4,1fr)"></div></div>
+  <div class="card"><h2>4 · Changer d'art</h2><div class="grid" id="swap" style="grid-template-columns:repeat(4,1fr)"></div></div>
+</div>
+
+<div class="row"><div class="card"><h2>5 · L'ultime lancée</h2><div class="grid" id="ult" style="grid-template-columns:repeat(5,1fr)"></div></div></div>
+
+<script>
+const icon = i => ['linear-gradient(135deg,transparent 42%,#bfefff 43% 57%,transparent 58%),#1b4e74',
+  'radial-gradient(circle,transparent 28%,#9fe6ff 30% 38%,transparent 40% 52%,#5fc4f0 54% 60%,transparent 62%),#173f63',
+  'linear-gradient(90deg,transparent 20%,#bfefff 21% 30%,transparent 31% 45%,#8fd8ff 46% 55%,transparent 56% 70%,#bfefff 71% 80%,transparent 81%),#163a5c',
+  'radial-gradient(circle,#fff6d6 0 14%,#ffd77a 15% 26%,transparent 28%),repeating-conic-gradient(#8fd8ff 0 6deg,transparent 6deg 30deg),#13304d',
+  // A second art (Iron Palm): palm, fist, wave.
+  'radial-gradient(ellipse 30% 40% at 50% 60%,#ffd9b8 0 60%,transparent 62%),linear-gradient(transparent 20%,#ffcfa3 21% 40%,transparent 41%),#4a2a1c',
+  'radial-gradient(circle,#ffcfa3 0 30%,transparent 32%),repeating-radial-gradient(circle,transparent 0 6px,rgba(255,207,163,.4) 7px 8px),#3d2418',
+  'repeating-linear-gradient(160deg,transparent 0 6px,#ffcfa3 7px 9px),#432819'][i];
+function cell(x, y, size, s, i, state = {}) {
+  const gold = i === 3;
+  const border = state.warn ? 'var(--warn)' : state.glow ? 'var(--cyan)' : gold ? 'rgba(255,215,122,.65)' : 'var(--soft)';
+  const shadow = state.burst ? `0 0 ${14 * s}px ${6 * s}px rgba(255,215,122,.85)` : state.glow ? `0 0 ${6 * s}px var(--cyan)`
+    : state.ready ? `0 0 ${5 * s}px rgba(255,215,122,.8)` : `0 0 ${2 * s}px var(--faint)`;
+  const flip = state.flip !== undefined ? `transform:scaleX(${state.flip});` : '';
+  let h = `<div style="position:absolute;left:${x * s}px;top:${y * s}px;width:${size * s}px;height:${size * s}px;background:var(--panel);border:${s}px solid ${border};box-shadow:${shadow};${flip}">`;
+  h += `<div style="position:absolute;left:-${s}px;top:-${s}px;width:${3 * s}px;height:${3 * s}px;border-left:${s}px solid var(--corner);border-top:${s}px solid var(--corner)"></div>`;
+  h += `<div style="position:absolute;right:-${s}px;bottom:-${s}px;width:${3 * s}px;height:${3 * s}px;border-right:${s}px solid var(--corner);border-bottom:${s}px solid var(--corner)"></div>`;
+  if (!state.empty) {
+    h += `<div style="position:absolute;inset:${2 * s}px;background:${icon(state.art ?? i)};${state.dim ? 'filter:grayscale(1) brightness(.55)' : ''}"></div>`;
+  }
+  if (gold && state.charge !== undefined) {
+    h += `<div style="position:absolute;left:0;right:0;bottom:0;height:${state.charge * 100}%;background:rgba(255,215,122,.3);border-top:${s}px solid var(--gold)"></div>`;
+  }
+  if (state.burst) {
+    h += `<div style="position:absolute;inset:-${4 * s}px;background:radial-gradient(circle,rgba(255,246,214,.9),rgba(255,215,122,.4) 45%,transparent 70%)"></div>`;
+  }
+  if (state.cd) {
+    h += `<div style="position:absolute;inset:0;background:rgba(2,8,14,.74);display:flex;align-items:center;justify-content:center;font:bold ${6 * s}px Consolas;color:var(--text)">${state.cd}</div>`;
+  }
+  h += '</div>';
+  h += `<div style="position:absolute;left:${x * s}px;width:${size * s}px;top:${(y + size + 1) * s}px;text-align:center;font:${4 * s}px Consolas;color:${gold ? 'var(--gold)' : 'var(--muted)'}">${i + 1}</div>`;
+  return h;
+}
+// The Qi segments; opts: half, spent [from, to] (white flash), red (broken), cracked, outline (pink frame), label.
+function segs(x, y, s, n, full, opts = {}) {
+  let h = '';
+  for (let k = 0; k < n; k++) {
+    let bg = 'rgba(99,207,255,.1)', bd = 'rgba(99,207,255,.45)', glow = '', tf = '';
+    if (k < full) { bg = '#63cfff'; }
+    if (k === full && opts.half) { bg = 'linear-gradient(90deg,#63cfff 50%,rgba(99,207,255,.1) 50%)'; }
+    if (opts.spent && k >= opts.spent[0] && k < opts.spent[1]) { bg = 'rgba(255,255,255,.6)'; glow = `box-shadow:0 0 ${4 * s}px #fff`; }
+    if (opts.part !== undefined && k === opts.part) { bg = 'linear-gradient(90deg,#63cfff 30%,#ffffff 30% 90%,rgba(99,207,255,.1) 90%)'; glow = `box-shadow:0 0 ${3 * s}px #fff`; }
+    if (opts.red) { bd = 'var(--red)'; bg = k < full ? 'rgba(255,90,90,.75)' : 'rgba(255,90,90,.08)'; }
+    if (opts.cracked && k >= opts.cracked[0] && k < opts.cracked[1]) { bg = 'rgba(255,90,90,.5)'; tf = `transform:translateY(${(k % 3 + 1) * s}px) rotate(${(k % 2 ? 14 : -11)}deg);`; }
+    h += `<div style="position:absolute;left:${(x + k * 7) * s}px;top:${y * s}px;width:${6 * s}px;height:${4 * s}px;background:${bg};border:${Math.max(1, s / 2)}px solid ${bd};${glow}${tf}"></div>`;
+  }
+  if (opts.outline) {
+    h += `<div style="position:absolute;left:${(x - 1.5) * s}px;top:${(y - 1.5) * s}px;width:${(n * 7 + 2) * s}px;height:${7 * s}px;border:${s}px solid var(--warn);box-shadow:0 0 ${4 * s}px var(--warn)"></div>`;
+  }
+  return h;
+}
+// The art's name and the combo pips above the segments.
+function header(x, y, s, art = 'FLOWING RIVER SWORD', combo = -1, windowLeft = 0, color = 'var(--muted)') {
+  let h = `<div style="position:absolute;left:${x * s}px;top:${(y - 7) * s}px;font:${4 * s}px Consolas;color:${color};letter-spacing:${s / 2}px;white-space:nowrap">${art}</div>`;
+  if (combo >= 0) {
+    for (let k = 0; k < 4; k++) {
+      const on = k <= combo;
+      h += `<div style="position:absolute;left:${(x + 56 + k * 5) * s}px;top:${(y - 6.5) * s}px;width:${3 * s}px;height:${3 * s}px;transform:rotate(45deg);background:${on ? 'var(--cyan)' : 'transparent'};border:${Math.max(1, s / 2)}px solid var(--soft);${on ? `box-shadow:0 0 ${3 * s}px var(--cyan)` : ''}"></div>`;
+    }
+    h += `<div style="position:absolute;left:${(x + 55) * s}px;top:${(y - 2.2) * s}px;width:${20 * s}px;height:${0.8 * s}px;background:rgba(99,207,255,.15)"><div style="width:${windowLeft * 100}%;height:100%;background:var(--cyan)"></div></div>`;
+  }
+  return h;
+}
+function block(x, y, s, o = {}) {
+  const seg = o.seg ?? {};
+  let h = header(x, y, s, o.art, o.combo ?? -1, o.window ?? 0, o.artColor);
+  if (o.mult) {
+    h += `<div style="position:absolute;left:${(x - 11) * s}px;top:${(y - 0.5) * s}px;font:bold ${4 * s}px Consolas;color:${o.mult === '×1' ? 'var(--muted)' : 'var(--warn)'}">${o.mult}</div>`;
+  }
+  h += segs(x, y, s, 12, seg.full ?? 8, {half: true, ...seg});
+  const st = o.cells ?? {};
+  h += [0, 1, 2].map(i => cell(x + i * 18, y + 7, 15, s, i, st[i] ?? {})).join('');
+  h += cell(x + 56, y + 5, 19, s, 3, st[3] ?? {charge: .65});
+  if (o.word) {
+    h += `<div style="position:absolute;left:${(x + 30) * s}px;top:${(y - 19) * s}px;font:bold ${7 * s}px Consolas;color:${o.wordColor};letter-spacing:${s}px;text-shadow:0 0 ${5 * s}px ${o.wordColor}">${o.word}</div>`;
+  }
+  if (o.ring) {
+    h += `<div style="position:absolute;left:${(x - 4) * s}px;top:${(y - 10) * s}px;width:${84 * s}px;height:${44 * s}px;border:${s}px solid ${o.ring};box-shadow:0 0 ${8 * s}px ${o.ring}, inset 0 0 ${8 * s}px ${o.ring};border-radius:${3 * s}px"></div>`;
+  }
+  return h;
+}
+
+// 1 · The whole screen at GUI scale 2 (1040 x 585 board px for 1280 x 720 screen px: 0.8125 board px per screen px).
+(() => {
+  const k = 1040 / 1280, s = 2 * k; // one GUI px = 2 screen px
+  let h = '';
+  // Hills and a foe with the lock diamond (choice B).
+  h += `<div style="position:absolute;left:0;right:0;top:${0.47 * 585}px;height:40px;background:linear-gradient(transparent,rgba(63,106,44,.6));clip-path:polygon(0 100%,8% 30%,18% 70%,30% 10%,42% 60%,55% 25%,70% 80%,82% 20%,100% 60%,100% 100%)"></div>`;
+  const mx = 560, my = 240;
+  h += `<div style="position:absolute;left:${mx}px;top:${my}px;width:36px;height:96px">
+    <div style="position:absolute;left:9px;top:0;width:18px;height:18px;background:#7f9a6a"></div><div style="position:absolute;left:6px;top:18px;width:24px;height:34px;background:#3c4f62"></div>
+    <div style="position:absolute;left:6px;top:52px;width:11px;height:44px;background:#4f4a41"></div><div style="position:absolute;left:19px;top:52px;width:11px;height:44px;background:#4f4a41"></div></div>`;
+  h += `<div style="position:absolute;left:${mx + 11}px;top:${my - 36}px;width:14px;height:14px;transform:rotate(45deg);border:2px solid var(--warn);background:rgba(255,140,154,.25)"></div>`;
+  h += `<div style="position:absolute;left:${mx - 8}px;top:${my - 14}px;width:52px;height:5px;background:rgba(255,140,154,.2)"><div style="width:58%;height:5px;background:var(--warn);box-shadow:inset -6px 0 0 #fff"></div></div>`;
+  // Crosshair.
+  h += `<div style="position:absolute;left:${520 - 7}px;top:${292}px;width:14px;height:2px;background:#fff;opacity:.85"></div><div style="position:absolute;left:${519}px;top:${286}px;width:2px;height:14px;background:#fff;opacity:.85"></div>`;
+  // Vanilla hotbar, hearts and hunger (182 x 22 GUI px, centred at the bottom).
+  const hw = 182 * s, hx = 520 - hw / 2, hy = 585 - 24 * s;
+  h += `<div style="position:absolute;left:${hx}px;top:${hy}px;width:${hw}px;height:${22 * s}px;background:rgba(40,40,40,.75);border:${s}px solid #8b8b8b"></div>`;
+  for (let i = 0; i < 9; i++) h += `<div style="position:absolute;left:${hx + (1 + i * 20) * s}px;top:${hy + s}px;width:${18 * s}px;height:${18 * s}px;border:${s / 2}px solid #555;${i === 0 ? 'outline:' + s + 'px solid #fff' : ''}"></div>`;
+  for (let i = 0; i < 10; i++) {
+    h += `<div style="position:absolute;left:${hx + i * 8 * s}px;top:${hy - 10 * s}px;width:${7 * s}px;height:${7 * s}px;background:${i < 8 ? '#d43c3c' : '#3a1414'};border-radius:2px"></div>`;
+    h += `<div style="position:absolute;left:${hx + hw - (i + 1) * 8 * s}px;top:${hy - 10 * s}px;width:${7 * s}px;height:${7 * s}px;background:#a86a2c;border-radius:50%"></div>`;
+  }
+  // Chat line, bottom left.
+  h += `<div style="position:absolute;left:${2 * s}px;top:${585 - 60 * s}px;padding:${s}px ${2 * s}px;background:rgba(0,0,0,.4);font:${4.5 * s}px Consolas;color:#fff">&lt;Enzo&gt; on le prend à deux ?</div>`;
+  // The J3 block, bottom right, 6 GUI px from the edges: 86 x 38 GUI px with the header (the 12 segments are the widest).
+  h += `<div style="position:absolute;right:${6 * s}px;bottom:${6 * s}px;width:${86 * s}px;height:${38 * s}px">${block(0, 12, s, {combo: 1, window: .6})}</div>`;
+  document.getElementById('full').innerHTML = h;
+})();
+
+const frame = (id, items, height, s, at = [14, 26]) => {
+  document.getElementById(id).innerHTML = items.map(([n, d, o]) =>
+    `<div class="stage" style="height:${height}px"><div style="position:absolute;left:${at[0]}px;top:${at[1]}px">${block(4, 12, s, o)}</div><div class="cap"><b>${n}</b>${d}</div></div>`).join('');
+};
+
+// 2 · Guard, parry, dodge.
+frame('guard', [
+  ['Garde levée', 'clic droit tenu : ×1 à gauche de la barre', {mult: '×1'}],
+  ['Coup bloqué', '2 segments éclatent, la pénalité monte', {mult: '×1,25', seg: {full: 6, spent: [6, 8]}}],
+  ['Garde brisée', 'barre rouge, segments qui tombent', {seg: {full: 0, half: false, red: 1, cracked: [0, 6]}, word: 'BRISÉE', wordColor: 'var(--red)'}],
+  ['Parade', "aucun Qi perdu, éclat cyan autour du bloc", {seg: {full: 8}, ring: 'var(--cyan)', word: 'PARADE', wordColor: 'var(--cyan)'}],
+  ['Esquive', '6 Qi : un peu plus d’un demi-segment', {seg: {full: 7, half: false, part: 7}}],
+  ['Esquive refusée', 'pas assez de Qi : le contour clignote', {seg: {full: 0, half: true, outline: 1}}],
+], 190, 1.75, [22, 34]);
+
+// 3 · The combo.
+frame('combo', [
+  ['1er coup', 'direct : 1 losange, la fenêtre se remplit', {combo: 0, window: 1}],
+  ['2e coup', 'croisé dans la fenêtre : 2 losanges', {combo: 1, window: .8}],
+  ['La fenêtre se vide', '8 ticks pour enchaîner', {combo: 1, window: .2}],
+  ['Chaîne finie', '4 losanges, puis tout s’éteint', {combo: 3, window: 0}],
+], 170, 1.45, [10, 30]);
+
+// 4 · Switching arts.
+const palm = {0: {art: 4}, 1: {art: 5}, 2: {art: 6}};
+frame('swap', [
+  ['Art actif', 'Flowing River Sword', {}],
+  ['Touche (à choisir)', 'le nom s’efface, la case 1 se retourne', {art: 'IRON PALM', artColor: 'var(--gold)', cells: {0: {flip: .15}}}],
+  ['Les cases suivent', 'une à une, 3 ticks d’écart', {art: 'IRON PALM', artColor: 'var(--gold)', cells: {0: {art: 4}, 1: {flip: .2}, 2: {flip: .7}}}],
+  ['Nouvel art', 'Iron Palm, ses techniques sur 1-3', {art: 'IRON PALM', cells: palm}],
+], 170, 1.45, [10, 30]);
+
+// 5 · The ultimate cast.
+document.getElementById('ult').innerHTML = [
+  ['Ultime prête', 'la case dorée pulse', {cells: {3: {charge: 1, ready: 1}}}, ''],
+  ['Touche 4', 'la case explose en or', {cells: {3: {charge: 1, burst: 1}}}, 'inset 0 0 60px 18px rgba(255,215,122,.55)'],
+  ['La technique joue', 'liseré doré autour de l’écran', {cells: {3: {charge: .5, dim: 1}}}, 'inset 0 0 40px 10px rgba(255,215,122,.35)'],
+  ['Juste après', 'la case retombe à zéro', {cells: {3: {charge: 0, dim: 1}}}, ''],
+  ['Elle remonte', 'en frappant et en encaissant', {cells: {3: {charge: .2}}}, ''],
+].map(([n, d, o, vignette]) => `<div class="stage" style="height:190px"><div class="screen" style="position:absolute;inset:0;box-shadow:${vignette}"></div>
+  <div style="position:absolute;inset:0;box-shadow:${vignette}"></div>
+  <div style="position:absolute;left:60px;top:40px">${block(4, 12, 1.6, o)}</div><div class="cap" style="background:rgba(11,16,22,.75);bottom:0;padding:4px 0"><b>${n}</b>${d}</div></div>`).join('');
+</script>
+</body></html>
