@@ -45,7 +45,8 @@ const BIOMES = {
   unnam_jungle: ['jungle', 0.95, 0.9, UNNAM, 'Unnam Jungle'],
   stone_peaks: ['sparse_jungle', 0.85, 0.85, HONAM, 'Stone Peaks'],
   rice_terraces: ['plains', 0.85, 0.85, HONAM, 'Rice Terraces'],
-  subtropical_forest: ['sparse_jungle', 0.9, 0.85, HONAM, 'Subtropical Forest'],
+  // The south grows denser: the subtropical forest is a full jungle.
+  subtropical_forest: ['jungle', 0.9, 0.85, HONAM, 'Subtropical Forest'],
   southeast_coast: ['forest', 0.85, 0.8, ['#5FAA48', '#519A38', '#3AA0B8', '#DDE8EC', '#8FBCE0'], 'Southeast Coast'],
 };
 
@@ -56,6 +57,7 @@ const EXTRA = {
   stone_peaks: [[2, 'murimblock:pillar_forest']],
   qinghai_plateau: [[1, 'murimblock:high_lake']],
   stone_forest: [[2, 'murimblock:karst_blade']],
+  rice_terraces: [[2, 'murimblock:rice_terrace']],
 };
 
 const rgb = hex =>parseInt(hex.slice(1), 16);

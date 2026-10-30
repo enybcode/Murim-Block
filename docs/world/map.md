@@ -159,6 +159,16 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 - Left for the second pass: rice terraces, tree density rising to the south, real loess and limestone blocks
   (terracotta reads more orange than loess).
 
+## Step 4, second pass: rice terraces and southern trees (30 Oct 2026)
+
+- `MurimMap` raises rounded hills (up to +34) under the `rice_terraces`. `TerraceFeature` (`rice_terrace`, step 2)
+  cuts them into 3-block steps along their contours. A column with no lower neighbour holds a paddy (water on two
+  mud blocks, a few dry fields by noise); the others are grass banks. Ground at Y 64 or lower is left alone.
+- The subtropical forest now starts from vanilla's jungle, not the sparse jungle. Tree cover then rises from the
+  open north through the bamboo, waterlands and jungle of the south.
+- Verified 30 Oct 2026: `gradlew build`, `runMapTour` 0 failures; the rice terraces shot shows the stepped paddies.
+- Left: real loess and limestone blocks.
+
 ## Open points
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.

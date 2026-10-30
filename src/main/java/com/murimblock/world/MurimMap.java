@@ -98,10 +98,12 @@ public final class MurimMap {
         double jag = 0;
         double[][] around = {{0, 0}, {BLEND, 0}, {-BLEND, 0}, {0, BLEND}, {0, -BLEND}};
         double loess = 0;
+        double terraces = 0;
         for (double[] o : around) {
             MurimBiome b = o[0] == 0 && o[1] == 0 ? here : biome(x + o[0], z + o[1]);
             double[] r = RELIEF[b.ordinal()];
             loess += b == MurimBiome.LOESS_PLATEAU ? 1.0 / around.length : 0;
+            terraces += b == MurimBiome.RICE_TERRACES ? 1.0 / around.length : 0;
             height += r[0] / around.length;
             weight += r[1] / around.length;
             jag += r[2] / around.length;
@@ -139,6 +141,10 @@ public final class MurimMap {
             double f = Math.pow(1 - d / 520, 1.4);
             height += 125 * f;
             weight = Math.max(weight, .95 * Math.min(1, f * 3));
+        }
+        // Rice terraces: rounded hills for the paddies to climb (TerraceFeature cuts the steps).
+        if (terraces > 0) {
+            height += terraces * 34 * Math.max(0, .45 + fbm(wx / 230, wz / 230, 61));
         }
         // Loess ravines: branching gullies 15 to 30 deep cut into the tablelands, fading out at the plateau's edge.
         if (loess > 0) {

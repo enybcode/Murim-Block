@@ -8,6 +8,7 @@ import com.murimblock.world.MurimRelief;
 import com.murimblock.world.feature.HighLakeFeature;
 import com.murimblock.world.feature.PillarForestFeature;
 import com.murimblock.world.feature.RockPillarFeature;
+import com.murimblock.world.feature.TerraceFeature;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -29,6 +30,7 @@ public final class MurimWorldgen {
         FEATURES.register("pillar_forest", PillarForestFeature::new);
         FEATURES.register("rock_pillar", RockPillarFeature::new);
         FEATURES.register("high_lake", HighLakeFeature::new);
+        FEATURES.register("rice_terrace", TerraceFeature::new);
     }
 
     private MurimWorldgen() {
