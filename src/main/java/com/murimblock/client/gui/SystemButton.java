@@ -78,44 +78,45 @@ public class SystemButton extends AbstractButton {
         int textY = y + (h - 8) / 2;
         switch (style) {
             case TAB -> {
-                if (selected) {
-                    g.renderOutline(x - 1, y - 1, w + 2, h + 2, SystemTheme.withAlpha(SystemTheme.CYAN, 0x40));
-                    g.fill(x, y, x + w, y + h, SystemTheme.CYAN);
-                } else if (hot) {
-                    g.fill(x, y, x + w, y + h, SystemTheme.withAlpha(SystemTheme.CYAN, 0x1A));
-                }
-                g.renderOutline(x, y, w, h, selected || hot ? SystemTheme.CYAN : SystemTheme.CYAN_SOFT);
-                int color = selected ? SystemTheme.TEXT_ON_CYAN : hot ? SystemTheme.TEXT : 0xFF9FDCFF;
+                // A pill with cut corners; the open tab is filled cyan with a diamond before its name.
+                int line = selected ? PixelArt.LIGHT : hot ? PixelArt.CYAN : PixelArt.MID;
+                int fill = selected ? PixelArt.CYAN : hot ? 0xFF16395C : 0xFF0F2944;
+                PixelArt.frame(g, x, y, w, h, 2, line, fill, selected ? PixelArt.WHITE : 0x333FB4EC);
                 int tw = SystemTheme.spacedWidth(font, label, 1);
-                SystemTheme.spaced(g, font, label, x + (w - tw) / 2, textY, color, 1);
+                int tx = x + (w - tw) / 2 + (selected ? 3 : 0);
+                if (selected) {
+                    PixelArt.diamond(g, tx - 6, y + h / 2, 2, PixelArt.OUTLINE);
+                    PixelArt.diamond(g, tx - 6, y + h / 2, 1, PixelArt.WHITE);
+                }
+                int color = selected ? SystemTheme.TEXT_ON_CYAN : hot ? SystemTheme.TEXT : 0xFF9FDCFF;
+                SystemTheme.spaced(g, font, label, tx, textY, color, 1);
             }
             case SUB_TAB -> {
                 int tw = SystemTheme.spacedWidth(font, label, 1);
                 int tx = x + (w - tw) / 2;
                 if (selected) {
-                    g.fill(x, y + h - 2, x + w, y + h, SystemTheme.CYAN);
+                    PixelArt.rect(g, x, y + h - 2, w, 2, PixelArt.CYAN);
+                    PixelArt.diamond(g, x + w / 2, y + h - 1, 2, PixelArt.LIGHT);
                     SystemTheme.crispSpaced(g, font, label, tx, textY, SystemTheme.TEXT, 1);
                 } else {
                     SystemTheme.spaced(g, font, label, tx, textY, hot ? SystemTheme.TEXT : SystemTheme.TEXT_MUTED, 1);
                 }
             }
             case ACTION -> {
-                if (hot) {
-                    g.fill(x, y, x + w, y + h, SystemTheme.withAlpha(SystemTheme.CYAN, 0x2E));
-                }
-                int frame = active ? SystemTheme.CYAN : SystemTheme.withAlpha(SystemTheme.CYAN, 0x59);
-                g.renderOutline(x, y, w, h, frame);
+                // Cut corners and a one-pixel shadow; pressed (hovered) it sinks by a pixel.
+                int sink = hot ? 1 : 0;
+                PixelArt.rect(g, x + 2, y + h, w - 2, 1, PixelArt.OUTLINE);
+                PixelArt.frame(g, x, y + sink, w, h, 1, active ? (hot ? PixelArt.LIGHT : PixelArt.CYAN) : PixelArt.SLATE,
+                        active ? (hot ? 0xFF1A4268 : PixelArt.NIGHT) : PixelArt.DEEP, active ? 0x403FB4EC : 0);
                 int tw = SystemTheme.spacedWidth(font, label, 1);
                 int color = active ? 0xFFD6F4FF : SystemTheme.withAlpha(SystemTheme.TEXT_MUTED, 0x80);
-                SystemTheme.spaced(g, font, label, x + (w - tw) / 2, textY, color, 1);
+                SystemTheme.spaced(g, font, label, x + (w - tw) / 2, textY + sink, color, 1);
             }
             case ROW -> {
-                if (selected) {
-                    g.fill(x, y, x + w, y + h, SystemTheme.CYAN_FILL);
-                } else if (hot) {
-                    g.fill(x, y, x + w, y + h, SystemTheme.withAlpha(SystemTheme.CYAN, 0x14));
-                }
-                g.renderOutline(x, y, w, h, selected || hot ? SystemTheme.CYAN : SystemTheme.CYAN_FAINT);
+                // A thin frame; the chosen row has a white line and a lighter fill.
+                int line = selected ? PixelArt.WHITE : hot ? PixelArt.CYAN : PixelArt.MID;
+                int fill = selected ? 0xF01A4268 : hot ? 0xE0143454 : 0xD20F2944;
+                PixelArt.frame(g, x, y, w, h, 1, line, fill, selected ? 0x66E9FBFF : 0);
                 if (content != null) {
                     content.draw(g, font, x, y, w, h);
                 } else {

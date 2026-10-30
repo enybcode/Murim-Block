@@ -1,9 +1,10 @@
 package com.murimblock.client.combat;
 
-import static com.murimblock.client.combat.HudPixels.*;
+import static com.murimblock.client.gui.PixelArt.*;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.client.gui.TechniqueIcons;
 import com.murimblock.client.gui.data.MartialArtsData;
 import com.murimblock.combat.CombatState;
 import java.util.List;

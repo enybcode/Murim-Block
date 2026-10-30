@@ -87,7 +87,7 @@ is the reference for the shapes). It replaces the J3 boxes above when the HUD is
 gets its own icon in this style:
 
 - Block: 96 x 52 GUI px, 6 GUI px from the bottom-right corner (raised above the hotbar on narrow screens), drawn in
-  GUI pixels (no smoothing). Built on 30 Oct 2026 in `CombatHud` (`HudPixels`, `TechniqueIcons`); in game it holds six
+  GUI pixels (no smoothing). Built on 30 Oct 2026 in `CombatHud` (`gui/PixelArt`, `gui/TechniqueIcons`); in game it holds six
   technique seals (Enzo, same day), smaller than the board.
 - Art banner with pointed ends, the name in the 3 x 5 pixel font (white, shadow one pixel down-right); Qi number at its
   right.

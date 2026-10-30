@@ -1,10 +1,12 @@
 package com.murimblock.client.gui.page;
 
+import com.murimblock.client.gui.PixelArt;
 import com.murimblock.client.gui.SystemButton;
 import com.murimblock.client.gui.SystemLayout.Rect;
 import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.SystemTheme;
+import com.murimblock.client.gui.TechniqueIcons;
 import com.murimblock.client.gui.data.MartialArtsData;
 import com.murimblock.client.gui.data.MartialArtsData.Art;
 import com.murimblock.client.gui.data.MartialArtsData.Technique;
@@ -22,6 +24,8 @@ public final class TechniquesPage implements SystemPageView {
     private static final int TECHNIQUE_ROW = 22;
     private static final int ROW_GAP = 3;
     private static final int LABEL_HEIGHT = 14;
+    /** Technique slots an art has, as on the combat bar. */
+    private static final int SLOTS = 6;
 
     private int picked;
 
@@ -52,6 +56,10 @@ public final class TechniquesPage implements SystemPageView {
         List<Technique> techniques = active.techniques();
         for (int i = 0; i < techniques.size(); i++) {
             Technique t = techniques.get(i);
+            if (t.kind() == MartialArtsData.Kind.ULTIMATE) {
+                // The free technique slots come before the ultimate (drawn by render).
+                y += emptySlots(active) * (TECHNIQUE_ROW + ROW_GAP);
+            }
             int index = i;
             String key = MartialArtsData.keyOf(active, t);
             screen.addPageWidget(new SystemButton(layout.techniques().x(), y, layout.techniques().width(), TECHNIQUE_ROW,
@@ -63,14 +71,56 @@ public final class TechniquesPage implements SystemPageView {
         }
     }
 
+    /** Technique slots the art leaves free, up to the six a bar holds. */
+    private static int emptySlots(Art art) {
+        long count = art.techniques().stream().filter(t -> t.kind() == MartialArtsData.Kind.TECHNIQUE).count();
+        return (int) Math.max(0, SLOTS - count);
+    }
+
     private static void techniqueRow(GuiGraphics g, Font font, int x, int y, int h, String key, Technique t) {
         int box = 14;
         int bx = x + 4;
         int by = y + (h - box) / 2;
-        g.renderOutline(bx, by, box, box, SystemTheme.CYAN);
+        PixelArt.frame(g, bx, by, box, box, 1, t.kind() == MartialArtsData.Kind.ULTIMATE ? PixelArt.GOLD : PixelArt.CYAN,
+                PixelArt.DEEP, 0);
         g.drawCenteredString(font, key, bx + box / 2 + 1, by + 3, 0xFF9FE2FF);
         g.drawString(font, t.name(), bx + box + 6, y + 3, SystemTheme.TEXT, false);
         g.drawString(font, t.kind().label(), bx + box + 6, y + 12, SystemTheme.TEXT_MUTED, false);
+    }
+
+    /** A free technique slot: a dim row with its key. */
+    private static void emptyRow(GuiGraphics g, Font font, Rect r, int key) {
+        PixelArt.frame(g, r.x(), r.y(), r.width(), r.height(), 1, PixelArt.SLATE, 0xB40D2238, 0);
+        int bx = r.x() + 4, by = r.y() + (r.height() - 14) / 2;
+        PixelArt.frame(g, bx, by, 14, 14, 1, PixelArt.SLATE, PixelArt.DEEP, 0);
+        g.drawCenteredString(font, String.valueOf(key), bx + 8, by + 3, SystemTheme.TEXT_MUTED);
+        g.drawString(font, Component.translatable("gui.murimblock.techniques.empty"), bx + 20, r.y() + 3, 0xFF6B8AA3, false);
+        g.drawString(font, Component.translatable("gui.murimblock.techniques.empty_line"), bx + 20, r.y() + 12, 0xFF4E6A82, false);
+    }
+
+    /** A large seal for a crest or a technique: a framed diamond with its icon (7 x 7 icons drawn twice as big). */
+    private static void seal(GuiGraphics g, int cx, int cy, int half, String[] icon, boolean gold) {
+        PixelArt.diamond(g, cx, cy, half, PixelArt.OUTLINE);
+        PixelArt.diamond(g, cx, cy, half - 1, gold ? PixelArt.GOLD : PixelArt.CYAN);
+        PixelArt.diamond(g, cx, cy, half - 2, PixelArt.OUTLINE);
+        PixelArt.diamond(g, cx, cy, half - 3, PixelArt.NIGHT);
+        for (int dy = 1; dy <= half - 3; dy++) {
+            int w = half - 3 - dy;
+            PixelArt.rect(g, cx - w, cy + dy, 2 * w + 1, 1, PixelArt.DEEP);
+        }
+        if (icon == null) {
+            return;
+        }
+        int scale = icon.length <= 7 ? 2 : 1;
+        int size = icon.length * scale;
+        for (int j = 0; j < icon.length; j++) {
+            for (int i = 0; i < icon[j].length(); i++) {
+                char c = icon[j].charAt(i);
+                if (c != '.') {
+                    PixelArt.rect(g, cx - size / 2 + i * scale, cy - size / 2 + j * scale, scale, scale, PixelArt.color(c));
+                }
+            }
+        }
     }
 
     @Override
@@ -79,13 +129,27 @@ public final class TechniquesPage implements SystemPageView {
         Art active = MartialArtsData.active();
         renderArts(g, font, layout.arts(), active);
         label(g, font, layout.techniques().x(), layout.techniques().y(), "gui.murimblock.techniques.of_art");
+        int y = layout.techniques().y() + LABEL_HEIGHT;
+        int key = 0;
+        for (Technique t : active.techniques()) {
+            if (t.kind() == MartialArtsData.Kind.TECHNIQUE) {
+                key++;
+            }
+            if (t.kind() == MartialArtsData.Kind.ULTIMATE) {
+                for (int k = 0; k < emptySlots(active); k++) {
+                    emptyRow(g, font, new Rect(layout.techniques().x(), y, layout.techniques().width(), TECHNIQUE_ROW), ++key);
+                    y += TECHNIQUE_ROW + ROW_GAP;
+                }
+            }
+            y += TECHNIQUE_ROW + ROW_GAP;
+        }
         renderDetail(g, font, layout.detail(), active.techniques().get(Math.min(picked, active.techniques().size() - 1)));
     }
 
     private static void renderArts(GuiGraphics g, Font font, Rect r, Art active) {
         Rect card = new Rect(r.x(), r.y(), r.width(), CARD_HEIGHT);
-        g.renderOutline(card.x() - 1, card.y() - 1, card.width() + 2, card.height() + 2, SystemTheme.withAlpha(SystemTheme.CYAN, 0x30));
         SystemTheme.box(g, card, true);
+        seal(g, card.right() - 17, card.y() + 18, 12, TechniqueIcons.crest(active.weapon()), false);
         int x = card.x() + 7;
         label(g, font, x, card.y() + 6, "gui.murimblock.techniques.active");
         SystemTheme.glowText(g, font, active.name(), x, card.y() + 18, SystemTheme.TEXT);
@@ -94,6 +158,15 @@ public final class TechniquesPage implements SystemPageView {
         g.drawString(font, Component.translatable("gui.murimblock.techniques.mastery"), x, card.y() + 42, SystemTheme.TEXT_MUTED, false);
         g.drawString(font, mastery, card.right() - 7 - font.width(mastery), card.y() + 42, SystemTheme.TEXT_MUTED, false);
         SystemTheme.bar(g, x, card.y() + 53, card.width() - 14, 7, active.masteryPercent() / 100f, SystemTheme.CYAN);
+        // A diamond on the bar at each mastery that unlocks a technique, lit once reached.
+        int inner = card.width() - 14 - 8;
+        for (Technique t : active.techniques()) {
+            if (t.unlockMastery() > 0) {
+                int mx = x + 4 + Math.round(inner * t.unlockMastery() / 100f);
+                PixelArt.diamond(g, mx, card.y() + 53, 2, PixelArt.OUTLINE);
+                PixelArt.diamond(g, mx, card.y() + 53, 1, active.masteryPercent() >= t.unlockMastery() ? PixelArt.WHITE : PixelArt.MID);
+            }
+        }
 
         int y = card.bottom() + 8;
         label(g, font, r.x(), y, "gui.murimblock.techniques.others");
@@ -103,22 +176,39 @@ public final class TechniquesPage implements SystemPageView {
                 continue;
             }
             Rect row = new Rect(r.x(), y, r.width(), ART_ROW);
-            g.renderOutline(row.x(), row.y(), row.width(), row.height(), SystemTheme.CYAN_FAINT);
-            g.drawString(font, art.name(), row.x() + 6, row.y() + 4, SystemTheme.TEXT, false);
-            g.drawString(font, artLine(art), row.x() + 6, row.y() + 14, SystemTheme.TEXT_MUTED, false);
+            PixelArt.frame(g, row.x(), row.y(), row.width(), row.height(), 1, PixelArt.MID, 0xD20F2944, 0);
+            PixelArt.diamond(g, row.x() + 7, row.y() + ART_ROW / 2, 2, PixelArt.CYAN);
+            g.drawString(font, art.name(), row.x() + 13, row.y() + 4, SystemTheme.TEXT, false);
+            g.drawString(font, artLine(art), row.x() + 13, row.y() + 14, SystemTheme.TEXT_MUTED, false);
             y += ART_ROW + ROW_GAP;
         }
 
         Component notice = Component.translatable(MartialArtsData.inCombat()
                 ? "gui.murimblock.techniques.notice_combat" : "gui.murimblock.techniques.notice");
-        notice(g, font, r, notice);
+        int noticeTop = notice(g, font, r, notice);
+
+        // The masteries that unlock this art's techniques, ticked once reached, where room is left.
+        List<Technique> unlocks = active.techniques().stream().filter(t -> t.unlockMastery() > 0).toList();
+        int top = y + 4;
+        if (!unlocks.isEmpty() && top + 11 + unlocks.size() * 10 <= noticeTop - 2) {
+            label(g, font, r.x(), top, "gui.murimblock.techniques.unlocks");
+            int uy = top + 11;
+            for (Technique t : unlocks) {
+                boolean reached = active.masteryPercent() >= t.unlockMastery();
+                PixelArt.check(g, r.x() + 5, uy + 3, reached);
+                g.drawString(font, t.unlockMastery() + "%", r.x() + 12, uy, reached ? 0xFF9FDCFF : 0xFF6B8AA3, false);
+                g.drawString(font, t.name(), r.x() + 42, uy, reached ? SystemTheme.TEXT : 0xFF6B8AA3, false);
+                uy += 10;
+            }
+        }
     }
 
     private static Component artLine(Art art) {
         return Component.translatable("gui.murimblock.techniques.art_line", art.weaponName(), art.rank());
     }
 
-    private static void notice(GuiGraphics g, Font font, Rect r, Component text) {
+    /** The [!] notice at the bottom of {@code r}; returns its top. */
+    private static int notice(GuiGraphics g, Font font, Rect r, Component text) {
         int textX = r.x() + 6 + font.width("[!] ");
         List<FormattedCharSequence> lines = font.split(text, r.right() - 6 - textX);
         int height = lines.size() * 10 + 8;
@@ -130,6 +220,7 @@ public final class TechniquesPage implements SystemPageView {
             g.drawString(font, line, textX, y, 0xFFCFEEFF, false);
             y += 10;
         }
+        return box.y();
     }
 
     private static void renderDetail(GuiGraphics g, Font font, Rect r, Technique t) {
@@ -139,7 +230,8 @@ public final class TechniquesPage implements SystemPageView {
 
         String kind = t.kind().label().getString().toUpperCase(java.util.Locale.ROOT);
         int tagWidth = SystemTheme.spacedWidth(font, kind, 1) + 12;
-        g.renderOutline(x, y, tagWidth, 14, SystemTheme.CYAN);
+        PixelArt.frame(g, x, y, tagWidth, 14, 1, PixelArt.CYAN, PixelArt.DEEP, 0);
+        seal(g, r.right() - 22, r.y() + 24, 15, TechniqueIcons.of(t.id()), t.kind() == MartialArtsData.Kind.ULTIMATE);
         SystemTheme.spaced(g, font, kind, x + 6, y + 3, 0xFFBFEEFF, 1);
         y += 22;
 
@@ -158,6 +250,7 @@ public final class TechniquesPage implements SystemPageView {
             g.drawString(font, line, x, y, 0xFFD5EFFF, false);
             y += 11;
         }
+        PixelArt.divider(g, x, y + 4, r.width() - 20);
 
         Component unlock = t.unlockMastery() > 0
                 ? Component.translatable("gui.murimblock.techniques.unlock_at", t.unlockMastery())
@@ -166,7 +259,7 @@ public final class TechniquesPage implements SystemPageView {
     }
 
     private static void stat(GuiGraphics g, Font font, int x, int y, int w, String labelKey, Component value) {
-        g.renderOutline(x, y, w, 28, SystemTheme.CYAN_FAINT);
+        PixelArt.frame(g, x, y, w, 28, 1, PixelArt.MID, PixelArt.DEEP, 0);
         g.drawString(font, Component.translatable(labelKey), x + 6, y + 5, SystemTheme.TEXT_MUTED, false);
         SystemTheme.crispText(g, font, value, x + 6, y + 16, SystemTheme.TEXT);
     }
