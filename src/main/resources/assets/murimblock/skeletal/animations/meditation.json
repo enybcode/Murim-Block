@@ -2,9 +2,6 @@
   "clips": {
     "sit": {"transition": 0.15},
     "lotus": {"loop": true, "transition": 0.3},
-    "lotus_still": {"loop": true, "transition": 0.3},
-    "breath": {"additive": true, "mask": ["Torso", "Chest", "Head", "Shoulder_L", "Shoulder_R"]},
-    "deep": {"additive": true, "transition": 0.1, "mask": ["Torso", "Chest", "Head", "Shoulder_L", "Shoulder_R"]},
     "breakthrough": {"transition": 0.3},
     "stand": {"transition": 0.1}
   }

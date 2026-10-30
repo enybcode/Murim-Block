@@ -8,17 +8,17 @@ public final class CultivationRules {
     public static final int STAGES = 9;
     public static final int MERIDIANS = 13;
     public static final int START_MAX_QI = 100;
-    /** Stage Qi gathered each second of meditation, before Harmony. */
+    /** Stage Qi gathered each second of meditation, before Calm. */
     public static final double MEDITATION_GAIN = 2.0;
-    /** Full Harmony multiplies the meditation gain by 1 + this. */
-    public static final double HARMONY_BONUS = 1.5;
-    /** Harmony won by a perfect and a good breath of the QTE, and lost by a miss (validated mockup, 24 Oct). */
-    public static final double HARMONY_PERFECT = 0.06;
-    public static final double HARMONY_GOOD = 0.04;
-    public static final double HARMONY_MISS = -0.08;
-    /** Breaths in a row without a miss that reach each combo tier, and each tier's gain multiplier. */
-    private static final int[] COMBO_TIERS = {0, 5, 10, 20};
-    private static final double[] COMBO_MULTIPLIERS = {1, 1.2, 1.5, 2};
+    /** Full Calm multiplies the meditation gain by 1 + this. */
+    public static final double CALM_BONUS = 2.0;
+    /** Seconds of closed eyes, undisturbed, from no Calm to full; and seconds a near hostile takes to empty it. */
+    public static final double CALM_RISE_SECONDS = 120;
+    public static final double CALM_FALL_SECONDS = 30;
+    /** A hostile mob this close stops the Calm from rising and wears it down. */
+    public static final double CALM_ENEMY_RANGE = 16;
+    /** Calm reaching each tier: Steady Breath, Flowing Qi, Still Heart. */
+    private static final double[] CALM_TIERS = {0.25, 0.5, 1};
     /** Qi refilled each second outside meditation, and while meditating. */
     public static final double QI_REGEN = 0.5;
     public static final double QI_REGEN_MEDITATING = 2.5;
@@ -34,33 +34,29 @@ public final class CultivationRules {
         return (int) Math.round(100 * Math.pow(1.25, stage - 1) * Math.pow(3, realm));
     }
 
-    /** Stage Qi gathered per second of meditation for a Harmony between 0 and 1. */
-    public static double meditationGain(double harmony) {
-        return MEDITATION_GAIN * (1 + HARMONY_BONUS * clamp01(harmony));
+    /** Stage Qi gathered per second of meditation for a Calm between 0 and 1: x1 to x3. */
+    public static double meditationGain(double calm) {
+        return MEDITATION_GAIN * (1 + CALM_BONUS * clamp01(calm));
     }
 
-    /** Stage Qi gathered per second of meditation for a Harmony between 0 and 1 and a combo of breaths. */
-    public static double meditationGain(double harmony, int combo) {
-        return meditationGain(harmony) * comboMultiplier(combo);
+    /**
+     * Calm after {@code seconds} more of meditation: it rises while the eyes are closed and no hostile is near,
+     * holds while they are open, and wears down while a hostile is near.
+     */
+    public static double calmAfter(double calm, double seconds, boolean eyesClosed, boolean disturbed) {
+        if (disturbed) {
+            return clamp01(calm - seconds / CALM_FALL_SECONDS);
+        }
+        return eyesClosed ? clamp01(calm + seconds / CALM_RISE_SECONDS) : clamp01(calm);
     }
 
-    /** Combo tier, 0 (none) to 3, for this many breaths in a row without a miss. */
-    public static int comboTier(int combo) {
+    /** Calm tier, 0 (none) to 3 (Still Heart). */
+    public static int calmTier(double calm) {
         int tier = 0;
-        while (tier + 1 < COMBO_TIERS.length && combo >= COMBO_TIERS[tier + 1]) {
+        while (tier < CALM_TIERS.length && calm >= CALM_TIERS[tier]) {
             tier++;
         }
         return tier;
-    }
-
-    public static double comboMultiplier(int combo) {
-        return COMBO_MULTIPLIERS[comboTier(combo)];
-    }
-
-    /** Breaths in a row needed for the tier after this combo's, or -1 at the top tier. */
-    public static int nextComboTier(int combo) {
-        int tier = comboTier(combo);
-        return tier + 1 < COMBO_TIERS.length ? COMBO_TIERS[tier + 1] : -1;
     }
 
     /** Meridians a realm can hold open: four per realm reached, up to all thirteen. */

@@ -100,7 +100,7 @@ public final class StageBreakthrough {
         }
     }
 
-    /** Whether the local player's own breakthrough is playing (the breathing lane pauses meanwhile). */
+    /** Whether the local player's own breakthrough is playing (the closed eyes open meanwhile). */
     public static boolean playingOwn() {
         return own(Minecraft.getInstance()) != null;
     }

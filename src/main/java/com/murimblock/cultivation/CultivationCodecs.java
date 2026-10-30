@@ -25,7 +25,7 @@ public final class CultivationCodecs {
         ByteBufCodecs.VAR_INT.encode(buf, s.maxQi());
         ByteBufCodecs.VAR_INT.encode(buf, s.meridians());
         buf.writeBoolean(s.meditating());
-        buf.writeFloat(s.harmony());
+        buf.writeFloat(s.calm());
     }, buf -> new Cultivation.Snapshot(ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
             buf.readDouble(), buf.readDouble(), ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
             buf.readBoolean(), buf.readFloat()));

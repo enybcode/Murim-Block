@@ -13,11 +13,6 @@ public final class Meditation {
     public static final double ENEMY_RANGE = 8;
     /** Moving farther than this from where the player sat ends meditation. */
     public static final double MAX_DRIFT = 0.3;
-    /**
-     * Fewest ticks between two breaths of the QTE, so a client cannot spam good beats. Two marks are at least 0.75 s
-     * apart and each may be pressed 0.16 s off, so honest breaths can come 0.43 s apart.
-     */
-    public static final int BREATH_INTERVAL = 8;
     private static final int SYNC_INTERVAL = 10;
 
     private Meditation() {
@@ -73,6 +68,7 @@ public final class Meditation {
                     stop(player, blocked);
                     return;
                 }
+                c.setDisturbed(enemyWithin(player, CultivationRules.CALM_ENEMY_RANGE));
                 // Watchers size the Qi smoke on the Qi held.
                 PacketDistributor.sendToPlayersTrackingEntity(player,
                         new CultivationPayloads.MeditatorQi(player.getId(), (int) c.qi()));
@@ -106,11 +102,9 @@ public final class Meditation {
         }
     }
 
-    public static void breathe(ServerPlayer player, BreathResult result) {
-        Cultivation c = of(player);
-        if (c.meditating() && player.tickCount - c.lastBreathTick() >= BREATH_INTERVAL) {
-            c.breathe(result, player.tickCount);
-        }
+    /** The client closed or opened its eyes while meditating. */
+    public static void eyes(ServerPlayer player, boolean closed) {
+        of(player).setEyesClosed(closed);
     }
 
     /** Why the player cannot meditate here, as a message key, or null. */
@@ -124,9 +118,12 @@ public final class Meditation {
         if (!player.onGround()) {
             return "message.murimblock.meditation.ground";
         }
-        boolean enemy = !player.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
-                player.getBoundingBox().inflate(ENEMY_RANGE), m -> m instanceof Enemy && m.isAlive()).isEmpty();
-        return enemy ? "message.murimblock.meditation.enemy" : null;
+        return enemyWithin(player, ENEMY_RANGE) ? "message.murimblock.meditation.enemy" : null;
+    }
+
+    private static boolean enemyWithin(ServerPlayer player, double range) {
+        return !player.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
+                player.getBoundingBox().inflate(range), m -> m instanceof Enemy && m.isAlive()).isEmpty();
     }
 
     public static CultivationPayloads.Pose pose(ServerPlayer player, boolean meditating) {

@@ -4,6 +4,7 @@ One file per feature or decision, added as the work goes.
 
 - [System GUI](gui/system-gui.md): the player's menu (Profile, Techniques, Cultivation, Info), its look and code.
 - [Cultivation](cultivation/cultivation.md): Qi data, stages, meditation and meridians (first slice, proposal).
+- [Meditation V3](cultivation/meditation-vision.md): closed eyes, Calm, the spiritual vision by realm.
 - [Inner world](cultivation/inner-world.md): each player's private island, entered from meditation from Third-rate on.
 - [Mortal trial](cultivation/mortal-trial.md): the way out of the mortal realm, fifteen zombies on a graveyard island.
 - [Shenfa to-do](combat/shenfa-todo.md): what is left for the animation engine and combat, in order (the current list).

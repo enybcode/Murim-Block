@@ -1,0 +1,609 @@
+<title>Spiritual Vision Mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Pixelify+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: one game viewport, control panel beside it (stacks under it on phones). Single dark look, like the game. */
+:root {
+  --ink: #070a0f;
+  --panel: #0f151d;
+  --line: #1f2b39;
+  --fg: #d6e2ec;
+  --muted: #7d8fa1;
+  --qi: #5fd0ff;
+  --gold: #ffd36a;
+  --red: #ff5050;
+  --f-ui: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --f-hud: "Pixelify Sans", "Courier New", monospace;
+  color-scheme: dark;
+}
+html, body { background: var(--ink); color: var(--fg); }
+body {
+  font-family: var(--f-ui);
+  font-size: 15px;
+  line-height: 1.45;
+  padding-block: 20px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: 0.02em; text-wrap: balance; }
+header p { margin: 0; color: var(--muted); font-size: 14px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.view { position: relative; min-width: 0; }
+canvas {
+  display: block; width: 100%; aspect-ratio: 16 / 9; max-width: 100%;
+  background: #000; border: 1px solid var(--line); border-radius: 4px;
+  cursor: grab; touch-action: none;
+}
+canvas:active { cursor: grabbing; }
+.hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+aside { display: grid; gap: 14px; min-width: 0; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; display: grid; gap: 8px; }
+h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin: 0; font-weight: 600; }
+.realms { display: grid; gap: 4px; }
+button {
+  font: inherit; font-size: 14px; color: var(--fg); background: #141c26;
+  border: 1px solid var(--line); border-radius: 3px; padding: 7px 10px;
+  cursor: pointer; text-align: left; display: flex; justify-content: space-between; gap: 8px;
+}
+button:hover { border-color: #33475d; background: #182230; }
+button:focus-visible { outline: 2px solid var(--qi); outline-offset: 1px; }
+button[aria-pressed="true"] { border-color: var(--qi); background: #102433; }
+button small { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.row button { flex: 1 1 130px; }
+dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
+dt { color: var(--muted); }
+dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.legend { display: grid; gap: 6px; font-size: 13px; }
+.legend div { display: flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: none; box-shadow: 0 0 8px currentColor; background: currentColor; }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+kbd { font-family: var(--f-hud); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; font-size: 12px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Spiritual Vision</h1>
+    <p>Maquette de la méditation V3 : yeux fermés, Calme, vision par royaume.</p>
+  </header>
+  <div class="grid">
+    <div class="view">
+      <canvas id="game" aria-label="First-person view of a player meditating with closed eyes"></canvas>
+      <p class="hint">Glisse sur la vue pour tourner la tête. <kbd>V</kbd> ouvre ou ferme les yeux.</p>
+    </div>
+    <aside>
+      <section>
+        <h2>Royaume</h2>
+        <div class="realms" id="realms"></div>
+      </section>
+      <section>
+        <h2>Actions</h2>
+        <div class="row">
+          <button id="eyes" type="button">Ouvrir les yeux</button>
+          <button id="fast" type="button" aria-pressed="false">Temps ×10</button>
+          <button id="zombie" type="button">Zombie approche</button>
+          <button id="arrow" type="button">Tir de squelette</button>
+          <button id="dash" type="button">Technique de vitesse</button>
+        </div>
+      </section>
+      <section>
+        <h2>État</h2>
+        <dl>
+          <dt>Calme</dt><dd id="s-calm">0 %</dd>
+          <dt>Palier</dt><dd id="s-tier">—</dd>
+          <dt>Gain</dt><dd id="s-gain">2.0 Qi/s</dd>
+          <dt>Hostile &lt; 16 blocs</dt><dd id="s-host">non</dd>
+        </dl>
+      </section>
+      <section>
+        <h2>Lire les étoiles</h2>
+        <div class="legend">
+          <div><span class="dot" style="color:#bfe3ff"></span>Passif (poule, vache, mouton)</div>
+          <div><span class="dot" style="color:#ffd84a"></span>Neutre (loup, Iron Golem)</div>
+          <div><span class="dot" style="color:#ff9a3c"></span>Hostile, ne te vise pas</div>
+          <div><span class="dot" style="color:#ff4040"></span>Hostile qui te vise</div>
+        </div>
+        <p class="note">Taille = gabarit du mob. Scintillement rapide = mob fort. Halo doré = autre cultivateur (First-Rate et plus).</p>
+      </section>
+      <p class="note">Chiffres provisoires, tirés de docs/cultivation/meditation-vision.md.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- seeded random ----------
+  let seed = 1337;
+  const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const smooth = (a, b, v) => { const k = clamp((v - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); };
+
+  // ---------- realms (from the design doc) ----------
+  const REALMS = [
+    { name: 'Mortal', block: 0, star: 0 },
+    { name: 'Third-Rate Warrior', block: 6, star: 12, flicker: true, sharp: 0 },
+    { name: 'Second-Rate Warrior', block: 10, star: 20, sharp: 0.3 },
+    { name: 'First-Rate Warrior', block: 16, star: 32, sharp: 0.6, halo: true },
+    { name: 'Peak Master', block: 24, star: 48, sharp: 0.8, halo: true, fill: 0.02 },
+    { name: 'Transcendent', block: 32, star: 64, sharp: 1, halo: true, fill: 0.045 },
+  ];
+
+  // ---------- world ----------
+  const N = 65, H = 28, C = 32;
+  const AIR = 0, GRASS = 1, DIRT = 2, STONE = 3, LOG = 4, LEAF = 5, WATER = 6;
+  const vox = new Uint8Array(N * H * N);
+  const at = (x, y, z) => (y * N + z) * N + x;
+  const get = (x, y, z) => (x < 0 || z < 0 || x >= N || z >= N || y < 0) ? 255 : (y >= H ? AIR : vox[at(x, y, z)]);
+  const terr = new Int16Array(N * N);
+  const POND = { x: C + 17, z: C + 10, r: 4.2 };
+  const raw = (x, z) => 7 + 2.0 * Math.sin(x * 0.21) + 1.7 * Math.cos(z * 0.17 + 1) + 1.4 * Math.sin((x + z) * 0.11)
+    + 7 * Math.max(0, 1 - Math.hypot(x - (C - 13), z - (C + 14)) / 11);
+  const hp = Math.round(raw(C, C));
+  for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) {
+    let h = raw(x, z);
+    const d = Math.hypot(x - C, z - C);
+    if (d < 6) h = hp + (h - hp) * smooth(3, 6, d);
+    const pd = Math.hypot(x - POND.x, z - POND.z);
+    if (pd < POND.r + 2) h = Math.min(h, hp - 2 + smooth(POND.r - 1, POND.r + 2, pd) * 3);
+    h = Math.round(clamp(h, 3, 18));
+    terr[z * N + x] = h;
+    for (let y = 0; y < h; y++) vox[at(x, y, z)] = y === h - 1 ? GRASS : (y > h - 4 ? DIRT : STONE);
+    if (pd < POND.r) { vox[at(x, h - 1, z)] = WATER; terr[z * N + x] = h; }
+  }
+  // trees
+  for (let n = 0; n < 11; n++) {
+    let x, z, tries = 0;
+    do { x = 3 + Math.floor(rnd() * (N - 6)); z = 3 + Math.floor(rnd() * (N - 6)); tries++; }
+    while (tries < 50 && (Math.hypot(x - C, z - C) < 6 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 3));
+    const g = terr[z * N + x], top = g + 4;
+    for (let y = g; y < top; y++) vox[at(x, y, z)] = LOG;
+    for (let y = top - 2; y <= top + 1; y++) for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) {
+      const r = y > top - 1 ? 1 : 2;
+      if (Math.abs(dx) > r || Math.abs(dz) > r || (Math.abs(dx) === 2 && Math.abs(dz) === 2)) continue;
+      const xx = x + dx, zz = z + dz;
+      if (xx < 0 || zz < 0 || xx >= N || zz >= N || y >= H) continue;
+      if (vox[at(xx, y, zz)] === AIR) vox[at(xx, y, zz)] = LEAF;
+    }
+  }
+  const ground = (x, z) => { const ix = Math.floor(x), iz = Math.floor(z);
+    if (ix < 0 || iz < 0 || ix >= N || iz >= N) return 7; return terr[iz * N + ix]; };
+
+  const E = [C + 0.5, hp + 0.95, C + 0.5]; // eye of the seated player
+
+  // ---------- faces and edges (built once: the player does not move) ----------
+  const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, -1]];
+  const corners = (x, y, z, d) => {
+    if (d === 0) return [[x + 1, y, z], [x + 1, y + 1, z], [x + 1, y + 1, z + 1], [x + 1, y, z + 1]];
+    if (d === 1) return [[x, y, z + 1], [x, y + 1, z + 1], [x, y + 1, z], [x, y, z]];
+    if (d === 2) return [[x, y + 1, z], [x, y + 1, z + 1], [x + 1, y + 1, z + 1], [x + 1, y + 1, z]];
+    if (d === 3) return [[x + 1, y, z + 1], [x + 1, y + 1, z + 1], [x, y + 1, z + 1], [x, y, z + 1]];
+    return [[x, y, z], [x, y + 1, z], [x + 1, y + 1, z], [x + 1, y, z]];
+  };
+  const BASE = { [GRASS]: [104, 168, 78], [DIRT]: [134, 96, 67], [STONE]: [125, 125, 125], [LOG]: [107, 81, 52], [LEAF]: [63, 127, 47], [WATER]: [58, 111, 216] };
+  const SKY = [168, 204, 236];
+  const faces = [];
+  const edgeMap = new Map();
+  const pk = (p) => (p[0] * (H + 1) + p[1]) * (N + 1) + p[2];
+  for (let y = 0; y < H; y++) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) {
+    const t = vox[at(x, y, z)]; if (!t) continue;
+    for (let d = 0; d < 5; d++) {
+      const [ax, ay, az] = DIRS[d];
+      const nb = get(x + ax, y + ay, z + az);
+      if (nb !== AIR && !(nb === LEAF && t !== LEAF) && !(nb === WATER && t !== WATER)) continue;
+      if (t === WATER && d !== 2) continue;
+      const c = corners(x, y, z, d);
+      const cx = x + 0.5 + ax * 0.5, cy = y + 0.5 + ay * 0.5, cz = z + 0.5 + az * 0.5;
+      const dist = Math.hypot(cx - E[0], cy - E[1], cz - E[2]);
+      const shade = d === 2 ? 1 : (d < 2 ? 0.78 : 0.66);
+      const top = (t === GRASS && d !== 2) ? BASE[DIRT] : BASE[t];
+      const fog = Math.pow(clamp(dist / 46, 0, 1), 1.6);
+      const rgb = top.map((v, i) => Math.round(v * shade * (1 - fog) + SKY[i] * fog));
+      faces.push({ c, n: DIRS[d], cx, cy, cz, dist, fill: `rgb(${rgb})`, water: t === WATER });
+      for (let i = 0; i < 4; i++) {
+        const a = c[i], b = c[(i + 1) % 4];
+        const ka = pk(a), kb = pk(b), key = ka < kb ? ka * 200000 + kb : kb * 200000 + ka;
+        if (!edgeMap.has(key)) {
+          const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, mz = (a[2] + b[2]) / 2;
+          edgeMap.set(key, [a[0], a[1], a[2], b[0], b[1], b[2], Math.hypot(mx - E[0], my - E[1], mz - E[2])]);
+        }
+      }
+    }
+  }
+  const edges = [...edgeMap.values()].sort((p, q) => p[6] - q[6]);
+  const EC = edges.length, ED = new Float32Array(EC * 7);
+  edges.forEach((e, i) => ED.set(e, i * 7));
+
+  // ---------- mobs ----------
+  const KIND = {
+    chicken: { w: 0.4, h: 0.7, host: 0, hp: 4, atk: 0, sp: 1.0, col: '#f2f2f2' },
+    cow: { w: 0.9, h: 1.4, host: 0, hp: 10, atk: 0, sp: 0.8, col: '#5a3d2b' },
+    sheep: { w: 0.9, h: 1.3, host: 0, hp: 8, atk: 0, sp: 0.8, col: '#e8e8e8' },
+    wolf: { w: 0.6, h: 0.85, host: 1, hp: 8, atk: 4, sp: 1.4, col: '#cfcfcf' },
+    golem: { w: 1.4, h: 2.7, host: 1, hp: 100, atk: 15, sp: 0.6, col: '#d8d0c0' },
+    crab: { w: 0.7, h: 0.5, host: 2, hp: 6, atk: 2, sp: 0.9, col: '#c4552f' },
+    spider: { w: 1.4, h: 0.9, host: 2, hp: 16, atk: 2, sp: 1.3, col: '#3a302a' },
+    zombie: { w: 0.6, h: 1.95, host: 2, hp: 20, atk: 3, sp: 0.9, col: '#3f7a4a' },
+    skeleton: { w: 0.6, h: 1.99, host: 2, hp: 20, atk: 3, sp: 0.9, col: '#c9c9c9' },
+    cultivator: { w: 0.6, h: 1.8, host: 0, hp: 60, atk: 8, sp: 1.0, col: '#2e4a7a', player: true },
+  };
+  const mobs = [];
+  const add = (kind, dx, dz, roam = 3) => {
+    const k = KIND[kind], x = C + dx + 0.5, z = C + dz + 0.5;
+    const m = { kind, ...k, x, z, hx: x, hz: z, roam, tx: x, tz: z, wait: rnd() * 3, phase: rnd() * 6.28, trail: [] };
+    m.size = Math.cbrt(k.w * k.w * k.h);
+    m.str = clamp(Math.log(k.hp + 4 * k.atk) / Math.log(160), 0, 1);
+    mobs.push(m); return m;
+  };
+  add('chicken', 3, 8, 2); add('chicken', -4, 10, 2); add('chicken', 5, 4, 1.5);
+  add('cow', 7, 14, 3); add('sheep', -8, 12, 3); add('sheep', -10, 15, 3);
+  add('wolf', 11, 5, 4); add('golem', -11, 21, 3);
+  add('crab', 18, 12.5, 1.2); add('crab', 19.5, 11, 1.2); add('crab', 17, 13.5, 1.2);
+  add('spider', 21, 24, 3); add('skeleton', -21, 25, 2); add('zombie', 25, -19, 3);
+  add('spider', -38, 30, 4); add('golem', 40, 42, 3); add('zombie', -4, 52, 4);
+  const skeleton = mobs.find(m => m.kind === 'skeleton');
+  const npc = add('cultivator', -9, 17, 0);
+  npc.dash = null;
+  let chaser = null;
+  const arrows = [];
+
+  // ---------- state ----------
+  let realm = 3, eyesClosed = true, eyes = 1, closeStart = -100, timeScale = 1;
+  let yaw = 0.25, pitch = 0.32, manualUntil = 0, calm = 0.62, lastTier = 2, banner = null, t = 0;
+  const TIERS = [
+    { at: 0, name: '', col: '#7aa3c4' },
+    { at: 0.25, name: 'Steady Breath', col: '#5fd0ff' },
+    { at: 0.5, name: 'Flowing Qi', col: '#5ff2c0' },
+    { at: 1, name: 'Still Heart', col: '#ffd36a' },
+  ];
+  const tierOf = (c) => c >= 1 ? 3 : c >= 0.5 ? 2 : c >= 0.25 ? 1 : 0;
+
+  // ---------- canvas ----------
+  const cv = document.getElementById('game'), ctx = cv.getContext('2d');
+  let W = 0, Hh = 0, F = 1, dpr = 1;
+  const resize = () => {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    const r = cv.getBoundingClientRect();
+    W = Math.max(320, Math.round(r.width * dpr)); Hh = Math.round(W * 9 / 16);
+    cv.width = W; cv.height = Hh;
+    F = (Hh / 2) / Math.tan(35 * Math.PI / 180);
+  };
+  new ResizeObserver(resize).observe(cv); resize();
+
+  let cyw, syw, cp, sp;
+  const cam = (x, y, z, o) => {
+    const dx = x - E[0], dy = y - E[1], dz = z - E[2];
+    const x1 = dx * cyw - dz * syw, z1 = dx * syw + dz * cyw;
+    o[0] = x1; o[1] = dy * cp + z1 * sp; o[2] = -dy * sp + z1 * cp; return o;
+  };
+  const NEAR = 0.05, A = [0, 0, 0], B = [0, 0, 0];
+  const line = (path, a, b) => {
+    let ax = a[0], ay = a[1], az = a[2], bx = b[0], by = b[1], bz = b[2];
+    if (az < NEAR && bz < NEAR) return;
+    if (az < NEAR) { const k = (NEAR - az) / (bz - az); ax += (bx - ax) * k; ay += (by - ay) * k; az = NEAR; }
+    else if (bz < NEAR) { const k = (NEAR - bz) / (az - bz); bx += (ax - bx) * k; by += (ay - by) * k; bz = NEAR; }
+    const sx1 = W / 2 + ax / az * F, sy1 = Hh / 2 - ay / az * F, sx2 = W / 2 + bx / bz * F, sy2 = Hh / 2 - by / bz * F;
+    if ((sx1 < -50 && sx2 < -50) || (sx1 > W + 50 && sx2 > W + 50) || (sy1 < -50 && sy2 < -50) || (sy1 > Hh + 50 && sy2 > Hh + 50)) return;
+    path.moveTo(sx1, sy1); path.lineTo(sx2, sy2);
+  };
+  const clipPoly = (pts) => {
+    const out = [];
+    for (let i = 0; i < pts.length; i++) {
+      const cur = pts[i], prev = pts[(i + pts.length - 1) % pts.length];
+      const ci = cur[2] >= NEAR, pi = prev[2] >= NEAR;
+      if (ci !== pi) { const k = (NEAR - prev[2]) / (cur[2] - prev[2]);
+        out.push([prev[0] + (cur[0] - prev[0]) * k, prev[1] + (cur[1] - prev[1]) * k, NEAR]); }
+      if (ci) out.push(cur);
+    }
+    return out;
+  };
+  const scr = (p) => [W / 2 + p[0] / p[2] * F, Hh / 2 - p[1] / p[2] * F];
+
+  // ---------- simulation ----------
+  const hdist = (m) => Math.hypot(m.x - E[0], m.z - E[2]);
+  const step = (dt) => {
+    for (const m of mobs) {
+      if (m.dash) {
+        const d = m.dash; d.k += dt / d.dur;
+        const k = Math.min(1, d.k), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        m.x = d.x0 + (d.x1 - d.x0) * e; m.z = d.z0 + (d.z1 - d.z0) * e;
+        if (d.k >= 1) { m.dash = null; m.hx = m.x; m.hz = m.z; m.tx = m.x; m.tz = m.z; }
+      } else if (m === chaser) {
+        const dx = E[0] - m.x, dz = E[2] - m.z, d = Math.hypot(dx, dz);
+        if (d > 2.6) { m.x += dx / d * 1.3 * dt; m.z += dz / d * 1.3 * dt; }
+      } else if (m.roam > 0) {
+        m.wait -= dt;
+        const dx = m.tx - m.x, dz = m.tz - m.z, d = Math.hypot(dx, dz);
+        if (d > 0.1) { const s = Math.min(d, m.sp * dt); m.x += dx / d * s; m.z += dz / d * s; }
+        else if (m.wait <= 0) { const a = rnd() * 6.28, r = rnd() * m.roam;
+          m.tx = m.hx + Math.cos(a) * r; m.tz = m.hz + Math.sin(a) * r; m.wait = 1 + rnd() * 4; }
+      }
+      m.y = ground(m.x, m.z);
+      m.targeting = m === chaser && hdist(m) < 12;
+      m.trail.push([m.x, m.y + m.h / 2, m.z, t]);
+      while (m.trail.length && t - m.trail[0][3] > 0.7) m.trail.shift();
+    }
+    for (const a of arrows) {
+      a.x += a.vx * dt; a.y += a.vy * dt; a.z += a.vz * dt; a.vy -= 4 * dt; a.life -= dt;
+      if (a.life > 0) a.trail.push([a.x, a.y, a.z, t]);
+      while (a.trail.length && t - a.trail[0][3] > 0.35) a.trail.shift();
+    }
+    for (let i = arrows.length - 1; i >= 0; i--) if (arrows[i].life <= 0 && !arrows[i].trail.length) arrows.splice(i, 1);
+
+    const sdt = dt * timeScale;
+    const hostile = mobs.some(m => m.host === 2 && hdist(m) < 16);
+    if (hostile) calm -= sdt / 30;
+    else if (eyes >= 0.99) calm += sdt / 120;
+    calm = clamp(calm, 0, 1);
+    const tier = tierOf(calm);
+    if (tier > lastTier && tier > 0) banner = { name: TIERS[tier].name, col: TIERS[tier].col, t };
+    lastTier = tier;
+    state.hostile = hostile;
+
+    eyes = clamp(eyes + (eyesClosed ? dt : -dt) / 1.0, 0, 1);
+    if (t > manualUntil) { yaw += (0.25 + 0.55 * Math.sin(t * 0.07) - yaw) * Math.min(1, dt * 0.6);
+      pitch += (0.32 - pitch) * Math.min(1, dt * 0.6); }
+  };
+  const state = { hostile: false };
+
+  // ---------- drawing: eyes open ----------
+  const drawWorld = () => {
+    const g = ctx.createLinearGradient(0, 0, 0, Hh);
+    g.addColorStop(0, '#6fa6dd'); g.addColorStop(0.6, `rgb(${SKY})`); g.addColorStop(1, `rgb(${SKY})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, Hh);
+    const list = [];
+    for (const f of faces) {
+      if (f.n[0] * (E[0] - f.cx) + f.n[1] * (E[1] - f.cy) + f.n[2] * (E[2] - f.cz) <= 0) continue;
+      const p = f.c.map(q => cam(q[0], q[1], q[2], [0, 0, 0]));
+      if (p.every(q => q[2] < NEAR)) continue;
+      const cl = clipPoly(p); if (cl.length < 3) continue;
+      list.push({ d: f.dist, pts: cl.map(scr), fill: f.fill, a: f.water ? 0.85 : 1 });
+    }
+    const rx = cyw, rz = -syw;
+    for (const m of mobs) {
+      if (m.dash) continue;
+      const hw = m.w / 2, y0 = m.y, y1 = m.y + m.h;
+      const p = [[m.x - rx * hw, y0, m.z - rz * hw], [m.x - rx * hw, y1, m.z - rz * hw], [m.x + rx * hw, y1, m.z + rz * hw], [m.x + rx * hw, y0, m.z + rz * hw]]
+        .map(q => cam(q[0], q[1], q[2], [0, 0, 0]));
+      if (p.some(q => q[2] < NEAR)) continue;
+      list.push({ d: Math.hypot(m.x - E[0], m.y - E[1], m.z - E[2]), pts: p.map(scr), fill: m.col, a: 1 });
+    }
+    list.sort((a, b) => b.d - a.d);
+    for (const it of list) {
+      ctx.globalAlpha = it.a; ctx.fillStyle = it.fill; ctx.beginPath();
+      ctx.moveTo(it.pts[0][0], it.pts[0][1]);
+      for (let i = 1; i < it.pts.length; i++) ctx.lineTo(it.pts[i][0], it.pts[i][1]);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#6b4a2b'; ctx.lineWidth = 2 * dpr;
+    for (const a of arrows) if (a.life > 0) {
+      cam(a.x, a.y, a.z, A); cam(a.x - a.vx * 0.03, a.y - a.vy * 0.03, a.z - a.vz * 0.03, B);
+      const p = new Path2D(); line(p, A, B); ctx.stroke(p);
+    }
+  };
+
+  // ---------- drawing: spiritual vision ----------
+  const motes = Array.from({ length: 90 }, () => ({ x: rnd(), y: rnd(), v: 0.2 + rnd() * 0.8, r: 0.6 + rnd() * 1.8, ph: rnd() * 6.28 }));
+  const drawMotes = (alpha, count) => {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < count; i++) {
+      const m = motes[i];
+      const a = t * 0.05 * m.v + m.ph;
+      const rad = 0.15 + ((m.y + t * 0.012 * m.v) % 1) * 0.55;
+      const x = W / 2 + Math.cos(a) * rad * W * 0.6, y = Hh * 0.62 + Math.sin(a) * rad * Hh * 0.55 - (1 - rad) * Hh * 0.08;
+      const tw = 0.5 + 0.5 * Math.sin(t * 1.7 * m.v + m.ph);
+      ctx.fillStyle = `rgba(120,220,255,${(0.15 + 0.45 * tw) * alpha})`;
+      ctx.beginPath(); ctx.arc(x, y, m.r * dpr, 0, 6.283); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  };
+  const hash = (i, k) => { let h = (i * 374761393 + k * 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  const starColor = (m) => m.player ? [210, 30, 92] : m.targeting ? [0, 92, 60] : m.host === 2 ? [28, 95, 60] : m.host === 1 ? [48, 95, 62] : [205, 90, 84];
+  const drawStar = (sx, sy, r, col, bright, rot, halo) => {
+    const [h, s, l] = col;
+    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, r * 2.6);
+    g.addColorStop(0, `hsla(${h},${s}%,96%,${bright})`);
+    g.addColorStop(0.18, `hsla(${h},${s}%,${l}%,${0.85 * bright})`);
+    g.addColorStop(1, `hsla(${h},${s}%,${l}%,0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, r * 2.6, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = `hsla(${h},${s}%,88%,${0.7 * bright})`; ctx.lineWidth = Math.max(1, r * 0.12);
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) { const a = rot + i * Math.PI / 2, L = r * (2.2 + 1.4 * bright);
+      ctx.moveTo(sx + Math.cos(a) * r * 0.3, sy + Math.sin(a) * r * 0.3); ctx.lineTo(sx + Math.cos(a) * L, sy + Math.sin(a) * L); }
+    ctx.stroke();
+    if (halo) { ctx.strokeStyle = `rgba(255,211,106,${0.55 * bright})`; ctx.lineWidth = 1.5 * dpr;
+      ctx.beginPath(); ctx.arc(sx, sy, r * 1.7 + 3 * dpr, 0, 6.283); ctx.stroke(); }
+  };
+  const drawVision = (alpha) => {
+    const R = REALMS[realm];
+    drawMotes(alpha, realm === 0 ? 90 : 40);
+    if (!R.block) return;
+    const rev = smooth(0, 1, (t - closeStart - 0.5) / 1.8);
+    const reach = rev * R.block, pulse = 0.78 + 0.22 * Math.sin(t * Math.PI / 2);
+    ctx.globalCompositeOperation = 'lighter';
+    if (R.fill) {
+      ctx.fillStyle = `rgba(70,160,255,${R.fill * alpha * pulse})`;
+      for (const f of faces) {
+        if (f.dist > reach) continue;
+        if (f.n[0] * (E[0] - f.cx) + f.n[1] * (E[1] - f.cy) + f.n[2] * (E[2] - f.cz) <= 0) continue;
+        const p = f.c.map(q => cam(q[0], q[1], q[2], [0, 0, 0]));
+        if (p.some(q => q[2] < NEAR)) continue;
+        const s = p.map(scr); ctx.beginPath(); ctx.moveTo(s[0][0], s[0][1]);
+        for (let i = 1; i < 4; i++) ctx.lineTo(s[i][0], s[i][1]); ctx.closePath(); ctx.fill();
+      }
+    }
+    const NB = 6, paths = Array.from({ length: NB }, () => new Path2D()), wave = new Path2D();
+    const fk = Math.floor(t * 9);
+    for (let i = 0; i < EC; i++) {
+      const o = i * 7, d = ED[o + 6];
+      if (d > reach) break;
+      if (R.flicker && hash(i, fk) < 0.16) continue;
+      const k = 1 - d / R.block;
+      const b = Math.min(NB - 1, Math.floor(Math.pow(k, 0.7) * NB));
+      cam(ED[o], ED[o + 1], ED[o + 2], A); cam(ED[o + 3], ED[o + 4], ED[o + 5], B);
+      line(rev < 1 && reach - d < 1.2 ? wave : paths[b], A, B);
+    }
+    const sharp = R.sharp || 0;
+    for (let b = 0; b < NB; b++) {
+      const a = ((b + 1) / NB) * alpha * pulse * (R.flicker ? 0.75 + 0.25 * Math.sin(t * 13) : 1);
+      ctx.strokeStyle = `rgba(60,150,255,${a * (0.22 - sharp * 0.1)})`; ctx.lineWidth = (4 - sharp * 2) * dpr; ctx.stroke(paths[b]);
+      ctx.strokeStyle = `rgba(120,200,255,${a * (0.55 + sharp * 0.35)})`; ctx.lineWidth = (1 + sharp * 0.3) * dpr; ctx.stroke(paths[b]);
+    }
+    ctx.strokeStyle = `rgba(200,240,255,${0.9 * alpha})`; ctx.lineWidth = 2 * dpr; ctx.stroke(wave);
+
+    // fast things: smeared afterimages only
+    for (const ar of arrows) {
+      if (ar.trail.length < 2) continue;
+      for (let i = 1; i < ar.trail.length; i++) {
+        const p = ar.trail[i - 1], q = ar.trail[i], age = (t - q[3]) / 0.35;
+        if (Math.hypot(q[0] - E[0], q[2] - E[2]) > R.star) continue;
+        cam(p[0], p[1], p[2], A); cam(q[0], q[1], q[2], B);
+        const pa = new Path2D(); line(pa, A, B);
+        ctx.strokeStyle = `rgba(255,170,110,${0.35 * (1 - age) * alpha})`; ctx.lineWidth = 6 * dpr * (1 - age); ctx.stroke(pa);
+      }
+    }
+    // stars
+    const sreach = rev * R.star;
+    for (const m of mobs) {
+      const hd = hdist(m);
+      if (hd > sreach) continue;
+      const edge = 1 - smooth(R.star * 0.85, R.star, hd);
+      const col = starColor(m), freq = 0.35 + 2.6 * m.str;
+      const bright = (0.62 + 0.38 * Math.sin(t * 6.283 * freq + m.phase)) * alpha * edge;
+      if (m.dash || (m.trail.length > 1 && t - (m.lastDash || -9) < 0.8)) {
+        for (let i = 0; i < m.trail.length; i += 2) {
+          const p = m.trail[i], age = (t - p[3]) / 0.7;
+          cam(p[0], p[1], p[2], A); if (A[2] < NEAR) continue;
+          const [sx, sy] = scr(A), r = clamp(m.size * F / A[2] * 0.3, 2 * dpr, 34 * dpr);
+          drawStar(sx, sy, r, col, 0.3 * (1 - age) * alpha, 0, false);
+        }
+        if (m.dash) continue;
+      }
+      cam(m.x, m.y + m.h / 2, m.z, A);
+      if (A[2] < NEAR) continue;
+      const [sx, sy] = scr(A);
+      const r = clamp(m.size * F / A[2] * 0.3, 2.2 * dpr, 40 * dpr);
+      drawStar(sx, sy, r, col, bright, t * 0.2 + m.phase, m.player && R.halo);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  };
+
+  // ---------- HUD ----------
+  const drawHud = () => {
+    const s = dpr, R = REALMS[realm];
+    ctx.font = `${13 * s}px ${getComputedStyle(document.body).getPropertyValue('--f-hud')}`;
+    ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(10 * s, 10 * s, 210 * s, 40 * s);
+    ctx.fillStyle = '#d6e2ec'; ctx.fillText(`${R.name} · Stage 3`, 18 * s, 16 * s);
+    ctx.fillStyle = '#5fd0ff'; ctx.fillText(`Qi +${(2 * (1 + 2 * calm)).toFixed(1)}/s`, 18 * s, 32 * s);
+    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(214,226,236,0.7)';
+    ctx.fillText(eyesClosed ? '[V] Open eyes' : '[V] Close eyes', W - 14 * s, 16 * s);
+    if (timeScale > 1) { ctx.fillStyle = '#ffd36a'; ctx.fillText('Time ×10 (mockup)', W - 14 * s, 32 * s); }
+
+    const cx = W / 2, cy = Hh / 2, tier = tierOf(calm), col = TIERS[tier].col;
+    if (eyes < 0.5) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2 * s; ctx.beginPath();
+      ctx.moveTo(cx - 7 * s, cy); ctx.lineTo(cx + 7 * s, cy); ctx.moveTo(cx, cy - 7 * s); ctx.lineTo(cx, cy + 7 * s); ctx.stroke();
+    }
+    const rr = 15 * s, ry = cy + 40 * s;
+    ctx.lineWidth = 3 * s; ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+    ctx.beginPath(); ctx.arc(cx, ry, rr, 0, 6.283); ctx.stroke();
+    ctx.strokeStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8 * s;
+    ctx.beginPath(); ctx.arc(cx, ry, rr, -Math.PI / 2, -Math.PI / 2 + calm * 6.283); ctx.stroke();
+    ctx.shadowBlur = 0;
+    if (state.hostile) { ctx.fillStyle = `rgba(255,80,80,${0.6 + 0.4 * Math.sin(t * 8)})`;
+      ctx.beginPath(); ctx.arc(cx, ry, 3 * s, 0, 6.283); ctx.fill(); }
+    if (banner) {
+      const age = t - banner.t;
+      if (age > 2.4) banner = null;
+      else { ctx.globalAlpha = Math.min(1, age * 4) * Math.min(1, (2.4 - age) * 2);
+        ctx.textAlign = 'center'; ctx.font = `${16 * s}px ${getComputedStyle(document.body).getPropertyValue('--f-hud')}`;
+        ctx.fillStyle = banner.col; ctx.fillText(banner.name, cx, ry + rr + 10 * s); ctx.globalAlpha = 1; }
+    }
+  };
+
+  // ---------- frame ----------
+  let last = performance.now();
+  const frame = (now) => {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
+    step(dt);
+    cyw = Math.cos(yaw); syw = Math.sin(yaw); cp = Math.cos(pitch); sp = Math.sin(pitch);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (eyes < 1) drawWorld();
+    if (eyes > 0) {
+      const e = eyes * eyes * (3 - 2 * eyes);
+      ctx.fillStyle = `rgba(2,3,6,${e})`; ctx.fillRect(0, 0, W, Hh);
+      const lid = e * Hh / 2;
+      ctx.fillStyle = '#020306'; ctx.fillRect(0, 0, W, lid); ctx.fillRect(0, Hh - lid, W, lid);
+      drawVision(smooth(0.65, 1, eyes));
+    }
+    drawHud();
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+
+  // ---------- controls ----------
+  const realmsEl = document.getElementById('realms');
+  REALMS.forEach((r, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.id = 'realm-' + i;
+    b.innerHTML = `<span>${r.name}</span><small>${r.block ? `blocs ${r.block} · étoiles ${r.star}` : 'Qi seulement'}</small>`;
+    b.addEventListener('click', () => { realm = i; closeStart = t - 0.5; syncRealms(); });
+    realmsEl.appendChild(b);
+  });
+  const syncRealms = () => REALMS.forEach((_, i) => document.getElementById('realm-' + i).setAttribute('aria-pressed', String(i === realm)));
+  syncRealms();
+  closeStart = -100;
+
+  const eyesBtn = document.getElementById('eyes');
+  const toggleEyes = () => { eyesClosed = !eyesClosed; if (eyesClosed) closeStart = t;
+    eyesBtn.textContent = eyesClosed ? 'Ouvrir les yeux' : 'Fermer les yeux'; };
+  eyesBtn.addEventListener('click', toggleEyes);
+  window.addEventListener('keydown', (e) => { if ((e.key === 'v' || e.key === 'V') && !e.repeat) toggleEyes(); });
+
+  const fast = document.getElementById('fast');
+  fast.addEventListener('click', () => { timeScale = timeScale > 1 ? 1 : 10; fast.setAttribute('aria-pressed', String(timeScale > 1)); });
+
+  const zBtn = document.getElementById('zombie');
+  zBtn.addEventListener('click', () => {
+    if (chaser) { mobs.splice(mobs.indexOf(chaser), 1); chaser = null; zBtn.textContent = 'Zombie approche'; return; }
+    const fx = Math.sin(yaw), fz = Math.cos(yaw);
+    chaser = add('zombie', fx * 28 + 3, fz * 28, 0); zBtn.textContent = 'Renvoyer le zombie';
+  });
+
+  document.getElementById('arrow').addEventListener('click', () => {
+    const sx = skeleton.x, sy = skeleton.y + 1.5, sz = skeleton.z;
+    const tx = E[0] + 2.5, ty = E[1] + 0.5, tz = E[2] - 1, d = Math.hypot(tx - sx, ty - sy, tz - sz), v = 32;
+    arrows.push({ x: sx, y: sy, z: sz, vx: (tx - sx) / d * v, vy: (ty - sy) / d * v + 2, vz: (tz - sz) / d * v, life: 2.2, trail: [] });
+  });
+
+  let dashSide = 1;
+  document.getElementById('dash').addEventListener('click', () => {
+    if (npc.dash) return;
+    const x1 = C + 0.5 + (dashSide > 0 ? 13 : -9), z1 = C + 0.5 + (dashSide > 0 ? 20 : 17);
+    npc.dash = { x0: npc.x, z0: npc.z, x1, z1, k: 0, dur: 0.45 }; npc.lastDash = t + 0.45; dashSide = -dashSide;
+  });
+
+  let drag = null;
+  cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    yaw -= (e.clientX - drag.x) * 0.006; pitch = clamp(pitch + (e.clientY - drag.y) * 0.006, -0.7, 1.1);
+    drag = { x: e.clientX, y: e.clientY }; manualUntil = t + 6;
+  });
+  const end = () => { drag = null; };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+
+  const $ = (id) => document.getElementById(id);
+  setInterval(() => {
+    $('s-calm').textContent = Math.round(calm * 100) + ' %';
+    $('s-tier').textContent = TIERS[tierOf(calm)].name || '—';
+    $('s-gain').textContent = (2 * (1 + 2 * calm)).toFixed(1) + ' Qi/s';
+    $('s-host').textContent = state.hostile ? 'oui, le Calme baisse' : 'non';
+  }, 200);
+})();
+</script>

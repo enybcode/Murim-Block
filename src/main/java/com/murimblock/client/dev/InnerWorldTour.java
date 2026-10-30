@@ -2,6 +2,7 @@ package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.cultivation.StageBreakthrough;
+import com.murimblock.client.cultivation.vision.ClosedEyes;
 import com.murimblock.client.innerworld.TrialEntry;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.CultivationRules;
@@ -94,6 +95,8 @@ public final class InnerWorldTour {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
+        // The tour films the world while meditating: the eyes stay open.
+        ClosedEyes.autoClose = false;
         if (!started) {
             // A fresh game folder opens on the accessibility screen first.
             if (mc.options.onboardAccessibility) {

@@ -8,9 +8,8 @@ import com.murimblock.client.gui.SystemPageView;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.gui.page.CultivationPage;
 import com.murimblock.client.gui.page.InfoPage;
-import com.murimblock.client.cultivation.BreathingHud;
 import com.murimblock.client.cultivation.QiAura;
-import com.murimblock.cultivation.BreathResult;
+import com.murimblock.client.cultivation.vision.ClosedEyes;
 import com.murimblock.cultivation.Cultivation;
 import com.murimblock.cultivation.Meditation;
 import com.murimblock.registry.MurimItems;
@@ -20,7 +19,11 @@ import net.minecraft.client.CameraType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import java.util.function.Supplier;
@@ -56,11 +59,20 @@ public final class GuiScreenshots {
     private static final int SETTLE_FRAMES = 20;
     /** Minecraft's own "Auto" GUI scale (4 at 1080p): the System must look the same whatever it is. */
     private static final int GUI_SCALE = 0;
+    private static final String WATCHER = "murim_gui_shots_watcher";
 
     private enum Step { TITLE, LOADING, MEDITATION, PAGES, DONE }
 
-    /** Frames to let the lotus pose and the synced cultivation settle before the meditation shot. */
-    private static final int MEDITATION_FRAMES = 90;
+    /** Frames before closing the eyes, then before the first shot of the dark (the fade takes a second). */
+    private static final int EYES_FRAMES = 70;
+    private static final int MEDITATION_FRAMES = 260;
+    /** Frames after full Calm for its banner, and for the First-Rate Warrior's vision to be built and revealed. */
+    private static final int BANNER_FRAMES = 40;
+    private static final int VISION_FRAMES = 300;
+    /** Frames to settle after each change of camera. */
+    private static final int CAMERA_FRAMES = 60;
+    /** Frames for the eyes to open again before the pose shots. */
+    private static final int OPEN_FRAMES = 90;
     /** Frames to land on the platform before sitting down. */
     private static final int PLATFORM_FRAMES = 30;
     /** Frames to let the full aura build up before its shot. */
@@ -122,43 +134,54 @@ public final class GuiScreenshots {
                 if (++frames == PLATFORM_FRAMES) {
                     startMeditation(mc);
                 }
-                // The breathing HUD in its four mockup states: neutral, good beat, miss, gauge full.
-                if (frames == MEDITATION_FRAMES) {
+                // Closed eyes: a Mortal's dark, the Still Heart banner and a First-Rate Warrior's vision at full
+                // Calm, then the full gauge; the eyes open again for the pose.
+                if (frames == EYES_FRAMES) {
+                    ClosedEyes.set(true);
+                } else if (frames == MEDITATION_FRAMES) {
                     shoot(mc, "murim_meditation.png");
-                    BreathingHud.showFeedback(true);
-                    // A good breath's Qi ring, given a few frames to fade in before the good-beat shot.
-                    QiAura.burst(mc.player);
-                } else if (frames == MEDITATION_FRAMES + 12) {
-                    shoot(mc, "murim_breath_good.png");
-                    BreathingHud.showFeedback(false);
-                } else if (frames == MEDITATION_FRAMES + 16) {
-                    shoot(mc, "murim_breath_miss.png");
+                    cultivate(mc, 3, 1);
+                    watchers(mc, true);
+                } else if (frames == MEDITATION_FRAMES + BANNER_FRAMES) {
+                    shoot(mc, "murim_calm_still_heart.png");
+                } else if (frames == MEDITATION_FRAMES + VISION_FRAMES) {
+                    // The vision in each camera of F5.
+                    shoot(mc, "murim_vision_first_rate.png");
+                    mc.options.setCameraType(CameraType.FIRST_PERSON);
+                } else if (frames == MEDITATION_FRAMES + VISION_FRAMES + CAMERA_FRAMES) {
+                    shoot(mc, "murim_vision_first_person.png");
+                    mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                } else if (frames == MEDITATION_FRAMES + VISION_FRAMES + 2 * CAMERA_FRAMES) {
+                    shoot(mc, "murim_vision_back.png");
+                    mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+                    watchers(mc, false);
+                    cultivate(mc, 0, 0.62);
                     fillGauge(mc);
+                } else if (frames == MEDITATION_FRAMES + VISION_FRAMES + 3 * CAMERA_FRAMES) {
+                    shoot(mc, "murim_meditation_full.png");
+                    ClosedEyes.set(false);
                 }
-                if (frames < MEDITATION_FRAMES + 40) {
+                int pose = MEDITATION_FRAMES + VISION_FRAMES + 3 * CAMERA_FRAMES + OPEN_FRAMES;
+                if (frames < pose) {
                     return;
                 }
-                if (frames < MEDITATION_FRAMES + 41) {
+                if (frames == pose) {
                     // A three-quarter view of the pose: turn the body, not the camera.
                     mc.player.setYBodyRot(mc.player.getYRot() + 90);
                     mc.player.yBodyRotO = mc.player.yBodyRot;
-                    return;
-                }
-                if (frames == MEDITATION_FRAMES + 41) {
-                    shoot(mc, "murim_breath_full.png");
                     mc.options.hideGui = true;
                     return;
                 }
-                if (frames < MEDITATION_FRAMES + 44) {
+                if (frames < pose + 3) {
                     return;
                 }
-                if (frames == MEDITATION_FRAMES + 44) {
+                if (frames == pose + 3) {
                     // The pose alone, without the HUD, with a beginner's Qi; then the aura of a great reserve.
                     shoot(mc, "murim_meditation_pose.png");
                     QiAura.previewQi = 10_000;
                     return;
                 }
-                if (frames < MEDITATION_FRAMES + 44 + STRONG_AURA_FRAMES) {
+                if (frames < pose + 3 + STRONG_AURA_FRAMES) {
                     return;
                 }
                 shoot(mc, "murim_meditation_pose_strong.png");
@@ -216,6 +239,10 @@ public final class GuiScreenshots {
         server.execute(() -> {
             ServerPlayer player = server.getPlayerList().getPlayer(id);
             BlockPos center = BlockPos.containing(player.getX(), 200, player.getZ());
+            // Mountains reach this high: clear the air around, or the camera and the watchers end up in rock.
+            for (BlockPos pos : BlockPos.betweenClosed(center.offset(-6, 1, -6), center.offset(6, 6, 6))) {
+                player.serverLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            }
             for (BlockPos pos : BlockPos.betweenClosed(center.offset(-2, 0, -2), center.offset(2, 0, 2))) {
                 player.serverLevel().setBlockAndUpdate(pos, Blocks.SMOOTH_STONE.defaultBlockState());
             }
@@ -243,6 +270,45 @@ public final class GuiScreenshots {
         });
     }
 
+    /** A cow, a wolf and an Iron Golem on the platform corners, for the stars of the vision; or away again. */
+    private static void watchers(Minecraft mc, boolean add) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            ServerLevel level = player.serverLevel();
+            if (!add) {
+                level.getEntities(player, player.getBoundingBox().inflate(8), e -> e.getTags().contains(WATCHER))
+                        .forEach(Entity::discard);
+                return;
+            }
+            EntityType<?>[] types = {EntityType.COW, EntityType.WOLF, EntityType.IRON_GOLEM};
+            double[][] corners = {{-2, -2}, {2, -2}, {-2, 2}};
+            for (int i = 0; i < types.length; i++) {
+                Entity e = types[i].create(level);
+                if (e instanceof Mob mob) {
+                    mob.setNoAi(true);
+                }
+                e.moveTo(player.getX() + corners[i][0], player.getY(), player.getZ() + corners[i][1], 0, 0);
+                e.addTag(WATCHER);
+                level.addFreshEntity(e);
+            }
+        });
+    }
+
+    /** Sets the meditating player's realm and Calm, keeping the rest. */
+    private static void cultivate(Minecraft mc, int realm, double calm) {
+        MinecraftServer server = mc.getSingleplayerServer();
+        UUID id = mc.player.getUUID();
+        server.execute(() -> {
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            Cultivation c = Meditation.of(player);
+            c.set(realm, c.stage(), c.stageQi(), c.qi(), c.maxQi(), c.meridians());
+            c.setCalm(calm);
+            Meditation.sync(player);
+        });
+    }
+
     private static void startMeditation(Minecraft mc) {
         MinecraftServer server = mc.getSingleplayerServer();
         UUID id = mc.player.getUUID();
@@ -252,9 +318,6 @@ public final class GuiScreenshots {
             c.set(0, 3, 0, c.maxQi(), c.maxQi(), 3);
             c.set(0, 3, c.gauge() * 0.62, c.maxQi(), c.maxQi(), 3);
             Meditation.start(player);
-            for (int i = 0; i < 6; i++) {
-                c.breathe(BreathResult.PERFECT, player.tickCount);
-            }
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MurimItems.MERIDIAN_PILL.get()));
             player.getMainHandItem().use(player.level(), player, InteractionHand.MAIN_HAND);
             player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);

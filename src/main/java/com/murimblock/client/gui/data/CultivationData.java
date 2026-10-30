@@ -146,10 +146,6 @@ public final class CultivationData {
         return now().meditating();
     }
 
-    public static float harmony() {
-        return now().harmony();
-    }
-
     public static boolean innerWorldUnlocked() {
         return InnerWorld.unlocked(now().realm());
     }

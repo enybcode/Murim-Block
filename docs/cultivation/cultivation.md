@@ -44,14 +44,9 @@ Saved IDs stay stable once released. Commands (operators only) set each field fo
 - Key (placeholder C): sit in lotus (Shenfa, see below), camera free, player rooted. Moving, attacking or taking damage
   ends it. Not usable in the air, in water or with a hostile mob closer than 8 blocks.
 - Base gain: 2 stage Qi per second, and `qi` refills 5× faster.
-- Breathing QTE (V2, validated playable mockup "Breathing V2", artifact Kanzz5Vni8Jhd3CDPrxaNm, 24 Oct): marks
-  scroll left into a frame. ▲ inhale and ▼ exhale: press the key as the mark enters the frame. Bars are holds: keep
-  the key down from the bar's start, release at its end. Beats are short / normal / long (1.0 / 1.6 / 2.6 s), up to
-  25 % shorter at full Harmony, in random patterns (calm, box breathing, quick, deep, sip, stagger; the hard ones
-  need some Harmony).
-- Judging: perfect ±0.07 s (+6 % Harmony), good ±0.16 s (+4 %), miss -8 % and the combo ends. Combo tiers at 5, 10
-  and 20 breaths: Steady Breath x1.2, Flowing Qi x1.5, Still Heart x2. Gain = base × (1 + 1.5 × Harmony) × tier,
-  so up to × 5. No penalty beyond that in this slice (Qi deviation could come with the trials).
+- Since 30 Oct (V3, validated by Enzo): no mini-game. The eyes close once seated and the Calm multiplies the gain,
+  up to × 3; closed eyes show the spiritual vision. Rules and code: [meditation-vision.md](meditation-vision.md).
+  The breathing QTE (V2, 24 Oct) is gone.
 
 ## Meridians
 
@@ -68,27 +63,19 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
 
 - `cultivation/`: `CultivationRules` (numbers), `Cultivation` (player data, plain Java, unit tested), `CultivationCodecs`
   (save + network), `Meditation` (server rules), `CultivationEvents`, `CultivationCommands`, `MeridianPillItem`.
-- Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `2`: sync, pose, toggle, advance, breath.
+- Attachment `murimblock:cultivation`, saved and kept on death. Network protocol `4`: sync, pose, toggle, advance, eyes.
 - Key C (placeholder) starts meditation; seated cross-legged, knees bent out, shins crossed, hands on the knees
   (Enzo's reference photo, 23 Oct). Drawn by Shenfa since 29 Oct (storyboards `docs/mobs/boards/meditation.png`
   and `meditation_fp.png`): `client/cultivation/LotusBody` plays `skeletal/animations/meditation.gltf` (sit 24 ticks,
-  lotus, breakthrough 72, stand 16, 1.5x after a hit) for every player the server says meditates. One's own body
-  breathes with the lane (additive `breath` held at `BreathingHud.lung()`, `deep` on a good breath); others breathe on
-  a 4 s loop. While seated (`PlayerAnimators.bodyHeld`) the feet are not planted, vanilla arm work and held items are
+  lotus, breakthrough 72, stand 16, 1.5x after a hit) for every player the server says meditates; the lotus breathes
+  on a 4 s loop. While seated (`PlayerAnimators.bodyHeld`) the feet are not planted, vanilla arm work and held items are
   left out, and the first-person eye follows the head down to about 0.95 block. A breakthrough lifts the body by its
   clip; the third-person camera glides back over 12 ticks and in again. With Shenfa players off, no lotus is drawn.
   Clips in `tools/blender/murim_clips.py` (`SETS["meditation"]`); check: `runEngineTest -PengineGroups=meditation`. The Cultivation page has Advance and Stop/Meditate; Profile reads the real Qi.
-- Breathing QTE: `client/cultivation/BreathTrack` (patterns and judging, plain Java, unit tested) and
-  `BreathingHud` (lane, frame, Combo and Harmony boxes, effects). Presses come from the input events, so they are
-  timed to the frame. The client judges and sends `Breath(BreathResult)`; the server accepts one per 8 ticks and keeps
-  Harmony and its own combo for the gain (`CultivationRules.meditationGain(harmony, combo)`). Sneak stands up.
-- Effects: hits flash the frame, send a rectangular wave out (perfect: two, gold, plus sparks) and climb a
-  pentatonic bell; misses shake the lane, redden the screen edges and thud (note block bass). Harmony tints the
-  edges in the tier colour (`textures/gui/breath_vignette.png`, drawn by `tools/textures/breath-vignette.cjs`), and above
-  50 % Qi motes drift to the frame. The world brightens a little on the inhale. Sounds are vanilla sound events.
+- Closed eyes, Calm and vision: see [meditation-vision.md](meditation-vision.md#in-the-code-30-oct).
 - Qi smoke `client/cultivation/QiAura` + `QiParticle`, `QiSparkParticle` (types `murimblock:qi`, `qi_ring`,
   `qi_spark`, options `QiParticleOptions` = power 0-1): cyan puffs and near-white twinkling specks leave the body of
-  every meditating player, rise and fade (puffs swell and fray); a good breath blows a flat ring of them out.
+  every meditating player, rise and fade (puffs swell and fray); a stage breakthrough blows a flat ring of them out.
   Everything scales with the Qi held, log scale: power = ln(1+qi/100) / ln(101), so 100 Qi ≈ 0.15 (a puff every
   ~4 ticks, small and faint), 1000 ≈ 0.52, 10 000 = 1 (1.5 puffs + 1 speck a tick, ring of 20). Watchers learn the
   Qi from `Pose` and `MeditatorQi` (every second). `gradlew runGuiShots` adds `murim_meditation_pose_strong`
@@ -99,4 +86,4 @@ Breakthrough trial, Qi from combat, pills that add Qi, Qi costs of techniques, r
   gauge, 10 000 Qi, clear day, hostiles within 32 blocks removed).
 - Pill icon drawn by `tools/textures/pill-icon.cjs`. Meridian bonuses are shown but not applied yet.
 - Check: `gradlew runGuiShots` also seats the player in lotus on a platform and shoots the HUD states
-  (`murim_meditation`, `murim_breath_good`, `murim_breath_miss`, `murim_breath_full`).
+  (`murim_meditation`, `murim_calm_still_heart`, `murim_vision_first_rate`, `murim_meditation_full`).

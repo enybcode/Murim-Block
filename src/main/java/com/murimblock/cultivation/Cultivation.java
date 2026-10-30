@@ -2,12 +2,12 @@ package com.murimblock.cultivation;
 
 /**
  * A player's cultivation, attached to the player and saved through {@link CultivationCodecs}. Plain Java so the rules
- * can be unit tested. Meditation, Harmony and the anchor are only kept while the player is online.
+ * can be unit tested. Meditation, Calm, the eyes and the anchor are only kept while the player is online.
  */
 public final class Cultivation {
-    /** What the owner's client sees: the saved fields plus meditation and Harmony. */
+    /** What the owner's client sees: the saved fields plus meditation and Calm. */
     public record Snapshot(int realm, int stage, double stageQi, double qi, int maxQi, int meridians,
-                           boolean meditating, float harmony) {
+                           boolean meditating, float calm) {
         public static final Snapshot START = new Cultivation().snapshot();
     }
 
@@ -19,13 +19,13 @@ public final class Cultivation {
     private int meridians;
 
     private boolean meditating;
-    private double harmony;
-    private int combo;
+    private double calm;
+    private boolean eyesClosed;
+    private boolean disturbed;
     private double anchorX;
     private double anchorY;
     private double anchorZ;
     private boolean dirty = true;
-    private int lastBreathTick = Integer.MIN_VALUE / 2;
 
     public Cultivation() {
         this(0, 1, 0, CultivationRules.START_MAX_QI, CultivationRules.START_MAX_QI, 0);
@@ -41,7 +41,7 @@ public final class Cultivation {
     }
 
     public Snapshot snapshot() {
-        return new Snapshot(realm, stage, stageQi, qi, maxQi, meridians, meditating, (float) harmony);
+        return new Snapshot(realm, stage, stageQi, qi, maxQi, meridians, meditating, (float) calm);
     }
 
     public int realm() {
@@ -72,13 +72,18 @@ public final class Cultivation {
         return meditating;
     }
 
-    public double harmony() {
-        return harmony;
+    /** How settled the meditation is, 0 to 1: it multiplies the gain. */
+    public double calm() {
+        return calm;
     }
 
-    /** Breaths in a row without a miss since the last miss or the start of meditation. */
-    public int combo() {
-        return combo;
+    public boolean eyesClosed() {
+        return eyesClosed;
+    }
+
+    /** Whether a hostile is near enough to wear the Calm down (set by the server each second). */
+    public boolean disturbed() {
+        return disturbed;
     }
 
     /** How far a point is from where the player sat down. */
@@ -92,10 +97,6 @@ public final class Cultivation {
 
     public boolean gaugeFull() {
         return CultivationRules.gaugeFull(realm, stage, stageQi);
-    }
-
-    public int lastBreathTick() {
-        return lastBreathTick;
     }
 
     public boolean canAdvance() {
@@ -158,7 +159,8 @@ public final class Cultivation {
     /** Gathers stage Qi (capped at the full gauge) and refills Qi for this many seconds. */
     public void gather(double seconds) {
         if (meditating) {
-            stageQi = Math.min(gauge(), stageQi + CultivationRules.meditationGain(harmony, combo) * seconds);
+            stageQi = Math.min(gauge(), stageQi + CultivationRules.meditationGain(calm) * seconds);
+            calm = CultivationRules.calmAfter(calm, seconds, eyesClosed, disturbed);
         }
         qi = Math.min(maxQi, qi + (meditating ? CultivationRules.QI_REGEN_MEDITATING : CultivationRules.QI_REGEN) * seconds);
         dirty = true;
@@ -169,24 +171,31 @@ public final class Cultivation {
         anchorX = x;
         anchorY = y;
         anchorZ = z;
-        harmony = 0;
-        combo = 0;
+        resetCalm();
         changed();
     }
 
     public void stopMeditation() {
         meditating = false;
-        harmony = 0;
-        combo = 0;
+        resetCalm();
         changed();
     }
 
-    /** A breath of the QTE: perfect and good beats raise Harmony and the combo, a miss lowers Harmony and ends it. */
-    public void breathe(BreathResult result, int tick) {
-        lastBreathTick = tick;
-        harmony = CultivationRules.clamp01(harmony + result.harmony());
-        combo = result == BreathResult.MISS ? 0 : combo + 1;
-        changed();
+    /** The meditating player closed or opened their eyes; Calm only rises with them closed. */
+    public void setEyesClosed(boolean closed) {
+        if (meditating) {
+            eyesClosed = closed;
+        }
+    }
+
+    public void setDisturbed(boolean disturbed) {
+        this.disturbed = disturbed;
+    }
+
+    private void resetCalm() {
+        calm = 0;
+        eyesClosed = false;
+        disturbed = false;
     }
 
     // Operator commands.
@@ -199,6 +208,14 @@ public final class Cultivation {
         this.maxQi = c.maxQi;
         this.meridians = c.meridians;
         changed();
+    }
+
+    /** Sets the Calm of a meditating player (tests and screenshots). */
+    public void setCalm(double calm) {
+        if (meditating) {
+            this.calm = CultivationRules.clamp01(calm);
+            changed();
+        }
     }
 
     /** Whether something the client shows changed since the last sync; clears the flag. */

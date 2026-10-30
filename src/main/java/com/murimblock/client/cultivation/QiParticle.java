@@ -11,7 +11,7 @@ import net.minecraft.util.Mth;
 
 /**
  * A puff of Qi smoke: it rises from the meditator, swells, frays (its frames thin out with age) and fades away. The
- * spawn's speed arguments are its starting velocity. Ring puffs, from a good breath, are bigger and brighter.
+ * spawn's speed arguments are its starting velocity. Ring puffs, from a breakthrough, are bigger and brighter.
  */
 public final class QiParticle extends TextureSheetParticle {
     private final SpriteSet sprites;

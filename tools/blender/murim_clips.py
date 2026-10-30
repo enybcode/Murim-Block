@@ -891,14 +891,8 @@ SETS["meditation"] = {
         (19, {"Root": {"loc": (0, -9.5, 0)}}),
         (24, LOTUS),
     ],
-    # Others see this slow breath (4 s); one's own body plays lotus_still with breath held at the QTE's level.
+    # The slow breath (4 s) of every seated body.
     "lotus": [(0, LOTUS), (30, INHALE), (38, INHALE), (80, EXHALE)],
-    "lotus_still": [(0, LOTUS), (40, EXHALE)],
-    # Additive, held by the client at a time from its breath: 0 s exhaled, 1 s full.
-    "breath": [(0, EXHALE), (20, INHALE), (21, INHALE)],
-    # Additive, on a good breath: a deeper inhale over the breath, then back.
-    "deep": [(0, EXHALE), (5, {"Torso": (-3, 0, 0), "Chest": (-7, 0, 0), "Head": (-5, 0, 0), **SHOULDERS(1.0)}),
-             (12, EXHALE)],
     # 72 ticks with the spiral of StageBreakthrough: bows as the ring forms, carried up 5 px as the strands climb,
     # head up and arms open at the burst (36), then down again while the Qi falls.
     "breakthrough": [

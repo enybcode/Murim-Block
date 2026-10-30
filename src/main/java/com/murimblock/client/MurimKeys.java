@@ -5,6 +5,7 @@ import com.murimblock.Murimblock;
 import com.murimblock.client.gui.SystemPage;
 import com.murimblock.client.gui.SystemScreen;
 import com.murimblock.client.cultivation.ClientCultivation;
+import com.murimblock.client.cultivation.vision.ClosedEyes;
 import com.murimblock.cultivation.CultivationPayloads;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.KeyMapping;
@@ -50,11 +51,15 @@ public final class MurimKeys {
                     mc.setScreen(new SystemScreen(SystemPage.PROFILE));
                 }
             }
-            // While meditating the key is a breath of the QTE (read by BreathingHud), and sneaking stands up.
+            // While meditating the key opens and closes the eyes, and sneaking stands up.
             boolean meditating = ClientCultivation.get().meditating();
             while (MEDITATE.consumeClick()) {
-                if (mc.screen == null && mc.player != null && !meditating) {
-                    PacketDistributor.sendToServer(new CultivationPayloads.ToggleMeditation());
+                if (mc.screen == null && mc.player != null) {
+                    if (meditating) {
+                        ClosedEyes.toggle();
+                    } else {
+                        PacketDistributor.sendToServer(new CultivationPayloads.ToggleMeditation());
+                    }
                 }
             }
             boolean sneak = mc.options.keyShift.isDown();

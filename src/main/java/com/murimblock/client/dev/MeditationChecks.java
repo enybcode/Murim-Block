@@ -2,6 +2,7 @@ package com.murimblock.client.dev;
 
 import com.murimblock.Murimblock;
 import com.murimblock.client.cultivation.StageBreakthrough;
+import com.murimblock.client.cultivation.vision.ClosedEyes;
 import com.murimblock.client.dev.EngineTest.Step;
 import com.murimblock.cultivation.Meditation;
 import com.murimblock.shenfa.Animation;
@@ -55,6 +56,8 @@ final class MeditationChecks {
     static List<Step> steps() {
         List<Step> steps = new ArrayList<>();
         steps.add(new Step("meditation setup", mc -> {
+            // The checks film the seated body: the eyes stay open.
+            ClosedEyes.autoClose = false;
             mc.options.hideGui = false;
             mc.options.setCameraType(CameraType.FIRST_PERSON);
             EngineTest.server(mc, player -> {

@@ -15,7 +15,7 @@ public final class MurimParticles {
     /** A puff of Qi smoke rising from a meditator. */
     public static final DeferredHolder<ParticleType<?>, ParticleType<QiParticleOptions>> QI =
             PARTICLES.register("qi", QiParticleOptions::newType);
-    /** A larger, brighter puff of the ring a good breath blows out. */
+    /** A larger, brighter puff of the ring a breakthrough blows out. */
     public static final DeferredHolder<ParticleType<?>, ParticleType<QiParticleOptions>> QI_RING =
             PARTICLES.register("qi_ring", QiParticleOptions::newType);
     /** A bright speck of Qi carried up in the smoke. */

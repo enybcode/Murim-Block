@@ -15,7 +15,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 /**
- * Qi smoke and specks rising from every meditating player, and a ring of them blown out on a good breath. All of it
+ * Qi smoke and specks rising from every meditating player, and a ring of them blown out at a breakthrough. All of it
  * grows with the Qi the player holds: a wisp at the start, a thick column for a great reserve.
  */
 public final class QiAura {
@@ -39,7 +39,7 @@ public final class QiAura {
         return power(previewQi >= 0 ? previewQi : ClientCultivation.qiOf(player));
     }
 
-    /** A good breath: a flat ring of Qi smoke rolls out from the dantian and lifts. */
+    /** A breakthrough: a flat ring of Qi smoke rolls out from the dantian and lifts. */
     public static void burst(Player player) {
         RandomSource random = player.getRandom();
         float power = powerOf(player);

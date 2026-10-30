@@ -78,9 +78,9 @@ final class CultivationCommands {
         ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
         Cultivation c = Meditation.of(player);
         ctx.getSource().sendSuccess(() -> Component.literal(String.format(
-                "%s: realm %d stage %d, stage Qi %.1f / %d, Qi %.1f / %d, meridians %d, meditating %s, harmony %.2f",
+                "%s: realm %d stage %d, stage Qi %.1f / %d, Qi %.1f / %d, meridians %d, meditating %s, calm %.2f",
                 player.getScoreboardName(), c.realm(), c.stage(), c.stageQi(), c.gauge(), c.qi(), c.maxQi(),
-                c.meridians(), c.meditating(), c.harmony())), false);
+                c.meridians(), c.meditating(), c.calm())), false);
         return 1;
     }
 

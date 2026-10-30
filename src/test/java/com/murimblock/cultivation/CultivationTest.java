@@ -16,10 +16,10 @@ class CultivationTest {
     }
 
     @Test
-    void harmonyMultipliesTheGainUpToTwoAndAHalf() {
+    void calmMultipliesTheGainUpToThree() {
         assertEquals(2.0, CultivationRules.meditationGain(0), 1e-9);
-        assertEquals(5.0, CultivationRules.meditationGain(1), 1e-9);
-        assertEquals(5.0, CultivationRules.meditationGain(3), 1e-9);
+        assertEquals(6.0, CultivationRules.meditationGain(1), 1e-9);
+        assertEquals(6.0, CultivationRules.meditationGain(3), 1e-9);
     }
 
     @Test
@@ -63,29 +63,38 @@ class CultivationTest {
     }
 
     @Test
-    void harmonyRisesOnGoodBeatsAndFallsHarderOnMisses() {
+    void calmRisesOnlyWithClosedEyesAndFallsNearAHostile() {
         Cultivation c = new Cultivation();
         c.startMeditation(0, 0, 0);
-        c.breathe(BreathResult.PERFECT, 0);
-        c.breathe(BreathResult.GOOD, 20);
-        assertEquals(0.10, c.harmony(), 1e-9);
-        assertEquals(2, c.combo());
-        c.breathe(BreathResult.MISS, 40);
-        assertEquals(0.02, c.harmony(), 1e-9);
-        assertEquals(0, c.combo());
-        c.breathe(BreathResult.MISS, 60);
-        assertEquals(0, c.harmony(), 1e-9);
+        c.gather(60);
+        assertEquals(0, c.calm(), 1e-9);
+        c.setEyesClosed(true);
+        c.gather(60);
+        assertEquals(0.5, c.calm(), 1e-9);
+        c.setDisturbed(true);
+        c.gather(6);
+        assertEquals(0.3, c.calm(), 1e-9);
+        c.setDisturbed(false);
+        c.gather(1000);
+        assertEquals(1, c.calm(), 1e-9);
+        c.stopMeditation();
+        assertEquals(0, c.calm(), 1e-9);
+        assertFalse(c.eyesClosed());
     }
 
     @Test
-    void comboTiersMultiplyTheGainUpToTwo() {
-        assertEquals(1.0, CultivationRules.comboMultiplier(4), 1e-9);
-        assertEquals(1.2, CultivationRules.comboMultiplier(5), 1e-9);
-        assertEquals(1.5, CultivationRules.comboMultiplier(19), 1e-9);
-        assertEquals(2.0, CultivationRules.comboMultiplier(500), 1e-9);
-        assertEquals(10, CultivationRules.nextComboTier(7));
-        assertEquals(-1, CultivationRules.nextComboTier(20));
-        assertEquals(10.0, CultivationRules.meditationGain(1, 20), 1e-9);
+    void eyesOnlyCloseWhileMeditating() {
+        Cultivation c = new Cultivation();
+        c.setEyesClosed(true);
+        assertFalse(c.eyesClosed());
+    }
+
+    @Test
+    void calmTiersAtAQuarterAHalfAndFull() {
+        assertEquals(0, CultivationRules.calmTier(0.24));
+        assertEquals(1, CultivationRules.calmTier(0.25));
+        assertEquals(2, CultivationRules.calmTier(0.99));
+        assertEquals(3, CultivationRules.calmTier(1));
     }
 
     @Test

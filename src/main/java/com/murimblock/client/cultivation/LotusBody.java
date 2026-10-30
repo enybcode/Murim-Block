@@ -17,14 +17,12 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 /**
  * The lotus meditation on Shenfa (storyboards {@code docs/mobs/boards/meditation.png} and {@code meditation_fp.png}):
- * the player sits down, breathes (one's own body with the breathing lane, others' on a slow loop), is lifted at a
- * stage breakthrough, and stands up. The clips are {@code skeletal/animations/meditation.gltf}: the seat on the lowest
- * layer, the breakthrough above it, a good breath as an additive layer over both.
+ * the player sits down, breathes on a slow loop, is lifted at a stage breakthrough, and stands up. The clips are
+ * {@code skeletal/animations/meditation.gltf}: the seat on the lowest layer, the breakthrough above it.
  */
 public final class LotusBody {
     private static final Animator.Priority SEAT = Animator.Priority.LOWEST;
     private static final Animator.Priority LIFTED = Animator.Priority.LOW;
-    private static final Animator.Priority DEEP = Animator.Priority.MIDDLE;
     /** Getting up after a hit plays this much faster. */
     private static final float HURT_SPEED = 1.5f;
 
@@ -61,40 +59,20 @@ public final class LotusBody {
         }
     }
 
-    /** A good breath of one's own: a deeper inhale laid over the breath. */
-    static void deepBreath() {
-        Animation deep = clip("deep");
-        Minecraft mc = Minecraft.getInstance();
-        if (SkeletalPlayers.enabled() && deep != null && mc.player != null) {
-            PlayerAnimators.play(mc.player, DEEP, deep, 1, false);
-        }
-    }
-
     private static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.isPaused() || !SkeletalPlayers.enabled()) {
             return;
         }
+        Animation lotus = clip("lotus");
+        if (lotus == null) {
+            return;
+        }
         for (AbstractClientPlayer player : mc.level.players()) {
-            boolean own = player == mc.player;
-            float lung = own ? BreathingHud.lung() : -1;
+            // Seated once the sit is over: the slow breathing loop.
             Animation seat = PlayerAnimators.playing(player, SEAT);
-            if (ClientCultivation.isMeditating(player)) {
-                // Seated once the sit is over: one's own body holds still and breathes with the lane while it plays;
-                // otherwise (others, a full gauge) the slow breathing loop.
-                Animation lotus = clip(lung >= 0 ? "lotus_still" : "lotus");
-                boolean seated = seat != null && seat.id().contains("meditation/lotus");
-                if (lotus != null && (seat == null || !ours(seat) || seated && seat != lotus)) {
-                    PlayerAnimators.play(player, SEAT, lotus, 1, false);
-                }
-            }
-            Animation breath = clip("breath");
-            if (own && breath != null) {
-                if (lung >= 0 && ClientCultivation.isMeditating(player)) {
-                    PlayerAnimators.holdAdditive(player, breath, lung);
-                } else {
-                    PlayerAnimators.stopAdditive(player, breath.id());
-                }
+            if (ClientCultivation.isMeditating(player) && (seat == null || !ours(seat))) {
+                PlayerAnimators.play(player, SEAT, lotus, 1, false);
             }
         }
     }

@@ -88,14 +88,13 @@ public final class CultivationPayloads {
         }
     }
 
-    /** Client to server: one beat of the breathing QTE, perfect, good or missed. */
-    public record Breath(BreathResult result) implements CustomPacketPayload {
-        public static final Type<Breath> TYPE = CultivationPayloads.payloadType("meditation_breath");
-        public static final StreamCodec<ByteBuf, Breath> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(
-                id -> new Breath(BreathResult.byId(id)), b -> b.result().ordinal());
+    /** Client to server: the meditating player closed or opened their eyes. */
+    public record Eyes(boolean closed) implements CustomPacketPayload {
+        public static final Type<Eyes> TYPE = CultivationPayloads.payloadType("meditation_eyes");
+        public static final StreamCodec<ByteBuf, Eyes> STREAM_CODEC = ByteBufCodecs.BOOL.map(Eyes::new, Eyes::closed);
 
         @Override
-        public Type<Breath> type() {
+        public Type<Eyes> type() {
             return TYPE;
         }
     }
