@@ -39,7 +39,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 /**
  * Showcase shots for the site and the mod's pages ({@code -PengineGroups=showcase -PengineGifs=true}, the scene camera needs the latter): each mob look fighting the
  * player at night on open grass, lit by night vision (the undead do not burn), the player hitting back in combat mode, filmed over the player's shoulder at three
- * quarters so both are seen in action. Shots {@code show_<mob>_<tick>} every 6 ticks; no checks beyond the mob being
+ * quarters so both are seen in action. Shots {@code show_<mob>_<tick>} every 6 ticks and a GIF {@code show_<mob>}; no checks beyond the mob being
  * there.
  */
 @EventBusSubscriber(modid = Murimblock.MOD_ID, value = Dist.CLIENT)
@@ -168,6 +168,9 @@ final class ShowcaseChecks {
                     if (!(mc.level.getEntity(id[0]) instanceof LivingEntity foe)) {
                         return;
                     }
+                    if (t == 0) {
+                        GifRecorder.start("show_" + cast.name());
+                    }
                     GifRecorder.camera(partial -> shoulder(mc, foe, partial));
                     // Face the foe and hit back now and then.
                     Vec3 to = foe.position().subtract(mc.player.position());
@@ -182,7 +185,7 @@ final class ShowcaseChecks {
                     }
                 }, () -> {
                     EngineTest.check("the " + cast.name() + " was filmed", id[0] >= 0);
-                    GifRecorder.camera(null);
+                    GifRecorder.stop();
                 });
             }));
         }
