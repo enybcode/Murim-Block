@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Joueur — M1 à l'épée</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// Poses (see board.js): lean = torso, head, aR/fR = right (near, sword) upper arm / forearm, aL/fL = left (far),
+// tF/sF = right (near, lead) leg thigh / shin, tB/sB = left (far, rear) leg, w = the sword, hx/hy = hips moved (px).
+// The player faces right, right foot forward, the sword in the right hand.
+const GUARD = {lean: 6, head: -4, aR: 40, fR: 75, w: 115, aL: 12, fL: 40, tF: 20, sF: 4, tB: -22, sB: 12, hy: 2};
+
+const ONE_ANTIC = {lean: 0, head: -6, hx: -2, hy: 2, aR: 165, fR: 200, w: 235, aL: 30, fL: 70, tF: 18, sF: 6,
+  tB: -24, sB: 14};
+const ONE_HIT = {lean: 16, head: 0, hx: 6, hy: 3, aR: 95, fR: 100, w: 110, aL: -20, fL: 10, tF: 32, sF: 4, tB: -30,
+  sB: 10};
+const ONE_FOLLOW = {...ONE_HIT, lean: 20, hx: 7, aR: 60, fR: 50, w: 40};
+
+const TWO_ANTIC = {lean: 4, head: -6, hx: 2, hy: 2, aR: 150, fR: 185, w: 215, aL: -10, fL: 20, tF: 26, sF: 4,
+  tB: -26, sB: 12};
+const TWO_HIT = {lean: 16, head: 0, hx: 7, hy: 3, aR: 95, fR: 98, w: 105, aL: 20, fL: 50, tF: 32, sF: 4, tB: -30,
+  sB: 10};
+const TWO_FOLLOW = {...TWO_HIT, lean: 20, hx: 8, aR: 55, fR: 45, w: 30};
+
+const THREE_ANTIC = {lean: 2, head: -6, hx: -4, hy: 4, aR: -30, fR: 20, w: 268, aL: 50, fL: 80, tF: 24, sF: 0,
+  tB: -24, sB: 20};
+const THREE_HIT = {lean: 14, head: -4, hx: 12, hy: 4, aR: 90, fR: 94, w: 95, aL: -30, fL: -10, tF: 44, sF: 6,
+  tB: -38, sB: 8};
+const THREE_FOLLOW = {...THREE_HIT, lean: 18, hx: 14, aR: 70, fR: 60, w: 70};
+
+const T = 168;
+sheet({
+  weapon: 'sword',
+  colors: {robe: '#4f7d8a', robeDark: '#3a5d68', skin: '#c99a72', skinDark: '#a57c58', belt: '#2f3b40'},
+  title: 'JOUEUR — M1 À L\'ÉPÉE',
+  sub: 'Proposition avant animation · une épée en main, sans art martial : trois coups simples qui s\'enchaînent '
+    + 'au clic, dans l\'esprit des M1 d\'Epic Fight · vue de profil, il regarde vers la droite, pied droit devant · '
+    + 'sous chaque nom, la trace du coup vue par l\'adversaire',
+  wrong: [
+    'Aujourd\'hui, une épée en main, le joueur frappe aux poings : aucun coup d\'épée.',
+    'Le coup vanilla : le bras seul bat de haut en bas, le corps ne suit pas, la lame ne trace aucun arc.',
+  ],
+  fix: [
+    'Trois M1 : deux tailles en diagonale qui dessinent une croix, puis une coupe large à l\'horizontale ; puis on '
+      + 'recommence au premier.',
+    'Garde au milieu : pointe vers le visage de l\'adversaire, main libre détendue près de la hanche.',
+    'La lame mène l\'arc : préparation lisible (l\'épée monte ou recule), impact tenu un tick, la lame dépasse la '
+      + 'cible avant de revenir.',
+    'Le bassin et l\'épaule partent avant le bras ; le poignet casse en dernier.',
+    'Un peu plus lents que les poings, un peu plus forts que l\'épée vanilla : dégâts de l\'épée × 1, × 1, × 1,3 ; '
+      + 'cliquer plus vite ne frappe pas plus vite.',
+  ],
+  anims: [
+    {name: 'M1 · 1 · Taille', meta: '11 ticks · impact ticks 3 → 5 · dégâts × 1',
+      feel: 'le coup d\'épée de base, net, en diagonale.',
+      read: 'l\'épée qui monte au-dessus de l\'épaule droite.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Pointe vers l\'adversaire, coude près du corps.'},
+        {ticks: '1 → 2', phase: 'préparation', phaseColor: '#a32020', pose: ONE_ANTIC, from: GUARD,
+          note: 'L\'épée monte au-dessus de l\'épaule droite, le buste se redresse.'},
+        {ticks: '3 → 4', phase: 'impact', phaseColor: '#a32020', pose: ONE_HIT, from: ONE_ANTIC, target: T,
+          impact: true, note: 'L\'épaule plonge, le bras se tend, la lame tombe en diagonale vers la hanche gauche.'},
+        {ticks: '5', phase: 'suivi', pose: ONE_FOLLOW, from: ONE_HIT, target: T, note: 'La lame passe la cible et '
+          + 'finit basse, à gauche.'},
+        {ticks: '6 → 10', phase: 'retour', pose: GUARD, from: ONE_FOLLOW, bend: -10,
+          note: 'Retour en garde.'},
+      ]},
+    {name: 'M1 · 2 · Taille croisée', meta: '11 ticks · impact ticks 3 → 5 · dégâts × 1',
+      feel: 'la même taille de l\'autre côté : les deux coups font une croix.',
+      read: 'l\'épée qui passe au-dessus de l\'épaule gauche, le poignet retourné.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Fin du premier coup.'},
+        {ticks: '1 → 2', phase: 'préparation', phaseColor: '#a32020', pose: TWO_ANTIC, from: GUARD,
+          note: 'Le bras croise devant le visage, l\'épée monte au-dessus de l\'épaule gauche, revers de la main '
+          + 'vers l\'adversaire.'},
+        {ticks: '3 → 4', phase: 'impact', phaseColor: '#a32020', pose: TWO_HIT, from: TWO_ANTIC, target: T,
+          impact: true, note: 'Le bassin tourne vers la droite, la lame tombe en diagonale vers la hanche droite et '
+          + 'croise la première trace.'},
+        {ticks: '5', phase: 'suivi', pose: TWO_FOLLOW, from: TWO_HIT, target: T, note: 'La lame finit basse, à '
+          + 'droite.'},
+        {ticks: '6 → 10', phase: 'retour', pose: GUARD, from: TWO_FOLLOW, bend: -10,
+          note: 'Retour en garde.'},
+      ]},
+    {name: 'M1 · 3 · Coupe large', meta: '13 ticks · impact ticks 4 → 7 · dégâts × 1,3 · fin de série',
+      feel: 'le coup qui clôt la série : un grand arc à plat, à hauteur de poitrine.',
+      read: 'l\'épée ramenée loin derrière, à plat, le buste tourné.',
+      frames: [
+        {ticks: '0', phase: 'garde', pose: GUARD, note: 'Fin du deuxième coup.'},
+        {ticks: '1 → 3', phase: 'préparation', phaseColor: '#a32020', pose: THREE_ANTIC, from: GUARD,
+          note: 'Les épaules tournent vers la droite, l\'épée part loin derrière, lame à plat ; la main gauche '
+          + 's\'ouvre devant.'},
+        {ticks: '4 → 6', phase: 'impact', phaseColor: '#a32020', pose: THREE_HIT, from: THREE_ANTIC, target: T,
+          impact: true, note: 'Un demi-pas en avant, le bassin puis les épaules tournent : la lame balaie '
+          + 'l\'horizontale de droite à gauche.'},
+        {ticks: '7', phase: 'suivi', pose: THREE_FOLLOW, from: THREE_HIT, target: T, note: 'La lame continue '
+          + 'jusqu\'à gauche, le buste suit.'},
+        {ticks: '8 → 12', phase: 'retour', pose: GUARD, from: THREE_FOLLOW, bend: -8,
+          note: 'Retour en garde : la série peut reprendre.'},
+      ]},
+  ],
+});
+
+// Each cut as the foe sees it: the player faces us, his right on our left. Earlier cuts of the series dashed grey.
+const CUTS = [[22, 18, 78, 86], [78, 18, 22, 86], [10, 52, 90, 52]];
+document.querySelectorAll('.anim .label').forEach((label, i) => {
+  let s = '<svg viewBox="0 0 100 104" width="130" height="135" style="display:block;margin-top:10px">'
+    + '<rect x="32" y="8" width="36" height="84" rx="3" fill="#e2d9c6"/>';
+  CUTS.slice(0, i + 1).forEach(([x1, y1, x2, y2], j) => {
+    const now = j === i;
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${now ? '#c23b2f' : '#b3aa99'}" `
+      + `stroke-width="${now ? 4 : 3}" stroke-linecap="round" ${now ? '' : 'stroke-dasharray="5 4"'}/>`;
+    if (now) {
+      const dx = x2 - x1, dy = y2 - y1, n = Math.hypot(dx, dy), ux = dx / n, uy = dy / n;
+      s += `<path d="M${x2 + ux * 4} ${y2 + uy * 4} L${x2 - ux * 8 - uy * 6} ${y2 - uy * 8 + ux * 6} `
+        + `L${x2 - ux * 8 + uy * 6} ${y2 - uy * 8 - ux * 6}Z" fill="#c23b2f"/>`;
+    }
+  });
+  s += '<text x="50" y="102" font-size="8" text-anchor="middle" fill="#6b5a4c">vu par l\'adversaire</text></svg>';
+  label.insertAdjacentHTML('beforeend', s);
+});
+</script></body></html>

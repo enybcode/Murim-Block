@@ -11,6 +11,8 @@ One file per feature or decision, added as the work goes.
 - [Shenfa roadmap and record](combat/engine-roadmap.md): the original step plan and how each done step was built.
 - [Combat system](combat/combat-system.md): keys, the fists, rules, blows, guard and parry, mobs, feel (first version).
 - [Epic Fight study](combat/epic-fight-study.md): what Epic Fight does in first person, combat and feel (27 Oct 2026).
+- [Animation method](combat/animation-method.md): player moves made from reference clips, measured and compared side
+  by side (31 Oct 2026).
 - [Visual rules](art/visual-rules.md): the art direction, relief on every model, hand-shaded textures, the process.
 - [Mob sheets](mobs/): one validated design sheet per mob and its model renders (Disciple déchu = zombie).
 - [Murim map](world/map.md): the fixed Murim continent, its ten zones and biomes, relief, rivers and reserved sites (plan).
@@ -28,5 +30,5 @@ One file per feature or decision, added as the work goes.
 - `src/main/resources/assets/murimblock/`: `skeletal/` the biped and its clip sets (glTF and sidecars), `lang/`,
   textures, GeckoLib models, particles.
 - `tools/`: `blender/` builds the biped and the clips, `textures/` paints original textures and models (Node),
-  `gifs.sh` and `frames-to-gif.java` turn recorded frames into GIFs.
+  `gifs.sh` and `frames-to-gif.java` turn recorded frames into GIFs, `reference/` reads reference clips.
 - `docs/`: this index; `playtest/` the in-game checklist.
