@@ -11,6 +11,7 @@ One file per feature or decision, added as the work goes.
 - [Shenfa roadmap and record](combat/engine-roadmap.md): the original step plan and how each done step was built.
 - [Combat system](combat/combat-system.md): keys, the fists, rules, blows, guard and parry, mobs, feel (first version).
 - [Epic Fight study](combat/epic-fight-study.md): what Epic Fight does in first person, combat and feel (27 Oct 2026).
+- [TGCraft study](combat/tgcraft-study.md): how svasco's mod makes combat feel dynamic, and what to take (31 Oct 2026).
 - [Animation method](combat/animation-method.md): player moves made from reference clips, measured and compared side
   by side (31 Oct 2026).
 - [Visual rules](art/visual-rules.md): the art direction, relief on every model, hand-shaded textures, the process.
