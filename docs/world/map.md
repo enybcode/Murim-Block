@@ -224,3 +224,14 @@ Capitals will be hand-built, saved as 48 x 48 structure tiles and placed once at
 
 - Exact landmass size and how far the ocean ring goes before vanilla (or nothing) starts.
 - Whether amplified / large-biome presets get the map too.
+
+## Structure placement (proposal, 31 Oct 2026)
+
+Enzo: structures are built here like the map, at fixed places, thought through one by one. Board:
+`docs/world/boards/structures.png` (source `structures.html`): 31 sites in block coordinates, each probed on the
+real generator (biome, ground height over the footprint, water). Rules: start in the centre and go outward (safe
+heartland, danger at the edges); each sect where it stands in the genre's China mapped onto our zones; orthodox sects
+in the heartland and rims, unorthodox and demonic in the far corners; each great house in its seat's zone; the
+Northern Blade factions on their reserved sites; big sites ~400 blocks apart, off rivers except the ferry, the
+Beggars' hall and the delta port. First structure proposed: Qingshui village, the world spawn (564, -389). Waiting
+for Enzo's OK.
