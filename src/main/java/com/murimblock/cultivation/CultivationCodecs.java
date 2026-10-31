@@ -6,14 +6,15 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-/** How cultivation is saved and sent. Field names in {@link #SAVED} are saved IDs: keep them. */
+/** How cultivation is saved and sent. Field names in {@link #SAVED} are saved IDs: keep them ({@code stage_qi} is read
+ * back as max Qi past the stage floor, see {@link Cultivation}). */
 public final class CultivationCodecs {
     public static final Codec<Cultivation> SAVED = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("realm").forGetter(Cultivation::realm),
             Codec.INT.fieldOf("stage").forGetter(Cultivation::stage),
             Codec.DOUBLE.fieldOf("stage_qi").forGetter(Cultivation::stageQi),
             Codec.DOUBLE.fieldOf("qi").forGetter(Cultivation::qi),
-            Codec.INT.fieldOf("max_qi").forGetter(Cultivation::maxQi),
+            Codec.DOUBLE.fieldOf("max_qi").forGetter(Cultivation::maxQiExact),
             Codec.INT.fieldOf("meridians").forGetter(Cultivation::meridians))
             .apply(i, Cultivation::new));
 

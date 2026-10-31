@@ -8,7 +8,7 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
 
 - BEGIN TRIAL opens the graveyard island; 5 waves of zombies. Changed the same day: one wave of 15 in all, arriving
   little by little, the Grave Warden as the 15th; it must be possible for a mortal.
-- Victory: Third-Rate Warrior (Qi Condensation stage 1). Defeat: 30 % of the Qi lost.
+- Victory: Third-Rate Warrior (Qi Condensation stage 1). Defeat: 30 % of the max Qi gained in stage 9 scatters.
 
 ## How it works
 
@@ -50,8 +50,8 @@ zombies, no NPC. The Heart Demon stays the idea for the realms above.
   breakthrough and its window, and "[!] You broke through to Third-Rate Warrior." to the player alone: nothing about
   a trial is ever told to the server (Enzo, 25 Oct: it stays secret).
 - Loss: anything that ends the trip before the last zombie falls (a lethal blow, nobody dies there; falling off;
-  RETURN TO BODY; a blow on the body; logging out). The trial's zombies vanish and 30 % of the gathered stage Qi
-  scatters (`Cultivation.scatter`), so the gauge must be refilled before trying again.
+  RETURN TO BODY; a blow on the body; logging out). The trial's zombies vanish and 30 % of the max Qi gained in the stage
+  scatters (`Cultivation.scatter`), so max Qi must grow back to the peak before trying again.
 - Runs live in memory (`MortalTrial`), cleared when the server stops.
 
 ## The island (`TrialIsland`, version 1)

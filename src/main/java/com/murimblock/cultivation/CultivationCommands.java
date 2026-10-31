@@ -78,8 +78,8 @@ final class CultivationCommands {
         ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
         Cultivation c = Meditation.of(player);
         ctx.getSource().sendSuccess(() -> Component.literal(String.format(
-                "%s: realm %d stage %d, stage Qi %.1f / %d, Qi %.1f / %d, meridians %d, meditating %s, calm %.2f",
-                player.getScoreboardName(), c.realm(), c.stage(), c.stageQi(), c.gauge(), c.qi(), c.maxQi(),
+                "%s: realm %d stage %d, max Qi %.1f (stage peak %d, +%.1f / %d), Qi %.1f, meridians %d, meditating %s, calm %.2f",
+                player.getScoreboardName(), c.realm(), c.stage(), c.maxQiExact(), c.peak(), c.stageQi(), c.gauge(), c.qi(),
                 c.meridians(), c.meditating(), c.calm())), false);
         return 1;
     }
@@ -97,7 +97,7 @@ final class CultivationCommands {
         ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
         Cultivation c = Meditation.of(player);
         c.set(IntegerArgumentType.getInteger(ctx, "realm"), IntegerArgumentType.getInteger(ctx, "stage"), 0,
-                c.qi(), c.maxQi(), IntegerArgumentType.getInteger(ctx, "meridians"));
+                c.qi(), 0, IntegerArgumentType.getInteger(ctx, "meridians"));
         Meditation.sync(player);
         return get(ctx);
     }

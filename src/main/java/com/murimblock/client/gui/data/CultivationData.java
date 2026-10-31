@@ -102,13 +102,18 @@ public final class CultivationData {
         return now().stage();
     }
 
-    /** Stage Qi gathered toward the next stage. */
+    /** Max Qi, growing toward the stage's peak. */
     public static int qi() {
-        return (int) now().stageQi();
+        return now().maxQi();
+    }
+
+    /** How far the stage is from its floor to its peak, 0 to 1. */
+    public static float stageShare() {
+        return (float) (now().stageQi() / CultivationRules.gauge(now().realm(), now().stage()));
     }
 
     public static int qiToFill() {
-        return CultivationRules.gauge(now().realm(), now().stage());
+        return CultivationRules.peak(now().realm(), now().stage());
     }
 
     public static boolean canAdvance() {
