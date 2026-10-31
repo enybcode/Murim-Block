@@ -33,8 +33,9 @@ resets: max Qi only goes on from where it is. Qi, the fuel, is spent in fights a
   = 300). Start 100; peaks: 200, 325, 481… Body Tempering 9 peaks at ≈ 2680, the floor of Qi Condensation 1.
 - Peak reached: the Cultivation page shows **Advance** (enabled only while meditating). Pressing it: stage + 1, max
   Qi unchanged, growing again toward the next peak, a [!] System message.
-- Meant to be very long: 0.1 max Qi a second, × 3 at full Calm. Body Tempering 1 ≈ 6 min of sitting, stage 9 ≈ 35
-  min, the whole realm ≈ 2.5-3 h; each realm three times the one before (Qi Condensation ≈ 8 h).
+- Meant to be very long (Enzo, 31 Oct): 0.02 max Qi a second, × 3 at full Calm. Body Tempering 1 ≈ 30 min of sitting,
+  stage 9 ≈ 2 h 45, the whole realm ≈ 12-13 h; each realm three times the one before (Qi Condensation ≈ 36 h).
+  Killing and remedies will be other ways to gain max Qi (to design).
 - Qi refills 0.5 % of max Qi a second, 2.5 % while meditating (empty to full in 200 s, 40 s seated).
 - Saves from before 31 Oct come back with their old gauge turned into max Qi (floor + stage Qi).
 - Stage breakthrough (`client/cultivation/StageBreakthrough`, mockup "Spiral Breakthrough" chosen by Enzo, 25 Oct,
@@ -53,7 +54,7 @@ resets: max Qi only goes on from where it is. Qi, the fuel, is spent in fights a
 
 - Key (placeholder C): sit in lotus (Shenfa, see below), camera free, player rooted. Moving, attacking or taking damage
   ends it. Not usable in the air, in water or with a hostile mob closer than 8 blocks.
-- Base gain: 0.1 max Qi per second, and `qi` refills 5× faster.
+- Base gain: 0.02 max Qi per second, and `qi` refills 5× faster.
 - Since 30 Oct (V3, validated by Enzo): no mini-game. The eyes close once seated and the Calm multiplies the gain,
   up to × 3; closed eyes show the spiritual vision. Rules and code: [meditation-vision.md](meditation-vision.md).
   The breathing QTE (V2, 24 Oct) is gone.

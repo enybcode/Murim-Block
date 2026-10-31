@@ -25,9 +25,9 @@ class CultivationTest {
 
     @Test
     void calmMultipliesTheGainUpToThree() {
-        assertEquals(0.1, CultivationRules.meditationGain(0), 1e-9);
-        assertEquals(0.3, CultivationRules.meditationGain(1), 1e-9);
-        assertEquals(0.3, CultivationRules.meditationGain(3), 1e-9);
+        assertEquals(0.02, CultivationRules.meditationGain(0), 1e-9);
+        assertEquals(0.06, CultivationRules.meditationGain(1), 1e-9);
+        assertEquals(0.06, CultivationRules.meditationGain(3), 1e-9);
     }
 
     @Test
@@ -37,8 +37,8 @@ class CultivationTest {
         assertEquals(100, c.maxQiExact(), 1e-9);
         c.startMeditation(0, 0, 0);
         c.gather(10);
-        assertEquals(101, c.maxQiExact(), 1e-9);
-        assertEquals(1, c.stageQi(), 1e-9);
+        assertEquals(100.2, c.maxQiExact(), 1e-9);
+        assertEquals(0.2, c.stageQi(), 1e-9);
         c.gather(100_000);
         assertEquals(c.peak(), c.maxQiExact(), 1e-9);
         assertTrue(c.gaugeFull());

@@ -8,8 +8,9 @@ public final class CultivationRules {
     public static final int STAGES = 9;
     public static final int MERIDIANS = 13;
     public static final int START_MAX_QI = 100;
-    /** Max Qi gained each second of meditation, before Calm: slow, so a realm takes hours of sitting. */
-    public static final double MEDITATION_GAIN = 0.1;
+    /** Max Qi gained each second of meditation, before Calm: very slow, so a realm takes many hours of sitting;
+     * killing and remedies will be other ways later. */
+    public static final double MEDITATION_GAIN = 0.02;
     /** Full Calm multiplies the meditation gain by 1 + this. */
     public static final double CALM_BONUS = 2.0;
     /** Seconds of closed eyes, undisturbed, from no Calm to full; and seconds a near hostile takes to empty it. */
