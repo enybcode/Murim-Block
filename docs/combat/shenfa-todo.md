@@ -28,6 +28,22 @@ on it. `engine-roadmap.md` is the record of what was built and how; `epic-fight-
 - Taken out on 28 Oct, at Enzo's word (in git history before that day): the technique key and techniques, the blade
   moveset, every mob on Shenfa (rigs, keyframe clips on model parts, patched mob attacks).
 
+## Next: dynamic combat, all on Shenfa (decided with Enzo, 31 Oct 2026)
+
+From `tgcraft-study.md`; made with the reference-clip method (`animation-method.md`). Nothing goes through PAL or
+another engine: Shenfa draws the body, our combat code decides, Photon draws effects.
+
+1. A living combat body: walk, run, jump, fall and landing clips, plus procedural motion as an additive Shenfa layer
+   (arms against legs, chest against hips, lean into speed and turns on overshooting springs, landing sink and
+   rebound, breathing).
+2. Moves in that style (hips lead, arms trail and overshoot, dip then lunge, settle), timed from references:
+   the fists again, then the sword.
+3. Hit stop by weight (1 to 4 ticks from the clip's sidecar), the target hanging and shaking, then flung.
+4. Wind lines only on limbs swinging fast against the body (from the bone positions Shenfa already poses).
+5. Finishers: impact frames (client option, it flashes), ground rubble ring, pixel dust.
+6. Moves by body state: after a dash, jumping back, forward, up, sprinting.
+7. Air combos: launcher, assisted follow jump, air hits that hold both up, slam finisher.
+
 ## Left (in order)
 
 1. Tuning with Enzo in game: every number of `combat-system.md`, the clips' poses (drafts keyed blind, D2: Enzo fixes
