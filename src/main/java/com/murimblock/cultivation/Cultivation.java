@@ -1,5 +1,9 @@
 package com.murimblock.cultivation;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * A player's cultivation, attached to the player and saved through {@link CultivationCodecs}. Plain Java so the rules
  * can be unit tested. Meditation, Calm, the eyes and the anchor are only kept while the player is online.
@@ -16,6 +20,8 @@ public final class Cultivation {
     private double qi;
     /** Grows with meditation up to the stage's peak; how far it is past the stage's floor is the stage gauge. */
     private double maxQi;
+    /** Bosses the player has defeated (entity ids): their max Qi bonus is given once. */
+    private final Set<String> defeated = new LinkedHashSet<>();
     private int meridians;
 
     private boolean meditating;
@@ -35,6 +41,11 @@ public final class Cultivation {
      * Max Qi is the larger of {@code maxQi} and the stage's floor plus {@code stageQi}: saves from before 31 Oct kept
      * a stage gauge apart from a smaller max Qi, and come back with that gauge turned into max Qi.
      */
+    Cultivation(int realm, int stage, double stageQi, double qi, double maxQi, int meridians, List<String> defeated) {
+        this(realm, stage, stageQi, qi, maxQi, meridians);
+        this.defeated.addAll(defeated);
+    }
+
     Cultivation(int realm, int stage, double stageQi, double qi, double maxQi, int meridians) {
         this.realm = Math.max(0, realm);
         this.stage = Math.clamp(stage, 1, CultivationRules.STAGES);
@@ -163,6 +174,37 @@ public final class Cultivation {
     }
 
     /** Opens the next meridian if the realm allows it; returns whether it did. */
+    /** Max Qi from outside meditation (kills, later remedies): it stops at the stage's peak too. Returns what was gained. */
+    public double gainMaxQi(double amount) {
+        double gained = Math.clamp(peak() - maxQi, 0, Math.max(0, amount));
+        maxQi += gained;
+        changed();
+        return gained;
+    }
+
+    public void addQi(double amount) {
+        qi = Math.clamp(qi + amount, 0, maxQi);
+        changed();
+    }
+
+    /** A death: {@link CultivationRules#DEATH_LOSS} of max Qi lost for good, never below the stage's floor. */
+    public double die() {
+        double before = maxQi;
+        maxQi = Math.max(Math.min(maxQi, floor()), maxQi * (1 - CultivationRules.DEATH_LOSS));
+        qi = Math.min(qi, maxQi);
+        changed();
+        return before - maxQi;
+    }
+
+    /** Remembers a boss defeated; true the first time, when its one-off max Qi is given. */
+    public boolean firstDefeat(String boss) {
+        return defeated.add(boss);
+    }
+
+    public List<String> defeated() {
+        return List.copyOf(defeated);
+    }
+
     public boolean openMeridian() {
         if (meridians >= CultivationRules.meridianCap(realm)) {
             return false;

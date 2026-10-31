@@ -15,7 +15,8 @@ public final class CultivationCodecs {
             Codec.DOUBLE.fieldOf("stage_qi").forGetter(Cultivation::stageQi),
             Codec.DOUBLE.fieldOf("qi").forGetter(Cultivation::qi),
             Codec.DOUBLE.fieldOf("max_qi").forGetter(Cultivation::maxQiExact),
-            Codec.INT.fieldOf("meridians").forGetter(Cultivation::meridians))
+            Codec.INT.fieldOf("meridians").forGetter(Cultivation::meridians),
+            Codec.STRING.listOf().optionalFieldOf("defeated", java.util.List.of()).forGetter(Cultivation::defeated))
             .apply(i, Cultivation::new));
 
     public static final StreamCodec<ByteBuf, Cultivation.Snapshot> SNAPSHOT = StreamCodec.of((buf, s) -> {

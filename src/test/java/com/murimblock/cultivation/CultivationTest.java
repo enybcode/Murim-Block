@@ -68,6 +68,41 @@ class CultivationTest {
     }
 
     @Test
+    void killsGrowMaxQiUpToThePeakOnly() {
+        Cultivation c = new Cultivation();
+        assertEquals(0.2, c.gainMaxQi(4 * CultivationRules.KILL_SHARE), 1e-9);
+        assertEquals(100.2, c.maxQiExact(), 1e-9);
+        assertEquals(c.peak() - 100.2, c.gainMaxQi(1000), 1e-9);
+        assertEquals(0, c.gainMaxQi(5), 1e-9);
+    }
+
+    @Test
+    void farmingOneKindCutsTheReward() {
+        assertEquals(1, CultivationRules.repeatMultiplier(10), 1e-9);
+        assertEquals(0.75, CultivationRules.repeatMultiplier(11), 1e-9);
+        assertEquals(0.5, CultivationRules.repeatMultiplier(21), 1e-9);
+    }
+
+    @Test
+    void deathCostsATenthOfMaxQiButNotTheStage() {
+        Cultivation c = new Cultivation();
+        c.set(0, 2, 125, 300, 0, 0);
+        assertEquals(32.5, c.die(), 1e-9);
+        assertEquals(292.5, c.maxQiExact(), 1e-9);
+        c.set(0, 2, 10, 300, 0, 0);
+        c.die();
+        assertEquals(CultivationRules.floor(0, 2), c.maxQiExact(), 1e-9);
+        assertTrue(c.qi() <= c.maxQiExact());
+    }
+
+    @Test
+    void aBossGivesItsBonusOnce() {
+        Cultivation c = new Cultivation();
+        assertTrue(c.firstDefeat("minecraft:warden"));
+        assertFalse(c.firstDefeat("minecraft:warden"));
+    }
+
+    @Test
     void oldSavesTurnTheirGaugeIntoMaxQi() {
         Cultivation c = new Cultivation(0, 3, 50, 10, 121, 0);
         assertEquals(CultivationRules.floor(0, 3) + 50, c.maxQi());

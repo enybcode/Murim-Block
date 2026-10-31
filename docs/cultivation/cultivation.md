@@ -38,6 +38,16 @@ resets: max Qi only goes on from where it is. Qi, the fuel, is spent in fights a
   Killing and remedies will be other ways to gain max Qi (to design).
 - Qi refills 0.5 % of max Qi a second, 2.5 % while meditating (empty to full in 200 s, 40 s seated).
 - Saves from before 31 Oct come back with their old gauge turned into max Qi (floor + stage Qi).
+
+## Kills and death (`KillQi`, from V1 on Enzo's request, 31 Oct)
+
+- A kill gives the mob's Qi (refills Qi) and 5 % of it as max Qi, which stops at the stage's peak like meditation's.
+  Qi by kind, V1's table: zombie 4, skeleton 6, creeper and witch 18, enderman 15, iron golem 45, Warden 400,
+  Wither 300, dragon 500; any other mob 1; the mod's own entities 0; nothing in the inner world.
+- Farming: over 10 kills of one kind within 15 min the reward is 75 %, over 20 it is half (in memory only).
+- A boss's first defeat adds max Qi once (saved list `defeated`): Elder Guardian 100, Warden 250, Wither 400, dragon 600.
+- The player's death costs 10 % of max Qi for good, never below the stage's floor.
+- Feedback in the action bar (`+4 Qi · +0.2 Max Qi`); the death's loss in red in the chat.
 - Stage breakthrough (`client/cultivation/StageBreakthrough`, mockup "Spiral Breakthrough" chosen by Enzo, 25 Oct,
   artifact 6x4Qok5t6ZRtcKrXVinTpz): the System closes and, in first person, the camera steps behind the player for
   3.6 s. Qi specks gather in a ring at the feet (0-0.8 s), two strands spiral up to above the head with a rising

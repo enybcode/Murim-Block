@@ -24,6 +24,17 @@ public final class CultivationRules {
     public static final double QI_REGEN = 0.005;
     public static final double QI_REGEN_MEDITATING = 0.025;
     public static final int MERIDIANS_PER_REALM = 4;
+    /** Share of a kill's Qi that also goes to max Qi (the experience of combat); the kill's Qi refills Qi. */
+    public static final double KILL_SHARE = 0.05;
+    /** Kills of one kind within this many ticks (15 min) count as farming. */
+    public static final long REPEAT_WINDOW_TICKS = 15 * 60 * 20;
+    /** Share of max Qi lost for good at each death, never below the stage's floor. */
+    public static final double DEATH_LOSS = 0.10;
+
+    /** A kill's reward after farming the same kind: full for the first 10 in the window, 75 % to 20, then half. */
+    public static double repeatMultiplier(int recentKills) {
+        return recentKills <= 10 ? 1 : recentKills <= 20 ? 0.75 : 0.5;
+    }
 
     private CultivationRules() {
     }
