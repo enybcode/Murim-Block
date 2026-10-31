@@ -235,3 +235,8 @@ in the heartland and rims, unorthodox and demonic in the far corners; each great
 Northern Blade factions on their reserved sites; big sites ~400 blocks apart, off rivers except the ferry, the
 Beggars' hall and the delta port. First structure proposed: Qingshui village, the world spawn (564, -389). Waiting
 for Enzo's OK.
+
+Qingshui village mockup (31 Oct 2026): `docs/world/boards/qingshui-village.png` (source `.html`): 128 x 128 plan
+(chief's courtyard, Willow Inn, herbalist, martial yard, blacksmith, store, ten houses, shrine, willow pond, old
+ginkgo, well, notice board, west archway, bridge, watchtower, millet fields), three front views and the block
+palette. Waiting for Enzo's OK before building.

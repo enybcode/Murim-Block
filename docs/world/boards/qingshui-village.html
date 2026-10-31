@@ -1,0 +1,164 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Qingshui village</title>
+<style>
+body{margin:0;background:#141820;color:#d9e2ec;font:13px/1.4 system-ui,sans-serif;padding:22px;width:1560px}
+h1{margin:0 0 2px;font-size:24px} h1 small{color:#ffc93c;font-size:18px;margin-left:8px}
+.sub{color:#9fb0c0;margin-bottom:14px}
+.wrap{display:flex;gap:22px;align-items:flex-start}
+canvas{image-rendering:pixelated;display:block;border-radius:6px}
+.side{flex:1}
+h3{margin:4px 0 6px;font-size:15px;color:#ffc93c}
+ol{margin:0 0 12px;padding-left:22px} li{margin-bottom:3px} li b{color:#fff}
+.elev{display:flex;gap:18px;margin-top:16px} .elev div{color:#9fb0c0}
+.pal{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px}
+.pal span{display:flex;align-items:center;gap:6px} .pal i{width:16px;height:16px;border-radius:3px;display:inline-block;border:1px solid #0006}
+.note{background:#1e2430;border:1px solid #2e3746;border-radius:6px;padding:10px 14px;color:#c4cfda;margin-bottom:12px}
+</style></head><body>
+<h1>Qingshui village <small>清水村 · "clear water"</small></h1>
+<div class="sub">Mockup. The world spawn, (564, -389) on the central plains, ground Y 67-69. 128 x 128 blocks, north up; the yellow river ferry inn is ~230 blocks west.</div>
+<div class="wrap">
+<canvas id="plan" width="128" height="128" style="width:832px;height:832px"></canvas>
+<div class="side">
+<div class="note"><b>The feel.</b> A quiet Song-dynasty farming village where a mortal's story starts: grey tile roofs, red pillars, a clear brook and its willow pond, millet fields all around. Small and readable: from the square you see every place you need on day one. The road from the ferry comes in under a red archway, crosses the square and leaves east towards Shaolin.</div>
+<h3>Places</h3>
+<ol id="legend"></ol>
+<h3>Blocks</h3>
+<div class="pal" id="pal"></div>
+</div></div>
+<div class="elev">
+<div><canvas id="gate" width="40" height="26" style="width:400px;height:260px"></canvas>West archway (paifang), front view</div>
+<div><canvas id="inn" width="44" height="26" style="width:440px;height:260px"></canvas>Willow Inn, south front facing the square</div>
+<div><canvas id="house" width="26" height="26" style="width:260px;height:260px"></canvas>A farmer's house, front</div>
+</div>
+<script>
+const P = {
+ grass: ['#6f9a3e', '#76a244', '#679238', '#7aa64a'], path: ['#9c8a66', '#a39070', '#94825e'], pave: ['#8f8f8a', '#9a9a94', '#85857f'],
+ wall: '#b98a5a', wallTop: '#cf9f6c', roof: ['#3b4148', '#454c54', '#2f343a'], ridge: '#23272c', eave: '#5a626b',
+ court: '#b8a882', field: ['#c9b35a', '#b9a24a', '#8a6e3a'], veg: ['#4f8a34', '#6d4a2c'], water: ['#3f7fc0', '#4a8bcc', '#5aa0dc'],
+ bank: '#7d7a5e', leaf: ['#3f7a2e', '#4f8c36', '#2f6224'], willow: ['#7fae4a', '#93c25a', '#5f8e34'], ginkgo: ['#d9b23a', '#e8c64a', '#b8902a'],
+ trunk: '#5a3e24', red: '#b8322a', gold: '#e8b83a', sand: '#d8c690', dummy: '#8a5a32', stone: '#7a7a76', smoke: '#cfcfcf', spawn: '#ff4d6d'
+};
+const cv = document.getElementById('plan'), g = cv.getContext('2d'), N = 128;
+const hash = (x, y, s = 1) => { let h = x * 374761393 + y * 668265263 + s * 1442695041; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+const px = (x, y, c) => { g.fillStyle = c; g.fillRect(x, y, 1, 1); };
+const pick = (a, x, y, s) => a[Math.floor(hash(x, y, s) * a.length)];
+const rect = (x0, y0, w, h, f) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) px(x, y, typeof f === 'function' ? f(x, y) : f); };
+// Ground.
+rect(0, 0, N, N, (x, y) => pick(P.grass, x, y, 1));
+// Fields outside the wall: millet rows (gold), vegetable plots (green and soil).
+const fields = [[2, 2, 22, 22], [92, 92, 34, 34], [2, 96, 40, 30], [104, 2, 22, 16], [48, 119, 36, 8]];
+for (const [x0, y0, w, h] of fields) rect(x0, y0, w, h, (x, y) => (x - x0) % 9 === 8 || (y - y0) % 7 === 6 ? P.path[2] : y % 2 ? P.field[0] : P.field[1]);
+rect(2, 30, 18, 14, (x, y) => (x % 3 === 2) ? P.veg[1] : P.veg[0]);
+// The brook: from the north, through the willow pond, under the bridge, out south.
+const brook = y => 104 + Math.round(3 * Math.sin(y / 9));
+for (let y = 0; y < N; y++) for (let k = -1; k <= 1; k++) px(brook(y) + k, y, P.water[k + 1]);
+for (let y = 28; y < 52; y++) for (let x = 92; x < 122; x++) {
+ const d = Math.hypot((x - 107) / 14, (y - 40) / 11);
+ if (d < 1) px(x, y, d > .86 ? P.bank : d > .6 ? P.water[2] : d > .3 ? P.water[1] : P.water[0]);
+}
+// The low rammed-earth wall around the core, gates west, east and north.
+for (let a = 0; a < 720; a++) {
+ const t = a / 720 * Math.PI * 2, x = Math.round(64 + 58 * Math.cos(t)), y = Math.round(65 + 52 * Math.sin(t));
+ const gate = Math.abs(y - 64) < 4 || (Math.abs(x - 64) < 3 && y < 40);
+ if (!gate) { px(x, y, P.wall); px(x, y - 1, P.wallTop); }
+}
+// Roads: west-east main road, north lane to the chief, south lane to the shrine.
+rect(0, 62, N, 5, (x, y) => y === 62 || y === 66 ? P.pave[2] : pick(P.path, x, y, 2));
+rect(62, 14, 5, 48, (x, y) => pick(P.path, x, y, 3));
+rect(62, 67, 5, 40, (x, y) => pick(P.path, x, y, 3));
+rect(brook(64) - 2, 61, 5, 7, (x, y) => y === 61 || y === 67 ? P.stone : P.pave[1]);
+// The square, paved.
+rect(50, 52, 30, 26, (x, y) => (x + y) % 2 ? P.pave[0] : P.pave[1]);
+// Buildings: a grey tile roof with a ridge and light eaves; red pillars at the front corners.
+function house(x0, y0, w, h, ridgeAlongX = true) {
+ rect(x0, y0, w, h, (x, y) => {
+  const edge = x === x0 || y === y0 || x === x0 + w - 1 || y === y0 + h - 1;
+  if (edge) return P.eave;
+  const onRidge = ridgeAlongX ? y === y0 + Math.floor(h / 2) : x === x0 + Math.floor(w / 2);
+  if (onRidge) return P.ridge;
+  const side = ridgeAlongX ? y < y0 + h / 2 : x < x0 + w / 2;
+  return side ? P.roof[1] : P.roof[2];
+ });
+ px(x0, y0 + h, P.red); px(x0 + w - 1, y0 + h, P.red);
+}
+function courtyard(x0, y0, w, h) {
+ rect(x0, y0, w, h, P.court);
+ house(x0, y0, w, 7); house(x0, y0 + h - 6, w, 6); house(x0, y0 + 7, 6, h - 13, false); house(x0 + w - 6, y0 + 7, 6, h - 13, false);
+}
+function tree(cx, cy, r, pal) {
+ for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+  const d = Math.hypot(x, y); if (d > r + .3) continue;
+  px(cx + x, cy + y, x + y < -r / 2 ? pal[1] : x + y > r / 2 ? pal[2] : pal[0]);
+ }
+}
+const L = [];
+const label = (n, name, desc) => L.push([n, name, desc]);
+courtyard(50, 14, 30, 26); label(1, 'Chief’s courtyard', 'The village chief’s siheyuan at the end of the north lane: four halls around a court with a plum tree. The first quest giver.');
+tree(65, 27, 2, ['#c85a7a', '#e07a98', '#a8405a']);
+house(66, 41, 20, 10); label(2, 'Willow Inn', 'Two floors on the square’s north side, red lanterns, a teahouse below and rooms above: news, rumours and the first rest.');
+house(38, 42, 12, 9); label(3, 'Herbalist', 'Herbs and the first pills (the Meridian-Opening Pill), drying racks in front.');
+rect(26, 70, 24, 20, (x, y) => pick([P.sand, '#cdb983'], x, y, 4)); house(26, 90, 16, 8);
+for (const [x, y] of [[30, 74], [36, 74], [42, 74], [30, 82], [36, 82]]) { px(x, y, P.dummy); px(x, y - 1, P.dummy); }
+label(4, 'Martial yard', 'A sand yard with wooden dummies and a weapon rack, its small hall behind: where the player first trains (fists, guard, parry).');
+house(84, 70, 12, 9); for (const [x, y] of [[90, 68], [91, 67], [90, 66]]) px(x, y, P.smoke); label(5, 'Blacksmith', 'Forge, anvil and quench trough by the brook; smoke over the roof.');
+house(52, 80, 12, 8); label(6, 'General store', 'Food, tools, rope, cloth. Opens on the square’s south side.');
+// Farmers' houses.
+for (const [x, y, w, h, r] of [[20, 50, 10, 8, true], [32, 54, 9, 7, true], [86, 54, 10, 8, true], [70, 86, 10, 8, true], [84, 86, 9, 8, true], [24, 34, 9, 8, true], [36, 26, 10, 8, true], [86, 24, 8, 10, false], [44, 96, 10, 8, true], [74, 98, 9, 7, true]]) house(x, y, w, h, r);
+label(7, 'Farmers’ houses', 'Ten small homes with yards, each a bit different (porch, well, chicken coop, drying corn).');
+// Shrine and ancestral hall at the south end.
+house(58, 106, 12, 6); px(64, 113, P.gold); label(8, 'Earth god shrine and ancestral hall', 'At the end of the south lane, incense burner in front; the village’s tablets.');
+// Willows around the pond, the ginkgo on the square, other trees.
+for (const [x, y] of [[94, 30], [119, 33], [96, 49], [118, 47], [107, 27]]) tree(x, y, 3, P.willow);
+label(9, 'Willow pond', 'The clear water of the name: the brook widens into a pond ringed by willows, a fishing pier, lotus.');
+tree(58, 58, 4, P.ginkgo); label(10, 'Old ginkgo', 'A huge ginkgo shades the square, red ribbons in its branches. The heart of the village.');
+rect(72, 70, 3, 3, P.stone); px(73, 71, P.water[0]); label(11, 'Well', 'Stone well on the square.');
+rect(76, 54, 3, 1, P.trunk); rect(76, 53, 3, 1, '#d8c8a0'); label(12, 'Notice board', 'Bounties and news: where quests show.');
+for (const [x, y] of [[12, 48], [16, 80], [46, 34], [82, 36], [24, 102], [100, 82], [114, 70], [8, 70], [120, 90], [42, 64 - 8]]) tree(x, y, 2, P.leaf);
+// The west archway and the bridge.
+rect(10, 60, 2, 9, P.red); rect(9, 59, 4, 1, P.gold); rect(9, 69, 4, 1, P.gold); label(13, 'West archway', 'A red and gold paifang over the road from the ferry: the way in.');
+label(14, 'Stone bridge', 'An arched stone bridge carries the main road over the brook.');
+rect(14, 30, 6, 6, P.wall); rect(15, 31, 4, 4, P.roof[1]); label(15, 'Watchtower', 'Rammed earth and timber at the north-west corner of the wall.');
+label(16, 'Fields', 'Millet in strips and vegetable plots outside the wall, farm paths between them.');
+// Spawn point on the square.
+for (const [x, y] of [[64, 64], [63, 64], [65, 64], [64, 63], [64, 65]]) px(x, y, P.spawn);
+// Numbers on the plan.
+const at = { 1: [65, 20], 2: [76, 46], 3: [44, 46], 4: [38, 79], 5: [90, 74], 6: [58, 84], 7: [25, 54], 8: [64, 109], 9: [107, 40], 10: [58, 58], 11: [73, 74], 12: [77, 51], 13: [11, 56], 14: [104, 59], 15: [17, 39], 16: [12, 12] };
+const big = document.createElement('canvas'); big.width = big.height = 832; const b = big.getContext('2d');
+b.imageSmoothingEnabled = false; b.drawImage(cv, 0, 0, 832, 832);
+b.font = 'bold 13px system-ui'; b.textAlign = 'center'; b.textBaseline = 'middle';
+for (const [n, [x, y]] of Object.entries(at)) { const X = x * 6.5 + 3, Y = y * 6.5 + 3; b.fillStyle = '#111d'; b.beginPath(); b.arc(X, Y, 10, 0, 7); b.fill(); b.strokeStyle = '#ffc93c'; b.lineWidth = 2; b.stroke(); b.fillStyle = '#fff'; b.fillText(n, X, Y + 1); }
+b.fillStyle = '#ff4d6d'; b.font = 'bold 12px system-ui'; b.fillText("SPAWN", 64 * 6.5 + 3, 67.5 * 6.5);
+b.fillStyle = '#fff'; b.font = '12px system-ui'; b.textAlign = 'left'; b.fillText('N ↑   1 px = 1 block', 8, 822);
+b.fillText('← to the ferry', 6, 72 * 6.5); b.textAlign = 'right'; b.fillText('to Shaolin →', 826, 72 * 6.5);
+cv.replaceWith(big); big.style.borderRadius = '6px';
+document.getElementById('legend').innerHTML = L.sort((a, b) => a[0] - b[0]).map(([n, t, d]) => `<li value="${n}"><b>${t}.</b> ${d}</li>`).join('');
+// Palette of blocks.
+const pal = [['#3b4148', 'Deepslate tiles: roofs (stairs and slabs, curved eaves)'], ['#b8322a', 'Red terracotta / mangrove: pillars, archway'], ['#e8b83a', 'Gold blocks (trim only) on the archway'],
+ ['#e6dfcf', 'White terracotta / calcite: plastered walls'], ['#4a3424', 'Dark oak and stripped dark oak: beams, doors, lattice windows'], ['#8f8f8a', 'Stone bricks and polished andesite: square and bridge'],
+ ['#b98a5a', 'Packed mud and mud bricks: rammed-earth wall'], ['#9c8a66', 'Dirt path and coarse dirt: lanes'], ['#d9b23a', 'Ginkgo: a custom yellow-leaf tree']];
+document.getElementById('pal').innerHTML = pal.map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join('');
+// Elevations, one cell = one block.
+function elev(id, draw) { const c = document.getElementById(id), x = c.getContext('2d'); x.fillStyle = '#9cc4e8'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#6f9a3e'; x.fillRect(0, c.height - 2, c.width, 2); draw((X, Y, W, H, col) => { x.fillStyle = col; x.fillRect(X, Y, W, H); }); }
+elev('gate', r => {
+ const Y = 24; r(8, 8, 2, Y - 8, P.red); r(30, 8, 2, Y - 8, P.red); r(18, 11, 1, Y - 11, P.red); r(21, 11, 1, Y - 11, P.red);
+ r(6, 6, 28, 2, P.red); r(10, 9, 20, 2, '#2a3a5a'); r(17, 9, 6, 2, P.gold);
+ r(3, 4, 34, 2, P.roof[0]); r(2, 5, 1, 1, P.roof[0]); r(37, 5, 1, 1, P.roof[0]); r(1, 6, 1, 1, P.roof[0]); r(38, 6, 1, 1, P.roof[0]);
+ r(6, 3, 28, 1, P.ridge); r(5, 2, 1, 1, P.ridge); r(34, 2, 1, 1, P.ridge); r(7, 6, 26, 1, P.gold);
+ r(7, Y - 1, 4, 1, P.stone); r(29, Y - 1, 4, 1, P.stone);
+});
+elev('inn', r => {
+ const Y = 24; r(4, 14, 36, Y - 14, '#e6dfcf'); r(4, 14, 36, 1, '#4a3424');
+ for (const x of [4, 12, 20, 28, 39]) r(x, 14, 1, Y - 14, P.red);
+ r(19, 18, 6, Y - 18, '#4a3424'); for (const x of [7, 14, 30, 34]) r(x, 17, 3, 3, '#7a5a3a');
+ r(1, 12, 42, 2, P.roof[0]); r(0, 13, 1, 1, P.roof[0]); r(43, 13, 1, 1, P.roof[0]);
+ r(6, 6, 32, 6, '#e6dfcf'); for (const x of [6, 14, 22, 30, 37]) r(x, 6, 1, 6, P.red); for (const x of [9, 17, 25, 33]) r(x, 7, 3, 3, '#7a5a3a');
+ r(3, 4, 38, 2, P.roof[0]); r(2, 5, 1, 1, P.roof[0]); r(41, 5, 1, 1, P.roof[0]); r(6, 3, 32, 1, P.ridge); r(5, 2, 1, 1, P.ridge); r(38, 2, 1, 1, P.ridge);
+ for (const x of [8, 35]) { r(x, 15, 1, 1, '#4a3424'); r(x, 16, 1, 2, '#e0402a'); }
+ r(17, 12, 10, 2, '#2a3a5a'); r(19, 12, 6, 2, P.gold);
+});
+elev('house', r => {
+ const Y = 24; r(3, 15, 20, Y - 15, '#e6dfcf'); r(3, 15, 1, Y - 15, P.red); r(22, 15, 1, Y - 15, P.red);
+ r(11, 18, 4, Y - 18, '#4a3424'); r(5, 17, 4, 3, '#7a5a3a'); r(17, 17, 4, 3, '#7a5a3a');
+ r(1, 13, 24, 2, P.roof[0]); r(0, 14, 1, 1, P.roof[0]); r(25, 14, 1, 1, P.roof[0]); r(3, 11, 20, 2, P.roof[1]); r(5, 10, 16, 1, P.ridge); r(4, 9, 1, 1, P.ridge); r(21, 9, 1, 1, P.ridge);
+});
+</script></body></html>
