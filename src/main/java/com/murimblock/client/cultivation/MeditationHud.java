@@ -136,7 +136,8 @@ public final class MeditationHud {
         boolean full = c.stageQi() >= gauge;
         Component stage = Component.translatable("hud.murimblock.meditation.stage",
                 Component.translatable("murimblock.cultivation_realm." + CultivationRealms.realmKey(c.realm())), c.stage());
-        String amount = (int) Math.min(c.stageQi(), gauge) + " / " + gauge;
+        // Max Qi toward the stage's peak, where it stops growing until the player advances.
+        String amount = c.maxQi() + " / " + CultivationRules.peak(c.realm(), c.stage());
         // As wide as the label and the amount need: long realm names and big gauges must not overlap.
         int width = Math.max(140, font.width(stage) + font.width(amount) + 12);
         int x = cx - width / 2;

@@ -234,10 +234,10 @@ public final class StageBreakthrough {
         Font font = mc.font;
         Component realm = Component.translatable("murimblock.cultivation_realm." + CultivationRealms.realmKey(e.realm));
         Component main = Component.translatable("hud.murimblock.breakthrough.stage", realm, e.stage);
-        int bonus = (int) Math.round(CultivationRules.STAGE_MAX_QI_BONUS * 100);
+        int maxQi = ClientCultivation.get().maxQi();
         Component sub = e.stage < CultivationRules.STAGES
-                ? Component.translatable("hud.murimblock.breakthrough.next", bonus, CultivationRules.gauge(e.realm, e.stage))
-                : Component.translatable("hud.murimblock.breakthrough.peak", bonus);
+                ? Component.translatable("hud.murimblock.breakthrough.next", maxQi, CultivationRules.peak(e.realm, e.stage))
+                : Component.translatable("hud.murimblock.breakthrough.peak", maxQi);
         int w = Math.max(font.width(main), font.width(sub)) + 40;
         int h = 40;
         // Slides down from above the screen, and back up at the end.

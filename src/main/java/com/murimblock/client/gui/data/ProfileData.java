@@ -31,7 +31,7 @@ public record ProfileData(
         Component none = Component.translatable("gui.murimblock.none");
         Cultivation.Snapshot c = ClientCultivation.get();
         int realm = c.realm();
-        float regen = (float) (c.meditating() ? CultivationRules.QI_REGEN_MEDITATING : CultivationRules.QI_REGEN);
+        float regen = (float) CultivationRules.regen(c.maxQi(), c.meditating());
         // Progress through the realm: whole stages done plus the share of the current gauge.
         float stageShare = (float) Math.min(1, c.stageQi() / CultivationRules.gauge(realm, c.stage()));
         int percent = (int) (100 * (c.stage() - 1 + stageShare) / CultivationRules.STAGES);

@@ -13,9 +13,9 @@ public final class Cultivation {
 
     private int realm;
     private int stage;
-    private double stageQi;
     private double qi;
-    private int maxQi;
+    /** Grows with meditation up to the stage's peak; how far it is past the stage's floor is the stage gauge. */
+    private double maxQi;
     private int meridians;
 
     private boolean meditating;
@@ -31,17 +31,20 @@ public final class Cultivation {
         this(0, 1, 0, CultivationRules.START_MAX_QI, CultivationRules.START_MAX_QI, 0);
     }
 
-    Cultivation(int realm, int stage, double stageQi, double qi, int maxQi, int meridians) {
+    /**
+     * Max Qi is the larger of {@code maxQi} and the stage's floor plus {@code stageQi}: saves from before 31 Oct kept
+     * a stage gauge apart from a smaller max Qi, and come back with that gauge turned into max Qi.
+     */
+    Cultivation(int realm, int stage, double stageQi, double qi, double maxQi, int meridians) {
         this.realm = Math.max(0, realm);
         this.stage = Math.clamp(stage, 1, CultivationRules.STAGES);
-        this.stageQi = Math.max(0, stageQi);
-        this.maxQi = Math.max(1, maxQi);
+        this.maxQi = Math.max(maxQi, floor() + Math.clamp(stageQi, 0, gauge()));
         this.qi = Math.clamp(qi, 0, this.maxQi);
         this.meridians = Math.clamp(meridians, 0, CultivationRules.MERIDIANS);
     }
 
     public Snapshot snapshot() {
-        return new Snapshot(realm, stage, stageQi, qi, maxQi, meridians, meditating, (float) calm);
+        return new Snapshot(realm, stage, stageQi(), qi, maxQi(), meridians, meditating, (float) calm);
     }
 
     public int realm() {
@@ -52,8 +55,9 @@ public final class Cultivation {
         return stage;
     }
 
+    /** Max Qi gained since the stage's floor, at most the stage's gauge. */
     public double stageQi() {
-        return stageQi;
+        return Math.clamp(maxQi - floor(), 0, gauge());
     }
 
     public double qi() {
@@ -61,6 +65,11 @@ public final class Cultivation {
     }
 
     public int maxQi() {
+        return (int) maxQi;
+    }
+
+    /** Max Qi with the fractions meditation adds (saved). */
+    public double maxQiExact() {
         return maxQi;
     }
 
@@ -95,34 +104,39 @@ public final class Cultivation {
         return CultivationRules.gauge(realm, stage);
     }
 
+    public int floor() {
+        return CultivationRules.floor(realm, stage);
+    }
+
+    /** Max Qi at which this stage stops growing until the player advances. */
+    public int peak() {
+        return CultivationRules.peak(realm, stage);
+    }
+
     public boolean gaugeFull() {
-        return CultivationRules.gaugeFull(realm, stage, stageQi);
+        return CultivationRules.gaugeFull(realm, stage, stageQi());
     }
 
     public boolean canAdvance() {
-        return CultivationRules.canAdvance(realm, stage, stageQi);
+        return CultivationRules.canAdvance(realm, stage, stageQi());
     }
 
-    /** Rises one stage if the gauge is full and the stage is not the last; returns whether it did. */
+    /** Rises one stage if max Qi reached the peak and the stage is not the last; max Qi grows on from there. */
     public boolean advance() {
         if (!canAdvance()) {
             return false;
         }
         stage++;
-        stageQi = 0;
-        maxQi = CultivationRules.maxQiAfterStage(maxQi);
         return changed();
     }
 
-    /** A won trial: the next realm, stage 1, an empty gauge, and the stage's Max Qi bonus. */
+    /** A won trial: the next realm, stage 1, max Qi growing on from the last peak. */
     public boolean breakRealm() {
         if (realm >= CultivationRealms.LADDER.size() - 1) {
             return false;
         }
         realm++;
         stage = 1;
-        stageQi = 0;
-        maxQi = CultivationRules.maxQiAfterStage(maxQi);
         return changed();
     }
 
@@ -141,9 +155,10 @@ public final class Cultivation {
         changed();
     }
 
-    /** A lost trial: this share of the gathered stage Qi scatters, so the gauge is no longer full. */
+    /** A lost trial: this share of the max Qi gained in the stage scatters, so the peak is no longer reached. */
     public void scatter(double fraction) {
-        stageQi = Math.max(0, stageQi * (1 - fraction));
+        maxQi = floor() + stageQi() * (1 - fraction);
+        qi = Math.min(qi, maxQi);
         changed();
     }
 
@@ -156,13 +171,15 @@ public final class Cultivation {
         return changed();
     }
 
-    /** Gathers stage Qi (capped at the full gauge) and refills Qi for this many seconds. */
+    /** Grows max Qi (up to the stage's peak) while meditating and refills Qi, for this many seconds. */
     public void gather(double seconds) {
         if (meditating) {
-            stageQi = Math.min(gauge(), stageQi + CultivationRules.meditationGain(calm) * seconds);
+            if (maxQi < peak()) {
+                maxQi = Math.min(peak(), maxQi + CultivationRules.meditationGain(calm) * seconds);
+            }
             calm = CultivationRules.calmAfter(calm, seconds, eyesClosed, disturbed);
         }
-        qi = Math.min(maxQi, qi + (meditating ? CultivationRules.QI_REGEN_MEDITATING : CultivationRules.QI_REGEN) * seconds);
+        qi = Math.min(maxQi, qi + CultivationRules.regen(maxQi, meditating) * seconds);
         dirty = true;
     }
 
@@ -198,12 +215,11 @@ public final class Cultivation {
         disturbed = false;
     }
 
-    // Operator commands.
-    public void set(int realm, int stage, double stageQi, double qi, int maxQi, int meridians) {
+    // Operator commands: max Qi is the larger of maxQi and the stage's floor plus stageQi.
+    public void set(int realm, int stage, double stageQi, double qi, double maxQi, int meridians) {
         Cultivation c = new Cultivation(realm, stage, stageQi, qi, maxQi, meridians);
         this.realm = c.realm;
         this.stage = c.stage;
-        this.stageQi = Math.min(c.stageQi, gauge());
         this.qi = c.qi;
         this.maxQi = c.maxQi;
         this.meridians = c.meridians;

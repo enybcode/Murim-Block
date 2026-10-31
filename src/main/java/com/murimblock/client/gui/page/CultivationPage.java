@@ -191,7 +191,7 @@ public final class CultivationPage implements SystemPageView {
         SystemTheme.box(g, r, false);
         int cx = r.centerX();
         int cy = r.y() + 52;
-        float fraction = (float) CultivationData.qi() / CultivationData.qiToFill();
+        float fraction = CultivationData.stageShare();
         int lit = Math.round(fraction * RING_DOTS);
         for (int i = 0; i < RING_DOTS; i++) {
             double angle = -Math.PI / 2 + i * 2 * Math.PI / RING_DOTS;

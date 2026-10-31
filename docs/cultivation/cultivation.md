@@ -16,34 +16,44 @@ Status: validated by Enzo on 23 Oct 2026; the foundation is in the game (below).
 |---|---|
 | `realm` | index in the realm ladder (0 = Mortal / Body Tempering) |
 | `stage` | 1-9 inside the realm |
-| `stageQi` | Qi gathered toward the next stage |
-| `qi` / `maxQi` | Qi spent by techniques later; regenerates slowly, faster while meditating |
+| `maxQi` | the progress: grows with meditation, step by step, up to the stage's peak |
+| `stageQi` | derived: max Qi past the stage's floor (saved as `stage_qi` for old saves) |
+| `qi` | Qi spent by dodges, guards and techniques; refills as a share of max Qi |
 | `meridians` | number opened, always in the Qi-flow order (0-13) |
 
 Saved IDs stay stable once released. Commands (operators only) set each field for tests.
 
-## Stage gauge
+## Max Qi and its peaks
 
-- Gauge to fill: `100 × 1.25^(stage-1) × 3^realm` (Body Tempering 1 = 100, stage 9 ≈ 600; Qi Condensation 1 = 300).
-- Full gauge: the Cultivation page shows **Advance** (enabled only while meditating). Pressing it: stage + 1, gauge
-  reset, `maxQi` + 10 % (realm bonus to decide), a [!] System message.
+Since 31 Oct (Enzo): cultivating is growing the reservoir. Meditation raises max Qi little by little; each stage has
+a **peak** where it stops growing until the player advances. There is no stage gauge apart from max Qi, and nothing
+resets: max Qi only goes on from where it is. Qi, the fuel, is spent in fights and refills on its own.
+
+- A stage adds `100 × 1.25^(stage-1) × 3^realm` max Qi (Body Tempering 1 = 100, stage 9 ≈ 600; Qi Condensation 1
+  = 300). Start 100; peaks: 200, 325, 481… Body Tempering 9 peaks at ≈ 2680, the floor of Qi Condensation 1.
+- Peak reached: the Cultivation page shows **Advance** (enabled only while meditating). Pressing it: stage + 1, max
+  Qi unchanged, growing again toward the next peak, a [!] System message.
+- Meant to be very long: 0.1 max Qi a second, × 3 at full Calm. Body Tempering 1 ≈ 6 min of sitting, stage 9 ≈ 35
+  min, the whole realm ≈ 2.5-3 h; each realm three times the one before (Qi Condensation ≈ 8 h).
+- Qi refills 0.5 % of max Qi a second, 2.5 % while meditating (empty to full in 200 s, 40 s seated).
+- Saves from before 31 Oct come back with their old gauge turned into max Qi (floor + stage Qi).
 - Stage breakthrough (`client/cultivation/StageBreakthrough`, mockup "Spiral Breakthrough" chosen by Enzo, 25 Oct,
   artifact 6x4Qok5t6ZRtcKrXVinTpz): the System closes and, in first person, the camera steps behind the player for
   3.6 s. Qi specks gather in a ring at the feet (0-0.8 s), two strands spiral up to above the head with a rising
   beacon sound (0.6-1.8 s), the seated body lifts a little like a deep breath, then the spiral bursts into falling
   specks (`qi_fall`, one in eight gold) and a ring of Qi smoke, with a chime one pentatonic step higher per stage
   (note-block chime and bell, amethyst shimmer). A **BREAKTHROUGH** System window slides down for 2.5 s: realm,
-  stage, Max Qi bonus, next gauge (stage 9: "the trial awaits"). The breathing lane pauses meanwhile. Everyone
+  stage, max Qi, next peak (stage 9: "the trial awaits"). The breathing lane pauses meanwhile. Everyone
   tracking the player sees and hears it (payload `stage_breakthrough`); the window and camera are the player's own.
   Checked by `runInnerWorldTour` (shots `murim_breakthrough_spiral`, `_burst`, `_window`).
-- Stage 9 full: the button reads **Trial required** (disabled) and lists the missing meridians
+- Stage 9 at its peak: the button reads **Trial required** (disabled) and lists the missing meridians
   (`MERIDIANS_FOR_TRIAL`). The mortal realm's trial: [mortal-trial.md](mortal-trial.md); the realms above: to do.
 
 ## Meditation
 
 - Key (placeholder C): sit in lotus (Shenfa, see below), camera free, player rooted. Moving, attacking or taking damage
   ends it. Not usable in the air, in water or with a hostile mob closer than 8 blocks.
-- Base gain: 2 stage Qi per second, and `qi` refills 5× faster.
+- Base gain: 0.1 max Qi per second, and `qi` refills 5× faster.
 - Since 30 Oct (V3, validated by Enzo): no mini-game. The eyes close once seated and the Calm multiplies the gain,
   up to × 3; closed eyes show the spiritual vision. Rules and code: [meditation-vision.md](meditation-vision.md).
   The breathing QTE (V2, 24 Oct) is gone.
