@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Joueur — corps vivant en combat</title>
+<link rel="stylesheet" href="style.css"><script src="board.js"></script></head><body><script>
+// Poses (see board.js): lean = torso, head, aR/fR = right (near) upper arm / forearm, aL/fL = left (far),
+// tF/sF = right (near) leg thigh / shin, tB/sB = left (far) leg, hx/hy = hips moved (px). He faces right.
+const IDLE = {lean: 4, head: -2, aR: 8, fR: 32, aL: 14, fL: 42, tF: 10, sF: 2, tB: -10, sB: -16, hy: 2};
+const SHIFT = {...IDLE, hx: 2, hy: 3, lean: 6, aR: 11, fR: 36, aL: 10, fL: 38};
+
+const W_CONTACT = {lean: 7, head: -4, hy: 2, aR: -24, fR: -4, aL: 26, fL: 56, tF: 30, sF: 24, tB: -26, sB: -36};
+const W_PASS = {lean: 6, head: -3, hy: -1, aR: 0, fR: 14, aL: 4, fL: 24, tF: 4, sF: -2, tB: 22, sB: -40};
+const W_CONTACT2 = {lean: 7, head: -4, hy: 2, aR: 26, fR: 56, aL: -24, fL: -4, tF: -26, sF: -36, tB: 30, sB: 24};
+
+const R_CONTACT = {lean: 24, head: -16, hy: 2, aR: -55, fR: 35, aL: 60, fL: 150, tF: 40, sF: 28, tB: -40, sB: -100};
+const R_FLIGHT = {lean: 22, head: -14, hy: -4, aR: -20, fR: 70, aL: 30, fL: 120, tF: 65, sF: 10, tB: -30, sB: -80};
+const R_CONTACT2 = {lean: 24, head: -16, hy: 2, aR: 60, fR: 150, aL: -55, fL: 35, tF: -40, sF: -100, tB: 40, sB: 28};
+
+const J_CROUCH = {lean: 14, head: -6, hy: 6, aR: -40, fR: -20, aL: -32, fL: -12, tF: 34, sF: -18, tB: 20, sB: -34};
+const J_RISE = {lean: 6, head: -10, hy: -14, aR: 150, fR: 165, aL: 125, fL: 145, tF: 75, sF: 12, tB: -8, sB: -40};
+const J_TOP = {lean: 2, head: -4, hy: -16, aR: 115, fR: 140, aL: 80, fL: 110, tF: 50, sF: 0, tB: 0, sB: -30};
+const FALL = {lean: -4, head: 4, hy: -10, aR: 100, fR: 125, aL: 60, fL: 95, tF: 22, sF: 12, tB: -6, sB: -18};
+const FALL2 = {...FALL, aR: 115, fR: 145, aL: 50, fL: 80, tF: 8, sF: 0, tB: 10, sB: -6};
+
+const L_HIT = {lean: 24, head: -12, hy: 9, aR: 34, fR: 60, aL: 24, fL: 48, tF: 52, sF: -30, tB: 24, sB: -50};
+const L_REBOUND = {lean: 0, head: 0, hy: 0, aR: 4, fR: 22, aL: 8, fL: 30, tF: 8, sF: 2, tB: -10, sB: -16};
+
+const GO = {...W_CONTACT, lean: 16, head: -10};
+const STOP = {...IDLE, lean: -6, head: 6, hx: 3, aR: 22, fR: 46, aL: 26, fL: 52};
+const SETTLE = {...IDLE, lean: 6, hx: 1};
+
+sheet({
+  weapon: 'none',
+  colors: {robe: '#4f7d8a', robeDark: '#3a5d68', skin: '#c99a72', skinDark: '#a57c58', belt: '#2f3b40'},
+  title: 'JOUEUR — CORPS VIVANT EN COMBAT',
+  sub: 'Proposition avant animation · chantier 1 du combat dynamique (sur Shenfa) · le corps du joueur en mode '
+    + 'combat entre les coups : repos, marche, course, saut, chute, atterrissage · stylisé façon anime, jamais raide '
+    + '· vue de profil, il regarde vers la droite',
+  wrong: [
+    'Repos : encore la garde de boxe, poings au visage, qui sautille deux fois par seconde.',
+    'Marche : des pas chassés de boxeur, mains en l\'air ; course, saut et chute : les clips de tous les jours, '
+      + 'sans rien de combat.',
+    'Aucun atterrissage : on touche le sol et le corps repasse au repos d\'un coup.',
+    'Rien ne réagit à la vitesse ni aux virages : le corps glisse, raide, quand on démarre, freine ou tourne.',
+  ],
+  fix: [
+    'Plus de pose de combat au repos : la garde ne sert qu\'à bloquer (touche B). Au repos, un corps prêt et '
+      + 'détendu, qui respire et déplace son poids.',
+    'Chaque partie bouge à son rythme : les bras contre les jambes, le buste contre les hanches, la tête et les '
+      + 'mains suivent en retard.',
+    'Une couche vivante calculée par le code, par-dessus les clips (Shenfa, couche additive) : le corps penche '
+      + 'dans la vitesse et dans les virages avec un léger dépassement, roule sur chaque pied, s\'enfonce à '
+      + 'l\'atterrissage selon la hauteur de chute puis rebondit, respire plus fort après une course.',
+    'Les coups partent de ces poses et y reviennent : le repos est leur point de départ.',
+    'Timings à caler sur des clips de référence que tu choisis (méthode du 31 oct) : ceux-ci sont un premier jet.',
+  ],
+  anims: [
+    {name: 'Repos', meta: 'boucle de 60 ticks · plus de garde de boxe',
+      feel: 'un combattant détendu, prêt, qui respire.',
+      read: 'les épaules basses, les mains libres, le poids qui passe d\'un pied à l\'autre.',
+      frames: [
+        {ticks: '0', phase: 'repos', pose: IDLE, note: 'Pieds écartés, genoux souples, mains détendues devant les '
+          + 'hanches.'},
+        {ticks: '0 → 30', phase: 'poids', pose: SHIFT, from: IDLE, note: 'Le poids glisse sur le pied avant, le '
+          + 'buste suit ; les mains un tick après.'},
+        {ticks: '30 → 60', phase: 'retour', pose: IDLE, from: SHIFT, note: 'Retour, sur une respiration lente ; '
+          + 'jamais deux fois le même rythme (code).'},
+      ]},
+    {name: 'Marche', meta: 'cycle de 16 ticks (comme aujourd\'hui) · pieds plantés',
+      feel: 'une marche souple qui roule, pas une glissade.',
+      read: 'les bras qui balancent contre les jambes.',
+      frames: [
+        {ticks: '0', phase: 'contact', pose: W_CONTACT, note: 'Talon droit au sol, le bras gauche devant, le buste '
+          + 'tourné vers la gauche.'},
+        {ticks: '4', phase: 'passage', phaseColor: '#a32020', pose: W_PASS, from: W_CONTACT, note: 'Le corps monte '
+          + 'sur la jambe d\'appui et roule au-dessus du pied.'},
+        {ticks: '8', phase: 'contact', pose: W_CONTACT2, from: W_PASS, note: 'L\'autre pied ; les bras ont croisé, '
+          + 'le buste tourne de l\'autre côté.'},
+      ]},
+    {name: 'Course', meta: 'cycle de 12 ticks · penchée forte',
+      feel: 'on fonce : penché dans la vitesse, foulée longue.',
+      read: 'le buste penché très en avant, le talon arrière qui monte haut.',
+      frames: [
+        {ticks: '0', phase: 'contact', pose: R_CONTACT, note: 'Le pied attaque sous le corps, le bras opposé pompe '
+          + 'loin devant.'},
+        {ticks: '3', phase: 'envol', phaseColor: '#a32020', pose: R_FLIGHT, from: R_CONTACT, note: 'Les deux pieds '
+          + 'en l\'air, le genou avant haut.'},
+        {ticks: '6', phase: 'contact', pose: R_CONTACT2, from: R_FLIGHT, note: 'L\'autre pied, les bras ont croisé.'},
+      ]},
+    {name: 'Saut et chute', meta: 'saut 6 ticks puis tenu · chute en boucle de 20 ticks',
+      feel: 'un bond léger, des bras qui cherchent l\'équilibre.',
+      read: 'le genou qui monte au départ, les bras qui s\'ouvrent en tombant.',
+      frames: [
+        {ticks: '0', phase: 'impulsion', phaseColor: '#a32020', pose: J_CROUCH, note: 'Un tick plié, les bras en '
+          + 'arrière (le saut part tout de suite : la préparation est dans le départ).'},
+        {ticks: '1 → 4', phase: 'montée', pose: J_RISE, from: J_CROUCH, note: 'Le genou droit monte, les bras '
+          + 'lancent le corps vers le haut.'},
+        {ticks: '5 →', phase: 'sommet', pose: J_TOP, from: J_RISE, note: 'Tenu au sommet, les bras redescendent un '
+          + 'peu.'},
+        {ticks: 'chute', phase: 'chute', pose: FALL, from: J_TOP, note: 'Les bras s\'ouvrent, les jambes cherchent '
+          + 'le sol.'},
+        {ticks: 'chute', phase: 'chute', pose: FALL2, from: FALL, note: 'Les bras battent doucement pour '
+          + 'l\'équilibre ; plus vite si on tombe de haut.'},
+      ]},
+    {name: 'Atterrissage (nouveau)', meta: '6 à 12 ticks selon la hauteur de chute',
+      feel: 'le poids qui arrive au sol, puis repart.',
+      read: 'les genoux qui plient fort à l\'impact.',
+      frames: [
+        {ticks: '0 → 1', phase: 'impact', phaseColor: '#a32020', pose: L_HIT, from: FALL, impact: true,
+          note: 'Les genoux plient, le buste plonge, les bras descendent : plus fort plus on tombe de haut.'},
+        {ticks: '2 → 4', phase: 'rebond', pose: L_REBOUND, from: L_HIT, note: 'Le corps remonte et dépasse un '
+          + 'peu le repos.'},
+        {ticks: '5 →', phase: 'repos', pose: IDLE, from: L_REBOUND, note: 'Il se pose au repos ; si on marche, la '
+          + 'marche reprend dès le rebond.'},
+      ]},
+    {name: 'Couche vivante (code)', meta: 'par-dessus tous les clips · ressorts qui dépassent',
+      feel: 'le corps a du poids : il ne démarre ni ne s\'arrête net.',
+      read: 'la penchée qui suit la vitesse, avec un retard et un dépassement.',
+      frames: [
+        {ticks: 'démarrage', phase: 'élan', phaseColor: '#a32020', pose: GO, from: IDLE, note: 'Le buste penche '
+          + 'dans le départ, plus que la marche, puis se reprend.'},
+        {ticks: 'arrêt', phase: 'freinage', pose: STOP, from: W_CONTACT, note: 'Le corps part en arrière, les bras '
+          + 'continuent un peu devant.'},
+        {ticks: 'après', phase: 'retour', pose: SETTLE, from: STOP, note: 'Il dépasse le repos d\'un rien puis se '
+          + 'pose. Dans un virage, le corps penche vers l\'intérieur, de la même façon.'},
+      ]},
+  ],
+});
+</script></body></html>
