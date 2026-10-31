@@ -1,0 +1,99 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Destiny Talisman board</title>
+<style>
+body{margin:0;background:#1b1f27;color:#d9e2ec;font:14px monospace;padding:24px;width:1100px}
+h1{font-size:20px;margin:0 0 4px} p{margin:0 0 18px;color:#9fb0c0}
+.row{display:flex;gap:28px}
+.card{background:#252b36;border:2px solid #3a4352;padding:16px;width:330px}
+.card h2{font-size:16px;margin:0 0 6px;color:#ffd36b} .card .why{color:#9fb0c0;min-height:54px;margin-bottom:10px}
+.big{image-rendering:pixelated;width:256px;height:256px;display:block;margin:0 auto 12px;background:#8b8b8b}
+.slots{display:flex;gap:10px;justify-content:center;align-items:center}
+.slot{background:#8b8b8b;border:3px solid;border-color:#373737 #fff #fff #373737;padding:4px}
+.slot canvas{image-rendering:pixelated;display:block}
+</style></head><body>
+<h1>Destiny Talisman — round 3</h1>
+<p>The paper slip does not read at 16 px (firecracker, dotted roll): the jade disc does. Big view, then a slot at 2x and 3x.</p>
+<div class="row" id="row"></div>
+<script>
+const W = 16;
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const PAPER = ['#fff3c2', '#f8dc86', '#ebbf5c', '#c99440', '#94642f'].map(hex), PAPER_LINE = hex('#4a271c');
+const INK = ['#ee5a44', '#c4262b', '#86192c'].map(hex);
+const WHITE_JADE = ['#fffdf4', '#f1ead6', '#d9cfb2', '#b3a585', '#7f7258'].map(hex), WHITE_JADE_LINE = hex('#3a3022');
+const JADE = ['#d4f7dc', '#86dfae', '#46b585', '#2a8669', '#1b5a52'].map(hex), JADE_LINE = hex('#10302d'), JADE_GREEN = JADE, JADE_GREEN_LINE = JADE_LINE;
+const GOLD = ['#fff0a8', '#f3b83e', '#b0742a'].map(hex);
+const CORD = ['#e0483a', '#a3263a', '#6a1730'].map(hex);
+const ORES = ['#3a3a3a', '#d9824f', '#e6e1da', '#ffd04a', '#ff3a2a', '#3a64d8', '#6cf0e6', '#3ce070', '#fff7ef'].map(hex);
+const blank = () => Array.from({ length: W }, () => Array(W).fill(null));
+// Dark outline around every painted pixel (4-neighbours), like vanilla items.
+function outline(g, c) {
+ const o = blank();
+ for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (!g[y][x])
+  if ([[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => g[y + dy]?.[x + dx] && !g[y + dy][x + dx].noLine)) o[y][x] = c;
+ for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (o[y][x]) g[y][x] = o[y][x];
+}
+// The slip laid diagonally, bottom left to top right; along runs up the slip, across from its upper-left edge.
+function slip(withOres) {
+ const g = blank(), d = [Math.SQRT1_2, -Math.SQRT1_2], n = [Math.SQRT1_2, Math.SQRT1_2];
+ const at = (x, y) => { const px = x + 0.5 - 8.6, py = y + 0.5 - 6.4; return [px * d[0] + py * d[1], px * n[0] + py * n[1]]; };
+ for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+  const [a, c] = at(x, y);
+  if (Math.abs(a) > 6.0 || Math.abs(c) > 2.75) continue;
+  let col = c < -1.8 ? PAPER[1] : c > 1.8 ? PAPER[3] : PAPER[2];
+  if (c < -1.8 && a > 2.5) col = PAPER[0];
+  if (c > 1.8 && a < -3) col = PAPER[4];
+  if (Math.abs(a) > 4.4 && Math.abs(a) < 5.1) col = c > 0.8 ? INK[2] : INK[1];
+  g[y][x] = col;
+ }
+ // The script: a column of brush strokes down the middle, broken like characters, a stroke crossing it, and a seal.
+ for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+  const [a, c] = at(x, y);
+  if (!g[y][x] || Math.abs(a) > 3.7) continue;
+  const stroke = Math.abs(c) < 0.4 && !(a > 0.9 && a < 1.7) && a > -1.5;
+  const cross = a < -2.2 && a > -3.6 && c > 0.3 && c < 1.9;
+  if (stroke || cross) g[y][x] = c > 0.3 ? INK[2] : INK[1];
+ }
+ outline(g, PAPER_LINE);
+ // The tassel hangs straight down from the lowest point of the slip.
+ let tx = 0, ty = 0;
+ for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (g[y][x] && (y > ty || y === ty && x < tx)) { tx = x; ty = y; }
+ for (let k = 1; k <= 15 - ty; k++) g[ty + k][tx] = k === 15 - ty ? CORD[2] : CORD[k % 2];
+ if (ty + 2 <= 15) { g[15][tx - 1] = CORD[1]; g[15][tx + 1] = CORD[2]; }
+ if (withOres) {
+  // A jade bead knotted on the tassel.
+  g[ty + 1][tx] = JADE[1]; g[ty + 1][tx + 1] = JADE[3]; g[ty + 2][tx] = JADE[2];
+ }
+ return g;
+}
+// A jade bi disc of fate: lit from the top left, a carved groove ring, a gold ring around the open hole, a red cord.
+function pendant(JADE = JADE_GREEN, JADE_LINE = JADE_GREEN_LINE) {
+ const g = blank(), cx = 8.0, cy = 9.5, R = 5.9;
+ for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+  const dx = x + 0.5 - cx, dy = y + 0.5 - cy, r = Math.hypot(dx, dy);
+  if (r > R || r < 1.45) continue;
+  const light = -(dx + dy) / Math.max(r, 0.01) * Math.min(1, r / 3);
+  if (r < 2.5) { g[y][x] = light > 0.3 ? GOLD[0] : light > -0.3 ? GOLD[1] : GOLD[2]; continue; }
+  let i = light > 0.55 ? 1 : light > -0.25 ? 2 : light > -0.75 ? 3 : 4;
+  if (r > 3.7 && r < 4.4) i = Math.min(4, i + 1);
+  g[y][x] = JADE[i];
+ }
+ for (const [x, y] of [[5, 6], [6, 5], [4, 8]]) g[y][x] = JADE[0];
+ outline(g, JADE_LINE);
+ for (const [x, y, c] of [[8, 3, CORD[1]], [8, 2, CORD[0]], [7, 1, CORD[0]], [9, 1, CORD[1]], [8, 1, CORD[2]], [7, 0, CORD[1]], [9, 0, CORD[2]]]) g[y][x] = c;
+ return g;
+}
+function draw(cv, g) { const x = cv.getContext('2d'); g.forEach((row, y) => row.forEach((c, i) => { if (c) { x.fillStyle = `rgb(${c})`; x.fillRect(i, y, 1, 1); } })); }
+const V = [
+ ['A — Green jade of fate', 'A jade bi disc lit from the top left, a carved groove ring, a gold ring around the open hole, a red cord knot. Broken to be born into another house.', pendant()],
+ ['B — White jade of fate', 'The same disc in white "mutton-fat" jade, the rarest kind: calmer, it lets the gold and the red cord stand out.', pendant(WHITE_JADE, WHITE_JADE_LINE)],
+];
+const row = document.getElementById('row');
+for (const [t, why, g] of V) {
+ const c = document.createElement('div'); c.className = 'card';
+ c.innerHTML = `<h2>${t}</h2><div class="why">${why}</div>`;
+ const big = document.createElement('canvas'); big.width = big.height = 16; big.className = 'big'; draw(big, g); c.appendChild(big);
+ const s = document.createElement('div'); s.className = 'slots';
+ for (const k of [2, 3]) { const sl = document.createElement('div'); sl.className = 'slot'; const cv = document.createElement('canvas'); cv.width = cv.height = 16; cv.style.width = cv.style.height = 16 * k + 'px'; draw(cv, g); sl.appendChild(cv); s.appendChild(sl); }
+ c.appendChild(s); row.appendChild(c);
+}
+</script></body></html>

@@ -1,47 +1,39 @@
-// Paints the Destiny Talisman (original pixel art, 16x16) into textures/item: an aged yellow paper talisman, the
-// character 命 ("fate") in red ink between two red rules, a row of the eight ores it is made of under it, quartz at
-// the top, and a red tassel hanging from the bottom.
+// Paints the Destiny Talisman (original pixel art, 16x16, board docs/items/boards/destiny-talisman.png, B chosen by
+// Enzo) into textures/item: a white "mutton-fat" jade bi disc lit from the top left, a carved groove ring, a gold ring
+// around the open hole, a red cord knot on top.
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
 const W = 16;
-const hex = (h, a = 255) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16), a];
-const C = {
-    outline: hex('#4a3317'), paper: hex('#e8c66a'), light: hex('#f6dd8c'), dark: hex('#c9a24b'), aged: hex('#d8b25a'),
-    ink: hex('#b3201c'), inkDark: hex('#7c1312'), tassel: hex('#c8302a'), tasselDark: hex('#86201c'),
-    quartz: hex('#efe9e2'),
-};
-const ORES = ['#2b2b2b', '#c8774a', '#d8d2cc', '#f4c63d', '#e0281e', '#2f56c4', '#5ce8e0', '#2fcf62'].map(h => hex(h));
-const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16), 255];
+const JADE = ['#fffdf4', '#f1ead6', '#d9cfb2', '#b3a585', '#7f7258'].map(hex), LINE = hex('#3a3022');
+const GOLD = ['#fff0a8', '#f3b83e', '#b0742a'].map(hex);
+const CORD = ['#e0483a', '#a3263a', '#6a1730'].map(hex);
+const g = Array.from({ length: W }, () => Array(W).fill(null));
+
+const cx = 8.0, cy = 9.5, R = 5.9;
+for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    const dx = x + 0.5 - cx, dy = y + 0.5 - cy, r = Math.hypot(dx, dy);
+    if (r > R || r < 1.45) continue;
+    const light = -(dx + dy) / Math.max(r, 0.01) * Math.min(1, r / 3);
+    if (r < 2.5) {
+        g[y][x] = light > 0.3 ? GOLD[0] : light > -0.3 ? GOLD[1] : GOLD[2];
+        continue;
+    }
+    let i = light > 0.55 ? 1 : light > -0.25 ? 2 : light > -0.75 ? 3 : 4;
+    if (r > 3.7 && r < 4.4) i = Math.min(4, i + 1);
+    g[y][x] = JADE[i];
+}
+for (const [x, y] of [[5, 6], [6, 5], [4, 8]]) g[y][x] = JADE[0];
+// A dark outline around every painted pixel, like vanilla items (the hole gets its dark inside too).
+const line = [];
+for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    if (!g[y][x] && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => g[y + dy]?.[x + dx])) line.push([x, y]);
+}
+for (const [x, y] of line) g[y][x] = LINE;
+for (const [x, y, c] of [[8, 3, CORD[1]], [8, 2, CORD[0]], [7, 1, CORD[0]], [9, 1, CORD[1]], [8, 1, CORD[2]], [7, 0, CORD[1]],
+    [9, 0, CORD[2]]]) g[y][x] = c;
+
 const px = Buffer.alloc(W * W * 4);
-const put = (x, y, c) => px.set(c, (y * W + x) * 4);
-
-// The paper: light left edge, shaded right edge, a few aged specks; a dark outline around it.
-for (let y = 0; y <= 14; y++) for (let x = 3; x <= 12; x++) {
-    const edge = x === 3 || x === 12 || y === 0 || y === 14;
-    put(x, y, edge ? C.outline : x === 4 ? C.light : x === 11 ? C.dark : hash(x, y) < 0.18 ? C.aged : C.paper);
-}
-// Two red rules framing the character.
-for (let x = 5; x <= 10; x++) {
-    put(x, 2, C.ink);
-    put(x, 11, C.inkDark);
-}
-put(7, 1, C.quartz);
-put(8, 1, C.quartz);
-// 命: a roof, its eaves, a bar, then the mouth on the left and the seal stroke on the right.
-const glyph = [
-    [7, 4], [8, 4], [6, 5], [9, 5], [5, 6], [10, 6], [6, 7], [7, 7], [8, 7], [9, 7],
-    [6, 8], [8, 8], [9, 8], [6, 9], [7, 9], [9, 9], [9, 10],
-];
-for (const [x, y] of glyph) put(x, y, C.ink);
-put(10, 7, C.inkDark);
-put(8, 9, C.inkDark);
-// The ores it was made of, in a row under the lower rule.
-ORES.forEach((c, i) => put(4 + i, 12, c));
-// The tassel.
-put(7, 14, C.tassel);
-put(8, 14, C.tasselDark);
-put(7, 15, C.tasselDark);
-put(8, 15, C.tassel);
-
+g.forEach((row, y) => row.forEach((c, x) => { if (c) px.set(c, (y * W + x) * 4); }));
 const raw = Buffer.alloc((W * 4 + 1) * W);
 for (let y = 0; y < W; y++) px.copy(raw, y * (W * 4 + 1) + 1, y * W * 4, (y + 1) * W * 4);
 const crcTable = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });

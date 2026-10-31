@@ -37,7 +37,7 @@ then each shows **Coming soon**.
   - one free reroll in the first Destiny window: **ACCEPT** keeps the house, **REROLL** draws again (the second draw is
     final);
   - a **Destiny Talisman** (Enzo, 30 Oct: an item rather than a command, crafted from every ore but netherite) gives
-    one more reroll: used (right click), it is burnt and draws again among all houses, the current one included;
+    one more reroll: used (right click), it is broken and draws again among all houses, the current one included;
   - **pity:** after 10 draws in a row without an epic or legendary house, the next one is epic or better.
 - **One house per player**, saved with their data under a stable id (like arts). Kept on death. In multiplayer each
   player draws their own.
@@ -105,9 +105,9 @@ to be built with every inheritance "coming soon": nothing is granted but the hou
   Destiny and the Profile tooltip list each bonus, item and art ("+2 Armor", "3 × Bread", "Art: ..."), or the rarity's
   promise and "Coming soon". `runGuiShots` gives every house a test inheritance (+2 armour, 3 bread, an art), checks
   it is granted after ACCEPT and taken back once the real ones return, and logs PASS or FAIL.
-- Destiny Talisman (`murimblock:destiny_talisman`, `DestinyTalismanItem`, texture by
-  `tools/textures/destiny-talisman.cjs`): shapeless recipe of coal, copper, iron, gold, redstone, lapis, diamond,
-  emerald and quartz; right click burns it (totem sound), draws a final new house (`FamilyEvents.redraw`: old bonuses
+- Destiny Talisman (`murimblock:destiny_talisman`, `DestinyTalismanItem`, a white jade bi disc with a gold ring and a red cord,
+  board `docs/items/boards/destiny-talisman.png` (B, chosen 31 Oct), texture by `tools/textures/destiny-talisman.cjs`): shapeless recipe of coal, copper, iron, gold, redstone, lapis, diamond,
+  emerald and quartz; right click breaks it (totem sound), draws a final new house (`FamilyEvents.redraw`: old bonuses
   off, new inheritance granted, the Destiny window shows it with FINAL); refused while the first window's free reroll
   waits. The `/family` commands stay for ops and the dev checks; `runGuiShots` burns one and logs PASS or FAIL.
 - Not built yet: each house's inheritance, the System log page (still placeholders).

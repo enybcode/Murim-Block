@@ -15,9 +15,9 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
- * The Destiny Talisman (crafted from every ore but netherite): burnt, it draws the player's house again. That draw is
- * final; the old house's bonuses are taken back and the new one's granted. Refused while the first window's free
- * reroll is still waiting.
+ * The Destiny Talisman, a white jade disc (crafted from every ore but netherite): broken, it draws the player's
+ * house again. That draw is final; the old house's bonuses are taken back and the new one's granted. Refused while
+ * the first window's free reroll is still waiting.
  */
 public final class DestinyTalismanItem extends Item {
     public DestinyTalismanItem(Properties properties) {
